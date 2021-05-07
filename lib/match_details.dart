@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:nutmeg/main.dart';
+import 'matches_available.dart';
 import 'model.dart';
 import 'package:maps_launcher/maps_launcher.dart';
 
@@ -18,7 +18,7 @@ class MatchDetails extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: Utils.getAppBar("Match details"),
+      appBar: Utils.getAppBar("Match details", context),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

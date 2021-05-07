@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "956073807168",
+    "project_id": "nutmeg-9099c",
+    "storage_bucket": "nutmeg-9099c.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:956073807168:android:6da9954e5c9bb9ffa6fea5",
+        "android_client_info": {
+          "package_name": "com.nutmeg.nutmeg"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "956073807168-euf217h4v80mojcfeb890366jf1119es.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAjyxMFOrglJXpK6QlzJR_Mh8hNH3NcGS0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "956073807168-euf217h4v80mojcfeb890366jf1119es.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,101 +1,178 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:nutmeg/main.dart';
-import 'model.dart';
-import 'package:maps_launcher/maps_launcher.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+
+import 'google_sign_in_button.dart';
 
 
-class MatchDetails extends StatelessWidget {
-  Match m;
-
-  MatchDetails(Match m) {
-    this.m = m;
+class Authentication {
+  static Future<FirebaseApp> initializeFirebase({BuildContext context}) async {
+    FirebaseApp firebaseApp = await Firebase.initializeApp();
+    return firebaseApp;
   }
 
-  var font = "Lato";
-  var faceIcon = new Icon(const IconData(0xe71a, fontFamily: 'MaterialIcons'));
+  static Future<User> signInWithGoogle({BuildContext context}) async {
+    FirebaseAuth auth = FirebaseAuth.instance;
+    User user;
 
+    if (kIsWeb) {
+      GoogleAuthProvider authProvider = GoogleAuthProvider();
+
+      try {
+        final UserCredential userCredential =
+        await auth.signInWithPopup(authProvider);
+
+        user = userCredential.user;
+      } catch (e) {
+        print(e);
+      }
+    } else {
+      final GoogleSignIn googleSignIn = GoogleSignIn();
+
+      final GoogleSignInAccount googleSignInAccount =
+      await googleSignIn.signIn();
+
+      if (googleSignInAccount != null) {
+        final GoogleSignInAuthentication googleSignInAuthentication =
+        await googleSignInAccount.authentication;
+
+        final AuthCredential credential = GoogleAuthProvider.credential(
+          accessToken: googleSignInAuthentication.accessToken,
+          idToken: googleSignInAuthentication.idToken,
+        );
+
+        try {
+          final UserCredential userCredential =
+          await auth.signInWithCredential(credential);
+
+          user = userCredential.user;
+        } on FirebaseAuthException catch (e) {
+          if (e.code == 'account-exists-with-different-credential') {
+            ScaffoldMessenger.of(context).showSnackBar(
+              Authentication.customSnackBar(
+                content:
+                'The account already exists with a different credential',
+              ),
+            );
+          } else if (e.code == 'invalid-credential') {
+            ScaffoldMessenger.of(context).showSnackBar(
+              Authentication.customSnackBar(
+                content:
+                'Error occurred while accessing credentials. Try again.',
+              ),
+            );
+          }
+        } catch (e) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            Authentication.customSnackBar(
+              content: 'Error occurred using Google Sign In. Try again.',
+            ),
+          );
+        }
+      }
+
+      return user;
+    }
+  }
+
+  static SnackBar customSnackBar({String content}) {
+    return SnackBar(
+      backgroundColor: Colors.black,
+      content: Text(
+        content,
+        style: TextStyle(color: Colors.redAccent, letterSpacing: 0.5),
+      ),
+    );
+  }
+
+  static Future<void> signOut({BuildContext context}) async {
+    final GoogleSignIn googleSignIn = GoogleSignIn();
+
+    try {
+      if (!kIsWeb) {
+        await googleSignIn.signOut();
+      }
+      await FirebaseAuth.instance.signOut();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        Authentication.customSnackBar(
+          content: 'Error signing out. Try again.',
+        ),
+      );
+    }
+  }
+}
+
+class SignInScreen extends StatefulWidget {
+  @override
+  _SignInScreenState createState() => _SignInScreenState();
+}
+
+class _SignInScreenState extends State<SignInScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: Utils.getAppBar("Match details"),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(height: 15),
-          Text(m.sport,
-              style: GoogleFonts.getFont(font,
-                  textStyle:
-                      TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold))),
-          SizedBox(height: 15),
-          Text("8 left",
-              style: GoogleFonts.getFont(font,
-                  textStyle:
-                      TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold))),
-          SizedBox(height: 15),
-          TextButton(
-            child: Text('Join',
-                style: GoogleFonts.getFont(font,
-                    textStyle: TextStyle(
-                        fontSize: 24.0, fontWeight: FontWeight.bold))),
-            onPressed: () {
-              print('Pressed');
-            },
-            style: ButtonStyle(
-                shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                    RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(18.0),
-                        side: BorderSide(color: Colors.red)))),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.only(
+            left: 16.0,
+            right: 16.0,
+            bottom: 20.0,
           ),
-          SizedBox(height: 15),
-          Row(
+          child: Column(
+            mainAxisSize: MainAxisSize.max,
             children: [
-              IconButton(
-                icon: Icon(Icons.map),
-                iconSize: 48,
-                onPressed: () {
-                  print("map pressed");
-                  MapsLauncher.launchCoordinates(m.sportCenter.lat, m.sportCenter.long, m.sportCenter.name);
+              Row(),
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Flexible(
+                      flex: 1,
+                      child: Image.asset(
+                        'assets/football.jpg',
+                        height: 160,
+                      ),
+                    ),
+                    SizedBox(height: 20),
+                    Text(
+                      'Nutmeg',
+                      style: TextStyle(
+                        // color: CustomColors.firebaseYellow,
+                        fontSize: 40,
+                      ),
+                    ),
+                    Text(
+                      'Authentication',
+                      style: TextStyle(
+                        // color: CustomColors.firebaseOrange,
+                        fontSize: 40,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              FutureBuilder(
+                future: Authentication.initializeFirebase(context: context),
+                builder: (context, snapshot) {
+                  if (snapshot.hasError) {
+                    return Text('Error initializing Firebase');
+                  } else if (snapshot.connectionState == ConnectionState.done) {
+                    return GoogleSignInButton();
+                  }
+                  return CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      Colors.green,
+                    ),
+                  );
                 },
               ),
-              Text(m.sportCenter.name,
-                  style: GoogleFonts.getFont(font,
-                      textStyle: TextStyle(fontSize: 18.0)))
             ],
           ),
-          SizedBox(height: 15),
-          Row(
-            children: [
-              Icon(Icons.watch, size: 48),
-              Text(m.dateTime.hour.toString() + ":" + m.dateTime.minute.toString(),
-                  style: GoogleFonts.getFont(font,
-                      textStyle: TextStyle(fontSize: 18.0)))
-            ],
-          ),
-          SizedBox(height: 15),
-          Row(children: [
-            Icon(Icons.monetization_on, size: 48),
-            Text(m.price.toString() + " euro",
-                style: GoogleFonts.getFont(font,
-                    textStyle: TextStyle(fontSize: 18.0)))
-          ]),
-          Spacer(),
-          Align(
-              alignment: Alignment.bottomCenter,
-              child: Card(
-                  child: Column(
-                children: [
-                  SizedBox(height: 15),
-                  Text("2/10 going",
-                      style: GoogleFonts.getFont(font,
-                          textStyle: TextStyle(
-                              fontSize: 24.0, fontWeight: FontWeight.bold))),
-                  SizedBox(height: 15),
-                  Row(children: [faceIcon, faceIcon, faceIcon, faceIcon]),
-                  SizedBox(height: 15),
-                ],
-              )))
-        ],
+        ),
       ),
     );
   }
