@@ -25,7 +25,7 @@ class _MyAppState extends State<MyApp> {
         const Duration(seconds: 1),
             () => Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => Home()),
+          MaterialPageRoute(builder: (context) => ListPage()),
         ));
   }
 
