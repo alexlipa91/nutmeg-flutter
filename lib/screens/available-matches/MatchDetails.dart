@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:nutmeg/model.dart';
 
+import '../Utils.dart';
+
 void main() {
   runApp(new MaterialApp(
     home: new MatchDetails(Match(
@@ -43,7 +45,7 @@ class MatchDetails extends StatelessWidget {
 
     return SafeArea(
       child: Container(
-        decoration: new BoxDecoration(color: Colors.white),
+        decoration: new BoxDecoration(color: new HexColor("#d3d3d3")),
         padding: EdgeInsets.all(padding),
         child: Column(
           children: [
