@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nutmeg/Utils.dart';
 
 import '../model.dart';
 import 'MatchDetails.dart';
@@ -14,26 +15,11 @@ void main() {
                     DateTime.parse("2020-05-21 18:00:00Z"),
                     new SportCenter("SportCentrum De Pijp", 52.34995155532827,
                         4.894433669187803),
-                    "5-aside",
+                    "5-a-side Football",
                     10,
                     4,
                     5.50))))),
-    theme: new ThemeData(
-      primaryColor: Colors.black,
-      accentColor: Colors.blueAccent,
-      textTheme: TextTheme(
-          headline1: TextStyle(
-              color: Colors.black, fontWeight: FontWeight.w700, fontSize: 22),
-          headline2: TextStyle(
-              color: Colors.black, fontWeight: FontWeight.w500, fontSize: 18),
-          headline3: TextStyle(
-              color: Colors.purple, fontWeight: FontWeight.w700, fontSize: 18),
-          bodyText1: TextStyle(
-              color: Colors.black, fontSize: 18, fontWeight: FontWeight.w600),
-          bodyText2: TextStyle(
-              color: Colors.black, fontSize: 12, fontWeight: FontWeight.w500)),
-      fontFamily: "Montserrat",
-    ),
+    theme: appTheme,
   ));
 }
 
