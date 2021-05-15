@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:nutmeg/screens/LoginEmail.dart';
 
 import '../Utils.dart';
 
@@ -12,14 +13,12 @@ void main() {
 
 class Login extends StatelessWidget {
 
-  ValueNotifier<bool> isLoginOptionsWidget = ValueNotifier(true);
-
   @override
   Widget build(BuildContext context) {
     final ThemeData themeData = Theme.of(context);
 
     onTap() {
-      isLoginOptionsWidget.value = !isLoginOptionsWidget.value;
+      Navigator.push(context, MaterialPageRoute(builder: (context) => LoginEmail()));
     }
 
     return SafeArea(
@@ -39,12 +38,7 @@ class Login extends StatelessWidget {
                 style: themeData.textTheme.bodyText1,
                 textAlign: TextAlign.center),
             SizedBox(height: 30),
-            ValueListenableBuilder(
-                valueListenable: isLoginOptionsWidget,
-                builder: (BuildContext context, bool isLoginOptions,
-                    Widget child) {
-                  return new LoginAreaWidget(isLoginOptions, onTap);
-                })
+            LoginAreaWidget(onTap)
           ],
         ),
       ),
@@ -54,37 +48,29 @@ class Login extends StatelessWidget {
 
 class LoginAreaWidget extends StatelessWidget {
 
-  bool isOptionsWidget;
   Function onEmailTap;
 
-  LoginAreaWidget(this.isOptionsWidget, this.onEmailTap);
+  LoginAreaWidget(this.onEmailTap);
 
   @override
   Widget build(BuildContext context) {
     final ThemeData themeData = Theme.of(context);
 
-    if (isOptionsWidget) {
-      return Container(
+    return Container(
           child: Column(children: [
             LoginOptionButton(text: "Email", onTap: onEmailTap),
             LoginOptionButton(text: "Facebook"),
             LoginOptionButton(text: "Google"),
           ]));
     }
-    return Container(
-      child: Column(children: [
-        LoginOptionButton(text: "Username"),
-        LoginOptionButton(text: "Password"),
-        LoginOptionButton(text: "Login"),
-      ]));
-  }
 }
 
 class LoginOptionButton extends StatelessWidget {
   final String text;
   final Function onTap;
+  final Widget next;
 
-  const LoginOptionButton({Key key, this.text, this.onTap}) : super(key: key);
+  const LoginOptionButton({Key key, this.text, this.onTap, this.next}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

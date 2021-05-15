@@ -1,25 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:nutmeg/Authentication.dart';
 import 'package:nutmeg/Utils.dart';
+import 'package:nutmeg/screens/AvailableMatches.dart';
+import 'package:provider/provider.dart';
 
-import '../model.dart';
-import 'MatchDetails.dart';
 
 void main() {
-  runApp(new MaterialApp(
-    debugShowCheckedModeBanner: false,
-    home: new Container(
-        decoration: new BoxDecoration(color: Colors.grey.shade400),
-        child: Center(
-            child: new LaunchWidget(
-                newPage: new MatchDetails(Match(
-                    DateTime.parse("2020-05-21 18:00:00Z"),
-                    new SportCenter("SportCentrum De Pijp", 52.34995155532827,
-                        4.894433669187803),
-                    "5-a-side Football",
-                    10,
-                    4,
-                    5.50))))),
-    theme: appTheme,
+  runApp(ChangeNotifierProvider(
+    create: (context) => UserModel(),
+    child: new MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: new Container(
+          decoration: new BoxDecoration(color: Colors.grey.shade400),
+          child: Center(
+              child: new LaunchWidget(
+                  newPage: new AvailableMatches(matches: getMatches())))),
+      theme: appTheme,
+    ),
   ));
 }
 

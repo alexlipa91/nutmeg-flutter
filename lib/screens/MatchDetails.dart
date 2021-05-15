@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:nutmeg/model.dart';
-import 'package:nutmeg/screens/Login.dart';
 
 import '../Utils.dart';
 
 void main() {
   runApp(new MaterialApp(
+    debugShowCheckedModeBanner: false,
     home: new MatchDetails(Match(
         DateTime.parse("2020-05-21 18:00:00Z"),
         new SportCenter(
@@ -30,90 +30,89 @@ class MatchDetails extends StatelessWidget {
     final padding = 15.0;
 
     return SafeArea(
-      child: Container(
-        decoration: new BoxDecoration(color: Colors.grey.shade400),
-        padding: EdgeInsets.all(padding),
-        child: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Icon(Icons.menu),
-                Text("Nutmeg", style: themeData.textTheme.headline1),
-                InkWell(
-                  onTap: () =>
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => Login())),
-                  child: Text("Login", style: themeData.textTheme.headline3)
-                ),
-              ],
-            ),
-            Spacer(),
-            Row(mainAxisAlignment: MainAxisAlignment.start, children: [
-              Text(match.sport, style: themeData.textTheme.headline1)
-            ]),
-            Spacer(),
-            Row(mainAxisAlignment: MainAxisAlignment.start, children: [
-              Text("8 spots left", style: themeData.textTheme.headline2)
-            ]),
-            Spacer(),
-            Row(mainAxisAlignment: MainAxisAlignment.start, children: [
-              TextButton(
-                  onPressed: () {},
-                  child: Text(
-                    'Join',
+      child: Scaffold(
+        appBar: getAppBar(context),
+        body: Container(
+          decoration: new BoxDecoration(color: Colors.grey.shade400),
+          padding: EdgeInsets.all(padding),
+          child: Column(
+            children: [
+              // Row(
+              //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              //   children: [
+              //     Icon(Icons.menu),
+              //
+              //     getTopBottomWidget(context)
+              //   ],
+              // ),
+              Spacer(),
+              Row(mainAxisAlignment: MainAxisAlignment.start, children: [
+                Text(match.sport, style: themeData.textTheme.headline1)
+              ]),
+              Spacer(),
+              Row(mainAxisAlignment: MainAxisAlignment.start, children: [
+                Text("8 spots left", style: themeData.textTheme.headline2)
+              ]),
+              Spacer(),
+              Row(mainAxisAlignment: MainAxisAlignment.start, children: [
+                TextButton(
+                    onPressed: () {},
+                    child: Text(
+                      'Join',
+                    ),
+                    style: ButtonStyle(
+                        side: MaterialStateProperty.all(
+                            BorderSide(width: 2, color: Colors.purple)),
+                        foregroundColor: MaterialStateProperty.all(Colors.purple),
+                        padding: MaterialStateProperty.all(
+                            EdgeInsets.symmetric(vertical: 10, horizontal: 50)),
+                        textStyle: MaterialStateProperty.all(
+                            themeData.textTheme.headline3))),
+              ]),
+              Spacer(),
+              new InfoWidget(
+                  title: "Today at 18:00",
+                  icon: Icons.watch,
+                  subTitle: "Wed Sept 2020"),
+              new InfoWidget(
+                  title: match.sportCenter.name,
+                  icon: Icons.place,
+                  subTitle: "Madurastraat 15D, Amsterdam"),
+              new InfoWidget(
+                  title: "Futsal",
+                  icon: Icons.sports_soccer,
+                  subTitle: "Indoors, covered"),
+              new InfoWidget(
+                  title: "5.50", icon: Icons.money, subTitle: "Pay with Ideal"),
+              Divider(),
+              Spacer(),
+              Row(children: [
+                Text("2/10 players going", style: themeData.textTheme.bodyText1),
+              ]),
+              Spacer(),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  physics: BouncingScrollPhysics(),
+                  child: Row(
+                    children: [
+                      Icon(Icons.face, size: 50.0),
+                      Icon(Icons.face, size: 50.0),
+                      Icon(Icons.face, size: 50.0),
+                      Icon(Icons.face, size: 50.0),
+                      Icon(Icons.face, size: 50.0),
+                      Icon(Icons.face, size: 50.0),
+                      Icon(Icons.face, size: 50.0),
+                      Icon(Icons.face, size: 50.0),
+                      Icon(Icons.face, size: 50.0),
+                      Icon(Icons.face, size: 50.0),
+                    ],
                   ),
-                  style: ButtonStyle(
-                      side: MaterialStateProperty.all(
-                          BorderSide(width: 2, color: Colors.purple)),
-                      foregroundColor: MaterialStateProperty.all(Colors.purple),
-                      padding: MaterialStateProperty.all(
-                          EdgeInsets.symmetric(vertical: 10, horizontal: 50)),
-                      textStyle: MaterialStateProperty.all(
-                          themeData.textTheme.headline3))),
-            ]),
-            Spacer(),
-            new InfoWidget(
-                title: "Today at 18:00",
-                icon: Icons.watch,
-                subTitle: "Wed Sept 2020"),
-            new InfoWidget(
-                title: match.sportCenter.name,
-                icon: Icons.place,
-                subTitle: "Madurastraat 15D, Amsterdam"),
-            new InfoWidget(
-                title: "Futsal",
-                icon: Icons.sports_soccer,
-                subTitle: "Indoors, covered"),
-            new InfoWidget(
-                title: "5.50", icon: Icons.money, subTitle: "Pay with Ideal"),
-            Divider(),
-            Spacer(),
-            Row(children: [
-              Text("2/10 players going", style: themeData.textTheme.bodyText1),
-            ]),
-            Spacer(),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                physics: BouncingScrollPhysics(),
-                child: Row(
-                  children: [
-                    Icon(Icons.face, size: 50.0),
-                    Icon(Icons.face, size: 50.0),
-                    Icon(Icons.face, size: 50.0),
-                    Icon(Icons.face, size: 50.0),
-                    Icon(Icons.face, size: 50.0),
-                    Icon(Icons.face, size: 50.0),
-                    Icon(Icons.face, size: 50.0),
-                    Icon(Icons.face, size: 50.0),
-                    Icon(Icons.face, size: 50.0),
-                    Icon(Icons.face, size: 50.0),
-                  ],
                 ),
-              ),
-            )
-          ],
+              )
+            ],
+          ),
         ),
       ),
     );

@@ -1,22 +1,20 @@
+import 'package:flutter/cupertino.dart';
 import 'package:nutmeg/Model.dart';
 
 var users = [
-  new User("rob.doeg@gmail.com", "rob123")
+  new User("rob.doeg@gmail.com", "rob123"),
+  new User("u", "p")
 ];
 
-class _Authentication {
+class UserModel extends ChangeNotifier {
 
-  String user;
+  String name = null;
 
-  static var _auth = new _Authentication();
-
-  static String getLoggedInUser() {
-    return _auth.user;
-  }
-
-  static bool login(String email, String password) {
+  bool login(String email, String password) {
     var exists = users.where((e) => e.email == email && e.password == password).isNotEmpty;
-    _auth.user = email;
+    name = email;
+    print("notifying");
+    notifyListeners();
     return exists;
   }
 }
