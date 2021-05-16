@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:nutmeg/screens/LoginEmail.dart';
+import 'package:nutmeg/Model.dart';
 
 import '../Utils.dart';
 
@@ -13,8 +14,12 @@ void main() {
 
 class Login extends StatelessWidget {
 
+  Login();
+
   @override
   Widget build(BuildContext context) {
+    print("Building " + this.runtimeType.toString());
+
     final ThemeData themeData = Theme.of(context);
 
     onTap() {

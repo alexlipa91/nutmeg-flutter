@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:nutmeg/Authentication.dart';
+import 'package:nutmeg/models/UserModel.dart';
 import 'package:provider/provider.dart';
 
 import '../Utils.dart';
@@ -14,29 +14,27 @@ void main() {
 }
 
 class LoginEmail extends StatelessWidget {
-
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
-  LoginEmail({Key key}) : super(key: key);
-
   @override
   Widget build(BuildContext context) {
+    print("Building " + this.runtimeType.toString());
+
     final ThemeData themeData = Theme.of(context);
 
     void onLoginPress() {
       if (!Provider.of<UserModel>(context, listen: false)
           .login(emailController.text, passwordController.text)) {
         showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(content: Text("User not found"));
-          }
-        );
+            context: context,
+            builder: (context) {
+              return AlertDialog(content: Text("User not found"));
+            });
+      } else {
+        int count = 0;
+        Navigator.of(context).popUntil((_) => count++ >= 2);
       }
-
-      int count = 0;
-      Navigator.of(context).popUntil((_) => count++ >= 2);
     }
 
     return SafeArea(
@@ -53,12 +51,15 @@ class LoginEmail extends StatelessWidget {
               SizedBox(height: 10),
               Text(
                   "Join Football matches in your city\n"
-                      "whenever you want",
+                  "whenever you want",
                   style: themeData.textTheme.bodyText1,
                   textAlign: TextAlign.center),
               SizedBox(height: 30),
               LoginInputTextField(text: "Email", controller: emailController),
-              LoginInputTextField(text: "Password", obscure: true, controller: passwordController),
+              LoginInputTextField(
+                  text: "Password",
+                  obscure: true,
+                  controller: passwordController),
               LoginOptionButton(text: "Login", onTap: onLoginPress)
             ],
           ),
@@ -69,12 +70,12 @@ class LoginEmail extends StatelessWidget {
 }
 
 class LoginInputTextField extends StatelessWidget {
-
   final String text;
   final bool obscure;
   final TextEditingController controller;
 
-  const LoginInputTextField({Key key, this.text, this.obscure, this.controller}) : super(key: key);
+  const LoginInputTextField({Key key, this.text, this.obscure, this.controller})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -92,14 +93,14 @@ class LoginInputTextField extends StatelessWidget {
         decoration: InputDecoration(
             contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
             hintText: text,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(32.0))),
+            border:
+                OutlineInputBorder(borderRadius: BorderRadius.circular(32.0))),
       ),
     );
   }
 }
 
 class LoginButton extends StatelessWidget {
-
   @override
   Widget build(BuildContext context) {
     // TODO: implement build

@@ -1,20 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:nutmeg/Authentication.dart';
+import 'package:nutmeg/models/MatchesModel.dart';
+import 'package:nutmeg/models/UserModel.dart';
 import 'package:nutmeg/Utils.dart';
 import 'package:nutmeg/screens/AvailableMatches.dart';
 import 'package:provider/provider.dart';
 
 
 void main() {
-  runApp(ChangeNotifierProvider(
-    create: (context) => UserModel(),
+  runApp(MultiProvider(
+    providers: [
+      ListenableProvider(create: (context) => UserModel()),
+      ListenableProvider(create: (context) => MatchesModel(getMatches()))
+    ],
     child: new MaterialApp(
       debugShowCheckedModeBanner: false,
       home: new Container(
           decoration: new BoxDecoration(color: Colors.grey.shade400),
           child: Center(
               child: new LaunchWidget(
-                  newPage: new AvailableMatches(matches: getMatches())))),
+                  newPage: new AvailableMatches()))),
       theme: appTheme,
     ),
   ));
@@ -50,6 +54,8 @@ class _LaunchWidgetState extends State<LaunchWidget> {
 
   @override
   Widget build(BuildContext context) {
+    print("Building " + this.runtimeType.toString());
+
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(

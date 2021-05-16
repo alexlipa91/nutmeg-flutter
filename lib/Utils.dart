@@ -1,21 +1,10 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:nutmeg/Authentication.dart';
 import 'package:nutmeg/screens/Login.dart';
 import 'package:provider/provider.dart';
 
-class HexColor extends Color {
-  static int _getColorFromHex(String hexColor) {
-    hexColor = hexColor.toUpperCase().replaceAll("#", "");
-    if (hexColor.length == 6) {
-      hexColor = "FF" + hexColor;
-    }
-    return int.parse(hexColor, radix: 16);
-  }
-
-  HexColor(final String hexColor) : super(_getColorFromHex(hexColor));
-}
+import 'models/UserModel.dart';
 
 var appTheme = new ThemeData(
   primaryColor: Colors.black,
@@ -40,17 +29,13 @@ getAppBar(BuildContext context) {
     return Consumer<UserModel>(
       builder: (context, user, child) {
         if (user.name != null) {
-          print("User is " + user.name);
+          print("Building app bar: detected user is " + user.name);
           // fixme this doesn't really pad well
           return Padding(
             padding: EdgeInsets.symmetric(vertical: 1.0),
             child: RawMaterialButton(
               onPressed: () {
-                showDialog(
-                    context: context,
-                    builder: (_) => new AlertDialog(
-                      content: new Text("Here go to user page"),
-                    ));
+                Provider.of<UserModel>(context, listen: false).logout();
               },
               elevation: 2.0,
               fillColor: Colors.purple,
@@ -65,11 +50,11 @@ getAppBar(BuildContext context) {
         return InkWell(
             onTap: () =>
                 Navigator.push(context, MaterialPageRoute(builder: (context) => Login())),
+
             child: Padding(
               padding: EdgeInsets.all(10.0),
               child: Text("Login",
                   style: Theme.of(context).textTheme.headline3
-                // style: new TextStyle(color: Colors.purple, fontSize: 25.0)
               ),
             )
         );

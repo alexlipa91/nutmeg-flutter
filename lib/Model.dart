@@ -1,12 +1,13 @@
 class Match {
+  int id;
   DateTime dateTime;
   SportCenter sportCenter;
   String sport;
   double price;
+  List<String> joining;
   int total;
-  int joined;
 
-  Match(this.dateTime, this.sportCenter, this.sport, this.total, this.joined, this.price);
+  Match(this.id, this.dateTime, this.sportCenter, this.sport, this.total, this.joining, this.price);
 }
 
 class SportCenter {
