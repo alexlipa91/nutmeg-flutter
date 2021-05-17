@@ -187,6 +187,7 @@ class InfoWidget extends StatelessWidget {
               ],
             )
           ],
-        ));
+        )
+    );
   }
 }
