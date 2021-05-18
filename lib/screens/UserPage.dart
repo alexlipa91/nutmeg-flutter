@@ -56,7 +56,7 @@ void main() {
   runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider(create: (context) => MatchesModel(matches)),
-      ChangeNotifierProvider(create: (context) => UserModel("a")),
+      ChangeNotifierProvider(create: (context) => UserModel()),
     ],
     child: new MaterialApp(
       home: UserPage(),
@@ -66,9 +66,6 @@ void main() {
 }
 
 class UserPage extends StatelessWidget {
-  final String userName;
-
-  const UserPage({Key key, this.userName}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -88,7 +85,9 @@ class UserPage extends StatelessWidget {
                     decoration: new BoxDecoration(color: Colors.grey.shade400),
                     child: MatchList(
                         matches: matches.matches.where(
-                            (element) => element.joining.contains(user.name)).toList()));
+                            (element) =>
+                                element.joining.contains(context.watch()<UserModel>().user.uid))
+                            .toList()));
               }),
             ),
           ]));
@@ -107,7 +106,7 @@ class UserImage extends StatelessWidget {
             radius: 40,
             child: FittedBox(
                 child: Consumer<UserModel>(builder: (context, user, child) {
-              return Text(user.name[0].toUpperCase(),
+              return Text(context.watch<UserModel>().user.displayName[0].toUpperCase(),
                   style: TextStyle(color: Colors.white));
             }))));
   }
@@ -160,7 +159,7 @@ class MatchList extends StatelessWidget {
     children.add(LoginOptionButton(
         text: "Logout",
         onTap: () {
-          Provider.of<UserModel>(context, listen: false).logout();
+          context.read<UserModel>().logout();
           Navigator.pop(context);
         }));
 

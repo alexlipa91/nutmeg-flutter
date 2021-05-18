@@ -1,28 +1,25 @@
+import 'package:dartz/dartz.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:nutmeg/models/Model.dart';
-
-
-var users = [
-  new User("rob.doeg@gmail.com", "rob123"),
-  new User("u", "p")
-];
 
 class UserModel extends ChangeNotifier {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  String name;
+  User user;
 
-  UserModel([this.name]);
+  UserModel();
 
-  bool login(String email, String password) {
-    var exists = users.where((e) => e.email == email && e.password == password).isNotEmpty;
-    name = email;
-    print("notifying");
-    notifyListeners();
-    return exists;
+  Future<String> login(String email, String password) async {
+    return _auth.signInWithEmailAndPassword(email: email, password: password)
+        .then((value) => value.user.uid);
+  }
+
+  bool isLoggedIn() {
+    return user != null;
   }
 
   void logout() {
-    name = null;
-    notifyListeners();
+    // user = null;
+    // notifyListeners();
   }
 }

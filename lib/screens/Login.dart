@@ -1,10 +1,15 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:nutmeg/google_sign_in_button.dart';
+import 'package:nutmeg/login.dart';
 import 'package:nutmeg/screens/LoginEmail.dart';
 
 import '../Utils.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  Authentication.initializeFirebase();
+
   runApp(new MaterialApp(
     home: Login(),
     theme: appTheme,
@@ -62,7 +67,8 @@ class LoginAreaWidget extends StatelessWidget {
           child: Column(children: [
             LoginOptionButton(text: "Email", onTap: onEmailTap),
             LoginOptionButton(text: "Facebook"),
-            LoginOptionButton(text: "Google"),
+            GoogleSignInButton()
+            // LoginOptionButton(text: "Google"),
           ]));
     }
 }

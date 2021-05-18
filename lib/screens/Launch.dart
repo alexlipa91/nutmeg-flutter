@@ -5,6 +5,8 @@ import 'package:nutmeg/Utils.dart';
 import 'package:nutmeg/screens/AvailableMatches.dart';
 import 'package:provider/provider.dart';
 
+import '../login.dart';
+
 
 void main() {
   runApp(MultiProvider(
@@ -24,8 +26,12 @@ void main() {
   ));
 }
 
-Future<String> callAsyncFetch() {
-  return Future.delayed(Duration(seconds: 3), () => "hi");
+Future<void> callAsyncFetch() {
+  return Future.delayed(Duration(seconds: 1), () {
+    print("app initialization tasks");
+
+    Authentication.initializeFirebase();
+  });
 }
 
 class LaunchWidget extends StatefulWidget {

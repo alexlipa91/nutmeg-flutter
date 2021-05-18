@@ -12,7 +12,7 @@ import 'Login.dart';
 void main() {
   runApp(MultiProvider(
     providers: [
-      ChangeNotifierProvider(create: (context) => UserModel("u")),
+      ChangeNotifierProvider(create: (context) => UserModel()),
       ChangeNotifierProvider(
           create: (context) => MatchesModel([
                 Match(
@@ -55,9 +55,7 @@ class MatchDetails extends StatelessWidget {
 
           // function for when clicking join
           _goToNextStepToJoin() {
-            if (Provider.of<UserModel>(context, listen: false)
-                .name !=
-                null) {
+            if (context.read<UserModel>().isLoggedIn()) {
               Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -91,9 +89,9 @@ class MatchDetails extends StatelessWidget {
                   Consumer<UserModel>(
                     builder: (context, user, child) {
                       return TextButton(
-                          onPressed: (match.joining.contains(user.name)) ? null
+                          onPressed: (match.joining.contains(user.user.uid)) ? null
                               : _goToNextStepToJoin,
-                          child: Text(_getTextDependingOnMatch(user.name)),
+                          child: Text(_getTextDependingOnMatch(user.user.uid)),
                           style: ButtonStyle(
                               side: MaterialStateProperty.all(
                                   BorderSide(width: 2, color: Colors.purple)),

@@ -29,19 +29,19 @@ getAppBar(BuildContext context) {
   getTopBottomWidget(BuildContext context) {
     return Consumer<UserModel>(
       builder: (context, user, child) {
-        if (user.name != null) {
-          print("Building app bar: detected user is " + user.name);
+        if (user.isLoggedIn() != null) {
+          print("Building app bar: detected user is " + user.user.displayName);
           // fixme this doesn't really pad well
           return Padding(
             padding: EdgeInsets.symmetric(vertical: 1.0),
             child: RawMaterialButton(
               onPressed: () {
                 Navigator.push(context, MaterialPageRoute(builder: (context) =>
-                new UserPage(userName: user.name)));
+                new UserPage()));
               },
               elevation: 2.0,
               fillColor: Colors.purple,
-              child: Text(user.name[0].toUpperCase(),
+              child: Text(user.user.displayName[0].toUpperCase(),
                   style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w500)),
               padding: EdgeInsets.all(15.0),
               shape: CircleBorder(),

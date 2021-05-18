@@ -1,3 +1,5 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:nutmeg/models/UserModel.dart';
@@ -6,14 +8,21 @@ import 'package:provider/provider.dart';
 import '../Utils.dart';
 import 'Login.dart';
 
-void main() {
-  runApp(new MaterialApp(
-    home: LoginEmail(),
-    theme: appTheme,
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+
+  runApp(MultiProvider(
+    providers: [ChangeNotifierProvider(create: (context) => UserModel())],
+    child: new MaterialApp(
+      home: LoginEmail(),
+      theme: appTheme,
+    ),
   ));
 }
 
 class LoginEmail extends StatelessWidget {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
@@ -23,45 +32,59 @@ class LoginEmail extends StatelessWidget {
 
     final ThemeData themeData = Theme.of(context);
 
-    void onLoginPress() {
-      if (!Provider.of<UserModel>(context, listen: false)
-          .login(emailController.text, passwordController.text)) {
-        showDialog(
-            context: context,
-            builder: (context) {
-              return AlertDialog(content: Text("User not found"));
-            });
-      } else {
-        int count = 0;
-        Navigator.of(context).popUntil((_) => count++ >= 2);
+    void onLoginPress() async {
+      if (_formKey.currentState.validate()) {
+        try {
+          await context
+              .read<UserModel>()
+              .login(emailController.text, passwordController.text);
+
+          int count = 0;
+          Navigator.of(context).popUntil((_) => count++ >= 2);
+        } on FirebaseAuthException catch (e) {
+          showDialog(
+              context: context,
+              builder: (context) {
+                return AlertDialog(content: Text(e.message));
+              });
+        }
       }
     }
 
     return SafeArea(
       child: Scaffold(
         body: Container(
+          height: double.infinity,
           padding: EdgeInsets.all(50),
           decoration: new BoxDecoration(color: Colors.grey.shade400),
-          // padding: EdgeInsets.symmetric(100, padding),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Text("Nutmeg", style: themeData.textTheme.headline1),
-              SizedBox(height: 10),
-              Text(
-                  "Join Football matches in your city\n"
-                  "whenever you want",
-                  style: themeData.textTheme.bodyText1,
-                  textAlign: TextAlign.center),
-              SizedBox(height: 30),
-              LoginInputTextField(text: "Email", controller: emailController),
-              LoginInputTextField(
-                  text: "Password",
-                  obscure: true,
-                  controller: passwordController),
-              LoginOptionButton(text: "Login", onTap: onLoginPress)
-            ],
+          child: Center(
+            child: Form(
+              key: _formKey,
+              child: SingleChildScrollView(
+                reverse: true,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text("Nutmeg", style: themeData.textTheme.headline1),
+                    SizedBox(height: 10),
+                    Text(
+                        "Join Football matches in your city\n"
+                        "whenever you want",
+                        style: themeData.textTheme.bodyText1,
+                        textAlign: TextAlign.center),
+                    SizedBox(height: 30),
+                    LoginInputTextField(
+                        text: "Email", controller: emailController),
+                    LoginInputTextField(
+                        text: "Password",
+                        obscure: true,
+                        controller: passwordController),
+                    LoginOptionButton(text: "Login", onTap: onLoginPress)
+                  ],
+                ),
+              ),
+            ),
           ),
         ),
       ),
@@ -83,7 +106,13 @@ class LoginInputTextField extends StatelessWidget {
 
     return Container(
       margin: EdgeInsets.symmetric(vertical: 10.0),
-      child: TextField(
+      child: TextFormField(
+        validator: (String value) {
+          if (value.isEmpty) {
+            return 'Please enter some text';
+          }
+          return null;
+        },
         inputFormatters: [
           FilteringTextInputFormatter.deny(RegExp('[ ]')),
         ],
@@ -97,15 +126,5 @@ class LoginInputTextField extends StatelessWidget {
                 OutlineInputBorder(borderRadius: BorderRadius.circular(32.0))),
       ),
     );
-  }
-}
-
-class LoginButton extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    // TODO: implement build
-    var button = LoginOptionButton(text: "Login");
-
-    return button;
   }
 }

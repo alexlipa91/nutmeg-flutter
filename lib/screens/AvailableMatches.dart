@@ -45,7 +45,7 @@ List<Match> getMatches() {
 void main() {
   runApp(MultiProvider(
     providers: [
-      ChangeNotifierProvider(create: (context) => UserModel("a")),
+      ChangeNotifierProvider(create: (context) => UserModel()),
       ChangeNotifierProvider(create: (context) => MatchesModel(getMatches())),
     ],
     child: new MaterialApp(home: new AvailableMatches(), theme: appTheme),
@@ -170,7 +170,7 @@ class MatchInfo extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(match.sport, style: themeData.textTheme.bodyText2),
-                  if(showGoingWidget && match.joining.contains(user.name))
+                  if(showGoingWidget && match.joining.contains(user.user.displayName))
                     Container(
                       decoration: new BoxDecoration(color: Colors.green),
                       child: Padding(

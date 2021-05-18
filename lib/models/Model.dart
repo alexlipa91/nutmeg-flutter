@@ -21,10 +21,3 @@ class SportCenter {
 
   SportCenter(this.name, this.lat, this.long);
 }
-
-class User {
-  String email;
-  String password;
-
-  User(this.email, this.password);
-}
