@@ -16,4 +16,12 @@ class MatchesModel extends ChangeNotifier {
   getMatch(int id) {
     return matches.where((e) => e.id == id).first;
   }
+
+  refresh() async {
+    print("simulating a refresh");
+    // simulate a refresh
+    matches.add(matches.last);
+    notifyListeners();
+    print(matches.length);
+  }
 }

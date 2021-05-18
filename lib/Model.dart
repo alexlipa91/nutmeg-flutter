@@ -1,3 +1,5 @@
+enum MatchStatus { open, played, canceled }
+
 class Match {
   int id;
   DateTime dateTime;
@@ -6,8 +8,10 @@ class Match {
   double price;
   List<String> joining;
   int total;
+  MatchStatus status;
 
-  Match(this.id, this.dateTime, this.sportCenter, this.sport, this.total, this.joining, this.price);
+  Match(this.id, this.dateTime, this.sportCenter, this.sport, this.total,
+      this.joining, this.price, this.status);
 }
 
 class SportCenter {

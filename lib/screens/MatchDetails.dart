@@ -22,7 +22,8 @@ void main() {
                     "5-aside",
                     10,
                     [],
-                    5.50)
+                    5.50,
+                    MatchStatus.open)
               ]))
     ],
     child: MaterialApp(
@@ -67,6 +68,11 @@ class MatchDetails extends StatelessWidget {
             }
           }
 
+          _getTextDependingOnMatch(String userName) {
+            return (match.status == MatchStatus.played) ? "Played" : 
+                match.joining.contains(userName) ? "Going" : "Join";
+          }
+          
           return Container(
             decoration: new BoxDecoration(color: Colors.grey.shade400),
             padding: EdgeInsets.all(padding),
@@ -86,9 +92,7 @@ class MatchDetails extends StatelessWidget {
                       return TextButton(
                           onPressed: (match.joining.contains(user.name)) ? null
                               : _goToNextStepToJoin,
-                          child: Text((match.joining.contains(user.name))
-                              ? "Going"
-                              : "Join"),
+                          child: Text(_getTextDependingOnMatch(user.name)),
                           style: ButtonStyle(
                               side: MaterialStateProperty.all(
                                   BorderSide(width: 2, color: Colors.purple)),

@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:nutmeg/screens/Login.dart';
+import 'package:nutmeg/screens/UserPage.dart';
 import 'package:provider/provider.dart';
 
 import 'models/UserModel.dart';
@@ -35,7 +36,8 @@ getAppBar(BuildContext context) {
             padding: EdgeInsets.symmetric(vertical: 1.0),
             child: RawMaterialButton(
               onPressed: () {
-                Provider.of<UserModel>(context, listen: false).logout();
+                Navigator.push(context, MaterialPageRoute(builder: (context) =>
+                new UserPage(userName: user.name)));
               },
               elevation: 2.0,
               fillColor: Colors.purple,
