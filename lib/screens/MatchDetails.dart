@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:nutmeg/models/MatchesModel.dart';
 import 'package:nutmeg/models/UserModel.dart';
-import 'package:nutmeg/Model.dart';
+import 'package:nutmeg/models/Model.dart';
 import 'package:nutmeg/screens/Payment.dart';
 import 'package:provider/provider.dart';
 
 import '../Utils.dart';
 import 'Login.dart';
+
 
 void main() {
   runApp(MultiProvider(

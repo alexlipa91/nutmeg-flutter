@@ -1,5 +1,5 @@
 import 'package:flutter/cupertino.dart';
-import 'package:nutmeg/Model.dart';
+import 'package:nutmeg/models/Model.dart';
 
 
 class MatchesModel extends ChangeNotifier {

@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 
 import '../Utils.dart';
 import 'AvailableMatches.dart';
-import 'package:nutmeg/Model.dart';
+import 'package:nutmeg/models/Model.dart';
 
 import 'Login.dart';
 

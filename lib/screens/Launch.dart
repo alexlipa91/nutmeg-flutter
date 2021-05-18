@@ -5,7 +5,6 @@ import 'package:nutmeg/Utils.dart';
 import 'package:nutmeg/screens/AvailableMatches.dart';
 import 'package:provider/provider.dart';
 
-import '../Model.dart';
 
 void main() {
   runApp(MultiProvider(

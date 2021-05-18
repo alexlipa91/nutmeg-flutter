@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:nutmeg/Model.dart';
+import 'package:nutmeg/models/Model.dart';
 import 'package:intl/intl.dart';
 import 'package:nutmeg/models/MatchesModel.dart';
 import 'package:nutmeg/models/UserModel.dart';
