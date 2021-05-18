@@ -19,8 +19,9 @@ class MatchesModel extends ChangeNotifier {
 
   refresh() async {
     print("simulating a refresh");
+    // todo fix this when the backend is there
     // simulate a refresh
-    matches.add(matches.last);
+    // matches.add(matches.last);
     notifyListeners();
     print(matches.length);
   }
