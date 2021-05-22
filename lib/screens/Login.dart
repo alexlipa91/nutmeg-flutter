@@ -4,6 +4,7 @@ import 'package:nutmeg/google_sign_in_button.dart';
 import 'package:nutmeg/login.dart';
 import 'package:nutmeg/screens/LoginEmail.dart';
 
+
 import '../Utils.dart';
 
 void main() {
@@ -85,7 +86,7 @@ class LoginOptionButton extends StatelessWidget {
     final ThemeData themeData = Theme.of(context);
 
     return Container(
-      margin: EdgeInsets.symmetric(vertical: 10.0),
+      margin: EdgeInsets.all(30.0),
       child: Row(
         children: [
           Expanded(

@@ -1,11 +1,10 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:nutmeg/models/MatchesModel.dart';
 import 'package:nutmeg/models/UserModel.dart';
 import 'package:nutmeg/Utils.dart';
 import 'package:nutmeg/screens/AvailableMatches.dart';
 import 'package:provider/provider.dart';
-
-import '../login.dart';
 
 
 void main() {
@@ -29,8 +28,7 @@ void main() {
 Future<void> callAsyncFetch() {
   return Future.delayed(Duration(seconds: 1), () {
     print("app initialization tasks");
-
-    Authentication.initializeFirebase();
+    return Firebase.initializeApp();
   });
 }
 

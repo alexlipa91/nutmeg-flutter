@@ -29,8 +29,8 @@ getAppBar(BuildContext context) {
   getTopBottomWidget(BuildContext context) {
     return Consumer<UserModel>(
       builder: (context, user, child) {
-        if (user.isLoggedIn() != null) {
-          print("Building app bar: detected user is " + user.user.displayName);
+        if (user.isLoggedIn()) {
+          print("Building app bar: detected user is " + user.user.uid);
           // fixme this doesn't really pad well
           return Padding(
             padding: EdgeInsets.symmetric(vertical: 1.0),

@@ -1,8 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:nutmeg/models/UserModel.dart';
+import 'package:provider/provider.dart';
 
-import 'login.dart';
 
 class GoogleSignInButton extends StatefulWidget {
   @override
@@ -34,13 +35,18 @@ class _GoogleSignInButtonState extends State<GoogleSignInButton> {
             _isSigningIn = true;
           });
 
-          User user = await Authentication.signInWithGoogle(context: context);
+          String userId;
+          try {
+            userId = await context.read<UserModel>().loginWithGoogle();
+          } on FirebaseAuthException catch (e) {
+            print(e.message);
+          }
 
           setState(() {
             _isSigningIn = false;
           });
 
-          if (user != null) {
+          if (userId != null) {
             // Navigator.of(context).pushReplacement(
             //   MaterialPageRoute(
             //     builder: (context) => UserInfoScreen(
@@ -48,7 +54,7 @@ class _GoogleSignInButtonState extends State<GoogleSignInButton> {
             //     ),
             //   ),
             // );
-            print("user is " + user.email);
+            print("user is " + userId);
             Navigator.pop(context);
           }
         },

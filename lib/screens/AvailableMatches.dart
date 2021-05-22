@@ -170,7 +170,7 @@ class MatchInfo extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(match.sport, style: themeData.textTheme.bodyText2),
-                  if(showGoingWidget && match.joining.contains(user.user.displayName))
+                  if(showGoingWidget && user.isLoggedIn() && match.joining.contains(user.user.uid))
                     Container(
                       decoration: new BoxDecoration(color: Colors.green),
                       child: Padding(
