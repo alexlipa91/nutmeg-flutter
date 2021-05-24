@@ -73,15 +73,14 @@ Future<void> main() async {
 }
 
 class UserPage extends StatelessWidget {
+
   @override
   Widget build(BuildContext context) {
     print("Building " + this.runtimeType.toString());
 
     final ThemeData themeData = Theme.of(context);
 
-    return !context.watch<UserModel>().isLoggedIn()
-        ? Container()
-        : SafeArea(
+    return SafeArea(
             child: Container(
                 decoration: new BoxDecoration(color: Colors.grey.shade400),
                 child: Column(mainAxisSize: MainAxisSize.min, children: [
@@ -115,7 +114,7 @@ class UserImage extends StatelessWidget {
             radius: 40,
             child: FittedBox(
                 child: Text(
-                    context.watch<UserModel>().user.email[0].toUpperCase(),
+                    context.read<UserModel>().user.email[0].toUpperCase(),
                     style: TextStyle(color: Colors.white, fontSize: 45))
             )));
   }
@@ -171,12 +170,7 @@ class MatchList extends StatelessWidget {
       ]);
     }
 
-    children.add(LoginOptionButton(
-        text: "Logout",
-        onTap: () {
-          context.read<UserModel>().logout();
-          Navigator.pop(context);
-        }));
+    children.add(LogoutButton());
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -190,3 +184,62 @@ class MatchList extends StatelessWidget {
     );
   }
 }
+
+class LogoutButton extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() => _LogoutButtonState();
+}
+
+class _LogoutButtonState extends State<LogoutButton> {
+  bool _isSigningOut = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData themeData = Theme.of(context);
+
+    return Container(
+      margin: EdgeInsets.all(30.0),
+      child: Row(
+        children: [
+          Expanded(
+            child: TextButton(
+                onPressed: () async {
+                  setState(() {
+                    _isSigningOut = true;
+                  });
+
+                  await context.read<UserModel>().logout();
+                  await Future.delayed(Duration(milliseconds: 500));
+
+                  setState(() {
+                    _isSigningOut = false;
+                  });
+
+                  Navigator.pop(context);
+                },
+                child: _isSigningOut
+                    ? CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white))
+                    : Text(
+                  "Logout",
+                ),
+                style: ButtonStyle(
+                    side: MaterialStateProperty.all(
+                        BorderSide(width: 2, color: Colors.grey)),
+                    foregroundColor: MaterialStateProperty.all(Colors.black),
+                    backgroundColor: MaterialStateProperty.all(Colors.grey),
+                    shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                        RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20.0),
+                        )),
+                    padding: MaterialStateProperty.all(
+                        EdgeInsets.symmetric(vertical: 10, horizontal: 50)),
+                    textStyle: MaterialStateProperty.all(
+                        themeData.textTheme.headline3))),
+          )
+        ],
+      ),
+    );
+  }
+}
+

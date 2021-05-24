@@ -48,7 +48,7 @@ class UserModel extends ChangeNotifier {
     return user != null;
   }
 
-  void logout() {
+  Future<void> logout() async {
     var gs = GoogleSignIn();
     gs.disconnect();
     _auth.signOut();
