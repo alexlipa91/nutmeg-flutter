@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:nutmeg/models/UserModel.dart';
 import 'package:provider/provider.dart';
@@ -39,7 +40,17 @@ class _GoogleSignInButtonState extends State<GoogleSignInButton> {
           try {
             userId = await context.read<UserModel>().loginWithGoogle();
           } on FirebaseAuthException catch (e) {
-            print(e.message);
+            showDialog(
+                context: context,
+                builder: (context) {
+                  return AlertDialog(content: Text(e.message));
+            });
+          } on PlatformException catch (e) {
+            showDialog(
+                context: context,
+                builder: (context) {
+                  return AlertDialog(content: Text(e.code));
+                });
           }
 
           setState(() {
