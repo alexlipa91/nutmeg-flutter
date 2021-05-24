@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 class UserModel extends ChangeNotifier {
+
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   User user;
@@ -48,6 +49,9 @@ class UserModel extends ChangeNotifier {
   }
 
   void logout() {
+    var gs = GoogleSignIn();
+    gs.disconnect();
+    _auth.signOut();
     user = null;
     notifyListeners();
   }

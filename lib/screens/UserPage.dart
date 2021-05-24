@@ -75,44 +75,49 @@ Future<void> main() async {
 class UserPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    print("Building " + this.runtimeType.toString());
+
     final ThemeData themeData = Theme.of(context);
 
-    return SafeArea(
-        child: Container(
-            decoration: new BoxDecoration(color: Colors.grey.shade400),
-            child: Column(mainAxisSize: MainAxisSize.min, children: [
-              Expanded(flex: 1, child: UserImage()),
-              Text("Name", style: themeData.textTheme.headline1),
-              Divider(height: 50),
-              Expanded(
-                  flex: 3,
-                  child: Container(
-                      decoration:
-                          new BoxDecoration(color: Colors.grey.shade400),
-                      child: MatchList(
-                          matches: context
-                              .watch<MatchesModel>()
-                              .matches
-                              .where((element) => element.joining.contains(
-                                  context.read<UserModel>().user.uid))
-                              .toList()))),
-            ])));
+    return !context.watch<UserModel>().isLoggedIn()
+        ? Container()
+        : SafeArea(
+            child: Container(
+                decoration: new BoxDecoration(color: Colors.grey.shade400),
+                child: Column(mainAxisSize: MainAxisSize.min, children: [
+                  Expanded(flex: 1, child: UserImage()),
+                  Text("Name", style: themeData.textTheme.headline1),
+                  Divider(height: 50),
+                  Expanded(
+                      flex: 3,
+                      child: Container(
+                          decoration:
+                              new BoxDecoration(color: Colors.grey.shade400),
+                          child: MatchList(
+                              matches: context
+                                  .watch<MatchesModel>()
+                                  .matches
+                                  .where((element) => element.joining.contains(
+                                      context.read<UserModel>().user.uid))
+                                  .toList()))),
+                ])));
   }
 }
 
 class UserImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Column(
-        children: [
-          Text(context.watch<UserModel>().user.email[0].toUpperCase()),
-          TextButton(
-              child: Text("Logout"),
-              onPressed: () {
-                context.read<UserModel>().logout();
-                Navigator.pop(context);
-              })
-    ]);
+    return Container(
+        decoration: new BoxDecoration(color: Colors.grey.shade400),
+        margin: EdgeInsets.all(30),
+        child: CircleAvatar(
+            backgroundColor: Colors.purple,
+            radius: 40,
+            child: FittedBox(
+                child: Text(
+                    context.watch<UserModel>().user.email[0].toUpperCase(),
+                    style: TextStyle(color: Colors.white, fontSize: 45))
+            )));
   }
 }
 
@@ -145,8 +150,8 @@ class MatchList extends StatelessWidget {
           .toList());
     } else {
       children.addAll([
-          Text("No upcoming matches", style: themeData.textTheme.bodyText1),
-          SizedBox(height: 30)
+        Text("No upcoming matches", style: themeData.textTheme.bodyText1),
+        SizedBox(height: 30)
       ]);
     }
 
@@ -177,11 +182,11 @@ class MatchList extends StatelessWidget {
       backgroundColor: Colors.transparent,
       body: SingleChildScrollView(
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 30),
-            child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: List<Widget>.from(children)),
-          )),
+        padding: EdgeInsets.symmetric(horizontal: 30),
+        child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: List<Widget>.from(children)),
+      )),
     );
   }
 }
