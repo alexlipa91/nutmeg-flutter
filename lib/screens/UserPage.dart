@@ -103,17 +103,16 @@ class UserPage extends StatelessWidget {
 class UserImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Container(
-        decoration: new BoxDecoration(color: Colors.grey.shade400),
-        margin: EdgeInsets.all(30),
-        child: CircleAvatar(
-            backgroundColor: Colors.purple,
-            radius: 40,
-            child: FittedBox(
-                child: Text(
-                  context.watch<UserModel>().user.email[0].toUpperCase(),
-                  style: TextStyle(color: Colors.white))
-            )));
+    return Column(
+        children: [
+          Text(context.watch<UserModel>().user.email[0].toUpperCase()),
+          TextButton(
+              child: Text("Logout"),
+              onPressed: () {
+                context.read<UserModel>().logout();
+                Navigator.pop(context);
+              })
+    ]);
   }
 }
 
