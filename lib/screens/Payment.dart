@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:nutmeg/models/MatchesModel.dart';
 import 'package:nutmeg/models/UserModel.dart';
 import 'package:provider/provider.dart';
-
+import 'package:nutmeg/models/Model.dart';
 
 class Payment extends StatelessWidget {
 
-  final int matchId;
+  final Match match;
 
-  const Payment({Key key, this.matchId}) : super(key: key);
+  const Payment({Key key, this.match}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +16,7 @@ class Payment extends StatelessWidget {
       decoration: new BoxDecoration(color: Colors.grey.shade400),
       child: new TextButton(onPressed: () {
         context.read<MatchesModel>().joinMatch(
-            context.read<UserModel>().user.uid, matchId);
+            context.read<UserModel>().user.uid, match);
 
         Navigator.pop(context);
       }, child: Text("pay")),

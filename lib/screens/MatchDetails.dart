@@ -10,32 +10,32 @@ import 'Login.dart';
 
 
 void main() {
+  Match m = Match(
+      DateTime.parse("2020-05-21 18:00:00Z"),
+      new SportCenter("ChIJ3zv5cYsJxkcRAr4WnAOlCT4"),
+      Sport.fiveAsideFootball,
+      10,
+      [],
+      5.50,
+      MatchStatus.open);
+
   runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider(create: (context) => UserModel()),
       ChangeNotifierProvider(
-          create: (context) => MatchesModel([
-                Match(
-                    DateTime.parse("2020-05-21 18:00:00Z"),
-                    new SportCenter("ChIJ3zv5cYsJxkcRAr4WnAOlCT4"),
-                    Sport.fiveAsideFootball,
-                    10,
-                    [],
-                    5.50,
-                    MatchStatus.open)
-              ]))
+          create: (context) => MatchesModel([m]))
     ],
     child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        home: MatchDetails(1),
+        home: MatchDetails(m),
         theme: appTheme),
   ));
 }
 
 class MatchDetails extends StatelessWidget {
-  int matchId;
+  Match match;
 
-  MatchDetails(this.matchId);
+  MatchDetails(this.match);
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +49,6 @@ class MatchDetails extends StatelessWidget {
       child: Scaffold(
         appBar: getAppBar(context),
         body: Consumer<MatchesModel>(builder: (context, matches, child) {
-          Match match = matches.getMatch(matchId);
 
           // function for when clicking join
           _goToNextStepToJoin() {
@@ -58,7 +57,7 @@ class MatchDetails extends StatelessWidget {
                   context,
                   MaterialPageRoute(
                       builder: (context) =>
-                          Payment(matchId: matchId)));
+                          Payment(match: match)));
             } else {
               Navigator.pushReplacement(context,
                   MaterialPageRoute(builder: (context) => Login()));

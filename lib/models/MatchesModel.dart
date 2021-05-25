@@ -8,13 +8,9 @@ class MatchesModel extends ChangeNotifier {
 
   MatchesModel(this.matches);
 
-  joinMatch(String user, int matchId) {
-    getMatch(matchId).joining.add(user);
+  joinMatch(String user, Match match) {
+    match.joining.add(user);
     notifyListeners();
-  }
-
-  getMatch(int id) {
-    return matches.where((e) => e.id == id).first;
   }
 
   refresh() async {

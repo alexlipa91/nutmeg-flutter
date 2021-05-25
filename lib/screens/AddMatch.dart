@@ -4,8 +4,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:nutmeg/models/Model.dart';
-import 'package:place_picker/entities/location_result.dart';
-import 'package:place_picker/widgets/place_picker.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
