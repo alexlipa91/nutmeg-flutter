@@ -1,23 +1,33 @@
 enum MatchStatus { open, played, canceled }
 
+enum Sport { fiveAsideFootball }
+
 class Match {
-  int id;
   DateTime dateTime;
   SportCenter sportCenter;
-  String sport;
-  double price;
+  Sport sport;
+  double pricePerPerson;
   List<String> joining;
-  int total;
+  int maxPlayers;
   MatchStatus status;
 
-  Match(this.id, this.dateTime, this.sportCenter, this.sport, this.total,
-      this.joining, this.price, this.status);
+  Match(this.dateTime, this.sportCenter, this.sport, this.maxPlayers,
+      this.joining, this.pricePerPerson, this.status);
+
+  toJson() {
+    return {
+      "datetime": dateTime,
+      "sportCenter": sportCenter
+    };
+  }
 }
 
 class SportCenter {
-  String name;
-  double lat;
-  double long;
+  String placeId;
 
-  SportCenter(this.name, this.lat, this.long);
+  SportCenter(this.placeId);
+
+  String getName() {
+    return "namePlaceholder";
+  }
 }

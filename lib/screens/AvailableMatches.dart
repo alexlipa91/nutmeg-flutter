@@ -11,30 +11,25 @@ import '../Utils.dart';
 List<Match> getMatches() {
   return [
     Match(
-        1,
         DateTime.parse("2020-05-21 18:00:00Z"),
-        new SportCenter(
-            "SportCentrum De Pijp", 52.34995155532827, 4.894433669187803),
-        "5-aside",
+        new SportCenter("ChIJ3zv5cYsJxkcRAr4WnAOlCT4"),
+        Sport.fiveAsideFootball,
         10,
         ["a", "b"],
         5.50,
         MatchStatus.open),
     Match(
-        2,
         DateTime.parse("2020-05-27 18:00:00Z"),
-        new SportCenter("Het Marnix", 52.37814776657895, 4.878418555693728),
-        "5-aside",
+        new SportCenter("ChIJM6a0ddoJxkcRsw7w54kvDD8"),
+        Sport.fiveAsideFootball,
         10,
         [],
         6.0,
         MatchStatus.open),
     Match(
-        3,
         DateTime.parse("2020-05-27 19:00:00Z"),
-        new SportCenter(
-            "SportCentrum Zuidplas", 51.985700943649064, 4.658921084515437),
-        "5-aside",
+        new SportCenter("ChIJYVFYYbrTxUcRMSYDU4GLg5k"),
+        Sport.fiveAsideFootball,
         10,
         ["a", "b", "c", "d"],
         7.00,
@@ -61,7 +56,7 @@ class AvailableMatches extends StatelessWidget {
 
     var widgets = [];
     for(int i = 0; i < matches.length; i++) {
-      widgets.add(MatchInfo.withBadge(matches[i].id,
+      widgets.add(MatchInfo.withBadge(matches[i],
           i == 0 || !_isSameDay(matches[i].dateTime, matches[i-1].dateTime)));
     }
 
@@ -118,18 +113,18 @@ class AvailableMatches extends StatelessWidget {
 class MatchInfo extends StatelessWidget {
   static var dateFormat = new DateFormat("MMMM dd");
 
-  int matchId;
+  Match match;
   bool showGoingWidget;
   bool showDate;
 
-  MatchInfo.withoutBadge(int matchId, bool showDate) {
-    this.matchId = matchId;
+  MatchInfo.withoutBadge(Match match, bool showDate) {
+    this.match = match;
     this.showGoingWidget = false;
     this.showDate = showDate;
   }
 
-  MatchInfo.withBadge(int matchId, bool showDate) {
-    this.matchId = matchId;
+  MatchInfo.withBadge(Match match, bool showDate) {
+    this.match = match;
     this.showGoingWidget = true;
     this.showDate = showDate;
   }
@@ -141,7 +136,6 @@ class MatchInfo extends StatelessWidget {
     return InkWell(
       child: Consumer2<MatchesModel, UserModel>(
           builder: (context, matches, user, child) {
-        Match match = matches.getMatch(matchId);
 
         return Container(
           color: Colors.transparent,
@@ -159,7 +153,7 @@ class MatchInfo extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                      match.sportCenter.name,
+                      match.sportCenter.getName(),
                       style: themeData.textTheme.bodyText1),
                   Text(DateFormat('HH:mm').format(match.dateTime),
                       style: themeData.textTheme.bodyText1)
@@ -169,7 +163,7 @@ class MatchInfo extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(match.sport, style: themeData.textTheme.bodyText2),
+                  Text(match.sport.toString(), style: themeData.textTheme.bodyText2),
                   if(showGoingWidget && user.isLoggedIn() && match.joining.contains(user.user.uid))
                     Container(
                       decoration: new BoxDecoration(color: Colors.green),
@@ -185,7 +179,7 @@ class MatchInfo extends StatelessWidget {
                   Text(
                       match.joining.length.toString() +
                           " / " +
-                          match.total.toString(),
+                          match.maxPlayers.toString(),
                       style: themeData.textTheme.bodyText2)
                 ],
               )
@@ -195,7 +189,7 @@ class MatchInfo extends StatelessWidget {
       }),
       onTap: () {
         Navigator.push(context,
-            MaterialPageRoute(builder: (context) => MatchDetails(matchId)));
+            MaterialPageRoute(builder: (context) => MatchDetails(match)));
       },
       splashColor: Colors.white,
     );

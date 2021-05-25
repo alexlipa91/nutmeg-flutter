@@ -16,11 +16,9 @@ void main() {
       ChangeNotifierProvider(
           create: (context) => MatchesModel([
                 Match(
-                    1,
                     DateTime.parse("2020-05-21 18:00:00Z"),
-                    new SportCenter("SportCentrum De Pijp", 52.34995155532827,
-                        4.894433669187803),
-                    "5-aside",
+                    new SportCenter("ChIJ3zv5cYsJxkcRAr4WnAOlCT4"),
+                    Sport.fiveAsideFootball,
                     10,
                     [],
                     5.50,
@@ -78,7 +76,7 @@ class MatchDetails extends StatelessWidget {
             child: Column(
               children: [
                 Row(mainAxisAlignment: MainAxisAlignment.start, children: [
-                  Text(match.sport, style: themeData.textTheme.headline1)
+                  Text(match.sportCenter.placeId, style: themeData.textTheme.headline1)
                 ]),
                 Spacer(),
                 Row(mainAxisAlignment: MainAxisAlignment.start, children: [
@@ -111,7 +109,7 @@ class MatchDetails extends StatelessWidget {
                     icon: Icons.watch,
                     subTitle: "Wed Sept 2020"),
                 new InfoWidget(
-                    title: match.sportCenter.name,
+                    title: match.sportCenter.placeId,
                     icon: Icons.place,
                     subTitle: "Madurastraat 15D, Amsterdam"),
                 new InfoWidget(

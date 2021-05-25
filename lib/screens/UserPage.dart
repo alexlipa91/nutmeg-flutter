@@ -8,7 +8,6 @@ import '../Utils.dart';
 import 'AvailableMatches.dart';
 import 'package:nutmeg/models/Model.dart';
 
-import 'Login.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,45 +15,29 @@ Future<void> main() async {
 
   var matches = [
     Match(
-        1,
         DateTime.parse("2020-05-21 18:00:00Z"),
-        new SportCenter(
-            "SportCentrum De Pijp", 52.34995155532827, 4.894433669187803),
-        "5-aside",
+        new SportCenter("ChIJ3zv5cYsJxkcRAr4WnAOlCT4"),
+        Sport.fiveAsideFootball,
         10,
         ["a", "b"],
         5.50,
         MatchStatus.open),
     Match(
-        2,
-        DateTime.parse("2020-05-22 18:00:00Z"),
-        new SportCenter(
-            "SportCentrum De Pijp", 52.34995155532827, 4.894433669187803),
-        "5-aside",
+        DateTime.parse("2020-05-27 18:00:00Z"),
+        new SportCenter("ChIJM6a0ddoJxkcRsw7w54kvDD8"),
+        Sport.fiveAsideFootball,
         10,
-        ["a", "b"],
-        5.50,
-        MatchStatus.canceled),
+        [],
+        6.0,
+        MatchStatus.open),
     Match(
-        3,
-        DateTime.parse("2020-05-12 18:00:00Z"),
-        new SportCenter(
-            "SportCentrum De Pijp", 52.34995155532827, 4.894433669187803),
-        "5-aside",
+        DateTime.parse("2020-05-27 19:00:00Z"),
+        new SportCenter("ChIJYVFYYbrTxUcRMSYDU4GLg5k"),
+        Sport.fiveAsideFootball,
         10,
-        ["a", "b"],
-        5.50,
-        MatchStatus.played),
-    Match(
-        3,
-        DateTime.parse("2020-05-11 18:00:00Z"),
-        new SportCenter(
-            "SportCentrum De Pijp", 52.34995155532827, 4.894433669187803),
-        "5-aside",
-        10,
-        ["a", "b"],
-        5.50,
-        MatchStatus.played)
+        ["a", "b", "c", "d"],
+        7.00,
+        MatchStatus.open),
   ];
 
   UserModel u = UserModel();
@@ -145,7 +128,7 @@ class MatchList extends StatelessWidget {
 
     if (open.isNotEmpty) {
       children.addAll(open
-          .map<Widget>((e) => MatchInfo.withoutBadge(e.id, false))
+          .map<Widget>((e) => MatchInfo.withoutBadge(e, false))
           .toList());
     } else {
       children.addAll([
@@ -161,7 +144,7 @@ class MatchList extends StatelessWidget {
 
     if (played.isNotEmpty) {
       children.addAll(played
-          .map<Widget>((e) => MatchInfo.withoutBadge(e.id, false))
+          .map<Widget>((e) => MatchInfo.withoutBadge(e, false))
           .toList());
     } else {
       children.addAll([
