@@ -12,7 +12,7 @@ import 'Login.dart';
 void main() {
   Match m = Match(
       DateTime.parse("2020-05-21 18:00:00Z"),
-      new SportCenter("ChIJ3zv5cYsJxkcRAr4WnAOlCT4"),
+      SportCenter.fromId("ChIJ3zv5cYsJxkcRAr4WnAOlCT4"),
       Sport.fiveAsideFootball,
       10,
       [],

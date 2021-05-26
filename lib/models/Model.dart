@@ -1,8 +1,13 @@
+import 'package:intl/intl.dart';
+
+
 enum MatchStatus { open, played, canceled }
 
 enum Sport { fiveAsideFootball }
 
 class Match {
+  static var dateFormat = new DateFormat("yyyy/MM/dd:HH:mm");
+
   DateTime dateTime;
   SportCenter sportCenter;
   Sport sport;
@@ -14,20 +19,68 @@ class Match {
   Match(this.dateTime, this.sportCenter, this.sport, this.maxPlayers,
       this.joining, this.pricePerPerson, this.status);
 
-  toJson() {
-    return {
-      "datetime": dateTime,
-      "sportCenter": sportCenter
-    };
-  }
+  Match.fromJson(Map<String, dynamic> json)
+      : dateTime = dateFormat.parse(json['dateTime']),
+        sportCenter = SportCenter.fromJson(json['sportCenter']),
+        sport = Sport.values[json['sport']],
+        pricePerPerson = json['pricePerPerson'],
+        joining = json['joining'],
+        maxPlayers = json['maxPlayers'],
+        status = MatchStatus.values[json['status']];
+
+  Map<String, dynamic> toJson() => {
+    'dateTime': dateFormat.format(dateTime),
+    'sportCenter': sportCenter.toJson(),
+    'sport': sport.index,
+    'pricePerPerson': pricePerPerson,
+    'joining' : joining,
+    'maxPlayers': maxPlayers,
+    'status': status.index
+  };
 }
 
 class SportCenter {
-  String placeId;
+  static List<SportCenter> getSportCenters() {
+    return [
+      SportCenter("ChIJ3zv5cYsJxkcRAr4WnAOlCT4", "Sportcentrum De Pijp"),
+      SportCenter("ChIJM6a0ddoJxkcRsw7w54kvDD8", "Het Marnix"),
+      SportCenter("ChIJYVFYYbrTxUcRMSYDU4GLg5k", "Sportcentrum Zuidplas")
+    ];
+  }
 
-  SportCenter(this.placeId);
+  String placeId;
+  String name;
+
+  SportCenter(this.placeId, this.name);
+
+  SportCenter.fromId(String id) {
+    var toFind = SportCenter.getSportCenters()
+        .where((element) => element.placeId == id);
+    if (toFind.isEmpty) {
+      throw Exception("Sport center with id " + id + " not found");
+    }
+    var sportCenterObject = toFind.first;
+
+    this.placeId = sportCenterObject.placeId;
+    this.name = sportCenterObject.name;
+  }
+
+  Map<String, dynamic> toJson() => {
+    'placeId': placeId,
+    'name': name
+  };
+
+  SportCenter.fromJson(Map<String, dynamic> json)
+      : placeId = json['placeId'],
+        name = json['name'];
 
   String getName() {
-    return "namePlaceholder";
+    return name;
   }
+
+  bool operator ==(dynamic other) =>
+      other != null && other is SportCenter && this.placeId == other.placeId;
+
+  @override
+  int get hashCode => super.hashCode;
 }

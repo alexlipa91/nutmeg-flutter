@@ -2,6 +2,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:nutmeg/models/MatchesModel.dart';
 import 'package:nutmeg/models/UserModel.dart';
+import 'package:nutmeg/screens/AddMatch.dart';
+import 'package:nutmeg/screens/Login.dart';
 import 'package:provider/provider.dart';
 
 import '../Utils.dart';
@@ -16,7 +18,7 @@ Future<void> main() async {
   var matches = [
     Match(
         DateTime.parse("2020-05-21 18:00:00Z"),
-        new SportCenter("ChIJ3zv5cYsJxkcRAr4WnAOlCT4"),
+        SportCenter.fromId("ChIJ3zv5cYsJxkcRAr4WnAOlCT4"),
         Sport.fiveAsideFootball,
         10,
         ["a", "b"],
@@ -24,7 +26,7 @@ Future<void> main() async {
         MatchStatus.open),
     Match(
         DateTime.parse("2020-05-27 18:00:00Z"),
-        new SportCenter("ChIJM6a0ddoJxkcRsw7w54kvDD8"),
+        SportCenter.fromId("ChIJM6a0ddoJxkcRsw7w54kvDD8"),
         Sport.fiveAsideFootball,
         10,
         [],
@@ -32,7 +34,7 @@ Future<void> main() async {
         MatchStatus.open),
     Match(
         DateTime.parse("2020-05-27 19:00:00Z"),
-        new SportCenter("ChIJYVFYYbrTxUcRMSYDU4GLg5k"),
+        SportCenter.fromId("ChIJYVFYYbrTxUcRMSYDU4GLg5k"),
         Sport.fiveAsideFootball,
         10,
         ["a", "b", "c", "d"],
@@ -154,6 +156,13 @@ class MatchList extends StatelessWidget {
     }
 
     children.add(LogoutButton());
+
+    if (context.read<UserModel>().isAdmin) {
+      children.add(LoginOptionButton(text: "Add match",
+          onTap: () {
+        Navigator.push(context, MaterialPageRoute(builder: (context) => new AddMatch()));
+      }));
+    }
 
     return Scaffold(
       backgroundColor: Colors.transparent,

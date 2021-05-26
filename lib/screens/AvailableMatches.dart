@@ -12,7 +12,7 @@ List<Match> getMatches() {
   return [
     Match(
         DateTime.parse("2020-05-21 18:00:00Z"),
-        new SportCenter("ChIJ3zv5cYsJxkcRAr4WnAOlCT4"),
+        SportCenter.fromId("ChIJ3zv5cYsJxkcRAr4WnAOlCT4"),
         Sport.fiveAsideFootball,
         10,
         ["a", "b"],
@@ -20,7 +20,7 @@ List<Match> getMatches() {
         MatchStatus.open),
     Match(
         DateTime.parse("2020-05-27 18:00:00Z"),
-        new SportCenter("ChIJM6a0ddoJxkcRsw7w54kvDD8"),
+        SportCenter.fromId("ChIJM6a0ddoJxkcRsw7w54kvDD8"),
         Sport.fiveAsideFootball,
         10,
         [],
@@ -28,7 +28,7 @@ List<Match> getMatches() {
         MatchStatus.open),
     Match(
         DateTime.parse("2020-05-27 19:00:00Z"),
-        new SportCenter("ChIJYVFYYbrTxUcRMSYDU4GLg5k"),
+        SportCenter.fromId("ChIJYVFYYbrTxUcRMSYDU4GLg5k"),
         Sport.fiveAsideFootball,
         10,
         ["a", "b", "c", "d"],

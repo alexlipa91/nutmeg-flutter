@@ -3,6 +3,10 @@
    <application
         android:label="nutmeg"
         android:icon="@mipmap/ic_launcher">
+
+       <meta-data android:name="com.google.android.geo.API_KEY"
+                  android:value="AIzaSyDlU4z5DbXqoafB-T-t2mJ8rGv3Y4rAcWY"/>
+
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTop"

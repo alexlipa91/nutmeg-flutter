@@ -1,12 +1,14 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 class UserModel extends ChangeNotifier {
-
+  final CollectionReference users = FirebaseFirestore.instance.collection('users');
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   User user;
+  bool isAdmin = false;
 
   UserModel();
 
@@ -38,10 +40,26 @@ class UserModel extends ChangeNotifier {
           await auth.signInWithCredential(credential);
 
       user = userCredential.user;
-      notifyListeners();
+      await getUserMetadata();
 
+      notifyListeners();
       return user.uid;
     }
+  }
+
+  Future<void> getUserMetadata() {
+    users.doc(user.uid).get().then((doc) {
+      if (doc.exists) {
+        Map<String, dynamic> metadata = doc.data();
+        if (metadata.containsKey("isAdmin")) {
+          isAdmin = metadata["isAdmin"];
+        } else {
+          isAdmin = false;
+        }
+      } else {
+        isAdmin = false;
+      }
+    });
   }
 
   bool isLoggedIn() {
