@@ -1,10 +1,13 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:nutmeg/models/Model.dart';
 
 
 class MatchesModel extends ChangeNotifier {
 
-  final List<Match> matches;
+  var ref = FirebaseFirestore.instance.collection('matches');
+
+  List<Match> matches;
 
   MatchesModel(this.matches);
 
@@ -13,12 +16,11 @@ class MatchesModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  refresh() async {
-    print("simulating a refresh");
-    // todo fix this when the backend is there
-    // simulate a refresh
-    // matches.add(matches.last);
+  pull() async {
+    matches = await fetchMatches();
     notifyListeners();
-    print(matches.length);
   }
+
+  Future<List<Match>> fetchMatches() async =>
+      await ref.get().then((q) => q.docs.map((doc) => Match.fromJson(doc.data(), doc.id)).toList());
 }

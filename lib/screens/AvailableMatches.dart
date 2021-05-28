@@ -48,21 +48,6 @@ void main() {
 }
 
 class AvailableMatches extends StatelessWidget {
-
-  _getMatchesWidget(List<Match> matches) {
-    _isSameDay(DateTime a, DateTime b) {
-      return a.day == b.day && a.month == b.month && a.year == b.year;
-    }
-
-    var widgets = [];
-    for(int i = 0; i < matches.length; i++) {
-      widgets.add(MatchInfo.withBadge(matches[i],
-          i == 0 || !_isSameDay(matches[i].dateTime, matches[i-1].dateTime)));
-    }
-
-    return List<MatchInfo>.from(widgets);
-  }
-
   @override
   Widget build(BuildContext context) {
     print("Building " + this.runtimeType.toString());
@@ -88,25 +73,66 @@ class AvailableMatches extends StatelessWidget {
                         borderRadius: BorderRadius.circular(32.0))),
               ),
             ),
-            Expanded(
-              child: Consumer<MatchesModel>(builder: (context, matches, child) {
-                return RefreshIndicator(
-                  onRefresh: () {
-                    return matches.refresh();
-                  },
-                  child: ListView(
-                    shrinkWrap: true,
-                    padding: const EdgeInsets.all(8),
-                    children: _getMatchesWidget(matches.matches)
-                    // matches.matches
-                    //     .map((e) => MatchInfo.withBadge(e.id, true))
-                    //     .toList(),
-                  ),
-                );
-              }),
-            ),
+            Expanded(child: RefreshIndicatorStateful()),
           ])),
     ));
+  }
+}
+
+class RefreshIndicatorStateful extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() => RefreshIndicatorState();
+}
+
+class RefreshIndicatorState extends State<RefreshIndicatorStateful>
+    with WidgetsBindingObserver {
+  _getMatchesWidget(List<Match> matches) {
+    _isSameDay(DateTime a, DateTime b) {
+      return a.day == b.day && a.month == b.month && a.year == b.year;
+    }
+
+    var widgets = [];
+    for (int i = 0; i < matches.length; i++) {
+      widgets.add(MatchInfo.withBadge(matches[i],
+          i == 0 || !_isSameDay(matches[i].dateTime, matches[i - 1].dateTime)));
+    }
+
+    return List<MatchInfo>.from(widgets);
+  }
+
+  AppLifecycleState _appLifecycleState;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    refresh();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    setState(() {
+      _appLifecycleState = state;
+    });
+    if (_appLifecycleState == AppLifecycleState.resumed) {
+      refresh();
+    }
+  }
+
+  Future<void> refresh() async {
+    print('refreshing');
+    await context.read<MatchesModel>().pull();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return RefreshIndicator(
+        onRefresh: () => refresh(),
+        child: ListView(
+            shrinkWrap: true,
+            padding: const EdgeInsets.all(8),
+            children:
+                _getMatchesWidget(context.watch<MatchesModel>().matches)));
   }
 }
 
@@ -134,59 +160,59 @@ class MatchInfo extends StatelessWidget {
     final ThemeData themeData = Theme.of(context);
 
     return InkWell(
-      child: Consumer2<MatchesModel, UserModel>(
-          builder: (context, matches, user, child) {
-
-        return Container(
-          color: Colors.transparent,
-          padding: EdgeInsets.all(15.0),
-          child: Column(
-            children: [
-              if (showDate) Row(
+      child: Container(
+        color: Colors.transparent,
+        padding: EdgeInsets.all(15.0),
+        child: Column(
+          children: [
+            if (showDate)
+              Row(
                 children: [
-                  Text(dateFormat.format(match.dateTime), style: themeData.textTheme.headline1),
+                  Text(dateFormat.format(match.dateTime),
+                      style: themeData.textTheme.headline1),
                   SizedBox(height: 10.0),
                 ],
               ),
-              SizedBox(height: 10.0),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                      match.sportCenter.getName(),
-                      style: themeData.textTheme.bodyText1),
-                  Text(DateFormat('HH:mm').format(match.dateTime),
-                      style: themeData.textTheme.bodyText1)
-                ],
-              ),
-              SizedBox(height: 10.0),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(match.sport.toString(), style: themeData.textTheme.bodyText2),
-                  if(showGoingWidget && user.isLoggedIn() && match.joining.contains(user.user.uid))
-                    Container(
+            SizedBox(height: 10.0),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(match.sportCenter.getName(),
+                    style: themeData.textTheme.bodyText1),
+                Text(DateFormat('HH:mm').format(match.dateTime),
+                    style: themeData.textTheme.bodyText1)
+              ],
+            ),
+            SizedBox(height: 10.0),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(match.sport.toString(),
+                    style: themeData.textTheme.bodyText2),
+                if (showGoingWidget &&
+                    context.watch<UserModel>().isLoggedIn() &&
+                    match.joining.contains(context.read<UserModel>().user.uid))
+                  Container(
                       decoration: new BoxDecoration(color: Colors.green),
                       child: Padding(
                           padding: EdgeInsets.all(5),
                           child: Text("Going",
                               style: new TextStyle(color: Colors.white))))
-                ],
-              ),
-              SizedBox(height: 10.0),
-              Row(
-                children: [
-                  Text(
-                      match.joining.length.toString() +
-                          " / " +
-                          match.maxPlayers.toString(),
-                      style: themeData.textTheme.bodyText2)
-                ],
-              )
-            ],
-          ),
-        );
-      }),
+              ],
+            ),
+            SizedBox(height: 10.0),
+            Row(
+              children: [
+                Text(
+                    match.joining.length.toString() +
+                        " / " +
+                        match.maxPlayers.toString(),
+                    style: themeData.textTheme.bodyText2)
+              ],
+            )
+          ],
+        ),
+      ),
       onTap: () {
         Navigator.push(context,
             MaterialPageRoute(builder: (context) => MatchDetails(match)));

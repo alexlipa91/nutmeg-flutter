@@ -6,29 +6,28 @@ import 'package:nutmeg/Utils.dart';
 import 'package:nutmeg/screens/AvailableMatches.dart';
 import 'package:provider/provider.dart';
 
-
 void main() {
+
   runApp(MultiProvider(
     providers: [
-      ListenableProvider(create: (context) => UserModel()),
-      ListenableProvider(create: (context) => MatchesModel(getMatches()))
+      ChangeNotifierProvider(create: (context) => UserModel()),
+      ChangeNotifierProvider(create: (context) => MatchesModel([]))
     ],
     child: new MaterialApp(
       debugShowCheckedModeBanner: false,
       home: new Container(
           decoration: new BoxDecoration(color: Colors.grey.shade400),
-          child: Center(
-              child: new LaunchWidget(
-                  newPage: new AvailableMatches()))),
+          child:
+              Center(child: new LaunchWidget(newPage: new AvailableMatches()))),
       theme: appTheme,
     ),
   ));
 }
 
-Future<void> callAsyncFetch() {
-  return Future.delayed(Duration(seconds: 1), () {
-    print("app initialization tasks");
-    return Firebase.initializeApp();
+Future<void> callAsyncFetch(BuildContext context) {
+  return Future.delayed(Duration(seconds: 1), () async {
+    await Firebase.initializeApp();
+    await context.read<MatchesModel>().pull();
   });
 }
 
@@ -49,8 +48,9 @@ class _LaunchWidgetState extends State<LaunchWidget> {
   @override
   void initState() {
     super.initState();
-    callAsyncFetch().then((data) {
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => newPage));
+    callAsyncFetch(context).then((data) {
+      Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (context) => newPage));
     }).catchError((e) {
       Navigator.pop(context, "an error");
     });

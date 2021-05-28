@@ -8,6 +8,8 @@ enum Sport { fiveAsideFootball }
 class Match {
   static var dateFormat = new DateFormat("yyyy/MM/dd:HH:mm");
 
+  String id;
+
   DateTime dateTime;
   SportCenter sportCenter;
   Sport sport;
@@ -19,12 +21,13 @@ class Match {
   Match(this.dateTime, this.sportCenter, this.sport, this.maxPlayers,
       this.joining, this.pricePerPerson, this.status);
 
-  Match.fromJson(Map<String, dynamic> json)
-      : dateTime = dateFormat.parse(json['dateTime']),
+  Match.fromJson(Map<String, dynamic> json, String id)
+      : this.id = id,
+        dateTime = dateFormat.parse(json['dateTime']),
         sportCenter = SportCenter.fromJson(json['sportCenter']),
         sport = Sport.values[json['sport']],
         pricePerPerson = json['pricePerPerson'],
-        joining = json['joining'],
+        joining = List<String>.from(json['joining']),
         maxPlayers = json['maxPlayers'],
         status = MatchStatus.values[json['status']];
 
@@ -40,6 +43,8 @@ class Match {
 }
 
 class SportCenter {
+
+  // todo store them in the db
   static List<SportCenter> getSportCenters() {
     return [
       SportCenter("ChIJ3zv5cYsJxkcRAr4WnAOlCT4", "Sportcentrum De Pijp"),
