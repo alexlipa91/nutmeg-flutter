@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:nutmeg/ButtonWidgets.dart';
 import 'package:nutmeg/models/MatchesModel.dart';
 import 'package:nutmeg/models/UserModel.dart';
 import 'package:nutmeg/screens/AddMatch.dart';
@@ -15,39 +16,12 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
 
-  var matches = [
-    Match(
-        DateTime.parse("2020-05-21 18:00:00Z"),
-        SportCenter.fromId("ChIJ3zv5cYsJxkcRAr4WnAOlCT4"),
-        Sport.fiveAsideFootball,
-        10,
-        ["a", "b"],
-        5.50,
-        MatchStatus.open),
-    Match(
-        DateTime.parse("2020-05-27 18:00:00Z"),
-        SportCenter.fromId("ChIJM6a0ddoJxkcRsw7w54kvDD8"),
-        Sport.fiveAsideFootball,
-        10,
-        [],
-        6.0,
-        MatchStatus.open),
-    Match(
-        DateTime.parse("2020-05-27 19:00:00Z"),
-        SportCenter.fromId("ChIJYVFYYbrTxUcRMSYDU4GLg5k"),
-        Sport.fiveAsideFootball,
-        10,
-        ["a", "b", "c", "d"],
-        7.00,
-        MatchStatus.open),
-  ];
-
   UserModel u = UserModel();
   await u.login("testtest@gmail.com", "testtest");
 
   runApp(MultiProvider(
     providers: [
-      ChangeNotifierProvider(create: (context) => MatchesModel(matches)),
+      ChangeNotifierProvider(create: (context) => MatchesModel(getMatches())),
       ChangeNotifierProvider(create: (context) => u),
     ],
     child: new MaterialApp(
@@ -78,12 +52,12 @@ class UserPage extends StatelessWidget {
                           decoration:
                               new BoxDecoration(color: Colors.grey.shade400),
                           child: MatchList(
-                              matches: context
+                              matches: Map.fromIterable(context
                                   .watch<MatchesModel>()
                                   .getMatches()
-                                  .where((element) => element.joining.contains(
-                                      context.read<UserModel>().user.uid))
-                                  .toList()))),
+                                  .entries
+                                  .where((element) => element.value.joining.contains(
+                                      context.read<UserModel>().user.uid)))))),
                 ])));
   }
 }
@@ -106,7 +80,7 @@ class UserImage extends StatelessWidget {
 }
 
 class MatchList extends StatelessWidget {
-  final List<Match> matches;
+  final Map<String, Match> matches;
   final String title;
 
   const MatchList({Key key, this.matches, this.title}) : super(key: key);
@@ -116,9 +90,9 @@ class MatchList extends StatelessWidget {
     final ThemeData themeData = Theme.of(context);
 
     var open =
-        matches.where((element) => element.status == MatchStatus.open).toList();
-    var played = matches
-        .where((element) => element.status == MatchStatus.played)
+        matches.entries.where((element) => element.value.status == MatchStatus.open).toList();
+    var played = matches.entries
+        .where((element) => element.value.status == MatchStatus.played)
         .toList();
 
     var children = [];
@@ -130,7 +104,7 @@ class MatchList extends StatelessWidget {
 
     if (open.isNotEmpty) {
       children.addAll(open
-          .map<Widget>((e) => MatchInfo.withoutBadge(e, false))
+          .map<Widget>((e) => MatchInfo.withoutBadge(e.key, false))
           .toList());
     } else {
       children.addAll([
@@ -146,7 +120,7 @@ class MatchList extends StatelessWidget {
 
     if (played.isNotEmpty) {
       children.addAll(played
-          .map<Widget>((e) => MatchInfo.withoutBadge(e, false))
+          .map<Widget>((e) => MatchInfo.withoutBadge(e.key, false))
           .toList());
     } else {
       children.addAll([
@@ -155,7 +129,9 @@ class MatchList extends StatelessWidget {
       ]);
     }
 
-    children.add(LogoutButton());
+    children.add(ButtonWithLoaderAndPop(
+        text: "Logout",
+        onPressedFunction: context.read<UserModel>().logout()));
 
     if (context.read<UserModel>().isAdmin) {
       children.add(LoginOptionButton(text: "Add match",
@@ -176,62 +152,3 @@ class MatchList extends StatelessWidget {
     );
   }
 }
-
-class LogoutButton extends StatefulWidget {
-  @override
-  State<StatefulWidget> createState() => _LogoutButtonState();
-}
-
-class _LogoutButtonState extends State<LogoutButton> {
-  bool _isSigningOut = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final ThemeData themeData = Theme.of(context);
-
-    return Container(
-      margin: EdgeInsets.all(30.0),
-      child: Row(
-        children: [
-          Expanded(
-            child: TextButton(
-                onPressed: () async {
-                  setState(() {
-                    _isSigningOut = true;
-                  });
-
-                  await context.read<UserModel>().logout();
-                  await Future.delayed(Duration(milliseconds: 500));
-
-                  setState(() {
-                    _isSigningOut = false;
-                  });
-
-                  Navigator.pop(context);
-                },
-                child: _isSigningOut
-                    ? CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white))
-                    : Text(
-                  "Logout",
-                ),
-                style: ButtonStyle(
-                    side: MaterialStateProperty.all(
-                        BorderSide(width: 2, color: Colors.grey)),
-                    foregroundColor: MaterialStateProperty.all(Colors.black),
-                    backgroundColor: MaterialStateProperty.all(Colors.grey),
-                    shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                        RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20.0),
-                        )),
-                    padding: MaterialStateProperty.all(
-                        EdgeInsets.symmetric(vertical: 10, horizontal: 50)),
-                    textStyle: MaterialStateProperty.all(
-                        themeData.textTheme.headline3))),
-          )
-        ],
-      ),
-    );
-  }
-}
-

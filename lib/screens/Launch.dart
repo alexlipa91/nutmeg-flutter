@@ -11,7 +11,7 @@ void main() {
   runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider(create: (context) => UserModel()),
-      ChangeNotifierProvider(create: (context) => MatchesModel([]))
+      ChangeNotifierProvider(create: (context) => MatchesModel(Map()))
     ],
     child: new MaterialApp(
       debugShowCheckedModeBanner: false,

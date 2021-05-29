@@ -10,8 +10,6 @@ class Match {
   static var serializationDateFormat = new DateFormat("yyyy/MM/dd:HH:mm");
   static var uiDateFormat = new DateFormat("yyyy-MM-dd");
   static var uiHourFormat = new DateFormat("HH:mm");
-  
-  String id;
 
   DateTime dateTime;
   SportCenter sportCenter;
@@ -24,9 +22,8 @@ class Match {
   Match(this.dateTime, this.sportCenter, this.sport, this.maxPlayers,
       this.joining, this.pricePerPerson, this.status);
 
-  Match.fromJson(Map<String, dynamic> json, String id)
-      : this.id = id,
-        dateTime = serializationDateFormat.parse(json['dateTime']),
+  Match.fromJson(Map<String, dynamic> json)
+      : dateTime = serializationDateFormat.parse(json['dateTime']),
         sportCenter = SportCenter.fromJson(json['sportCenter']),
         sport = Sport.values[json['sport']],
         pricePerPerson = json['pricePerPerson'],

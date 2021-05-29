@@ -21,19 +21,19 @@ void main() {
   runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider(create: (context) => UserModel()),
-      ChangeNotifierProvider(create: (context) => MatchesModel([m]))
+      ChangeNotifierProvider(create: (context) => MatchesModel({}))
     ],
     child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        home: MatchDetails(m),
+        home: MatchDetails("1"),
         theme: appTheme),
   ));
 }
 
 class MatchDetails extends StatelessWidget {
-  Match match;
+  String matchId;
 
-  MatchDetails(this.match);
+  MatchDetails(this.matchId);
 
   @override
   Widget build(BuildContext context) {
@@ -47,13 +47,15 @@ class MatchDetails extends StatelessWidget {
       child: Scaffold(
         appBar: getAppBar(context),
         body: Consumer<MatchesModel>(builder: (context, matches, child) {
+          Match match = matches.getMatch(matchId);
+
           // function for when clicking join
           _goToNextStepToJoin() {
             if (context.read<UserModel>().isLoggedIn()) {
               Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => Payment(match: match)));
+                      builder: (context) => Payment(matchId: matchId)));
             } else {
               Navigator.pushReplacement(
                   context, MaterialPageRoute(builder: (context) => Login()));
@@ -131,9 +133,11 @@ class MatchDetails extends StatelessWidget {
                 Divider(),
                 Spacer(),
                 Row(children: [
-                  Text(match.joining.length.toString()
-                      + "/" + match.maxPlayers.toString()
-                      + " players going",
+                  Text(
+                      match.joining.length.toString() +
+                          "/" +
+                          match.maxPlayers.toString() +
+                          " players going",
                       style: themeData.textTheme.bodyText1),
                 ]),
                 Spacer(),
@@ -143,19 +147,9 @@ class MatchDetails extends StatelessWidget {
                     scrollDirection: Axis.horizontal,
                     physics: BouncingScrollPhysics(),
                     child: Row(
-                      children: [
-                        Icon(Icons.face, size: 50.0),
-                        Icon(Icons.face, size: 50.0),
-                        Icon(Icons.face, size: 50.0),
-                        Icon(Icons.face, size: 50.0),
-                        Icon(Icons.face, size: 50.0),
-                        Icon(Icons.face, size: 50.0),
-                        Icon(Icons.face, size: 50.0),
-                        Icon(Icons.face, size: 50.0),
-                        Icon(Icons.face, size: 50.0),
-                        Icon(Icons.face, size: 50.0),
-                      ],
-                    ),
+                        children: match.joining
+                            .map((e) => Icon(Icons.face, size: 50.0))
+                            .toList()),
                   ),
                 )
               ],

@@ -3,22 +3,22 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:nutmeg/models/Model.dart';
 
-
 // todo try to have one change notifier per match rather than one per all the matches
 class MatchesModel extends ChangeNotifier {
-
   var ref = FirebaseFirestore.instance.collection('matches');
 
-  List<Match> matches;
+  Map<String, Match> matches;
 
   MatchesModel(this.matches);
 
-  List<Match> getMatches() => matches;
+  Map<String, Match> getMatches() => matches;
 
-  joinMatch(User user, Match match) {
-    DocumentReference documentReference = ref.doc(match.id);
+  Match getMatch(String id) => matches[id];
 
-    FirebaseFirestore.instance.runTransaction((transaction) async {
+  joinMatch(User user, String matchId) async {
+    DocumentReference documentReference = ref.doc(matchId);
+
+    await FirebaseFirestore.instance.runTransaction((transaction) async {
       DocumentSnapshot snapshot = await transaction.get(documentReference);
 
       if (!snapshot.exists) {
@@ -36,8 +36,7 @@ class MatchesModel extends ChangeNotifier {
       // Perform an update on the document
       transaction.update(documentReference, {'joining': joiningList});
     });
-    pull();
-    notifyListeners();
+    await pull();
   }
 
   pull() async {
@@ -45,6 +44,13 @@ class MatchesModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<List<Match>> _fetchMatches() async =>
-      await ref.get().then((q) => q.docs.map((doc) => Match.fromJson(doc.data(), doc.id)).toList());
+  Future<Map<String, Match>> _fetchMatches() async =>
+      await ref.get().then(
+              (q) => q.docs.map((doc) => MapEntry(doc.id, Match.fromJson(doc.data()))))
+          .then((value) => Map<String, Match>.fromEntries(value))
+          .catchError((e) {
+            // fixme proper error handling
+            print(e);
+            return null;
+          });
 }

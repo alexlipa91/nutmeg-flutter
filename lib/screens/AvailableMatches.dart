@@ -8,9 +8,9 @@ import 'package:provider/provider.dart';
 
 import '../Utils.dart';
 
-List<Match> getMatches() {
-  return [
-    Match(
+Map<String, Match> getMatches() {
+  return {
+    "1": Match(
         DateTime.parse("2020-05-21 18:00:00Z"),
         SportCenter.fromId("ChIJ3zv5cYsJxkcRAr4WnAOlCT4"),
         Sport.fiveAsideFootball,
@@ -18,7 +18,7 @@ List<Match> getMatches() {
         ["a", "b"],
         5.50,
         MatchStatus.open),
-    Match(
+    "2": Match(
         DateTime.parse("2020-05-27 18:00:00Z"),
         SportCenter.fromId("ChIJM6a0ddoJxkcRsw7w54kvDD8"),
         Sport.fiveAsideFootball,
@@ -26,7 +26,7 @@ List<Match> getMatches() {
         [],
         6.0,
         MatchStatus.open),
-    Match(
+    "3" : Match(
         DateTime.parse("2020-05-27 19:00:00Z"),
         SportCenter.fromId("ChIJYVFYYbrTxUcRMSYDU4GLg5k"),
         Sport.fiveAsideFootball,
@@ -34,7 +34,7 @@ List<Match> getMatches() {
         ["a", "b", "c", "d"],
         7.00,
         MatchStatus.open),
-  ];
+  };
 }
 
 void main() {
@@ -86,10 +86,13 @@ class RefreshIndicatorStateful extends StatefulWidget {
 
 class RefreshIndicatorState extends State<RefreshIndicatorStateful>
     with WidgetsBindingObserver {
-  _getMatchesWidget(List<Match> matches) {
+  _getMatchesWidget(Map<String,Match> matches) {
+    var entries = matches.entries.toList();
+    entries.sort((a, b) => a.value.dateTime.compareTo(b.value.dateTime));
+
     var widgets = [];
-    for (int i = 0; i < matches.length; i++) {
-      widgets.add(MatchInfo.withBadge(matches[i],
+    for (int i = 0; i < entries.length; i++) {
+      widgets.add(MatchInfo.withBadge(entries[i].key,
           i == 0 || !isSameDay(matches[i].dateTime, matches[i - 1].dateTime)));
     }
 
@@ -135,18 +138,18 @@ class RefreshIndicatorState extends State<RefreshIndicatorStateful>
 class MatchInfo extends StatelessWidget {
   static var dateFormat = new DateFormat("MMMM dd");
 
-  Match match;
+  String matchId;
   bool showGoingWidget;
   bool showDate;
 
-  MatchInfo.withoutBadge(Match match, bool showDate) {
-    this.match = match;
+  MatchInfo.withoutBadge(String matchId, bool showDate) {
+    this.matchId = matchId;
     this.showGoingWidget = false;
     this.showDate = showDate;
   }
 
-  MatchInfo.withBadge(Match match, bool showDate) {
-    this.match = match;
+  MatchInfo.withBadge(String matchId, bool showDate) {
+    this.matchId = matchId;
     this.showGoingWidget = true;
     this.showDate = showDate;
   }
@@ -154,6 +157,8 @@ class MatchInfo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeData themeData = Theme.of(context);
+
+    Match match = context.watch<MatchesModel>().getMatch(matchId);
 
     return InkWell(
       child: Container(
@@ -211,7 +216,7 @@ class MatchInfo extends StatelessWidget {
       ),
       onTap: () {
         Navigator.push(context,
-            MaterialPageRoute(builder: (context) => MatchDetails(match)));
+            MaterialPageRoute(builder: (context) => MatchDetails(matchId)));
       },
       splashColor: Colors.white,
     );
