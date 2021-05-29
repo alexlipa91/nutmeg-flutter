@@ -64,14 +64,6 @@ class MatchDetails extends StatelessWidget {
                 style: buttonStyle);
           }
 
-          _getTextDependingOnMatch(String userName) {
-            return (match.status == MatchStatus.played)
-                ? "Played"
-                : match.joining.contains(userName)
-                    ? "Going"
-                    : "Join";
-          }
-
           return Container(
             decoration: new BoxDecoration(color: Colors.grey.shade400),
             padding: EdgeInsets.all(padding),
@@ -83,7 +75,8 @@ class MatchDetails extends StatelessWidget {
                 ]),
                 Spacer(),
                 Row(mainAxisAlignment: MainAxisAlignment.start, children: [
-                  Text("8 spots left", style: themeData.textTheme.headline2)
+                  Text((match.maxPlayers - match.joining.length).toString()
+                      + " spots left", style: themeData.textTheme.headline2)
                 ]),
                 Spacer(),
                 Row(mainAxisAlignment: MainAxisAlignment.start, children: [
@@ -130,7 +123,7 @@ class MatchDetails extends StatelessWidget {
                             .map((e) => FutureBuilder(
                                 future: UserModel.getImageUrl(e),
                                 builder: (context, snapshot) => (snapshot
-                                        .hasData)
+                                        .hasData && e != null)
                                     ? Tab(icon: Image.network(snapshot.data))
                                     : Icon(Icons.face, size: 50.0)))
                             // Icon(Icons.face, size: 50.0)
