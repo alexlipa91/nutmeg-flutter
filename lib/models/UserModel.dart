@@ -25,6 +25,7 @@ class UserModel extends ChangeNotifier {
     FirebaseAuth auth = FirebaseAuth.instance;
 
     final GoogleSignIn googleSignIn = GoogleSignIn();
+    googleSignIn.disconnect();
     final GoogleSignInAccount googleSignInAccount = await googleSignIn.signIn();
 
     if (googleSignInAccount != null) {

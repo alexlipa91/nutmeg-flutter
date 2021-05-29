@@ -80,7 +80,7 @@ class UserPage extends StatelessWidget {
                           child: MatchList(
                               matches: context
                                   .watch<MatchesModel>()
-                                  .matches
+                                  .getMatches()
                                   .where((element) => element.joining.contains(
                                       context.read<UserModel>().user.uid))
                                   .toList()))),

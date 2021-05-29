@@ -1,4 +1,5 @@
 import 'package:intl/intl.dart';
+import '../Utils.dart';
 
 
 enum MatchStatus { open, played, canceled }
@@ -6,8 +7,10 @@ enum MatchStatus { open, played, canceled }
 enum Sport { fiveAsideFootball }
 
 class Match {
-  static var dateFormat = new DateFormat("yyyy/MM/dd:HH:mm");
-
+  static var serializationDateFormat = new DateFormat("yyyy/MM/dd:HH:mm");
+  static var uiDateFormat = new DateFormat("yyyy-MM-dd");
+  static var uiHourFormat = new DateFormat("HH:mm");
+  
   String id;
 
   DateTime dateTime;
@@ -23,7 +26,7 @@ class Match {
 
   Match.fromJson(Map<String, dynamic> json, String id)
       : this.id = id,
-        dateTime = dateFormat.parse(json['dateTime']),
+        dateTime = serializationDateFormat.parse(json['dateTime']),
         sportCenter = SportCenter.fromJson(json['sportCenter']),
         sport = Sport.values[json['sport']],
         pricePerPerson = json['pricePerPerson'],
@@ -32,7 +35,7 @@ class Match {
         status = MatchStatus.values[json['status']];
 
   Map<String, dynamic> toJson() => {
-    'dateTime': dateFormat.format(dateTime),
+    'dateTime': serializationDateFormat.format(dateTime),
     'sportCenter': sportCenter.toJson(),
     'sport': sport.index,
     'pricePerPerson': pricePerPerson,
@@ -40,6 +43,11 @@ class Match {
     'maxPlayers': maxPlayers,
     'status': status.index
   };
+
+  String getFormattedDate() {
+    return (isSameDay(DateTime.now(), dateTime) ? "Today" : uiDateFormat.format(dateTime)) 
+        + " at " + uiHourFormat.format(dateTime);
+  }
 }
 
 class SportCenter {

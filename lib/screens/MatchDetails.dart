@@ -8,7 +8,6 @@ import 'package:provider/provider.dart';
 import '../Utils.dart';
 import 'Login.dart';
 
-
 void main() {
   Match m = Match(
       DateTime.parse("2020-05-21 18:00:00Z"),
@@ -22,8 +21,7 @@ void main() {
   runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider(create: (context) => UserModel()),
-      ChangeNotifierProvider(
-          create: (context) => MatchesModel([m]))
+      ChangeNotifierProvider(create: (context) => MatchesModel([m]))
     ],
     child: MaterialApp(
         debugShowCheckedModeBanner: false,
@@ -49,33 +47,58 @@ class MatchDetails extends StatelessWidget {
       child: Scaffold(
         appBar: getAppBar(context),
         body: Consumer<MatchesModel>(builder: (context, matches, child) {
-
           // function for when clicking join
           _goToNextStepToJoin() {
             if (context.read<UserModel>().isLoggedIn()) {
               Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) =>
-                          Payment(match: match)));
+                      builder: (context) => Payment(match: match)));
             } else {
-              Navigator.pushReplacement(context,
-                  MaterialPageRoute(builder: (context) => Login()));
+              Navigator.pushReplacement(
+                  context, MaterialPageRoute(builder: (context) => Login()));
             }
           }
 
-          _getTextDependingOnMatch(String userName) {
-            return (match.status == MatchStatus.played) ? "Played" : 
-                match.joining.contains(userName) ? "Going" : "Join";
+          _getTextButton(UserModel user, Match m) {
+            var buttonStyle = ButtonStyle(
+                side: MaterialStateProperty.all(
+                    BorderSide(width: 2, color: Colors.purple)),
+                foregroundColor: MaterialStateProperty.all(Colors.purple),
+                padding: MaterialStateProperty.all(
+                    EdgeInsets.symmetric(vertical: 10, horizontal: 50)),
+                textStyle:
+                    MaterialStateProperty.all(themeData.textTheme.headline3));
+
+            if (user.isLoggedIn() && m.joining.contains(user.user.uid)) {
+              return TextButton(
+                  child: Text((match.status == MatchStatus.played)
+                      ? "Played"
+                      : "Going"),
+                  style: buttonStyle);
+            }
+            return TextButton(
+                onPressed: _goToNextStepToJoin,
+                child: Text("Join"),
+                style: buttonStyle);
           }
-          
+
+          _getTextDependingOnMatch(String userName) {
+            return (match.status == MatchStatus.played)
+                ? "Played"
+                : match.joining.contains(userName)
+                    ? "Going"
+                    : "Join";
+          }
+
           return Container(
             decoration: new BoxDecoration(color: Colors.grey.shade400),
             padding: EdgeInsets.all(padding),
             child: Column(
               children: [
                 Row(mainAxisAlignment: MainAxisAlignment.start, children: [
-                  Text(match.sportCenter.placeId, style: themeData.textTheme.headline1)
+                  Text(match.sportCenter.name,
+                      style: themeData.textTheme.headline1)
                 ]),
                 Spacer(),
                 Row(mainAxisAlignment: MainAxisAlignment.start, children: [
@@ -83,46 +106,34 @@ class MatchDetails extends StatelessWidget {
                 ]),
                 Spacer(),
                 Row(mainAxisAlignment: MainAxisAlignment.start, children: [
-                  Consumer<UserModel>(
-                    builder: (context, user, child) {
-                      return TextButton(
-                          onPressed: (match.joining.contains(user.user.uid)) ? null
-                              : _goToNextStepToJoin,
-                          child: Text(_getTextDependingOnMatch(user.user.uid)),
-                          style: ButtonStyle(
-                              side: MaterialStateProperty.all(
-                                  BorderSide(width: 2, color: Colors.purple)),
-                              foregroundColor:
-                              MaterialStateProperty.all(Colors.purple),
-                              padding: MaterialStateProperty.all(
-                                  EdgeInsets.symmetric(
-                                      vertical: 10, horizontal: 50)),
-                              textStyle: MaterialStateProperty.all(
-                                  themeData.textTheme.headline3)));
-                    }
-                  ),
+                  _getTextButton(context.watch<UserModel>(), match)
                 ]),
                 Spacer(),
                 new InfoWidget(
-                    title: "Today at 18:00",
+                    title: match.getFormattedDate(),
                     icon: Icons.watch,
+                    // todo fix this
                     subTitle: "Wed Sept 2020"),
                 new InfoWidget(
-                    title: match.sportCenter.placeId,
+                    title: match.sportCenter.name,
                     icon: Icons.place,
+                    // todo fix address
                     subTitle: "Madurastraat 15D, Amsterdam"),
                 new InfoWidget(
-                    title: "Futsal",
+                    title: match.sport.toString(),
                     icon: Icons.sports_soccer,
+                    // todo fix info sport
                     subTitle: "Indoors, covered"),
                 new InfoWidget(
-                    title: "5.50",
+                    title: "€ " + match.pricePerPerson.toString(),
                     icon: Icons.money,
                     subTitle: "Pay with Ideal"),
                 Divider(),
                 Spacer(),
                 Row(children: [
-                  Text("2/10 players going",
+                  Text(match.joining.length.toString()
+                      + "/" + match.maxPlayers.toString()
+                      + " players going",
                       style: themeData.textTheme.bodyText1),
                 ]),
                 Spacer(),
@@ -189,7 +200,6 @@ class InfoWidget extends StatelessWidget {
               ],
             )
           ],
-        )
-    );
+        ));
   }
 }

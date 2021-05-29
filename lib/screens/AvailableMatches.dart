@@ -87,14 +87,10 @@ class RefreshIndicatorStateful extends StatefulWidget {
 class RefreshIndicatorState extends State<RefreshIndicatorStateful>
     with WidgetsBindingObserver {
   _getMatchesWidget(List<Match> matches) {
-    _isSameDay(DateTime a, DateTime b) {
-      return a.day == b.day && a.month == b.month && a.year == b.year;
-    }
-
     var widgets = [];
     for (int i = 0; i < matches.length; i++) {
       widgets.add(MatchInfo.withBadge(matches[i],
-          i == 0 || !_isSameDay(matches[i].dateTime, matches[i - 1].dateTime)));
+          i == 0 || !isSameDay(matches[i].dateTime, matches[i - 1].dateTime)));
     }
 
     return List<MatchInfo>.from(widgets);
@@ -132,7 +128,7 @@ class RefreshIndicatorState extends State<RefreshIndicatorStateful>
             shrinkWrap: true,
             padding: const EdgeInsets.all(8),
             children:
-                _getMatchesWidget(context.watch<MatchesModel>().matches)));
+                _getMatchesWidget(context.watch<MatchesModel>().getMatches())));
   }
 }
 

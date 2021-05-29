@@ -16,7 +16,7 @@ class Payment extends StatelessWidget {
       decoration: new BoxDecoration(color: Colors.grey.shade400),
       child: new TextButton(onPressed: () {
         context.read<MatchesModel>().joinMatch(
-            context.read<UserModel>().user.uid, match);
+            context.read<UserModel>().user, match);
 
         Navigator.pop(context);
       }, child: Text("pay")),
