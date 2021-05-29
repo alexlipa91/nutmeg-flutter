@@ -52,7 +52,7 @@ class UserPage extends StatelessWidget {
                           decoration:
                               new BoxDecoration(color: Colors.grey.shade400),
                           child: MatchList(
-                              matches: Map.fromIterable(context
+                              matches: Map.fromEntries(context
                                   .watch<MatchesModel>()
                                   .getMatches()
                                   .entries
