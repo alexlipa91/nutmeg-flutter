@@ -94,3 +94,20 @@ class SportCenter {
   @override
   int get hashCode => super.hashCode;
 }
+
+class UserDetails {
+
+  bool isAdmin;
+  String image;
+
+  UserDetails(this.isAdmin, this.image);
+
+  UserDetails.fromJson(Map<String, dynamic> json)
+      : isAdmin = json["isAdmin"] ?? false,
+        image = json["image"];
+
+  Map<String, dynamic> toJson() => {
+    'isAdmin' : isAdmin,
+    'image': image
+  };
+}

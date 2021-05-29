@@ -2,13 +2,23 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'Model.dart';
+
 
 class UserModel extends ChangeNotifier {
-  final CollectionReference users = FirebaseFirestore.instance.collection('users');
+
+  static CollectionReference users = FirebaseFirestore.instance.collection('users');
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
+  static Future<String> getImageUrl(String uid) async {
+    return await users.doc(uid).get().then((value) {
+      Map<String, dynamic> data = value.data();
+      return data['image'].toString();
+    });
+  }
+
   User user;
-  bool isAdmin = false;
+  UserDetails userDetails;
 
   UserModel();
 
@@ -41,26 +51,24 @@ class UserModel extends ChangeNotifier {
           await auth.signInWithCredential(credential);
 
       user = userCredential.user;
-      await getUserMetadata();
+
+      // check if first time
+      await users.doc(user.uid).get().then((doc) {
+        if (!doc.exists) {
+          userDetails = new UserDetails(false, user.photoURL);
+        } else {
+          userDetails = UserDetails.fromJson(doc.data());
+        }
+        return !doc.exists;
+      }).then((shouldInsert) {
+        if (shouldInsert) {
+          users.doc(user.uid).set(userDetails.toJson());
+        }
+      });
 
       notifyListeners();
       return user.uid;
     }
-  }
-
-  Future<void> getUserMetadata() {
-    users.doc(user.uid).get().then((doc) {
-      if (doc.exists) {
-        Map<String, dynamic> metadata = doc.data();
-        if (metadata.containsKey("isAdmin")) {
-          isAdmin = metadata["isAdmin"];
-        } else {
-          isAdmin = false;
-        }
-      } else {
-        isAdmin = false;
-      }
-    });
   }
 
   bool isLoggedIn() {

@@ -8,27 +8,6 @@ import 'package:provider/provider.dart';
 import '../Utils.dart';
 import 'Login.dart';
 
-void main() {
-  Match m = Match(
-      DateTime.parse("2020-05-21 18:00:00Z"),
-      SportCenter.fromId("ChIJ3zv5cYsJxkcRAr4WnAOlCT4"),
-      Sport.fiveAsideFootball,
-      10,
-      [],
-      5.50,
-      MatchStatus.open);
-
-  runApp(MultiProvider(
-    providers: [
-      ChangeNotifierProvider(create: (context) => UserModel()),
-      ChangeNotifierProvider(create: (context) => MatchesModel({}))
-    ],
-    child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        home: MatchDetails("1"),
-        theme: appTheme),
-  ));
-}
 
 class MatchDetails extends StatelessWidget {
   String matchId;
@@ -148,7 +127,13 @@ class MatchDetails extends StatelessWidget {
                     physics: BouncingScrollPhysics(),
                     child: Row(
                         children: match.joining
-                            .map((e) => Icon(Icons.face, size: 50.0))
+                            .map((e) => FutureBuilder(
+                                future: UserModel.getImageUrl(e),
+                                builder: (context, snapshot) => (snapshot
+                                        .hasData)
+                                    ? Tab(icon: Image.network(snapshot.data))
+                                    : Icon(Icons.face, size: 50.0)))
+                            // Icon(Icons.face, size: 50.0)
                             .toList()),
                   ),
                 )
