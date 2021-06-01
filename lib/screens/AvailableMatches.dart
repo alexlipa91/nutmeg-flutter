@@ -26,7 +26,7 @@ Map<String, Match> getMatches() {
         [],
         6.0,
         MatchStatus.open),
-    "3" : Match(
+    "3": Match(
         DateTime.parse("2020-05-27 19:00:00Z"),
         SportCenter.fromId("ChIJYVFYYbrTxUcRMSYDU4GLg5k"),
         Sport.fiveAsideFootball,
@@ -48,6 +48,11 @@ void main() {
 }
 
 class AvailableMatches extends StatelessWidget {
+
+  final String loadingErrorMessage;
+
+  const AvailableMatches({Key key, this.loadingErrorMessage}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     print("Building " + this.runtimeType.toString());
@@ -73,7 +78,8 @@ class AvailableMatches extends StatelessWidget {
                         borderRadius: BorderRadius.circular(32.0))),
               ),
             ),
-            Expanded(child: RefreshIndicatorStateful()),
+            Expanded(child: (loadingErrorMessage != null) ?
+            Text(loadingErrorMessage) : RefreshIndicatorStateful()),
           ])),
     ));
   }
@@ -86,7 +92,10 @@ class RefreshIndicatorStateful extends StatefulWidget {
 
 class RefreshIndicatorState extends State<RefreshIndicatorStateful>
     with WidgetsBindingObserver {
-  _getMatchesWidget(Map<String,Match> matches) {
+
+  String fetchMatchesError;
+
+  _getMatchesWidget(Map<String, Match> matches) {
     var entries = matches.entries.toList();
     entries.sort((a, b) => a.value.dateTime.compareTo(b.value.dateTime));
 
@@ -119,15 +128,18 @@ class RefreshIndicatorState extends State<RefreshIndicatorStateful>
   }
 
   Future<void> refresh() async {
-    print('refreshing');
-    await context.read<MatchesModel>().pull();
+    try {
+      await context.read<MatchesModel>().pull();
+    } on Exception catch (err) {
+      print("Caught in refresh " + err.toString());
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return RefreshIndicator(
-        onRefresh: () => refresh(),
-        child: ListView(
+        onRefresh: () async => await refresh(),
+        child: (fetchMatchesError != null) ? Text(fetchMatchesError) : ListView(
             shrinkWrap: true,
             padding: const EdgeInsets.all(8),
             children:

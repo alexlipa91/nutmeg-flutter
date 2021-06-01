@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:nutmeg/models/MatchesModel.dart';
 import 'package:nutmeg/models/UserModel.dart';
 import 'package:nutmeg/models/Model.dart';
-import 'package:nutmeg/screens/Payment.dart';
+import 'package:nutmeg/screens/PaymentTest.dart';
 import 'package:provider/provider.dart';
 
 import '../Utils.dart';
@@ -34,7 +34,7 @@ class MatchDetails extends StatelessWidget {
               Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => Payment(matchId: matchId)));
+                      builder: (context) => PaymentPage(matchId: matchId)));
             } else {
               Navigator.pushReplacement(
                   context, MaterialPageRoute(builder: (context) => Login()));

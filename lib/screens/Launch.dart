@@ -7,7 +7,6 @@ import 'package:nutmeg/screens/AvailableMatches.dart';
 import 'package:provider/provider.dart';
 
 void main() {
-
   runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider(create: (context) => UserModel()),
@@ -17,8 +16,7 @@ void main() {
       debugShowCheckedModeBanner: false,
       home: new Container(
           decoration: new BoxDecoration(color: Colors.grey.shade400),
-          child:
-              Center(child: new LaunchWidget(newPage: new AvailableMatches()))),
+          child: Center(child: new LaunchWidget())),
       theme: appTheme,
     ),
   ));
@@ -32,28 +30,23 @@ Future<void> callAsyncFetch(BuildContext context) {
 }
 
 class LaunchWidget extends StatefulWidget {
-  final Widget newPage;
-
-  const LaunchWidget({Key key, this.newPage}) : super(key: key);
-
   @override
-  _LaunchWidgetState createState() => _LaunchWidgetState(newPage);
+  _LaunchWidgetState createState() => _LaunchWidgetState();
 }
 
 class _LaunchWidgetState extends State<LaunchWidget> {
-  final Widget newPage;
-
-  _LaunchWidgetState(this.newPage);
-
   @override
   void initState() {
     super.initState();
-    callAsyncFetch(context).then((data) {
-      Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (context) => newPage));
-    }).catchError((e) {
-      Navigator.pop(context, "an error");
-    });
+    callAsyncFetch(context)
+        .then((data) => Future<String>.value(null)) // no error message here
+        .catchError((onError) => onError.toString())
+        .then((errorMessage) => Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+                builder: (context) => new AvailableMatches(
+                      loadingErrorMessage: errorMessage,
+                    ))));
   }
 
   @override

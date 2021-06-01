@@ -39,18 +39,14 @@ class MatchesModel extends ChangeNotifier {
     await pull();
   }
 
-  pull() async {
+  Future<void> pull() async {
     matches = await _fetchMatches();
     notifyListeners();
   }
 
-  Future<Map<String, Match>> _fetchMatches() async =>
-      await ref.get().then(
-              (q) => q.docs.map((doc) => MapEntry(doc.id, Match.fromJson(doc.data()))))
-          .then((value) => Map<String, Match>.fromEntries(value))
-          .catchError((e) {
-            // fixme proper error handling
-            print(e);
-            return null;
-          });
+  Future<Map<String, Match>> _fetchMatches() async {
+    var q = await ref.get();
+    var entries = q.docs.map((doc) => MapEntry(doc.id, Match.fromJson(doc.data())));
+    return Map<String, Match>.fromEntries(entries);
+  }
 }
