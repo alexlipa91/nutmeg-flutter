@@ -1,4 +1,3 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:nutmeg/ButtonWidgets.dart';
 import 'package:nutmeg/models/MatchesModel.dart';
@@ -7,29 +6,9 @@ import 'package:nutmeg/screens/AddMatch.dart';
 import 'package:nutmeg/screens/Login.dart';
 import 'package:provider/provider.dart';
 
-import '../Utils.dart';
 import 'AvailableMatches.dart';
 import 'package:nutmeg/models/Model.dart';
 
-
-Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-
-  UserModel u = UserModel();
-  await u.login("testtest@gmail.com", "testtest");
-
-  runApp(MultiProvider(
-    providers: [
-      ChangeNotifierProvider(create: (context) => MatchesModel(getMatches())),
-      ChangeNotifierProvider(create: (context) => u),
-    ],
-    child: new MaterialApp(
-      home: UserPage(),
-      theme: appTheme,
-    ),
-  ));
-}
 
 class UserPage extends StatelessWidget {
 
@@ -104,7 +83,7 @@ class MatchList extends StatelessWidget {
 
     if (open.isNotEmpty) {
       children.addAll(open
-          .map<Widget>((e) => MatchInfo.withoutBadge(e.key, false))
+          .map<Widget>((e) => MatchInfo(e.key))
           .toList());
     } else {
       children.addAll([
@@ -120,7 +99,7 @@ class MatchList extends StatelessWidget {
 
     if (played.isNotEmpty) {
       children.addAll(played
-          .map<Widget>((e) => MatchInfo.withoutBadge(e.key, false))
+          .map<Widget>((e) => MatchInfo(e.key))
           .toList());
     } else {
       children.addAll([

@@ -6,6 +6,15 @@ enum MatchStatus { open, played, canceled }
 
 enum Sport { fiveAsideFootball }
 
+extension SportExtension on Sport {
+  String getDisplayTitle() {
+    switch (this) {
+      case Sport.fiveAsideFootball: return "5-aside-football";
+      default: return "";
+    }
+  }
+}
+
 class Match {
   static var serializationDateFormat = new DateFormat("yyyy/MM/dd:HH:mm");
   static var uiDateFormat = new DateFormat("yyyy-MM-dd");

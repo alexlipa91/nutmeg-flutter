@@ -36,11 +36,13 @@ class MatchesModel extends ChangeNotifier {
 
       Map<String, dynamic> data = snapshot.data();
       List<String> joiningList = List<String>.from(data['joining']);
-      List<String> removedList = data.containsKey('left') ? List<String>.from(data['left']) : List<String>.empty();
+      List<String> removedList = data.containsKey('left')
+          ? List<String>.from(data['left'])
+          : List<String>.empty();
 
       if (op == "add") {
         joiningList.add(user.uid);
-      } else if(op == "remove") {
+      } else if (op == "remove") {
         joiningList.remove(user.uid);
         removedList.add(user.uid);
       }
@@ -61,7 +63,8 @@ class MatchesModel extends ChangeNotifier {
 
   Future<Map<String, Match>> _fetchMatches() async {
     var q = await ref.get();
-    var entries = q.docs.map((doc) => MapEntry(doc.id, Match.fromJson(doc.data())));
+    var entries =
+        q.docs.map((doc) => MapEntry(doc.id, Match.fromJson(doc.data())));
     return Map<String, Match>.fromEntries(entries);
   }
 }
