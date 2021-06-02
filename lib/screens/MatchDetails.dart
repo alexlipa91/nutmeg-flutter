@@ -8,7 +8,6 @@ import 'package:provider/provider.dart';
 import '../Utils.dart';
 import 'Login.dart';
 
-
 class MatchDetails extends StatelessWidget {
   String matchId;
 
@@ -41,7 +40,7 @@ class MatchDetails extends StatelessWidget {
             }
           }
 
-          _getTextButton(UserModel user, Match m) {
+          List<Widget> _getTextButtons(UserModel user, Match m) {
             var buttonStyle = ButtonStyle(
                 side: MaterialStateProperty.all(
                     BorderSide(width: 2, color: Colors.purple)),
@@ -51,17 +50,28 @@ class MatchDetails extends StatelessWidget {
                 textStyle:
                     MaterialStateProperty.all(themeData.textTheme.headline3));
 
+            var buttons = [];
             if (user.isLoggedIn() && m.joining.contains(user.user.uid)) {
-              return TextButton(
+              buttons.add(TextButton(
                   child: Text((match.status == MatchStatus.played)
                       ? "Played"
                       : "Going"),
-                  style: buttonStyle);
+                  style: buttonStyle));
+
+              if (match.status == MatchStatus.open) {
+                buttons.add(TextButton(
+                    onPressed: () => context.read<MatchesModel>()
+                        .leaveMatch(user.user, matchId),
+                    child: Text("Leave"),
+                    style: buttonStyle));
+              }
+            } else {
+              buttons.add(TextButton(
+                  onPressed: _goToNextStepToJoin,
+                  child: Text("Join"),
+                  style: buttonStyle));
             }
-            return TextButton(
-                onPressed: _goToNextStepToJoin,
-                child: Text("Join"),
-                style: buttonStyle);
+            return List<Widget>.from(buttons);
           }
 
           return Container(
@@ -75,13 +85,16 @@ class MatchDetails extends StatelessWidget {
                 ]),
                 Spacer(),
                 Row(mainAxisAlignment: MainAxisAlignment.start, children: [
-                  Text((match.maxPlayers - match.joining.length).toString()
-                      + " spots left", style: themeData.textTheme.headline2)
+                  Text(
+                      (match.maxPlayers - match.joining.length).toString() +
+                          " spots left",
+                      style: themeData.textTheme.headline2)
                 ]),
                 Spacer(),
-                Row(mainAxisAlignment: MainAxisAlignment.start, children: [
-                  _getTextButton(context.watch<UserModel>(), match)
-                ]),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: _getTextButtons(context.watch<UserModel>(), match),
+                ),
                 Spacer(),
                 new InfoWidget(
                     title: match.getFormattedDate(),
@@ -123,7 +136,8 @@ class MatchDetails extends StatelessWidget {
                             .map((e) => FutureBuilder(
                                 future: UserModel.getImageUrl(e),
                                 builder: (context, snapshot) => (snapshot
-                                        .hasData && e != null)
+                                            .hasData &&
+                                        e != null)
                                     ? Tab(icon: Image.network(snapshot.data))
                                     : Icon(Icons.face, size: 50.0)))
                             // Icon(Icons.face, size: 50.0)

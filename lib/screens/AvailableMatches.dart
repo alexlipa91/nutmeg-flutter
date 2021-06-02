@@ -47,11 +47,13 @@ void main() {
   ));
 }
 
-class AvailableMatches extends StatelessWidget {
+class AvailableMatches extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() => AvailableMatchesState();
+}
 
-  final String loadingErrorMessage;
-
-  const AvailableMatches({Key key, this.loadingErrorMessage}) : super(key: key);
+class AvailableMatchesState extends State<AvailableMatches> {
+  bool allFilterIsOn = true;
 
   @override
   Widget build(BuildContext context) {
@@ -63,25 +65,106 @@ class AvailableMatches extends StatelessWidget {
         child: Container(
       decoration: new BoxDecoration(color: Colors.grey.shade400),
       child: Scaffold(
-          backgroundColor: Colors.transparent,
+          backgroundColor: Colors.white,
           appBar: getAppBar(context),
-          body: Column(children: [
+          body:
+              Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
             Container(
-              margin: EdgeInsets.all(30.0),
-              child: TextField(
-                enabled: false,
-                style: themeData.textTheme.headline3,
-                decoration: InputDecoration(
-                    contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
-                    hintText: 'Amsterdam',
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(32.0))),
-              ),
-            ),
-            Expanded(child: (loadingErrorMessage != null) ?
-            Text(loadingErrorMessage) : RefreshIndicatorStateful()),
+                decoration: BoxDecoration(
+                  color: Colors.green.shade700,
+                  borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(20),
+                      bottomRight: Radius.circular(20)),
+                ),
+                child: Padding(
+                  padding: EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text("Find football matches near",
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w400)),
+                      SizedBox(height: 10),
+                      Text("Amsterdam",
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 42,
+                              fontWeight: FontWeight.w800)),
+                      SizedBox(height: 10),
+                      Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            FilterButton(
+                                onPressedFunction: () {
+                                  setState(() {
+                                    allFilterIsOn = !allFilterIsOn;
+                                  });
+                                },
+                                isOn: allFilterIsOn,
+                                text: "ALL",
+                                isLeft: true),
+                            FilterButton(
+                                onPressedFunction: () {
+                                  setState(() {
+                                    allFilterIsOn = !allFilterIsOn;
+                                  });
+                                },
+                                isOn: !allFilterIsOn,
+                                text: "GOING",
+                                isLeft: false),
+                          ])
+                    ],
+                  ),
+                )),
+            Expanded(child: RefreshIndicatorStateful()),
           ])),
     ));
+  }
+}
+
+class FilterButton extends StatelessWidget {
+  final String text;
+  final Function onPressedFunction;
+  final isOn;
+  final isLeft;
+
+  static var onTextStyle = TextStyle(
+      color: Colors.green.shade700, fontSize: 18, fontWeight: FontWeight.w300);
+  static var offTextStyle =
+      TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w300);
+
+  const FilterButton(
+      {Key key, this.onPressedFunction, this.isOn, this.text, this.isLeft})
+      : super(key: key);
+
+  getBorderRadius() => (isLeft)
+      ? BorderRadius.only(
+          topLeft: Radius.circular(10.0), bottomLeft: Radius.circular(10.0))
+      : BorderRadius.only(
+          topRight: Radius.circular(10.0), bottomRight: Radius.circular(10.0));
+
+  getOnStyle() => TextButton.styleFrom(
+      backgroundColor: Colors.white,
+      padding: EdgeInsets.symmetric(horizontal: 55.0),
+      shape: RoundedRectangleBorder(
+          side: BorderSide(width: 1.0, color: Colors.white),
+          borderRadius: getBorderRadius()));
+
+  getOffStyle() => TextButton.styleFrom(
+      backgroundColor: Colors.transparent,
+      padding: EdgeInsets.symmetric(horizontal: 55.0),
+      shape: RoundedRectangleBorder(
+          side: BorderSide(width: 1.0, color: Colors.white),
+          borderRadius: getBorderRadius()));
+
+  @override
+  Widget build(BuildContext context) {
+    return TextButton(
+        onPressed: onPressedFunction,
+        child: Text(text, style: (isOn) ? onTextStyle : offTextStyle),
+        style: (isOn) ? getOnStyle() : getOffStyle());
   }
 }
 
@@ -92,7 +175,6 @@ class RefreshIndicatorStateful extends StatefulWidget {
 
 class RefreshIndicatorState extends State<RefreshIndicatorStateful>
     with WidgetsBindingObserver {
-
   String fetchMatchesError;
 
   _getMatchesWidget(Map<String, Match> matches) {
@@ -139,11 +221,13 @@ class RefreshIndicatorState extends State<RefreshIndicatorStateful>
   Widget build(BuildContext context) {
     return RefreshIndicator(
         onRefresh: () async => await refresh(),
-        child: (fetchMatchesError != null) ? Text(fetchMatchesError) : ListView(
-            shrinkWrap: true,
-            padding: const EdgeInsets.all(8),
-            children:
-                _getMatchesWidget(context.watch<MatchesModel>().getMatches())));
+        child: (fetchMatchesError != null)
+            ? Text(fetchMatchesError)
+            : ListView(
+                shrinkWrap: true,
+                padding: const EdgeInsets.all(8),
+                children: _getMatchesWidget(
+                    context.watch<MatchesModel>().getMatches())));
   }
 }
 

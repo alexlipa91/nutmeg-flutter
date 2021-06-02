@@ -16,6 +16,15 @@ class MatchesModel extends ChangeNotifier {
   Match getMatch(String id) => matches[id];
 
   joinMatch(User user, String matchId) async {
+    await _alterMatchList(user, matchId, "add");
+  }
+
+  leaveMatch(User user, String matchId) async {
+    await _alterMatchList(user, matchId, "remove");
+  }
+
+  _alterMatchList(User user, String matchId, String op) async {
+    print("adding user " + user.uid + " to match " + matchId);
     DocumentReference documentReference = ref.doc(matchId);
 
     await FirebaseFirestore.instance.runTransaction((transaction) async {
@@ -27,14 +36,20 @@ class MatchesModel extends ChangeNotifier {
 
       Map<String, dynamic> data = snapshot.data();
       List<String> joiningList = List<String>.from(data['joining']);
-      if (joiningList.contains(user.uid)) {
-        throw Exception("User already joined");
-      }
+      List<String> removedList = data.containsKey('left') ? List<String>.from(data['left']) : List<String>.empty();
 
-      joiningList.add(user.uid);
+      if (op == "add") {
+        joiningList.add(user.uid);
+      } else if(op == "remove") {
+        joiningList.remove(user.uid);
+        removedList.add(user.uid);
+      }
 
       // Perform an update on the document
       transaction.update(documentReference, {'joining': joiningList});
+      if (op == "remove") {
+        transaction.update(documentReference, {'left': removedList});
+      }
     });
     await pull();
   }

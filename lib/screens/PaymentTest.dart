@@ -4,11 +4,11 @@ import 'dart:io';
 import 'package:cool_alert/cool_alert.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:nutmeg/ButtonWidgets.dart';
 import 'package:nutmeg/models/MatchesModel.dart';
 import 'package:nutmeg/models/UserModel.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:provider/provider.dart';
-
 
 void main() async {
   runApp(new MaterialApp(home: MyApp()));
@@ -33,7 +33,6 @@ class MyApp extends StatelessWidget {
 }
 
 class PaymentPage extends StatefulWidget {
-
   final String matchId;
 
   const PaymentPage({Key key, this.matchId}) : super(key: key);
@@ -43,7 +42,6 @@ class PaymentPage extends StatefulWidget {
 }
 
 class _PaymentPageState extends State<PaymentPage> {
-
   final String matchId;
 
   bool paymentDone = false;
@@ -56,30 +54,31 @@ class _PaymentPageState extends State<PaymentPage> {
     return Scaffold(
       body: Builder(
         builder: (context) => Center(
-          child: TextButton(
-            onPressed: () async {
-              final sessionId = await Server().createCheckout();
-              Navigator.of(context)
-                  .push(MaterialPageRoute(
-                      builder: (_) => CheckoutPage(sessionId: sessionId)))
-                  .then((value) => CoolAlert.show(
-                      context: context,
-                      type: (value == "success")
-                          ? CoolAlertType.success
-                          : CoolAlertType.error,
-                      text: (value == "success")
-                          ? "Your transaction was successful!"
-                          : "Something went wrong!"))
-                  .then((value) {
+            child: ButtonWithLoaderAndPop(
+                text: "Pay",
+                onPressedFunction: () async {
+                  final sessionId = await Server().createCheckout();
+                  print("sessId " + sessionId);
+                  await Navigator.of(context)
+                      .push(MaterialPageRoute(
+                          builder: (_) => CheckoutPage(sessionId: sessionId)))
+                      .then((value) {
                     if (value == "success") {
-                      context.read<MatchesModel>().joinMatch(context.read<UserModel>().user, matchId);
+                      context
+                          .read<MatchesModel>()
+                          .joinMatch(context.read<UserModel>().user, matchId);
                     }
-                    Navigator.pop(context);
-              });
-            },
-            child: Text('Pay!'),
-          ),
-        ),
+                    return value;
+                  }).then((value) => CoolAlert.show(
+                          context: context,
+                          type: (value == "success")
+                              ? CoolAlertType.success
+                              : CoolAlertType.error,
+                          text: (value == "success")
+                              ? "Your transaction was successful!"
+                              : "Something went wrong!"));
+                })
+            ),
       ),
     );
   }

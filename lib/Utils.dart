@@ -8,11 +8,11 @@ import 'package:provider/provider.dart';
 import 'models/UserModel.dart';
 
 var appTheme = new ThemeData(
-  primaryColor: Colors.black,
+  primaryColor: Colors.green.shade700,
   accentColor: Colors.blueAccent,
   textTheme: TextTheme(
       headline1: TextStyle(
-          color: Colors.black, fontWeight: FontWeight.w700, fontSize: 28),
+          color: Colors.white, fontWeight: FontWeight.w700, fontSize: 28),
       headline2: TextStyle(
           color: Colors.black, fontWeight: FontWeight.w500, fontSize: 18),
       headline3: TextStyle(
@@ -21,58 +21,49 @@ var appTheme = new ThemeData(
           color: Colors.black, fontSize: 18, fontWeight: FontWeight.w600),
       bodyText2: TextStyle(
           color: Colors.black, fontSize: 12, fontWeight: FontWeight.w500)),
-  fontFamily: "Montserrat",
+  fontFamily: "ComicSans",
 );
 
 getAppBar(BuildContext context) {
-
   getTopBottomWidget(BuildContext context) {
-    return Consumer<UserModel>(
-      builder: (context, user, child) {
-        if (user.isLoggedIn()) {
-          print("Building app bar: detected user is " + user.user.uid);
-          // fixme this doesn't really pad well
-          return Padding(
-            padding: EdgeInsets.symmetric(vertical: 1.0),
-            child: RawMaterialButton(
-              onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) =>
-                new UserPage()));
-              },
-              elevation: 2.0,
-              fillColor: Colors.purple,
-              child: Text(user.user.displayName[0].toUpperCase(),
-                  style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w500)),
-              padding: EdgeInsets.all(15.0),
-              shape: CircleBorder(),
-            ),
-          );
-        }
-
-        return InkWell(
-            onTap: () =>
-                Navigator.push(context, MaterialPageRoute(builder: (context) => Login())),
-
-            child: Padding(
-              padding: EdgeInsets.all(10.0),
-              child: Text("Login",
-                  style: Theme.of(context).textTheme.headline3
-              ),
-            )
-        );
+    return Consumer<UserModel>(builder: (context, user, child) {
+      var widget;
+      var function;
+      if (user.isLoggedIn()) {
+        print("Building app bar: detected user is " + user.user.uid);
+        // fixme this doesn't really pad well
+        function = () {
+          Navigator.push(
+              context, MaterialPageRoute(builder: (context) => new UserPage()));
+        };
+        widget = Text(user.user.displayName[0].toUpperCase(),
+            style: TextStyle(
+                color: Colors.white,
+                fontSize: 22,
+                fontWeight: FontWeight.w500));
+      } else {
+        function = () => Navigator.push(
+            context, MaterialPageRoute(builder: (context) => Login()));
+        widget = Icon(Icons.login, color: Colors.white);
       }
-    );
+
+      return InkWell(
+        child: Padding(
+          padding: EdgeInsets.all(8.0),
+          child: CircleAvatar(child: widget, radius: 25),
+        ),
+        onTap: function,
+      );
+    });
   }
 
   return AppBar(
-    title: Text("Nutmeg", style: Theme
-        .of(context)
-        .textTheme
-        .headline1),
-    backgroundColor: Colors.grey.shade400,
-    actions: [
-      getTopBottomWidget(context)
-    ],
+    toolbarHeight: 70,
+    title: Text("Nutmeg",
+        style: TextStyle(
+            color: Colors.white, fontWeight: FontWeight.w300, fontSize: 22)),
+    // backgroundColor: Colors.green.shade700,
+    actions: [getTopBottomWidget(context)],
     elevation: 0,
   );
 }

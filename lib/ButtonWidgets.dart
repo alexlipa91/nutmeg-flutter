@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 class ButtonWithLoaderAndPop extends StatefulWidget {
   final String text;
-  final Future<void> onPressedFunction;
+  final Function onPressedFunction;
 
   const ButtonWithLoaderAndPop({Key key, this.onPressedFunction, this.text}) : super(key: key);
 
@@ -13,7 +13,7 @@ class ButtonWithLoaderAndPop extends StatefulWidget {
 }
 
 class _ButtonWithLoaderAndPopState extends State<ButtonWithLoaderAndPop> {
-  final Future<void> onPressedFunction;
+  final Function onPressedFunction;
   final String text;
 
   bool _isExecuting = false;
@@ -35,7 +35,7 @@ class _ButtonWithLoaderAndPopState extends State<ButtonWithLoaderAndPop> {
                     _isExecuting = true;
                   });
 
-                  await onPressedFunction;
+                  await onPressedFunction();
                   await Future.delayed(Duration(milliseconds: 500));
 
                   setState(() {

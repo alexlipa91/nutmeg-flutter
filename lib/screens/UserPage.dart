@@ -131,7 +131,7 @@ class MatchList extends StatelessWidget {
 
     children.add(ButtonWithLoaderAndPop(
         text: "Logout",
-        onPressedFunction: context.read<UserModel>().logout()));
+        onPressedFunction: () => context.read<UserModel>().logout()));
 
     if (context.read<UserModel>().userDetails.isAdmin) {
       children.add(LoginOptionButton(text: "Add match",

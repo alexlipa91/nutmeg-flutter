@@ -41,12 +41,8 @@ class _LaunchWidgetState extends State<LaunchWidget> {
     callAsyncFetch(context)
         .then((data) => Future<String>.value(null)) // no error message here
         .catchError((onError) => onError.toString())
-        .then((errorMessage) => Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-                builder: (context) => new AvailableMatches(
-                      loadingErrorMessage: errorMessage,
-                    ))));
+        .then((errorMessage) => Navigator.pushReplacement(context,
+            MaterialPageRoute(builder: (context) => new AvailableMatches())));
   }
 
   @override
