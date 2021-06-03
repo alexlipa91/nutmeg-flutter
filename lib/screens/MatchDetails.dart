@@ -9,15 +9,15 @@ import 'package:intl/intl.dart';
 import '../Utils.dart';
 import 'Login.dart';
 
-
 class MatchDetails extends StatelessWidget {
   static getMatch(BuildContext context, String matchId) =>
       context.read<MatchesModel>().getMatch(matchId);
 
   static isUserLoggedAndGoing(BuildContext context, String matchId) =>
+      context.watch<UserModel>().isLoggedIn() &&
       getMatch(context, matchId)
           .joining
-          .contains(context.read<UserModel>().user.uid);
+          .contains(context.watch<UserModel>().user.uid);
 
   String matchId;
 
@@ -80,7 +80,8 @@ class MatchDetails extends StatelessWidget {
                             )
                           ])),
                 ),
-                MatchInfoContainer(matchId: matchId)
+                MatchInfoContainer(matchId: matchId),
+                PlayersList(users: match.joining)
               ],
             ),
           )),
@@ -213,5 +214,58 @@ class MatchInfoMainButton extends StatelessWidget {
       onPressed: () =>
           isGoing ? _onPressedLeaveAction() : _onPressedJoinAction(),
     );
+  }
+}
+
+class PlayersList extends StatelessWidget {
+  final List<String> users;
+
+  const PlayersList({Key key, this.users}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.all(10),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          physics: BouncingScrollPhysics(),
+          child: Row(
+              children: users
+                  .map((e) => FutureBuilder(
+                      future: UserModel.getImageUrl(e),
+                      builder: (context, snapshot) => (snapshot.hasData &&
+                              e != null)
+                          ? PlayerCard(name: "Name", imageUrl: snapshot.data)
+                          : Icon(Icons.face, size: 50.0)))
+                  .toList()),
+        ),
+      ),
+    );
+  }
+}
+
+class PlayerCard extends StatelessWidget {
+  final String name;
+  final String imageUrl;
+
+  const PlayerCard({Key key, this.name, this.imageUrl}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+        decoration: infoMatchDecoration,
+        child: Padding(
+          padding: EdgeInsets.all(10),
+          child: Column(children: [
+            CircleAvatar(
+                backgroundImage: NetworkImage(imageUrl),
+                radius: 25,
+                backgroundColor: Palette.white),
+            SizedBox(height: 10),
+            Text(name)
+          ]),
+        ));
   }
 }
