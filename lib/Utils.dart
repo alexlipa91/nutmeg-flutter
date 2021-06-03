@@ -11,12 +11,13 @@ import 'models/UserModel.dart';
 class Palette {
   static var green = Colors.green.shade700;
   static var white = Colors.white;
+  static var lightGrey = Colors.grey.shade200;
 }
 
 var appTheme = new ThemeData(
   primaryColor: Colors.green.shade700,
   accentColor: Colors.white,
-  textTheme: GoogleFonts.workSansTextTheme(TextTheme(
+  textTheme: GoogleFonts.latoTextTheme(TextTheme(
       headline1: TextStyle(
           color: Colors.white, fontWeight: FontWeight.w700, fontSize: 28),
       headline2: TextStyle(
@@ -42,11 +43,6 @@ getAppBar(BuildContext context) {
           Navigator.push(
               context, MaterialPageRoute(builder: (context) => new UserPage()));
         };
-        // widget = Text(user.user.displayName[0].toUpperCase(),
-        //     style: TextStyle(
-        //         color: Colors.grey,
-        //         fontSize: 22,
-        //         fontWeight: FontWeight.w500));
         backgroundImage =
             NetworkImage(context.read<UserModel>().userDetails.image);
       } else {

@@ -24,51 +24,57 @@ class AvailableMatchesState extends State<AvailableMatches> {
         child: Container(
       decoration: new BoxDecoration(color: Colors.grey.shade400),
       child: Scaffold(
-          backgroundColor: Colors.grey.shade200,
+          backgroundColor: Palette.green,
           appBar: getAppBar(context),
-          body:
-              Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            Container(
-                decoration: BoxDecoration(
-                  color: Colors.green.shade700,
-                  borderRadius: BorderRadius.only(
-                      bottomLeft: Radius.circular(20),
-                      bottomRight: Radius.circular(20)),
-                ),
-                child: Padding(
-                  padding: EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text("Find football matches near",
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w400)),
-                      SizedBox(height: 10),
-                      Text("Amsterdam",
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 42,
-                              fontWeight: FontWeight.w800)),
-                      SizedBox(height: 10),
-                      ChangeNotifierProvider(
-                        create: (_) => new FilterButtonState(FilterOption.ALL),
-                        child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              FilterButton(
-                                  filterOption: FilterOption.ALL, isLeft: true),
-                              FilterButton(
-                                  filterOption: FilterOption.GOING,
-                                  isLeft: false),
-                            ]),
-                      )
-                    ],
-                  ),
-                )),
-            Expanded(child: RefreshIndicatorStateful()),
-          ])),
+          body: Scaffold(
+            backgroundColor: Palette.lightGrey,
+            body: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Container(
+                      decoration: BoxDecoration(
+                        color: Colors.green.shade700,
+                        borderRadius: BorderRadius.only(
+                            bottomLeft: Radius.circular(20),
+                            bottomRight: Radius.circular(20)),
+                      ),
+                      child: Padding(
+                        padding: EdgeInsets.all(20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text("Find football matches near",
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w400)),
+                            SizedBox(height: 10),
+                            Text("Amsterdam",
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 42,
+                                    fontWeight: FontWeight.w800)),
+                            SizedBox(height: 10),
+                            ChangeNotifierProvider(
+                              create: (_) =>
+                                  new FilterButtonState(FilterOption.ALL),
+                              child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    FilterButton(
+                                        filterOption: FilterOption.ALL,
+                                        isLeft: true),
+                                    FilterButton(
+                                        filterOption: FilterOption.GOING,
+                                        isLeft: false),
+                                  ]),
+                            )
+                          ],
+                        ),
+                      )),
+                  Expanded(child: RefreshIndicatorStateful()),
+                ]),
+          )),
     ));
   }
 }
@@ -144,9 +150,10 @@ class RefreshIndicatorState extends State<RefreshIndicatorStateful>
   static var dateFormat = new DateFormat("MMMM dd");
 
   _getMatchesWidget(Map<String, Match> matches) {
-    var groupedByDay = Map<String, List<String>>.fromEntries([]);
+    var groupedByDay = Map<DateTime, List<String>>.fromEntries([]);
     for (var m in matches.entries) {
-      var day = dateFormat.format(m.value.dateTime);
+      var day = DateTime(
+          m.value.dateTime.year, m.value.dateTime.month, m.value.dateTime.day);
 
       var current = [];
       if (groupedByDay.containsKey(day)) {
@@ -160,7 +167,7 @@ class RefreshIndicatorState extends State<RefreshIndicatorStateful>
     for (var day in groupedByDay.keys.toList()..sort()) {
       widgets.add(Padding(
         padding: EdgeInsets.symmetric(horizontal: 25, vertical: 10),
-        child: Text(day,
+        child: Text(dateFormat.format(day),
             style: TextStyle(
                 color: Colors.grey, fontSize: 16, fontWeight: FontWeight.w400)),
       ));
