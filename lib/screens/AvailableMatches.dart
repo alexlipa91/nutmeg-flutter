@@ -33,12 +33,7 @@ class AvailableMatchesState extends State<AvailableMatches> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Container(
-                      decoration: BoxDecoration(
-                        color: Colors.green.shade700,
-                        borderRadius: BorderRadius.only(
-                            bottomLeft: Radius.circular(20),
-                            bottomRight: Radius.circular(20)),
-                      ),
+                      decoration: topBoxDecoration,
                       child: Padding(
                         padding: EdgeInsets.all(20),
                         child: Column(
@@ -241,19 +236,7 @@ class MatchInfoGroup extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.transparent),
-        color: Colors.white,
-        borderRadius: BorderRadius.all(Radius.circular(20)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.5),
-            spreadRadius: 5,
-            blurRadius: 7,
-            offset: Offset(0, 3), // changes position of shadow
-          ),
-        ],
-      ),
+      decoration: infoMatchDecoration,
       child: Column(
         children: matches,
       ),
@@ -262,7 +245,8 @@ class MatchInfoGroup extends StatelessWidget {
 }
 
 class MatchInfo extends StatelessWidget {
-  static var formatCurrency = new NumberFormat.simpleCurrency(name: "EUR");
+  static var formatCurrency = NumberFormat.simpleCurrency(name: "EUR");
+  static var monthDayFormat = DateFormat('HH:mm');
 
   String matchId;
 
@@ -282,7 +266,7 @@ class MatchInfo extends StatelessWidget {
             children: [
               Column(
                 children: [
-                  Text(DateFormat('HH:mm').format(match.dateTime),
+                  Text(monthDayFormat.format(match.dateTime),
                       style: TextStyle(
                           color: Colors.black,
                           fontSize: 16,
@@ -329,7 +313,7 @@ class MatchInfo extends StatelessWidget {
                             "/" +
                             match.maxPlayers.toString(),
                         style: TextStyle(
-                            color: Colors.white70,
+                            color: Colors.grey.shade50,
                             fontSize: 12,
                             fontWeight: FontWeight.w400))),
               )
