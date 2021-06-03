@@ -237,7 +237,9 @@ class PlayersList extends StatelessWidget {
                       future: UserModel.getImageUrl(e),
                       builder: (context, snapshot) => (snapshot.hasData &&
                               e != null)
-                          ? PlayerCard(name: "Name", imageUrl: snapshot.data)
+                          ? PlayerCard(
+                              name: context.read<UserModel>().userDetails.name,
+                              imageUrl: snapshot.data)
                           : Icon(Icons.face, size: 50.0)))
                   .toList()),
         ),
@@ -264,7 +266,7 @@ class PlayerCard extends StatelessWidget {
                 radius: 25,
                 backgroundColor: Palette.white),
             SizedBox(height: 10),
-            Text(name)
+            if(name != null) Text(name)
           ]),
         ));
   }

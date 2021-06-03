@@ -121,12 +121,14 @@ class SportCenter {
 class UserDetails {
   bool isAdmin;
   String image;
+  String name;
 
-  UserDetails(this.isAdmin, this.image);
+  UserDetails(this.isAdmin, this.image, this.name);
 
   UserDetails.fromJson(Map<String, dynamic> json)
       : isAdmin = json["isAdmin"] ?? false,
-        image = json["image"];
+        image = json["image"],
+        name = json["name"];
 
-  Map<String, dynamic> toJson() => {'isAdmin': isAdmin, 'image': image};
+  Map<String, dynamic> toJson() => {'isAdmin': isAdmin, 'image': image, 'name': name};
 }
