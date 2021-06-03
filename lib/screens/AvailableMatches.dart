@@ -19,6 +19,7 @@ class AvailableMatchesState extends State<AvailableMatches> {
   @override
   Widget build(BuildContext context) {
     print("Building " + this.runtimeType.toString());
+    print(context.read<FilterButtonState>().selectedOption);
 
     return SafeArea(
         child: Container(
@@ -55,24 +56,21 @@ class AvailableMatchesState extends State<AvailableMatches> {
                                     fontSize: 42,
                                     fontWeight: FontWeight.w800)),
                             SizedBox(height: 10),
-                            ChangeNotifierProvider(
-                              create: (_) =>
-                                  new FilterButtonState(FilterOption.ALL),
-                              child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    FilterButton(
-                                        filterOption: FilterOption.ALL,
-                                        isLeft: true),
-                                    FilterButton(
-                                        filterOption: FilterOption.GOING,
-                                        isLeft: false),
-                                  ]),
-                            )
+                            Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  FilterButton(
+                                      filterOption: FilterOption.ALL,
+                                      isLeft: true),
+                                  FilterButton(
+                                      filterOption: FilterOption.GOING,
+                                      isLeft: false),
+                                ])
                           ],
                         ),
                       )),
-                  Expanded(child: RefreshIndicatorStateful()),
+                  Expanded(
+                      child: RefreshIndicatorStateful()),
                 ]),
           )),
     ));
@@ -126,6 +124,7 @@ class FilterButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // fixme make the size fixed and not depending on text of the button otherwise GOING is bigger
     return TextButton(
         onPressed: () =>
             context.read<FilterButtonState>().changeTo(filterOption),
@@ -207,13 +206,29 @@ class RefreshIndicatorState extends State<RefreshIndicatorStateful>
 
   @override
   Widget build(BuildContext context) {
-    return RefreshIndicator(
-        onRefresh: () async => await refresh(),
-        child: ListView(
-            shrinkWrap: true,
-            padding: const EdgeInsets.all(8),
-            children:
-                _getMatchesWidget(context.watch<MatchesModel>().getMatches())));
+    print("Building " + this.runtimeType.toString());
+
+    var filterOption = context.watch<FilterButtonState>().selectedOption;
+
+    var mainWidget = (filterOption == FilterOption.GOING &&
+            !context.read<UserModel>().isLoggedIn())
+        ? Center(
+          child: Text("Login to join matches", style: TextStyle(
+              color: Colors.grey, fontSize: 24, fontWeight: FontWeight.w400)),
+        )
+        : RefreshIndicator(
+            onRefresh: () async => await refresh(),
+            child: ListView(
+                shrinkWrap: true,
+                padding: const EdgeInsets.all(8),
+                children: _getMatchesWidget((filterOption == FilterOption.GOING)
+                    ? context
+                        .watch<MatchesModel>()
+                        .getMatchesByUser(context.read<UserModel>().user)
+                    : context.watch<MatchesModel>().getMatches())));
+
+    // todo animate it
+    return mainWidget;
   }
 }
 
@@ -317,7 +332,7 @@ class MatchInfo extends StatelessWidget {
                             color: Colors.white70,
                             fontSize: 12,
                             fontWeight: FontWeight.w400))),
-              ),
+              )
             ],
           ),
         ),

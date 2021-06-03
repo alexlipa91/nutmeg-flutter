@@ -13,6 +13,9 @@ class MatchesModel extends ChangeNotifier {
 
   Map<String, Match> getMatches() => matches;
 
+  Map<String, Match> getMatchesByUser(User user) => 
+      Map.fromEntries(matches.entries.where((e) => e.value.joining.contains(user.uid)));
+
   Match getMatch(String id) => matches[id];
 
   joinMatch(User user, String matchId) async {
