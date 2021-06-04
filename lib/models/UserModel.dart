@@ -4,10 +4,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'Model.dart';
 
-
 class UserModel extends ChangeNotifier {
-
-  static CollectionReference users = FirebaseFirestore.instance.collection('users');
+  static CollectionReference users =
+      FirebaseFirestore.instance.collection('users');
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   static Future<String> getImageUrl(String uid) async {
@@ -26,9 +25,9 @@ class UserModel extends ChangeNotifier {
     return _auth
         .signInWithEmailAndPassword(email: email, password: password)
         .then((value) {
-          user = value.user;
-          notifyListeners();
-        });
+      user = value.user;
+      notifyListeners();
+    });
   }
 
   Future<String> loginWithGoogle() async {

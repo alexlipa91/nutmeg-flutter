@@ -23,6 +23,8 @@ class Match {
   static var uiDateFormat = new DateFormat("yyyy-MM-dd");
   static var uiHourFormat = new DateFormat("HH:mm");
 
+  String id;
+
   DateTime dateTime;
   SportCenter sportCenter;
   Sport sport;
@@ -34,8 +36,9 @@ class Match {
   Match(this.dateTime, this.sportCenter, this.sport, this.maxPlayers,
       this.joining, this.pricePerPerson, this.status);
 
-  Match.fromJson(Map<String, dynamic> json)
-      : dateTime = serializationDateFormat.parse(json['dateTime']),
+  Match.fromJson(String id, Map<String, dynamic> json)
+      : this.id = id,
+        dateTime = serializationDateFormat.parse(json['dateTime']),
         sportCenter = SportCenter.fromJson(json['sportCenter']),
         sport = Sport.values[json['sport']],
         pricePerPerson = json['pricePerPerson'],
@@ -130,5 +133,23 @@ class UserDetails {
         image = json["image"],
         name = json["name"];
 
-  Map<String, dynamic> toJson() => {'isAdmin': isAdmin, 'image': image, 'name': name};
+  Map<String, dynamic> toJson() =>
+      {'isAdmin': isAdmin, 'image': image, 'name': name};
+}
+
+class Subscription {
+  String id;
+
+  String matchId;
+  String userId;
+  Sport paymentId;
+
+  Subscription.fromJson(String id, Map<String, dynamic> json)
+      : this.id = id,
+        matchId = json['matchId'],
+        userId = json['userId'],
+        paymentId = json['paymentId'];
+
+  Map<String, dynamic> toJson() =>
+      {'matchId': matchId, 'userId': userId, 'paymentId': paymentId};
 }
