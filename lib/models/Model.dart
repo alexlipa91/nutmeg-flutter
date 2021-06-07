@@ -1,5 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import '../Utils.dart';
+import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 
 enum MatchStatus { open, played, canceled }
 
@@ -121,14 +123,21 @@ class SportCenter {
   int get hashCode => super.hashCode;
 }
 
-class UserDetails {
+class User {
+  String id;
+
   bool isAdmin;
   String image;
   String name;
 
-  UserDetails(this.isAdmin, this.image, this.name);
+  User(firebase_auth.User firebaseUser, this.isAdmin) {
+    this.id = firebaseUser.uid;
+    this.isAdmin = isAdmin;
+    this.image = firebaseUser.photoURL;
+    this.name = firebaseUser.displayName;
+  }
 
-  UserDetails.fromJson(Map<String, dynamic> json)
+  User.fromJson(String id, Map<String, dynamic> json)
       : isAdmin = json["isAdmin"] ?? false,
         image = json["image"],
         name = json["name"];
@@ -142,7 +151,9 @@ class Subscription {
 
   String matchId;
   String userId;
-  Sport paymentId;
+  String paymentId;
+
+  Subscription(this.matchId, this.userId, this.paymentId);
 
   Subscription.fromJson(String id, Map<String, dynamic> json)
       : this.id = id,

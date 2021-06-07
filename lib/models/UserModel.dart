@@ -1,38 +1,29 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:flutter/cupertino.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'Model.dart';
 
 class UserModel extends ChangeNotifier {
-  static CollectionReference users =
+
+  final CollectionReference users =
       FirebaseFirestore.instance.collection('users');
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final firebase_auth.FirebaseAuth _auth = firebase_auth.FirebaseAuth.instance;
 
-  static Future<String> getImageUrl(String uid) async {
-    return await users.doc(uid).get().then((value) {
-      Map<String, dynamic> data = value.data();
-      return data['image'].toString();
-    });
-  }
+  User _user;
 
-  User user;
-  UserDetails userDetails;
+  User getUser() => _user;
 
-  UserModel();
+  // Future<void> loginWithEmail(String email, String password) async {
+  //   return _auth
+  //       .signInWithEmailAndPassword(email: email, password: password)
+  //       .then((value) {
+  //     user = value.user;
+  //     notifyListeners();
+  //   });
+  // }
 
-  Future<void> login(String email, String password) async {
-    return _auth
-        .signInWithEmailAndPassword(email: email, password: password)
-        .then((value) {
-      user = value.user;
-      notifyListeners();
-    });
-  }
-
-  Future<String> loginWithGoogle() async {
-    FirebaseAuth auth = FirebaseAuth.instance;
-
+  Future<void> loginWithGoogle() async {
     final GoogleSignIn googleSignIn = GoogleSignIn();
     googleSignIn.disconnect();
     final GoogleSignInAccount googleSignInAccount = await googleSignIn.signIn();
@@ -41,45 +32,43 @@ class UserModel extends ChangeNotifier {
       final GoogleSignInAuthentication googleSignInAuthentication =
           await googleSignInAccount.authentication;
 
-      final AuthCredential credential = GoogleAuthProvider.credential(
+      final firebase_auth.AuthCredential credential = firebase_auth.GoogleAuthProvider.credential(
         accessToken: googleSignInAuthentication.accessToken,
         idToken: googleSignInAuthentication.idToken,
       );
 
-      final UserCredential userCredential =
-          await auth.signInWithCredential(credential);
+      final firebase_auth.UserCredential userCredential =
+          await _auth.signInWithCredential(credential);
 
-      user = userCredential.user;
+      firebase_auth.User firebaseUser = userCredential.user;
 
       // check if first time
-      await users.doc(user.uid).get().then((doc) {
+      await users.doc(firebaseUser.uid).get().then((doc) {
         if (!doc.exists) {
-          userDetails = new UserDetails(false, user.photoURL, user.displayName);
+          _user = new User(firebaseUser, false);
         } else {
-          userDetails = UserDetails.fromJson(doc.data());
+          _user = User.fromJson(firebaseUser.uid, doc.data());
         }
         return !doc.exists;
       }).then((shouldInsert) {
         if (shouldInsert) {
-          users.doc(user.uid).set(userDetails.toJson());
+          users.doc(_user.id).set(_user.toJson());
         }
       });
 
       notifyListeners();
-      return user.uid;
     }
   }
 
-  bool isLoggedIn() {
-    return user != null;
-  }
+  bool isLoggedIn() => _user != null;
 
   Future<void> logout() async {
-    print("logout");
     var gs = GoogleSignIn();
     gs.disconnect();
     _auth.signOut();
-    user = null;
+    _user = null;
     notifyListeners();
   }
+
+  String getUserId() => (_user == null) ? null : _user.id;
 }

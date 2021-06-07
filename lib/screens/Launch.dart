@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:nutmeg/models/MatchesModel.dart';
+import 'package:nutmeg/models/SubscriptionsModel.dart';
 import 'package:nutmeg/models/UserModel.dart';
 import 'package:nutmeg/Utils.dart';
 import 'package:nutmeg/screens/AvailableMatches.dart';
@@ -10,7 +11,8 @@ void main() {
   runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider(create: (context) => UserModel()),
-      ChangeNotifierProvider(create: (context) => MatchesModel(Map()))
+      ChangeNotifierProvider(create: (context) => SubscriptionsBloc()),
+      ChangeNotifierProvider(create: (context) => MatchesModel()),
     ],
     child: new MaterialApp(
       debugShowCheckedModeBanner: false,
@@ -25,7 +27,8 @@ void main() {
 Future<void> callAsyncFetch(BuildContext context) {
   return Future.delayed(Duration(seconds: 1), () async {
     await Firebase.initializeApp();
-    await context.read<MatchesModel>().pull();
+    await context.read<MatchesModel>().update();
+    await context.read<SubscriptionsBloc>().update();
   });
 }
 

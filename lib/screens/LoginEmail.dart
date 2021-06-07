@@ -33,22 +33,22 @@ class LoginEmail extends StatelessWidget {
     final ThemeData themeData = Theme.of(context);
 
     void onLoginPress() async {
-      if (_formKey.currentState.validate()) {
-        try {
-          await context
-              .read<UserModel>()
-              .login(emailController.text, passwordController.text);
-
-          int count = 0;
-          Navigator.of(context).popUntil((_) => count++ >= 2);
-        } on FirebaseAuthException catch (e) {
-          showDialog(
-              context: context,
-              builder: (context) {
-                return AlertDialog(content: Text(e.message));
-              });
-        }
-      }
+      // if (_formKey.currentState.validate()) {
+      //   try {
+      //     await context
+      //         .read<UserModel>()
+      //         .loginWithEmail(emailController.text, passwordController.text);
+      //
+      //     int count = 0;
+      //     Navigator.of(context).popUntil((_) => count++ >= 2);
+      //   } on FirebaseAuthException catch (e) {
+      //     showDialog(
+      //         context: context,
+      //         builder: (context) {
+      //           return AlertDialog(content: Text(e.message));
+      //         });
+      //   }
+      // }
     }
 
     return SafeArea(

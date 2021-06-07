@@ -5,10 +5,13 @@ import 'package:cool_alert/cool_alert.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:nutmeg/ButtonWidgets.dart';
-import 'package:nutmeg/models/MatchesModel.dart';
+import 'package:nutmeg/models/SubscriptionsBloc.dart';
+import 'package:nutmeg/models/SubscriptionsModel.dart';
 import 'package:nutmeg/models/UserModel.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:nutmeg/models/Model.dart';
+
 
 void main() async {
   runApp(new MaterialApp(home: MyApp()));
@@ -38,7 +41,7 @@ class PaymentPage extends StatefulWidget {
   const PaymentPage({Key key, this.matchId}) : super(key: key);
 
   @override
-  State<StatefulWidget> createState() => _PaymentPageState(matchId);
+  State<StatefulWidget> createState() => _PaymentPageState(match);
 }
 
 class _PaymentPageState extends State<PaymentPage> {
@@ -51,6 +54,8 @@ class _PaymentPageState extends State<PaymentPage> {
 
   @override
   Widget build(BuildContext context) {
+    var match =
+
     return Scaffold(
       body: Builder(
         builder: (context) => Center(
@@ -64,9 +69,8 @@ class _PaymentPageState extends State<PaymentPage> {
                           builder: (_) => CheckoutPage(sessionId: sessionId)))
                       .then((value) {
                     if (value == "success") {
-                      context
-                          .read<MatchesModel>()
-                          .joinMatch(context.read<UserModel>().user, matchId);
+                      context.read<SubscriptionsBloc>()
+                          .addSubscription(context.read<UserModel>().getUser(), match.id);
                     }
                     return value;
                   }).then((value) => CoolAlert.show(

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/models/Model.dart';
 import 'package:intl/intl.dart';
 import 'package:nutmeg/models/MatchesModel.dart';
+import 'package:nutmeg/models/SubscriptionsModel.dart';
 import 'package:nutmeg/models/UserModel.dart';
 import 'package:nutmeg/screens/MatchDetails.dart';
 import 'package:provider/provider.dart';
@@ -143,18 +145,18 @@ class RefreshIndicatorState extends State<RefreshIndicatorStateful>
     with WidgetsBindingObserver {
   static var dateFormat = new DateFormat("MMMM dd");
 
-  _getMatchesWidget(Map<String, Match> matches) {
-    var groupedByDay = Map<DateTime, List<String>>.fromEntries([]);
-    for (var m in matches.entries) {
+  _getMatchesWidget(Iterable<Match> matches) {
+    var groupedByDay = Map<DateTime, List<Match>>.fromEntries([]);
+    for (var m in matches) {
       var day = DateTime(
-          m.value.dateTime.year, m.value.dateTime.month, m.value.dateTime.day);
+          m.dateTime.year, m.dateTime.month, m.dateTime.day);
 
       var current = [];
       if (groupedByDay.containsKey(day)) {
         current = groupedByDay[day];
       }
-      current.add(m.key);
-      groupedByDay[day] = List<String>.from(current);
+      current.add(m);
+      groupedByDay[day] = List<Match>.from(current);
     }
 
     var widgets = [];
@@ -193,7 +195,7 @@ class RefreshIndicatorState extends State<RefreshIndicatorStateful>
 
   Future<void> refresh() async {
     try {
-      await context.read<MatchesModel>().pull();
+      await context.read<MatchesModel>().update();
     } on Exception catch (err) {
       print("Caught in refresh " + err.toString());
     }
@@ -204,6 +206,10 @@ class RefreshIndicatorState extends State<RefreshIndicatorStateful>
     print("Building " + this.runtimeType.toString());
 
     var filterOption = context.watch<FilterButtonState>().selectedOption;
+
+    var matches = context.watch<MatchesModel>().getMatches();
+    var user = context.watch<UserModel>().getUser();
+    var subs = context.watch<SubscriptionsBloc>().getSubscriptions();
 
     var mainWidget = (filterOption == FilterOption.GOING &&
             !context.read<UserModel>().isLoggedIn())
@@ -217,10 +223,8 @@ class RefreshIndicatorState extends State<RefreshIndicatorStateful>
                 shrinkWrap: true,
                 padding: const EdgeInsets.all(8),
                 children: _getMatchesWidget((filterOption == FilterOption.GOING)
-                    ? context
-                        .watch<MatchesModel>()
-                        .getMatchesByUser(context.read<UserModel>().user)
-                    : context.watch<MatchesModel>().getMatches())));
+                    ? MatchesController.getUserMatches(matches, subs, user)
+                    : matches)));
 
     // todo animate it
     return mainWidget;
@@ -248,14 +252,12 @@ class MatchInfo extends StatelessWidget {
   static var formatCurrency = NumberFormat.simpleCurrency(name: "EUR");
   static var monthDayFormat = DateFormat('HH:mm');
 
-  String matchId;
+  Match match;
 
-  MatchInfo(this.matchId);
+  MatchInfo(this.match);
 
   @override
   Widget build(BuildContext context) {
-    Match match = context.watch<MatchesModel>().getMatch(matchId);
-
     return InkWell(
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: 20),
@@ -323,7 +325,7 @@ class MatchInfo extends StatelessWidget {
       ),
       onTap: () {
         Navigator.push(context,
-            MaterialPageRoute(builder: (context) => MatchDetails(matchId)));
+            MaterialPageRoute(builder: (context) => MatchDetails(match.id)));
       },
       splashColor: Colors.white,
     );

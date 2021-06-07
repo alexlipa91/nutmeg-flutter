@@ -66,7 +66,7 @@ getAppBar(BuildContext context) {
         backgroundImage =
             NetworkImage(context
                 .read<UserModel>()
-                .userDetails
+                .user
                 .image);
       } else {
         function = () =>

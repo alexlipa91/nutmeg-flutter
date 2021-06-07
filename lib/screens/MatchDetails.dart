@@ -1,23 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/models/MatchesModel.dart';
 import 'package:nutmeg/models/Model.dart';
+import 'package:nutmeg/models/SubscriptionsModel.dart';
 import 'package:nutmeg/models/UserModel.dart';
 import 'package:nutmeg/screens/PaymentTest.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 
+import '../UsersUtils.dart';
 import '../Utils.dart';
 import 'Login.dart';
 
-class MatchDetails extends StatelessWidget {
-  static getMatch(BuildContext context, String matchId) =>
-      context.read<MatchesModel>().getMatch(matchId);
 
-  static isUserLoggedAndGoing(BuildContext context, String matchId) =>
-      context.watch<UserModel>().isLoggedIn() &&
-      getMatch(context, matchId)
-          .joining
-          .contains(context.watch<UserModel>().user.uid);
+class MatchDetails extends StatelessWidget {
 
   String matchId;
 
@@ -27,7 +23,9 @@ class MatchDetails extends StatelessWidget {
   Widget build(BuildContext context) {
     print("Building " + this.runtimeType.toString());
 
-    Match match = getMatch(context, matchId);
+    var match = context.watch<MatchesModel>().getMatch(matchId);
+    var user = context.watch<UserModel>().getUser();
+    var subs = context.watch<SubscriptionsBloc>().getSubscriptions();
 
     return SafeArea(
       child: Scaffold(
@@ -73,14 +71,14 @@ class MatchDetails extends StatelessWidget {
                                                 color: Colors.grey.shade50,
                                                 fontSize: 12,
                                                 fontWeight: FontWeight.w400)))),
-                                if (isUserLoggedAndGoing(context, matchId))
+                                if (MatchesController.isUserInMatch(match, subs, user))
                                   Icon(Icons.check_circle,
                                       color: Colors.white, size: 40),
                               ],
                             )
                           ])),
                 ),
-                MatchInfoContainer(matchId: matchId),
+                MatchInfoContainer(match: match),
                 PlayersList(users: match.joining)
               ],
             ),
@@ -93,14 +91,12 @@ class MatchInfoContainer extends StatelessWidget {
   static var formatCurrency = NumberFormat.simpleCurrency(name: "EUR");
   static var dateFormat = DateFormat('MMMM dd \'at\' HH:mm');
 
-  final String matchId;
+  final Match match;
 
-  const MatchInfoContainer({Key key, this.matchId}) : super(key: key);
+  const MatchInfoContainer({Key key, this.match}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    Match match = MatchDetails.getMatch(context, matchId);
-
     return Container(
         margin: EdgeInsets.all(20),
         decoration: infoMatchDecoration,
@@ -125,7 +121,7 @@ class MatchInfoContainer extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                  child: MatchInfoMainButton(matchId: matchId),
+                  child: MatchInfoMainButton(match: match),
                 )
               ],
             )
@@ -171,20 +167,20 @@ class InfoWidget extends StatelessWidget {
 }
 
 class MatchInfoMainButton extends StatelessWidget {
-  final String matchId;
+  final Match match;
+  final bool isGoing;
 
-  const MatchInfoMainButton({Key key, this.matchId}) : super(key: key);
+  const MatchInfoMainButton({Key key, this.match, this.isGoing}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    var isGoing = MatchDetails.isUserLoggedAndGoing(context, matchId);
 
     _onPressedJoinAction() {
       if (context.read<UserModel>().isLoggedIn()) {
         Navigator.push(
             context,
             MaterialPageRoute(
-                builder: (context) => PaymentPage(matchId: matchId)));
+                builder: (context) => PaymentPage(match: match)));
       } else {
         Navigator.pushReplacement(
             context, MaterialPageRoute(builder: (context) => Login()));
@@ -233,13 +229,13 @@ class PlayersList extends StatelessWidget {
           physics: BouncingScrollPhysics(),
           child: Row(
               children: users
-                  .map((e) => FutureBuilder(
-                      future: UserModel.getImageUrl(e),
+                  .map((e) => FutureBuilder<User>(
+                      future: UsersUtils.getUser(e),
                       builder: (context, snapshot) => (snapshot.hasData &&
                               e != null)
                           ? PlayerCard(
-                              name: context.read<UserModel>().userDetails.name,
-                              imageUrl: snapshot.data)
+                              name: snapshot.data.name,
+                              imageUrl: snapshot.data.image)
                           : Icon(Icons.face, size: 50.0)))
                   .toList()),
         ),
