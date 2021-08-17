@@ -16,13 +16,12 @@ void main() {
 }
 
 class _RegisterEmailSection extends StatefulWidget {
-
   final String title = 'Registration';
 
   @override
-  State<StatefulWidget> createState() =>
-      _RegisterEmailSectionState();
+  State<StatefulWidget> createState() => _RegisterEmailSectionState();
 }
+
 class _RegisterEmailSectionState extends State<_RegisterEmailSection> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
@@ -54,8 +53,7 @@ class _RegisterEmailSectionState extends State<_RegisterEmailSection> {
             ),
             TextFormField(
               controller: _passwordController,
-              decoration: const InputDecoration(labelText:
-              'Password'),
+              decoration: const InputDecoration(labelText: 'Password'),
               validator: (String value) {
                 if (value.isEmpty) {
                   return 'Please enter some text';
@@ -80,8 +78,8 @@ class _RegisterEmailSectionState extends State<_RegisterEmailSection> {
               child: Text(_success == null
                   ? ''
                   : (_success
-                  ? 'Successfully registered ' + _userEmail
-                  : 'Registration failed')),
+                      ? 'Successfully registered ' + _userEmail
+                      : 'Registration failed')),
             )
           ],
         ),
@@ -97,12 +95,11 @@ class _RegisterEmailSectionState extends State<_RegisterEmailSection> {
   }
 
   void _register() async {
-    final User user = (await
-    _auth.createUserWithEmailAndPassword(
+    final User user = (await _auth.createUserWithEmailAndPassword(
       email: _emailController.text,
       password: _passwordController.text,
-    )
-    ).user;
+    ))
+        .user;
     if (user != null) {
       setState(() {
         _success = true;

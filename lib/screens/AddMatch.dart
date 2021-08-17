@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:nutmeg/models/Model.dart';
 
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
@@ -65,7 +64,8 @@ class AddMatchState extends State<AddMatch> {
                       .map<DropdownMenuItem<SportCenter>>((SportCenter value) {
                     return DropdownMenuItem<SportCenter>(
                         value: value,
-                        child: Text(value.getName() == null ? "null" : value.getName(),
+                        child: Text(
+                            value.getName() == null ? "null" : value.getName(),
                             style: TextStyle(color: Colors.black)));
                   }).toList(),
                   onChanged: (SportCenter value) {

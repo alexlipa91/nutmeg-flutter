@@ -77,8 +77,7 @@ class _PaymentPageState extends State<PaymentPage> {
                           text: (value == "success")
                               ? "Your transaction was successful!"
                               : "Something went wrong!"));
-                })
-            ),
+                })),
       ),
     );
   }

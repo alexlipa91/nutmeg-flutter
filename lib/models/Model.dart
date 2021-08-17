@@ -133,5 +133,6 @@ class UserDetails {
         image = json["image"],
         name = json["name"];
 
-  Map<String, dynamic> toJson() => {'isAdmin': isAdmin, 'image': image, 'name': name};
+  Map<String, dynamic> toJson() =>
+      {'isAdmin': isAdmin, 'image': image, 'name': name};
 }

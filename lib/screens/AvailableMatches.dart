@@ -64,8 +64,7 @@ class AvailableMatchesState extends State<AvailableMatches> {
                           ],
                         ),
                       )),
-                  Expanded(
-                      child: RefreshIndicatorStateful()),
+                  Expanded(child: RefreshIndicatorStateful()),
                 ]),
           )),
     ));
@@ -208,9 +207,12 @@ class RefreshIndicatorState extends State<RefreshIndicatorStateful>
     var mainWidget = (filterOption == FilterOption.GOING &&
             !context.read<UserModel>().isLoggedIn())
         ? Center(
-          child: Text("Login to join matches", style: TextStyle(
-              color: Colors.grey, fontSize: 24, fontWeight: FontWeight.w400)),
-        )
+            child: Text("Login to join matches",
+                style: TextStyle(
+                    color: Colors.grey,
+                    fontSize: 24,
+                    fontWeight: FontWeight.w400)),
+          )
         : RefreshIndicator(
             onRefresh: () async => await refresh(),
             child: ListView(

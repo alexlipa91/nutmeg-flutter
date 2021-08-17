@@ -266,7 +266,7 @@ class PlayerCard extends StatelessWidget {
                 radius: 25,
                 backgroundColor: Palette.white),
             SizedBox(height: 10),
-            if(name != null) Text(name)
+            if (name != null) Text(name)
           ]),
         ));
   }

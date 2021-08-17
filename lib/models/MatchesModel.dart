@@ -5,11 +5,11 @@ import 'package:nutmeg/models/Model.dart';
 
 // todo try to have one change notifier per match rather than one per all the matches
 class MatchesModel extends ChangeNotifier {
-
-  var _ref = FirebaseFirestore.instance.collection('matches').withConverter<Match>(
-    fromFirestore: (snapshot, _) => Match.fromJson(snapshot.data()),
-    toFirestore: (match, _) => match.toJson(),
-  );
+  var _ref =
+      FirebaseFirestore.instance.collection('matches').withConverter<Match>(
+            fromFirestore: (snapshot, _) => Match.fromJson(snapshot.data()),
+            toFirestore: (match, _) => match.toJson(),
+          );
 
   Map<String, Match> matches;
 
@@ -17,8 +17,8 @@ class MatchesModel extends ChangeNotifier {
 
   Map<String, Match> getMatches() => matches;
 
-  Map<String, Match> getMatchesByUser(User user) => 
-      Map.fromEntries(matches.entries.where((e) => e.value.joining.contains(user.uid)));
+  Map<String, Match> getMatchesByUser(User user) => Map.fromEntries(
+      matches.entries.where((e) => e.value.joining.contains(user.uid)));
 
   Match getMatch(String id) => matches[id];
 
@@ -34,7 +34,8 @@ class MatchesModel extends ChangeNotifier {
     DocumentReference<Match> documentReference = _ref.doc(matchId);
 
     await FirebaseFirestore.instance.runTransaction((transaction) async {
-      DocumentSnapshot<Match> snapshot = await transaction.get(documentReference);
+      DocumentSnapshot<Match> snapshot =
+          await transaction.get(documentReference);
 
       if (!snapshot.exists) {
         throw Exception("Match does not exist!");

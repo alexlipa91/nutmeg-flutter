@@ -1,15 +1,16 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 
-
 class ButtonWithLoaderAndPop extends StatefulWidget {
   final String text;
   final Function onPressedFunction;
 
-  const ButtonWithLoaderAndPop({Key key, this.onPressedFunction, this.text}) : super(key: key);
+  const ButtonWithLoaderAndPop({Key key, this.onPressedFunction, this.text})
+      : super(key: key);
 
   @override
-  State<StatefulWidget> createState() => _ButtonWithLoaderAndPopState(onPressedFunction, text);
+  State<StatefulWidget> createState() =>
+      _ButtonWithLoaderAndPopState(onPressedFunction, text);
 }
 
 class _ButtonWithLoaderAndPopState extends State<ButtonWithLoaderAndPop> {
@@ -46,8 +47,10 @@ class _ButtonWithLoaderAndPopState extends State<ButtonWithLoaderAndPop> {
                 },
                 child: _isExecuting
                     ? CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white))
-                    : Text(text,),
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white))
+                    : Text(
+                        text,
+                      ),
                 style: ButtonStyle(
                     side: MaterialStateProperty.all(
                         BorderSide(width: 2, color: Colors.grey)),
@@ -55,8 +58,8 @@ class _ButtonWithLoaderAndPopState extends State<ButtonWithLoaderAndPop> {
                     backgroundColor: MaterialStateProperty.all(Colors.grey),
                     shape: MaterialStateProperty.all<RoundedRectangleBorder>(
                         RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20.0),
-                        )),
+                      borderRadius: BorderRadius.circular(20.0),
+                    )),
                     padding: MaterialStateProperty.all(
                         EdgeInsets.symmetric(vertical: 10, horizontal: 50)),
                     textStyle: MaterialStateProperty.all(
