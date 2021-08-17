@@ -28,6 +28,7 @@ class Match {
   Sport sport;
   double pricePerPerson;
   List<String> joining;
+  List<String> left;
   int maxPlayers;
   MatchStatus status;
 
@@ -41,7 +42,8 @@ class Match {
         pricePerPerson = json['pricePerPerson'],
         joining = List<String>.from(json['joining']),
         maxPlayers = json['maxPlayers'],
-        status = MatchStatus.values[json['status']];
+        status = MatchStatus.values[json['status']],
+        left = json.containsKey("left") ? json["left"] : List<String>.empty();
 
   Map<String, dynamic> toJson() => {
         'dateTime': serializationDateFormat.format(dateTime),
@@ -50,7 +52,8 @@ class Match {
         'pricePerPerson': pricePerPerson,
         'joining': joining,
         'maxPlayers': maxPlayers,
-        'status': status.index
+        'status': status.index,
+        'left': left
       };
 
   String getFormattedDate() {

@@ -5,7 +5,11 @@ import 'package:nutmeg/models/Model.dart';
 
 // todo try to have one change notifier per match rather than one per all the matches
 class MatchesModel extends ChangeNotifier {
-  var ref = FirebaseFirestore.instance.collection('matches');
+
+  var _ref = FirebaseFirestore.instance.collection('matches').withConverter<Match>(
+    fromFirestore: (snapshot, _) => Match.fromJson(snapshot.data()),
+    toFirestore: (match, _) => match.toJson(),
+  );
 
   Map<String, Match> matches;
 
@@ -27,21 +31,18 @@ class MatchesModel extends ChangeNotifier {
   }
 
   _alterMatchList(User user, String matchId, String op) async {
-    print("adding user " + user.uid + " to match " + matchId);
-    DocumentReference documentReference = ref.doc(matchId);
+    DocumentReference<Match> documentReference = _ref.doc(matchId);
 
     await FirebaseFirestore.instance.runTransaction((transaction) async {
-      DocumentSnapshot snapshot = await transaction.get(documentReference);
+      DocumentSnapshot<Match> snapshot = await transaction.get(documentReference);
 
       if (!snapshot.exists) {
         throw Exception("Match does not exist!");
       }
 
-      Map<String, dynamic> data = snapshot.data();
-      List<String> joiningList = List<String>.from(data['joining']);
-      List<String> removedList = data.containsKey('left')
-          ? List<String>.from(data['left'])
-          : List<String>.empty();
+      Match data = snapshot.data();
+      List<String> joiningList = data.joining;
+      List<String> removedList = data.left;
 
       if (op == "add") {
         joiningList.add(user.uid);
@@ -65,9 +66,8 @@ class MatchesModel extends ChangeNotifier {
   }
 
   Future<Map<String, Match>> _fetchMatches() async {
-    var q = await ref.get();
-    var entries =
-        q.docs.map((doc) => MapEntry(doc.id, Match.fromJson(doc.data())));
+    var q = await _ref.get();
+    var entries = q.docs.map((doc) => MapEntry(doc.id, doc.data()));
     return Map<String, Match>.fromEntries(entries);
   }
 }
