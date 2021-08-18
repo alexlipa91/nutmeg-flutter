@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
-import 'package:nutmeg/models/UserFirestore.dart';
+import 'package:nutmeg/screens/Launch.dart';
 import 'package:provider/provider.dart';
 
 
@@ -36,9 +36,8 @@ class _GoogleSignInButtonState extends State<GoogleSignInButton> {
             _isSigningIn = true;
           });
 
-          String userId;
           try {
-            userId = await context.read<UserModel>().loginWithGoogle();
+            await context.read<UserChangeNotifier>().loginWithGoogle();
           } on FirebaseAuthException catch (e) {
             showDialog(
                 context: context,
@@ -57,10 +56,8 @@ class _GoogleSignInButtonState extends State<GoogleSignInButton> {
             _isSigningIn = false;
           });
 
-          if (userId != null) {
-            print("user is " + userId);
-            Navigator.pop(context, true);
-          }
+          print("user is " + context.read<UserChangeNotifier>().userDetails.getUid());
+          Navigator.pop(context, true);
         },
         child: Padding(
           padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),

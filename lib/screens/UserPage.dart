@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:nutmeg/screens/Launch.dart';
 import 'package:nutmeg/utils/ButtonWidgets.dart';
-import 'package:nutmeg/models/UserFirestore.dart';
 import 'package:nutmeg/screens/AddMatch.dart';
 import 'package:nutmeg/screens/Login.dart';
 import 'package:provider/provider.dart';
@@ -53,7 +53,7 @@ class UserImage extends StatelessWidget {
             radius: 40,
             child: FittedBox(
                 child: Text(
-                    context.read<UserModel>().user.email[0].toUpperCase(),
+                    context.read<UserChangeNotifier>().userDetails.firebaseUser.email[0].toUpperCase(),
                     style: TextStyle(color: Colors.white, fontSize: 45)))));
   }
 }
@@ -106,9 +106,9 @@ class MatchList extends StatelessWidget {
 
     children.add(ButtonWithLoaderAndPop(
         text: "Logout",
-        onPressedFunction: () => context.read<UserModel>().logout()));
+        onPressedFunction: () => context.read<UserChangeNotifier>().logout()));
 
-    if (context.read<UserModel>().userDetails.isAdmin) {
+    if (context.read<UserChangeNotifier>().userDetails.isAdmin) {
       children.add(LoginOptionButton(
           text: "Add match",
           onTap: () {

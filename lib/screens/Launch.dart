@@ -7,11 +7,62 @@ import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/screens/AvailableMatches.dart';
 import 'package:provider/provider.dart';
 
+class MatchesChangeNotifier extends ChangeNotifier {
+
+  List<Match> matches;
+
+  refresh() async {
+    matches = await MatchesFirestore.fetchMatches();
+    print("notifying");
+    notifyListeners();
+  }
+
+  joinMatch(Match m, UserDetails u) async {
+    await MatchesFirestore.joinMatch(u, m);
+    await refresh();
+  }
+}
+
+class SingleMatchChangeNotifier extends ChangeNotifier {
+
+  Match match;
+
+  refresh() async {
+    match = await MatchesFirestore.fetchMatch(match);
+    notifyListeners();
+  }
+
+  joinMatch(UserDetails u) async {
+    await MatchesFirestore.joinMatch(u, match);
+    await refresh();
+  }
+}
+
+
+class UserChangeNotifier extends ChangeNotifier {
+
+  UserDetails userDetails;
+
+  Future<void> loginWithGoogle() async {
+    userDetails = await UserFirestore.loginWithGoogle();
+    notifyListeners();
+  }
+
+  bool isLoggedIn() => userDetails != null && userDetails.firebaseUser != null;
+
+  void logout() async {
+    await UserFirestore.logout();
+    userDetails.firebaseUser = null;
+    notifyListeners();
+  }
+}
+
+
 void main() {
   runApp(MultiProvider(
     providers: [
-      ChangeNotifierProvider(create: (context) => UserModel()),
-      ChangeNotifierProvider(create: (context) => MatchesModel())
+      ChangeNotifierProvider(create: (context) => UserChangeNotifier()),
+      ChangeNotifierProvider(create: (context) => MatchesChangeNotifier())
     ],
     child: new MaterialApp(
       debugShowCheckedModeBanner: false,
@@ -23,10 +74,10 @@ void main() {
   ));
 }
 
-Future<List<Match>> callAsyncFetch(BuildContext context) {
-  Future<List<Match>> Function() loadFunction = () async {
+Future<void> callAsyncFetch(BuildContext context) {
+  Future<void> Function() loadFunction = () async {
     await Firebase.initializeApp();
-    return await context.read<MatchesModel>().fetchMatches();
+    await context.read<MatchesChangeNotifier>().refresh();
   };
 
   return Future.delayed(Duration(seconds: 1), loadFunction);
@@ -49,7 +100,7 @@ class _LaunchWidgetState extends State<LaunchWidget> {
             MaterialPageRoute(
                 builder: (context) => ChangeNotifierProvider(
                     create: (context) => FilterButtonState(FilterOption.ALL),
-                    child: AvailableMatches(matches)))));
+                    child: AvailableMatches()))));
   }
 
   @override

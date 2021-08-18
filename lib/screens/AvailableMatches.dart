@@ -1,29 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:nutmeg/models/Model.dart';
 import 'package:intl/intl.dart';
-import 'package:nutmeg/models/MatchesFirestore.dart';
-import 'package:nutmeg/models/UserFirestore.dart';
 import 'package:nutmeg/screens/MatchDetails.dart';
 import 'package:provider/provider.dart';
 
 import '../utils/Utils.dart';
+import 'Launch.dart';
 
 enum FilterOption { ALL, GOING }
 
 // main widget (stateful)
 class AvailableMatches extends StatefulWidget {
-  List<Match> matches;
-
-  AvailableMatches(this.matches);
 
   @override
-  State<StatefulWidget> createState() => AvailableMatchesState(matches);
+  State<StatefulWidget> createState() => AvailableMatchesState();
 }
 
 class AvailableMatchesState extends State<AvailableMatches> {
-  List<Match> matches;
-
-  AvailableMatchesState(this.matches);
 
   bool allFilterIsOn = true;
 
@@ -72,7 +65,7 @@ class AvailableMatchesState extends State<AvailableMatches> {
                           ],
                         ),
                       )),
-                  Expanded(child: RefreshIndicatorStateful(matches)),
+                  Expanded(child: RefreshIndicatorStateful()),
                 ]),
           )),
     ));
@@ -143,12 +136,8 @@ class FilterButtonState with ChangeNotifier {
 // widget with list of matches
 class RefreshIndicatorStateful extends StatefulWidget {
 
-  List<Match> matches;
-
-  RefreshIndicatorStateful(this.matches);
-
   @override
-  State<StatefulWidget> createState() => RefreshIndicatorState(matches);
+  State<StatefulWidget> createState() => RefreshIndicatorState();
 }
 
 class RefreshIndicatorState extends State<RefreshIndicatorStateful>
@@ -183,10 +172,6 @@ class RefreshIndicatorState extends State<RefreshIndicatorStateful>
     return List<Widget>.from(widgets);
   }
 
-  List<Match> matches;
-
-  RefreshIndicatorState(this.matches);
-
   AppLifecycleState _appLifecycleState;
 
   @override
@@ -209,9 +194,10 @@ class RefreshIndicatorState extends State<RefreshIndicatorStateful>
   @override
   Widget build(BuildContext context) {
     var filterOption = context.watch<FilterButtonState>().selectedOption;
+    var matches = context.watch<MatchesChangeNotifier>().matches;
 
     var mainWidget = (filterOption == FilterOption.GOING &&
-            !context.read<UserModel>().isLoggedIn())
+            !context.read<UserChangeNotifier>().isLoggedIn())
         ? Center(
             child: Text("Login to join matches",
                 style: TextStyle(
@@ -220,13 +206,12 @@ class RefreshIndicatorState extends State<RefreshIndicatorStateful>
                     fontWeight: FontWeight.w400)),
           )
         : RefreshIndicator(
-            onRefresh: () async =>
-                matches = await context.read<MatchesModel>().fetchMatches(),
+            onRefresh: () async => await context.read<MatchesChangeNotifier>().refresh(),
             child: ListView(
                 shrinkWrap: true,
                 padding: const EdgeInsets.all(8),
                 children: _getMatchesWidget((filterOption == FilterOption.GOING)
-                    ? matches.where((m) => m.isUserGoing(context.read<UserModel>().userDetails))
+                    ? matches.where((m) => m.isUserGoing(context.read<UserChangeNotifier>().userDetails))
                     : matches)));
 
     // todo animate it
@@ -328,27 +313,10 @@ class MatchInfo extends StatelessWidget {
         ),
       ),
       onTap: () async {
-        await Navigator.push(context, MaterialPageRoute(builder: (context) => ChangeNotifierProvider(
-          create: (_) => MatchChangeNotifier(match),
-          child: MatchDetails(),
-        )
-            ));
-        match = await context.read<MatchesModel>().fetchMatch(match.documentId);
+        await Navigator.push(context, MaterialPageRoute(builder: (context) => MatchDetails(match)));
+        await context.read<MatchesChangeNotifier>().refresh();
       },
       splashColor: Colors.white,
     );
-  }
-}
-
-class MatchChangeNotifier extends ChangeNotifier {
-
-  Match match;
-
-  MatchChangeNotifier(this.match);
-
-  set(Match newMatch) {
-    print("setting " + match.subscriptions.length.toString());
-    match = newMatch;
-    notifyListeners();
   }
 }

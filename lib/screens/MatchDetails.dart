@@ -3,28 +3,30 @@ import 'package:flutter/material.dart';
 import 'package:nutmeg/models/MatchesFirestore.dart';
 import 'package:nutmeg/models/Model.dart';
 import 'package:nutmeg/models/UserFirestore.dart';
-import 'package:nutmeg/screens/AvailableMatches.dart';
 import 'package:nutmeg/screens/PaymentTest.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 
 import '../utils/Utils.dart';
+import 'Launch.dart';
 import 'Login.dart';
 
 isGoing(Match match, BuildContext context) {
-  return context.read<UserModel>().isLoggedIn() &&
+  return context.read<UserChangeNotifier>().isLoggedIn() &&
       match.isUserGoing(context
-          .read<UserModel>()
+          .read<UserChangeNotifier>()
           .userDetails);
 }
 
 class MatchDetails extends StatelessWidget {
 
+  final Match match;
+
+  MatchDetails(this.match);
+
   @override
   Widget build(BuildContext context) {
-    Match match = context.watch<MatchChangeNotifier>().match;
-    print("Match subs = " + match.subscriptions.length.toString());
-
+    print("building match details, match hash " + match.hashCode.toString());
     return SafeArea(
       child: Scaffold(
           backgroundColor: Palette.green,
@@ -69,10 +71,10 @@ class MatchDetails extends StatelessWidget {
                                                 color: Colors.grey.shade50,
                                                 fontSize: 12,
                                                 fontWeight: FontWeight.w400)))),
-                                if (context.read<UserModel>().isLoggedIn() &&
+                                if (context.read<UserChangeNotifier>().isLoggedIn() &&
                                     match.isUserGoing(
                                         context
-                                            .read<UserModel>()
+                                            .read<UserChangeNotifier>()
                                             .userDetails))
                                   Icon(Icons.check_circle,
                                       color: Colors.white, size: 40),
@@ -182,7 +184,7 @@ class MatchInfoMainButton extends StatelessWidget {
     _onPressedJoinAction() async {
       bool isLoggedIn = false;
 
-      if (!context.read<UserModel>().isLoggedIn()) {
+      if (!context.read<UserChangeNotifier>().isLoggedIn()) {
         isLoggedIn = await Navigator.push(
             context, MaterialPageRoute(builder: (context) => Login()))
             .then((isLoginSuccessfull) => isLoginSuccessfull);
@@ -218,15 +220,8 @@ class MatchInfoMainButton extends StatelessWidget {
                 ],
               );
             });
-        print("value is " + value);
         if (value == "success") {
-          await context
-              .read<MatchesModel>()
-              .joinMatch(context
-              .read<UserModel>()
-              .user, match);
-          var newMatch = await context.read<MatchesModel>().fetchMatch(match.documentId);
-          context.read<MatchChangeNotifier>().set(newMatch);
+          await context.read<MatchesChangeNotifier>().joinMatch(match, context.read<UserChangeNotifier>().userDetails);
           showModalBottomSheet(context: context,
               builder: (context) {
                 return TextButton(child: Text("close"), onPressed: () => Navigator.pop(context));
@@ -286,14 +281,14 @@ class PlayersList extends StatelessWidget {
               children: users
                   .map((e) =>
                   FutureBuilder(
-                      future: UserModel.getImageUrl(e),
+                      future: UserFirestore.getImageUrl(e),
                       builder: (context, snapshot) =>
                       (snapshot.hasData &&
                           e != null)
                           ? PlayerCard(
                           name:
                           context
-                              .read<UserModel>()
+                              .read<UserChangeNotifier>()
                               .userDetails
                               ?.name ??
                               "name",

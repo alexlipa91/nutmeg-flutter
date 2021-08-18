@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import '../utils/Utils.dart';
 
@@ -69,10 +70,8 @@ class Match {
 
   int numPlayersGoing() => subscriptions.where((s) => s.status == SubscriptionStatus.going).length;
 
-  bool isUserGoing(UserDetails user) {
-    print(user.uid);
-    return subscriptions.contains((s) => s.status == SubscriptionStatus.going && s.userId == user.uid);
-  }
+  bool isUserGoing(UserDetails user) =>
+      subscriptions.contains((s) => s.status == SubscriptionStatus.going && s.userId == user.getUid());
 }
 
 class Subscription {
@@ -150,19 +149,21 @@ class SportCenter {
 }
 
 class UserDetails {
-  String uid;
+  User firebaseUser;
 
   bool isAdmin;
   String image;
   String name;
 
-  UserDetails(this.uid, this.isAdmin, this.image, this.name);
+  UserDetails(this.firebaseUser, this.isAdmin, this.image, this.name);
 
-  UserDetails.fromJson(Map<String, dynamic> json, String documentId)
+  UserDetails.fromJson(Map<String, dynamic> json, User firebaseUser)
       : isAdmin = json["isAdmin"] ?? false,
         image = json["image"],
         name = json["name"],
-        uid = documentId;
+        firebaseUser = firebaseUser;
 
   Map<String, dynamic> toJson() => {'isAdmin': isAdmin, 'image': image, 'name': name};
+
+  String getUid() => firebaseUser.uid;
 }

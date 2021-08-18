@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:nutmeg/utils/GoogleSignInButton.dart';
 import 'package:nutmeg/utils/LoginUtils.dart';
-import 'package:nutmeg/screens/LoginEmail.dart';
 
 
 import '../utils/Utils.dart';
@@ -19,17 +18,9 @@ void main() {
 
 class Login extends StatelessWidget {
 
-  Login();
-
   @override
   Widget build(BuildContext context) {
-    print("Building " + this.runtimeType.toString());
-
     final ThemeData themeData = Theme.of(context);
-
-    onTap() {
-      Navigator.push(context, MaterialPageRoute(builder: (context) => LoginEmail()));
-    }
 
     return SafeArea(
       child: Container(
@@ -48,7 +39,7 @@ class Login extends StatelessWidget {
                 style: themeData.textTheme.bodyText1,
                 textAlign: TextAlign.center),
             SizedBox(height: 30),
-            LoginAreaWidget(onTap)
+            LoginAreaWidget()
           ],
         ),
       ),
@@ -58,15 +49,10 @@ class Login extends StatelessWidget {
 
 class LoginAreaWidget extends StatelessWidget {
 
-  Function onEmailTap;
-
-  LoginAreaWidget(this.onEmailTap);
-
   @override
   Widget build(BuildContext context) {
     return Container(
           child: Column(children: [
-            LoginOptionButton(text: "Email", onTap: onEmailTap),
             LoginOptionButton(text: "Facebook"),
             GoogleSignInButton()
             // LoginOptionButton(text: "Google"),
@@ -74,6 +60,7 @@ class LoginAreaWidget extends StatelessWidget {
     }
 }
 
+// fixme this is being used because of the UI somewhere else. Rename it and generalize
 class LoginOptionButton extends StatelessWidget {
   final String text;
   final Function onTap;
