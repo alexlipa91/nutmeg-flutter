@@ -103,6 +103,8 @@ class MatchInfoContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    SportCenter sportCenter = context.read<SportCentersChangeNotifier>().getSportCenter(match.sportCenter);
+
     return Container(
         margin: EdgeInsets.all(20),
         decoration: infoMatchDecoration,
@@ -112,14 +114,14 @@ class MatchInfoContainer extends StatelessWidget {
             InfoWidget(
                 title: dateFormat.format(match.dateTime), icon: Icons.watch),
             InfoWidget(
-                title: match.sportCenter.name,
+                title: sportCenter.name,
                 icon: Icons.place,
-                subTitle: match.sportCenter.address),
+                subTitle: sportCenter.address),
             InfoWidget(
                 title: match.sport.getDisplayTitle(),
                 icon: Icons.sports_soccer,
                 // todo fix info sport
-                subTitle: match.sportCenter.getTags()),
+                subTitle: sportCenter.tags.join(", ")),
             InfoWidget(
                 title: formatCurrency.format(match.pricePerPerson),
                 icon: Icons.money,

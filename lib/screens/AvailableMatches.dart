@@ -273,7 +273,7 @@ class MatchInfo extends StatelessWidget {
                           fontSize: 20,
                           fontWeight: FontWeight.w700)),
                   SizedBox(height: 10),
-                  Text(match.sportCenter.name,
+                  Text(context.read<SportCentersChangeNotifier>().getSportCenter(match.sportCenter).name,
                       style: TextStyle(
                           color: Colors.grey,
                           fontSize: 16,

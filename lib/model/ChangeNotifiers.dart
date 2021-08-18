@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:nutmeg/db/MatchesFirestore.dart';
+import 'package:nutmeg/db/SportCentersFirestore.dart';
 import 'package:nutmeg/db/UserFirestore.dart';
 import 'Model.dart';
 
@@ -21,6 +22,20 @@ class MatchesChangeNotifier extends ChangeNotifier {
     await MatchesFirestore.joinMatch(u, m);
     await refresh();
   }
+}
+
+class SportCentersChangeNotifier extends ChangeNotifier {
+
+  Map<String, SportCenter> _sportCenters;
+
+  refresh() async {
+    _sportCenters = Map.fromEntries((await SportCentersFirestore.getSportCenters()).map((e) => MapEntry(e.placeId, e)));
+    notifyListeners();
+  }
+
+  SportCenter getSportCenter(String id) => _sportCenters[id];
+
+  List<SportCenter> getSportCenters() => _sportCenters.values;
 }
 
 class UserChangeNotifier extends ChangeNotifier {

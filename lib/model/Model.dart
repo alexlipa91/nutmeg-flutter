@@ -29,7 +29,7 @@ class Match {
   String documentId;
 
   DateTime dateTime;
-  SportCenter sportCenter;
+  String sportCenter;
   Sport sport;
   double pricePerPerson;
   int maxPlayers;
@@ -42,17 +42,16 @@ class Match {
 
   Match.fromJson(Map<String, dynamic> json, String documentId)
       : dateTime = serializationDateFormat.parse(json['dateTime']),
-        sportCenter = SportCenter.fromJson(json['sportCenter']),
+        sportCenter = json['sportCenter'],
         sport = Sport.values[json['sport']],
         pricePerPerson = json['pricePerPerson'],
         maxPlayers = json['maxPlayers'],
         status = MatchStatus.values[json['status']],
         documentId = documentId;
 
-  Map<String, dynamic> toJson() =>
-      {
+  Map<String, dynamic> toJson() => {
         'dateTime': serializationDateFormat.format(dateTime),
-        'sportCenter': sportCenter.toJson(),
+        'sportCenter': sportCenter,
         'sport': sport.index,
         'pricePerPerson': pricePerPerson,
         'maxPlayers': maxPlayers,
@@ -61,8 +60,8 @@ class Match {
 
   String getFormattedDate() {
     return (isSameDay(DateTime.now(), dateTime)
-        ? "Today"
-        : uiDateFormat.format(dateTime)) +
+            ? "Today"
+            : uiDateFormat.format(dateTime)) +
         " at " +
         uiHourFormat.format(dateTime);
   }
@@ -70,19 +69,15 @@ class Match {
   int getSpotsLeft() => maxPlayers - numPlayersGoing();
 
   int numPlayersGoing() =>
-      subscriptions
-          .where((s) => s.status == SubscriptionStatus.going)
-          .length;
+      subscriptions.where((s) => s.status == SubscriptionStatus.going).length;
 
-  bool isUserGoing(UserDetails user) =>
-      subscriptions
-          .where((s) =>
-      s.status == SubscriptionStatus.going && s.userId == user.getUid())
-          .isNotEmpty;
+  bool isUserGoing(UserDetails user) => subscriptions
+      .where((s) =>
+          s.status == SubscriptionStatus.going && s.userId == user.getUid())
+      .isNotEmpty;
 }
 
 class Subscription {
-
   String documentId;
 
   String userId;
@@ -95,62 +90,23 @@ class Subscription {
         userId = json['userId'],
         status = SubscriptionStatus.values[json['status']];
 
-  Map<String, dynamic> toJson() =>
-      {
-        'userId': userId,
-        'status': status.index
-      };
+  Map<String, dynamic> toJson() => {'userId': userId, 'status': status.index};
 }
 
 class SportCenter {
-  // todo store them in the db
-  static List<SportCenter> getSportCenters() {
-    return [
-      SportCenter(
-          "ChIJ3zv5cYsJxkcRAr4WnAOlCT4",
-          "Sportcentrum De Pijp",
-          "Lizzy Ansinghstraat 88, 1072 RD Amsterdam",
-          [SportCenterTags.indoor]),
-      SportCenter("ChIJM6a0ddoJxkcRsw7w54kvDD8", "Het Marnix",
-          "Marnixplein 1, 1015 ZN Amsterdam", [SportCenterTags.indoor]),
-      SportCenter("ChIJYVFYYbrTxUcRMSYDU4GLg5k", "Sportcentrum Zuidplas", null,
-          [SportCenterTags.indoor])
-    ];
-  }
-
   String placeId;
+
   String name;
+  String neighbourhood;
   String address;
-  List<SportCenterTags> tags;
+  List<String> tags;
 
-  SportCenter(this.placeId, this.name, this.address, this.tags);
-
-  SportCenter.fromId(String id) {
-    var toFind =
-    SportCenter.getSportCenters().where((element) => element.placeId == id);
-    if (toFind.isEmpty) {
-      throw Exception("Sport center with id " + id + " not found");
-    }
-    var sportCenterObject = toFind.first;
-
-    this.placeId = sportCenterObject.placeId;
-    this.name = sportCenterObject.name;
-  }
-
-  Map<String, dynamic> toJson() => {'placeId': placeId, 'name': name};
-
-  SportCenter.fromJson(Map<String, dynamic> json)
-      : placeId = json['placeId'],
-        name = json['name'];
-
-  String getTags() =>
-      (tags == null)
-          ? null
-          : tags.map((e) =>
-      e
-          .toString()
-          .split('.')
-          .last).join(", ");
+  SportCenter.fromJson(Map<String, dynamic> json, String documentId)
+      : placeId = documentId,
+        name = json['name'],
+        neighbourhood = json['neighbourhood'],
+        address = json['address'],
+        tags = List<String>.from(json['tags']);
 
   String getName() => name;
 

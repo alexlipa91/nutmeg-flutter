@@ -3,8 +3,9 @@ import 'package:date_time_picker/date_time_picker.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
-
+import 'package:provider/provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,6 +30,9 @@ class AddMatchState extends State<AddMatch> {
   Widget build(BuildContext context) {
     CollectionReference matches =
         FirebaseFirestore.instance.collection('matches');
+
+    List<SportCenter> sportCenters =
+        context.read<SportCentersChangeNotifier>().getSportCenters();
 
     return Scaffold(
         body: Padding(
@@ -61,11 +65,12 @@ class AddMatchState extends State<AddMatch> {
                   //elevation: 5,
                   style: TextStyle(color: Colors.white),
                   iconEnabledColor: Colors.black,
-                  items: SportCenter.getSportCenters()
+                  items: sportCenters
                       .map<DropdownMenuItem<SportCenter>>((SportCenter value) {
                     return DropdownMenuItem<SportCenter>(
                         value: value,
-                        child: Text(value.getName() == null ? "null" : value.getName(),
+                        child: Text(
+                            value.getName() == null ? "null" : value.getName(),
                             style: TextStyle(color: Colors.black)));
                   }).toList(),
                   onChanged: (SportCenter value) {
@@ -141,7 +146,7 @@ class AddMatchState extends State<AddMatch> {
                         print("adding");
                         var m = Match(
                             DateTime.parse(dateController.value.text),
-                            sportCenter,
+                            sportCenter.placeId,
                             sport,
                             maxPlayers,
                             double.parse(priceController.value.text),

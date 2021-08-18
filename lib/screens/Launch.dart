@@ -10,7 +10,8 @@ void main() {
   runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider(create: (context) => UserChangeNotifier()),
-      ChangeNotifierProvider(create: (context) => MatchesChangeNotifier())
+      ChangeNotifierProvider(create: (context) => MatchesChangeNotifier()),
+      ChangeNotifierProvider(create: (context) => SportCentersChangeNotifier())
     ],
     child: new MaterialApp(
       debugShowCheckedModeBanner: false,
@@ -26,6 +27,7 @@ Future<void> callAsyncFetch(BuildContext context) {
   Future<void> Function() loadFunction = () async {
     await Firebase.initializeApp();
     await context.read<MatchesChangeNotifier>().refresh();
+    await context.read<SportCentersChangeNotifier>().refresh();
   };
 
   return Future.delayed(Duration(seconds: 1), loadFunction);
