@@ -1,37 +1,28 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'Model.dart';
+import '../model/Model.dart';
 
 
-class UserModel extends ChangeNotifier {
+class UserFirestore {
 
   static CollectionReference users = FirebaseFirestore.instance.collection('users');
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  static final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  static Future<String> getImageUrl(String uid) async {
+  static Future<UserDetails> getSpecificUserDetails(String uid) async {
     return await users.doc(uid).get().then((value) {
       Map<String, dynamic> data = value.data();
-      return data['image'].toString();
+      return UserDetails.fromJson(data, null);
     });
   }
 
-  User user;
-  UserDetails userDetails;
-
-  UserModel();
-
-  Future<void> login(String email, String password) async {
+  static Future<User> login(String email, String password) async {
     return _auth
         .signInWithEmailAndPassword(email: email, password: password)
-        .then((value) {
-          user = value.user;
-          notifyListeners();
-        });
+        .then((value) => value.user);
   }
 
-  Future<String> loginWithGoogle() async {
+  static Future<UserDetails> loginWithGoogle() async {
     FirebaseAuth auth = FirebaseAuth.instance;
 
     final GoogleSignIn googleSignIn = GoogleSignIn();
@@ -50,37 +41,30 @@ class UserModel extends ChangeNotifier {
       final UserCredential userCredential =
           await auth.signInWithCredential(credential);
 
-      user = userCredential.user;
+      var userDetails;
 
       // check if first time
-      await users.doc(user.uid).get().then((doc) {
+      await users.doc(userCredential.user.uid).get().then((doc) {
         if (!doc.exists) {
-          userDetails = new UserDetails(false, user.photoURL, user.displayName);
+          userDetails = new UserDetails(userCredential.user, false, userCredential.user.photoURL, userCredential.user.displayName);
         } else {
-          userDetails = UserDetails.fromJson(doc.data());
+          userDetails = UserDetails.fromJson(doc.data(), userCredential.user);
         }
         return !doc.exists;
       }).then((shouldInsert) {
         if (shouldInsert) {
-          users.doc(user.uid).set(userDetails.toJson());
+          users.doc(userCredential.user.uid).set(userDetails.toJson());
         }
       });
 
-      notifyListeners();
-      return user.uid;
+      return userDetails;
     }
   }
 
-  bool isLoggedIn() {
-    return user != null;
-  }
-
-  Future<void> logout() async {
+  static Future<void> logout() async {
     print("logout");
     var gs = GoogleSignIn();
     gs.disconnect();
     _auth.signOut();
-    user = null;
-    notifyListeners();
   }
 }

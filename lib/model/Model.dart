@@ -1,11 +1,14 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
-import '../Utils.dart';
+import '../utils/Utils.dart';
 
 enum MatchStatus { open, played, canceled }
 
 enum SportCenterTags { indoor, outdoor }
 
 enum Sport { fiveAsideFootball }
+
+enum SubscriptionStatus { going, canceled }
 
 extension SportExtension on Sport {
   String getDisplayTitle() {
@@ -23,45 +26,80 @@ class Match {
   static var uiDateFormat = new DateFormat("yyyy-MM-dd");
   static var uiHourFormat = new DateFormat("HH:mm");
 
+  String documentId;
+
   DateTime dateTime;
   SportCenter sportCenter;
   Sport sport;
   double pricePerPerson;
-  List<String> joining;
   int maxPlayers;
   MatchStatus status;
 
-  Match(this.dateTime, this.sportCenter, this.sport, this.maxPlayers,
-      this.joining, this.pricePerPerson, this.status);
+  List<Subscription> subscriptions;
 
-  Match.fromJson(Map<String, dynamic> json)
+  Match(this.dateTime, this.sportCenter, this.sport, this.maxPlayers,
+      this.pricePerPerson, this.status);
+
+  Match.fromJson(Map<String, dynamic> json, String documentId)
       : dateTime = serializationDateFormat.parse(json['dateTime']),
         sportCenter = SportCenter.fromJson(json['sportCenter']),
         sport = Sport.values[json['sport']],
         pricePerPerson = json['pricePerPerson'],
-        joining = List<String>.from(json['joining']),
         maxPlayers = json['maxPlayers'],
-        status = MatchStatus.values[json['status']];
+        status = MatchStatus.values[json['status']],
+        documentId = documentId;
 
-  Map<String, dynamic> toJson() => {
+  Map<String, dynamic> toJson() =>
+      {
         'dateTime': serializationDateFormat.format(dateTime),
         'sportCenter': sportCenter.toJson(),
         'sport': sport.index,
         'pricePerPerson': pricePerPerson,
-        'joining': joining,
         'maxPlayers': maxPlayers,
-        'status': status.index
+        'status': status.index,
       };
 
   String getFormattedDate() {
     return (isSameDay(DateTime.now(), dateTime)
-            ? "Today"
-            : uiDateFormat.format(dateTime)) +
+        ? "Today"
+        : uiDateFormat.format(dateTime)) +
         " at " +
         uiHourFormat.format(dateTime);
   }
 
-  int getSpotsLeft() => maxPlayers - joining.length;
+  int getSpotsLeft() => maxPlayers - numPlayersGoing();
+
+  int numPlayersGoing() =>
+      subscriptions
+          .where((s) => s.status == SubscriptionStatus.going)
+          .length;
+
+  bool isUserGoing(UserDetails user) =>
+      subscriptions
+          .where((s) =>
+      s.status == SubscriptionStatus.going && s.userId == user.getUid())
+          .isNotEmpty;
+}
+
+class Subscription {
+
+  String documentId;
+
+  String userId;
+  SubscriptionStatus status;
+
+  Subscription(this.userId, this.status);
+
+  Subscription.fromJson(Map<String, dynamic> json, String documentId)
+      : documentId = documentId,
+        userId = json['userId'],
+        status = SubscriptionStatus.values[json['status']];
+
+  Map<String, dynamic> toJson() =>
+      {
+        'userId': userId,
+        'status': status.index
+      };
 }
 
 class SportCenter {
@@ -89,7 +127,7 @@ class SportCenter {
 
   SportCenter.fromId(String id) {
     var toFind =
-        SportCenter.getSportCenters().where((element) => element.placeId == id);
+    SportCenter.getSportCenters().where((element) => element.placeId == id);
     if (toFind.isEmpty) {
       throw Exception("Sport center with id " + id + " not found");
     }
@@ -105,9 +143,14 @@ class SportCenter {
       : placeId = json['placeId'],
         name = json['name'];
 
-  String getTags() => (tags == null)
-      ? null
-      : tags.map((e) => e.toString().split('.').last).join(", ");
+  String getTags() =>
+      (tags == null)
+          ? null
+          : tags.map((e) =>
+      e
+          .toString()
+          .split('.')
+          .last).join(", ");
 
   String getName() => name;
 
@@ -119,16 +162,22 @@ class SportCenter {
 }
 
 class UserDetails {
+  User firebaseUser;
+
   bool isAdmin;
   String image;
   String name;
 
-  UserDetails(this.isAdmin, this.image, this.name);
+  UserDetails(this.firebaseUser, this.isAdmin, this.image, this.name);
 
-  UserDetails.fromJson(Map<String, dynamic> json)
+  UserDetails.fromJson(Map<String, dynamic> json, User firebaseUser)
       : isAdmin = json["isAdmin"] ?? false,
         image = json["image"],
-        name = json["name"];
+        name = json["name"],
+        firebaseUser = firebaseUser;
 
-  Map<String, dynamic> toJson() => {'isAdmin': isAdmin, 'image': image, 'name': name};
+  Map<String, dynamic> toJson() =>
+      {'isAdmin': isAdmin, 'image': image, 'name': name};
+
+  String getUid() => firebaseUser.uid;
 }

@@ -3,7 +3,7 @@ import 'package:date_time_picker/date_time_picker.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:nutmeg/models/Model.dart';
+import 'package:nutmeg/model/Model.dart';
 
 
 void main() async {
@@ -144,7 +144,6 @@ class AddMatchState extends State<AddMatch> {
                             sportCenter,
                             sport,
                             maxPlayers,
-                            [],
                             double.parse(priceController.value.text),
                             MatchStatus.open);
 

@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:nutmeg/models/Model.dart';
+import 'package:nutmeg/model/ChangeNotifiers.dart';
+import 'package:nutmeg/model/Model.dart';
 import 'package:intl/intl.dart';
-import 'package:nutmeg/models/MatchesModel.dart';
-import 'package:nutmeg/models/UserModel.dart';
 import 'package:nutmeg/screens/MatchDetails.dart';
 import 'package:provider/provider.dart';
+import 'package:nutmeg/utils/Utils.dart';
+import 'package:week_of_year/week_of_year.dart';
+import "package:collection/collection.dart";
 
-import '../Utils.dart';
 
+import '../utils/Utils.dart';
+
+enum FilterOption { ALL, GOING }
+
+// main widget (stateful)
 class AvailableMatches extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => AvailableMatchesState();
@@ -18,9 +24,6 @@ class AvailableMatchesState extends State<AvailableMatches> {
 
   @override
   Widget build(BuildContext context) {
-    print("Building " + this.runtimeType.toString());
-    print(context.read<FilterButtonState>().selectedOption);
-
     return SafeArea(
         child: Container(
       decoration: new BoxDecoration(color: Colors.grey.shade400),
@@ -64,27 +67,14 @@ class AvailableMatchesState extends State<AvailableMatches> {
                           ],
                         ),
                       )),
-                  Expanded(
-                      child: RefreshIndicatorStateful()),
+                  Expanded(child: RefreshIndicatorStateful()),
                 ]),
           )),
     ));
   }
 }
 
-enum FilterOption { ALL, GOING }
-
-class FilterButtonState with ChangeNotifier {
-  FilterOption selectedOption;
-
-  FilterButtonState(this.selectedOption);
-
-  changeTo(FilterOption f) {
-    selectedOption = f;
-    notifyListeners();
-  }
-}
-
+// widget for all/going filter button + change notifier
 class FilterButton extends StatelessWidget {
   final FilterOption filterOption;
   final isLeft;
@@ -134,6 +124,18 @@ class FilterButton extends StatelessWidget {
   }
 }
 
+class FilterButtonState with ChangeNotifier {
+  FilterOption selectedOption;
+
+  FilterButtonState(this.selectedOption);
+
+  changeTo(FilterOption f) {
+    selectedOption = f;
+    notifyListeners();
+  }
+}
+
+// widget with list of matches
 class RefreshIndicatorStateful extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => RefreshIndicatorState();
@@ -143,30 +145,26 @@ class RefreshIndicatorState extends State<RefreshIndicatorStateful>
     with WidgetsBindingObserver {
   static var dateFormat = new DateFormat("MMMM dd");
 
-  _getMatchesWidget(Map<String, Match> matches) {
-    var groupedByDay = Map<DateTime, List<String>>.fromEntries([]);
-    for (var m in matches.entries) {
-      var day = DateTime(
-          m.value.dateTime.year, m.value.dateTime.month, m.value.dateTime.day);
+  // creates widgets splitting by week
+  _getMatchesWidget(List<Match> matches) {
+    var currentWeek = DateTime.now().weekOfYear;
+    var groups = matches.groupListsBy((m) => m.dateTime.weekOfYear);
 
-      var current = [];
-      if (groupedByDay.containsKey(day)) {
-        current = groupedByDay[day];
-      }
-      current.add(m.key);
-      groupedByDay[day] = List<String>.from(current);
-    }
+    var weekTitles = {
+      currentWeek: "This week",
+      currentWeek + 1: "Next week",
+    };
 
     var widgets = [];
-    for (var day in groupedByDay.keys.toList()..sort()) {
+    for (var week in groups.keys.toList()..sort()) {
       widgets.add(Padding(
         padding: EdgeInsets.symmetric(horizontal: 25, vertical: 10),
-        child: Text(dateFormat.format(day),
+        child: Text(weekTitles[week] ?? "More than two weeks",
             style: TextStyle(
                 color: Colors.grey, fontSize: 16, fontWeight: FontWeight.w400)),
       ));
       widgets.add(new MatchInfoGroup(
-          matches: groupedByDay[day].map((e) => MatchInfo(e)).toList()));
+          matches: groups[week].map((e) => MatchInfo(e)).toList()));
     }
 
     return List<Widget>.from(widgets);
@@ -178,7 +176,6 @@ class RefreshIndicatorState extends State<RefreshIndicatorStateful>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    refresh();
   }
 
   @override
@@ -187,46 +184,42 @@ class RefreshIndicatorState extends State<RefreshIndicatorStateful>
       _appLifecycleState = state;
     });
     if (_appLifecycleState == AppLifecycleState.resumed) {
-      refresh();
-    }
-  }
-
-  Future<void> refresh() async {
-    try {
-      await context.read<MatchesModel>().pull();
-    } on Exception catch (err) {
-      print("Caught in refresh " + err.toString());
+      // fixme when resuming refresh list of matches
+      // refresh();
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    print("Building " + this.runtimeType.toString());
-
+    var matches = context.watch<MatchesChangeNotifier>().getMatches();
     var filterOption = context.watch<FilterButtonState>().selectedOption;
 
     var mainWidget = (filterOption == FilterOption.GOING &&
-            !context.read<UserModel>().isLoggedIn())
+            !context.read<UserChangeNotifier>().isLoggedIn())
         ? Center(
-          child: Text("Login to join matches", style: TextStyle(
-              color: Colors.grey, fontSize: 24, fontWeight: FontWeight.w400)),
-        )
+            child: Text("Login to join matches",
+                style: TextStyle(
+                    color: Colors.grey,
+                    fontSize: 24,
+                    fontWeight: FontWeight.w400)),
+          )
         : RefreshIndicator(
-            onRefresh: () async => await refresh(),
+            onRefresh: () async =>
+                await context.read<MatchesChangeNotifier>().refresh(),
             child: ListView(
                 shrinkWrap: true,
                 padding: const EdgeInsets.all(8),
                 children: _getMatchesWidget((filterOption == FilterOption.GOING)
-                    ? context
-                        .watch<MatchesModel>()
-                        .getMatchesByUser(context.read<UserModel>().user)
-                    : context.watch<MatchesModel>().getMatches())));
+                    ? matches.where((m) => m.isUserGoing(
+                        context.read<UserChangeNotifier>().getUserDetails())).toList()
+                    : matches)));
 
     // todo animate it
     return mainWidget;
   }
 }
 
+// single match info widgets
 class MatchInfoGroup extends StatelessWidget {
   final List<MatchInfo> matches;
 
@@ -248,14 +241,12 @@ class MatchInfo extends StatelessWidget {
   static var formatCurrency = NumberFormat.simpleCurrency(name: "EUR");
   static var monthDayFormat = DateFormat('HH:mm');
 
-  String matchId;
+  Match match;
 
-  MatchInfo(this.matchId);
+  MatchInfo(this.match);
 
   @override
   Widget build(BuildContext context) {
-    Match match = context.watch<MatchesModel>().getMatch(matchId);
-
     return InkWell(
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: 20),
@@ -309,7 +300,7 @@ class MatchInfo extends StatelessWidget {
                 child: Padding(
                     padding: EdgeInsets.all(5),
                     child: Text(
-                        match.joining.length.toString() +
+                        match.numPlayersGoing().toString() +
                             "/" +
                             match.maxPlayers.toString(),
                         style: TextStyle(
@@ -321,9 +312,15 @@ class MatchInfo extends StatelessWidget {
           ),
         ),
       ),
-      onTap: () {
-        Navigator.push(context,
-            MaterialPageRoute(builder: (context) => MatchDetails(matchId)));
+      onTap: () async {
+        // fixme why it doesn't rebuild here?
+        await Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => MatchDetails(context
+                    .watch<MatchesChangeNotifier>()
+                    .getMatch(match.documentId))));
+        await context.read<MatchesChangeNotifier>().refresh();
       },
       splashColor: Colors.white,
     );

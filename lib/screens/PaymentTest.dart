@@ -1,88 +1,14 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:cool_alert/cool_alert.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:nutmeg/ButtonWidgets.dart';
-import 'package:nutmeg/models/MatchesModel.dart';
-import 'package:nutmeg/models/UserModel.dart';
 import 'package:webview_flutter/webview_flutter.dart';
-import 'package:provider/provider.dart';
-
-void main() async {
-  runApp(new MaterialApp(home: MyApp()));
-}
 
 var apiKey =
     "pk_test_51HyCDAGRb87bTNwH1dlHJXwdDSIUhxqPZS3zeytnO7T9dHBxzhwiWO5E0kFYLkVdZbZ2t0LEHxjuPmKFZ32fiMjO00dWLo1DqE";
 var secretKey =
     "sk_test_51HyCDAGRb87bTNwH4bDZ4nS8eQyDGQvJDt3uFOKdptndo68tkFc4Hr0lyASDEMWMMHbp53HkkXbBozZGEmlVmxP3001nYitsJu";
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Stripe Checkout Demo',
-      theme: ThemeData(
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-      ),
-      home: PaymentPage(),
-    );
-  }
-}
-
-class PaymentPage extends StatefulWidget {
-  final String matchId;
-
-  const PaymentPage({Key key, this.matchId}) : super(key: key);
-
-  @override
-  State<StatefulWidget> createState() => _PaymentPageState(matchId);
-}
-
-class _PaymentPageState extends State<PaymentPage> {
-  final String matchId;
-
-  bool paymentDone = false;
-  String outcome;
-
-  _PaymentPageState(this.matchId);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Builder(
-        builder: (context) => Center(
-            child: ButtonWithLoaderAndPop(
-                text: "Pay",
-                onPressedFunction: () async {
-                  final sessionId = await Server().createCheckout();
-                  print("sessId " + sessionId);
-                  await Navigator.of(context)
-                      .push(MaterialPageRoute(
-                          builder: (_) => CheckoutPage(sessionId: sessionId)))
-                      .then((value) {
-                    if (value == "success") {
-                      context
-                          .read<MatchesModel>()
-                          .joinMatch(context.read<UserModel>().user, matchId);
-                    }
-                    return value;
-                  }).then((value) => CoolAlert.show(
-                          context: context,
-                          type: (value == "success")
-                              ? CoolAlertType.success
-                              : CoolAlertType.error,
-                          text: (value == "success")
-                              ? "Your transaction was successful!"
-                              : "Something went wrong!"));
-                })
-            ),
-      ),
-    );
-  }
-}
 
 class CheckoutPage extends StatefulWidget {
   final String sessionId;

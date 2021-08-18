@@ -1,34 +1,29 @@
+import 'package:cool_alert/cool_alert.dart';
 import 'package:flutter/material.dart';
-import 'package:nutmeg/models/MatchesModel.dart';
-import 'package:nutmeg/models/Model.dart';
-import 'package:nutmeg/models/UserModel.dart';
+import 'package:nutmeg/model/ChangeNotifiers.dart';
+import 'package:nutmeg/model/Model.dart';
 import 'package:nutmeg/screens/PaymentTest.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 
-import '../Utils.dart';
+import '../utils/Utils.dart';
 import 'Login.dart';
 
+isGoing(Match match, BuildContext context) {
+  return context.watch<UserChangeNotifier>().isLoggedIn() &&
+      match.isUserGoing(context
+          .watch<UserChangeNotifier>()
+          .getUserDetails());
+}
+
 class MatchDetails extends StatelessWidget {
-  static getMatch(BuildContext context, String matchId) =>
-      context.read<MatchesModel>().getMatch(matchId);
 
-  static isUserLoggedAndGoing(BuildContext context, String matchId) =>
-      context.watch<UserModel>().isLoggedIn() &&
-      getMatch(context, matchId)
-          .joining
-          .contains(context.watch<UserModel>().user.uid);
+  final Match match;
 
-  String matchId;
-
-  MatchDetails(this.matchId);
+  MatchDetails(this.match);
 
   @override
   Widget build(BuildContext context) {
-    print("Building " + this.runtimeType.toString());
-
-    Match match = getMatch(context, matchId);
-
     return SafeArea(
       child: Scaffold(
           backgroundColor: Palette.green,
@@ -58,7 +53,7 @@ class MatchDetails extends StatelessWidget {
                                     decoration: new BoxDecoration(
                                       color: Colors.red.shade300,
                                       borderRadius:
-                                          BorderRadius.all(Radius.circular(5)),
+                                      BorderRadius.all(Radius.circular(5)),
                                       border: new Border.all(
                                         color: Colors.white70,
                                         width: 0.5,
@@ -73,15 +68,23 @@ class MatchDetails extends StatelessWidget {
                                                 color: Colors.grey.shade50,
                                                 fontSize: 12,
                                                 fontWeight: FontWeight.w400)))),
-                                if (isUserLoggedAndGoing(context, matchId))
+                                if (context.read<UserChangeNotifier>().isLoggedIn() &&
+                                    match.isUserGoing(
+                                        context
+                                            .read<UserChangeNotifier>()
+                                            .getUserDetails()))
                                   Icon(Icons.check_circle,
                                       color: Colors.white, size: 40),
                               ],
                             )
                           ])),
                 ),
-                MatchInfoContainer(matchId: matchId),
-                PlayersList(users: match.joining)
+                MatchInfoContainer(match),
+                PlayersList(
+                    users: match.subscriptions
+                        .where((s) => s.status == SubscriptionStatus.going)
+                        .map((e) => e.userId)
+                        .toList())
               ],
             ),
           )),
@@ -93,14 +96,12 @@ class MatchInfoContainer extends StatelessWidget {
   static var formatCurrency = NumberFormat.simpleCurrency(name: "EUR");
   static var dateFormat = DateFormat('MMMM dd \'at\' HH:mm');
 
-  final String matchId;
+  final Match match;
 
-  const MatchInfoContainer({Key key, this.matchId}) : super(key: key);
+  const MatchInfoContainer(this.match);
 
   @override
   Widget build(BuildContext context) {
-    Match match = MatchDetails.getMatch(context, matchId);
-
     return Container(
         margin: EdgeInsets.all(20),
         decoration: infoMatchDecoration,
@@ -125,7 +126,7 @@ class MatchInfoContainer extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                  child: MatchInfoMainButton(matchId: matchId),
+                  child: MatchInfoMainButton(match),
                 )
               ],
             )
@@ -171,23 +172,63 @@ class InfoWidget extends StatelessWidget {
 }
 
 class MatchInfoMainButton extends StatelessWidget {
-  final String matchId;
+  Match match;
 
-  const MatchInfoMainButton({Key key, this.matchId}) : super(key: key);
+  MatchInfoMainButton(this.match);
 
   @override
   Widget build(BuildContext context) {
-    var isGoing = MatchDetails.isUserLoggedAndGoing(context, matchId);
+    _onPressedJoinAction() async {
+      bool isLoggedIn = false;
 
-    _onPressedJoinAction() {
-      if (context.read<UserModel>().isLoggedIn()) {
-        Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => PaymentPage(matchId: matchId)));
+      if (!context.read<UserChangeNotifier>().isLoggedIn()) {
+        isLoggedIn = await Navigator.push(
+            context, MaterialPageRoute(builder: (context) => Login()))
+            .then((isLoginSuccessfull) => isLoginSuccessfull);
       } else {
-        Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (context) => Login()));
+        isLoggedIn = true;
+      }
+
+      if (isLoggedIn) {
+        var value = await showModalBottomSheet(
+            context: context,
+            builder: (context) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Text("Join this match"),
+                  Text('blablabla'),
+                  Divider(),
+                  Text("price"),
+                  TextButton(
+                      onPressed: () async {
+                        final sessionId = await Server().createCheckout();
+                        print("sessId " + sessionId);
+
+                        var value = "success";
+                        // var value = await Navigator.of(context).push(
+                        //     MaterialPageRoute(
+                        //         builder: (_) =>
+                        //             CheckoutPage(sessionId: sessionId)));
+                        // remove previous bottom sheet
+                        Navigator.pop(context, value);
+                      },
+                      child: Text("Continue to payment (skipping it for now, it will assume success and come back)"))
+                ],
+              );
+            });
+        if (value == "success") {
+          await context.read<MatchesChangeNotifier>().joinMatch(match, context.read<UserChangeNotifier>().getUserDetails());
+          showModalBottomSheet(context: context,
+              builder: (context) {
+                return TextButton(child: Text("close"), onPressed: () => Navigator.pop(context));
+              });
+        } else {
+          CoolAlert.show(
+              context: context,
+              type: CoolAlertType.error,
+              text: "Payment failed");
+        }
       }
     }
 
@@ -195,24 +236,26 @@ class MatchInfoMainButton extends StatelessWidget {
       showDialog(
           context: context,
           builder: (_) =>
-              new AlertDialog(title: Text("Implement leave match")));
+          new AlertDialog(title: Text("Implement leave match")));
     }
 
-    var mainColor = isGoing ? Colors.red : Palette.green;
+    var mainColor = isGoing(match, context) ? Colors.red : Palette.green;
 
     return TextButton(
-      child: Text(isGoing ? "Leave" : "Join",
+      child: Text(isGoing(match, context) ? "Leave" : "Join",
           style: TextStyle(
               color: mainColor, fontSize: 20, fontWeight: FontWeight.w700)),
       style: ButtonStyle(
         side: MaterialStateProperty.all(BorderSide(width: 2, color: mainColor)),
         shape: MaterialStateProperty.all<RoundedRectangleBorder>(
             RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20.0),
-        )),
+              borderRadius: BorderRadius.circular(20.0),
+            )),
       ),
       onPressed: () =>
-          isGoing ? _onPressedLeaveAction() : _onPressedJoinAction(),
+      isGoing(match, context)
+          ? _onPressedLeaveAction()
+          : _onPressedJoinAction(),
     );
   }
 }
@@ -233,13 +276,15 @@ class PlayersList extends StatelessWidget {
           physics: BouncingScrollPhysics(),
           child: Row(
               children: users
-                  .map((e) => FutureBuilder(
-                      future: UserModel.getImageUrl(e),
-                      builder: (context, snapshot) => (snapshot.hasData &&
-                              e != null)
+                  .map((e) =>
+                  FutureBuilder<UserDetails>(
+                      future: UserChangeNotifier.getSpecificUserDetails(e),
+                      builder: (context, snapshot) =>
+                      (snapshot.hasData &&
+                          e != null)
                           ? PlayerCard(
-                              name: context.read<UserModel>().userDetails.name,
-                              imageUrl: snapshot.data)
+                          name: snapshot.data.name.split(" ").first,
+                          imageUrl: snapshot.data.image)
                           : Icon(Icons.face, size: 50.0)))
                   .toList()),
         ),
@@ -266,7 +311,7 @@ class PlayerCard extends StatelessWidget {
                 radius: 25,
                 backgroundColor: Palette.white),
             SizedBox(height: 10),
-            if(name != null) Text(name)
+            if (name != null) Text(name)
           ]),
         ));
   }

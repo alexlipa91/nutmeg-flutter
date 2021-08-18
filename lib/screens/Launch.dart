@@ -1,16 +1,16 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:nutmeg/models/MatchesModel.dart';
-import 'package:nutmeg/models/UserModel.dart';
-import 'package:nutmeg/Utils.dart';
+import 'package:nutmeg/model/ChangeNotifiers.dart';
+import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/screens/AvailableMatches.dart';
 import 'package:provider/provider.dart';
+
 
 void main() {
   runApp(MultiProvider(
     providers: [
-      ChangeNotifierProvider(create: (context) => UserModel()),
-      ChangeNotifierProvider(create: (context) => MatchesModel(Map()))
+      ChangeNotifierProvider(create: (context) => UserChangeNotifier()),
+      ChangeNotifierProvider(create: (context) => MatchesChangeNotifier())
     ],
     child: new MaterialApp(
       debugShowCheckedModeBanner: false,
@@ -23,10 +23,12 @@ void main() {
 }
 
 Future<void> callAsyncFetch(BuildContext context) {
-  return Future.delayed(Duration(seconds: 1), () async {
+  Future<void> Function() loadFunction = () async {
     await Firebase.initializeApp();
-    await context.read<MatchesModel>().pull();
-  });
+    await context.read<MatchesChangeNotifier>().refresh();
+  };
+
+  return Future.delayed(Duration(seconds: 1), loadFunction);
 }
 
 class LaunchWidget extends StatefulWidget {
@@ -39,9 +41,9 @@ class _LaunchWidgetState extends State<LaunchWidget> {
   void initState() {
     super.initState();
     callAsyncFetch(context)
-        .then((data) => Future<String>.value(null)) // no error message here
+        .then((matches) => matches) // no error message here
         .catchError((onError) => onError.toString())
-        .then((errorMessage) => Navigator.pushReplacement(
+        .then((matches) => Navigator.pushReplacement(
             context,
             MaterialPageRoute(
                 builder: (context) => ChangeNotifierProvider(
