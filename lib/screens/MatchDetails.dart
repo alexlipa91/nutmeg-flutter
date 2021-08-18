@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
 import 'package:nutmeg/screens/PaymentTest.dart';
+import 'package:nutmeg/utils/UiUtils.dart';
+import 'package:nutmeg/widgets/AppBar.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 
@@ -26,7 +28,7 @@ class MatchDetails extends StatelessWidget {
     return SafeArea(
       child: Scaffold(
           backgroundColor: Palette.green,
-          appBar: getAppBar(context),
+          appBar: CustomAppBar(),
           body: Container(
             decoration: new BoxDecoration(color: Colors.grey.shade400),
             child: Column(

@@ -2,9 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:nutmeg/utils/GoogleSignInButton.dart';
 import 'package:nutmeg/utils/LoginUtils.dart';
+import 'package:nutmeg/utils/UiUtils.dart';
 
-
-import '../utils/Utils.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();

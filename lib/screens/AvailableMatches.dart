@@ -3,6 +3,8 @@ import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
 import 'package:intl/intl.dart';
 import 'package:nutmeg/screens/MatchDetails.dart';
+import 'package:nutmeg/utils/UiUtils.dart';
+import 'package:nutmeg/widgets/AppBar.dart';
 import 'package:provider/provider.dart';
 import 'package:week_of_year/week_of_year.dart';
 import "package:collection/collection.dart";
@@ -26,7 +28,7 @@ class AvailableMatchesState extends State<AvailableMatches> {
       decoration: new BoxDecoration(color: Colors.grey.shade400),
       child: Scaffold(
           backgroundColor: Palette.green,
-          appBar: getAppBar(context),
+          appBar: CustomAppBar(),
           body: Scaffold(
             backgroundColor: Palette.lightGrey,
             body: Column(
