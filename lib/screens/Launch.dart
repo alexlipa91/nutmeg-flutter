@@ -1,7 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
-import 'package:nutmeg/utils/Utils.dart';
+import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/screens/AvailableMatches.dart';
 import 'package:provider/provider.dart';
 

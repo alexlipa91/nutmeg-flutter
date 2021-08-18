@@ -6,7 +6,6 @@ import 'package:nutmeg/screens/PaymentTest.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 
-import '../utils/Utils.dart';
 import 'Login.dart';
 
 isGoing(Match match, BuildContext context) {
