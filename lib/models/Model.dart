@@ -1,11 +1,13 @@
 import 'package:intl/intl.dart';
-import '../Utils.dart';
+import '../utils/Utils.dart';
 
 enum MatchStatus { open, played, canceled }
 
 enum SportCenterTags { indoor, outdoor }
 
 enum Sport { fiveAsideFootball }
+
+enum SubscriptionStatus { going, canceled }
 
 extension SportExtension on Sport {
   String getDisplayTitle() {
@@ -23,37 +25,36 @@ class Match {
   static var uiDateFormat = new DateFormat("yyyy-MM-dd");
   static var uiHourFormat = new DateFormat("HH:mm");
 
+  String documentId;
+
   DateTime dateTime;
   SportCenter sportCenter;
   Sport sport;
   double pricePerPerson;
-  List<String> joining;
-  List<String> left;
   int maxPlayers;
   MatchStatus status;
 
-  Match(this.dateTime, this.sportCenter, this.sport, this.maxPlayers,
-      this.joining, this.pricePerPerson, this.status);
+  List<Subscription> subscriptions;
 
-  Match.fromJson(Map<String, dynamic> json)
+  Match(this.dateTime, this.sportCenter, this.sport, this.maxPlayers,
+      this.pricePerPerson, this.status);
+
+  Match.fromJson(Map<String, dynamic> json, String documentId)
       : dateTime = serializationDateFormat.parse(json['dateTime']),
         sportCenter = SportCenter.fromJson(json['sportCenter']),
         sport = Sport.values[json['sport']],
         pricePerPerson = json['pricePerPerson'],
-        joining = List<String>.from(json['joining']),
         maxPlayers = json['maxPlayers'],
         status = MatchStatus.values[json['status']],
-        left = json.containsKey("left") ? json["left"] : List<String>.empty();
+        documentId = documentId;
 
   Map<String, dynamic> toJson() => {
         'dateTime': serializationDateFormat.format(dateTime),
         'sportCenter': sportCenter.toJson(),
         'sport': sport.index,
         'pricePerPerson': pricePerPerson,
-        'joining': joining,
         'maxPlayers': maxPlayers,
         'status': status.index,
-        'left': left
       };
 
   String getFormattedDate() {
@@ -64,7 +65,34 @@ class Match {
         uiHourFormat.format(dateTime);
   }
 
-  int getSpotsLeft() => maxPlayers - joining.length;
+  int getSpotsLeft() => maxPlayers - numPlayersGoing();
+
+  int numPlayersGoing() => subscriptions.where((s) => s.status == SubscriptionStatus.going).length;
+
+  bool isUserGoing(UserDetails user) {
+    print(user.uid);
+    return subscriptions.contains((s) => s.status == SubscriptionStatus.going && s.userId == user.uid);
+  }
+}
+
+class Subscription {
+
+  String documentId;
+
+  String userId;
+  SubscriptionStatus status;
+
+  Subscription(this.userId, this.status);
+
+  Subscription.fromJson(Map<String, dynamic> json, String documentId)
+      : documentId = documentId,
+        userId = json['userId'],
+        status = SubscriptionStatus.values[json['status']];
+
+  Map<String, dynamic> toJson() => {
+    'userId': userId,
+    'status': status.index
+  };
 }
 
 class SportCenter {
@@ -122,16 +150,19 @@ class SportCenter {
 }
 
 class UserDetails {
+  String uid;
+
   bool isAdmin;
   String image;
   String name;
 
-  UserDetails(this.isAdmin, this.image, this.name);
+  UserDetails(this.uid, this.isAdmin, this.image, this.name);
 
-  UserDetails.fromJson(Map<String, dynamic> json)
+  UserDetails.fromJson(Map<String, dynamic> json, String documentId)
       : isAdmin = json["isAdmin"] ?? false,
         image = json["image"],
-        name = json["name"];
+        name = json["name"],
+        uid = documentId;
 
   Map<String, dynamic> toJson() => {'isAdmin': isAdmin, 'image': image, 'name': name};
 }

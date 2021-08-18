@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:nutmeg/ButtonWidgets.dart';
-import 'package:nutmeg/models/MatchesModel.dart';
-import 'package:nutmeg/models/UserModel.dart';
+import 'package:nutmeg/utils/ButtonWidgets.dart';
+import 'package:nutmeg/models/UserFirestore.dart';
 import 'package:nutmeg/screens/AddMatch.dart';
 import 'package:nutmeg/screens/Login.dart';
 import 'package:provider/provider.dart';
@@ -9,9 +8,7 @@ import 'package:provider/provider.dart';
 import 'AvailableMatches.dart';
 import 'package:nutmeg/models/Model.dart';
 
-
 class UserPage extends StatelessWidget {
-
   @override
   Widget build(BuildContext context) {
     print("Building " + this.runtimeType.toString());
@@ -19,25 +16,29 @@ class UserPage extends StatelessWidget {
     final ThemeData themeData = Theme.of(context);
 
     return SafeArea(
-            child: Container(
-                decoration: new BoxDecoration(color: Colors.grey.shade400),
-                child: Column(mainAxisSize: MainAxisSize.min, children: [
-                  Expanded(flex: 1, child: UserImage()),
-                  Text("Name", style: themeData.textTheme.headline1),
-                  Divider(height: 50),
-                  Expanded(
-                      flex: 3,
-                      child: Container(
-                          decoration:
-                              new BoxDecoration(color: Colors.grey.shade400),
-                          child: MatchList(
-                              matches: Map.fromEntries(context
-                                  .watch<MatchesModel>()
-                                  .getMatches()
-                                  .entries
-                                  .where((element) => element.value.joining.contains(
-                                      context.read<UserModel>().user.uid)))))),
-                ])));
+        child: Container(
+            decoration: new BoxDecoration(color: Colors.grey.shade400),
+            child: Column(mainAxisSize: MainAxisSize.min, children: [
+              Expanded(flex: 1, child: UserImage()),
+              Text("Name", style: themeData.textTheme.headline1),
+              Divider(height: 50),
+              Expanded(
+                  flex: 3,
+                  child: Container(
+                      decoration:
+                          new BoxDecoration(color: Colors.grey.shade400),
+                      child: MatchList(
+                          matches:
+                              // fixme
+                              // context
+                              // .watch<MatchesModel>()
+                              // .getMatches()
+                              List<Match>.empty()
+                          // .where((m) =>
+                          // m.joining.contains(
+                          //     context.read<UserModel>().user.uid))))),
+                          )))
+            ])));
   }
 }
 
@@ -53,13 +54,12 @@ class UserImage extends StatelessWidget {
             child: FittedBox(
                 child: Text(
                     context.read<UserModel>().user.email[0].toUpperCase(),
-                    style: TextStyle(color: Colors.white, fontSize: 45))
-            )));
+                    style: TextStyle(color: Colors.white, fontSize: 45)))));
   }
 }
 
 class MatchList extends StatelessWidget {
-  final Map<String, Match> matches;
+  final List<Match> matches;
   final String title;
 
   const MatchList({Key key, this.matches, this.title}) : super(key: key);
@@ -69,9 +69,9 @@ class MatchList extends StatelessWidget {
     final ThemeData themeData = Theme.of(context);
 
     var open =
-        matches.entries.where((element) => element.value.status == MatchStatus.open).toList();
-    var played = matches.entries
-        .where((element) => element.value.status == MatchStatus.played)
+        matches.where((element) => element.status == MatchStatus.open).toList();
+    var played = matches
+        .where((element) => element.status == MatchStatus.played)
         .toList();
 
     var children = [];
@@ -82,9 +82,7 @@ class MatchList extends StatelessWidget {
     ]);
 
     if (open.isNotEmpty) {
-      children.addAll(open
-          .map<Widget>((e) => MatchInfo(e.key))
-          .toList());
+      children.addAll(open.map<Widget>((e) => MatchInfo(e)).toList());
     } else {
       children.addAll([
         Text("No upcoming matches", style: themeData.textTheme.bodyText1),
@@ -98,9 +96,7 @@ class MatchList extends StatelessWidget {
     ]);
 
     if (played.isNotEmpty) {
-      children.addAll(played
-          .map<Widget>((e) => MatchInfo(e.key))
-          .toList());
+      children.addAll(played.map<Widget>((e) => MatchInfo(e)).toList());
     } else {
       children.addAll([
         Text("No past matches", style: themeData.textTheme.bodyText1),
@@ -113,10 +109,12 @@ class MatchList extends StatelessWidget {
         onPressedFunction: () => context.read<UserModel>().logout()));
 
     if (context.read<UserModel>().userDetails.isAdmin) {
-      children.add(LoginOptionButton(text: "Add match",
+      children.add(LoginOptionButton(
+          text: "Add match",
           onTap: () {
-        Navigator.push(context, MaterialPageRoute(builder: (context) => new AddMatch()));
-      }));
+            Navigator.push(context,
+                MaterialPageRoute(builder: (context) => new AddMatch()));
+          }));
     }
 
     return Scaffold(

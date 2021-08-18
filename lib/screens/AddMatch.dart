@@ -144,7 +144,6 @@ class AddMatchState extends State<AddMatch> {
                             sportCenter,
                             sport,
                             maxPlayers,
-                            [],
                             double.parse(priceController.value.text),
                             MatchStatus.open);
 

@@ -6,7 +6,7 @@ import 'package:nutmeg/screens/Login.dart';
 import 'package:nutmeg/screens/UserPage.dart';
 import 'package:provider/provider.dart';
 
-import 'models/UserModel.dart';
+import '../models/UserFirestore.dart';
 
 var topBoxDecoration = BoxDecoration(
     color: Colors.green.shade700,

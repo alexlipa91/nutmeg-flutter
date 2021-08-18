@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
-import 'package:nutmeg/models/UserModel.dart';
+import 'package:nutmeg/models/UserFirestore.dart';
 import 'package:provider/provider.dart';
 
 
@@ -58,15 +58,8 @@ class _GoogleSignInButtonState extends State<GoogleSignInButton> {
           });
 
           if (userId != null) {
-            // Navigator.of(context).pushReplacement(
-            //   MaterialPageRoute(
-            //     builder: (context) => UserInfoScreen(
-            //       user: user,
-            //     ),
-            //   ),
-            // );
             print("user is " + userId);
-            Navigator.pop(context);
+            Navigator.pop(context, true);
           }
         },
         child: Padding(

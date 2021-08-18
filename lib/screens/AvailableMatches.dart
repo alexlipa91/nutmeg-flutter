@@ -1,26 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:nutmeg/models/Model.dart';
 import 'package:intl/intl.dart';
-import 'package:nutmeg/models/MatchesModel.dart';
-import 'package:nutmeg/models/UserModel.dart';
+import 'package:nutmeg/models/MatchesFirestore.dart';
+import 'package:nutmeg/models/UserFirestore.dart';
 import 'package:nutmeg/screens/MatchDetails.dart';
 import 'package:provider/provider.dart';
 
-import '../Utils.dart';
+import '../utils/Utils.dart';
 
+enum FilterOption { ALL, GOING }
+
+// main widget (stateful)
 class AvailableMatches extends StatefulWidget {
+  List<Match> matches;
+
+  AvailableMatches(this.matches);
+
   @override
-  State<StatefulWidget> createState() => AvailableMatchesState();
+  State<StatefulWidget> createState() => AvailableMatchesState(matches);
 }
 
 class AvailableMatchesState extends State<AvailableMatches> {
+  List<Match> matches;
+
+  AvailableMatchesState(this.matches);
+
   bool allFilterIsOn = true;
 
   @override
   Widget build(BuildContext context) {
-    print("Building " + this.runtimeType.toString());
-    print(context.read<FilterButtonState>().selectedOption);
-
     return SafeArea(
         child: Container(
       decoration: new BoxDecoration(color: Colors.grey.shade400),
@@ -64,27 +72,14 @@ class AvailableMatchesState extends State<AvailableMatches> {
                           ],
                         ),
                       )),
-                  Expanded(
-                      child: RefreshIndicatorStateful()),
+                  Expanded(child: RefreshIndicatorStateful(matches)),
                 ]),
           )),
     ));
   }
 }
 
-enum FilterOption { ALL, GOING }
-
-class FilterButtonState with ChangeNotifier {
-  FilterOption selectedOption;
-
-  FilterButtonState(this.selectedOption);
-
-  changeTo(FilterOption f) {
-    selectedOption = f;
-    notifyListeners();
-  }
-}
-
+// widget for all/going filter button + change notifier
 class FilterButton extends StatelessWidget {
   final FilterOption filterOption;
   final isLeft;
@@ -134,27 +129,43 @@ class FilterButton extends StatelessWidget {
   }
 }
 
+class FilterButtonState with ChangeNotifier {
+  FilterOption selectedOption;
+
+  FilterButtonState(this.selectedOption);
+
+  changeTo(FilterOption f) {
+    selectedOption = f;
+    notifyListeners();
+  }
+}
+
+// widget with list of matches
 class RefreshIndicatorStateful extends StatefulWidget {
+
+  List<Match> matches;
+
+  RefreshIndicatorStateful(this.matches);
+
   @override
-  State<StatefulWidget> createState() => RefreshIndicatorState();
+  State<StatefulWidget> createState() => RefreshIndicatorState(matches);
 }
 
 class RefreshIndicatorState extends State<RefreshIndicatorStateful>
     with WidgetsBindingObserver {
   static var dateFormat = new DateFormat("MMMM dd");
 
-  _getMatchesWidget(Map<String, Match> matches) {
-    var groupedByDay = Map<DateTime, List<String>>.fromEntries([]);
-    for (var m in matches.entries) {
-      var day = DateTime(
-          m.value.dateTime.year, m.value.dateTime.month, m.value.dateTime.day);
+  _getMatchesWidget(List<Match> matches) {
+    var groupedByDay = Map<DateTime, List<Match>>.fromEntries([]);
+    for (var m in matches) {
+      var day = DateTime(m.dateTime.year, m.dateTime.month, m.dateTime.day);
 
       var current = [];
       if (groupedByDay.containsKey(day)) {
         current = groupedByDay[day];
       }
-      current.add(m.key);
-      groupedByDay[day] = List<String>.from(current);
+      current.add(m);
+      groupedByDay[day] = List<Match>.from(current);
     }
 
     var widgets = [];
@@ -172,13 +183,16 @@ class RefreshIndicatorState extends State<RefreshIndicatorStateful>
     return List<Widget>.from(widgets);
   }
 
+  List<Match> matches;
+
+  RefreshIndicatorState(this.matches);
+
   AppLifecycleState _appLifecycleState;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    refresh();
   }
 
   @override
@@ -187,46 +201,40 @@ class RefreshIndicatorState extends State<RefreshIndicatorStateful>
       _appLifecycleState = state;
     });
     if (_appLifecycleState == AppLifecycleState.resumed) {
-      refresh();
-    }
-  }
-
-  Future<void> refresh() async {
-    try {
-      await context.read<MatchesModel>().pull();
-    } on Exception catch (err) {
-      print("Caught in refresh " + err.toString());
+      // fixme when resuming refresh list of matches
+      // refresh();
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    print("Building " + this.runtimeType.toString());
-
     var filterOption = context.watch<FilterButtonState>().selectedOption;
 
     var mainWidget = (filterOption == FilterOption.GOING &&
             !context.read<UserModel>().isLoggedIn())
         ? Center(
-          child: Text("Login to join matches", style: TextStyle(
-              color: Colors.grey, fontSize: 24, fontWeight: FontWeight.w400)),
-        )
+            child: Text("Login to join matches",
+                style: TextStyle(
+                    color: Colors.grey,
+                    fontSize: 24,
+                    fontWeight: FontWeight.w400)),
+          )
         : RefreshIndicator(
-            onRefresh: () async => await refresh(),
+            onRefresh: () async =>
+                matches = await context.read<MatchesModel>().fetchMatches(),
             child: ListView(
                 shrinkWrap: true,
                 padding: const EdgeInsets.all(8),
                 children: _getMatchesWidget((filterOption == FilterOption.GOING)
-                    ? context
-                        .watch<MatchesModel>()
-                        .getMatchesByUser(context.read<UserModel>().user)
-                    : context.watch<MatchesModel>().getMatches())));
+                    ? matches.where((m) => m.isUserGoing(context.read<UserModel>().userDetails))
+                    : matches)));
 
     // todo animate it
     return mainWidget;
   }
 }
 
+// single match info widgets
 class MatchInfoGroup extends StatelessWidget {
   final List<MatchInfo> matches;
 
@@ -248,14 +256,12 @@ class MatchInfo extends StatelessWidget {
   static var formatCurrency = NumberFormat.simpleCurrency(name: "EUR");
   static var monthDayFormat = DateFormat('HH:mm');
 
-  String matchId;
+  Match match;
 
-  MatchInfo(this.matchId);
+  MatchInfo(this.match);
 
   @override
   Widget build(BuildContext context) {
-    Match match = context.watch<MatchesModel>().getMatch(matchId);
-
     return InkWell(
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: 20),
@@ -309,7 +315,7 @@ class MatchInfo extends StatelessWidget {
                 child: Padding(
                     padding: EdgeInsets.all(5),
                     child: Text(
-                        match.joining.length.toString() +
+                        match.numPlayersGoing().toString() +
                             "/" +
                             match.maxPlayers.toString(),
                         style: TextStyle(
@@ -321,11 +327,28 @@ class MatchInfo extends StatelessWidget {
           ),
         ),
       ),
-      onTap: () {
-        Navigator.push(context,
-            MaterialPageRoute(builder: (context) => MatchDetails(matchId)));
+      onTap: () async {
+        await Navigator.push(context, MaterialPageRoute(builder: (context) => ChangeNotifierProvider(
+          create: (_) => MatchChangeNotifier(match),
+          child: MatchDetails(),
+        )
+            ));
+        match = await context.read<MatchesModel>().fetchMatch(match.documentId);
       },
       splashColor: Colors.white,
     );
+  }
+}
+
+class MatchChangeNotifier extends ChangeNotifier {
+
+  Match match;
+
+  MatchChangeNotifier(this.match);
+
+  set(Match newMatch) {
+    print("setting " + match.subscriptions.length.toString());
+    match = newMatch;
+    notifyListeners();
   }
 }

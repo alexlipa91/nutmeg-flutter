@@ -55,9 +55,9 @@ class UserModel extends ChangeNotifier {
       // check if first time
       await users.doc(user.uid).get().then((doc) {
         if (!doc.exists) {
-          userDetails = new UserDetails(false, user.photoURL, user.displayName);
+          userDetails = new UserDetails(user.uid, false, user.photoURL, user.displayName);
         } else {
-          userDetails = UserDetails.fromJson(doc.data());
+          userDetails = UserDetails.fromJson(doc.data(), doc.id);
         }
         return !doc.exists;
       }).then((shouldInsert) {
