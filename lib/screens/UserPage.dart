@@ -1,18 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:nutmeg/screens/Launch.dart';
+import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/utils/ButtonWidgets.dart';
 import 'package:nutmeg/screens/AddMatch.dart';
 import 'package:nutmeg/screens/Login.dart';
 import 'package:provider/provider.dart';
 
 import 'AvailableMatches.dart';
-import 'package:nutmeg/models/Model.dart';
+import 'package:nutmeg/model/Model.dart';
 
 class UserPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    print("Building " + this.runtimeType.toString());
-
     final ThemeData themeData = Theme.of(context);
 
     return SafeArea(
@@ -53,7 +51,7 @@ class UserImage extends StatelessWidget {
             radius: 40,
             child: FittedBox(
                 child: Text(
-                    context.read<UserChangeNotifier>().userDetails.firebaseUser.email[0].toUpperCase(),
+                    context.read<UserChangeNotifier>().getUserDetails().firebaseUser.email[0].toUpperCase(),
                     style: TextStyle(color: Colors.white, fontSize: 45)))));
   }
 }
@@ -108,7 +106,7 @@ class MatchList extends StatelessWidget {
         text: "Logout",
         onPressedFunction: () => context.read<UserChangeNotifier>().logout()));
 
-    if (context.read<UserChangeNotifier>().userDetails.isAdmin) {
+    if (context.read<UserChangeNotifier>().getUserDetails().isAdmin) {
       children.add(LoginOptionButton(
           text: "Add match",
           onTap: () {

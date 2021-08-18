@@ -1,23 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:nutmeg/models/Model.dart';
+import 'package:nutmeg/model/ChangeNotifiers.dart';
+import 'package:nutmeg/model/Model.dart';
 import 'package:intl/intl.dart';
 import 'package:nutmeg/screens/MatchDetails.dart';
 import 'package:provider/provider.dart';
+import 'package:nutmeg/utils/Utils.dart';
+import 'package:week_of_year/week_of_year.dart';
+import "package:collection/collection.dart";
+
 
 import '../utils/Utils.dart';
-import 'Launch.dart';
 
 enum FilterOption { ALL, GOING }
 
 // main widget (stateful)
 class AvailableMatches extends StatefulWidget {
-
   @override
   State<StatefulWidget> createState() => AvailableMatchesState();
 }
 
 class AvailableMatchesState extends State<AvailableMatches> {
-
   bool allFilterIsOn = true;
 
   @override
@@ -135,7 +137,6 @@ class FilterButtonState with ChangeNotifier {
 
 // widget with list of matches
 class RefreshIndicatorStateful extends StatefulWidget {
-
   @override
   State<StatefulWidget> createState() => RefreshIndicatorState();
 }
@@ -144,29 +145,26 @@ class RefreshIndicatorState extends State<RefreshIndicatorStateful>
     with WidgetsBindingObserver {
   static var dateFormat = new DateFormat("MMMM dd");
 
+  // creates widgets splitting by week
   _getMatchesWidget(List<Match> matches) {
-    var groupedByDay = Map<DateTime, List<Match>>.fromEntries([]);
-    for (var m in matches) {
-      var day = DateTime(m.dateTime.year, m.dateTime.month, m.dateTime.day);
+    var currentWeek = DateTime.now().weekOfYear;
+    var groups = matches.groupListsBy((m) => m.dateTime.weekOfYear);
 
-      var current = [];
-      if (groupedByDay.containsKey(day)) {
-        current = groupedByDay[day];
-      }
-      current.add(m);
-      groupedByDay[day] = List<Match>.from(current);
-    }
+    var weekTitles = {
+      currentWeek: "This week",
+      currentWeek + 1: "Next week",
+    };
 
     var widgets = [];
-    for (var day in groupedByDay.keys.toList()..sort()) {
+    for (var week in groups.keys.toList()..sort()) {
       widgets.add(Padding(
         padding: EdgeInsets.symmetric(horizontal: 25, vertical: 10),
-        child: Text(dateFormat.format(day),
+        child: Text(weekTitles[week] ?? "More than two weeks",
             style: TextStyle(
                 color: Colors.grey, fontSize: 16, fontWeight: FontWeight.w400)),
       ));
       widgets.add(new MatchInfoGroup(
-          matches: groupedByDay[day].map((e) => MatchInfo(e)).toList()));
+          matches: groups[week].map((e) => MatchInfo(e)).toList()));
     }
 
     return List<Widget>.from(widgets);
@@ -193,8 +191,8 @@ class RefreshIndicatorState extends State<RefreshIndicatorStateful>
 
   @override
   Widget build(BuildContext context) {
+    var matches = context.watch<MatchesChangeNotifier>().getMatches();
     var filterOption = context.watch<FilterButtonState>().selectedOption;
-    var matches = context.watch<MatchesChangeNotifier>().matches;
 
     var mainWidget = (filterOption == FilterOption.GOING &&
             !context.read<UserChangeNotifier>().isLoggedIn())
@@ -206,12 +204,14 @@ class RefreshIndicatorState extends State<RefreshIndicatorStateful>
                     fontWeight: FontWeight.w400)),
           )
         : RefreshIndicator(
-            onRefresh: () async => await context.read<MatchesChangeNotifier>().refresh(),
+            onRefresh: () async =>
+                await context.read<MatchesChangeNotifier>().refresh(),
             child: ListView(
                 shrinkWrap: true,
                 padding: const EdgeInsets.all(8),
                 children: _getMatchesWidget((filterOption == FilterOption.GOING)
-                    ? matches.where((m) => m.isUserGoing(context.read<UserChangeNotifier>().userDetails))
+                    ? matches.where((m) => m.isUserGoing(
+                        context.read<UserChangeNotifier>().getUserDetails())).toList()
                     : matches)));
 
     // todo animate it
@@ -313,7 +313,13 @@ class MatchInfo extends StatelessWidget {
         ),
       ),
       onTap: () async {
-        await Navigator.push(context, MaterialPageRoute(builder: (context) => MatchDetails(match)));
+        // fixme why it doesn't rebuild here?
+        await Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => MatchDetails(context
+                    .watch<MatchesChangeNotifier>()
+                    .getMatch(match.documentId))));
         await context.read<MatchesChangeNotifier>().refresh();
       },
       splashColor: Colors.white,

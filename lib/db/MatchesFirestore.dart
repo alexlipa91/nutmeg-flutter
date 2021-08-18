@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:nutmeg/models/Model.dart';
-import 'package:nutmeg/models/SubscriptionsFirestore.dart';
+import 'package:nutmeg/model/Model.dart';
+import 'package:nutmeg/db//SubscriptionsFirestore.dart';
 
 // todo try to have one change notifier per match rather than one per all the matches
 class MatchesFirestore {
@@ -64,8 +64,6 @@ class MatchesFirestore {
   static Future<Match> _createMatchObject(DocumentSnapshot<Match> doc) async {
     var match = doc.data();
     match.subscriptions = await SubscriptionsDb.getMatchSubscriptions(match.documentId) ?? [];
-    print("match subs " + match.subscriptions.length.toString());
-
     return match;
   }
 }

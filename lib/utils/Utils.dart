@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:nutmeg/screens/Launch.dart';
+import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/screens/Login.dart';
 import 'package:nutmeg/screens/UserPage.dart';
 import 'package:provider/provider.dart';
@@ -63,7 +63,7 @@ getAppBar(BuildContext context) {
               context, MaterialPageRoute(builder: (context) => new UserPage()));
         };
         backgroundImage =
-            NetworkImage(context.read<UserChangeNotifier>().userDetails.firebaseUser.photoURL);
+            NetworkImage(context.read<UserChangeNotifier>().getUserDetails().firebaseUser.photoURL);
       } else {
         function = () => Navigator.push(
             context, MaterialPageRoute(builder: (context) => Login()));
@@ -89,10 +89,6 @@ getAppBar(BuildContext context) {
     title: Text("Nutmeg",
         style: TextStyle(
             color: Colors.white, fontWeight: FontWeight.w500, fontSize: 26)),
-    leading: Icon(
-      Icons.menu,
-      color: Colors.white,
-    ),
     actions: [getTopBottomWidget(context)],
     elevation: 0,
   );

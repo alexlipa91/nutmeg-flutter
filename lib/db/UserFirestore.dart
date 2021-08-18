@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'Model.dart';
+import '../model/Model.dart';
 
 
 class UserFirestore {
@@ -9,10 +9,10 @@ class UserFirestore {
   static CollectionReference users = FirebaseFirestore.instance.collection('users');
   static final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  static Future<String> getImageUrl(String uid) async {
+  static Future<UserDetails> getSpecificUserDetails(String uid) async {
     return await users.doc(uid).get().then((value) {
       Map<String, dynamic> data = value.data();
-      return data['image'].toString();
+      return UserDetails.fromJson(data, null);
     });
   }
 

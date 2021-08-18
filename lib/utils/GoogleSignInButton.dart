@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
-import 'package:nutmeg/screens/Launch.dart';
+import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:provider/provider.dart';
 
 
@@ -56,7 +56,7 @@ class _GoogleSignInButtonState extends State<GoogleSignInButton> {
             _isSigningIn = false;
           });
 
-          print("user is " + context.read<UserChangeNotifier>().userDetails.getUid());
+          print("user is " + context.read<UserChangeNotifier>().getUserDetails().getUid());
           Navigator.pop(context, true);
         },
         child: Padding(

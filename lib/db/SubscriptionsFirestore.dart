@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:nutmeg/models/Model.dart';
+import 'package:nutmeg/model/Model.dart';
 
 // todo try to have one change notifier per match rather than one per all the matches
 class SubscriptionsDb  {

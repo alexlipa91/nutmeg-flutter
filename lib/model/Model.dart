@@ -49,7 +49,8 @@ class Match {
         status = MatchStatus.values[json['status']],
         documentId = documentId;
 
-  Map<String, dynamic> toJson() => {
+  Map<String, dynamic> toJson() =>
+      {
         'dateTime': serializationDateFormat.format(dateTime),
         'sportCenter': sportCenter.toJson(),
         'sport': sport.index,
@@ -60,18 +61,24 @@ class Match {
 
   String getFormattedDate() {
     return (isSameDay(DateTime.now(), dateTime)
-            ? "Today"
-            : uiDateFormat.format(dateTime)) +
+        ? "Today"
+        : uiDateFormat.format(dateTime)) +
         " at " +
         uiHourFormat.format(dateTime);
   }
 
   int getSpotsLeft() => maxPlayers - numPlayersGoing();
 
-  int numPlayersGoing() => subscriptions.where((s) => s.status == SubscriptionStatus.going).length;
+  int numPlayersGoing() =>
+      subscriptions
+          .where((s) => s.status == SubscriptionStatus.going)
+          .length;
 
   bool isUserGoing(UserDetails user) =>
-      subscriptions.contains((s) => s.status == SubscriptionStatus.going && s.userId == user.getUid());
+      subscriptions
+          .where((s) =>
+      s.status == SubscriptionStatus.going && s.userId == user.getUid())
+          .isNotEmpty;
 }
 
 class Subscription {
@@ -88,10 +95,11 @@ class Subscription {
         userId = json['userId'],
         status = SubscriptionStatus.values[json['status']];
 
-  Map<String, dynamic> toJson() => {
-    'userId': userId,
-    'status': status.index
-  };
+  Map<String, dynamic> toJson() =>
+      {
+        'userId': userId,
+        'status': status.index
+      };
 }
 
 class SportCenter {
@@ -119,7 +127,7 @@ class SportCenter {
 
   SportCenter.fromId(String id) {
     var toFind =
-        SportCenter.getSportCenters().where((element) => element.placeId == id);
+    SportCenter.getSportCenters().where((element) => element.placeId == id);
     if (toFind.isEmpty) {
       throw Exception("Sport center with id " + id + " not found");
     }
@@ -135,9 +143,14 @@ class SportCenter {
       : placeId = json['placeId'],
         name = json['name'];
 
-  String getTags() => (tags == null)
-      ? null
-      : tags.map((e) => e.toString().split('.').last).join(", ");
+  String getTags() =>
+      (tags == null)
+          ? null
+          : tags.map((e) =>
+      e
+          .toString()
+          .split('.')
+          .last).join(", ");
 
   String getName() => name;
 
@@ -163,7 +176,8 @@ class UserDetails {
         name = json["name"],
         firebaseUser = firebaseUser;
 
-  Map<String, dynamic> toJson() => {'isAdmin': isAdmin, 'image': image, 'name': name};
+  Map<String, dynamic> toJson() =>
+      {'isAdmin': isAdmin, 'image': image, 'name': name};
 
   String getUid() => firebaseUser.uid;
 }

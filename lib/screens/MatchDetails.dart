@@ -1,21 +1,19 @@
 import 'package:cool_alert/cool_alert.dart';
 import 'package:flutter/material.dart';
-import 'package:nutmeg/models/MatchesFirestore.dart';
-import 'package:nutmeg/models/Model.dart';
-import 'package:nutmeg/models/UserFirestore.dart';
+import 'package:nutmeg/model/ChangeNotifiers.dart';
+import 'package:nutmeg/model/Model.dart';
 import 'package:nutmeg/screens/PaymentTest.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 
 import '../utils/Utils.dart';
-import 'Launch.dart';
 import 'Login.dart';
 
 isGoing(Match match, BuildContext context) {
-  return context.read<UserChangeNotifier>().isLoggedIn() &&
+  return context.watch<UserChangeNotifier>().isLoggedIn() &&
       match.isUserGoing(context
-          .read<UserChangeNotifier>()
-          .userDetails);
+          .watch<UserChangeNotifier>()
+          .getUserDetails());
 }
 
 class MatchDetails extends StatelessWidget {
@@ -26,7 +24,6 @@ class MatchDetails extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print("building match details, match hash " + match.hashCode.toString());
     return SafeArea(
       child: Scaffold(
           backgroundColor: Palette.green,
@@ -75,7 +72,7 @@ class MatchDetails extends StatelessWidget {
                                     match.isUserGoing(
                                         context
                                             .read<UserChangeNotifier>()
-                                            .userDetails))
+                                            .getUserDetails()))
                                   Icon(Icons.check_circle,
                                       color: Colors.white, size: 40),
                               ],
@@ -216,12 +213,12 @@ class MatchInfoMainButton extends StatelessWidget {
                         // remove previous bottom sheet
                         Navigator.pop(context, value);
                       },
-                      child: Text("Continue to payment"))
+                      child: Text("Continue to payment (skipping it for now, it will assume success and come back)"))
                 ],
               );
             });
         if (value == "success") {
-          await context.read<MatchesChangeNotifier>().joinMatch(match, context.read<UserChangeNotifier>().userDetails);
+          await context.read<MatchesChangeNotifier>().joinMatch(match, context.read<UserChangeNotifier>().getUserDetails());
           showModalBottomSheet(context: context,
               builder: (context) {
                 return TextButton(child: Text("close"), onPressed: () => Navigator.pop(context));
@@ -280,19 +277,14 @@ class PlayersList extends StatelessWidget {
           child: Row(
               children: users
                   .map((e) =>
-                  FutureBuilder(
-                      future: UserFirestore.getImageUrl(e),
+                  FutureBuilder<UserDetails>(
+                      future: UserChangeNotifier.getSpecificUserDetails(e),
                       builder: (context, snapshot) =>
                       (snapshot.hasData &&
                           e != null)
                           ? PlayerCard(
-                          name:
-                          context
-                              .read<UserChangeNotifier>()
-                              .userDetails
-                              ?.name ??
-                              "name",
-                          imageUrl: snapshot.data)
+                          name: snapshot.data.name.split(" ").first,
+                          imageUrl: snapshot.data.image)
                           : Icon(Icons.face, size: 50.0)))
                   .toList()),
         ),
