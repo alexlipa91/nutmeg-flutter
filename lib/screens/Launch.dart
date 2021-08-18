@@ -23,21 +23,6 @@ class MatchesChangeNotifier extends ChangeNotifier {
   }
 }
 
-class SingleMatchChangeNotifier extends ChangeNotifier {
-
-  Match match;
-
-  refresh() async {
-    match = await MatchesFirestore.fetchMatch(match);
-    notifyListeners();
-  }
-
-  joinMatch(UserDetails u) async {
-    await MatchesFirestore.joinMatch(u, match);
-    await refresh();
-  }
-}
-
 
 class UserChangeNotifier extends ChangeNotifier {
 
