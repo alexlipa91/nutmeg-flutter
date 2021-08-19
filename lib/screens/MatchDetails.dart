@@ -211,11 +211,11 @@ class MatchInfoMainButton extends StatelessWidget {
                             .createCheckout(stripeCustomerId, match.pricePerPersonInCents);
                         print("sessId " + sessionId);
 
-                        var value = "success";
-                        // var value = await Navigator.of(context).push(
-                        //     MaterialPageRoute(
-                        //         builder: (_) =>
-                        //             CheckoutPage(sessionId: sessionId)));
+                        var value = await Navigator.of(context).push(
+                            MaterialPageRoute(
+                                builder: (_) =>
+                                    CheckoutPage(sessionId: sessionId)));
+
                         // remove previous bottom sheet
                         Navigator.pop(context, value);
                       },
