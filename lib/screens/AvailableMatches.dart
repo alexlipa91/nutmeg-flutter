@@ -279,7 +279,7 @@ class MatchInfo extends StatelessWidget {
                           fontSize: 16,
                           fontWeight: FontWeight.w500)),
                   SizedBox(height: 10),
-                  Text(formatCurrency.format(match.pricePerPerson),
+                  Text(formatCurrency.format(match.getPrice()),
                       style: TextStyle(
                           color: Colors.grey,
                           fontSize: 18,

@@ -3,12 +3,28 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:nutmeg/model/ChangeNotifiers.dart';
+import 'package:provider/provider.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 var apiKey =
     "pk_test_51HyCDAGRb87bTNwH1dlHJXwdDSIUhxqPZS3zeytnO7T9dHBxzhwiWO5E0kFYLkVdZbZ2t0LEHxjuPmKFZ32fiMjO00dWLo1DqE";
 var secretKey =
     "sk_test_51HyCDAGRb87bTNwH4bDZ4nS8eQyDGQvJDt3uFOKdptndo68tkFc4Hr0lyASDEMWMMHbp53HkkXbBozZGEmlVmxP3001nYitsJu";
+
+void main() async {
+  final customerId = await Server().createCustomer("abc@gmail.com", "Abc Def");
+  final sessionId = await Server().createCheckout(customerId, 1000);
+
+  runApp(MultiProvider(
+    providers: [
+      ChangeNotifierProvider(create: (context) => UserChangeNotifier())
+    ],
+    child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: CheckoutPage(sessionId: sessionId)),
+  ));
+}
 
 class CheckoutPage extends StatefulWidget {
   final String sessionId;
@@ -25,6 +41,10 @@ class _CheckoutPageState extends State<CheckoutPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: PreferredSize(
+        child: Container(),
+        preferredSize: Size.fromHeight(0.0),
+      ),
       resizeToAvoidBottomInset: false,
       body: WebView(
         initialUrl: initialUrl,
@@ -77,14 +97,14 @@ const kStripeHtmlPage = '''
 
 // fixme move to a backend
 class Server {
-  Future<String> createCheckout() async {
+  Future<String> createCheckout(customerId, int amountInCents) async {
     final auth = 'Basic ' + base64Encode(utf8.encode('$secretKey:'));
     final body = {
       'payment_method_types[]': ['ideal', 'card'],
       'line_items': [
         {
           'price_data': {
-            "unit_amount": 800,
+            "unit_amount": amountInCents,
             "product_data": {
               "name": "Nutmeg match",
             },
@@ -96,11 +116,35 @@ class Server {
       'mode': 'payment',
       'success_url': 'https://success.com/{CHECKOUT_SESSION_ID}',
       'cancel_url': 'https://cancel.com/',
+      'customer' : customerId
     };
 
     try {
       final result = await Dio().post(
         "https://api.stripe.com/v1/checkout/sessions",
+        data: body,
+        options: Options(
+          headers: {HttpHeaders.authorizationHeader: auth},
+          contentType: "application/x-www-form-urlencoded",
+        ),
+      );
+      return result.data['id'];
+    } on DioError catch (e, s) {
+      print(e.response);
+      throw e;
+    }
+  }
+
+  Future<String> createCustomer(String email, String name) async {
+    final auth = 'Basic ' + base64Encode(utf8.encode('$secretKey:'));
+    final body = {
+      'email': email,
+      'name': name
+    };
+
+    try {
+      final result = await Dio().post(
+        "https://api.stripe.com/v1/customers",
         data: body,
         options: Options(
           headers: {HttpHeaders.authorizationHeader: auth},

@@ -31,20 +31,20 @@ class Match {
   DateTime dateTime;
   String sportCenter;
   Sport sport;
-  double pricePerPerson;
+  int pricePerPersonInCents;
   int maxPlayers;
   MatchStatus status;
 
   List<Subscription> subscriptions;
 
   Match(this.dateTime, this.sportCenter, this.sport, this.maxPlayers,
-      this.pricePerPerson, this.status);
+      this.pricePerPersonInCents, this.status);
 
   Match.fromJson(Map<String, dynamic> json, String documentId)
       : dateTime = serializationDateFormat.parse(json['dateTime']),
         sportCenter = json['sportCenter'],
         sport = Sport.values[json['sport']],
-        pricePerPerson = json['pricePerPerson'],
+        pricePerPersonInCents = json['pricePerPerson'],
         maxPlayers = json['maxPlayers'],
         status = MatchStatus.values[json['status']],
         documentId = documentId;
@@ -53,7 +53,7 @@ class Match {
         'dateTime': serializationDateFormat.format(dateTime),
         'sportCenter': sportCenter,
         'sport': sport.index,
-        'pricePerPerson': pricePerPerson,
+        'pricePerPerson': pricePerPersonInCents,
         'maxPlayers': maxPlayers,
         'status': status.index,
       };
@@ -75,6 +75,8 @@ class Match {
       .where((s) =>
           s.status == SubscriptionStatus.going && s.userId == user.getUid())
       .isNotEmpty;
+
+  double getPrice() => pricePerPersonInCents / 100;
 }
 
 class Subscription {
@@ -123,6 +125,7 @@ class UserDetails {
   bool isAdmin;
   String image;
   String name;
+  String stripeId;
 
   UserDetails(this.firebaseUser, this.isAdmin, this.image, this.name);
 
@@ -130,10 +133,15 @@ class UserDetails {
       : isAdmin = json["isAdmin"] ?? false,
         image = json["image"],
         name = json["name"],
+        stripeId = json["stripeId"] ?? null,
         firebaseUser = firebaseUser;
 
   Map<String, dynamic> toJson() =>
       {'isAdmin': isAdmin, 'image': image, 'name': name};
 
   String getUid() => firebaseUser.uid;
+
+  String getStripeId() => stripeId;
+
+  void setStripeId(String stripeId) => stripeId = stripeId;
 }

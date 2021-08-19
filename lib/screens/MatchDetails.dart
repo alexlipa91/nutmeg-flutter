@@ -2,7 +2,7 @@ import 'package:cool_alert/cool_alert.dart';
 import 'package:flutter/material.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
-import 'package:nutmeg/screens/PaymentTest.dart';
+import 'package:nutmeg/screens/PaymentPage.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/AppBar.dart';
 import 'package:provider/provider.dart';
@@ -123,7 +123,7 @@ class MatchInfoContainer extends StatelessWidget {
                 // todo fix info sport
                 subTitle: sportCenter.tags.join(", ")),
             InfoWidget(
-                title: formatCurrency.format(match.pricePerPerson),
+                title: formatCurrency.format(match.getPrice()),
                 icon: Icons.money,
                 subTitle: "Pay with Ideal"),
             Row(
@@ -205,7 +205,10 @@ class MatchInfoMainButton extends StatelessWidget {
                   Text("price"),
                   TextButton(
                       onPressed: () async {
-                        final sessionId = await Server().createCheckout();
+                        final stripeCustomerId = context.read<UserChangeNotifier>()
+                            .getOrCreateStripeId();
+                        final sessionId = await Server()
+                            .createCheckout(stripeCustomerId, match.pricePerPersonInCents);
                         print("sessId " + sessionId);
 
                         var value = "success";

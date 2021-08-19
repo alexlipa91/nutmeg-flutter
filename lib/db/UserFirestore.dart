@@ -62,9 +62,11 @@ class UserFirestore {
   }
 
   static Future<void> logout() async {
-    print("logout");
     var gs = GoogleSignIn();
-    gs.disconnect();
-    _auth.signOut();
+    await gs.disconnect();
+    await _auth.signOut();
   }
+
+  static storeStripeId(String uid, String stripeId) async =>
+      await users.doc(uid).update({"stripeId": stripeId});
 }

@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:nutmeg/db/MatchesFirestore.dart';
 import 'package:nutmeg/db/SportCentersFirestore.dart';
 import 'package:nutmeg/db/UserFirestore.dart';
+import 'package:nutmeg/screens/PaymentPage.dart';
 import 'Model.dart';
 
 class MatchesChangeNotifier extends ChangeNotifier {
@@ -58,5 +59,19 @@ class UserChangeNotifier extends ChangeNotifier {
     await UserFirestore.logout();
     _userDetails.firebaseUser = null;
     notifyListeners();
+  }
+
+  Future<String> getOrCreateStripeId() async {
+    if (_userDetails.getStripeId() != null) {
+      return _userDetails.getStripeId();
+    }
+
+    String stripeId = await Server()
+        .createCustomer(_userDetails.firebaseUser.email, _userDetails.name);
+
+    _userDetails.setStripeId(stripeId);
+    UserFirestore.storeStripeId(_userDetails.getUid(), stripeId);
+
+    return stripeId;
   }
 }
