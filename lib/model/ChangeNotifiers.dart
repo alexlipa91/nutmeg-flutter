@@ -23,6 +23,11 @@ class MatchesChangeNotifier extends ChangeNotifier {
     await MatchesFirestore.joinMatch(u, m);
     await refresh();
   }
+
+  leaveMatch(Match m, UserDetails u) async {
+    await MatchesFirestore.leaveMatch(u, m);
+    await refresh();
+  }
 }
 
 class SportCentersChangeNotifier extends ChangeNotifier {

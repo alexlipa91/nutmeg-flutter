@@ -31,7 +31,7 @@ class MatchesFirestore {
     return await _ref.doc(match.documentId).get().then((value) => value.data());
   }
 
-  static Future<Match> leaveMatch(User user, Match match) async {
+  static Future<Match> leaveMatch(UserDetails user, Match match) async {
     await FirebaseFirestore.instance.runTransaction((transaction) async {
       var subscriptionsRef = _ref.doc(match.documentId).collection("subscriptions").withConverter<Subscription>(
         fromFirestore: (snapshot, _) => Subscription.fromJson(snapshot.data(), snapshot.id),
@@ -41,13 +41,13 @@ class MatchesFirestore {
       var subsQuerySnapshot = await subscriptionsRef.get();
       var subs = subsQuerySnapshot.docs.map((e) => e.data());
 
-      var currentSub = subs.where((s) => s.userId == user.uid && s.status == SubscriptionStatus.going);
+      var currentSub = subs.where((s) => s.userId == user.getUid() && s.status == SubscriptionStatus.going);
       
       if (currentSub.isEmpty) {
         throw new Exception("Cannot remove since not going");
       }
 
-      subscriptionsRef.doc(currentSub.first.documentId).set(new Subscription(user.uid, SubscriptionStatus.canceled));
+      subscriptionsRef.doc(currentSub.first.documentId).set(new Subscription(user.getUid(), SubscriptionStatus.canceled));
     });
 
     return await _ref.doc(match.documentId).get().then((value) => value.data());

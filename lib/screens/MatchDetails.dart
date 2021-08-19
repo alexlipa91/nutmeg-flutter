@@ -247,11 +247,26 @@ class MatchInfoMainButton extends StatelessWidget {
       }
     }
 
-    _onPressedLeaveAction() {
-      showDialog(
+    _onPressedLeaveAction() async {
+      var value = await showModalBottomSheet(
           context: context,
-          builder: (_) =>
-          new AlertDialog(title: Text("Implement leave match")));
+          builder: (context) {
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Text("Are you sure? You are going to receive X euro back in your account for future matches"),
+                Divider(),
+                TextButton(
+                    onPressed: () async {
+                      await context.read<MatchesChangeNotifier>().leaveMatch(match, context.read<UserChangeNotifier>().getUserDetails());
+
+                      // go to home
+                      Navigator.of(context).popUntil((route) => route.isFirst);
+                    },
+                    child: Text("Yes"))
+              ],
+            );
+          });
     }
 
     var mainColor = isGoing(match, context) ? Colors.red : Palette.green;
