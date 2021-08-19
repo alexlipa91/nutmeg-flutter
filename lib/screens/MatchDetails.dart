@@ -11,9 +11,9 @@ import 'package:intl/intl.dart';
 import 'Login.dart';
 
 isGoing(Match match, BuildContext context) {
-  return context.watch<UserChangeNotifier>().isLoggedIn() &&
+  return context.read<UserChangeNotifier>().isLoggedIn() &&
       match.isUserGoing(context
-          .watch<UserChangeNotifier>()
+          .read<UserChangeNotifier>()
           .getUserDetails());
 }
 
@@ -31,61 +31,69 @@ class MatchDetails extends StatelessWidget {
           appBar: CustomAppBar(),
           body: Container(
             decoration: new BoxDecoration(color: Colors.grey.shade400),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Container(
-                  decoration: topBoxDecoration,
-                  child: Padding(
-                      padding: EdgeInsets.all(20),
-                      child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(match.sport.getDisplayTitle(),
-                                style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 38,
-                                    fontWeight: FontWeight.w800)),
-                            SizedBox(height: 10),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Container(
-                                    decoration: new BoxDecoration(
-                                      color: Colors.red.shade300,
-                                      borderRadius:
-                                      BorderRadius.all(Radius.circular(5)),
-                                      border: new Border.all(
-                                        color: Colors.white70,
-                                        width: 0.5,
-                                      ),
-                                    ),
-                                    child: Padding(
-                                        padding: EdgeInsets.all(5),
-                                        child: Text(
-                                            match.getSpotsLeft().toString() +
-                                                " spots left",
-                                            style: TextStyle(
-                                                color: Colors.grey.shade50,
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.w400)))),
-                                if (context.read<UserChangeNotifier>().isLoggedIn() &&
-                                    match.isUserGoing(
-                                        context
-                                            .read<UserChangeNotifier>()
-                                            .getUserDetails()))
-                                  Icon(Icons.check_circle,
-                                      color: Colors.white, size: 40),
-                              ],
-                            )
-                          ])),
-                ),
-                MatchInfoContainer(match),
-                PlayersList(
-                    users: match.subscriptions
-                        .where((s) => s.status == SubscriptionStatus.going)
-                        .map((e) => e.userId)
-                        .toList())
+            // fixme this is not working well; here we need something that fits the whole page vertically and can scroll if too big. Now this has the scroll animation on top but it actually fits so it shouldn't
+            child: CustomScrollView(
+              slivers: [
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Container(
+                        decoration: topBoxDecoration,
+                        child: Padding(
+                            padding: EdgeInsets.all(20),
+                            child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(match.sport.getDisplayTitle(),
+                                      style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 38,
+                                          fontWeight: FontWeight.w800)),
+                                  SizedBox(height: 10),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Container(
+                                          decoration: new BoxDecoration(
+                                            color: Colors.red.shade300,
+                                            borderRadius:
+                                            BorderRadius.all(Radius.circular(5)),
+                                            border: new Border.all(
+                                              color: Colors.white70,
+                                              width: 0.5,
+                                            ),
+                                          ),
+                                          child: Padding(
+                                              padding: EdgeInsets.all(5),
+                                              child: Text(
+                                                  match.getSpotsLeft().toString() +
+                                                      " spots left",
+                                                  style: TextStyle(
+                                                      color: Colors.grey.shade50,
+                                                      fontSize: 12,
+                                                      fontWeight: FontWeight.w400)))),
+                                      if (context.read<UserChangeNotifier>().isLoggedIn() &&
+                                          match.isUserGoing(
+                                              context
+                                                  .read<UserChangeNotifier>()
+                                                  .getUserDetails()))
+                                        Icon(Icons.check_circle,
+                                            color: Colors.white, size: 40),
+                                    ],
+                                  )
+                                ])),
+                      ),
+                      MatchInfoContainer(match),
+                      PlayersList(
+                          users: match.subscriptions
+                              .where((s) => s.status == SubscriptionStatus.going)
+                              .map((e) => e.userId)
+                              .toList())
+                    ],
+                  ),
+                )
               ],
             ),
           )),
@@ -106,7 +114,7 @@ class MatchInfoContainer extends StatelessWidget {
     SportCenter sportCenter = context.read<SportCentersChangeNotifier>().getSportCenter(match.sportCenter);
 
     return Container(
-        margin: EdgeInsets.all(20),
+        margin: EdgeInsets.all(15),
         decoration: infoMatchDecoration,
         child: Padding(
           padding: EdgeInsets.all(20),
@@ -205,8 +213,9 @@ class MatchInfoMainButton extends StatelessWidget {
                   Text("price"),
                   TextButton(
                       onPressed: () async {
-                        final stripeCustomerId = context.read<UserChangeNotifier>()
+                        final stripeCustomerId = await context.read<UserChangeNotifier>()
                             .getOrCreateStripeId();
+                        print("stripeCustomerId " + stripeCustomerId);
                         final sessionId = await Server()
                             .createCheckout(stripeCustomerId, match.pricePerPersonInCents);
                         print("sessId " + sessionId);
@@ -219,7 +228,7 @@ class MatchInfoMainButton extends StatelessWidget {
                         // remove previous bottom sheet
                         Navigator.pop(context, value);
                       },
-                      child: Text("Continue to payment (skipping it for now, it will assume success and come back)"))
+                      child: Text("Continue to payment"))
                 ],
               );
             });
