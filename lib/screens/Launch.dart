@@ -57,22 +57,19 @@ class _LaunchWidgetState extends State<LaunchWidget> {
 
   @override
   Widget build(BuildContext context) {
-    print("Building " + this.runtimeType.toString());
-
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
-          image: DecorationImage(
-            image: AssetImage("assets/running_football.png"),
-            fit: BoxFit.cover,
-          ),
+          color: Palette.primary,
         ),
         child: Center(
-          child: CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-          ),
-        ),
+            child:
+                Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+          Image.asset("assets/nutmeg_logo.png", width: 116, height: 46),
+          SizedBox(height: 30),
+          CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
+        ])),
       ),
     );
   }
