@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:location/location.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
 import 'package:intl/intl.dart';
 import 'package:nutmeg/screens/MatchDetails.dart';
+import 'package:nutmeg/utils/LocationUtils.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/AppBar.dart';
 import 'package:provider/provider.dart';
 import 'package:week_of_year/week_of_year.dart';
 import "package:collection/collection.dart";
-
 
 enum FilterOption { ALL, GOING }
 
@@ -145,7 +146,7 @@ class RefreshIndicatorState extends State<RefreshIndicatorStateful>
   static var dateFormat = new DateFormat("MMMM dd");
 
   // creates widgets splitting by week
-  _getMatchesWidget(List<Match> matches) {
+  _getMatchesWidget(List<Match> matches, LocationData locationData) {
     var currentWeek = DateTime.now().weekOfYear;
     var groups = matches.groupListsBy((m) => m.dateTime.weekOfYear);
 
@@ -163,7 +164,9 @@ class RefreshIndicatorState extends State<RefreshIndicatorStateful>
                 color: Colors.grey, fontSize: 16, fontWeight: FontWeight.w400)),
       ));
       widgets.add(new MatchInfoGroup(
-          matches: groups[week].map((e) => MatchInfo(e)).toList()));
+          matches: groups[week]
+              .map((e) => MatchInfo.withLocation(e, locationData))
+              .toList()));
     }
 
     return List<Widget>.from(widgets);
@@ -178,13 +181,13 @@ class RefreshIndicatorState extends State<RefreshIndicatorStateful>
   }
 
   @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
+  void didChangeAppLifecycleState(AppLifecycleState state) async {
     setState(() {
       _appLifecycleState = state;
     });
     if (_appLifecycleState == AppLifecycleState.resumed) {
       // fixme when resuming refresh list of matches
-      // refresh();
+      context.read<MatchesChangeNotifier>().refresh();
     }
   }
 
@@ -203,16 +206,22 @@ class RefreshIndicatorState extends State<RefreshIndicatorStateful>
                     fontWeight: FontWeight.w400)),
           )
         : RefreshIndicator(
-            onRefresh: () async =>
-                await context.read<MatchesChangeNotifier>().refresh(),
+            onRefresh: () async {
+              await context.read<MatchesChangeNotifier>().refresh();
+              await context.read<LocationChangeNotifier>().refresh();
+            },
             child: ListView(
                 shrinkWrap: true,
                 padding: const EdgeInsets.all(8),
-                children: _getMatchesWidget((filterOption == FilterOption.GOING)
-                    ? matches.where((m) => m.isUserGoing(
-                        context.read<UserChangeNotifier>().getUserDetails())).toList()
-                    : matches)));
-
+                children: _getMatchesWidget(
+                    (filterOption == FilterOption.GOING)
+                        ? matches
+                            .where((m) => m.isUserGoing(context
+                                .read<UserChangeNotifier>()
+                                .getUserDetails()))
+                            .toList()
+                        : matches,
+                    context.read<LocationChangeNotifier>().locationData)));
     // todo animate it
     return mainWidget;
   }
@@ -241,8 +250,11 @@ class MatchInfo extends StatelessWidget {
   static var monthDayFormat = DateFormat('HH:mm');
 
   Match match;
+  LocationData locationData;
 
   MatchInfo(this.match);
+
+  MatchInfo.withLocation(this.match, this.locationData);
 
   @override
   Widget build(BuildContext context) {
@@ -273,7 +285,11 @@ class MatchInfo extends StatelessWidget {
                           fontSize: 20,
                           fontWeight: FontWeight.w700)),
                   SizedBox(height: 10),
-                  Text(context.read<SportCentersChangeNotifier>().getSportCenter(match.sportCenter).name,
+                  Text(
+                      context
+                          .read<SportCentersChangeNotifier>()
+                          .getSportCenter(match.sportCenter)
+                          .name,
                       style: TextStyle(
                           color: Colors.grey,
                           fontSize: 16,
@@ -283,29 +299,53 @@ class MatchInfo extends StatelessWidget {
                       style: TextStyle(
                           color: Colors.grey,
                           fontSize: 18,
-                          fontWeight: FontWeight.w500))
+                          fontWeight: FontWeight.w500)),
                 ],
               ),
               Spacer(),
-              Container(
-                decoration: new BoxDecoration(
-                  color: Colors.red.shade300,
-                  borderRadius: BorderRadius.all(Radius.circular(5)),
-                  border: new Border.all(
-                    color: Colors.white70,
-                    width: 0.5,
+              Column(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  Container(
+                    decoration: new BoxDecoration(
+                      color: Colors.red.shade300,
+                      borderRadius: BorderRadius.all(Radius.circular(5)),
+                      border: new Border.all(
+                        color: Colors.white70,
+                        width: 0.5,
+                      ),
+                    ),
+                    child: Padding(
+                        padding: EdgeInsets.all(5),
+                        child: Text(
+                            match.numPlayersGoing().toString() +
+                                "/" +
+                                match.maxPlayers.toString(),
+                            style: TextStyle(
+                                color: Colors.grey.shade50,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w400))),
                   ),
-                ),
-                child: Padding(
-                    padding: EdgeInsets.all(5),
-                    child: Text(
-                        match.numPlayersGoing().toString() +
-                            "/" +
-                            match.maxPlayers.toString(),
-                        style: TextStyle(
-                            color: Colors.grey.shade50,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w400))),
+                  SizedBox(height: 40),
+                  if (locationData != null)
+                    FutureBuilder<String>(
+                        future: LocationUtils.getDistanceInKm(
+                            locationData.latitude,
+                            locationData.longitude,
+                            match.sportCenter),
+                        builder: (BuildContext context,
+                            AsyncSnapshot<String> snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.done) {
+                            return Text(snapshot.data,
+                                style: TextStyle(
+                                    color: Colors.grey,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500));
+                          }
+                          return Text("");
+                        })
+                ],
               )
             ],
           ),

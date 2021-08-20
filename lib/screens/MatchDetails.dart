@@ -7,6 +7,8 @@ import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/AppBar.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
+
 
 import 'Login.dart';
 
@@ -121,10 +123,23 @@ class MatchInfoContainer extends StatelessWidget {
           child: Column(children: [
             InfoWidget(
                 title: dateFormat.format(match.dateTime), icon: Icons.watch),
-            InfoWidget(
-                title: sportCenter.name,
-                icon: Icons.place,
-                subTitle: sportCenter.address),
+            InkWell(
+              child: InfoWidget(
+                  title: sportCenter.name,
+                  icon: Icons.place,
+                  subTitle: sportCenter.address),
+              onTap: () async {
+
+                String googleUrl = "https://www.google.com/maps/search/?api=1&query=Google&query_place_id=" + sportCenter.placeId;
+
+                if (await canLaunch(googleUrl)) {
+                  await launch(googleUrl);
+                } else {
+                  // throw 'Could not open the map.';
+                  CoolAlert.show(context: context, type: CoolAlertType.error, text: "Could not open maps");
+                }
+              },
+            ),
             InfoWidget(
                 title: match.sport.getDisplayTitle(),
                 icon: Icons.sports_soccer,
@@ -248,7 +263,7 @@ class MatchInfoMainButton extends StatelessWidget {
     }
 
     _onPressedLeaveAction() async {
-      var value = await showModalBottomSheet(
+      await showModalBottomSheet(
           context: context,
           builder: (context) {
             return Column(
