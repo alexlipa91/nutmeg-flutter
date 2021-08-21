@@ -5,7 +5,7 @@ import 'package:nutmeg/screens/AddMatch.dart';
 import 'package:nutmeg/screens/Login.dart';
 import 'package:provider/provider.dart';
 
-import 'AvailableMatches.dart';
+import '../screens_old/AvailableMatches.dart';
 import 'package:nutmeg/model/Model.dart';
 
 class UserPage extends StatelessWidget {
