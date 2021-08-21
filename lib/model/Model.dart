@@ -1,6 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
-import '../utils/Utils.dart';
+
 
 enum MatchStatus { open, played, canceled }
 
@@ -14,7 +15,7 @@ extension SportExtension on Sport {
   String getDisplayTitle() {
     switch (this) {
       case Sport.fiveAsideFootball:
-        return "5-aside-football";
+        return "5v5";
       default:
         return "";
     }
@@ -23,7 +24,7 @@ extension SportExtension on Sport {
 
 class Match {
   static var serializationDateFormat = new DateFormat("yyyy/MM/dd:HH:mm");
-  static var uiDateFormat = new DateFormat("yyyy-MM-dd");
+  static var uiDateFormat = new DateFormat("E, MMM dd");
   static var uiHourFormat = new DateFormat("HH:mm");
 
   String documentId;
@@ -41,7 +42,7 @@ class Match {
       this.pricePerPersonInCents, this.status);
 
   Match.fromJson(Map<String, dynamic> json, String documentId)
-      : dateTime = serializationDateFormat.parse(json['dateTime']),
+      : dateTime = (json['dateTime'] as Timestamp).toDate(),
         sportCenter = json['sportCenter'],
         sport = Sport.values[json['sport']],
         pricePerPersonInCents = json['pricePerPerson'],
@@ -50,7 +51,7 @@ class Match {
         documentId = documentId;
 
   Map<String, dynamic> toJson() => {
-        'dateTime': serializationDateFormat.format(dateTime),
+        'dateTime': Timestamp.fromDate(dateTime),
         'sportCenter': sportCenter,
         'sport': sport.index,
         'pricePerPerson': pricePerPersonInCents,
@@ -59,11 +60,19 @@ class Match {
       };
 
   String getFormattedDate() {
-    return (isSameDay(DateTime.now(), dateTime)
-            ? "Today"
-            : uiDateFormat.format(dateTime)) +
-        " at " +
-        uiHourFormat.format(dateTime);
+    var diff = dateTime.difference(DateTime.now());
+
+    var dayString;
+
+    if (diff.inDays == 0) {
+      dayString = "Today";
+    } else if (diff.inDays == 1) {
+      dayString = "Tomorrow";
+    } else {
+      dayString = uiDateFormat.format(dateTime);
+    }
+
+    return dayString + " at " + uiHourFormat.format(dateTime);
   }
 
   int getSpotsLeft() => maxPlayers - numPlayersGoing();
@@ -144,4 +153,6 @@ class UserDetails {
   String getStripeId() => stripeId;
 
   void setStripeId(String stripeId) => stripeId = stripeId;
+
+  String getPhotoUrl() => firebaseUser.photoURL ?? image;
 }

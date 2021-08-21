@@ -27,79 +27,77 @@ class MatchDetails extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-          backgroundColor: Palette.green,
-          appBar: CustomAppBar(),
-          body: Container(
-            decoration: new BoxDecoration(color: Colors.grey.shade400),
-            // fixme this is not working well; here we need something that fits the whole page vertically and can scroll if too big. Now this has the scroll animation on top but it actually fits so it shouldn't
-            child: CustomScrollView(
-              slivers: [
-                SliverFillRemaining(
-                  hasScrollBody: false,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Container(
-                        decoration: topBoxDecoration,
-                        child: Padding(
-                            padding: EdgeInsets.all(20),
-                            child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(match.sport.getDisplayTitle(),
-                                      style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 38,
-                                          fontWeight: FontWeight.w800)),
-                                  SizedBox(height: 10),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Container(
-                                          decoration: new BoxDecoration(
-                                            color: Colors.red.shade300,
-                                            borderRadius:
-                                            BorderRadius.all(Radius.circular(5)),
-                                            border: new Border.all(
-                                              color: Colors.white70,
-                                              width: 0.5,
-                                            ),
+    return Scaffold(
+        backgroundColor: Palette.primary,
+        appBar: CustomAppBar(),
+        body: Container(
+          decoration: new BoxDecoration(color: Colors.grey.shade400),
+          // fixme this is not working well; here we need something that fits the whole page vertically and can scroll if too big. Now this has the scroll animation on top but it actually fits so it shouldn't
+          child: CustomScrollView(
+            slivers: [
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Container(
+                      decoration: topBoxDecoration,
+                      child: Padding(
+                          padding: EdgeInsets.all(20),
+                          child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(match.sport.getDisplayTitle(),
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 38,
+                                        fontWeight: FontWeight.w800)),
+                                SizedBox(height: 10),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Container(
+                                        decoration: new BoxDecoration(
+                                          color: Colors.red.shade300,
+                                          borderRadius:
+                                          BorderRadius.all(Radius.circular(5)),
+                                          border: new Border.all(
+                                            color: Colors.white70,
+                                            width: 0.5,
                                           ),
-                                          child: Padding(
-                                              padding: EdgeInsets.all(5),
-                                              child: Text(
-                                                  match.getSpotsLeft().toString() +
-                                                      " spots left",
-                                                  style: TextStyle(
-                                                      color: Colors.grey.shade50,
-                                                      fontSize: 12,
-                                                      fontWeight: FontWeight.w400)))),
-                                      if (context.read<UserChangeNotifier>().isLoggedIn() &&
-                                          match.isUserGoing(
-                                              context
-                                                  .read<UserChangeNotifier>()
-                                                  .getUserDetails()))
-                                        Icon(Icons.check_circle,
-                                            color: Colors.white, size: 40),
-                                    ],
-                                  )
-                                ])),
-                      ),
-                      MatchInfoContainer(match),
-                      PlayersList(
-                          users: match.subscriptions
-                              .where((s) => s.status == SubscriptionStatus.going)
-                              .map((e) => e.userId)
-                              .toList())
-                    ],
-                  ),
-                )
-              ],
-            ),
-          )),
-    );
+                                        ),
+                                        child: Padding(
+                                            padding: EdgeInsets.all(5),
+                                            child: Text(
+                                                match.getSpotsLeft().toString() +
+                                                    " spots left",
+                                                style: TextStyle(
+                                                    color: Colors.grey.shade50,
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.w400)))),
+                                    if (context.read<UserChangeNotifier>().isLoggedIn() &&
+                                        match.isUserGoing(
+                                            context
+                                                .read<UserChangeNotifier>()
+                                                .getUserDetails()))
+                                      Icon(Icons.check_circle,
+                                          color: Colors.white, size: 40),
+                                  ],
+                                )
+                              ])),
+                    ),
+                    MatchInfoContainer(match),
+                    PlayersList(
+                        users: match.subscriptions
+                            .where((s) => s.status == SubscriptionStatus.going)
+                            .map((e) => e.userId)
+                            .toList())
+                  ],
+                ),
+              )
+            ],
+          ),
+        ));
   }
 }
 
@@ -284,7 +282,7 @@ class MatchInfoMainButton extends StatelessWidget {
           });
     }
 
-    var mainColor = isGoing(match, context) ? Colors.red : Palette.green;
+    var mainColor = isGoing(match, context) ? Colors.red : Palette.primary;
 
     return TextButton(
       child: Text(isGoing(match, context) ? "Leave" : "Join",

@@ -5,49 +5,35 @@ import 'package:nutmeg/screens/UserPage.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:provider/provider.dart';
 
-
 class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
-    return AppBar(
-      toolbarHeight: 70,
-      title: Text("Nutmeg",
-          style: TextStyle(
-              color: Colors.white, fontWeight: FontWeight.w500, fontSize: 26)),
-      actions: [
-        Consumer<UserChangeNotifier>(builder: (context, user, child) {
-          var widget;
-          var function;
-          var backgroundImage;
-          if (context.watch<UserChangeNotifier>().isLoggedIn()) {
-            // fixme this doesn't really pad well
-            function = () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => new UserPage()));
-            };
-            backgroundImage = NetworkImage(context
-                .read<UserChangeNotifier>()
-                .getUserDetails()
-                .firebaseUser
-                .photoURL);
-          } else {
-            function = () => Navigator.push(
-                context, MaterialPageRoute(builder: (context) => Login()));
-            widget = Icon(Icons.login, color: Colors.green);
-          }
+    var isLoggedIn = context.watch<UserChangeNotifier>().isLoggedIn();
+    var userDetails = context.watch<UserChangeNotifier>().getUserDetails();
 
-          return InkWell(
-            child: Padding(
-              padding: EdgeInsets.all(8.0),
-              child: CircleAvatar(
-                  child: widget,
-                  backgroundImage: backgroundImage,
-                  radius: 25,
-                  backgroundColor: Palette.white),
-            ),
-            onTap: function,
-          );
-        })
+    return AppBar(
+      backgroundColor: Palette.primary,
+      toolbarHeight: 70,
+      title: Image.asset('assets/nutmeg_logo.png', width: 116, height: 46),
+      actions: [
+        if (isLoggedIn)
+          InkWell(
+              child: Padding(
+                padding: EdgeInsets.all(8.0),
+                child: CircleAvatar(
+                    backgroundImage: NetworkImage(userDetails.getPhotoUrl()),
+                    radius: 25),
+              ),
+              onTap: () => Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => new UserPage())))
+        else
+          Padding(
+              padding: EdgeInsets.only(right: 15),
+              child: Center(
+                  child: InkWell(
+                      child: Text("LOGIN", style: TextPalette.whiteLogin),
+                      onTap: () => Navigator.push(context,
+                          MaterialPageRoute(builder: (context) => Login())))))
       ],
       elevation: 0,
     );

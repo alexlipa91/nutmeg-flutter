@@ -8,7 +8,6 @@ import 'package:nutmeg/utils/LocationUtils.dart';
 import 'Model.dart';
 
 class MatchesChangeNotifier extends ChangeNotifier {
-
   List<Match> _matches;
 
   refresh() async {
@@ -18,8 +17,13 @@ class MatchesChangeNotifier extends ChangeNotifier {
 
   List<Match> getMatches() => _matches;
 
+  List<Match> getMatchesInFuture() => _matches
+      .where((m) => m.dateTime.difference(DateTime.now()).inHours > 2)
+      .toList();
+
   // fixme ugly
-  Match getMatch(String matchId) => _matches.firstWhere((e) => e.documentId == matchId);
+  Match getMatch(String matchId) =>
+      _matches.firstWhere((e) => e.documentId == matchId);
 
   joinMatch(Match m, UserDetails u) async {
     await MatchesFirestore.joinMatch(u, m);
@@ -33,11 +37,12 @@ class MatchesChangeNotifier extends ChangeNotifier {
 }
 
 class SportCentersChangeNotifier extends ChangeNotifier {
-
   Map<String, SportCenter> _sportCenters;
 
   refresh() async {
-    _sportCenters = Map.fromEntries((await SportCentersFirestore.getSportCenters()).map((e) => MapEntry(e.placeId, e)));
+    _sportCenters = Map.fromEntries(
+        (await SportCentersFirestore.getSportCenters())
+            .map((e) => MapEntry(e.placeId, e)));
     notifyListeners();
   }
 
@@ -47,9 +52,9 @@ class SportCentersChangeNotifier extends ChangeNotifier {
 }
 
 class UserChangeNotifier extends ChangeNotifier {
-
   // todo should this be somewhere else?
-  static Future<UserDetails> getSpecificUserDetails(String uid) => UserFirestore.getSpecificUserDetails(uid);
+  static Future<UserDetails> getSpecificUserDetails(String uid) =>
+      UserFirestore.getSpecificUserDetails(uid);
 
   UserDetails _userDetails;
 
@@ -60,7 +65,8 @@ class UserChangeNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
-  bool isLoggedIn() => _userDetails != null && _userDetails.firebaseUser != null;
+  bool isLoggedIn() =>
+      _userDetails != null && _userDetails.firebaseUser != null;
 
   void logout() async {
     await UserFirestore.logout();
@@ -84,7 +90,6 @@ class UserChangeNotifier extends ChangeNotifier {
 }
 
 class LocationChangeNotifier extends ChangeNotifier {
-
   LocationData locationData;
 
   Future<void> refresh() async {
