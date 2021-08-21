@@ -5,7 +5,6 @@ import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/screens/AvailableMatches.dart';
 import 'package:provider/provider.dart';
 
-
 void main() {
   runApp(MultiProvider(
     providers: [
@@ -47,12 +46,8 @@ class _LaunchWidgetState extends State<LaunchWidget> {
     callAsyncFetch(context)
         .then((matches) => matches) // no error message here
         .catchError((onError) => onError.toString())
-        .then((matches) => Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-                builder: (context) => ChangeNotifierProvider(
-                    create: (context) => FilterButtonState(FilterOption.ALL),
-                    child: AvailableMatches()))));
+        .then((matches) => Navigator.pushReplacement(context,
+            MaterialPageRoute(builder: (context) => AvailableMatches())));
   }
 
   @override

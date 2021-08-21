@@ -1,367 +1,387 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:location/location.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
 import 'package:intl/intl.dart';
-import 'package:nutmeg/screens/MatchDetails.dart';
-import 'package:nutmeg/utils/LocationUtils.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/AppBar.dart';
+import 'package:nutmeg/widgets/Buttons.dart';
+import 'package:nutmeg/widgets/Containers.dart';
 import 'package:provider/provider.dart';
 import 'package:week_of_year/week_of_year.dart';
 import "package:collection/collection.dart";
 
-enum FilterOption { ALL, GOING }
+import 'MatchDetails.dart';
 
-// main widget (stateful)
-class AvailableMatches extends StatefulWidget {
-  @override
-  State<StatefulWidget> createState() => AvailableMatchesState();
+// use this main for testing only
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  var matchesChangeNotifier = MatchesChangeNotifier();
+  var sportCenterChangeNotifier = SportCentersChangeNotifier();
+
+  await matchesChangeNotifier.refresh();
+  await sportCenterChangeNotifier.refresh();
+
+  runApp(MultiProvider(
+    providers: [
+      ChangeNotifierProvider(create: (context) => UserChangeNotifier()),
+      ChangeNotifierProvider(create: (context) => matchesChangeNotifier),
+      ChangeNotifierProvider(create: (context) => sportCenterChangeNotifier),
+      ChangeNotifierProvider(create: (context) => LocationChangeNotifier()),
+    ],
+    child: new MaterialApp(
+        debugShowCheckedModeBanner: false, home: AvailableMatches()),
+  ));
 }
 
-class AvailableMatchesState extends State<AvailableMatches> {
-  bool allFilterIsOn = true;
-
+// main widget
+class AvailableMatches extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
+    return Scaffold(
+      extendBodyBehindAppBar: true,
+      appBar: CustomAppBar(),
+      body: MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (context) => SelectedTapNotifier()),
+        ],
         child: Container(
-      decoration: new BoxDecoration(color: Colors.grey.shade400),
-      child: Scaffold(
-          backgroundColor: Palette.green,
-          appBar: CustomAppBar(),
-          body: Scaffold(
-            backgroundColor: Palette.lightGrey,
-            body: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Container(
-                      decoration: topBoxDecoration,
-                      child: Padding(
-                        padding: EdgeInsets.all(20),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text("Find football matches near",
-                                style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w400)),
-                            SizedBox(height: 10),
-                            Text("Amsterdam",
-                                style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 42,
-                                    fontWeight: FontWeight.w800)),
-                            SizedBox(height: 10),
-                            Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  FilterButton(
-                                      filterOption: FilterOption.ALL,
-                                      isLeft: true),
-                                  FilterButton(
-                                      filterOption: FilterOption.GOING,
-                                      isLeft: false),
-                                ])
-                          ],
-                        ),
-                      )),
-                  Expanded(child: RefreshIndicatorStateful()),
-                ]),
-          )),
-    ));
+          color: Palette.lightGrey,
+          child: Column(
+            children: [
+              SizedBox(height: 90),
+              // this must be as high as the app bar (a bit higher is better) because of an annoying issue https://github.com/flutter/flutter/issues/16262
+              RoundedTopBar(),
+              SizedBox(height: 10),
+              Expanded(child: MatchesArea())
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 
-// widget for all/going filter button + change notifier
-class FilterButton extends StatelessWidget {
-  final FilterOption filterOption;
-  final isLeft;
+class RoundedTopBar extends StatelessWidget {
+  _getAllFunction(BuildContext context) =>
+      () => context.read<SelectedTapNotifier>().changeToAll();
 
-  static var onTextStyle = TextStyle(
-      color: Colors.green.shade700, fontSize: 18, fontWeight: FontWeight.w300);
-  static var offTextStyle =
-      TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w300);
-
-  const FilterButton({Key key, this.isLeft, this.filterOption})
-      : super(key: key);
-
-  getBorderRadius() => (isLeft)
-      ? BorderRadius.only(
-          topLeft: Radius.circular(10.0), bottomLeft: Radius.circular(10.0))
-      : BorderRadius.only(
-          topRight: Radius.circular(10.0), bottomRight: Radius.circular(10.0));
-
-  getOnStyle() => TextButton.styleFrom(
-      backgroundColor: Colors.white,
-      padding: EdgeInsets.symmetric(horizontal: 55.0),
-      shape: RoundedRectangleBorder(
-          side: BorderSide(width: 1.0, color: Colors.white),
-          borderRadius: getBorderRadius()));
-
-  getOffStyle() => TextButton.styleFrom(
-      backgroundColor: Colors.transparent,
-      padding: EdgeInsets.symmetric(horizontal: 55.0),
-      shape: RoundedRectangleBorder(
-          side: BorderSide(width: 1.0, color: Colors.white),
-          borderRadius: getBorderRadius()));
+  _getMyGamesFunction(BuildContext context) =>
+      () => context.read<SelectedTapNotifier>().changeToMyGames();
 
   @override
   Widget build(BuildContext context) {
-    // fixme make the size fixed and not depending on text of the button otherwise GOING is bigger
-    return TextButton(
-        onPressed: () =>
-            context.read<FilterButtonState>().changeTo(filterOption),
-        child: Text(filterOption.toString().split('.').last,
-            style: context.watch<FilterButtonState>().selectedOption ==
-                    filterOption
-                ? onTextStyle
-                : offTextStyle),
-        style: context.watch<FilterButtonState>().selectedOption == filterOption
-            ? getOnStyle()
-            : getOffStyle());
+    return Container(
+        decoration: BoxDecoration(
+            color: Palette.primary,
+            borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(20),
+                bottomRight: Radius.circular(20))),
+        child: Padding(
+          padding: EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text("Find football matches near", style: TextPalette.h2White),
+              SizedBox(height: 10),
+              Text("Amsterdam", style: TextPalette.h1White),
+              SizedBox(height: 10),
+              Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                context.watch<SelectedTapNotifier>().getCurrentSelection() ==
+                        "ALL"
+                    ? LeftButtonOn("ALL", _getAllFunction(context))
+                    : LeftButtonOff("ALL", _getAllFunction(context)),
+                context.watch<SelectedTapNotifier>().getCurrentSelection() ==
+                        "ALL"
+                    ? RightButtonOff("MY GAMES", _getMyGamesFunction(context))
+                    : RightButtonOn("MY GAMES", _getMyGamesFunction(context)),
+              ])
+            ],
+          ),
+        ));
   }
 }
 
-class FilterButtonState with ChangeNotifier {
-  FilterOption selectedOption;
+class News extends StatelessWidget {
+  // fixme pass news from db
 
-  FilterButtonState(this.selectedOption);
+  GlobalKey<AnimatedListState> _listKey;
 
-  changeTo(FilterOption f) {
-    selectedOption = f;
-    notifyListeners();
-  }
-}
-
-// widget with list of matches
-class RefreshIndicatorStateful extends StatefulWidget {
-  @override
-  State<StatefulWidget> createState() => RefreshIndicatorState();
-}
-
-class RefreshIndicatorState extends State<RefreshIndicatorStateful>
-    with WidgetsBindingObserver {
-  static var dateFormat = new DateFormat("MMMM dd");
-
-  // creates widgets splitting by week
-  _getMatchesWidget(List<Match> matches, LocationData locationData) {
-    var currentWeek = DateTime.now().weekOfYear;
-    var groups = matches.groupListsBy((m) => m.dateTime.weekOfYear);
-
-    var weekTitles = {
-      currentWeek: "This week",
-      currentWeek + 1: "Next week",
-    };
-
-    var widgets = [];
-    for (var week in groups.keys.toList()..sort()) {
-      widgets.add(Padding(
-        padding: EdgeInsets.symmetric(horizontal: 25, vertical: 10),
-        child: Text(weekTitles[week] ?? "More than two weeks",
-            style: TextStyle(
-                color: Colors.grey, fontSize: 16, fontWeight: FontWeight.w400)),
-      ));
-      widgets.add(new MatchInfoGroup(
-          matches: groups[week]
-              .map((e) => MatchInfo.withLocation(e, locationData))
-              .toList()));
-    }
-
-    return List<Widget>.from(widgets);
-  }
-
-  AppLifecycleState _appLifecycleState;
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addObserver(this);
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) async {
-    setState(() {
-      _appLifecycleState = state;
-    });
-    if (_appLifecycleState == AppLifecycleState.resumed) {
-      // fixme when resuming refresh list of matches
-      context.read<MatchesChangeNotifier>().refresh();
-    }
-  }
+  News(this._listKey);
 
   @override
   Widget build(BuildContext context) {
-    var matches = context.watch<MatchesChangeNotifier>().getMatches();
-    var filterOption = context.watch<FilterButtonState>().selectedOption;
+    return Row(children: [
+      Expanded(
+          child: InfoContainer(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(children: [
+              Text("50% off", style: TextPalette.h1Black),
+              Expanded(
+                  child: Align(
+                      alignment: Alignment.centerRight,
+                      child: InkWell(
+                          child: Icon(Icons.close),
+                          onTap: () {
+                            _listKey.currentState.removeItem(0, (_, animation) {
+                              // fixme check if there's something better around
+                              return SlideTransition(
+                                  position: Tween<Offset>(
+                                    begin: const Offset(-3, 0),
+                                    end: Offset(0, 0),
+                                  ).animate(animation),
+                                  child: News(_listKey));
+                            }, duration: Duration(milliseconds: 500));
+                            MatchesArea.showNews = false;
+                          })))
+            ]),
+            SizedBox(height: 15),
+            Text(
+              "All games in Amsterdam are 50% off until Sept 4.",
+              style: TextPalette.bodyText2Gray,
+            )
+          ],
+        ),
+      )),
+    ]);
+  }
+}
 
-    var mainWidget = (filterOption == FilterOption.GOING &&
-            !context.read<UserChangeNotifier>().isLoggedIn())
+class MatchesArea extends StatelessWidget {
+  static bool showNews = true;
+
+  @override
+  Widget build(BuildContext context) {
+    GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
+
+    var optionSelected = context.watch<SelectedTapNotifier>().selected;
+    var isLoggedIn = context.watch<UserChangeNotifier>().isLoggedIn();
+
+    return (optionSelected == "MY GAMES" && !isLoggedIn)
         ? Center(
-            child: Text("Login to join matches",
-                style: TextStyle(
-                    color: Colors.grey,
-                    fontSize: 24,
-                    fontWeight: FontWeight.w400)),
+            child:
+                Text("Login to join matches", style: TextPalette.bodyText2Gray),
           )
         : RefreshIndicator(
             onRefresh: () async {
               await context.read<MatchesChangeNotifier>().refresh();
               await context.read<LocationChangeNotifier>().refresh();
             },
-            child: ListView(
-                shrinkWrap: true,
-                padding: const EdgeInsets.all(8),
-                children: _getMatchesWidget(
-                    (filterOption == FilterOption.GOING)
-                        ? matches
-                            .where((m) => m.isUserGoing(context
-                                .read<UserChangeNotifier>()
-                                .getUserDetails()))
-                            .toList()
-                        : matches,
-                    context.read<LocationChangeNotifier>().locationData)));
-    // todo animate it
-    return mainWidget;
+            child: Builder(builder: (BuildContext buildContext) {
+              var widgets = (optionSelected == "ALL")
+                  ? allGamesWidgets(context)
+                  : myGamesWidgets(context);
+
+              return AnimatedList(
+                key: _listKey,
+                initialItemCount:
+                    (showNews) ? widgets.length + 1 : widgets.length,
+                itemBuilder: (context, index, animation) {
+                  if (showNews) {
+                    return (index == 0)
+                        ? SlideTransition(
+                            position: Tween<Offset>(
+                              begin: const Offset(-1, 0),
+                              end: Offset(0, 0),
+                            ).animate(animation),
+                            child: News(_listKey))
+                        : widgets[index - 1];
+                  }
+                  return widgets[index];
+                },
+              );
+            }),
+          );
+  }
+
+  static List<Widget> myGamesWidgets(BuildContext context) {
+    var matches = context.watch<MatchesChangeNotifier>().getMatches().where(
+        (m) => m
+            .isUserGoing(context.watch<UserChangeNotifier>().getUserDetails()));
+
+    if (matches.isEmpty) {
+      return [
+        SizedBox(height: 50),
+        TextSeparatorWidget("No games to display. Book your first game today.")
+      ];
+    }
+
+    var now = DateTime.now();
+    var past = matches.where((m) => m.dateTime.isBefore(now));
+    var future = matches.where((m) => m.dateTime.isAfter(now));
+
+    List<Widget> widgets = [];
+
+    if (past.isNotEmpty) {
+      widgets.add(TextSeparatorWidget("Past matches"));
+      widgets.addAll(past.sortedBy((e) => e.dateTime).map((e) => MatchInfo(e)));
+    }
+
+    if (future.isNotEmpty) {
+      widgets.add(TextSeparatorWidget("Upcoming matches"));
+      widgets.addAll(future.sortedBy((e) => e.dateTime).map((e) => MatchInfo(e)));
+    }
+
+    return widgets;
+  }
+
+  static List<Widget> allGamesWidgets(BuildContext context) {
+    var matches = context.watch<MatchesChangeNotifier>().getMatchesInFuture();
+    var grouped = matches.groupListsBy((m) => m.dateTime.weekOfYear);
+
+    List<int> sortedWeeks = grouped.keys.toList()..sort();
+
+    return sortedWeeks
+        .map((w) {
+          List<Widget> l = [];
+          l.add(WeekSeparatorWidget(w));
+          l.addAll(grouped[w].sortedBy((e) => e.dateTime).map((e) => MatchInfo(e)));
+          return l;
+        })
+        .flattened
+        .toList();
   }
 }
 
-// single match info widgets
-class MatchInfoGroup extends StatelessWidget {
-  final List<MatchInfo> matches;
-
-  const MatchInfoGroup({Key key, this.matches}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.all(10),
-      decoration: infoMatchDecoration,
-      child: Column(
-        children: matches,
-      ),
-    );
-  }
-}
-
+// widget of info for a single match
 class MatchInfo extends StatelessWidget {
   static var formatCurrency = NumberFormat.simpleCurrency(name: "EUR");
   static var monthDayFormat = DateFormat('HH:mm');
 
-  Match match;
+  final Match match;
+
+  // fixme currently passing null, we need to figure it out in the UI
   LocationData locationData;
 
   MatchInfo(this.match);
 
-  MatchInfo.withLocation(this.match, this.locationData);
+  @override
+  Widget build(BuildContext context) {
+    var sportCenter = context
+        .read<SportCentersChangeNotifier>()
+        .getSportCenter(match.sportCenter);
+
+    return InkWell(
+        child: InfoContainer(
+            child: IntrinsicHeight(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                  width: 60,
+                  height: 78,
+                  decoration: BoxDecoration(
+                      image: DecorationImage(
+                          image: AssetImage(
+                              "assets/sportcentertest_thumbnail.png")),
+                      color: Colors.grey,
+                      borderRadius: BorderRadius.all(Radius.circular(15)))),
+              Expanded(
+                child: Container(
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 10),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                              sportCenter.neighbourhood +
+                                  " - " +
+                                  match.sport.getDisplayTitle(),
+                              style: TextPalette.h1Black),
+                          Text(match.getFormattedDate(),
+                              style: TextPalette.bodyText2Black),
+                          Text(sportCenter.name,
+                              style: TextPalette.bodyText2Gray),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Container(
+                  child: Column(
+                children: [
+                  Text(
+                      (match.numPlayersGoing() == match.maxPlayers)
+                          ? "Full"
+                          : (match.maxPlayers - match.numPlayersGoing())
+                                  .toString() +
+                              " spots left",
+                      style: TextPalette.bodyText2Gray)
+                ],
+              )),
+            ],
+          ),
+        )),
+        onTap: () async {
+          // fixme why it doesn't rebuild here?
+          await Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => MatchDetails(context
+                      .watch<MatchesChangeNotifier>()
+                      .getMatch(match.documentId))));
+          await context.read<MatchesChangeNotifier>().refresh();
+        });
+  }
+}
+
+class TextSeparatorWidget extends StatelessWidget {
+  final String text;
+
+  const TextSeparatorWidget(this.text);
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 20),
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 25.0, vertical: 15),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Column(
-                children: [
-                  Text(monthDayFormat.format(match.dateTime),
-                      style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w400))
-                ],
-              ),
-              SizedBox(width: 20),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(match.sport.getDisplayTitle(),
-                      style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w700)),
-                  SizedBox(height: 10),
-                  Text(
-                      context
-                          .read<SportCentersChangeNotifier>()
-                          .getSportCenter(match.sportCenter)
-                          .name,
-                      style: TextStyle(
-                          color: Colors.grey,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500)),
-                  SizedBox(height: 10),
-                  Text(formatCurrency.format(match.getPrice()),
-                      style: TextStyle(
-                          color: Colors.grey,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w500)),
-                ],
-              ),
-              Spacer(),
-              Column(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  Container(
-                    decoration: new BoxDecoration(
-                      color: Colors.red.shade300,
-                      borderRadius: BorderRadius.all(Radius.circular(5)),
-                      border: new Border.all(
-                        color: Colors.white70,
-                        width: 0.5,
-                      ),
-                    ),
-                    child: Padding(
-                        padding: EdgeInsets.all(5),
-                        child: Text(
-                            match.numPlayersGoing().toString() +
-                                "/" +
-                                match.maxPlayers.toString(),
-                            style: TextStyle(
-                                color: Colors.grey.shade50,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w400))),
-                  ),
-                  SizedBox(height: 40),
-                  if (locationData != null)
-                    FutureBuilder<String>(
-                        future: LocationUtils.getDistanceInKm(
-                            locationData.latitude,
-                            locationData.longitude,
-                            match.sportCenter),
-                        builder: (BuildContext context,
-                            AsyncSnapshot<String> snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.done) {
-                            return Text(snapshot.data,
-                                style: TextStyle(
-                                    color: Colors.grey,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w500));
-                          }
-                          return Text("");
-                        })
-                ],
-              )
-            ],
-          ),
-        ),
-      ),
-      onTap: () async {
-        // fixme why it doesn't rebuild here?
-        await Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => MatchDetails(context
-                    .watch<MatchesChangeNotifier>()
-                    .getMatch(match.documentId))));
-        await context.read<MatchesChangeNotifier>().refresh();
-      },
-      splashColor: Colors.white,
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 25, vertical: 3),
+      child: Text(text,
+          style: TextStyle(
+              color: Colors.grey, fontSize: 16, fontWeight: FontWeight.w400)),
     );
   }
+}
+
+class WeekSeparatorWidget extends StatelessWidget {
+  final int weekNumber;
+
+  const WeekSeparatorWidget(this.weekNumber);
+
+  @override
+  Widget build(BuildContext context) => TextSeparatorWidget(_getWeekDesc());
+
+  _getWeekDesc() {
+    var currentWeek = DateTime.now().weekOfYear;
+
+    if (currentWeek == weekNumber) {
+      return "This week";
+    }
+    if (currentWeek + 1 == weekNumber) {
+      return "Next week";
+    }
+    return "In more than two weeks";
+  }
+}
+
+// utility to manage the change between all/my games
+class SelectedTapNotifier extends ChangeNotifier {
+  String selected = "ALL";
+
+  void changeToAll() => _change("ALL");
+
+  void changeToMyGames() => _change("MY GAMES");
+
+  void _change(String newSelection) {
+    selected = newSelection;
+    notifyListeners();
+  }
+
+  String getCurrentSelection() => selected;
 }

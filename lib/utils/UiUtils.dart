@@ -5,7 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 
 var topBoxDecoration = BoxDecoration(
-    color: Colors.green.shade700,
+    color: Palette.primary,
     borderRadius: BorderRadius.only(
         bottomLeft: Radius.circular(20), bottomRight: Radius.circular(20)));
 
@@ -36,11 +36,30 @@ class UiUtils {
 
 class Palette {
   static var primary = UiUtils.fromHex("#394BBB");
+  static var lightGrey = Colors.grey.shade200; // used for background
 
   static var green = Colors.green.shade700;
   static var white = Colors.white;
-  static var lightGrey = Colors.grey.shade200;
 }
+
+class TextPalette {
+
+  static TextStyle h1White = GoogleFonts.roboto(color: Colors.white, fontSize: 30, fontWeight: FontWeight.bold);
+  static TextStyle h2White = GoogleFonts.roboto(color: Colors.white, fontSize: 15);
+
+  static TextStyle h1Black = GoogleFonts.roboto(color: Colors.black, fontSize: 22, fontWeight: FontWeight.bold);
+  static TextStyle h2Black = GoogleFonts.roboto(color: Colors.black, fontSize: 15);
+  static TextStyle h2BlackBold = GoogleFonts.roboto(color: Colors.black, fontSize: 15, fontWeight: FontWeight.bold);
+
+  static TextStyle bodyText2Black = GoogleFonts.roboto(color: Colors.black, fontSize: 14);
+  static TextStyle bodyText2Gray = GoogleFonts.roboto(color: Colors.grey, fontSize: 14);
+
+  static TextStyle whiteLogin = GoogleFonts.roboto(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold);
+
+  static TextStyle whiteInButton = GoogleFonts.roboto(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold);
+  static TextStyle primaryInButton = GoogleFonts.roboto(color: Palette.primary, fontSize: 16, fontWeight: FontWeight.bold);
+}
+
 
 var appTheme = new ThemeData(
     primaryColor: Colors.green.shade700,
