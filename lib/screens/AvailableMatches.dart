@@ -1,6 +1,5 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:location/location.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
 import 'package:intl/intl.dart';
@@ -38,11 +37,14 @@ void main() async {
 
 // main widget
 class AvailableMatches extends StatelessWidget {
+
   @override
   Widget build(BuildContext context) {
+    var appBar = CustomAppBar();
+
     return Scaffold(
       extendBodyBehindAppBar: true,
-      appBar: CustomAppBar(),
+      appBar: appBar,
       body: MultiProvider(
         providers: [
           ChangeNotifierProvider(create: (context) => SelectedTapNotifier()),
@@ -51,7 +53,8 @@ class AvailableMatches extends StatelessWidget {
           color: Palette.lightGrey,
           child: Column(
             children: [
-              SizedBox(height: 90),
+              // fixme this has different behaviour in iphone and android, check it
+              SizedBox(height: appBar.preferredSize.height + 30),
               // this must be as high as the app bar (a bit higher is better) because of an annoying issue https://github.com/flutter/flutter/issues/16262
               RoundedTopBar(),
               SizedBox(height: 10),
@@ -107,7 +110,7 @@ class RoundedTopBar extends StatelessWidget {
 class News extends StatelessWidget {
   // fixme pass news from db
 
-  GlobalKey<AnimatedListState> _listKey;
+  final GlobalKey<AnimatedListState> _listKey;
 
   News(this._listKey);
 
@@ -255,7 +258,7 @@ class MatchInfo extends StatelessWidget {
   final Match match;
 
   // fixme currently passing null, we need to figure it out in the UI
-  LocationData locationData;
+  // LocationData locationData;
 
   MatchInfo(this.match);
 

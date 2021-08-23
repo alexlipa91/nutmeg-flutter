@@ -12,6 +12,7 @@ class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
     var userDetails = context.watch<UserChangeNotifier>().getUserDetails();
 
     return AppBar(
+      centerTitle: false,
       backgroundColor: Palette.primary,
       toolbarHeight: 70,
       title: Image.asset('assets/nutmeg_logo.png', width: 116, height: 46),
