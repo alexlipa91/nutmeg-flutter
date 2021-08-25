@@ -60,7 +60,7 @@ class TextPalette {
   static TextStyle primaryInButton = GoogleFonts.roboto(color: Palette.primary, fontSize: 16, fontWeight: FontWeight.bold);
 }
 
-
+// ignore for now
 var appTheme = new ThemeData(
     primaryColor: Colors.green.shade700,
     accentColor: Colors.white,

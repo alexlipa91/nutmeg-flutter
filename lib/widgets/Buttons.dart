@@ -31,10 +31,10 @@ class PrimaryButton extends StatelessWidget {
 
   ButtonStyle getStyle() {
     return TextButton.styleFrom(
-        fixedSize: Size(170, 40),
+        padding: EdgeInsets.symmetric(vertical:12, horizontal:0),
         backgroundColor: getBackgroundColor(),
         shape: RoundedRectangleBorder(
-            side: BorderSide(width: 1.0, color: Colors.white),
+            side: BorderSide(width: 2.0, color: Colors.white),
             borderRadius: getBorderRadius()));
   }
 
@@ -46,11 +46,11 @@ class PrimaryButton extends StatelessWidget {
 }
 
 mixin LeftRounded on PrimaryButton {
-  Radius getLeftRadius() => Radius.circular(10.0);
+  Radius getLeftRadius() => Radius.circular(50);
 }
 
 mixin RightRounded on PrimaryButton {
-  Radius getRightRadius() => Radius.circular(10.0);
+  Radius getRightRadius() => Radius.circular(50);
 }
 
 mixin On on PrimaryButton {
