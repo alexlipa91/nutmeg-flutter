@@ -47,12 +47,14 @@ class TextPalette {
   static TextStyle h1White = GoogleFonts.roboto(color: Colors.white, fontSize: 30, fontWeight: FontWeight.bold);
   static TextStyle h2White = GoogleFonts.roboto(color: Colors.white, fontSize: 15);
 
-  static TextStyle h1Black = GoogleFonts.roboto(color: Colors.black, fontSize: 22, fontWeight: FontWeight.bold);
+  static TextStyle h1Black = GoogleFonts.roboto(color: Colors.black, fontSize: 30, fontWeight: FontWeight.bold);
   static TextStyle h2Black = GoogleFonts.roboto(color: Colors.black, fontSize: 18, fontWeight: FontWeight.w900);
   static TextStyle h2BlackBold = GoogleFonts.roboto(color: Colors.black, fontSize: 15, fontWeight: FontWeight.bold);
 
   static TextStyle bodyText2Black = GoogleFonts.roboto(color: Colors.black, fontSize: 14);
   static TextStyle bodyText2Gray = GoogleFonts.roboto(color: Colors.grey, fontSize: 14);
+
+  static TextStyle linkStyle = GoogleFonts.roboto(color: Palette.primary, fontSize: 14, fontWeight: FontWeight.bold);
 
   static TextStyle whiteLogin = GoogleFonts.roboto(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold);
 

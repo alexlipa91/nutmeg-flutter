@@ -11,6 +11,8 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:readmore/readmore.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -60,23 +62,28 @@ class MatchDetails extends StatelessWidget {
                 child: Text(title, style: TextPalette.h1Black)),
             MatchInfo(match, sportCenter),
             Padding(
-                padding: EdgeInsets.symmetric(horizontal: 25),
+                padding: EdgeInsets.symmetric(horizontal: 25, vertical: 15),
                 child: Text(
                     match.numPlayersGoing().toString() + " players going")),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 25),
               child: SingleChildScrollView(
+                clipBehavior: Clip.none,
                 scrollDirection: Axis.horizontal,
                 // physics: BouncingScrollPhysics(),
                 child: Row(
-                  children: List.filled(15, PlayerCard(name: "Andre",
-                      imageUrl: "https://lh3.googleusercontent.com/a-/AOh14GhDr8xTqP9vgkx2VYKVYLm3NHfG9zBtauDSizxNhfs=s96-c"),)
-                ),
+                    // fixme pass real data here
+                    children: List.filled(
+                  15,
+                  PlayerCard(
+                      name: "Andre",
+                      imageUrl:
+                          "https://lh3.googleusercontent.com/a-/AOh14GhDr8xTqP9vgkx2VYKVYLm3NHfG9zBtauDSizxNhfs=s96-c"),
+                )),
               ),
-
             ),
             Padding(
-                padding: EdgeInsets.symmetric(horizontal: 25),
+                padding: EdgeInsets.symmetric(horizontal: 25, vertical: 15),
                 child: Text("Details")),
             RuleCard(),
             RuleCard(),
@@ -277,10 +284,28 @@ class PlayerCard extends StatelessWidget {
 }
 
 class RuleCard extends StatelessWidget {
+
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
-    return InfoContainer(child: Text("Rule" * 100));
+    return InfoContainer(
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Text("Title", style: TextPalette.h2Black),
+      SizedBox(height: 10),
+      ReadMoreText(
+        'Flutter is Google’s mobile UI open source framework to build high-quality native (super fast) interfaces for iOS and Android apps with the unified codebase.',
+        style: TextPalette.bodyText2Black,
+        trimLines: 2,
+        colorClickableText: Colors.blue,
+        delimiter: "\n\n",
+        trimMode: TrimMode.Line,
+        trimCollapsedText: 'SHOW MORE',
+        trimExpandedText: 'SHOW LESS',
+        moreStyle: TextPalette.linkStyle,
+        lessStyle: TextPalette.linkStyle,
+      ),
+      // Text("Rule" * 100, style: TextPalette.bodyText2Gray)
+    ]));
   }
 }
 
@@ -289,5 +314,8 @@ class MapCard extends StatelessWidget {
   Widget build(BuildContext context) {
     // TODO: implement build
     return InfoContainer(child: Text("Map"));
+    // return GoogleMap(
+    //
+    // );
   }
 }
