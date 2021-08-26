@@ -88,8 +88,7 @@ class RoundedTopBar extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(height: 8),
-              Text("Find football matches near", style: TextPalette.h2White),
-              SizedBox(height: 0),
+              Text("Find football games in", style: TextPalette.h2White),
               Text("Amsterdam", style: TextPalette.h1White),
               SizedBox(height: 24),
               Row(mainAxisAlignment: MainAxisAlignment.center, children: [
