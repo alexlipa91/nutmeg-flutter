@@ -90,17 +90,18 @@ class RoundedTopBar extends StatelessWidget {
               Text("Find Football games in", style: TextPalette.h2White),
               SizedBox(height: 8),
               Text("Amsterdam", style: TextPalette.h1White),
-              SizedBox(height: 10),
+              SizedBox(height: 24),
               Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                 context.watch<SelectedTapNotifier>().getCurrentSelection() ==
                         "ALL"
                     ? Expanded(child: LeftButtonOn("ALL", _getAllFunction(context)))
                     : Expanded(child: LeftButtonOff("ALL", _getAllFunction(context))),
                 context.watch<SelectedTapNotifier>().getCurrentSelection() ==
-                        "ALL"
+                    "ALL"
                     ? Expanded(child: RightButtonOff("MY GAMES", _getMyGamesFunction(context)))
                     : Expanded(child: RightButtonOn("MY GAMES", _getMyGamesFunction(context))),
-              ])
+              ]),
+              SizedBox(height: 4),
             ],
           ),
         ));

@@ -11,18 +11,18 @@ class InfoContainer extends StatelessWidget {
         margin: EdgeInsets.symmetric(horizontal: 25, vertical: 10),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.all(Radius.circular(20)),
+          borderRadius: BorderRadius.all(Radius.circular(10)),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.5),
-              spreadRadius: 5,
-              blurRadius: 7,
-              offset: Offset(0, 3), // changes position of shadow
+              color: Colors.black.withOpacity(0.10),
+              spreadRadius: 0,
+              blurRadius: 20,
+              offset: Offset(0, 10), // changes position of shadow
             )
           ],
         ),
         child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+          padding: EdgeInsets.symmetric(vertical: 16, horizontal: 16),
           child: child,
         ));
   }
