@@ -50,7 +50,7 @@ class AvailableMatches extends StatelessWidget {
           ChangeNotifierProvider(create: (context) => SelectedTapNotifier()),
         ],
         child: Container(
-          color: Palette.lightGrey,
+          color: Palette.light,
           child: Column(
             children: [
               // fixme this has different behaviour in iphone and android, check it
@@ -87,8 +87,9 @@ class RoundedTopBar extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Find Football games in", style: TextPalette.h2White),
               SizedBox(height: 8),
+              Text("Find football matches near", style: TextPalette.h2White),
+              SizedBox(height: 0),
               Text("Amsterdam", style: TextPalette.h1White),
               SizedBox(height: 24),
               Row(mainAxisAlignment: MainAxisAlignment.center, children: [

@@ -35,10 +35,24 @@ class UiUtils {
 }
 
 class Palette {
+  //for CTAs, links, buttons
   static var primary = UiUtils.fromHex("#394BBB");
-  static var lightGrey = Colors.grey.shade200; // used for background
 
+  //delete, remove, etc
+  static var destructive = UiUtils.fromHex("#E34D4F");
+
+  //for background
+  static var light = UiUtils.fromHex("#F3F5FA");
+
+  //text
+  static var mediumgrey = UiUtils.fromHex("#787878");
+  static var darkgrey = UiUtils.fromHex("#4444444");
+  static var black = UiUtils.fromHex("#1E1E24");
+
+
+  static var lightGrey = Colors.grey.shade200; // used for background
   static var green = Colors.green.shade700;
+
   static var white = Colors.white;
 }
 
