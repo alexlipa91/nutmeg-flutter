@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 
@@ -126,6 +127,13 @@ class SportCenter {
 
   @override
   int get hashCode => super.hashCode;
+
+  String getShortAddress() => address.split(",").first;
+
+  List<String> getMainPicturesListUrls() => ["assets/sportcentertest_large.png",
+    "assets/sportcentertest_large.png",
+    "assets/sportcentertest_large.png"
+  ];
 }
 
 class UserDetails {

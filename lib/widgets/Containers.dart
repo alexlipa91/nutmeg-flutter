@@ -3,7 +3,13 @@ import 'package:flutter/material.dart';
 class InfoContainer extends StatelessWidget {
   final Widget child;
 
-  const InfoContainer({Key key, this.child}) : super(key: key);
+  final EdgeInsets padding;
+
+  InfoContainer({this.child}) :
+        padding = EdgeInsets.symmetric(horizontal: 25, vertical: 10);
+
+  InfoContainer.withoutMargin({this.child}) :
+        padding = EdgeInsets.all(0);
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +28,7 @@ class InfoContainer extends StatelessWidget {
           ],
         ),
         child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+          padding: padding,
           child: child,
         ));
   }

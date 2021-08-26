@@ -10,8 +10,7 @@ import 'package:nutmeg/widgets/Containers.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
-
-import 'Login.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -42,17 +41,43 @@ class MatchDetails extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    SportCenter sportCenter = context
+        .read<SportCentersChangeNotifier>()
+        .getSportCenter(match.sportCenter);
+
+    var title =
+        sportCenter.neighbourhood + " - " + match.sport.getDisplayTitle();
+
     return Scaffold(
       appBar: SecondaryAppBar(),
       body: SingleChildScrollView(
         child: Column(
+          // fixme here we are repeating the padding just because cannot be applied globally as MatchInfo doesn't need
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            MatchInfo(match),
-            Text("X players going"),
-            Row(
-              children: [PlayerCard(), PlayerCard()],
+            Padding(
+                padding: EdgeInsets.symmetric(horizontal: 25),
+                child: Text(title, style: TextPalette.h1Black)),
+            MatchInfo(match, sportCenter),
+            Padding(
+                padding: EdgeInsets.symmetric(horizontal: 25),
+                child: Text(
+                    match.numPlayersGoing().toString() + " players going")),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 25),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                // physics: BouncingScrollPhysics(),
+                child: Row(
+                  children: List.filled(15, PlayerCard(name: "Andre",
+                      imageUrl: "https://lh3.googleusercontent.com/a-/AOh14GhDr8xTqP9vgkx2VYKVYLm3NHfG9zBtauDSizxNhfs=s96-c"),)
+                ),
+              ),
+
             ),
-            Text("Details"),
+            Padding(
+                padding: EdgeInsets.symmetric(horizontal: 25),
+                child: Text("Details")),
             RuleCard(),
             RuleCard(),
             MapCard()
@@ -66,22 +91,188 @@ class MatchDetails extends StatelessWidget {
 }
 
 class MatchInfo extends StatelessWidget {
-  final Match match;
+  static var formatCurrency = NumberFormat.simpleCurrency(name: "EUR");
+  static var dateFormat = DateFormat('MMMM dd \'at\' HH:mm');
 
-  MatchInfo(this.match);
+  final Match match;
+  final SportCenter sportCenter;
+
+  MatchInfo(this.match, this.sportCenter);
 
   @override
   Widget build(BuildContext context) {
-    return InfoContainer(child: Text("a"));
+    return InfoContainer.withoutMargin(
+        child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(children: [
+          Expanded(
+              child: SportCenterImageCarousel(
+                  images: sportCenter.getMainPicturesListUrls()))
+        ]),
+        InfoWidget(title: dateFormat.format(match.dateTime), icon: Icons.watch),
+        InkWell(
+          child: InfoWidget(
+              title: sportCenter.name,
+              icon: Icons.place,
+              subTitle: sportCenter.getShortAddress()),
+          onTap: () async {
+            String googleUrl =
+                "https://www.google.com/maps/search/?api=1&query=Google&query_place_id=" +
+                    sportCenter.placeId;
+
+            if (await canLaunch(googleUrl)) {
+              await launch(googleUrl);
+            } else {
+              // throw 'Could not open the map.';
+              CoolAlert.show(
+                  context: context,
+                  type: CoolAlertType.error,
+                  text: "Could not open maps");
+            }
+          },
+        ),
+        InfoWidget(
+            title: match.sport.getDisplayTitle(),
+            icon: Icons.sports_soccer,
+            // todo fix info sport
+            subTitle: sportCenter.tags.join(", ")),
+        InfoWidget(
+            title: formatCurrency.format(match.getPrice()),
+            icon: Icons.money,
+            subTitle: "Pay with Ideal"),
+      ],
+    ));
+  }
+}
+
+class SportCenterImageCarousel extends StatefulWidget {
+  final List<String> images;
+
+  const SportCenterImageCarousel({Key key, this.images}) : super(key: key);
+
+  @override
+  State<StatefulWidget> createState() => SportCenterImageCarouselState(images);
+}
+
+class SportCenterImageCarouselState extends State<SportCenterImageCarousel> {
+  int _current = 0;
+  final List<String> images;
+  final CarouselController _controller = CarouselController();
+
+  SportCenterImageCarouselState(this.images);
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        // fixme check animation when slide
+        CarouselSlider(
+          carouselController: _controller,
+          options: CarouselOptions(
+              enableInfiniteScroll: false,
+              viewportFraction: 1,
+              onPageChanged: (index, reason) {
+                setState(() {
+                  _current = index;
+                });
+              }),
+          items: images.map((i) {
+            return Builder(
+              builder: (BuildContext context) {
+                return Container(
+                  decoration: BoxDecoration(
+                      image: DecorationImage(
+                          fit: BoxFit.fill, image: AssetImage(i)),
+                      borderRadius: BorderRadius.all(Radius.circular(15))),
+                );
+              },
+            );
+          }).toList(),
+        ),
+        Positioned(
+          bottom: 10,
+          left: 1,
+          right: 1,
+          child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: images.asMap().entries.map((entry) {
+                return GestureDetector(
+                  onTap: () => _controller.animateToPage(entry.key),
+                  child: Container(
+                    width: 12.0,
+                    height: 12.0,
+                    margin:
+                        EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+                    decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white
+                            .withOpacity(_current == entry.key ? 0.9 : 0.4)),
+                  ),
+                );
+              }).toList()),
+        ),
+      ],
+    );
+  }
+}
+
+class InfoWidget extends StatelessWidget {
+  final String title;
+  final IconData icon;
+  final String subTitle;
+
+  const InfoWidget({Key key, this.title, this.icon, this.subTitle})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+        margin: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+        child: Row(
+          children: [
+            new Icon(icon),
+            SizedBox(
+              width: 20,
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: TextPalette.h2Black),
+                SizedBox(
+                  height: 5,
+                ),
+                if (subTitle != null)
+                  Text(subTitle, style: TextPalette.bodyText2Black)
+              ],
+            )
+          ],
+        ));
   }
 }
 
 class PlayerCard extends StatelessWidget {
+  final String name;
+  final String imageUrl;
+
+  const PlayerCard({Key key, this.name, this.imageUrl}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
-    return InfoContainer(
-      child: Text("picture"),
-    );
+    return Container(
+        decoration: infoMatchDecoration,
+        margin: EdgeInsets.only(right: 10),
+        child: Padding(
+          padding: EdgeInsets.all(10),
+          child: Column(children: [
+            CircleAvatar(
+                backgroundImage: NetworkImage(imageUrl),
+                radius: 25,
+                backgroundColor: Palette.white),
+            SizedBox(height: 10),
+            if (name != null) Text(name)
+          ]),
+        ));
   }
 }
 
