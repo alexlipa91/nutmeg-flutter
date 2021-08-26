@@ -1,9 +1,14 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:cool_alert/cool_alert.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:maps_launcher/maps_launcher.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
 import 'package:nutmeg/screens/PaymentPage.dart';
+import 'package:nutmeg/utils/LocationUtils.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/AppBar.dart';
 import 'package:nutmeg/widgets/Containers.dart';
@@ -12,7 +17,7 @@ import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:readmore/readmore.dart';
-
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -87,7 +92,7 @@ class MatchDetails extends StatelessWidget {
                 child: Text("Details")),
             RuleCard(),
             RuleCard(),
-            MapCard()
+            MapCard(placeId: sportCenter.placeId)
           ],
         ),
       ),
@@ -284,7 +289,6 @@ class PlayerCard extends StatelessWidget {
 }
 
 class RuleCard extends StatelessWidget {
-
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
@@ -310,12 +314,75 @@ class RuleCard extends StatelessWidget {
 }
 
 class MapCard extends StatelessWidget {
+  final String placeId;
+
+  const MapCard({Key key, this.placeId}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
+    // fixme for some reason if we use InfoContainer it doesn't work https://stackoverflow.com/questions/53972558/how-to-add-border-radius-to-google-maps-in-flutter
+    return InkWell(
+      child: Container(
+        margin: EdgeInsets.symmetric(horizontal: 25, vertical: 10),
+        child: ClipRRect(
+          borderRadius: InfoContainer.borderRadius,
+          child: SizedBox(
+            height: 100,
+            child: FutureBuilder<LatLng>(
+                future: LocationUtils.getPlaceCoordinates(placeId),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    return GoogleMap(
+                      onTap: (LatLng latLng) async {
+                        // String url;
+                        //
+                        // if (Platform.isIOS) {
+                        //   // iOS
+                        //   url = 'http://maps.apple.com/?q=${snapshot.data.latitude},${snapshot.data.longitude}';
+                        // } else {
+                        //   url =
+                        //       "https://www.google.com/maps/search/?api=1&query=Google&query_place_id=" +
+                        //           placeId;
+                        // }
+                        // if (await canLaunch(url)) {
+                        //   await launch(url);
+                        // } else {
+                        //   // throw 'Could not open the map.';
+                        //   CoolAlert.show(
+                        //       context: context,
+                        //       type: CoolAlertType.error,
+                        //       text: "Could not open maps");
+                        // }
+                        MapsLauncher.launchCoordinates(snapshot.data.latitude, snapshot.data.longitude);
+                      },
+                      myLocationButtonEnabled: false,
+                      zoomGesturesEnabled: false,
+                      markers: {
+                        Marker(
+                            markerId: MarkerId("id"),
+                            position: snapshot.data)
+                      },
+                      initialCameraPosition: CameraPosition(
+                          target: snapshot.data,
+                          zoom: 12),
+                    );
+                  }
+                  return Text("put skeleton here");
+                }),
+          ),
+        ),
+      ),
+    );
+
     // TODO: implement build
-    return InfoContainer(child: Text("Map"));
-    // return GoogleMap(
-    //
+    // return InfoContainer.withoutMargin(
+    //   child: SizedBox(
+    //     height: 100,
+    //     // child: Container()
+    //     child: GoogleMap(
+    //       initialCameraPosition: _kInitialPosition,
+    //     ),
+    //   ),
     // );
   }
 }

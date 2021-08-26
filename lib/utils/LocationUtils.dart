@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 
 class LocationUtils {
@@ -53,5 +54,9 @@ class LocationUtils {
     }
 
     return await location.getLocation();
+  }
+
+  static Future<LatLng> getPlaceCoordinates(String placeId) async {
+    return new LatLng(10, 20);
   }
 }
