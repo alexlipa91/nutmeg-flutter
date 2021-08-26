@@ -29,7 +29,7 @@ class MatchDetails extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: Palette.primary,
-        appBar: CustomAppBar(),
+        appBar: MainAppBar(),
         body: Container(
           decoration: new BoxDecoration(color: Colors.grey.shade400),
           // fixme this is not working well; here we need something that fits the whole page vertically and can scroll if too big. Now this has the scroll animation on top but it actually fits so it shouldn't

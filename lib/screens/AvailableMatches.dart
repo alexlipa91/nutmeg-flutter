@@ -40,7 +40,7 @@ class AvailableMatches extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var appBar = CustomAppBar();
+    var appBar = MainAppBar();
 
     return Scaffold(
       extendBodyBehindAppBar: true,

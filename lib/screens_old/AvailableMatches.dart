@@ -29,7 +29,7 @@ class AvailableMatchesState extends State<AvailableMatches> {
       decoration: new BoxDecoration(color: Colors.grey.shade400),
       child: Scaffold(
           backgroundColor: Palette.green,
-          appBar: CustomAppBar(),
+          appBar: MainAppBar(),
           body: Scaffold(
             backgroundColor: Palette.lightGrey,
             body: Column(
