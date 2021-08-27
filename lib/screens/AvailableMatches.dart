@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
 import 'package:intl/intl.dart';
@@ -7,6 +8,7 @@ import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/AppBar.dart';
 import 'package:nutmeg/widgets/Buttons.dart';
 import 'package:nutmeg/widgets/Containers.dart';
+import 'package:nutmeg/widgets/Texts.dart';
 import 'package:provider/provider.dart';
 import 'package:week_of_year/week_of_year.dart';
 import "package:collection/collection.dart";
@@ -37,25 +39,23 @@ void main() async {
 
 // main widget
 class AvailableMatches extends StatelessWidget {
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true,
       body: MultiProvider(
         providers: [
           ChangeNotifierProvider(create: (context) => SelectedTapNotifier()),
         ],
-        child: SafeArea(
-          child: Container(
-            color: Palette.lightGrey,
-            child: Column(
-              children: [
-                MainAppBar(),
-                // this must be as high as the app bar (a bit higher is better) because of an annoying issue https://github.com/flutter/flutter/issues/16262
-                RoundedTopBar(),
-                SizedBox(height: 10),
-                Expanded(child: MatchesArea())
-              ],
-            ),
+        child: Container(
+          color: Palette.light,
+          child: Column(
+            children: [
+              MainAppBar(),
+              RoundedTopBar(),
+              Expanded(child: MatchesArea())
+            ],
           ),
         ),
       ),
@@ -79,13 +79,13 @@ class RoundedTopBar extends StatelessWidget {
                 bottomLeft: Radius.circular(20),
                 bottomRight: Radius.circular(20))),
         child: Padding(
-          padding: EdgeInsets.all(20),
+          padding: EdgeInsets.only(top: 10, left: 20, right: 20, bottom: 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(height: 8),
-              Text("Find football games in", style: TextPalette.h2White),
-              Text("Amsterdam", style: TextPalette.h1White),
+              Text("Find football games in",
+                  style: TextPalette.bodyTextInverted),
+              Text("Amsterdam", style: TextPalette.h1Inverted),
               SizedBox(height: 24),
               Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                 context.watch<SelectedTapNotifier>().getCurrentSelection() ==
@@ -124,30 +124,31 @@ class News extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(children: [
-              Text("50% off", style: TextPalette.h1Black),
+            Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              ContainerTitleText(text: "50% off"),
               Expanded(
                   child: Align(
-                      alignment: Alignment.centerRight,
-                      child: InkWell(
-                          child: Icon(Icons.close),
-                          onTap: () {
-                            _listKey.currentState.removeItem(0, (_, animation) {
-                              // fixme check if there's something better around
-                              return SlideTransition(
-                                  position: Tween<Offset>(
-                                    begin: const Offset(-3, 0),
-                                    end: Offset(0, 0),
-                                  ).animate(animation),
-                                  child: News(_listKey));
-                            }, duration: Duration(milliseconds: 500));
-                            MatchesArea.showNews = false;
-                          })))
+                alignment: Alignment.topRight,
+                child: InkWell(
+                    child: Icon(Icons.close, size: 18),
+                    onTap: () {
+                      _listKey.currentState.removeItem(0, (_, animation) {
+                        // fixme check if there's something better around
+                        return SlideTransition(
+                            position: Tween<Offset>(
+                              begin: const Offset(-3, 0),
+                              end: Offset(0, 0),
+                            ).animate(animation),
+                            child: News(_listKey));
+                      }, duration: Duration(milliseconds: 500));
+                      MatchesArea.showNews = false;
+                    }),
+              ))
             ]),
-            SizedBox(height: 15),
+            // SizedBox(height: 15),
             Text(
               "All games in Amsterdam are 50% off until Sept 4.",
-              style: TextPalette.bodyText2Gray,
+              style: TextPalette.bodyText,
             )
           ],
         ),
@@ -168,8 +169,7 @@ class MatchesArea extends StatelessWidget {
 
     return (optionSelected == "MY GAMES" && !isLoggedIn)
         ? Center(
-            child:
-                Text("Login to join matches", style: TextPalette.bodyText2Gray),
+            child: Text("Login to join matches", style: TextPalette.bodyText),
           )
         : RefreshIndicator(
             onRefresh: () async {
@@ -182,6 +182,7 @@ class MatchesArea extends StatelessWidget {
                   : myGamesWidgets(context);
 
               return AnimatedList(
+                padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
                 key: _listKey,
                 initialItemCount:
                     (showNews) ? widgets.length + 1 : widgets.length,
@@ -210,27 +211,37 @@ class MatchesArea extends StatelessWidget {
 
     if (matches.isEmpty) {
       return [
-        SizedBox(height: 50),
         TextSeparatorWidget("No games to display. Book your first game today.")
       ];
     }
 
     var now = DateTime.now();
-    var past = matches.where((m) => m.dateTime.isBefore(now));
-    var future = matches.where((m) => m.dateTime.isAfter(now));
+
+    List<Match> past = matches.where((m) => m.dateTime.isBefore(now)).toList();
+    List<Match> future = matches.where((m) => m.dateTime.isAfter(now)).toList();
 
     List<Widget> widgets = [];
 
-    if (past.isNotEmpty) {
-      widgets.add(TextSeparatorWidget("Past matches"));
-      widgets.addAll(
-          past.sortedBy((e) => e.dateTime).map((e) => MatchInfoPast(e)));
+    if (future.isNotEmpty) {
+      widgets.add(TextSeparatorWidget("UPCOMING GAMES"));
+      future.sortedBy((e) => e.dateTime).forEachIndexed((index, m) {
+        if (index == 0) {
+          widgets.add(MatchInfo.first(m));
+        } else {
+          widgets.add(MatchInfo(m));
+        }
+      });
     }
 
-    if (future.isNotEmpty) {
-      widgets.add(TextSeparatorWidget("Upcoming matches"));
-      widgets
-          .addAll(future.sortedBy((e) => e.dateTime).map((e) => MatchInfo(e)));
+    if (past.isNotEmpty) {
+      widgets.add(TextSeparatorWidget("PAST GAMES"));
+      past.sortedBy((e) => e.dateTime).forEachIndexed((index, m) {
+        if (index == 0) {
+          widgets.add(MatchInfoPast.first(m));
+        } else {
+          widgets.add(MatchInfoPast(m));
+        }
+      });
     }
 
     return widgets;
@@ -238,20 +249,25 @@ class MatchesArea extends StatelessWidget {
 
   static List<Widget> allGamesWidgets(BuildContext context) {
     var matches = context.watch<MatchesChangeNotifier>().getMatchesInFuture();
+
     var grouped = matches.groupListsBy((m) => m.dateTime.weekOfYear);
 
     List<int> sortedWeeks = grouped.keys.toList()..sort();
 
-    return sortedWeeks
-        .map((w) {
-          List<Widget> l = [];
-          l.add(WeekSeparatorWidget(w));
-          l.addAll(
-              grouped[w].sortedBy((e) => e.dateTime).map((e) => MatchInfo(e)));
-          return l;
-        })
-        .flattened
-        .toList();
+    List<Widget> result = [];
+
+    sortedWeeks.forEach((w) {
+      result.add(WeekSeparatorWidget(w));
+      grouped[w].sortedBy((e) => e.dateTime).forEachIndexed((index, match) {
+        if (index == 0) {
+          result.add(MatchInfo.first(match));
+        } else {
+          result.add(MatchInfo(match));
+        }
+      });
+    });
+
+    return result;
   }
 }
 
@@ -261,8 +277,11 @@ class MatchInfo extends StatelessWidget {
   static var monthDayFormat = DateFormat('HH:mm');
 
   final Match match;
+  final double topMargin;
 
-  MatchInfo(this.match);
+  MatchInfo(this.match) : topMargin = 10;
+
+  MatchInfo.first(this.match) : topMargin = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -271,75 +290,69 @@ class MatchInfo extends StatelessWidget {
         .getSportCenter(match.sportCenter);
 
     return InkWell(
-        child: InfoContainer(
-            child: IntrinsicHeight(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                  width: 60,
-                  height: 78,
-                  decoration: BoxDecoration(
-                      image: DecorationImage(
-                          image: AssetImage(
-                              "assets/sportcentertest_thumbnail.png")),
-                      color: Colors.grey,
-                      borderRadius: BorderRadius.all(Radius.circular(15)))),
-              Expanded(
-                child: Container(
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 10),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Text(
-                                  sportCenter.neighbourhood +
-                                      " - " +
-                                      match.sport.getDisplayTitle(),
-                                  style: TextPalette.h2Black),
-                              Expanded(
-                                  child: Text(
-                                      (match.numPlayersGoing() ==
-                                              match.maxPlayers)
-                                          ? "Full"
-                                          : (match.maxPlayers -
-                                                      match.numPlayersGoing())
-                                                  .toString() +
-                                              " spots left",
-                                      style: TextPalette.bodyText2Gray,
-                                      textAlign: TextAlign.right))
-                            ],
-                          ),
-                          Text(match.getFormattedDate(),
-                              style: TextPalette.bodyText2Black),
-                          Text(sportCenter.name,
-                              style: TextPalette.bodyText2Gray),
-                        ],
+        child: Padding(
+          padding: EdgeInsets.only(top: topMargin),
+          child: InfoContainer(
+              child: IntrinsicHeight(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                    width: 60,
+                    height: 78,
+                    decoration: BoxDecoration(
+                        image: DecorationImage(
+                            image: AssetImage(
+                                "assets/sportcentertest_thumbnail.png")),
+                        color: Colors.grey,
+                        borderRadius: BorderRadius.all(Radius.circular(10)))),
+                Expanded(
+                  child: Container(
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Padding(
+                        padding: EdgeInsets.only(left: 16),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Text(
+                                    sportCenter.neighbourhood +
+                                        " - " +
+                                        match.sport.getDisplayTitle(),
+                                    style: TextPalette.h2),
+                                Expanded(
+                                    child: Text(
+                                        (match.numPlayersGoing() ==
+                                                match.maxPlayers)
+                                            ? "Full"
+                                            : (match.maxPlayers -
+                                                        match.numPlayersGoing())
+                                                    .toString() +
+                                                " spots left",
+                                        style: GoogleFonts.roboto(
+                                            color: Palette.mediumgrey,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w400),
+                                        textAlign: TextAlign.right))
+                              ],
+                            ),
+                            Text(match.getFormattedDate(),
+                                style: TextPalette.h3),
+                            Text(sportCenter.name,
+                                style: TextPalette.bodyTextOneLine),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-              // Container(
-              //     child: Column(
-              //   children: [
-              //     Text(
-              //         (match.numPlayersGoing() == match.maxPlayers)
-              //             ? "Full"
-              //             : (match.maxPlayers - match.numPlayersGoing())
-              //                     .toString() +
-              //                 " spots left",
-              //         style: TextPalette.bodyText2Gray)
-              //   ],
-              // )),
-            ],
-          ),
-        )),
+              ],
+            ),
+          )),
+        ),
         onTap: () async {
           // fixme why it doesn't rebuild here?
           await Navigator.push(
@@ -358,11 +371,11 @@ class MatchInfoPast extends StatelessWidget {
   static var dayFormat = DateFormat('dd MMM');
 
   final Match match;
+  final double topMargin;
 
-  // fixme currently passing null, we need to figure it out in the UI
-  // LocationData locationData;
+  MatchInfoPast(this.match) : topMargin = 10;
 
-  MatchInfoPast(this.match);
+  MatchInfoPast.first(this.match) : topMargin = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -371,45 +384,47 @@ class MatchInfoPast extends StatelessWidget {
         .getSportCenter(match.sportCenter);
 
     return InkWell(
-        child: InfoContainer(
-            child: IntrinsicHeight(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Container(
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 10),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                              sportCenter.neighbourhood +
-                                  " - " +
-                                  match.sport.getDisplayTitle(),
-                              style: TextPalette.h2Black),
-                          SizedBox(height: 10),
-                          Text(sportCenter.name,
-                              style: TextPalette.bodyText2Gray),
-                        ],
+        child: Padding(
+          padding: EdgeInsets.only(top: topMargin),
+          child: InfoContainer(
+              child: IntrinsicHeight(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Container(
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 10),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                                sportCenter.neighbourhood +
+                                    " - " +
+                                    match.sport.getDisplayTitle(),
+                                style: TextPalette.h2),
+                            SizedBox(height: 10),
+                            Text(sportCenter.name, style: TextPalette.bodyText),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-              Container(
-                  child: Column(
-                children: [
-                  Text(dayFormat.format(match.dateTime),
-                      style: TextPalette.primaryInButton)
-                ],
-              )),
-            ],
-          ),
-        )),
+                Container(
+                    child: Column(
+                  children: [
+                    Text(dayFormat.format(match.dateTime),
+                        style: TextPalette.h4)
+                  ],
+                )),
+              ],
+            ),
+          )),
+        ),
         onTap: () async {
           // fixme why it doesn't rebuild here?
           await Navigator.push(
@@ -431,10 +446,8 @@ class TextSeparatorWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 25, vertical: 3),
-      child: Text(text,
-          style: TextStyle(
-              color: Colors.grey, fontSize: 16, fontWeight: FontWeight.w400)),
+      padding: EdgeInsets.only(top: 32, bottom: 16),
+      child: Text(text, style: TextPalette.h4),
     );
   }
 }
@@ -451,12 +464,12 @@ class WeekSeparatorWidget extends StatelessWidget {
     var currentWeek = DateTime.now().weekOfYear;
 
     if (currentWeek == weekNumber) {
-      return "This week";
+      return "THIS WEEK";
     }
     if (currentWeek + 1 == weekNumber) {
-      return "Next week";
+      return "NEXT WEEK";
     }
-    return "In more than two weeks";
+    return "IN MORE THAN TWO WEEKS";
   }
 }
 

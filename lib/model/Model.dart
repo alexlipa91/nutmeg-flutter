@@ -42,6 +42,17 @@ class Match {
   Match(this.dateTime, this.sportCenter, this.sport, this.maxPlayers,
       this.pricePerPersonInCents, this.status);
 
+  Match.from(Match m) {
+    documentId = m.documentId;
+    dateTime = m.dateTime;
+    sportCenter = m.sportCenter;
+    sport = m.sport;
+    pricePerPersonInCents = m.pricePerPersonInCents;
+    maxPlayers = m.maxPlayers;
+    status = m.status;
+    subscriptions = m.subscriptions;
+  }
+
   Match.fromJson(Map<String, dynamic> json, String documentId)
       : dateTime = (json['dateTime'] as Timestamp).toDate(),
         sportCenter = json['sportCenter'],

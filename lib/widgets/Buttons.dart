@@ -14,7 +14,7 @@ class PrimaryButton extends StatelessWidget {
 
   Color getBackgroundColor() => Palette.primary;
 
-  TextStyle getTextStyle() => TextPalette.whiteInButton;
+  TextStyle getTextStyle() => TextPalette.linkStyleInverted;
 
   @override
   Widget build(BuildContext context) {
@@ -59,13 +59,13 @@ mixin RightRounded on PrimaryButton {
 mixin On on PrimaryButton {
   Color getBackgroundColor() => Colors.white;
 
-  TextStyle getTextStyle() => TextPalette.primaryInButton;
+  TextStyle getTextStyle() => TextPalette.linkStyle;
 }
 
 mixin Off on PrimaryButton {
   Color getBackgroundColor() => Colors.transparent;
 
-  TextStyle getTextStyle() => TextPalette.whiteInButton;
+  TextStyle getTextStyle() => TextPalette.linkStyleInverted;
 }
 
 mixin All on PrimaryButton {}

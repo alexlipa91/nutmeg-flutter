@@ -56,7 +56,7 @@ class LoginArea extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Image.asset('assets/nutmeg_logo.png', width: 106, height: 40),
+        Image.asset('assets/nutmeg_white.png', width: 106, height: 40),
         SizedBox(height: 30),
         Container(
             padding: EdgeInsets.symmetric(vertical: 10, horizontal: 35),
@@ -125,7 +125,7 @@ class GoogleSignInButton extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(left: 10),
             child:
-                Text('CONTINUE WITH GOOGLE', style: TextPalette.bodyText2Gray),
+                Text('CONTINUE WITH GOOGLE', style: TextPalette.bodyText),
           )
         ],
       ),

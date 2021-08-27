@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:nutmeg/utils/UiUtils.dart';
 
 class InfoContainer extends StatelessWidget {
-  static var borderRadius = BorderRadius.all(Radius.circular(20));
+
+  static var borderRadius = BorderRadius.all(Radius.circular(10));
   static var boxShadow = BoxShadow(
-    color: Colors.grey.withOpacity(0.5),
-    spreadRadius: 5,
-    blurRadius: 7,
-    offset: Offset(0, 3), // changes position of shadow
+    color: Palette.black.withOpacity(0.1),
+    spreadRadius: 0,
+    blurRadius: 20,
+    offset: Offset(0, 10),
   );
   static var boxDecoration = BoxDecoration(
     color: Colors.white,
@@ -21,7 +23,7 @@ class InfoContainer extends StatelessWidget {
   final EdgeInsets padding;
 
   InfoContainer({this.child}) :
-        padding = EdgeInsets.symmetric(horizontal: 25, vertical: 10);
+        padding = EdgeInsets.symmetric(horizontal: 16, vertical: 16);
 
   InfoContainer.withoutPadding({this.child}) :
         padding = EdgeInsets.all(0);
@@ -29,7 +31,7 @@ class InfoContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-        margin: EdgeInsets.symmetric(horizontal: 25, vertical: 10),
+        // margin: EdgeInsets.symmetric(horizontal: 25, vertical: 10),
         decoration: boxDecoration,
         child: Padding(
           padding: padding,

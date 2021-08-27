@@ -40,6 +40,7 @@ class LaunchWidget extends StatefulWidget {
 }
 
 class _LaunchWidgetState extends State<LaunchWidget> {
+
   @override
   void initState() {
     super.initState();
@@ -60,7 +61,7 @@ class _LaunchWidgetState extends State<LaunchWidget> {
         child: Center(
             child:
                 Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-          Image.asset("assets/nutmeg_logo.png", width: 116, height: 46),
+          Image.asset("assets/nutmeg_white.png", width: 116, height: 46),
           SizedBox(height: 30),
           CircularProgressIndicator(
               valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),

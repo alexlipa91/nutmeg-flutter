@@ -46,9 +46,8 @@ class Palette {
 
   //text
   static var mediumgrey = UiUtils.fromHex("#787878");
-  static var darkgrey = UiUtils.fromHex("#4444444");
+  static var darkgrey = UiUtils.fromHex("#444444");
   static var black = UiUtils.fromHex("#1E1E24");
-
 
   static var lightGrey = Colors.grey.shade200; // used for background
   static var green = Colors.green.shade700;
@@ -58,22 +57,21 @@ class Palette {
 
 class TextPalette {
 
-  static TextStyle h1White = GoogleFonts.roboto(color: Colors.white, fontSize: 30, fontWeight: FontWeight.bold);
-  static TextStyle h2White = GoogleFonts.roboto(color: Colors.white, fontSize: 15);
+  static TextStyle h1Default = GoogleFonts.roboto(color: Palette.black, fontSize: 30, fontWeight: FontWeight.w900);
+  static TextStyle h1Inverted = GoogleFonts.roboto(color: Palette.white, fontSize: 30, fontWeight: FontWeight.w900);
 
-  static TextStyle h1Black = GoogleFonts.roboto(color: Colors.black, fontSize: 30, fontWeight: FontWeight.bold);
-  static TextStyle h2Black = GoogleFonts.roboto(color: Colors.black, fontSize: 18, fontWeight: FontWeight.w900);
-  static TextStyle h2BlackBold = GoogleFonts.roboto(color: Colors.black, fontSize: 15, fontWeight: FontWeight.bold);
+  static TextStyle h2 = GoogleFonts.roboto(color: Palette.black, fontSize: 18, fontWeight: FontWeight.w700);
 
-  static TextStyle bodyText2Black = GoogleFonts.roboto(color: Colors.black, fontSize: 14);
-  static TextStyle bodyText2Gray = GoogleFonts.roboto(color: Colors.grey, fontSize: 14);
+  static TextStyle h3 = GoogleFonts.roboto(color: Palette.black, fontSize: 14, fontWeight: FontWeight.w500);
 
-  static TextStyle linkStyle = GoogleFonts.roboto(color: Palette.primary, fontSize: 14, fontWeight: FontWeight.bold);
+  static TextStyle h4 = GoogleFonts.roboto(color: Palette.darkgrey, fontSize: 12, fontWeight: FontWeight.w500);
 
-  static TextStyle whiteLogin = GoogleFonts.roboto(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold);
+  static TextStyle bodyText = GoogleFonts.roboto(color: Palette.mediumgrey, fontSize: 14, fontWeight: FontWeight.w400, height: 1.6);
+  static TextStyle bodyTextOneLine = GoogleFonts.roboto(color: Palette.mediumgrey, fontSize: 14, fontWeight: FontWeight.w400);
+  static TextStyle bodyTextInverted = GoogleFonts.roboto(color: Palette.white, fontSize: 14, fontWeight: FontWeight.w400, height: 1.6);
 
-  static TextStyle whiteInButton = GoogleFonts.roboto(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold);
-  static TextStyle primaryInButton = GoogleFonts.roboto(color: Palette.primary, fontSize: 16, fontWeight: FontWeight.bold);
+  static TextStyle linkStyle = GoogleFonts.roboto(color: Palette.primary, fontSize: 14, fontWeight: FontWeight.w700);
+  static TextStyle linkStyleInverted = GoogleFonts.roboto(color: Palette.white, fontSize: 14, fontWeight: FontWeight.w700);
 }
 
 // ignore for now

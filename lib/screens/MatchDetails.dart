@@ -62,10 +62,10 @@ class MatchDetails extends StatelessWidget {
             // fixme here we are repeating the padding just because cannot be applied globally as MatchInfo doesn't need
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SecondaryAppBar(),
+              SecondaryAppBarAsContainer(),
               Padding(
                   padding: EdgeInsets.symmetric(horizontal: 25),
-                  child: Text(title, style: TextPalette.h1Black)),
+                  child: Text(title, style: TextPalette.h1Default)),
               MatchInfo(match, sportCenter),
               Padding(
                   padding: EdgeInsets.symmetric(horizontal: 25, vertical: 15),
@@ -109,7 +109,7 @@ class MatchDetails extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(match.getSpotsLeft().toString() + " spots left",
-                        style: TextPalette.h2Black),
+                        style: TextPalette.h2),
                     Text(formatCurrency.format(match.getPrice()))
                   ],
                 ),
@@ -321,12 +321,12 @@ class InfoWidget extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: TextPalette.h2Black),
+                Text(title, style: TextPalette.h2),
                 SizedBox(
                   height: 5,
                 ),
                 if (subTitle != null)
-                  Text(subTitle, style: TextPalette.bodyText2Black)
+                  Text(subTitle, style: TextPalette.h4)
               ],
             ),
             if (rightWidget != null) Expanded(child: rightWidget)
@@ -366,11 +366,11 @@ class RuleCard extends StatelessWidget {
     // TODO: implement build
     return InfoContainer(
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text("Title", style: TextPalette.h2Black),
+      Text("Title", style: TextPalette.h2),
       SizedBox(height: 10),
       ReadMoreText(
         'Flutter is Google’s mobile UI open source framework to build high-quality native (super fast) interfaces for iOS and Android apps with the unified codebase.',
-        style: TextPalette.bodyText2Black,
+        style: TextPalette.bodyText,
         trimLines: 2,
         colorClickableText: Colors.blue,
         delimiter: "\n\n",
