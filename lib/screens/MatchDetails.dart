@@ -196,7 +196,7 @@ class MatchInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InfoContainer.withoutMargin(
+    return InfoContainer.withoutPadding(
         child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

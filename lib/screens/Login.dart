@@ -1,9 +1,12 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:nutmeg/utils/GoogleSignInButton.dart';
+import 'package:flutter/services.dart';
+import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/utils/LoginUtils.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
-
+import 'package:nutmeg/widgets/Containers.dart';
+import 'package:provider/provider.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,87 +19,112 @@ void main() {
 }
 
 class Login extends StatelessWidget {
-
   @override
   Widget build(BuildContext context) {
-    final ThemeData themeData = Theme.of(context);
-
-    return SafeArea(
-      child: Container(
-        padding: EdgeInsets.all(50),
-        decoration: new BoxDecoration(color: Colors.grey.shade400),
-        // padding: EdgeInsets.symmetric(100, padding),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Text("Nutmeg", style: themeData.textTheme.headline1),
-            SizedBox(height: 10),
-            Text(
-                "Join Football matches in your city\n"
-                    "whenever you want",
-                style: themeData.textTheme.bodyText1,
-                textAlign: TextAlign.center),
-            SizedBox(height: 30),
-            LoginAreaWidget()
-          ],
-        ),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+            create: (context) => LoginStatusChangeNotifier()),
+      ],
+      child: SafeArea(
+        child: Container(
+            decoration: new BoxDecoration(color: Palette.primary),
+            child: LoginArea()),
       ),
     );
   }
 }
 
-class LoginAreaWidget extends StatelessWidget {
-
+class LoginArea extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Container(
-          child: Column(children: [
-            LoginOptionButton(text: "Facebook"),
-            GoogleSignInButton()
-            // LoginOptionButton(text: "Google"),
-          ]));
-    }
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Image.asset('assets/nutmeg_logo.png', width: 106, height: 40),
+        SizedBox(height: 30),
+        Container(
+            padding: EdgeInsets.symmetric(vertical: 10, horizontal: 35),
+            decoration: InfoContainer.boxDecoration,
+            child: GoogleSignInButton()),
+        SizedBox(height: 30),
+        CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(
+                (context.watch<LoginStatusChangeNotifier>().isSigningIn)
+                    ? Colors.white
+                    : Colors.transparent)),
+      ],
+    );
+  }
 }
 
-// fixme this is being used because of the UI somewhere else. Rename it and generalize
-class LoginOptionButton extends StatelessWidget {
-  final String text;
-  final Function onTap;
-  final Widget next;
+class GoogleSignInButton extends StatelessWidget {
+  final Function onPressed;
 
-  const LoginOptionButton({Key key, this.text, this.onTap, this.next}) : super(key: key);
+  const GoogleSignInButton({Key key, this.onPressed}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData themeData = Theme.of(context);
+    return OutlinedButton(
+      style: ButtonStyle(
+        backgroundColor: MaterialStateProperty.all(Colors.white),
+        shape: MaterialStateProperty.all(
+          RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(40),
+          ),
+        ),
+      ),
+      onPressed: () async {
+        context.read<LoginStatusChangeNotifier>().setIsSigningIn(true);
 
-    return Container(
-      margin: EdgeInsets.all(30.0),
+        try {
+          await context.read<UserChangeNotifier>().loginWithGoogle();
+        } on FirebaseAuthException catch (e) {
+          showDialog(
+              context: context,
+              builder: (context) {
+                return AlertDialog(content: Text(e.message));
+              });
+        } on PlatformException catch (e) {
+          showDialog(
+              context: context,
+              builder: (context) {
+                return AlertDialog(content: Text(e.code));
+              });
+        }
+
+        context.read<LoginStatusChangeNotifier>().setIsSigningIn(false);
+
+        print("user is " +
+            context.read<UserChangeNotifier>().getUserDetails().getUid());
+        Navigator.pop(context, true);
+      },
       child: Row(
-        children: [
-          Expanded(
-            child: TextButton(
-                onPressed: onTap,
-                child: Text(
-                  text,
-                ),
-                style: ButtonStyle(
-                    side: MaterialStateProperty.all(
-                        BorderSide(width: 2, color: Colors.grey)),
-                    foregroundColor: MaterialStateProperty.all(Colors.black),
-                    backgroundColor: MaterialStateProperty.all(Colors.grey),
-                    shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                        RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20.0),
-                        )),
-                    padding: MaterialStateProperty.all(
-                        EdgeInsets.symmetric(vertical: 10, horizontal: 50)),
-                    textStyle: MaterialStateProperty.all(
-                        themeData.textTheme.headline3))),
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Image(
+            image: AssetImage("assets/google_logo.png"),
+            height: 20.0,
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 10),
+            child:
+                Text('CONTINUE WITH GOOGLE', style: TextPalette.bodyText2Gray),
           )
         ],
       ),
     );
+  }
+}
+
+class LoginStatusChangeNotifier extends ChangeNotifier {
+  bool _isSigningIn = false;
+
+  bool get isSigningIn => _isSigningIn;
+
+  void setIsSigningIn(bool value) {
+    _isSigningIn = value;
+    notifyListeners();
   }
 }

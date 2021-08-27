@@ -3,6 +3,7 @@ import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/utils/ButtonWidgets.dart';
 import 'package:nutmeg/screens/AddMatch.dart';
 import 'package:nutmeg/screens/Login.dart';
+import 'package:nutmeg/widgets/Buttons.dart';
 import 'package:provider/provider.dart';
 
 import '../screens_old/AvailableMatches.dart';
@@ -51,7 +52,12 @@ class UserImage extends StatelessWidget {
             radius: 40,
             child: FittedBox(
                 child: Text(
-                    context.read<UserChangeNotifier>().getUserDetails().firebaseUser.email[0].toUpperCase(),
+                    context
+                        .read<UserChangeNotifier>()
+                        .getUserDetails()
+                        .firebaseUser
+                        .email[0]
+                        .toUpperCase(),
                     style: TextStyle(color: Colors.white, fontSize: 45)))));
   }
 }
@@ -107,12 +113,10 @@ class MatchList extends StatelessWidget {
         onPressedFunction: () => context.read<UserChangeNotifier>().logout()));
 
     if (context.read<UserChangeNotifier>().getUserDetails().isAdmin) {
-      children.add(LoginOptionButton(
-          text: "Add match",
-          onTap: () {
-            Navigator.push(context,
-                MaterialPageRoute(builder: (context) => new AddMatch()));
-          }));
+      children.add(RoundedButton("Add match", () {
+        Navigator.push(
+            context, MaterialPageRoute(builder: (context) => new AddMatch()));
+      }));
     }
 
     return Scaffold(
