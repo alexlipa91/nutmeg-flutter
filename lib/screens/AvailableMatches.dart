@@ -51,7 +51,7 @@ class AvailableMatches extends StatelessWidget {
           ChangeNotifierProvider(create: (context) => SelectedTapNotifier()),
         ],
         child: Container(
-          color: Palette.lightGrey,
+          color: Palette.light,
           child: Column(
             children: [
               // fixme this has different behaviour in iphone and android, check it
@@ -88,20 +88,21 @@ class RoundedTopBar extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Find Football games in", style: TextPalette.h2White),
               SizedBox(height: 8),
+              Text("Find football games in", style: TextPalette.h2White),
               Text("Amsterdam", style: TextPalette.h1White),
-              SizedBox(height: 10),
+              SizedBox(height: 24),
               Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                 context.watch<SelectedTapNotifier>().getCurrentSelection() ==
                         "ALL"
                     ? Expanded(child: LeftButtonOn("ALL", _getAllFunction(context)))
                     : Expanded(child: LeftButtonOff("ALL", _getAllFunction(context))),
                 context.watch<SelectedTapNotifier>().getCurrentSelection() ==
-                        "ALL"
+                    "ALL"
                     ? Expanded(child: RightButtonOff("MY GAMES", _getMyGamesFunction(context)))
                     : Expanded(child: RightButtonOn("MY GAMES", _getMyGamesFunction(context))),
-              ])
+              ]),
+              SizedBox(height: 4),
             ],
           ),
         ));
