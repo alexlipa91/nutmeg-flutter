@@ -13,7 +13,6 @@ import "package:collection/collection.dart";
 
 import 'MatchDetails.dart';
 
-
 // use this main for testing only
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -38,29 +37,25 @@ void main() async {
 
 // main widget
 class AvailableMatches extends StatelessWidget {
-
   @override
   Widget build(BuildContext context) {
-    var appBar = MainAppBar();
-
     return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: appBar,
       body: MultiProvider(
         providers: [
           ChangeNotifierProvider(create: (context) => SelectedTapNotifier()),
         ],
-        child: Container(
-          color: Palette.light,
-          child: Column(
-            children: [
-              // fixme this has different behaviour in iphone and android, check it
-              SizedBox(height: appBar.preferredSize.height + 30),
-              // this must be as high as the app bar (a bit higher is better) because of an annoying issue https://github.com/flutter/flutter/issues/16262
-              RoundedTopBar(),
-              SizedBox(height: 10),
-              Expanded(child: MatchesArea())
-            ],
+        child: SafeArea(
+          child: Container(
+            color: Palette.lightGrey,
+            child: Column(
+              children: [
+                MainAppBar(),
+                // this must be as high as the app bar (a bit higher is better) because of an annoying issue https://github.com/flutter/flutter/issues/16262
+                RoundedTopBar(),
+                SizedBox(height: 10),
+                Expanded(child: MatchesArea())
+              ],
+            ),
           ),
         ),
       ),
@@ -95,14 +90,19 @@ class RoundedTopBar extends StatelessWidget {
               Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                 context.watch<SelectedTapNotifier>().getCurrentSelection() ==
                         "ALL"
-                    ? Expanded(child: LeftButtonOn("ALL", _getAllFunction(context)))
-                    : Expanded(child: LeftButtonOff("ALL", _getAllFunction(context))),
+                    ? Expanded(
+                        child: LeftButtonOn("ALL", _getAllFunction(context)))
+                    : Expanded(
+                        child: LeftButtonOff("ALL", _getAllFunction(context))),
                 context.watch<SelectedTapNotifier>().getCurrentSelection() ==
-                    "ALL"
-                    ? Expanded(child: RightButtonOff("MY GAMES", _getMyGamesFunction(context)))
-                    : Expanded(child: RightButtonOn("MY GAMES", _getMyGamesFunction(context))),
-              ]),
-              SizedBox(height: 4),
+                        "ALL"
+                    ? Expanded(
+                        child: RightButtonOff(
+                            "MY GAMES", _getMyGamesFunction(context)))
+                    : Expanded(
+                        child: RightButtonOn(
+                            "MY GAMES", _getMyGamesFunction(context))),
+              ])
             ],
           ),
         ));
@@ -223,12 +223,14 @@ class MatchesArea extends StatelessWidget {
 
     if (past.isNotEmpty) {
       widgets.add(TextSeparatorWidget("Past matches"));
-      widgets.addAll(past.sortedBy((e) => e.dateTime).map((e) => MatchInfo(e)));
+      widgets.addAll(
+          past.sortedBy((e) => e.dateTime).map((e) => MatchInfoPast(e)));
     }
 
     if (future.isNotEmpty) {
       widgets.add(TextSeparatorWidget("Upcoming matches"));
-      widgets.addAll(future.sortedBy((e) => e.dateTime).map((e) => MatchInfo(e)));
+      widgets
+          .addAll(future.sortedBy((e) => e.dateTime).map((e) => MatchInfo(e)));
     }
 
     return widgets;
@@ -244,7 +246,8 @@ class MatchesArea extends StatelessWidget {
         .map((w) {
           List<Widget> l = [];
           l.add(WeekSeparatorWidget(w));
-          l.addAll(grouped[w].sortedBy((e) => e.dateTime).map((e) => MatchInfo(e)));
+          l.addAll(
+              grouped[w].sortedBy((e) => e.dateTime).map((e) => MatchInfo(e)));
           return l;
         })
         .flattened
@@ -258,9 +261,6 @@ class MatchInfo extends StatelessWidget {
   static var monthDayFormat = DateFormat('HH:mm');
 
   final Match match;
-
-  // fixme currently passing null, we need to figure it out in the UI
-  // LocationData locationData;
 
   MatchInfo(this.match);
 
@@ -295,13 +295,103 @@ class MatchInfo extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          Row(
+                            children: [
+                              Text(
+                                  sportCenter.neighbourhood +
+                                      " - " +
+                                      match.sport.getDisplayTitle(),
+                                  style: TextPalette.h2Black),
+                              Expanded(
+                                  child: Text(
+                                      (match.numPlayersGoing() ==
+                                              match.maxPlayers)
+                                          ? "Full"
+                                          : (match.maxPlayers -
+                                                      match.numPlayersGoing())
+                                                  .toString() +
+                                              " spots left",
+                                      style: TextPalette.bodyText2Gray,
+                                      textAlign: TextAlign.right))
+                            ],
+                          ),
+                          Text(match.getFormattedDate(),
+                              style: TextPalette.bodyText2Black),
+                          Text(sportCenter.name,
+                              style: TextPalette.bodyText2Gray),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              // Container(
+              //     child: Column(
+              //   children: [
+              //     Text(
+              //         (match.numPlayersGoing() == match.maxPlayers)
+              //             ? "Full"
+              //             : (match.maxPlayers - match.numPlayersGoing())
+              //                     .toString() +
+              //                 " spots left",
+              //         style: TextPalette.bodyText2Gray)
+              //   ],
+              // )),
+            ],
+          ),
+        )),
+        onTap: () async {
+          // fixme why it doesn't rebuild here?
+          await Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => MatchDetails(context
+                      .watch<MatchesChangeNotifier>()
+                      .getMatch(match.documentId))));
+          await context.read<MatchesChangeNotifier>().refresh();
+        });
+  }
+}
+
+class MatchInfoPast extends StatelessWidget {
+  static var formatCurrency = NumberFormat.simpleCurrency(name: "EUR");
+  static var dayFormat = DateFormat('dd MMM');
+
+  final Match match;
+
+  // fixme currently passing null, we need to figure it out in the UI
+  // LocationData locationData;
+
+  MatchInfoPast(this.match);
+
+  @override
+  Widget build(BuildContext context) {
+    var sportCenter = context
+        .read<SportCentersChangeNotifier>()
+        .getSportCenter(match.sportCenter);
+
+    return InkWell(
+        child: InfoContainer(
+            child: IntrinsicHeight(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Container(
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 10),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
                           Text(
                               sportCenter.neighbourhood +
                                   " - " +
                                   match.sport.getDisplayTitle(),
                               style: TextPalette.h2Black),
-                          Text(match.getFormattedDate(),
-                              style: TextPalette.bodyText2Black),
+                          SizedBox(height: 10),
                           Text(sportCenter.name,
                               style: TextPalette.bodyText2Gray),
                         ],
@@ -313,13 +403,8 @@ class MatchInfo extends StatelessWidget {
               Container(
                   child: Column(
                 children: [
-                  Text(
-                      (match.numPlayersGoing() == match.maxPlayers)
-                          ? "Full"
-                          : (match.maxPlayers - match.numPlayersGoing())
-                                  .toString() +
-                              " spots left",
-                      style: TextPalette.bodyText2Gray)
+                  Text(dayFormat.format(match.dateTime),
+                      style: TextPalette.primaryInButton)
                 ],
               )),
             ],
