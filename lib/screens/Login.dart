@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/utils/LoginUtils.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
+import 'package:nutmeg/widgets/AppBar.dart';
 import 'package:nutmeg/widgets/Containers.dart';
 import 'package:provider/provider.dart';
 
@@ -26,8 +27,22 @@ class Login extends StatelessWidget {
         ChangeNotifierProvider(
             create: (context) => LoginStatusChangeNotifier()),
       ],
-      child: SafeArea(
-        child: Container(
+      child: Scaffold(
+        extendBodyBehindAppBar: true,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          actions: [
+            Padding(
+                padding: EdgeInsets.only(right: 20),
+                child: InkWell(
+                  child: Icon(Icons.close),
+                  onTap: () => Navigator.pop(context),
+                ))
+          ],
+        ),
+        body: Container(
+            constraints: BoxConstraints.expand(),
             decoration: new BoxDecoration(color: Palette.primary),
             child: LoginArea()),
       ),
