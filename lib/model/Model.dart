@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 
@@ -108,6 +109,8 @@ class SportCenter {
   String placeId;
 
   String name;
+  double lat;
+  double lng;
   String neighbourhood;
   String address;
   List<String> tags;
@@ -117,6 +120,8 @@ class SportCenter {
         name = json['name'],
         neighbourhood = json['neighbourhood'],
         address = json['address'],
+        lat = json['lat'],
+        lng = json['lng'],
         tags = List<String>.from(json['tags']);
 
   String getName() => name;
@@ -126,6 +131,13 @@ class SportCenter {
 
   @override
   int get hashCode => super.hashCode;
+
+  String getShortAddress() => address.split(",").first;
+
+  List<String> getMainPicturesListUrls() => ["assets/sportcentertest_large.png",
+    "assets/sportcentertest_large.png",
+    "assets/sportcentertest_large.png"
+  ];
 }
 
 class UserDetails {

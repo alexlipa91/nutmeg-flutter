@@ -5,7 +5,8 @@ import 'package:nutmeg/screens/UserPage.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:provider/provider.dart';
 
-class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
+class MainAppBar extends StatelessWidget with PreferredSizeWidget {
+
   @override
   Widget build(BuildContext context) {
     var isLoggedIn = context.watch<UserChangeNotifier>().isLoggedIn();
@@ -42,4 +43,59 @@ class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
 
   @override
   Size get preferredSize => Size.fromHeight(70.0);
+}
+
+class SecondaryAppBarOld extends StatelessWidget with PreferredSizeWidget {
+  @override
+  Widget build(BuildContext context) {
+
+    return AppBar(
+      centerTitle: false,
+      toolbarHeight: 70,
+      backgroundColor: Colors.transparent,
+      actions: [
+        InkWell(
+            child: Padding(
+              padding: EdgeInsets.all(8.0),
+              child: Icon(Icons.share, color: Colors.black)
+            ),
+            onTap: () => Navigator.push(context,
+                MaterialPageRoute(builder: (context) => new UserPage())))
+      ],
+      elevation: 0,
+    );
+  }
+
+  @override
+  Size get preferredSize => Size.fromHeight(70.0);
+}
+
+class SecondaryAppBar extends StatelessWidget {
+
+  @override
+  Widget build(BuildContext context) {
+
+    return Container(child:
+      Padding(
+        padding: EdgeInsets.all(10),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            InkWell(
+                child: Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: Icon(Icons.arrow_back, color: Colors.black)
+                ),
+                onTap: () => Navigator.pop(context)),
+            InkWell(
+              child: Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: Icon(Icons.share, color: Colors.black)
+              ),
+              onTap: () => print("IMPLEMENT SHARE")),
+          ],
+        ),
+      )
+    );
+  }
 }

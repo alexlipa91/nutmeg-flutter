@@ -1,9 +1,23 @@
 import 'package:flutter/material.dart';
 
 class InfoContainer extends StatelessWidget {
+  static var borderRadius = BorderRadius.all(Radius.circular(20));
+  static var boxShadow = BoxShadow(
+    color: Colors.grey.withOpacity(0.5),
+    spreadRadius: 5,
+    blurRadius: 7,
+    offset: Offset(0, 3), // changes position of shadow
+  );
+
   final Widget child;
 
-  const InfoContainer({Key key, this.child}) : super(key: key);
+  final EdgeInsets padding;
+
+  InfoContainer({this.child}) :
+        padding = EdgeInsets.symmetric(horizontal: 25, vertical: 10);
+
+  InfoContainer.withoutMargin({this.child}) :
+        padding = EdgeInsets.all(0);
 
   @override
   Widget build(BuildContext context) {
@@ -11,18 +25,13 @@ class InfoContainer extends StatelessWidget {
         margin: EdgeInsets.symmetric(horizontal: 25, vertical: 10),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.all(Radius.circular(10)),
+          borderRadius: borderRadius,
           boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.10),
-              spreadRadius: 0,
-              blurRadius: 20,
-              offset: Offset(0, 10), // changes position of shadow
-            )
+            boxShadow
           ],
         ),
         child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+          padding: padding,
           child: child,
         ));
   }

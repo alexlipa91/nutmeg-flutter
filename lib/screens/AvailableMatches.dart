@@ -13,6 +13,7 @@ import "package:collection/collection.dart";
 
 import 'MatchDetails.dart';
 
+
 // use this main for testing only
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -40,7 +41,7 @@ class AvailableMatches extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var appBar = CustomAppBar();
+    var appBar = MainAppBar();
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -298,7 +299,7 @@ class MatchInfo extends StatelessWidget {
                               sportCenter.neighbourhood +
                                   " - " +
                                   match.sport.getDisplayTitle(),
-                              style: TextPalette.h1Black),
+                              style: TextPalette.h2Black),
                           Text(match.getFormattedDate(),
                               style: TextPalette.bodyText2Black),
                           Text(sportCenter.name,
