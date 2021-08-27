@@ -109,6 +109,8 @@ class SportCenter {
   String placeId;
 
   String name;
+  double lat;
+  double lng;
   String neighbourhood;
   String address;
   List<String> tags;
@@ -118,6 +120,8 @@ class SportCenter {
         name = json['name'],
         neighbourhood = json['neighbourhood'],
         address = json['address'],
+        lat = json['lat'],
+        lng = json['lng'],
         tags = List<String>.from(json['tags']);
 
   String getName() => name;

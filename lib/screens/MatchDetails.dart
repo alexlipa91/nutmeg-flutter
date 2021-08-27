@@ -1,161 +1,297 @@
 import 'package:cool_alert/cool_alert.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:maps_launcher/maps_launcher.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
 import 'package:nutmeg/screens/PaymentPage.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/AppBar.dart';
+import 'package:nutmeg/widgets/Buttons.dart';
+import 'package:nutmeg/widgets/Containers.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import 'package:url_launcher/url_launcher.dart';
-
+import 'package:carousel_slider/carousel_slider.dart';
+import 'package:readmore/readmore.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import 'Login.dart';
 
-isGoing(Match match, BuildContext context) {
-  return context.read<UserChangeNotifier>().isLoggedIn() &&
-      match.isUserGoing(context
-          .read<UserChangeNotifier>()
-          .getUserDetails());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  var matchesChangeNotifier = MatchesChangeNotifier();
+  var sportCenterChangeNotifier = SportCentersChangeNotifier();
+
+  await matchesChangeNotifier.refresh();
+  await sportCenterChangeNotifier.refresh();
+
+  runApp(MultiProvider(
+    providers: [
+      ChangeNotifierProvider(create: (context) => UserChangeNotifier()),
+      ChangeNotifierProvider(create: (context) => matchesChangeNotifier),
+      ChangeNotifierProvider(create: (context) => sportCenterChangeNotifier),
+      ChangeNotifierProvider(create: (context) => LocationChangeNotifier()),
+    ],
+    child: new MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: MatchDetails(matchesChangeNotifier.getMatches().first)),
+  ));
 }
 
-class MatchDetails extends StatelessWidget {
+var formatCurrency = NumberFormat.simpleCurrency(name: "EUR");
 
+class MatchDetails extends StatelessWidget {
   final Match match;
 
   MatchDetails(this.match);
 
   @override
   Widget build(BuildContext context) {
+    SportCenter sportCenter = context
+        .read<SportCentersChangeNotifier>()
+        .getSportCenter(match.sportCenter);
+
+    var title =
+        sportCenter.neighbourhood + " - " + match.sport.getDisplayTitle();
+
     return Scaffold(
-        backgroundColor: Palette.primary,
-        appBar: MainAppBar(),
-        body: Container(
-          decoration: new BoxDecoration(color: Colors.grey.shade400),
-          // fixme this is not working well; here we need something that fits the whole page vertically and can scroll if too big. Now this has the scroll animation on top but it actually fits so it shouldn't
-          child: CustomScrollView(
-            slivers: [
-              SliverFillRemaining(
-                hasScrollBody: false,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Container(
-                      decoration: topBoxDecoration,
-                      child: Padding(
-                          padding: EdgeInsets.all(20),
-                          child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(match.sport.getDisplayTitle(),
-                                    style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 38,
-                                        fontWeight: FontWeight.w800)),
-                                SizedBox(height: 10),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Container(
-                                        decoration: new BoxDecoration(
-                                          color: Colors.red.shade300,
-                                          borderRadius:
-                                          BorderRadius.all(Radius.circular(5)),
-                                          border: new Border.all(
-                                            color: Colors.white70,
-                                            width: 0.5,
-                                          ),
-                                        ),
-                                        child: Padding(
-                                            padding: EdgeInsets.all(5),
-                                            child: Text(
-                                                match.getSpotsLeft().toString() +
-                                                    " spots left",
-                                                style: TextStyle(
-                                                    color: Colors.grey.shade50,
-                                                    fontSize: 12,
-                                                    fontWeight: FontWeight.w400)))),
-                                    if (context.read<UserChangeNotifier>().isLoggedIn() &&
-                                        match.isUserGoing(
-                                            context
-                                                .read<UserChangeNotifier>()
-                                                .getUserDetails()))
-                                      Icon(Icons.check_circle,
-                                          color: Colors.white, size: 40),
-                                  ],
-                                )
-                              ])),
-                    ),
-                    MatchInfoContainer(match),
-                    PlayersList(
-                        users: match.subscriptions
-                            .where((s) => s.status == SubscriptionStatus.going)
-                            .map((e) => e.userId)
-                            .toList())
-                  ],
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            // fixme here we are repeating the padding just because cannot be applied globally as MatchInfo doesn't need
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SecondaryAppBar(),
+              Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 25),
+                  child: Text(title, style: TextPalette.h1Black)),
+              MatchInfo(match, sportCenter),
+              Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 25, vertical: 15),
+                  child: Text(
+                      match.numPlayersGoing().toString() + " players going")),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 25),
+                child: SingleChildScrollView(
+                  clipBehavior: Clip.none,
+                  scrollDirection: Axis.horizontal,
+                  // physics: BouncingScrollPhysics(),
+                  child: Row(
+                      // fixme pass real data here
+                      children: List.filled(
+                    15,
+                    PlayerCard(
+                        name: "Andre",
+                        imageUrl:
+                            "https://lh3.googleusercontent.com/a-/AOh14GhDr8xTqP9vgkx2VYKVYLm3NHfG9zBtauDSizxNhfs=s96-c"),
+                  )),
                 ),
-              )
+              ),
+              Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 25, vertical: 15),
+                  child: Text("Details")),
+              RuleCard(),
+              RuleCard(),
+              MapCard.big(sportCenter)
             ],
           ),
-        ));
+        ),
+      ),
+      bottomNavigationBar: Container(
+          height: 100,
+          child: Padding(
+            padding: EdgeInsets.all(20),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(match.getSpotsLeft().toString() + " spots left",
+                        style: TextPalette.h2Black),
+                    Text(formatCurrency.format(match.getPrice()))
+                  ],
+                ),
+                RoundedButton("JOIN GAME", () async {
+                  bool isLoggedIn = false;
+
+                  if (!context.read<UserChangeNotifier>().isLoggedIn()) {
+                    isLoggedIn = await Navigator.push(context,
+                            MaterialPageRoute(builder: (context) => Login()))
+                        .then((isLoginSuccessfull) => isLoginSuccessfull);
+                  } else {
+                    isLoggedIn = true;
+                  }
+
+                  if (isLoggedIn) {
+                    var value = await showModalBottomSheet(
+                        context: context,
+                        builder: (context) {
+                          return Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: <Widget>[
+                              Text("Join this match"),
+                              Text('blablabla'),
+                              Divider(),
+                              Text("price"),
+                              TextButton(
+                                  onPressed: () async {
+                                    final stripeCustomerId = await context
+                                        .read<UserChangeNotifier>()
+                                        .getOrCreateStripeId();
+                                    print(
+                                        "stripeCustomerId " + stripeCustomerId);
+                                    final sessionId = await Server()
+                                        .createCheckout(stripeCustomerId,
+                                            match.pricePerPersonInCents);
+                                    print("sessId " + sessionId);
+
+                                    var value = await Navigator.of(context)
+                                        .push(MaterialPageRoute(
+                                            builder: (_) => CheckoutPage(
+                                                sessionId: sessionId)));
+
+                                    // remove previous bottom sheet
+                                    Navigator.pop(context, value);
+                                  },
+                                  child: Text("Continue to payment"))
+                            ],
+                          );
+                        });
+                    if (value == "success") {
+                      await context.read<MatchesChangeNotifier>().joinMatch(
+                          match,
+                          context.read<UserChangeNotifier>().getUserDetails());
+                      showModalBottomSheet(
+                          context: context,
+                          builder: (context) {
+                            return TextButton(
+                                child: Text("close"),
+                                onPressed: () => Navigator.pop(context));
+                          });
+                    } else {
+                      CoolAlert.show(
+                          context: context,
+                          type: CoolAlertType.error,
+                          text: "Payment failed");
+                    }
+                  }
+                })
+              ],
+            ),
+          )),
+    );
   }
 }
 
-class MatchInfoContainer extends StatelessWidget {
+class MatchInfo extends StatelessWidget {
   static var formatCurrency = NumberFormat.simpleCurrency(name: "EUR");
   static var dateFormat = DateFormat('MMMM dd \'at\' HH:mm');
 
   final Match match;
+  final SportCenter sportCenter;
 
-  const MatchInfoContainer(this.match);
+  MatchInfo(this.match, this.sportCenter);
 
   @override
   Widget build(BuildContext context) {
-    SportCenter sportCenter = context.read<SportCentersChangeNotifier>().getSportCenter(match.sportCenter);
+    return InfoContainer.withoutMargin(
+        child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(children: [
+          Expanded(
+              child: SportCenterImageCarousel(
+                  images: sportCenter.getMainPicturesListUrls()))
+        ]),
+        InfoWidget(title: dateFormat.format(match.dateTime), icon: Icons.watch),
+        InfoWidget.withRightWidget(
+            title: sportCenter.name,
+            icon: Icons.place,
+            subTitle: sportCenter.getShortAddress()),
+        InfoWidget(
+            title: match.sport.getDisplayTitle(),
+            icon: Icons.sports_soccer,
+            // todo fix info sport
+            subTitle: sportCenter.tags.join(", ")),
+        InfoWidget(
+            title: formatCurrency.format(match.getPrice()),
+            icon: Icons.money,
+            subTitle: "Pay with Ideal"),
+      ],
+    ));
+  }
+}
 
-    return Container(
-        margin: EdgeInsets.all(15),
-        decoration: infoMatchDecoration,
-        child: Padding(
-          padding: EdgeInsets.all(20),
-          child: Column(children: [
-            InfoWidget(
-                title: dateFormat.format(match.dateTime), icon: Icons.watch),
-            InkWell(
-              child: InfoWidget(
-                  title: sportCenter.name,
-                  icon: Icons.place,
-                  subTitle: sportCenter.address),
-              onTap: () async {
+class SportCenterImageCarousel extends StatefulWidget {
+  final List<String> images;
 
-                String googleUrl = "https://www.google.com/maps/search/?api=1&query=Google&query_place_id=" + sportCenter.placeId;
+  const SportCenterImageCarousel({Key key, this.images}) : super(key: key);
 
-                if (await canLaunch(googleUrl)) {
-                  await launch(googleUrl);
-                } else {
-                  // throw 'Could not open the map.';
-                  CoolAlert.show(context: context, type: CoolAlertType.error, text: "Could not open maps");
-                }
+  @override
+  State<StatefulWidget> createState() => SportCenterImageCarouselState(images);
+}
+
+class SportCenterImageCarouselState extends State<SportCenterImageCarousel> {
+  int _current = 0;
+  final List<String> images;
+  final CarouselController _controller = CarouselController();
+
+  SportCenterImageCarouselState(this.images);
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        // fixme check animation when slide
+        CarouselSlider(
+          carouselController: _controller,
+          options: CarouselOptions(
+              enableInfiniteScroll: false,
+              viewportFraction: 1,
+              onPageChanged: (index, reason) {
+                setState(() {
+                  _current = index;
+                });
+              }),
+          items: images.map((i) {
+            return Builder(
+              builder: (BuildContext context) {
+                return Container(
+                  decoration: BoxDecoration(
+                      image: DecorationImage(
+                          fit: BoxFit.fill, image: AssetImage(i)),
+                      borderRadius: BorderRadius.all(Radius.circular(15))),
+                );
               },
-            ),
-            InfoWidget(
-                title: match.sport.getDisplayTitle(),
-                icon: Icons.sports_soccer,
-                // todo fix info sport
-                subTitle: sportCenter.tags.join(", ")),
-            InfoWidget(
-                title: formatCurrency.format(match.getPrice()),
-                icon: Icons.money,
-                subTitle: "Pay with Ideal"),
-            Row(
-              children: [
-                Expanded(
-                  child: MatchInfoMainButton(match),
-                )
-              ],
-            )
-          ]),
-        ));
+            );
+          }).toList(),
+        ),
+        Positioned(
+          bottom: 10,
+          left: 1,
+          right: 1,
+          child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: images.asMap().entries.map((entry) {
+                return GestureDetector(
+                  onTap: () => _controller.animateToPage(entry.key),
+                  child: Container(
+                    width: 12.0,
+                    height: 12.0,
+                    margin:
+                        EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+                    decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white
+                            .withOpacity(_current == entry.key ? 0.9 : 0.4)),
+                  ),
+                );
+              }).toList()),
+        ),
+      ],
+    );
   }
 }
 
@@ -164,15 +300,18 @@ class InfoWidget extends StatelessWidget {
   final IconData icon;
   final String subTitle;
 
-  const InfoWidget({Key key, this.title, this.icon, this.subTitle})
-      : super(key: key);
+  Widget rightWidget;
+
+  InfoWidget({this.title, this.icon, this.subTitle});
+
+  InfoWidget.withRightWidget(
+      {this.title, this.icon, this.subTitle, Widget rightWidget})
+      : rightWidget = rightWidget;
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData themeData = Theme.of(context);
-
     return Container(
-        margin: EdgeInsets.symmetric(vertical: 20),
+        margin: EdgeInsets.only(left: 15, top: 15, bottom: 10),
         child: Row(
           children: [
             new Icon(icon),
@@ -182,157 +321,17 @@ class InfoWidget extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: themeData.textTheme.bodyText1),
+                Text(title, style: TextPalette.h2Black),
                 SizedBox(
                   height: 5,
                 ),
                 if (subTitle != null)
-                  Text(subTitle, style: themeData.textTheme.bodyText2)
+                  Text(subTitle, style: TextPalette.bodyText2Black)
               ],
-            )
+            ),
+            if (rightWidget != null) Expanded(child: rightWidget)
           ],
         ));
-  }
-}
-
-class MatchInfoMainButton extends StatelessWidget {
-  Match match;
-
-  MatchInfoMainButton(this.match);
-
-  @override
-  Widget build(BuildContext context) {
-    _onPressedJoinAction() async {
-      bool isLoggedIn = false;
-
-      if (!context.read<UserChangeNotifier>().isLoggedIn()) {
-        isLoggedIn = await Navigator.push(
-            context, MaterialPageRoute(builder: (context) => Login()))
-            .then((isLoginSuccessfull) => isLoginSuccessfull);
-      } else {
-        isLoggedIn = true;
-      }
-
-      if (isLoggedIn) {
-        var value = await showModalBottomSheet(
-            context: context,
-            builder: (context) {
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  Text("Join this match"),
-                  Text('blablabla'),
-                  Divider(),
-                  Text("price"),
-                  TextButton(
-                      onPressed: () async {
-                        final stripeCustomerId = await context.read<UserChangeNotifier>()
-                            .getOrCreateStripeId();
-                        print("stripeCustomerId " + stripeCustomerId);
-                        final sessionId = await Server()
-                            .createCheckout(stripeCustomerId, match.pricePerPersonInCents);
-                        print("sessId " + sessionId);
-
-                        var value = await Navigator.of(context).push(
-                            MaterialPageRoute(
-                                builder: (_) =>
-                                    CheckoutPage(sessionId: sessionId)));
-
-                        // remove previous bottom sheet
-                        Navigator.pop(context, value);
-                      },
-                      child: Text("Continue to payment"))
-                ],
-              );
-            });
-        if (value == "success") {
-          await context.read<MatchesChangeNotifier>().joinMatch(match, context.read<UserChangeNotifier>().getUserDetails());
-          showModalBottomSheet(context: context,
-              builder: (context) {
-                return TextButton(child: Text("close"), onPressed: () => Navigator.pop(context));
-              });
-        } else {
-          CoolAlert.show(
-              context: context,
-              type: CoolAlertType.error,
-              text: "Payment failed");
-        }
-      }
-    }
-
-    _onPressedLeaveAction() async {
-      await showModalBottomSheet(
-          context: context,
-          builder: (context) {
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                Text("Are you sure? You are going to receive X euro back in your account for future matches"),
-                Divider(),
-                TextButton(
-                    onPressed: () async {
-                      await context.read<MatchesChangeNotifier>().leaveMatch(match, context.read<UserChangeNotifier>().getUserDetails());
-
-                      // go to home
-                      Navigator.of(context).popUntil((route) => route.isFirst);
-                    },
-                    child: Text("Yes"))
-              ],
-            );
-          });
-    }
-
-    var mainColor = isGoing(match, context) ? Colors.red : Palette.primary;
-
-    return TextButton(
-      child: Text(isGoing(match, context) ? "Leave" : "Join",
-          style: TextStyle(
-              color: mainColor, fontSize: 20, fontWeight: FontWeight.w700)),
-      style: ButtonStyle(
-        side: MaterialStateProperty.all(BorderSide(width: 2, color: mainColor)),
-        shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-            RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20.0),
-            )),
-      ),
-      onPressed: () =>
-      isGoing(match, context)
-          ? _onPressedLeaveAction()
-          : _onPressedJoinAction(),
-    );
-  }
-}
-
-class PlayersList extends StatelessWidget {
-  final List<String> users;
-
-  const PlayersList({Key key, this.users}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.all(10),
-      child: Align(
-        alignment: Alignment.centerLeft,
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          physics: BouncingScrollPhysics(),
-          child: Row(
-              children: users
-                  .map((e) =>
-                  FutureBuilder<UserDetails>(
-                      future: UserChangeNotifier.getSpecificUserDetails(e),
-                      builder: (context, snapshot) =>
-                      (snapshot.hasData &&
-                          e != null)
-                          ? PlayerCard(
-                          name: snapshot.data.name.split(" ").first,
-                          imageUrl: snapshot.data.image)
-                          : Icon(Icons.face, size: 50.0)))
-                  .toList()),
-        ),
-      ),
-    );
   }
 }
 
@@ -346,6 +345,7 @@ class PlayerCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
         decoration: infoMatchDecoration,
+        margin: EdgeInsets.only(right: 10),
         child: Padding(
           padding: EdgeInsets.all(10),
           child: Column(children: [
@@ -357,5 +357,75 @@ class PlayerCard extends StatelessWidget {
             if (name != null) Text(name)
           ]),
         ));
+  }
+}
+
+class RuleCard extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    // TODO: implement build
+    return InfoContainer(
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Text("Title", style: TextPalette.h2Black),
+      SizedBox(height: 10),
+      ReadMoreText(
+        'Flutter is Google’s mobile UI open source framework to build high-quality native (super fast) interfaces for iOS and Android apps with the unified codebase.',
+        style: TextPalette.bodyText2Black,
+        trimLines: 2,
+        colorClickableText: Colors.blue,
+        delimiter: "\n\n",
+        trimMode: TrimMode.Line,
+        trimCollapsedText: 'SHOW MORE',
+        trimExpandedText: 'SHOW LESS',
+        moreStyle: TextPalette.linkStyle,
+        lessStyle: TextPalette.linkStyle,
+      ),
+      // Text("Rule" * 100, style: TextPalette.bodyText2Gray)
+    ]));
+  }
+}
+
+class MapCard extends StatelessWidget {
+  final SportCenter sportCenter;
+
+  final margin;
+  final width;
+  final height;
+
+  MapCard.big(this.sportCenter)
+      : margin = EdgeInsets.symmetric(horizontal: 25, vertical: 10),
+        height = 100.0,
+        width = null;
+
+  @override
+  Widget build(BuildContext context) {
+    // fixme for some reason if we use InfoContainer it doesn't work https://stackoverflow.com/questions/53972558/how-to-add-border-radius-to-google-maps-in-flutter
+    return InkWell(
+      child: Container(
+        margin: margin,
+        child: ClipRRect(
+          borderRadius: InfoContainer.borderRadius,
+          child: SizedBox(
+              height: height,
+              width: width,
+              child: GoogleMap(
+                onTap: (LatLng latLng) async {
+                  print("launching" + latLng.toString());
+                  MapsLauncher.launchCoordinates(
+                      sportCenter.lat, sportCenter.lng, sportCenter.name);
+                },
+                myLocationButtonEnabled: false,
+                zoomGesturesEnabled: false,
+                markers: {
+                  Marker(
+                      markerId: MarkerId(sportCenter.placeId),
+                      position: LatLng(sportCenter.lat, sportCenter.lng))
+                },
+                initialCameraPosition: CameraPosition(
+                    target: LatLng(sportCenter.lat, sportCenter.lng), zoom: 12),
+              )),
+        ),
+      ),
+    );
   }
 }

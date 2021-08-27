@@ -3,7 +3,7 @@ import 'package:location/location.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
 import 'package:intl/intl.dart';
-import 'package:nutmeg/screens/MatchDetails.dart';
+import 'package:nutmeg/screens_old/MatchDetails.dart';
 import 'package:nutmeg/utils/LocationUtils.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/AppBar.dart';

@@ -21,9 +21,12 @@ class PrimaryButton extends StatelessWidget {
     // fixme make the size fixed and not depending on text of the button otherwise GOING is bigger
     return TextButton(
       onPressed: onPressed,
-      child: Text(
-        text,
-        style: getTextStyle(),
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 25),
+        child: Text(
+          text,
+          style: getTextStyle(),
+        ),
       ),
       style: getStyle(),
     );
@@ -81,4 +84,8 @@ class LeftButtonOn extends PrimaryButton with LeftRounded, On {
 
 class RightButtonOn extends PrimaryButton with RightRounded, On {
   RightButtonOn(String text, Function onPressed) : super(text, onPressed);
+}
+
+class RoundedButton extends PrimaryButton with LeftRounded, RightRounded {
+  RoundedButton(String text, Function onPressed) : super(text, onPressed);
 }

@@ -6,6 +6,7 @@ import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:provider/provider.dart';
 
 class MainAppBar extends StatelessWidget with PreferredSizeWidget {
+
   @override
   Widget build(BuildContext context) {
     var isLoggedIn = context.watch<UserChangeNotifier>().isLoggedIn();
@@ -44,7 +45,7 @@ class MainAppBar extends StatelessWidget with PreferredSizeWidget {
   Size get preferredSize => Size.fromHeight(70.0);
 }
 
-class SecondaryAppBar extends StatelessWidget with PreferredSizeWidget {
+class SecondaryAppBarOld extends StatelessWidget with PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
 
@@ -67,4 +68,34 @@ class SecondaryAppBar extends StatelessWidget with PreferredSizeWidget {
 
   @override
   Size get preferredSize => Size.fromHeight(70.0);
+}
+
+class SecondaryAppBar extends StatelessWidget {
+
+  @override
+  Widget build(BuildContext context) {
+
+    return Container(child:
+      Padding(
+        padding: EdgeInsets.all(10),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            InkWell(
+                child: Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: Icon(Icons.arrow_back, color: Colors.black)
+                ),
+                onTap: () => Navigator.pop(context)),
+            InkWell(
+              child: Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: Icon(Icons.share, color: Colors.black)
+              ),
+              onTap: () => print("IMPLEMENT SHARE")),
+          ],
+        ),
+      )
+    );
+  }
 }
