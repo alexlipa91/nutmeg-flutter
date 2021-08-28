@@ -25,6 +25,13 @@ class MatchesChangeNotifier extends ChangeNotifier {
   Match getMatch(String matchId) =>
       _matches.firstWhere((e) => e.documentId == matchId);
 
+  int numPlayedByUser(String userId) => _matches
+      .where((m) => m.status == MatchStatus.played && m.subscriptions
+          .where((sub) =>
+              sub.status == SubscriptionStatus.going && sub.userId == userId)
+          .isNotEmpty)
+      .length;
+
   joinMatch(Match m, UserDetails u) async {
     await MatchesFirestore.joinMatch(u, m);
     await refresh();

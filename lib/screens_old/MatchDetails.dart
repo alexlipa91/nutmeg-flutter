@@ -196,7 +196,7 @@ class InfoWidget extends StatelessWidget {
 }
 
 class MatchInfoMainButton extends StatelessWidget {
-  Match match;
+  final Match match;
 
   MatchInfoMainButton(this.match);
 

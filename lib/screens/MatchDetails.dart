@@ -1,6 +1,7 @@
 import 'package:cool_alert/cool_alert.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:maps_launcher/maps_launcher.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
@@ -14,6 +15,7 @@ import 'package:intl/intl.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:readmore/readmore.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:shimmer/shimmer.dart';
 
 import 'Login.dart';
 
@@ -79,13 +81,10 @@ class MatchDetails extends StatelessWidget {
                   // physics: BouncingScrollPhysics(),
                   child: Row(
                       // fixme pass real data here
-                      children: List.filled(
-                    15,
-                    PlayerCard(
-                        name: "Andre",
-                        imageUrl:
-                            "https://lh3.googleusercontent.com/a-/AOh14GhDr8xTqP9vgkx2VYKVYLm3NHfG9zBtauDSizxNhfs=s96-c"),
-                  )),
+                      children: match.subscriptions
+                          .where((s) => s.status == SubscriptionStatus.going)
+                          .map((s) => PlayerCard(s.userId))
+                          .toList()),
                 ),
               ),
               Padding(
@@ -325,8 +324,7 @@ class InfoWidget extends StatelessWidget {
                 SizedBox(
                   height: 5,
                 ),
-                if (subTitle != null)
-                  Text(subTitle, style: TextPalette.h4)
+                if (subTitle != null) Text(subTitle, style: TextPalette.h4)
               ],
             ),
             if (rightWidget != null) Expanded(child: rightWidget)
@@ -336,27 +334,102 @@ class InfoWidget extends StatelessWidget {
 }
 
 class PlayerCard extends StatelessWidget {
-  final String name;
-  final String imageUrl;
+  final String userId;
 
-  const PlayerCard({Key key, this.name, this.imageUrl}) : super(key: key);
+  PlayerCard(this.userId);
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-        decoration: infoMatchDecoration,
-        margin: EdgeInsets.only(right: 10),
-        child: Padding(
-          padding: EdgeInsets.all(10),
-          child: Column(children: [
-            CircleAvatar(
-                backgroundImage: NetworkImage(imageUrl),
-                radius: 25,
-                backgroundColor: Palette.white),
-            SizedBox(height: 10),
-            if (name != null) Text(name)
-          ]),
-        ));
+    return FutureBuilder<UserDetails>(
+        future: UserChangeNotifier.getSpecificUserDetails(userId),
+        builder: (context, snapshot) {
+          return Container(
+              constraints: BoxConstraints(maxWidth: 100),
+              decoration: infoMatchDecoration,
+              margin: EdgeInsets.only(right: 10),
+              child: Padding(
+                padding: EdgeInsets.all(10),
+                child: (snapshot.hasData)
+                    ? Column(children: [
+                        InkWell(
+                          onTap: () {
+                            showModalBottomSheet(
+                                context: context,
+                                builder: (context) {
+                                  return Stack(
+                                      alignment:
+                                          AlignmentDirectional.bottomStart,
+                                      clipBehavior: Clip.none,
+                                      children: [
+                                        Container(
+                                          width: double.infinity,
+                                          height: 200,
+                                          color: Palette.white,
+                                          child: Column(
+                                            children: [
+                                              SizedBox(height: 70),
+                                              Text(snapshot.data.name,
+                                                  style: TextPalette.h2),
+                                              SizedBox(height: 20),
+                                              // fixme feed real data
+                                              Text(
+                                                  context
+                                                          .watch<
+                                                              MatchesChangeNotifier>()
+                                                          .numPlayedByUser(
+                                                              userId)
+                                                          .toString() +
+                                                      " games played",
+                                                  style: TextPalette.bodyText)
+                                            ],
+                                          ),
+                                        ),
+                                        Positioned(
+                                          top: -30,
+                                          left: 0,
+                                          right: 0,
+                                          child: CircleAvatar(
+                                            backgroundColor: Palette.white,
+                                            radius: 38,
+                                            child: CircleAvatar(
+                                                backgroundImage: NetworkImage(
+                                                    snapshot.data.image),
+                                                radius: 34,
+                                                backgroundColor: Palette.white),
+                                          ),
+                                        ),
+                                      ]);
+                                });
+                          },
+                          child: CircleAvatar(
+                              backgroundImage:
+                                  NetworkImage(snapshot.data.image),
+                              radius: 25,
+                              backgroundColor: Palette.white),
+                        ),
+                        SizedBox(height: 10),
+                        Text(snapshot.data.name.split(" ").first,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.roboto(
+                                color: Palette.mediumgrey,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w400))
+                      ])
+                    : Shimmer.fromColors(
+                        baseColor: Colors.grey[300],
+                        highlightColor: Colors.grey[100],
+                        child: Column(children: [
+                          CircleAvatar(
+                              radius: 25, backgroundColor: Palette.white),
+                          SizedBox(height: 10),
+                          Container(
+                              height: 10,
+                              width: double.infinity,
+                              color: Colors.white)
+                        ]),
+                      ),
+              ));
+        });
   }
 }
 
