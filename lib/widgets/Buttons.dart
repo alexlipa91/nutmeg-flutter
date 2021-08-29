@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 
 class PrimaryButton extends StatelessWidget {
-
   final String text;
   final Function onPressed;
 
@@ -16,11 +15,12 @@ class PrimaryButton extends StatelessWidget {
 
   TextStyle getTextStyle() => TextPalette.linkStyleInverted;
 
+  Function onPressedFunction() => onPressed;
+
   @override
   Widget build(BuildContext context) {
-    // fixme make the size fixed and not depending on text of the button otherwise GOING is bigger
     return TextButton(
-      onPressed: onPressed,
+      onPressed: onPressedFunction(),
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: 25),
         child: Text(
@@ -34,7 +34,7 @@ class PrimaryButton extends StatelessWidget {
 
   ButtonStyle getStyle() {
     return TextButton.styleFrom(
-        padding: EdgeInsets.symmetric(vertical:12, horizontal:0),
+        padding: EdgeInsets.symmetric(vertical: 12, horizontal: 0),
         backgroundColor: getBackgroundColor(),
         shape: RoundedRectangleBorder(
             side: BorderSide(width: 2.0, color: Colors.white),
@@ -88,4 +88,43 @@ class RightButtonOn extends PrimaryButton with RightRounded, On {
 
 class RoundedButton extends PrimaryButton with LeftRounded, RightRounded {
   RoundedButton(String text, Function onPressed) : super(text, onPressed);
+}
+
+class ButtonWithLoader extends StatefulWidget {
+  final RoundedButton button;
+  final Color loadingColor;
+
+  ButtonWithLoader(this.button, this.loadingColor);
+
+  @override
+  State<StatefulWidget> createState() =>
+      ButtonWithLoaderState(button, loadingColor);
+}
+
+class ButtonWithLoaderState extends State<ButtonWithLoader> {
+  bool isOpRunning = false;
+
+  final RoundedButton button;
+  final Color loadingColor;
+
+  ButtonWithLoaderState(this.button, this.loadingColor);
+
+  @override
+  Widget build(BuildContext context) {
+    return (!isOpRunning)
+        ? RoundedButton(button.text, () async {
+            setState(() {
+              isOpRunning = true;
+            });
+            await button.onPressed();
+            setState(() {
+              isOpRunning = false;
+            });
+          })
+        : SizedBox(
+            height: 30,
+            child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(loadingColor)),
+          );
+  }
 }

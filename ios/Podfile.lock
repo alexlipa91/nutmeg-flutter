@@ -396,9 +396,6 @@ PODS:
     - leveldb-library (~> 1.22)
     - nanopb (~> 2.30908.0)
   - Flutter (1.0.0)
-  - FMDB (2.7.5):
-    - FMDB/standard (= 2.7.5)
-  - FMDB/standard (2.7.5)
   - google_maps_flutter (0.0.1):
     - Flutter
     - GoogleMaps
@@ -462,8 +459,6 @@ PODS:
     - GTMSessionFetcher/Core (~> 1.5)
   - GTMSessionFetcher/Core (1.6.1)
   - leveldb-library (1.22.1)
-  - location (0.0.1):
-    - Flutter
   - maps_launcher (0.0.1):
     - Flutter
   - nanopb (2.30908.0):
@@ -474,9 +469,6 @@ PODS:
   - path_provider (0.0.1):
     - Flutter
   - PromisesObjC (2.0.0)
-  - sqflite (0.0.2):
-    - Flutter
-    - FMDB (>= 2.7.5)
   - url_launcher (0.0.1):
     - Flutter
   - webview_flutter (0.0.1):
@@ -489,10 +481,8 @@ DEPENDENCIES:
   - Flutter (from `Flutter`)
   - google_maps_flutter (from `.symlinks/plugins/google_maps_flutter/ios`)
   - google_sign_in (from `.symlinks/plugins/google_sign_in/ios`)
-  - location (from `.symlinks/plugins/location/ios`)
   - maps_launcher (from `.symlinks/plugins/maps_launcher/ios`)
   - path_provider (from `.symlinks/plugins/path_provider/ios`)
-  - sqflite (from `.symlinks/plugins/sqflite/ios`)
   - url_launcher (from `.symlinks/plugins/url_launcher/ios`)
   - webview_flutter (from `.symlinks/plugins/webview_flutter/ios`)
 
@@ -506,7 +496,6 @@ SPEC REPOS:
     - FirebaseCore
     - FirebaseCoreDiagnostics
     - FirebaseFirestore
-    - FMDB
     - GoogleDataTransport
     - GoogleMaps
     - GoogleSignIn
@@ -532,14 +521,10 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/google_maps_flutter/ios"
   google_sign_in:
     :path: ".symlinks/plugins/google_sign_in/ios"
-  location:
-    :path: ".symlinks/plugins/location/ios"
   maps_launcher:
     :path: ".symlinks/plugins/maps_launcher/ios"
   path_provider:
     :path: ".symlinks/plugins/path_provider/ios"
-  sqflite:
-    :path: ".symlinks/plugins/sqflite/ios"
   url_launcher:
     :path: ".symlinks/plugins/url_launcher/ios"
   webview_flutter:
@@ -558,7 +543,6 @@ SPEC CHECKSUMS:
   FirebaseCoreDiagnostics: 3721920bde3a9a6d5aa093c1d25e9d3e47f694af
   FirebaseFirestore: 7b8bd72aff4d3ad91498343e81fdbaa994ce8abe
   Flutter: 434fef37c0980e73bb6479ef766c45957d4b510c
-  FMDB: 2ce00b547f966261cd18927a3ddb07cb6f3db82a
   google_maps_flutter: df4e7de95264aa0a2f11aac0fc7e313acb8ffc7e
   google_sign_in: 6bd214b9c154f881422f5fe27b66aaa7bbd580cc
   GoogleDataTransport: 85fd18ff3019bb85d3f2c551d04c481dedf71fc9
@@ -570,12 +554,10 @@ SPEC CHECKSUMS:
   GTMAppAuth: ad5c2b70b9a8689e1a04033c9369c4915bfcbe89
   GTMSessionFetcher: 36689134877faeb055b27dfa4ccc9ceaa42e029e
   leveldb-library: 50c7b45cbd7bf543c81a468fe557a16ae3db8729
-  location: 3a2eed4dd2fab25e7b7baf2a9efefe82b512d740
   maps_launcher: eae38ee13a9c3f210fa04e04bb4c073fa4c6ed92
   nanopb: a0ba3315591a9ae0a16a309ee504766e90db0c96
   path_provider: abfe2b5c733d04e238b0d8691db0cfd63a27a93c
   PromisesObjC: 68159ce6952d93e17b2dfe273b8c40907db5ba58
-  sqflite: 6d358c025f5b867b29ed92fc697fd34924e11904
   url_launcher: 6fef411d543ceb26efce54b05a0a40bfd74cbbef
   webview_flutter: 3603125dfd3bcbc9d8d418c3f80aeecf331c068b
 

@@ -96,89 +96,7 @@ class MatchDetails extends StatelessWidget {
           ),
         ),
       ),
-      bottomNavigationBar: Container(
-          height: 100,
-          child: Padding(
-            padding: EdgeInsets.all(20),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(match.getSpotsLeft().toString() + " spots left",
-                        style: TextPalette.h2),
-                    Text(formatCurrency.format(match.getPrice()))
-                  ],
-                ),
-                RoundedButton("JOIN GAME", () async {
-                  bool isLoggedIn = false;
-
-                  if (!context.read<UserChangeNotifier>().isLoggedIn()) {
-                    isLoggedIn = await Navigator.push(context,
-                            MaterialPageRoute(builder: (context) => Login()))
-                        .then((isLoginSuccessfull) => isLoginSuccessfull);
-                  } else {
-                    isLoggedIn = true;
-                  }
-
-                  if (isLoggedIn) {
-                    var value = await showModalBottomSheet(
-                        context: context,
-                        builder: (context) {
-                          return Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: <Widget>[
-                              Text("Join this match"),
-                              Text('blablabla'),
-                              Divider(),
-                              Text("price"),
-                              TextButton(
-                                  onPressed: () async {
-                                    final stripeCustomerId = await context
-                                        .read<UserChangeNotifier>()
-                                        .getOrCreateStripeId();
-                                    print(
-                                        "stripeCustomerId " + stripeCustomerId);
-                                    final sessionId = await Server()
-                                        .createCheckout(stripeCustomerId,
-                                            match.pricePerPersonInCents);
-                                    print("sessId " + sessionId);
-
-                                    var value = await Navigator.of(context)
-                                        .push(MaterialPageRoute(
-                                            builder: (_) => CheckoutPage(
-                                                sessionId: sessionId)));
-
-                                    // remove previous bottom sheet
-                                    Navigator.pop(context, value);
-                                  },
-                                  child: Text("Continue to payment"))
-                            ],
-                          );
-                        });
-                    if (value == "success") {
-                      await context.read<MatchesChangeNotifier>().joinMatch(
-                          match,
-                          context.read<UserChangeNotifier>().getUserDetails());
-                      showModalBottomSheet(
-                          context: context,
-                          builder: (context) {
-                            return TextButton(
-                                child: Text("close"),
-                                onPressed: () => Navigator.pop(context));
-                          });
-                    } else {
-                      CoolAlert.show(
-                          context: context,
-                          type: CoolAlertType.error,
-                          text: "Payment failed");
-                    }
-                  }
-                })
-              ],
-            ),
-          )),
+      bottomNavigationBar: UserNotGoingBottomBar(match: match),
     );
   }
 }
@@ -498,6 +416,146 @@ class MapCard extends StatelessWidget {
               )),
         ),
       ),
+    );
+  }
+}
+
+class UserNotGoingBottomBar extends StatelessWidget {
+  final Match match;
+
+  const UserNotGoingBottomBar({Key key, this.match}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    var isUserGoing = context.watch<UserChangeNotifier>().isLoggedIn() &&
+        match.isUserGoing(context.watch<UserChangeNotifier>().getUserDetails());
+
+    return Container(
+        height: 100,
+        child: Padding(
+          padding: EdgeInsets.all(20),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                      (isUserGoing)
+                          ? "You are going!"
+                          : match.getSpotsLeft().toString() + " spots left",
+                      style: TextPalette.h2),
+                  if (!isUserGoing)
+                    Text(formatCurrency.format(match.getPrice()))
+                ],
+              ),
+              (isUserGoing)
+                  ? RoundedButton("LEAVE GAME", () async {
+                      var hasUserConfirmed = await showModalBottomSheet(
+                          context: context,
+                          builder: (context) => LeaveMatchConfirmation(match));
+                      print("return from bottom sheet " + hasUserConfirmed.toString());
+                    })
+                  : RoundedButton("JOIN GAME", () async {
+                      bool isLoggedIn = false;
+
+                      if (!context.read<UserChangeNotifier>().isLoggedIn()) {
+                        isLoggedIn = await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => Login()))
+                            .then((isLoginSuccessfull) => isLoginSuccessfull);
+                      } else {
+                        isLoggedIn = true;
+                      }
+
+                      if (isLoggedIn) {
+                        var value = await showModalBottomSheet(
+                            context: context,
+                            builder: (context) {
+                              return Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: <Widget>[
+                                  Text("Join this match"),
+                                  Text('blablabla'),
+                                  Divider(),
+                                  Text("price"),
+                                  TextButton(
+                                      onPressed: () async {
+                                        final stripeCustomerId = await context
+                                            .read<UserChangeNotifier>()
+                                            .getOrCreateStripeId();
+                                        print("stripeCustomerId " +
+                                            stripeCustomerId);
+                                        final sessionId = await Server()
+                                            .createCheckout(stripeCustomerId,
+                                                match.pricePerPersonInCents);
+                                        print("sessId " + sessionId);
+
+                                        var value = await Navigator.of(context)
+                                            .push(MaterialPageRoute(
+                                                builder: (_) => CheckoutPage(
+                                                    sessionId: sessionId)));
+
+                                        // remove previous bottom sheet
+                                        Navigator.pop(context, value);
+                                      },
+                                      child: Text("Continue to payment"))
+                                ],
+                              );
+                            });
+                        if (value == "success") {
+                          await context.read<MatchesChangeNotifier>().joinMatch(
+                              match,
+                              context
+                                  .read<UserChangeNotifier>()
+                                  .getUserDetails());
+                          showModalBottomSheet(
+                              context: context,
+                              builder: (context) {
+                                return TextButton(
+                                    child: Text("close"),
+                                    onPressed: () => Navigator.pop(context));
+                              });
+                        } else {
+                          CoolAlert.show(
+                              context: context,
+                              type: CoolAlertType.error,
+                              text: "Payment failed");
+                        }
+                      }
+                    })
+            ],
+          ),
+        ));
+  }
+}
+
+class LeaveMatchConfirmation extends StatelessWidget {
+  final Match match;
+
+  LeaveMatchConfirmation(this.match);
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        Text("Leave this game?"),
+        Text(
+            'We will refund you in credits that you can use in your next game'),
+        Divider(),
+        Text("Credits refund: X"),
+        Divider(),
+        ButtonWithLoader(RoundedButton("CONFIRM", () async {
+          await context.read<MatchesChangeNotifier>().leaveMatch(
+              match,
+              context
+                  .read<UserChangeNotifier>()
+                  .getUserDetails());
+          Navigator.pop(context);
+        }), Colors.black)
+      ],
     );
   }
 }
