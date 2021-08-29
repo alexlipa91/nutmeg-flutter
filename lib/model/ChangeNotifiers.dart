@@ -5,11 +5,12 @@ import 'package:nutmeg/db/UserFirestore.dart';
 import 'package:nutmeg/screens/PaymentPage.dart';
 import 'Model.dart';
 
+
 class MatchesChangeNotifier extends ChangeNotifier {
   List<Match> _matches;
 
   refresh() async {
-    _matches = await MatchesFirestore.fetchMatches();
+    _matches = await Future.delayed(Duration(milliseconds: 200), () => MatchesFirestore.fetchMatches());
     notifyListeners();
   }
 

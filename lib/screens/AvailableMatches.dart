@@ -10,6 +10,7 @@ import 'package:nutmeg/widgets/Buttons.dart';
 import 'package:nutmeg/widgets/Containers.dart';
 import 'package:nutmeg/widgets/Texts.dart';
 import 'package:provider/provider.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:week_of_year/week_of_year.dart';
 import "package:collection/collection.dart";
 
@@ -140,7 +141,7 @@ class News extends StatelessWidget {
                             ).animate(animation),
                             child: News(_listKey));
                       }, duration: Duration(milliseconds: 500));
-                      MatchesArea.showNews = false;
+                      MatchesAreaState.showNews = false;
                     }),
               ))
             ]),
@@ -156,7 +157,14 @@ class News extends StatelessWidget {
   }
 }
 
-class MatchesArea extends StatelessWidget {
+class MatchesArea extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() => MatchesAreaState();
+}
+
+class MatchesAreaState extends State<MatchesArea> {
+  bool isLoading = false;
+
   static bool showNews = true;
 
   @override
@@ -172,12 +180,23 @@ class MatchesArea extends StatelessWidget {
           )
         : RefreshIndicator(
             onRefresh: () async {
+              setState(() {
+                isLoading = true;
+              });
               await context.read<MatchesChangeNotifier>().refresh();
+              setState(() {
+                isLoading = false;
+              });
             },
             child: Builder(builder: (BuildContext buildContext) {
-              var widgets = (optionSelected == "ALL")
-                  ? allGamesWidgets(context)
-                  : myGamesWidgets(context);
+              var widgets;
+              if (!isLoading) {
+                widgets = (optionSelected == "ALL")
+                    ? allGamesWidgets(context)
+                    : myGamesWidgets(context);
+              } else {
+                widgets = List<Widget>.filled(5, MatchInfoSkeleton());
+              }
 
               return AnimatedList(
                 padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
@@ -361,6 +380,63 @@ class MatchInfo extends StatelessWidget {
                       .getMatch(match.documentId))));
           await context.read<MatchesChangeNotifier>().refresh();
         });
+  }
+}
+
+class MatchInfoSkeleton extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(top: 30),
+      child: InfoContainer(
+          child: IntrinsicHeight(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Shimmer.fromColors(
+              baseColor: Colors.grey[300],
+              highlightColor: Colors.grey[100],
+              child: Container(
+                  width: 60,
+                  height: 78,
+                  decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.all(Radius.circular(10)))),
+            ),
+            Expanded(
+              child: Container(
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Padding(
+                    padding: EdgeInsets.only(left: 16),
+                    child: Shimmer.fromColors(
+                      baseColor: Colors.grey[300],
+                      highlightColor: Colors.grey[100],
+                      child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: List<Widget>.filled(
+                            3,
+                            Row(
+                              children: [
+                                Expanded(
+                                    child: Container(
+                                  height: 10,
+                                  width: 100,
+                                  color: Colors.white,
+                                ))
+                              ],
+                            ),
+                          )),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      )),
+    );
   }
 }
 
