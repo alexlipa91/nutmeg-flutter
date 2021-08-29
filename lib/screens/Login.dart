@@ -5,7 +5,6 @@ import 'package:flutter/services.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/utils/LoginUtils.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
-import 'package:nutmeg/widgets/AppBar.dart';
 import 'package:nutmeg/widgets/Containers.dart';
 import 'package:provider/provider.dart';
 
@@ -94,6 +93,7 @@ class GoogleSignInButton extends StatelessWidget {
 
         try {
           await context.read<UserChangeNotifier>().loginWithGoogle();
+          Navigator.pop(context, true);
         } on FirebaseAuthException catch (e) {
           showDialog(
               context: context,
@@ -104,15 +104,11 @@ class GoogleSignInButton extends StatelessWidget {
           showDialog(
               context: context,
               builder: (context) {
-                return AlertDialog(content: Text(e.code));
+                return AlertDialog(content: Text(e.code + " " + e.message));
               });
+        } finally {
+          context.read<LoginStatusChangeNotifier>().setIsSigningIn(false);
         }
-
-        context.read<LoginStatusChangeNotifier>().setIsSigningIn(false);
-
-        print("user is " +
-            context.read<UserChangeNotifier>().getUserDetails().getUid());
-        Navigator.pop(context, true);
       },
       child: Row(
         mainAxisSize: MainAxisSize.min,

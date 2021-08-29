@@ -30,7 +30,6 @@ void main() async {
       ChangeNotifierProvider(create: (context) => UserChangeNotifier()),
       ChangeNotifierProvider(create: (context) => matchesChangeNotifier),
       ChangeNotifierProvider(create: (context) => sportCenterChangeNotifier),
-      ChangeNotifierProvider(create: (context) => LocationChangeNotifier()),
     ],
     child: new MaterialApp(
         debugShowCheckedModeBanner: false, home: AvailableMatches()),
@@ -174,7 +173,6 @@ class MatchesArea extends StatelessWidget {
         : RefreshIndicator(
             onRefresh: () async {
               await context.read<MatchesChangeNotifier>().refresh();
-              await context.read<LocationChangeNotifier>().refresh();
             },
             child: Builder(builder: (BuildContext buildContext) {
               var widgets = (optionSelected == "ALL")

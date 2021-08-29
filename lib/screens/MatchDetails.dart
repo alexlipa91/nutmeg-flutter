@@ -33,7 +33,6 @@ void main() async {
       ChangeNotifierProvider(create: (context) => UserChangeNotifier()),
       ChangeNotifierProvider(create: (context) => matchesChangeNotifier),
       ChangeNotifierProvider(create: (context) => sportCenterChangeNotifier),
-      ChangeNotifierProvider(create: (context) => LocationChangeNotifier()),
     ],
     child: new MaterialApp(
         debugShowCheckedModeBanner: false,

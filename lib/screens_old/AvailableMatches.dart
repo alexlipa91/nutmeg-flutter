@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:location/location.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
 import 'package:intl/intl.dart';
 import 'package:nutmeg/screens_old/MatchDetails.dart';
-import 'package:nutmeg/utils/LocationUtils.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
-import 'package:nutmeg/widgets/AppBar.dart';
 import 'package:provider/provider.dart';
 import 'package:week_of_year/week_of_year.dart';
 import "package:collection/collection.dart";
@@ -146,7 +143,7 @@ class RefreshIndicatorState extends State<RefreshIndicatorStateful>
   static var dateFormat = new DateFormat("MMMM dd");
 
   // creates widgets splitting by week
-  _getMatchesWidget(List<Match> matches, LocationData locationData) {
+  _getMatchesWidget(List<Match> matches) {
     var currentWeek = DateTime.now().weekOfYear;
     var groups = matches.groupListsBy((m) => m.dateTime.weekOfYear);
 
@@ -165,7 +162,7 @@ class RefreshIndicatorState extends State<RefreshIndicatorStateful>
       ));
       widgets.add(new MatchInfoGroup(
           matches: groups[week]
-              .map((e) => MatchInfo.withLocation(e, locationData))
+              .map((e) => MatchInfo(e))
               .toList()));
     }
 
@@ -208,7 +205,7 @@ class RefreshIndicatorState extends State<RefreshIndicatorStateful>
         : RefreshIndicator(
             onRefresh: () async {
               await context.read<MatchesChangeNotifier>().refresh();
-              await context.read<LocationChangeNotifier>().refresh();
+              // await context.read<LocationChangeNotifier>().refresh();
             },
             child: ListView(
                 shrinkWrap: true,
@@ -221,7 +218,8 @@ class RefreshIndicatorState extends State<RefreshIndicatorStateful>
                                 .getUserDetails()))
                             .toList()
                         : matches,
-                    context.read<LocationChangeNotifier>().locationData)));
+                    // context.read<LocationChangeNotifier>().locationData
+                )));
     // todo animate it
     return mainWidget;
   }
@@ -250,11 +248,10 @@ class MatchInfo extends StatelessWidget {
   static var monthDayFormat = DateFormat('HH:mm');
 
   Match match;
-  LocationData locationData;
 
   MatchInfo(this.match);
 
-  MatchInfo.withLocation(this.match, this.locationData);
+  // MatchInfo.withLocation(this.match, this.locationData);
 
   @override
   Widget build(BuildContext context) {
@@ -327,24 +324,24 @@ class MatchInfo extends StatelessWidget {
                                 fontWeight: FontWeight.w400))),
                   ),
                   SizedBox(height: 40),
-                  if (locationData != null)
-                    FutureBuilder<String>(
-                        future: LocationUtils.getDistanceInKm(
-                            locationData.latitude,
-                            locationData.longitude,
-                            match.sportCenter),
-                        builder: (BuildContext context,
-                            AsyncSnapshot<String> snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.done) {
-                            return Text(snapshot.data,
-                                style: TextStyle(
-                                    color: Colors.grey,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w500));
-                          }
-                          return Text("");
-                        })
+                  // if (locationData != null)
+                  //   FutureBuilder<String>(
+                  //       future: LocationUtils.getDistanceInKm(
+                  //           locationData.latitude,
+                  //           locationData.longitude,
+                  //           match.sportCenter),
+                  //       builder: (BuildContext context,
+                  //           AsyncSnapshot<String> snapshot) {
+                  //         if (snapshot.connectionState ==
+                  //             ConnectionState.done) {
+                  //           return Text(snapshot.data,
+                  //               style: TextStyle(
+                  //                   color: Colors.grey,
+                  //                   fontSize: 12,
+                  //                   fontWeight: FontWeight.w500));
+                  //         }
+                  //         return Text("");
+                  //       })
                 ],
               )
             ],

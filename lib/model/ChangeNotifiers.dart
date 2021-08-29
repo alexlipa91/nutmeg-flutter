@@ -1,10 +1,8 @@
 import 'package:flutter/cupertino.dart';
-import 'package:location/location.dart';
 import 'package:nutmeg/db/MatchesFirestore.dart';
 import 'package:nutmeg/db/SportCentersFirestore.dart';
 import 'package:nutmeg/db/UserFirestore.dart';
 import 'package:nutmeg/screens/PaymentPage.dart';
-import 'package:nutmeg/utils/LocationUtils.dart';
 import 'Model.dart';
 
 class MatchesChangeNotifier extends ChangeNotifier {
@@ -96,12 +94,12 @@ class UserChangeNotifier extends ChangeNotifier {
   }
 }
 
-class LocationChangeNotifier extends ChangeNotifier {
-  LocationData locationData;
-
-  Future<void> refresh() async {
-    locationData = await LocationUtils.getCurrentLocation();
-  }
-
-  LocationData getLocationData() => locationData;
-}
+// class LocationChangeNotifier extends ChangeNotifier {
+//   LocationData locationData;
+//
+//   Future<void> refresh() async {
+//     locationData = await LocationUtils.getCurrentLocation();
+//   }
+//
+//   LocationData getLocationData() => locationData;
+// }
