@@ -44,22 +44,21 @@ class UserFirestore {
       var userDetails;
 
       // check if first time
-      await users.doc(userCredential.user.uid).get().then((doc) {
-        if (!doc.exists) {
-          userDetails = new UserDetails(userCredential.user, false, userCredential.user.photoURL, userCredential.user.displayName);
-        } else {
-          userDetails = UserDetails.fromJson(doc.data(), userCredential.user);
-        }
-        return !doc.exists;
-      }).then((shouldInsert) {
-        if (shouldInsert) {
-          users.doc(userCredential.user.uid).set(userDetails.toJson());
-        }
-      });
+      var doc = await users.doc(userCredential.user.uid).get();
+
+      if (!doc.exists) {
+        userDetails = new UserDetails(userCredential.user, false, userCredential.user.photoURL, userCredential.user.displayName);
+        await storeUserDetails(userDetails);
+      } else {
+        userDetails = UserDetails.fromJson(doc.data(), userCredential.user);
+      }
 
       return userDetails;
     }
   }
+
+  static Future<void> storeUserDetails(UserDetails userDetails) =>
+      users.doc(userDetails.firebaseUser.uid).set(userDetails.toJson());
 
   static Future<void> logout() async {
     var gs = GoogleSignIn();
@@ -69,4 +68,6 @@ class UserFirestore {
 
   static storeStripeId(String uid, String stripeId) async =>
       await users.doc(uid).update({"stripeId": stripeId});
+
+  static User getCurrentFirestoreUser() => _auth.currentUser;
 }

@@ -25,6 +25,10 @@ void main() {
 Future<void> callAsyncFetch(BuildContext context) {
   Future<void> Function() loadFunction = () async {
     await Firebase.initializeApp();
+
+    // check if user is logged in
+    await context.read<UserChangeNotifier>().loadUserIfAvailable();
+
     await context.read<MatchesChangeNotifier>().refresh();
     await context.read<SportCentersChangeNotifier>().refresh();
   };

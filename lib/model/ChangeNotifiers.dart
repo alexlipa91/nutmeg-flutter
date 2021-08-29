@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:nutmeg/db/MatchesFirestore.dart';
 import 'package:nutmeg/db/SportCentersFirestore.dart';
@@ -7,7 +8,7 @@ import 'Model.dart';
 
 
 class MatchesChangeNotifier extends ChangeNotifier {
-  List<Match> _matches;
+  List<Match> _matches = [];
 
   refresh() async {
     _matches = await Future.delayed(Duration(milliseconds: 200), () => MatchesFirestore.fetchMatches());
@@ -52,12 +53,14 @@ class SportCentersChangeNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
+  // fixme break with exception here
   SportCenter getSportCenter(String id) => _sportCenters[id];
 
   List<SportCenter> getSportCenters() => _sportCenters.values;
 }
 
 class UserChangeNotifier extends ChangeNotifier {
+
   // todo should this be somewhere else?
   static Future<UserDetails> getSpecificUserDetails(String uid) =>
       UserFirestore.getSpecificUserDetails(uid);
@@ -93,14 +96,19 @@ class UserChangeNotifier extends ChangeNotifier {
 
     return stripeId;
   }
-}
 
-// class LocationChangeNotifier extends ChangeNotifier {
-//   LocationData locationData;
-//
-//   Future<void> refresh() async {
-//     locationData = await LocationUtils.getCurrentLocation();
-//   }
-//
-//   LocationData getLocationData() => locationData;
-// }
+  // fixme separate better user from firebase and from my db
+  Future<void> loadUserIfAvailable() async {
+    User u = UserFirestore.getCurrentFirestoreUser();
+
+    if (u != null) {
+      var existingUserDetails = await UserFirestore.getSpecificUserDetails(u.uid);
+      _userDetails = new UserDetails(u, existingUserDetails.isAdmin, u.photoURL, u.displayName);
+      try {
+        UserFirestore.storeUserDetails(_userDetails);
+      } catch (e) {
+        print(e.toString());
+      }
+    }
+  }
+}
