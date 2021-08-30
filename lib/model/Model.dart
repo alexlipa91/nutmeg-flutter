@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+var formatCurrency = NumberFormat.simpleCurrency(name: "EUR");
 
 enum MatchStatus { open, played, canceled }
 
@@ -98,6 +98,8 @@ class Match {
       .isNotEmpty;
 
   double getPrice() => pricePerPersonInCents / 100;
+
+  String getFormattedPrice() => formatCurrency.format(getPrice());
 }
 
 class Subscription {
@@ -158,18 +160,21 @@ class UserDetails {
   String image;
   String name;
   String stripeId;
+  int creditsInCents;
 
-  UserDetails(this.firebaseUser, this.isAdmin, this.image, this.name);
+  UserDetails(this.firebaseUser, this.isAdmin, this.image, this.name) :
+    creditsInCents = 0;
 
   UserDetails.fromJson(Map<String, dynamic> json, User firebaseUser)
       : isAdmin = json["isAdmin"] ?? false,
         image = json["image"],
         name = json["name"],
+        creditsInCents = json["credits"],
         stripeId = json["stripeId"] ?? null,
         firebaseUser = firebaseUser;
 
   Map<String, dynamic> toJson() =>
-      {'isAdmin': isAdmin, 'image': image, 'name': name};
+      {'isAdmin': isAdmin, 'image': image, 'name': name, 'credits': creditsInCents};
 
   String getUid() => firebaseUser.uid;
 
@@ -178,4 +183,6 @@ class UserDetails {
   void setStripeId(String stripeId) => stripeId = stripeId;
 
   String getPhotoUrl() => firebaseUser.photoURL ?? image;
+
+  String getCreditsAvailable() => formatCurrency.format(creditsInCents / 100);
 }

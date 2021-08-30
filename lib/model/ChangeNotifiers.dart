@@ -77,7 +77,7 @@ class UserChangeNotifier extends ChangeNotifier {
   bool isLoggedIn() =>
       _userDetails != null && _userDetails.firebaseUser != null;
 
-  void logout() async {
+  Future<void> logout() async {
     await UserFirestore.logout();
     _userDetails.firebaseUser = null;
     notifyListeners();

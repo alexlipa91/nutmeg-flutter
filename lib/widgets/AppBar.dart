@@ -44,31 +44,31 @@ class MainAppBarAsContainer extends StatelessWidget {
   }
 }
 
-class SecondaryAppBarAsContainer extends StatelessWidget {
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-        child: Padding(
-      padding: EdgeInsets.all(10),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          InkWell(
-              child: Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Icon(Icons.arrow_back, color: Colors.black)),
-              onTap: () => Navigator.pop(context)),
-          InkWell(
-              child: Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Icon(Icons.share, color: Colors.black)),
-              onTap: () => print("IMPLEMENT SHARE")),
-        ],
-      ),
-    ));
-  }
-}
+// class SecondaryAppBarAsContainer extends StatelessWidget {
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return Container(
+//         child: Padding(
+//       padding: EdgeInsets.all(10),
+//       child: Row(
+//         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//         children: [
+//           InkWell(
+//               child: Padding(
+//                   padding: EdgeInsets.all(8.0),
+//                   child: Icon(Icons.arrow_back, color: Colors.black)),
+//               onTap: () => Navigator.pop(context)),
+//           InkWell(
+//               child: Padding(
+//                   padding: EdgeInsets.all(8.0),
+//                   child: Icon(Icons.share, color: Colors.black)),
+//               onTap: () => print("IMPLEMENT SHARE")),
+//         ],
+//       ),
+//     ));
+//   }
+// }
 
 class MainAppBar extends StatelessWidget with PreferredSizeWidget {
 
@@ -112,62 +112,32 @@ class MainAppBar extends StatelessWidget with PreferredSizeWidget {
   Size get preferredSize => Size.fromHeight(0.0);
 }
 
-// class SecondaryAppBar extends StatelessWidget with PreferredSizeWidget {
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     var isLoggedIn = context.watch<UserChangeNotifier>().isLoggedIn();
-//     var userDetails = context.watch<UserChangeNotifier>().getUserDetails();
-//
-//     return Container(
-//       child: Padding(
-//         padding: EdgeInsets.all(10),
-//         child: Row(
-//           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//           children: [
-//             InkWell(
-//                 child: Padding(
-//                     padding: EdgeInsets.all(8.0),
-//                     child: Icon(Icons.arrow_back, color: Colors.black)),
-//                 onTap: () => Navigator.pop(context)),
-//             InkWell(
-//                 child: Padding(
-//                     padding: EdgeInsets.all(8.0),
-//                     child: Icon(Icons.share, color: Colors.black)),
-//                 onTap: () => print("IMPLEMENT SHARE")),
-//           ],
-//         ),
-//       )
-//
-//     return AppBar(
-//       centerTitle: false,
-//       backgroundColor: Colors.transparent,
-//       // toolbarHeight: 70,
-//       title: Image.asset('assets/nutmeg_white.png', width: 116, height: 46),
-//       actions: [
-//         if (isLoggedIn)
-//           InkWell(
-//               child: Padding(
-//                 padding: EdgeInsets.all(8.0),
-//                 child: CircleAvatar(
-//                     backgroundImage: NetworkImage(userDetails.getPhotoUrl()),
-//                     radius: 25),
-//               ),
-//               onTap: () => Navigator.push(context,
-//                   MaterialPageRoute(builder: (context) => new UserPage())))
-//         else
-//           Padding(
-//               padding: EdgeInsets.only(right: 15),
-//               child: Center(
-//                   child: InkWell(
-//                       child: Text("LOGIN", style: TextPalette.linkStyleInverted),
-//                       onTap: () => Navigator.push(context,
-//                           MaterialPageRoute(builder: (context) => Login())))))
-//       ],
-//       elevation: 0,
-//     );
-//   }
-//
-//   @override
-//   Size get preferredSize => Size.fromHeight(70.0);
-// }
+class SecondaryAppBar extends StatelessWidget with PreferredSizeWidget {
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: Padding(
+        padding: EdgeInsets.all(10),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            InkWell(
+                child: Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: Icon(Icons.arrow_back, color: Colors.black)),
+                onTap: () => Navigator.pop(context)),
+            InkWell(
+                child: Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: Icon(Icons.share, color: Colors.black)),
+                onTap: () => print("IMPLEMENT SHARE")),
+          ],
+        ),
+      )
+    );
+  }
+
+  @override
+  Size get preferredSize => Size.fromHeight(70.0);
+}

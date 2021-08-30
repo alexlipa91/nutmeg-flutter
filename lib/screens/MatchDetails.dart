@@ -63,7 +63,7 @@ class MatchDetails extends StatelessWidget {
             // fixme here we are repeating the padding just because cannot be applied globally as MatchInfo doesn't need
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SecondaryAppBarAsContainer(),
+              SecondaryAppBar(),
               Padding(
                   padding: EdgeInsets.symmetric(horizontal: 25),
                   child: Text(title, style: TextPalette.h1Default)),
@@ -122,7 +122,7 @@ class MatchInfo extends StatelessWidget {
               child: SportCenterImageCarousel(
                   images: sportCenter.getMainPicturesListUrls()))
         ]),
-        InfoWidget(title: dateFormat.format(match.dateTime), icon: Icons.watch),
+        InfoWidget(title: match.getFormattedDate(), icon: Icons.watch),
         InfoWidget.withRightWidget(
             title: sportCenter.name,
             icon: Icons.place,
@@ -243,7 +243,7 @@ class InfoWidget extends StatelessWidget {
                 SizedBox(
                   height: 5,
                 ),
-                if (subTitle != null) Text(subTitle, style: TextPalette.h4)
+                if (subTitle != null) Text(subTitle, style: TextPalette.bodyText)
               ],
             ),
             if (rightWidget != null) Expanded(child: rightWidget)
@@ -457,81 +457,173 @@ class BottomBar extends StatelessWidget {
                   ? RoundedButton("LEAVE GAME", () async {
                       var hasUserConfirmed = await showModalBottomSheet(
                           context: context,
-                          builder: (context) => LeaveMatchConfirmation(match));
-                      print("return from bottom sheet " + hasUserConfirmed.toString());
+                          builder: (context) => LeaveMatchConfirmation(match)
+                      );
+                      print("return from bottom sheet " +
+                          hasUserConfirmed.toString());
                     })
                   : RoundedButton("JOIN GAME", () async {
-                      bool isLoggedIn = false;
-
                       if (!context.read<UserChangeNotifier>().isLoggedIn()) {
-                        isLoggedIn = await Navigator.push(
+                        bool couldLogIn = await Navigator.push(
                                 context,
                                 MaterialPageRoute(
                                     builder: (context) => Login()))
                             .then((isLoginSuccessfull) => isLoginSuccessfull);
-                      } else {
-                        isLoggedIn = true;
-                      }
 
-                      if (isLoggedIn) {
-                        var value = await showModalBottomSheet(
-                            context: context,
-                            builder: (context) {
-                              return Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: <Widget>[
-                                  Text("Join this match"),
-                                  Text('blablabla'),
-                                  Divider(),
-                                  Text("price"),
-                                  TextButton(
-                                      onPressed: () async {
-                                        final stripeCustomerId = await context
-                                            .read<UserChangeNotifier>()
-                                            .getOrCreateStripeId();
-                                        print("stripeCustomerId " +
-                                            stripeCustomerId);
-                                        final sessionId = await Server()
-                                            .createCheckout(stripeCustomerId,
-                                                match.pricePerPersonInCents);
-                                        print("sessId " + sessionId);
-
-                                        var value = await Navigator.of(context)
-                                            .push(MaterialPageRoute(
-                                                builder: (_) => CheckoutPage(
-                                                    sessionId: sessionId)));
-
-                                        // remove previous bottom sheet
-                                        Navigator.pop(context, value);
-                                      },
-                                      child: Text("Continue to payment"))
-                                ],
-                              );
-                            });
-                        if (value == "success") {
-                          await context.read<MatchesChangeNotifier>().joinMatch(
-                              match,
-                              context
-                                  .read<UserChangeNotifier>()
-                                  .getUserDetails());
-                          showModalBottomSheet(
-                              context: context,
-                              builder: (context) {
-                                return TextButton(
-                                    child: Text("close"),
-                                    onPressed: () => Navigator.pop(context));
-                              });
-                        } else {
+                        if (!couldLogIn) {
                           CoolAlert.show(
                               context: context,
                               type: CoolAlertType.error,
-                              text: "Payment failed");
+                              text: "Could not loging");
+                          Navigator.pop(context);
+                          return;
                         }
+                      }
+
+                      var value = await showModalBottomSheet(
+                          context: context,
+                          builder: (context) =>
+                              PrepaymentBottomBar(match: match));
+                      if (value == "success") {
+                        await context.read<MatchesChangeNotifier>().joinMatch(
+                            match,
+                            context
+                                .read<UserChangeNotifier>()
+                                .getUserDetails());
+                        showModalBottomSheet(
+                            context: context,
+                            builder: (context) => PostPaymentBottomBar(match: match));
+                      } else if (value == "payment-failed") {
+                        CoolAlert.show(
+                            context: context,
+                            type: CoolAlertType.error,
+                            text: "Payment failed");
                       }
                     })
             ],
           ),
         ));
+  }
+}
+
+class PrepaymentBottomBar extends StatelessWidget {
+  final Match match;
+
+  const PrepaymentBottomBar({Key key, this.match}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      // fixme why not having borders?
+      decoration: BoxDecoration(
+        color: Palette.white,
+        borderRadius: BorderRadius.only(topRight: Radius.circular(10)),
+      ),
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: 30, horizontal: 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Padding(
+                padding: EdgeInsets.only(bottom: 20.0),
+                child: Text("Join this game", style: TextPalette.h2)),
+            Text(
+              "You can cancel up to 24h before the game starting time to get a full refund in credits to use on your next game. \n After that you won't get a refund.",
+              style: TextPalette.bodyText,
+            ),
+            Divider(),
+            Row(
+              children: [
+                CircleAvatar(
+                    backgroundImage: NetworkImage(context
+                        .watch<UserChangeNotifier>()
+                        .getUserDetails()
+                        .getPhotoUrl()),
+                    radius: 15),
+                SizedBox(width: 30),
+                Text("1x player", style: TextPalette.h3),
+                Expanded(
+                    child: Text(
+                  match.getFormattedPrice() + " euro",
+                  style: TextPalette.h3,
+                  textAlign: TextAlign.end,
+                ))
+              ],
+            ),
+            Divider(),
+            Row(
+              children: [
+                Expanded(
+                  child: RoundedButton("CONTINUE TO PAYMENT", () async {
+                    final stripeCustomerId = await context
+                        .read<UserChangeNotifier>()
+                        .getOrCreateStripeId();
+                    print("stripeCustomerId " + stripeCustomerId);
+                    final sessionId = await Server().createCheckout(
+                        stripeCustomerId, match.pricePerPersonInCents);
+                    print("sessId " + sessionId);
+
+                    var value = await Navigator.of(context).push(
+                        MaterialPageRoute(
+                            builder: (_) => CheckoutPage(sessionId: sessionId)));
+
+                    // remove previous bottom sheet
+                    Navigator.pop(context, value);
+                  }),
+                )
+              ],
+            )
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class PostPaymentBottomBar extends StatelessWidget {
+  final Match match;
+
+  const PostPaymentBottomBar({Key key, this.match}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      // fixme why not having borders?
+      decoration: BoxDecoration(
+        color: Palette.white,
+        borderRadius: BorderRadius.only(topRight: Radius.circular(10)),
+      ),
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: 30, horizontal: 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Padding(
+                padding: EdgeInsets.only(bottom: 20.0),
+                child: Text("You are going to this game", style: TextPalette.h2)),
+            Padding(
+              padding: EdgeInsets.only(bottom: 20.0),
+              child: Text(
+                "You have successfully paid and joined this game.",
+                style: TextPalette.bodyText,
+              ),
+            ),
+            InkWell(
+              child: Row(
+                children: [
+                  Icon(Icons.share, color: Palette.primary),
+                  SizedBox(width: 20),
+                  Text("SHARE", style: TextPalette.linkStyle)
+                ],
+              ),
+              onTap: () => CoolAlert.show(context: context, type: CoolAlertType.info, text: "Implement this"),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 
@@ -543,24 +635,58 @@ class LeaveMatchConfirmation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: <Widget>[
-        Text("Leave this game?"),
-        Text(
-            'We will refund you in credits that you can use in your next game'),
-        Divider(),
-        Text("Credits refund: X"),
-        Divider(),
-        ButtonWithLoader(RoundedButton("CONFIRM", () async {
-          await context.read<MatchesChangeNotifier>().leaveMatch(
-              match,
-              context
-                  .read<UserChangeNotifier>()
-                  .getUserDetails());
-          Navigator.pop(context);
-        }), Colors.black)
-      ],
+    return Container(
+      // fixme why not having borders?
+      decoration: BoxDecoration(
+        color: Palette.white,
+        borderRadius: BorderRadius.only(topRight: Radius.circular(10)),
+      ),
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: 30, horizontal: 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Padding(
+                padding: EdgeInsets.only(bottom: 20.0),
+                child: Text("Leaving this game?", style: TextPalette.h2)),
+            Text(
+              "We will refund you in credits that you can use in your next games. (HERE WE NEED TO DISABLE THINGS IF WE ARE < 24 H).",
+              style: TextPalette.bodyText,
+            ),
+            Divider(),
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: 10.0),
+              child: Row(
+                children: [
+                  Text("Credits refund", style: TextPalette.h3),
+                  Expanded(
+                      child: Text(
+                        match.getFormattedPrice() + " euro",
+                        style: TextPalette.h3,
+                        textAlign: TextAlign.end,
+                      ))
+                ],
+              ),
+            ),
+            Divider(),
+            Row(
+              children: [
+                Expanded(
+                  child: RoundedButton("CONFIRM", () async {
+                    await context.read<MatchesChangeNotifier>().leaveMatch(
+                        match,
+                        context
+                            .read<UserChangeNotifier>()
+                            .getUserDetails());
+                    Navigator.pop(context);
+                  }),
+                )
+              ],
+            )
+          ],
+        ),
+      ),
     );
   }
 }

@@ -1,133 +1,99 @@
 import 'package:flutter/material.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
-import 'package:nutmeg/utils/ButtonWidgets.dart';
-import 'package:nutmeg/screens/AddMatch.dart';
-import 'package:nutmeg/screens/Login.dart';
+import 'package:nutmeg/utils/UiUtils.dart';
+import 'package:nutmeg/widgets/AppBar.dart';
 import 'package:nutmeg/widgets/Buttons.dart';
+import 'package:nutmeg/widgets/Containers.dart';
 import 'package:provider/provider.dart';
 
-import '../screens_old/AvailableMatches.dart';
-import 'package:nutmeg/model/Model.dart';
-
 class UserPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final ThemeData themeData = Theme.of(context);
-
-    return SafeArea(
-        child: Container(
-            decoration: new BoxDecoration(color: Colors.grey.shade400),
-            child: Column(mainAxisSize: MainAxisSize.min, children: [
-              Expanded(flex: 1, child: UserImage()),
-              Text("Name", style: themeData.textTheme.headline1),
-              Divider(height: 50),
-              Expanded(
-                  flex: 3,
-                  child: Container(
-                      decoration:
-                          new BoxDecoration(color: Colors.grey.shade400),
-                      child: MatchList(
-                          matches:
-                              // fixme
-                              // context
-                              // .watch<MatchesModel>()
-                              // .getMatches()
-                              List<Match>.empty()
-                          // .where((m) =>
-                          // m.joining.contains(
-                          //     context.read<UserModel>().user.uid))))),
-                          )))
-            ])));
-  }
-}
-
-class UserImage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-        decoration: new BoxDecoration(color: Colors.grey.shade400),
-        margin: EdgeInsets.all(30),
-        child: CircleAvatar(
-            backgroundColor: Colors.purple,
-            radius: 40,
-            child: FittedBox(
-                child: Text(
-                    context
-                        .read<UserChangeNotifier>()
-                        .getUserDetails()
-                        .firebaseUser
-                        .email[0]
-                        .toUpperCase(),
-                    style: TextStyle(color: Colors.white, fontSize: 45)))));
-  }
-}
-
-class MatchList extends StatelessWidget {
-  final List<Match> matches;
-  final String title;
-
-  const MatchList({Key key, this.matches, this.title}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData themeData = Theme.of(context);
-
-    var open =
-        matches.where((element) => element.status == MatchStatus.open).toList();
-    var played = matches
-        .where((element) => element.status == MatchStatus.played)
-        .toList();
-
-    var children = [];
-
-    children.addAll([
-      Text("Upcoming matches", style: themeData.textTheme.headline1),
-      SizedBox(height: 30)
-    ]);
-
-    if (open.isNotEmpty) {
-      children.addAll(open.map<Widget>((e) => MatchInfo(e)).toList());
-    } else {
-      children.addAll([
-        Text("No upcoming matches", style: themeData.textTheme.bodyText1),
-        SizedBox(height: 30)
-      ]);
-    }
-
-    children.addAll([
-      Text("Past Matches", style: themeData.textTheme.headline1),
-      SizedBox(height: 30)
-    ]);
-
-    if (played.isNotEmpty) {
-      children.addAll(played.map<Widget>((e) => MatchInfo(e)).toList());
-    } else {
-      children.addAll([
-        Text("No past matches", style: themeData.textTheme.bodyText1),
-        SizedBox(height: 30)
-      ]);
-    }
-
-    children.add(ButtonWithLoaderAndPop(
-        text: "Logout",
-        onPressedFunction: () => context.read<UserChangeNotifier>().logout()));
-
-    if (context.read<UserChangeNotifier>().getUserDetails().isAdmin) {
-      children.add(RoundedButton("Add match", () {
-        Navigator.push(
-            context, MaterialPageRoute(builder: (context) => new AddMatch()));
-      }));
-    }
+    var userDetails = context.read<UserChangeNotifier>().getUserDetails();
 
     return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: SingleChildScrollView(
-          child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 30),
-        child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: List<Widget>.from(children)),
-      )),
+      body: SafeArea(
+        child: Container(
+            child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20),
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            SecondaryAppBar(),
+            Padding(
+                padding: EdgeInsets.only(top: 20),
+                child: Text("Account", style: TextPalette.h1Default)),
+            Padding(
+              padding: EdgeInsets.only(top: 20),
+              child: InfoContainer(
+                  child: Row(
+                children: [
+                  CircleAvatar(
+                      backgroundImage: NetworkImage(userDetails.image),
+                      radius: 24,
+                      backgroundColor: Palette.white),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 30),
+                    child: Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(userDetails.name, style: TextPalette.h2),
+                          SizedBox(height: 10),
+                          Text(userDetails.firebaseUser.email,
+                              style: TextPalette.bodyText)
+                        ],
+                      ),
+                    ),
+                  )
+                ],
+              )),
+            ),
+            Padding(
+              padding: EdgeInsets.only(top: 20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  InfoContainer(
+                    child: Column(
+                      children: [
+                        Text(userDetails.getCreditsAvailable(),
+                            style: TextPalette.h2),
+                        SizedBox(height: 20),
+                        Text("Available Credits", style: TextPalette.h3)
+                      ],
+                    ),
+                  ),
+                  InfoContainer(
+                      child: Column(
+                    children: [
+                      Text(
+                          context
+                                  .watch<MatchesChangeNotifier>()
+                                  .numPlayedByUser(userDetails.getUid())
+                                  .toString() +
+                              " games played",
+                          style: TextPalette.h2),
+                      SizedBox(height: 20),
+                      Text("Games Played", style: TextPalette.h3)
+                    ],
+                  ))
+                ],
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.only(top: 10),
+              child: Row(
+                children: [Expanded(
+                  child: RoundedButton("LOGOUT", () async {
+                    await context.read<UserChangeNotifier>().logout();
+                    Navigator.pop(context);
+                  }),
+                )],
+              ),
+            )
+          ]),
+        )),
+      ),
     );
   }
 }
