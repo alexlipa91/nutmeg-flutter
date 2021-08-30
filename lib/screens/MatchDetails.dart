@@ -96,11 +96,12 @@ class MatchDetails extends StatelessWidget {
           ),
         ),
       ),
-      bottomNavigationBar: UserNotGoingBottomBar(match: match),
+      bottomNavigationBar: BottomBar(match: match),
     );
   }
 }
 
+// info card
 class MatchInfo extends StatelessWidget {
   static var formatCurrency = NumberFormat.simpleCurrency(name: "EUR");
   static var dateFormat = DateFormat('MMMM dd \'at\' HH:mm');
@@ -211,6 +212,7 @@ class SportCenterImageCarouselState extends State<SportCenterImageCarousel> {
   }
 }
 
+// single line with icon and texts in the info card
 class InfoWidget extends StatelessWidget {
   final String title;
   final IconData icon;
@@ -250,6 +252,7 @@ class InfoWidget extends StatelessWidget {
   }
 }
 
+// single player card
 class PlayerCard extends StatelessWidget {
   final String userId;
 
@@ -350,6 +353,7 @@ class PlayerCard extends StatelessWidget {
   }
 }
 
+// single rule card
 class RuleCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -420,10 +424,10 @@ class MapCard extends StatelessWidget {
   }
 }
 
-class UserNotGoingBottomBar extends StatelessWidget {
+class BottomBar extends StatelessWidget {
   final Match match;
 
-  const UserNotGoingBottomBar({Key key, this.match}) : super(key: key);
+  const BottomBar({Key key, this.match}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -531,6 +535,7 @@ class UserNotGoingBottomBar extends StatelessWidget {
   }
 }
 
+// widget to show when user is leaving
 class LeaveMatchConfirmation extends StatelessWidget {
   final Match match;
 

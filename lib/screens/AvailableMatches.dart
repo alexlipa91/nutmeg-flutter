@@ -109,54 +109,6 @@ class RoundedTopBar extends StatelessWidget {
   }
 }
 
-class News extends StatelessWidget {
-  // fixme pass news from db
-
-  final GlobalKey<AnimatedListState> _listKey;
-
-  News(this._listKey);
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(children: [
-      Expanded(
-          child: InfoContainer(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              ContainerTitleText(text: "50% off"),
-              Expanded(
-                  child: Align(
-                alignment: Alignment.topRight,
-                child: InkWell(
-                    child: Icon(Icons.close, size: 18),
-                    onTap: () {
-                      _listKey.currentState.removeItem(0, (_, animation) {
-                        // fixme check if there's something better around
-                        return SlideTransition(
-                            position: Tween<Offset>(
-                              begin: const Offset(-3, 0),
-                              end: Offset(0, 0),
-                            ).animate(animation),
-                            child: News(_listKey));
-                      }, duration: Duration(milliseconds: 500));
-                      MatchesAreaState.showNews = false;
-                    }),
-              ))
-            ]),
-            // SizedBox(height: 15),
-            Text(
-              "All games in Amsterdam are 50% off until Sept 4.",
-              style: TextPalette.bodyText,
-            )
-          ],
-        ),
-      )),
-    ]);
-  }
-}
-
 class MatchesArea extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => MatchesAreaState();
@@ -176,54 +128,54 @@ class MatchesAreaState extends State<MatchesArea> {
 
     return (optionSelected == "MY GAMES" && !isLoggedIn)
         ? Center(
-            child: Text("Login to join matches", style: TextPalette.bodyText),
-          )
+      child: Text("Login to join matches", style: TextPalette.bodyText),
+    )
         : RefreshIndicator(
-            onRefresh: () async {
-              setState(() {
-                isLoading = true;
-              });
-              await context.read<MatchesChangeNotifier>().refresh();
-              setState(() {
-                isLoading = false;
-              });
-            },
-            child: Builder(builder: (BuildContext buildContext) {
-              var widgets;
-              if (!isLoading) {
-                widgets = (optionSelected == "ALL")
-                    ? allGamesWidgets(context)
-                    : myGamesWidgets(context);
-              } else {
-                widgets = List<Widget>.filled(5, MatchInfoSkeleton());
-              }
+      onRefresh: () async {
+        setState(() {
+          isLoading = true;
+        });
+        await context.read<MatchesChangeNotifier>().refresh();
+        setState(() {
+          isLoading = false;
+        });
+      },
+      child: Builder(builder: (BuildContext buildContext) {
+        var widgets;
+        if (!isLoading) {
+          widgets = (optionSelected == "ALL")
+              ? allGamesWidgets(context)
+              : myGamesWidgets(context);
+        } else {
+          widgets = List<Widget>.filled(5, MatchInfoSkeleton());
+        }
 
-              return AnimatedList(
-                padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
-                key: _listKey,
-                initialItemCount:
-                    (showNews) ? widgets.length + 1 : widgets.length,
-                itemBuilder: (context, index, animation) {
-                  if (showNews) {
-                    return (index == 0)
-                        ? SlideTransition(
-                            position: Tween<Offset>(
-                              begin: const Offset(-1, 0),
-                              end: Offset(0, 0),
-                            ).animate(animation),
-                            child: News(_listKey))
-                        : widgets[index - 1];
-                  }
-                  return widgets[index];
-                },
-              );
-            }),
-          );
+        return AnimatedList(
+          padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+          key: _listKey,
+          initialItemCount:
+          (showNews) ? widgets.length + 1 : widgets.length,
+          itemBuilder: (context, index, animation) {
+            if (showNews) {
+              return (index == 0)
+                  ? SlideTransition(
+                  position: Tween<Offset>(
+                    begin: const Offset(-1, 0),
+                    end: Offset(0, 0),
+                  ).animate(animation),
+                  child: News(_listKey))
+                  : widgets[index - 1];
+            }
+            return widgets[index];
+          },
+        );
+      }),
+    );
   }
 
   static List<Widget> myGamesWidgets(BuildContext context) {
     var matches = context.watch<MatchesChangeNotifier>().getMatches().where(
-        (m) => m
+            (m) => m
             .isUserGoing(context.watch<UserChangeNotifier>().getUserDetails()));
 
     if (matches.isEmpty) {
@@ -285,6 +237,54 @@ class MatchesAreaState extends State<MatchesArea> {
     });
 
     return result;
+  }
+}
+
+class News extends StatelessWidget {
+  // fixme pass news from db
+
+  final GlobalKey<AnimatedListState> _listKey;
+
+  News(this._listKey);
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(children: [
+      Expanded(
+          child: InfoContainer(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  ContainerTitleText(text: "50% off"),
+                  Expanded(
+                      child: Align(
+                        alignment: Alignment.topRight,
+                        child: InkWell(
+                            child: Icon(Icons.close, size: 18),
+                            onTap: () {
+                              _listKey.currentState.removeItem(0, (_, animation) {
+                                // fixme check if there's something better around
+                                return SlideTransition(
+                                    position: Tween<Offset>(
+                                      begin: const Offset(-3, 0),
+                                      end: Offset(0, 0),
+                                    ).animate(animation),
+                                    child: News(_listKey));
+                              }, duration: Duration(milliseconds: 500));
+                              MatchesAreaState.showNews = false;
+                            }),
+                      ))
+                ]),
+                // SizedBox(height: 15),
+                Text(
+                  "All games in Amsterdam are 50% off until Sept 4.",
+                  style: TextPalette.bodyText,
+                )
+              ],
+            ),
+          )),
+    ]);
   }
 }
 
@@ -383,6 +383,7 @@ class MatchInfo extends StatelessWidget {
   }
 }
 
+// skeleton for loading
 class MatchInfoSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -440,6 +441,7 @@ class MatchInfoSkeleton extends StatelessWidget {
   }
 }
 
+// variation of match info for past
 class MatchInfoPast extends StatelessWidget {
   static var formatCurrency = NumberFormat.simpleCurrency(name: "EUR");
   static var dayFormat = DateFormat('dd MMM');
@@ -509,20 +511,6 @@ class MatchInfoPast extends StatelessWidget {
                       .getMatch(match.documentId))));
           await context.read<MatchesChangeNotifier>().refresh();
         });
-  }
-}
-
-class TextSeparatorWidget extends StatelessWidget {
-  final String text;
-
-  const TextSeparatorWidget(this.text);
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(top: 32, bottom: 16),
-      child: Text(text, style: TextPalette.h4),
-    );
   }
 }
 
