@@ -34,16 +34,14 @@ class UserPage extends StatelessWidget {
                       backgroundColor: Palette.white),
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 30),
-                    child: Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(userDetails.name, style: TextPalette.h2),
-                          SizedBox(height: 10),
-                          Text(userDetails.firebaseUser.email,
-                              style: TextPalette.bodyText)
-                        ],
-                      ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(userDetails.name, style: TextPalette.h2),
+                        SizedBox(height: 10),
+                        Text(userDetails.firebaseUser.email,
+                            style: TextPalette.bodyText)
+                      ],
                     ),
                   )
                 ],

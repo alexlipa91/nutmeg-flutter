@@ -102,12 +102,12 @@ class UserChangeNotifier extends ChangeNotifier {
     User u = UserFirestore.getCurrentFirestoreUser();
 
     if (u != null) {
-      var existingUserDetails = await UserFirestore.getSpecificUserDetails(u.uid);
-      _userDetails = new UserDetails(u, existingUserDetails.isAdmin, u.photoURL, u.displayName);
       try {
+        var existingUserDetails = await UserFirestore.getSpecificUserDetails(u.uid);
+       _userDetails = new UserDetails(u, existingUserDetails.isAdmin, u.photoURL, u.displayName, u.email);
         UserFirestore.storeUserDetails(_userDetails);
       } catch (e) {
-        print(e.toString());
+        print("Found firebase user but couldn't load details: " + e.toString());
       }
     }
   }

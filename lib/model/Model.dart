@@ -162,22 +162,24 @@ class UserDetails {
   bool isAdmin;
   String image;
   String name;
+  String email;
   String stripeId;
   int creditsInCents;
 
-  UserDetails(this.firebaseUser, this.isAdmin, this.image, this.name) :
+  UserDetails(this.firebaseUser, this.isAdmin, this.image, this.name, this.email) :
     creditsInCents = 0;
 
   UserDetails.fromJson(Map<String, dynamic> json, User firebaseUser)
       : isAdmin = json["isAdmin"] ?? false,
         image = json["image"],
         name = json["name"],
+        email = json["email"],
         creditsInCents = json["credits"],
         stripeId = json["stripeId"] ?? null,
         firebaseUser = firebaseUser;
 
   Map<String, dynamic> toJson() =>
-      {'isAdmin': isAdmin, 'image': image, 'name': name, 'credits': creditsInCents};
+      {'isAdmin': isAdmin, 'image': image, 'name': name, 'email': email, 'credits': creditsInCents};
 
   String getUid() => firebaseUser.uid;
 

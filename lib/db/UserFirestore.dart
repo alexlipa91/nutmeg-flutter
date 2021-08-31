@@ -10,16 +10,9 @@ class UserFirestore {
   static final FirebaseAuth _auth = FirebaseAuth.instance;
 
   static Future<UserDetails> getSpecificUserDetails(String uid) async {
-    return await users.doc(uid).get().then((value) {
-      Map<String, dynamic> data = value.data();
-      return UserDetails.fromJson(data, null);
-    });
-  }
-
-  static Future<User> login(String email, String password) async {
-    return _auth
-        .signInWithEmailAndPassword(email: email, password: password)
-        .then((value) => value.user);
+    var doc = await users.doc(uid).get();
+    Map<String, dynamic> data = doc.data();
+    return UserDetails.fromJson(data, null);
   }
 
   static Future<UserDetails> loginWithGoogle() async {
@@ -47,7 +40,7 @@ class UserFirestore {
       var doc = await users.doc(userCredential.user.uid).get();
 
       if (!doc.exists) {
-        userDetails = new UserDetails(userCredential.user, false, userCredential.user.photoURL, userCredential.user.displayName);
+        userDetails = new UserDetails(userCredential.user, false, userCredential.user.photoURL, userCredential.user.displayName, userCredential.user.email);
         await storeUserDetails(userDetails);
       } else {
         userDetails = UserDetails.fromJson(doc.data(), userCredential.user);
