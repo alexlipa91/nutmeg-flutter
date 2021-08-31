@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
+import 'package:nutmeg/screens/admin/Matches.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/AppBar.dart';
 import 'package:nutmeg/widgets/Buttons.dart';
@@ -87,6 +88,21 @@ class UserPage extends StatelessWidget {
                   child: RoundedButton("LOGOUT", () async {
                     await context.read<UserChangeNotifier>().logout();
                     Navigator.pop(context);
+                  }),
+                )],
+              ),
+            ),
+            if (userDetails.isAdmin)
+              Padding(
+              padding: EdgeInsets.only(top: 10),
+              child: Row(
+                children: [Expanded(
+                  child: RoundedButton("ADMIN AREA", () async {
+                    await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => AdminAvailableMatches()));
+                    await context.read<MatchesChangeNotifier>().refresh();
                   }),
                 )],
               ),

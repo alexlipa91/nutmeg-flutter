@@ -3,7 +3,6 @@ import 'package:nutmeg/model/Model.dart';
 import 'package:nutmeg/db//SubscriptionsFirestore.dart';
 
 
-// todo try to have one change notifier per match rather than one per all the matches
 class MatchesFirestore {
 
   static var _ref = FirebaseFirestore.instance.collection('matches').withConverter<Match>(
@@ -20,12 +19,19 @@ class MatchesFirestore {
 
       var subsQuerySnapshot = await subscriptionsRef.get();
       var subs = subsQuerySnapshot.docs.map((e) => e.data());
-      
-      if (subs.where((s) => s.userId == user.getUid() && s.status == SubscriptionStatus.going).isNotEmpty) {
-        throw new Exception("Already going");
-      }
 
-      subscriptionsRef.add(new Subscription(user.getUid(), SubscriptionStatus.going));
+      var userSubList = subs.where((s) => s.userId == user.getUid());
+      if (userSubList.isNotEmpty) {
+        var userSub = userSubList.first;
+
+        if (userSub.status == SubscriptionStatus.going) {
+          throw new Exception("Already going");
+        } else {
+          subscriptionsRef.doc(userSub.documentId).set(new Subscription(user.getUid(), SubscriptionStatus.going));
+        }
+      } else {
+        subscriptionsRef.add(new Subscription(user.getUid(), SubscriptionStatus.going));
+      }
     });
 
     return await _ref.doc(match.documentId).get().then((value) => value.data());
@@ -41,13 +47,18 @@ class MatchesFirestore {
       var subsQuerySnapshot = await subscriptionsRef.get();
       var subs = subsQuerySnapshot.docs.map((e) => e.data());
 
-      var currentSub = subs.where((s) => s.userId == user.getUid() && s.status == SubscriptionStatus.going);
-      
-      if (currentSub.isEmpty) {
-        throw new Exception("Cannot remove since not going");
-      }
+      var userSubList = subs.where((s) => s.userId == user.getUid());
+      if (userSubList.isNotEmpty) {
+        var userSub = userSubList.first;
 
-      subscriptionsRef.doc(currentSub.first.documentId).set(new Subscription(user.getUid(), SubscriptionStatus.canceled));
+        if (userSub.status == SubscriptionStatus.canceled) {
+          throw new Exception("Already canceled");
+        } else {
+          subscriptionsRef.doc(userSub.documentId).set(new Subscription(user.getUid(), SubscriptionStatus.canceled));
+        }
+      } else {
+        subscriptionsRef.add(new Subscription(user.getUid(), SubscriptionStatus.canceled));
+      }
     });
 
     return await _ref.doc(match.documentId).get().then((value) => value.data());
@@ -65,5 +76,14 @@ class MatchesFirestore {
     var match = doc.data();
     match.subscriptions = await SubscriptionsDb.getMatchSubscriptions(match.documentId) ?? [];
     return match;
+  }
+
+  static Future<String> addMatch(Match m) async {
+    var doc = await _ref.add(m);
+    return doc.id;
+  }
+
+  static Future<void> editMatch(Match m) async {
+    await _ref.doc(m.documentId).set(m);
   }
 }

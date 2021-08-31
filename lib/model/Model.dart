@@ -107,15 +107,18 @@ class Subscription {
 
   String userId;
   SubscriptionStatus status;
+  Timestamp createdAt;
 
-  Subscription(this.userId, this.status);
+  Subscription(this.userId, this.status):
+        createdAt = Timestamp.now();
 
   Subscription.fromJson(Map<String, dynamic> json, String documentId)
       : documentId = documentId,
         userId = json['userId'],
+        createdAt = json['createdAt'] ?? null,
         status = SubscriptionStatus.values[json['status']];
 
-  Map<String, dynamic> toJson() => {'userId': userId, 'status': status.index};
+  Map<String, dynamic> toJson() => {'userId': userId, 'status': status.index, 'createdAt': createdAt};
 }
 
 class SportCenter {

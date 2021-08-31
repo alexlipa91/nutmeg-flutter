@@ -56,7 +56,7 @@ class SportCentersChangeNotifier extends ChangeNotifier {
   // fixme break with exception here
   SportCenter getSportCenter(String id) => _sportCenters[id];
 
-  List<SportCenter> getSportCenters() => _sportCenters.values;
+  List<SportCenter> getSportCenters() => _sportCenters.values.toList();
 }
 
 class UserChangeNotifier extends ChangeNotifier {

@@ -6,7 +6,6 @@ import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:provider/provider.dart';
 
 class MainAppBarAsContainer extends StatelessWidget {
-
   @override
   Widget build(BuildContext context) {
     var isLoggedIn = context.watch<UserChangeNotifier>().isLoggedIn();
@@ -25,19 +24,23 @@ class MainAppBarAsContainer extends StatelessWidget {
                     child: Padding(
                       padding: EdgeInsets.all(8.0),
                       child: CircleAvatar(
-                          backgroundImage: NetworkImage(userDetails.getPhotoUrl()),
+                          backgroundImage:
+                              NetworkImage(userDetails.getPhotoUrl()),
                           radius: 25),
                     ),
-                    onTap: () => Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => new UserPage())))
+                    onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => new UserPage())))
               else
                 InkWell(
-                child: Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: Text("LOGIN", style: TextPalette.linkStyleInverted)),
-                onTap: () => Navigator.push(
-                    context, MaterialPageRoute(builder: (context) => Login())),
-              ),
+                  child: Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child:
+                          Text("LOGIN", style: TextPalette.linkStyleInverted)),
+                  onTap: () => Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => Login())),
+                ),
             ],
           ),
         ));
@@ -71,11 +74,9 @@ class MainAppBarAsContainer extends StatelessWidget {
 // }
 
 class MainAppBar extends StatelessWidget with PreferredSizeWidget {
-
   @override
   Widget build(BuildContext context) {
     var isLoggedIn = context.watch<UserChangeNotifier>().isLoggedIn();
-    var userDetails = context.watch<UserChangeNotifier>().getUserDetails();
 
     return AppBar(
       centerTitle: false,
@@ -89,16 +90,12 @@ class MainAppBar extends StatelessWidget with PreferredSizeWidget {
           children: [
             Image.asset('assets/nutmeg_white.png', height: 24),
             if (isLoggedIn)
-              InkWell(
-                  child: CircleAvatar(
-                      backgroundImage: NetworkImage(userDetails.getPhotoUrl()),
-                      radius: 25),
-                  onTap: () => Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => new UserPage())))
+              UserAvatar()
             else
               Center(
                   child: InkWell(
-                      child: Text("LOGIN", style: TextPalette.linkStyleInverted),
+                      child:
+                          Text("LOGIN", style: TextPalette.linkStyleInverted),
                       onTap: () => Navigator.push(context,
                           MaterialPageRoute(builder: (context) => Login()))))
           ],
@@ -112,30 +109,65 @@ class MainAppBar extends StatelessWidget with PreferredSizeWidget {
   Size get preferredSize => Size.fromHeight(0.0);
 }
 
-class SecondaryAppBar extends StatelessWidget with PreferredSizeWidget {
+class UserAvatar extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    var userDetails = context.watch<UserChangeNotifier>().getUserDetails();
+    return InkWell(
+        child: CircleAvatar(
+            backgroundImage: NetworkImage(userDetails.getPhotoUrl()),
+            radius: 25),
+        onTap: () => Navigator.push(
+            context, MaterialPageRoute(builder: (context) => new UserPage())));
+  }
+}
 
+class SecondaryAppBar extends StatelessWidget with PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      child: Padding(
-        padding: EdgeInsets.all(10),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            InkWell(
-                child: Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: Icon(Icons.arrow_back, color: Colors.black)),
-                onTap: () => Navigator.pop(context)),
-            InkWell(
-                child: Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: Icon(Icons.share, color: Colors.black)),
-                onTap: () => print("IMPLEMENT SHARE")),
-          ],
-        ),
-      )
-    );
+        child: Padding(
+      padding: EdgeInsets.all(10),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          InkWell(
+              child: Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: Icon(Icons.arrow_back, color: Colors.black)),
+              onTap: () => Navigator.pop(context)),
+          InkWell(
+              child: Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: Icon(Icons.share, color: Colors.black)),
+              onTap: () => print("IMPLEMENT SHARE")),
+        ],
+      ),
+    ));
+  }
+
+  @override
+  Size get preferredSize => Size.fromHeight(70.0);
+}
+
+class AdminAreaAppBar extends StatelessWidget with PreferredSizeWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+        child: Padding(
+          padding: EdgeInsets.all(10),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              InkWell(
+                  child: Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Icon(Icons.arrow_back, color: Colors.black)),
+                  onTap: () => Navigator.pop(context)),
+              UserAvatar()
+            ],
+          ),
+        ));
   }
 
   @override
