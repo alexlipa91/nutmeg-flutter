@@ -5,85 +5,36 @@ import 'package:nutmeg/screens/UserPage.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:provider/provider.dart';
 
-class MainAppBarAsContainer extends StatelessWidget {
+class NutmegAppBar extends StatelessWidget with PreferredSizeWidget {
+  final Color backgroundColor;
+  final Widget mainRow;
+
+  const NutmegAppBar({Key key, this.backgroundColor, this.mainRow})
+      : super(key: key);
+
   @override
   Widget build(BuildContext context) {
-    var isLoggedIn = context.watch<UserChangeNotifier>().isLoggedIn();
-    var userDetails = context.watch<UserChangeNotifier>().getUserDetails();
-
-    return Container(
-        color: Palette.primary,
-        child: Padding(
-          padding: EdgeInsets.all(20),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Image.asset('assets/nutmeg_white.png', width: 106, height: 40),
-              if (isLoggedIn)
-                InkWell(
-                    child: Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: CircleAvatar(
-                          backgroundImage:
-                              NetworkImage(userDetails.getPhotoUrl()),
-                          radius: 25),
-                    ),
-                    onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => new UserPage())))
-              else
-                InkWell(
-                  child: Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child:
-                          Text("LOGIN", style: TextPalette.linkStyleInverted)),
-                  onTap: () => Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => Login())),
-                ),
-            ],
-          ),
-        ));
+    return AppBar(
+        centerTitle: false,
+        backgroundColor: backgroundColor,
+        automaticallyImplyLeading: false,
+        titleSpacing: 0,
+        elevation: 0,
+        title: mainRow);
   }
+
+  @override
+  Size get preferredSize => Size.fromHeight(70.0);
 }
 
-// class SecondaryAppBarAsContainer extends StatelessWidget {
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Container(
-//         child: Padding(
-//       padding: EdgeInsets.all(10),
-//       child: Row(
-//         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//         children: [
-//           InkWell(
-//               child: Padding(
-//                   padding: EdgeInsets.all(8.0),
-//                   child: Icon(Icons.arrow_back, color: Colors.black)),
-//               onTap: () => Navigator.pop(context)),
-//           InkWell(
-//               child: Padding(
-//                   padding: EdgeInsets.all(8.0),
-//                   child: Icon(Icons.share, color: Colors.black)),
-//               onTap: () => print("IMPLEMENT SHARE")),
-//         ],
-//       ),
-//     ));
-//   }
-// }
-
-class MainAppBar extends StatelessWidget with PreferredSizeWidget {
+class MainAppBar extends NutmegAppBar {
   @override
   Widget build(BuildContext context) {
     var isLoggedIn = context.watch<UserChangeNotifier>().isLoggedIn();
 
-    return AppBar(
-      centerTitle: false,
+    return NutmegAppBar(
       backgroundColor: Palette.primary,
-      automaticallyImplyLeading: false,
-      titleSpacing: 0,
-      title: Padding(
+      mainRow: Padding(
         padding: EdgeInsets.symmetric(horizontal: 20),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -94,19 +45,56 @@ class MainAppBar extends StatelessWidget with PreferredSizeWidget {
             else
               Center(
                   child: InkWell(
-                      child:
-                          Text("LOGIN", style: TextPalette.linkStyleInverted),
+                      child: Text("LOGIN", style: TextPalette.linkStyleInverted),
                       onTap: () => Navigator.push(context,
                           MaterialPageRoute(builder: (context) => Login()))))
           ],
         ),
       ),
-      elevation: 0,
     );
   }
+}
 
+class MatchAppBar extends NutmegAppBar {
   @override
-  Size get preferredSize => Size.fromHeight(0.0);
+  Widget build(BuildContext context) {
+    return NutmegAppBar(
+      backgroundColor: Colors.transparent,
+      mainRow: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 20),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            InkWell(
+                child: Icon(Icons.arrow_back, color: Colors.black),
+                onTap: () => Navigator.pop(context)),
+            InkWell(
+                child: Icon(Icons.share, color: Colors.black),
+                onTap: () => print("IMPLEMENT SHARE")),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class UserPageAppBar extends NutmegAppBar {
+  @override
+  Widget build(BuildContext context) {
+    return NutmegAppBar(
+      backgroundColor: Colors.transparent,
+      mainRow: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          InkWell(
+              child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20.0),
+                  child: Icon(Icons.arrow_back, color: Colors.black)),
+              onTap: () => Navigator.pop(context)),
+        ],
+      ),
+    );
+  }
 }
 
 class UserAvatar extends StatelessWidget {
@@ -122,54 +110,44 @@ class UserAvatar extends StatelessWidget {
   }
 }
 
-class SecondaryAppBar extends StatelessWidget with PreferredSizeWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-        child: Padding(
-      padding: EdgeInsets.all(10),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          InkWell(
-              child: Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Icon(Icons.arrow_back, color: Colors.black)),
-              onTap: () => Navigator.pop(context)),
-          InkWell(
-              child: Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Icon(Icons.share, color: Colors.black)),
-              onTap: () => print("IMPLEMENT SHARE")),
-        ],
-      ),
-    ));
-  }
+class AdminAreaAppBar extends NutmegAppBar {
 
   @override
-  Size get preferredSize => Size.fromHeight(70.0);
-}
-
-class AdminAreaAppBar extends StatelessWidget with PreferredSizeWidget {
-  @override
   Widget build(BuildContext context) {
-    return Container(
-        child: Padding(
-          padding: EdgeInsets.all(10),
+    return NutmegAppBar(
+        backgroundColor: Palette.primary,
+        mainRow: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               InkWell(
-                  child: Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Icon(Icons.arrow_back, color: Colors.black)),
+                  child: Icon(Icons.arrow_back, color: Palette.white),
                   onTap: () => Navigator.pop(context)),
               UserAvatar()
             ],
           ),
         ));
   }
+}
+
+class AdminAreaAppBarInverted extends NutmegAppBar {
 
   @override
-  Size get preferredSize => Size.fromHeight(70.0);
+  Widget build(BuildContext context) {
+    return NutmegAppBar(
+        backgroundColor: Palette.light,
+        mainRow: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              InkWell(
+                  child: Icon(Icons.arrow_back, color: Palette.primary),
+                  onTap: () => Navigator.pop(context)),
+              UserAvatar()
+            ],
+          ),
+        ));
+  }
 }

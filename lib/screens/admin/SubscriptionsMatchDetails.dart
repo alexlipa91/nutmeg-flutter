@@ -1,12 +1,8 @@
-import 'package:cool_alert/cool_alert.dart';
 import 'package:flutter/material.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
-import 'package:nutmeg/widgets/AppBar.dart';
-import 'package:nutmeg/widgets/Buttons.dart';
 import 'package:nutmeg/widgets/Containers.dart';
-import 'package:provider/provider.dart';
 
 // main widget
 class SubscriptionsMatchDetails extends StatelessWidget {
@@ -28,7 +24,9 @@ class SubscriptionsMatchDetails extends StatelessWidget {
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
               child: Column(
-                children: [AdminAreaAppBar(), Column(children: subsWidgets)],
+                children: [
+                  Column(children: subsWidgets)
+                ],
               ),
             ),
           ),

@@ -14,12 +14,12 @@ class UserPage extends StatelessWidget {
     var userDetails = context.read<UserChangeNotifier>().getUserDetails();
 
     return Scaffold(
+      appBar: UserPageAppBar(),
       body: SafeArea(
         child: Container(
             child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 20),
           child: Column(mainAxisSize: MainAxisSize.min, children: [
-            SecondaryAppBar(),
             Padding(
                 padding: EdgeInsets.only(top: 20),
                 child: Text("Account", style: TextPalette.h1Default)),

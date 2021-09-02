@@ -42,21 +42,18 @@ class AdminAvailableMatches extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar: true,
+      appBar: AdminAreaAppBar(),
       body: MultiProvider(
         providers: [
           ChangeNotifierProvider(create: (context) => SelectedTapNotifier()),
         ],
-        child: SafeArea(
-          child: Container(
-            color: Palette.light,
-            child: Column(
-              children: [
-                AdminAreaAppBar(),
-                RoundedTopBar(),
-                Expanded(child: MatchesArea())
-              ],
-            ),
+        child: Container(
+          color: Palette.light,
+          child: Column(
+            children: [
+              RoundedTopBar(),
+              Expanded(child: MatchesArea())
+            ],
           ),
         ),
       ),
@@ -202,7 +199,7 @@ class MatchesAreaState extends State<MatchesArea> {
 
     if (future.isNotEmpty) {
       widgets.add(TextSeparatorWidget("UPCOMING GAMES"));
-      future.sortedBy((e) => e.dateTime).forEachIndexed((index, m) {
+      future.forEachIndexed((index, m) {
         if (index == 0) {
           widgets.add(MatchInfo.first(m));
         } else {
@@ -213,7 +210,7 @@ class MatchesAreaState extends State<MatchesArea> {
 
     if (past.isNotEmpty) {
       widgets.add(TextSeparatorWidget("PAST GAMES"));
-      past.sortedBy((e) => e.dateTime).forEachIndexed((index, m) {
+      past.forEachIndexed((index, m) {
         if (index == 0) {
           widgets.add(MatchInfo.first(m));
         } else {
@@ -229,7 +226,7 @@ class MatchesAreaState extends State<MatchesArea> {
       BuildContext context, List<Match> matches) {
     List<Widget> result = [];
 
-    matches.sortedBy((e) => e.dateTime).forEachIndexed((index, match) {
+    matches.forEachIndexed((index, match) {
       if (index == 0) {
         result.add(MatchInfo.first(match));
       } else {

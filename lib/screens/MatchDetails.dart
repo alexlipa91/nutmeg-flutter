@@ -57,43 +57,46 @@ class MatchDetails extends StatelessWidget {
         sportCenter.neighbourhood + " - " + match.sport.getDisplayTitle();
 
     return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            // fixme here we are repeating the padding just because cannot be applied globally as MatchInfo doesn't need
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SecondaryAppBar(),
-              Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 25),
-                  child: Text(title, style: TextPalette.h1Default)),
-              MatchInfo(match, sportCenter),
-              Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 25, vertical: 15),
-                  child: Text(
-                      match.numPlayersGoing().toString() + " players going")),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 25),
-                child: SingleChildScrollView(
-                  clipBehavior: Clip.none,
-                  scrollDirection: Axis.horizontal,
-                  // physics: BouncingScrollPhysics(),
-                  child: Row(
-                      // fixme pass real data here
-                      children: match.subscriptions
-                          .where((s) => s.status == SubscriptionStatus.going)
-                          .map((s) => PlayerCard(s.userId))
-                          .toList()),
-                ),
+      appBar: MatchAppBar(),
+      body: SingleChildScrollView(
+        child: Column(
+          // fixme here we are repeating the padding just because cannot be applied globally as MatchInfo doesn't need
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+                padding: EdgeInsets.only(right: 20, left: 20, bottom: 10),
+                child: Text(title, style: TextPalette.h1Default)),
+            Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                child: MatchInfo(match, sportCenter)),
+            Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                child: Text(
+                    match.numPlayersGoing().toString() + " players going",
+                    style: TextPalette.bodyText)),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20),
+              child: SingleChildScrollView(
+                clipBehavior: Clip.none,
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                    // fixme pass real data here
+                    children: match.subscriptions
+                        .where((s) => s.status == SubscriptionStatus.going)
+                        .map((s) => PlayerCard(s.userId))
+                        .toList()),
               ),
-              Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 25, vertical: 15),
-                  child: Text("Details")),
-              RuleCard(),
-              RuleCard(),
-              MapCard.big(sportCenter)
-            ],
-          ),
+            ),
+            Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                child: Text(
+                  "Details",
+                  style: TextPalette.bodyText,
+                )),
+            RuleCard(),
+            RuleCard(),
+            MapCard.big(sportCenter)
+          ],
         ),
       ),
       bottomNavigationBar: BottomBar(match: match),
@@ -123,7 +126,7 @@ class MatchInfo extends StatelessWidget {
                   images: sportCenter.getMainPicturesListUrls()))
         ]),
         InfoWidget(title: match.getFormattedDate(), icon: Icons.watch),
-        InfoWidget.withRightWidget(
+        InfoWidget(
             title: sportCenter.name,
             icon: Icons.place,
             subTitle: sportCenter.getShortAddress()),
@@ -232,7 +235,10 @@ class InfoWidget extends StatelessWidget {
         margin: EdgeInsets.only(left: 15, top: 15, bottom: 10),
         child: Row(
           children: [
-            new Icon(icon),
+            new Icon(
+              icon,
+              color: Palette.primary,
+            ),
             SizedBox(
               width: 20,
             ),
@@ -243,7 +249,8 @@ class InfoWidget extends StatelessWidget {
                 SizedBox(
                   height: 5,
                 ),
-                if (subTitle != null) Text(subTitle, style: TextPalette.bodyText)
+                if (subTitle != null)
+                  Text(subTitle, style: TextPalette.bodyText)
               ],
             ),
             if (rightWidget != null) Expanded(child: rightWidget)
@@ -358,24 +365,28 @@ class RuleCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
-    return InfoContainer(
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text("Title", style: TextPalette.h2),
-      SizedBox(height: 10),
-      ReadMoreText(
-        'Flutter is Google’s mobile UI open source framework to build high-quality native (super fast) interfaces for iOS and Android apps with the unified codebase.',
-        style: TextPalette.bodyText,
-        trimLines: 2,
-        colorClickableText: Colors.blue,
-        delimiter: "\n\n",
-        trimMode: TrimMode.Line,
-        trimCollapsedText: 'SHOW MORE',
-        trimExpandedText: 'SHOW LESS',
-        moreStyle: TextPalette.linkStyle,
-        lessStyle: TextPalette.linkStyle,
-      ),
-      // Text("Rule" * 100, style: TextPalette.bodyText2Gray)
-    ]));
+    return Padding(
+      padding: EdgeInsets.only(left: 20, right: 20, bottom: 15),
+      child: InfoContainer(
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text("Title", style: TextPalette.h2),
+        SizedBox(height: 10),
+        ReadMoreText(
+          'Flutter is Google’s mobile UI open source framework to build high-quality native (super fast) interfaces for iOS and Android apps with the unified codebase.',
+          style: TextPalette.bodyText,
+          trimLines: 2,
+          colorClickableText: Colors.blue,
+          delimiter: "\n\n",
+          trimMode: TrimMode.Line,
+          trimCollapsedText: 'SHOW MORE',
+          trimExpandedText: 'SHOW LESS',
+          moreStyle: TextPalette.linkStyle,
+          lessStyle: TextPalette.linkStyle,
+        ),
+        // Text("Rule" * 100, style: TextPalette.bodyText2Gray)
+      ])),
+    );
   }
 }
 
@@ -387,7 +398,7 @@ class MapCard extends StatelessWidget {
   final height;
 
   MapCard.big(this.sportCenter)
-      : margin = EdgeInsets.symmetric(horizontal: 25, vertical: 10),
+      : margin = EdgeInsets.only(right: 25, left: 25, bottom: 10),
         height = 100.0,
         width = null;
 
@@ -457,8 +468,7 @@ class BottomBar extends StatelessWidget {
                   ? RoundedButton("LEAVE GAME", () async {
                       var hasUserConfirmed = await showModalBottomSheet(
                           context: context,
-                          builder: (context) => LeaveMatchConfirmation(match)
-                      );
+                          builder: (context) => LeaveMatchConfirmation(match));
                       print("return from bottom sheet " +
                           hasUserConfirmed.toString());
                     })
@@ -482,8 +492,12 @@ class BottomBar extends StatelessWidget {
 
                       var value = await showModalBottomSheet(
                           context: context,
-                          builder: (context) =>
-                              PrepaymentBottomBar(match: match));
+                          builder: (context) => MultiProvider(providers: [
+                                ChangeNotifierProvider(
+                                    create: (context) =>
+                                        DiscountCodeChangeNotifier(
+                                            match.pricePerPersonInCents)),
+                              ], child: PrepaymentBottomBar(match: match)));
                       if (value == "success") {
                         await context.read<MatchesChangeNotifier>().joinMatch(
                             match,
@@ -492,7 +506,8 @@ class BottomBar extends StatelessWidget {
                                 .getUserDetails());
                         showModalBottomSheet(
                             context: context,
-                            builder: (context) => PostPaymentBottomBar(match: match));
+                            builder: (context) =>
+                                PostPaymentBottomBar(match: match));
                       } else if (value == "payment-failed") {
                         CoolAlert.show(
                             context: context,
@@ -529,7 +544,7 @@ class PrepaymentBottomBar extends StatelessWidget {
                 padding: EdgeInsets.only(bottom: 20.0),
                 child: Text("Join this game", style: TextPalette.h2)),
             Text(
-              "You can cancel up to 24h before the game starting time to get a full refund in credits to use on your next game. \n After that you won't get a refund.",
+              "You can cancel up to 24h before the game starting time to get a full refund in credits to use on your next game. \nAfter that you won't get a refund.",
               style: TextPalette.bodyText,
             ),
             Divider(),
@@ -541,17 +556,64 @@ class PrepaymentBottomBar extends StatelessWidget {
                         .getUserDetails()
                         .getPhotoUrl()),
                     radius: 15),
-                SizedBox(width: 30),
+                SizedBox(width: 15),
                 Text("1x player", style: TextPalette.h3),
                 Expanded(
                     child: Text(
-                  match.getFormattedPrice() + " euro",
-                  style: TextPalette.h3,
+                  match.getFormattedPrice(),
+                  style: (context
+                              .watch<DiscountCodeChangeNotifier>()
+                              .appliedDiscountPercentage ==
+                          0)
+                      ? TextPalette.h3
+                      : TextPalette.h3WithBar,
                   textAlign: TextAlign.end,
                 ))
               ],
             ),
+            if (context
+                    .watch<DiscountCodeChangeNotifier>()
+                    .appliedDiscountPercentage !=
+                0)
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: 5),
+                child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+                  Text(
+                    formatCurrency.format(context
+                            .watch<DiscountCodeChangeNotifier>()
+                            .discountedPrice /
+                        100),
+                    style: TextPalette.h3,
+                  )
+                ]),
+              ),
             Divider(),
+            if (context
+                    .watch<DiscountCodeChangeNotifier>()
+                    .appliedDiscountPercentage ==
+                0)
+              Row(children: [
+                Expanded(
+                  child: TextField(
+                    onChanged: (v) =>
+                        context.read<DiscountCodeChangeNotifier>().code = v,
+                    style: TextPalette.h3,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(borderSide: BorderSide()),
+                      hintText: "Insert discount code",
+                    ),
+                  ),
+                ),
+                SizedBox(width: 20),
+                RoundedButton("APPLY",
+                    () {
+                      bool applied = context.read<DiscountCodeChangeNotifier>().apply();
+                      if (!applied) {
+                        // fixme tell the user the code is not ok
+                        // CoolAlert.show(context: context, type: CoolAlertType.error, text: "Invalid code");
+                      }
+                    }())
+              ]),
             Row(
               children: [
                 Expanded(
@@ -566,7 +628,8 @@ class PrepaymentBottomBar extends StatelessWidget {
 
                     var value = await Navigator.of(context).push(
                         MaterialPageRoute(
-                            builder: (_) => CheckoutPage(sessionId: sessionId)));
+                            builder: (_) =>
+                                CheckoutPage(sessionId: sessionId)));
 
                     // remove previous bottom sheet
                     Navigator.pop(context, value);
@@ -602,7 +665,8 @@ class PostPaymentBottomBar extends StatelessWidget {
           children: <Widget>[
             Padding(
                 padding: EdgeInsets.only(bottom: 20.0),
-                child: Text("You are going to this game", style: TextPalette.h2)),
+                child:
+                    Text("You are going to this game", style: TextPalette.h2)),
             Padding(
               padding: EdgeInsets.only(bottom: 20.0),
               child: Text(
@@ -618,7 +682,10 @@ class PostPaymentBottomBar extends StatelessWidget {
                   Text("SHARE", style: TextPalette.linkStyle)
                 ],
               ),
-              onTap: () => CoolAlert.show(context: context, type: CoolAlertType.info, text: "Implement this"),
+              onTap: () => CoolAlert.show(
+                  context: context,
+                  type: CoolAlertType.info,
+                  text: "Implement this"),
             ),
           ],
         ),
@@ -662,10 +729,10 @@ class LeaveMatchConfirmation extends StatelessWidget {
                   Text("Credits refund", style: TextPalette.h3),
                   Expanded(
                       child: Text(
-                        match.getFormattedPrice() + " euro",
-                        style: TextPalette.h3,
-                        textAlign: TextAlign.end,
-                      ))
+                    match.getFormattedPrice() + " euro",
+                    style: TextPalette.h3,
+                    textAlign: TextAlign.end,
+                  ))
                 ],
               ),
             ),
@@ -676,9 +743,7 @@ class LeaveMatchConfirmation extends StatelessWidget {
                   child: RoundedButton("CONFIRM", () async {
                     await context.read<MatchesChangeNotifier>().leaveMatch(
                         match,
-                        context
-                            .read<UserChangeNotifier>()
-                            .getUserDetails());
+                        context.read<UserChangeNotifier>().getUserDetails());
                     Navigator.pop(context);
                   }),
                 )
@@ -688,5 +753,28 @@ class LeaveMatchConfirmation extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class DiscountCodeChangeNotifier extends ChangeNotifier {
+  DiscountCodeChangeNotifier(int priceInCents) {
+    initialPrice = priceInCents;
+    discountedPrice = priceInCents;
+  }
+
+  int initialPrice;
+  String code;
+  int appliedDiscountPercentage = 0;
+  int discountedPrice;
+
+  bool apply() {
+    if (code == "FIRSTWEEK50") {
+      // todo add logic to check if user is eligible
+      appliedDiscountPercentage = 50;
+      discountedPrice -= initialPrice * appliedDiscountPercentage ~/ 100;
+      notifyListeners();
+      return true;
+    }
+    return false;
   }
 }

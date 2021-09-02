@@ -15,7 +15,7 @@ class MatchesChangeNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
-  List<Match> getMatches() => _matches;
+  List<Match> getMatches() => _matches..sort((a, b) => b.dateTime.compareTo(a.dateTime));
 
   List<Match> getMatchesInFuture() => _matches
       .where((m) => m.dateTime.difference(DateTime.now()).inHours > 2)

@@ -43,7 +43,7 @@ class AvailableMatches extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar: true,
+      appBar: MainAppBar(),
       body: MultiProvider(
         providers: [
           ChangeNotifierProvider(create: (context) => SelectedTapNotifier()),
@@ -52,7 +52,7 @@ class AvailableMatches extends StatelessWidget {
           color: Palette.light,
           child: Column(
             children: [
-              MainAppBar(),
+              // MainAppBar(),
               RoundedTopBar(),
               Expanded(child: MatchesArea())
             ],
@@ -218,6 +218,12 @@ class MatchesAreaState extends State<MatchesArea> {
 
   static List<Widget> allGamesWidgets(BuildContext context) {
     var matches = context.watch<MatchesChangeNotifier>().getMatchesInFuture();
+
+    if (matches.isEmpty) {
+      return [
+        TextSeparatorWidget("No upcoming games to display.")
+      ];
+    }
 
     var grouped = matches.groupListsBy((m) => m.dateTime.weekOfYear);
 
