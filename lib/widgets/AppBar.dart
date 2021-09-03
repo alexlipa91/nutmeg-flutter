@@ -67,7 +67,7 @@ class MatchAppBar extends NutmegAppBar {
           children: [
             InkWell(
                 child: Icon(Icons.arrow_back, color: Colors.black),
-                onTap: () => Navigator.pop(context)),
+                onTap: () => Navigator.of(context).pop()),
             InkWell(
                 child: Icon(Icons.share, color: Colors.black),
                 onTap: () => print("IMPLEMENT SHARE")),

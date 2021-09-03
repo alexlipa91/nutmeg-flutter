@@ -43,6 +43,7 @@ class AvailableMatches extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Palette.primary,
       appBar: MainAppBar(),
       body: MultiProvider(
         providers: [
