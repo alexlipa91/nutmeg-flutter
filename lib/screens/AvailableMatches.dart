@@ -5,6 +5,7 @@ import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
 import 'package:intl/intl.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
+import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/AppBar.dart';
 import 'package:nutmeg/widgets/Buttons.dart';
 import 'package:nutmeg/widgets/Containers.dart';
@@ -39,7 +40,6 @@ void main() async {
 
 // main widget
 class AvailableMatches extends StatelessWidget {
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -128,55 +128,59 @@ class MatchesAreaState extends State<MatchesArea> {
 
     return (optionSelected == "MY GAMES" && !isLoggedIn)
         ? Center(
-      child: Text("Login to join matches", style: TextPalette.bodyText),
-    )
+            child: Text("Login to join matches", style: TextPalette.bodyText),
+          )
         : RefreshIndicator(
-      onRefresh: () async {
-        setState(() {
-          isLoading = true;
-        });
-        await context.read<MatchesChangeNotifier>().refresh();
-        setState(() {
-          isLoading = false;
-        });
-      },
-      child: Builder(builder: (BuildContext buildContext) {
-        var widgets;
-        if (!isLoading) {
-          widgets = (optionSelected == "ALL")
-              ? allGamesWidgets(context)
-              : myGamesWidgets(context);
-        } else {
-          widgets = List<Widget>.filled(5, MatchInfoSkeleton());
-        }
+            onRefresh: () async {
+              setState(() {
+                isLoading = true;
+              });
+              await context.read<MatchesChangeNotifier>().refresh();
+              setState(() {
+                isLoading = false;
+              });
+            },
+            child: Builder(builder: (BuildContext buildContext) {
+              var widgets;
+              if (!isLoading) {
+                widgets = (optionSelected == "ALL")
+                    ? allGamesWidgets(context)
+                    : myGamesWidgets(context);
+              } else {
+                widgets = List<Widget>.filled(5, MatchInfoSkeleton());
+              }
 
-        return AnimatedList(
-          padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
-          key: _listKey,
-          initialItemCount:
-          (showNews) ? widgets.length + 1 : widgets.length,
-          itemBuilder: (context, index, animation) {
-            if (showNews) {
-              return (index == 0)
-                  ? SlideTransition(
-                  position: Tween<Offset>(
-                    begin: const Offset(-1, 0),
-                    end: Offset(0, 0),
-                  ).animate(animation),
-                  child: News(_listKey))
-                  : widgets[index - 1];
-            }
-            return widgets[index];
-          },
-        );
-      }),
-    );
+              return AnimatedList(
+                padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+                key: _listKey,
+                initialItemCount:
+                    (showNews) ? widgets.length + 1 : widgets.length,
+                itemBuilder: (context, index, animation) {
+                  if (showNews) {
+                    return (index == 0)
+                        ? SlideTransition(
+                            position: Tween<Offset>(
+                              begin: const Offset(-1, 0),
+                              end: Offset(0, 0),
+                            ).animate(animation),
+                            child: News(_listKey))
+                        : widgets[index - 1];
+                  }
+                  return widgets[index];
+                },
+              );
+            }),
+          );
   }
 
   static List<Widget> myGamesWidgets(BuildContext context) {
     var matches = context.watch<MatchesChangeNotifier>().getMatches().where(
-            (m) => m
-            .isUserGoing(context.watch<UserChangeNotifier>().getUserDetails()));
+        (m) {
+          var userSubInMatch = m.getUserSub(
+              context.watch<UserChangeNotifier>().getUserDetails());
+          return userSubInMatch != null &&
+              userSubInMatch.status == SubscriptionStatus.going;
+        });
 
     if (matches.isEmpty) {
       return [
@@ -220,9 +224,7 @@ class MatchesAreaState extends State<MatchesArea> {
     var matches = context.watch<MatchesChangeNotifier>().getMatchesInFuture();
 
     if (matches.isEmpty) {
-      return [
-        TextSeparatorWidget("No upcoming games to display.")
-      ];
+      return [TextSeparatorWidget("No upcoming games to display.")];
     }
 
     var grouped = matches.groupListsBy((m) => m.dateTime.weekOfYear);
@@ -258,38 +260,38 @@ class News extends StatelessWidget {
     return Row(children: [
       Expanded(
           child: InfoContainer(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  ContainerTitleText(text: "50% off"),
-                  Expanded(
-                      child: Align(
-                        alignment: Alignment.topRight,
-                        child: InkWell(
-                            child: Icon(Icons.close, size: 18),
-                            onTap: () {
-                              _listKey.currentState.removeItem(0, (_, animation) {
-                                // fixme check if there's something better around
-                                return SlideTransition(
-                                    position: Tween<Offset>(
-                                      begin: const Offset(-3, 0),
-                                      end: Offset(0, 0),
-                                    ).animate(animation),
-                                    child: News(_listKey));
-                              }, duration: Duration(milliseconds: 500));
-                              MatchesAreaState.showNews = false;
-                            }),
-                      ))
-                ]),
-                // SizedBox(height: 15),
-                Text(
-                  "All games in Amsterdam are 50% off until Sept 4.",
-                  style: TextPalette.bodyText,
-                )
-              ],
-            ),
-          )),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              ContainerTitleText(text: "50% off"),
+              Expanded(
+                  child: Align(
+                alignment: Alignment.topRight,
+                child: InkWell(
+                    child: Icon(Icons.close, size: 18),
+                    onTap: () {
+                      _listKey.currentState.removeItem(0, (_, animation) {
+                        // fixme check if there's something better around
+                        return SlideTransition(
+                            position: Tween<Offset>(
+                              begin: const Offset(-3, 0),
+                              end: Offset(0, 0),
+                            ).animate(animation),
+                            child: News(_listKey));
+                      }, duration: Duration(milliseconds: 500));
+                      MatchesAreaState.showNews = false;
+                    }),
+              ))
+            ]),
+            // SizedBox(height: 15),
+            Text(
+              "All games in Amsterdam are 50% off until Sept 4.",
+              style: TextPalette.bodyText,
+            )
+          ],
+        ),
+      )),
     ]);
   }
 }
@@ -362,7 +364,7 @@ class MatchInfo extends StatelessWidget {
                                         textAlign: TextAlign.right))
                               ],
                             ),
-                            Text(match.getFormattedDate(),
+                            Text(getFormattedDate(match.dateTime),
                                 style: TextPalette.h3),
                             Text(sportCenter.name,
                                 style: TextPalette.bodyTextOneLine),

@@ -6,6 +6,7 @@ import 'package:nutmeg/model/Model.dart';
 import 'package:intl/intl.dart';
 import 'package:nutmeg/screens/admin/AddOrEditMatch.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
+import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/AppBar.dart';
 import 'package:nutmeg/widgets/Buttons.dart';
 import 'package:nutmeg/widgets/Containers.dart';
@@ -13,7 +14,6 @@ import 'package:nutmeg/widgets/Texts.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
 import "package:collection/collection.dart";
-
 
 // use this main for testing only
 void main() async {
@@ -31,14 +31,13 @@ void main() async {
       ChangeNotifierProvider(create: (context) => matchesChangeNotifier),
       ChangeNotifierProvider(create: (context) => sportCenterChangeNotifier),
     ],
-    child:
-        new MaterialApp(debugShowCheckedModeBanner: false, home: AdminAvailableMatches()),
+    child: new MaterialApp(
+        debugShowCheckedModeBanner: false, home: AdminAvailableMatches()),
   ));
 }
 
 // main widget
 class AdminAvailableMatches extends StatelessWidget {
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -50,10 +49,7 @@ class AdminAvailableMatches extends StatelessWidget {
         child: Container(
           color: Palette.light,
           child: Column(
-            children: [
-              RoundedTopBar(),
-              Expanded(child: MatchesArea())
-            ],
+            children: [RoundedTopBar(), Expanded(child: MatchesArea())],
           ),
         ),
       ),
@@ -66,8 +62,10 @@ class AdminAvailableMatches extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       RoundedButton("ADD MATCH", () {
-                        Navigator.push(context,
-                            MaterialPageRoute(builder: (context) => AddOrEditMatch()));
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => AddOrEditMatch()));
                       }),
                       RoundedButton("ADD SPORT CENTER", () {}),
                     ],
@@ -181,8 +179,10 @@ class MatchesAreaState extends State<MatchesArea> {
 
   static List<Widget> myGamesWidgets(BuildContext context) {
     var matches = context.watch<MatchesChangeNotifier>().getMatches().where(
-        (m) => m
-            .isUserGoing(context.watch<UserChangeNotifier>().getUserDetails()));
+        (m) =>
+            m.getUserSub(
+                context.watch<UserChangeNotifier>().getUserDetails()) !=
+            null);
 
     if (matches.isEmpty) {
       return [
@@ -305,7 +305,7 @@ class MatchInfo extends StatelessWidget {
                                         textAlign: TextAlign.right))
                               ],
                             ),
-                            Text(match.getFormattedDate(),
+                            Text(getFormattedDate(match.dateTime),
                                 style: TextPalette.h3),
                             Text(sportCenter.name,
                                 style: TextPalette.bodyTextOneLine),
@@ -327,8 +327,10 @@ class MatchInfo extends StatelessWidget {
           )),
         ),
         onTap: () async {
-          Navigator.push(context,
-              MaterialPageRoute(builder: (context) => AddOrEditMatch(match: match)));
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => AddOrEditMatch(match: match)));
           await context.read<MatchesChangeNotifier>().refresh();
         });
   }

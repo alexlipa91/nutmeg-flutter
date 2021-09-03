@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 
 var formatCurrency = NumberFormat.simpleCurrency(name: "EUR");
@@ -10,7 +9,7 @@ enum SportCenterTags { indoor, outdoor }
 
 enum Sport { fiveAsideFootball }
 
-enum SubscriptionStatus { going, canceled }
+enum SubscriptionStatus { going, refunded, canceled }
 
 extension SportExtension on Sport {
   String getDisplayTitle() {
@@ -24,10 +23,6 @@ extension SportExtension on Sport {
 }
 
 class Match {
-  static var serializationDateFormat = new DateFormat("yyyy/MM/dd:HH:mm");
-  static var uiDateFormat = new DateFormat("E, MMM dd");
-  static var uiHourFormat = new DateFormat("HH:mm");
-
   String documentId;
 
   DateTime dateTime;
@@ -71,31 +66,16 @@ class Match {
         'status': status.index,
       };
 
-  String getFormattedDate() {
-    var diff = dateTime.difference(DateTime.now());
-
-    var dayString;
-
-    if (diff.inDays == 0) {
-      dayString = "Today";
-    } else if (diff.inDays == 1) {
-      dayString = "Tomorrow";
-    } else {
-      dayString = uiDateFormat.format(dateTime);
-    }
-
-    return dayString + " at " + uiHourFormat.format(dateTime);
-  }
-
   int getSpotsLeft() => maxPlayers - numPlayersGoing();
 
   int numPlayersGoing() =>
       subscriptions.where((s) => s.status == SubscriptionStatus.going).length;
 
-  bool isUserGoing(UserDetails user) => subscriptions
-      .where((s) =>
-          s.status == SubscriptionStatus.going && s.userId == user.getUid())
-      .isNotEmpty;
+  Subscription getUserSub(UserDetails user) {
+    print(subscriptions.length.toString());
+    print(user.getUid());
+    return (subscriptions.isEmpty) ? null : subscriptions.firstWhere((s) => s.userId == user.getUid());
+  }
 
   double getPrice() => pricePerPersonInCents / 100;
 
@@ -108,17 +88,32 @@ class Subscription {
   String userId;
   SubscriptionStatus status;
   Timestamp createdAt;
+  int paid;
+  int paidInCredits;
+  int refundedInCredits;
 
-  Subscription(this.userId, this.status):
-        createdAt = Timestamp.now();
+  Subscription(this.userId, this.status, this.paid, this.paidInCredits,
+      this.refundedInCredits)
+      : createdAt = Timestamp.now();
 
   Subscription.fromJson(Map<String, dynamic> json, String documentId)
       : documentId = documentId,
         userId = json['userId'],
+        paid = json['paid'],
+        paidInCredits = json['paidInCredits'],
+        refundedInCredits = json['refundedInCredits'],
         createdAt = json['createdAt'] ?? null,
-        status = SubscriptionStatus.values[json['status']];
+        status = SubscriptionStatus.values
+            .firstWhere((e) => e.toString().split(".").last == json['status']);
 
-  Map<String, dynamic> toJson() => {'userId': userId, 'status': status.index, 'createdAt': createdAt};
+  Map<String, dynamic> toJson() => {
+        'userId': userId,
+        'status': status.toString().split(".").last,
+        'createdAt': createdAt,
+        'paid': paid,
+        'paidInCredits': paidInCredits,
+        'refundedInCredits': refundedInCredits,
+      };
 }
 
 class SportCenter {
@@ -150,14 +145,15 @@ class SportCenter {
 
   String getShortAddress() => address.split(",").first;
 
-  List<String> getMainPicturesListUrls() => ["assets/sportcentertest_large.png",
-    "assets/sportcentertest_large.png",
-    "assets/sportcentertest_large.png"
-  ];
+  List<String> getMainPicturesListUrls() => [
+        "assets/sportcentertest_large.png",
+        "assets/sportcentertest_large.png",
+        "assets/sportcentertest_large.png"
+      ];
 }
 
 class UserDetails {
-  User firebaseUser;
+  String documentId;
 
   bool isAdmin;
   String image;
@@ -165,29 +161,66 @@ class UserDetails {
   String email;
   String stripeId;
   int creditsInCents;
+  List<String> usedCoupons;
 
-  UserDetails(this.firebaseUser, this.isAdmin, this.image, this.name, this.email) :
-    creditsInCents = 0;
+  UserDetails(
+      this.documentId, this.isAdmin, this.image, this.name, this.email)
+      : creditsInCents = 0,
+        usedCoupons = [];
 
-  UserDetails.fromJson(Map<String, dynamic> json, User firebaseUser)
+  UserDetails.from(String documentId, UserDetails u)
+      : this.documentId = documentId,
+        this.isAdmin = u.isAdmin,
+        this.image = u.image,
+        this.name = u.name,
+        this.email = u.email,
+        this.stripeId = u.stripeId,
+        this.creditsInCents = u.creditsInCents,
+        this.usedCoupons = u.usedCoupons;
+
+  UserDetails.fromJson(Map<String, dynamic> json, String documentId)
       : isAdmin = json["isAdmin"] ?? false,
         image = json["image"],
         name = json["name"],
         email = json["email"],
         creditsInCents = json["credits"],
         stripeId = json["stripeId"] ?? null,
-        firebaseUser = firebaseUser;
+        usedCoupons = (json["usedCoupons"] != null)
+            ? List<String>.from(json['usedCoupons'])
+            : null,
+        documentId = documentId;
 
-  Map<String, dynamic> toJson() =>
-      {'isAdmin': isAdmin, 'image': image, 'name': name, 'email': email, 'credits': creditsInCents};
+  Map<String, dynamic> toJson() => {
+        'isAdmin': isAdmin,
+        'image': image,
+        'name': name,
+        'email': email,
+        'credits': creditsInCents,
+        'usedCoupons': usedCoupons
+      };
 
-  String getUid() => firebaseUser.uid;
+  String getUid() => documentId;
 
   String getStripeId() => stripeId;
 
   void setStripeId(String stripeId) => stripeId = stripeId;
 
-  String getPhotoUrl() => firebaseUser.photoURL ?? image;
+  String getPhotoUrl() => image;
 
   String getCreditsAvailable() => formatCurrency.format(creditsInCents / 100);
+}
+
+class Coupon {
+  String id;
+
+  String description;
+  int percentage;
+
+  Coupon.fromJson(Map<String, dynamic> json, String id)
+      : id = id,
+        description = json["description"],
+        percentage = json["percentage"];
+
+  Map<String, dynamic> toJson() =>
+      {'percentage': percentage, 'description': description};
 }

@@ -39,7 +39,7 @@ class UserPage extends StatelessWidget {
                       children: [
                         Text(userDetails.name, style: TextPalette.h2),
                         SizedBox(height: 10),
-                        Text(userDetails.firebaseUser.email,
+                        Text(userDetails.email,
                             style: TextPalette.bodyText)
                       ],
                     ),

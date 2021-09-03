@@ -31,16 +31,6 @@ class MatchesChangeNotifier extends ChangeNotifier {
               sub.status == SubscriptionStatus.going && sub.userId == userId)
           .isNotEmpty)
       .length;
-
-  joinMatch(Match m, UserDetails u) async {
-    await MatchesFirestore.joinMatch(u, m);
-    await refresh();
-  }
-
-  leaveMatch(Match m, UserDetails u) async {
-    await MatchesFirestore.leaveMatch(u, m);
-    await refresh();
-  }
 }
 
 class SportCentersChangeNotifier extends ChangeNotifier {
@@ -69,17 +59,21 @@ class UserChangeNotifier extends ChangeNotifier {
 
   UserDetails getUserDetails() => _userDetails;
 
+  refresh() async {
+    _userDetails = await UserFirestore.getSpecificUserDetails(_userDetails.getUid());
+    notifyListeners();
+  }
+
   Future<void> loginWithGoogle() async {
     _userDetails = await UserFirestore.loginWithGoogle();
     notifyListeners();
   }
 
-  bool isLoggedIn() =>
-      _userDetails != null && _userDetails.firebaseUser != null;
+  bool isLoggedIn() => _userDetails != null;
 
   Future<void> logout() async {
     await UserFirestore.logout();
-    _userDetails.firebaseUser = null;
+    _userDetails = null;
     notifyListeners();
   }
 
@@ -89,7 +83,7 @@ class UserChangeNotifier extends ChangeNotifier {
     }
 
     String stripeId = await Server()
-        .createCustomer(_userDetails.firebaseUser.email, _userDetails.name);
+        .createCustomer(_userDetails.email, _userDetails.name);
 
     _userDetails.setStripeId(stripeId);
     UserFirestore.storeStripeId(_userDetails.getUid(), stripeId);
@@ -104,11 +98,26 @@ class UserChangeNotifier extends ChangeNotifier {
     if (u != null) {
       try {
         var existingUserDetails = await UserFirestore.getSpecificUserDetails(u.uid);
-       _userDetails = new UserDetails(u, existingUserDetails.isAdmin, u.photoURL, u.displayName, u.email);
-        UserFirestore.storeUserDetails(_userDetails);
+       _userDetails = UserDetails.from(u.uid, existingUserDetails);
+        await UserFirestore.storeUserDetails(_userDetails);
       } catch (e) {
         print("Found firebase user but couldn't load details: " + e.toString());
       }
     }
+  }
+
+  Future<void> storeUsedCoupon(String id) async {
+    _userDetails.usedCoupons.add(id);
+    await UserFirestore.storeUserDetails(_userDetails);
+  }
+
+  Future<void> useCredits(int creditsToUse) async {
+    _userDetails.creditsInCents = _userDetails.creditsInCents - creditsToUse;
+    await UserFirestore.storeUserDetails(_userDetails);
+  }
+
+  Future<void> emitCreditRefund(int creditRefundInCents) async {
+    _userDetails.creditsInCents = _userDetails.creditsInCents + creditRefundInCents;
+    await UserFirestore.storeUserDetails(_userDetails);
   }
 }
