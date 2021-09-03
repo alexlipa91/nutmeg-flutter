@@ -32,7 +32,7 @@ jobs:
       - name: Deploy to playstore internal testing
         uses: maierj/fastlane-action@v1.4.0
         with:
-          lane: playstore
+          lane: internalAppSharing
           subdirectory: android
 
       # Upload generated apk to the artifacts.
