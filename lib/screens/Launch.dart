@@ -4,6 +4,8 @@ import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/screens/AvailableMatches.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
 
 
 void main() {
@@ -27,6 +29,16 @@ class LaunchWidget extends StatelessWidget {
 
   Future<void> loadData(BuildContext context) async {
     await Firebase.initializeApp();
+
+    if (kDebugMode) {
+      // Force disable Crashlytics collection while doing every day development.
+      // Temporarily toggle this to true if you want to test crash reporting in your app.
+      await FirebaseCrashlytics.instance
+          .setCrashlyticsCollectionEnabled(false);
+    } else {
+      // Handle Crashlytics enabled status when not in Debug,
+      // e.g. allow your users to opt-in to crash reporting.
+    }
 
     // check if user is logged in
     await context.read<UserChangeNotifier>().loadUserIfAvailable();
