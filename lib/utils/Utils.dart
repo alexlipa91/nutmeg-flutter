@@ -8,15 +8,15 @@ var uiDateFormat = new DateFormat("E, MMM dd");
 var uiHourFormat = new DateFormat("HH:mm");
 
 String getFormattedDate(DateTime dateTime) {
-  var diff = dateTime.difference(DateTime.now());
+  var now = DateTime.now();
 
   var dayString;
 
-  if (diff.inDays == 0) {
+  if (now.day == dateTime.day) {
     dayString = "Today";
-  } else if (diff.inDays == 1) {
+  } else if (now.day == dateTime.day - 1) {
     dayString = "Tomorrow";
-  } else if (diff.inDays == -1) {
+  } else if (now.day == dateTime.day + 1) {
     dayString = "Yesterday";
   } else {
     dayString = uiDateFormat.format(dateTime);

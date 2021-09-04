@@ -23,6 +23,13 @@ class SubscriptionsDb {
     return qs.docs.map((e) => e.data()).toList();
   }
 
+  static Future<List<Subscription>> getMatchSubscriptionsLogPerUser(
+      String matchId, String userId) async {
+    CollectionReference<Subscription> subscriptionsRef = await getQuerySnapshot(matchId);
+    var qs = await subscriptionsRef.where('userId', isEqualTo: userId).get();
+    return qs.docs.map((e) => e.data()).toList();
+  }
+
   static Future<List<Subscription>> getMatchSubscriptionsLatestState(String matchId) async {
     List<Subscription> log = await getMatchSubscriptionsLog(matchId);
     if (log.isEmpty) {
