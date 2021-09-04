@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:cool_alert/cool_alert.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -92,3 +93,6 @@ var appTheme = new ThemeData(
           bodyText2: TextStyle(
               color: Colors.black, fontSize: 12, fontWeight: FontWeight.w500)),
     ));
+
+var defaultErrorMessage = (err, context) =>
+    CoolAlert.show(context: context, type: CoolAlertType.error, text: err.toString());

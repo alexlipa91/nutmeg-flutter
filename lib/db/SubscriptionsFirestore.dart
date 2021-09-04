@@ -38,7 +38,7 @@ class SubscriptionsDb {
     if (latestStateFilter.isEmpty) {
       return null;
     }
-    return latestStates.first;
+    return latestStateFilter.first;
   }
 
   static Future<void> addSubscription(String matchId, Subscription s) async {

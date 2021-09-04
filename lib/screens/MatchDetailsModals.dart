@@ -16,10 +16,15 @@ import 'Login.dart';
 var formatCurrency = NumberFormat.simpleCurrency(name: "EUR");
 
 Future<void> showWaitingModal(BuildContext context, Future future) {
+  var futureWithPop = () async {
+    await future;
+    Navigator.pop(context);
+  };
+
   return showModalBottomSheet(
       context: context,
       builder: (context) => FutureBuilder<void>(
-          future: future.then((value) => Navigator.pop(context)),
+          future: futureWithPop(),
           builder: (context, snapshot) {
             if (snapshot.hasError) {
               throw snapshot.stackTrace;
