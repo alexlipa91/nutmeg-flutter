@@ -1,3 +1,4 @@
+import 'package:cool_alert/cool_alert.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
@@ -26,25 +27,35 @@ void main() {
 }
 
 class LaunchWidget extends StatelessWidget {
-
   Future<void> loadData(BuildContext context) async {
-    await Firebase.initializeApp();
+    try {
+      await Firebase.initializeApp();
 
-    if (kDebugMode) {
-      // Force disable Crashlytics collection while doing every day development.
-      // Temporarily toggle this to true if you want to test crash reporting in your app.
-      await FirebaseCrashlytics.instance
-          .setCrashlyticsCollectionEnabled(false);
-    } else {
-      // Handle Crashlytics enabled status when not in Debug,
-      // e.g. allow your users to opt-in to crash reporting.
+      if (kDebugMode) {
+        // Force disable Crashlytics collection while doing every day development.
+        // Temporarily toggle this to true if you want to test crash reporting in your app.
+        await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(false);
+      } else {
+        // Handle Crashlytics enabled status when not in Debug,
+        // e.g. allow your users to opt-in to crash reporting.
+      }
+
+      FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterError;
+
+      // check if user is logged in
+      await context.read<UserChangeNotifier>().loadUserIfAvailable();
+      await context.read<MatchesChangeNotifier>().refresh();
+      await context.read<SportCentersChangeNotifier>().refresh();
+      await Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (context) => AvailableMatches()));
+    } on Exception catch (e, stacktrace) {
+      FirebaseCrashlytics.instance.recordError(e, stacktrace, reason: "app launch failed");
+
+      CoolAlert.show(
+          context: context,
+          type: CoolAlertType.error,
+          text: "Something went wrong!");
     }
-
-    // check if user is logged in
-    await context.read<UserChangeNotifier>().loadUserIfAvailable();
-    await context.read<MatchesChangeNotifier>().refresh();
-    await context.read<SportCentersChangeNotifier>().refresh();
-    await Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => AvailableMatches()));
   }
 
   @override
