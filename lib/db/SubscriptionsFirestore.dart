@@ -34,10 +34,11 @@ class SubscriptionsDb {
   static Future<Subscription> getMatchSubscriptionsLatestStatePerUser(
       UserDetails userDetails, String matchId) async {
     List<Subscription> latestStates = await getMatchSubscriptionsLatestState(matchId);
-    if (latestStates.isEmpty) {
+    var latestStateFilter = latestStates.where((s) => s.userId == userDetails.getUid());
+    if (latestStateFilter.isEmpty) {
       return null;
     }
-    return latestStates.firstWhere((s) => s.userId == userDetails.getUid());
+    return latestStates.first;
   }
 
   static Future<void> addSubscription(String matchId, Subscription s) async {

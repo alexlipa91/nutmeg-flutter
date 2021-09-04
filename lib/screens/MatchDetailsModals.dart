@@ -19,8 +19,12 @@ Future<void> showWaitingModal(BuildContext context, Future future) {
   return showModalBottomSheet(
       context: context,
       builder: (context) => FutureBuilder<void>(
-          future: future.then((value) => Navigator.pop(context)).catchError((err) => print(err.toString())),
+          future: future.then((value) => Navigator.pop(context)),
           builder: (context, snapshot) {
+            if (snapshot.hasError) {
+              throw snapshot.stackTrace;
+            }
+
             return Container(
               height: 100,
               child: Center(

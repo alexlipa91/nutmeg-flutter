@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
+import 'package:nutmeg/utils/Utils.dart';
+import 'package:nutmeg/widgets/AppBar.dart';
 import 'package:nutmeg/widgets/Containers.dart';
 
 // main widget
@@ -16,19 +18,19 @@ class SubscriptionsMatchDetails extends StatelessWidget {
         match.subscriptions.map((e) => SubscriptionRow(e)).toList();
 
     return Scaffold(
-      extendBodyBehindAppBar: true,
+      appBar: AdminAreaAppBarInverted(),
       body: SafeArea(
-        child: Container(
-          color: Palette.light,
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20),
-              child: Column(
-                children: [
-                  Column(children: subsWidgets)
-                ],
-              ),
-            ),
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20),
+          child: Container(
+            color: Palette.light,
+            child: (subsWidgets.isEmpty)
+                ? Text("No subscriptions yet.", style: TextPalette.bodyText)
+                : SingleChildScrollView(
+                    child: Column(
+                      children: [Column(children: subsWidgets)],
+                    ),
+                  ),
           ),
         ),
       ),
@@ -48,24 +50,60 @@ class SubscriptionRow extends StatelessWidget {
       builder: (context, snapshot) => (!snapshot.hasData)
           ? Text("loading")
           : Padding(
-        padding: EdgeInsets.only(top: 10),
-        child: Row(children: [
+              padding: EdgeInsets.only(top: 10),
+              child: Row(children: [
                 Expanded(
                   child: InfoContainer(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text("Subscription id: " + subscription.documentId, style: TextPalette.bodyText),
-                        Text("User id: " + subscription.userId, style: TextPalette.bodyText),
-                        Text("User name: " + snapshot.data.name, style: TextPalette.h2),
-                        Text("Status: " + subscription.status.toString().split(".").last,
-                            style: TextPalette.bodyText)
+                        Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text("Subscription id", style: TextPalette.h3),
+                              Text(subscription.documentId,
+                                  style: TextPalette.bodyText),
+                            ]),
+                        Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text("User id", style: TextPalette.h3),
+                              Text(subscription.userId,
+                                  style: TextPalette.bodyText),
+                            ]),
+                        Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text("User email", style: TextPalette.h3),
+                              Text(snapshot.data.email,
+                                  style: TextPalette.bodyText),
+                            ]),
+                        Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text("Status", style: TextPalette.h3),
+                              Text(
+                                  subscription.status
+                                      .toString()
+                                      .split(".")
+                                      .last,
+                                  style: TextPalette.bodyText),
+                            ]),
+                        Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text("Created at", style: TextPalette.h3),
+                              Text(
+                                  getFormattedDate(
+                                      subscription.createdAt.toDate()),
+                                  style: TextPalette.bodyText),
+                            ]),
                       ],
                     ),
                   ),
                 )
               ]),
-          ),
+            ),
     );
   }
 }

@@ -1,11 +1,9 @@
 def localProperties = new Properties()
 def localPropertiesFile = rootProject.file('local.properties')
-println System.getProperty("user.dir");
 if (localPropertiesFile.exists()) {
     localPropertiesFile.withReader('UTF-8') { reader ->
         localProperties.load(reader)
     }
-    println "properties file found"
 }
 
 def flutterRoot = localProperties.getProperty('flutter.sdk')
@@ -72,3 +70,6 @@ android {
 flutter {
     source '../..'
 }
+
+apply plugin: 'com.google.firebase.crashlytics'
+

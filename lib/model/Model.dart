@@ -72,9 +72,11 @@ class Match {
       subscriptions.where((s) => s.status == SubscriptionStatus.going).length;
 
   Subscription getUserSub(UserDetails user) {
-    print(subscriptions.length.toString());
-    print(user.getUid());
-    return (subscriptions.isEmpty) ? null : subscriptions.firstWhere((s) => s.userId == user.getUid());
+    var userSubFilter = subscriptions.where((s) => s.userId == user.getUid());
+    if (userSubFilter.isEmpty) {
+      return null;
+    }
+    return userSubFilter.first;
   }
 
   double getPrice() => pricePerPersonInCents / 100;
