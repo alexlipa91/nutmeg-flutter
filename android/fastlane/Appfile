@@ -1,2 +1,2 @@
-json_key_file("/Users/alessandrol/Desktop/nutmeg-9099c-c70a0f6cba3d.json") # Path to the json secret file - Follow https://docs.fastlane.tools/actions/supply/#setup to get one
+json_key_file("nutmeg-9099c-c70a0f6cba3d.json") # Path to the json secret file - Follow https://docs.fastlane.tools/actions/supply/#setup to get one
 package_name("com.nutmeg.nutmeg") # e.g. com.krausefx.app
