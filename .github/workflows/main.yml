@@ -17,6 +17,8 @@ jobs:
 
       - run: flutter build appbundle -t lib/screens/Launch.dart
 
+      - run: sed -i "s/<DATETIME>/$(date +%Y-%m-%d-%T)/" android/fastlane/metadata/android/en-GB/full_description.txt
+
       - name: Deploy to playstore internal testing
         uses: maierj/fastlane-action@v1.4.0
         if: ${{ startsWith(github.event.head_commit.message, 'PLAYSTORE_INTERNAL_TESTING') }}
