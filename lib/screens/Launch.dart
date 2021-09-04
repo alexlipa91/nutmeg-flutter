@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/screens/AvailableMatches.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
@@ -34,7 +35,8 @@ class LaunchWidget extends StatelessWidget {
       if (kDebugMode) {
         // Force disable Crashlytics collection while doing every day development.
         // Temporarily toggle this to true if you want to test crash reporting in your app.
-        await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(false);
+        await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(
+            false);
       } else {
         // Handle Crashlytics enabled status when not in Debug,
         // e.g. allow your users to opt-in to crash reporting.
@@ -46,10 +48,13 @@ class LaunchWidget extends StatelessWidget {
       await context.read<UserChangeNotifier>().loadUserIfAvailable();
       await context.read<MatchesChangeNotifier>().refresh();
       await context.read<SportCentersChangeNotifier>().refresh();
+      await Future.delayed(Duration(seconds: 3));
+
       await Navigator.pushReplacement(
           context, MaterialPageRoute(builder: (context) => AvailableMatches()));
     } on Exception catch (e, stacktrace) {
-      FirebaseCrashlytics.instance.recordError(e, stacktrace, reason: "app launch failed");
+      FirebaseCrashlytics.instance.recordError(
+          e, stacktrace, reason: "app launch failed");
 
       CoolAlert.show(
           context: context,
@@ -60,6 +65,13 @@ class LaunchWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var getVersionFuture = () async {
+      PackageInfo packageInfo = await PackageInfo.fromPlatform();
+      String version = packageInfo.version;
+      String code = packageInfo.buildNumber;
+      return version + " " + code;
+    };
+
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -67,14 +79,25 @@ class LaunchWidget extends StatelessWidget {
         ),
         child: FutureBuilder<void>(
           future: loadData(context),
-          builder: (context, snapshot) => Center(
-              child:
-              Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                Image.asset("assets/nutmeg_white.png", width: 116, height: 46),
-                SizedBox(height: 30),
-                CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
-              ])),
+          builder: (context, snapshot) =>
+              Center(
+                  child:
+                  Column(
+                      mainAxisAlignment: MainAxisAlignment.center, children: [
+                    Image.asset(
+                        "assets/nutmeg_white.png", width: 116, height: 46),
+                    SizedBox(height: 30),
+                    CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                            Colors.white)),
+                    FutureBuilder<String>(
+                        future: getVersionFuture(),
+                        builder: (context, snapshot) =>
+                            Text((snapshot.hasData)
+                                ? snapshot.data
+                                : "loading version number",
+                                style: TextPalette.linkStyleInverted))
+                  ])),
         ),
       ),
     );
