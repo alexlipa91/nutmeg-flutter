@@ -54,6 +54,8 @@ class MatchDetails extends StatelessWidget {
     var title =
         sportCenter.neighbourhood + " - " + match.sport.getDisplayTitle();
 
+    var user = context.read<UserChangeNotifier>().getUserDetails();
+
     return Scaffold(
       appBar: MatchAppBar(match.documentId),
       body: SingleChildScrollView(
@@ -79,8 +81,7 @@ class MatchDetails extends StatelessWidget {
                 scrollDirection: Axis.horizontal,
                 child: Row(
                     // fixme pass real data here
-                    children: match.subscriptions
-                        .where((s) => s.status == SubscriptionStatus.going)
+                    children: match.getOrderedGoingSubscriptions(user)
                         .map((s) => PlayerCard(s.userId))
                         .toList()),
               ),

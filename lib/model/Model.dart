@@ -79,6 +79,19 @@ class Match {
     return userSubFilter.first;
   }
 
+  List<Subscription> getOrderedGoingSubscriptions(UserDetails userDetails) {
+    // if user is in match place him on top of list
+    var orderedSubscriptions = subscriptions.where((e) => e.status == SubscriptionStatus.going).toList()
+      ..sort((a,b) => a.createdAt.compareTo(b.createdAt));
+    if (userDetails != null) {
+      var userIndex = orderedSubscriptions.indexWhere((e) => e.userId == userDetails.getUid());
+      if (userIndex != -1) {
+        orderedSubscriptions.insert(0, orderedSubscriptions.removeAt(userIndex));
+      }
+    }
+    return orderedSubscriptions;
+  }
+
   double getPrice() => pricePerPersonInCents / 100;
 
   String getFormattedPrice() => formatCurrency.format(getPrice());
