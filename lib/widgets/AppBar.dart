@@ -1,9 +1,12 @@
+import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/screens/Login.dart';
 import 'package:nutmeg/screens/UserPage.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
+import 'package:nutmeg/utils/Utils.dart';
 import 'package:provider/provider.dart';
+import 'package:share/share.dart';
 
 class NutmegAppBar extends StatelessWidget with PreferredSizeWidget {
   final Color backgroundColor;
@@ -45,7 +48,8 @@ class MainAppBar extends NutmegAppBar {
             else
               Center(
                   child: InkWell(
-                      child: Text("LOGIN", style: TextPalette.linkStyleInverted),
+                      child:
+                          Text("LOGIN", style: TextPalette.linkStyleInverted),
                       onTap: () => Navigator.push(context,
                           MaterialPageRoute(builder: (context) => Login()))))
           ],
@@ -56,6 +60,11 @@ class MainAppBar extends NutmegAppBar {
 }
 
 class MatchAppBar extends NutmegAppBar {
+
+  final String matchId;
+
+  MatchAppBar(this.matchId);
+
   @override
   Widget build(BuildContext context) {
     return NutmegAppBar(
@@ -70,7 +79,7 @@ class MatchAppBar extends NutmegAppBar {
                 onTap: () => Navigator.of(context).pop()),
             InkWell(
                 child: Icon(Icons.share, color: Colors.black),
-                onTap: () => print("IMPLEMENT SHARE")),
+                onTap: () async => await DynamicLinks.shareMatchFunction(matchId))
           ],
         ),
       ),
@@ -111,7 +120,6 @@ class UserAvatar extends StatelessWidget {
 }
 
 class AdminAreaAppBar extends NutmegAppBar {
-
   @override
   Widget build(BuildContext context) {
     return NutmegAppBar(
@@ -132,7 +140,6 @@ class AdminAreaAppBar extends NutmegAppBar {
 }
 
 class AdminAreaAppBarInverted extends NutmegAppBar {
-
   @override
   Widget build(BuildContext context) {
     return NutmegAppBar(

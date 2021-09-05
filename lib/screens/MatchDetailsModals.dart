@@ -1,4 +1,5 @@
 import 'package:cool_alert/cool_alert.dart';
+import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/controller/PaymentController.dart';
@@ -10,6 +11,7 @@ import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/Buttons.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:share/share.dart';
 
 import 'Login.dart';
 
@@ -47,7 +49,8 @@ class BottomBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print("user det: " + context.watch<UserChangeNotifier>().getUserDetails().toString());
+    print("user det: " +
+        context.watch<UserChangeNotifier>().getUserDetails().toString());
 
     var userSub = (context.watch<UserChangeNotifier>().isLoggedIn())
         ? match.getUserSub(context.watch<UserChangeNotifier>().getUserDetails())
@@ -80,7 +83,11 @@ class BottomBar extends StatelessWidget {
                       if (hasUserConfirmed != null && hasUserConfirmed) {
                         // actually leave
                         Future<void> Function() updateState = () async {
-                          await MatchesController.leaveMatch(match, context.read<UserChangeNotifier>().getUserDetails());
+                          await MatchesController.leaveMatch(
+                              match,
+                              context
+                                  .read<UserChangeNotifier>()
+                                  .getUserDetails());
                           await context.read<MatchesChangeNotifier>().refresh();
                           await context.read<UserChangeNotifier>().refresh();
                         };
@@ -192,7 +199,9 @@ class PrepaymentBottomBar extends StatelessWidget {
                       Expanded(
                           child: Text(
                         match.getFormattedPrice(),
-                        style: (snapshot.hasData && snapshot.data != null && snapshot.data.couponApplied != null)
+                        style: (snapshot.hasData &&
+                                snapshot.data != null &&
+                                snapshot.data.couponApplied != null)
                             ? TextPalette.h3WithBar
                             : TextPalette.h3,
                         textAlign: TextAlign.end,
@@ -307,7 +316,8 @@ class PostPaymentBottomBar extends StatelessWidget {
   final Match match;
   final PaymentOutcome paymentOutcome;
 
-  const PostPaymentBottomBar({Key key, this.match, this.paymentOutcome}) : super(key: key);
+  const PostPaymentBottomBar({Key key, this.match, this.paymentOutcome})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -335,6 +345,8 @@ class PostPaymentBottomBar extends StatelessWidget {
               ),
             ),
             InkWell(
+              onTap: () async =>
+                  await DynamicLinks.shareMatchFunction(match.documentId),
               child: Row(
                 children: [
                   Icon(Icons.share, color: Palette.primary),
@@ -342,10 +354,6 @@ class PostPaymentBottomBar extends StatelessWidget {
                   Text("SHARE", style: TextPalette.linkStyle)
                 ],
               ),
-              onTap: () => CoolAlert.show(
-                  context: context,
-                  type: CoolAlertType.info,
-                  text: "Implement this"),
             ),
           ],
         ),

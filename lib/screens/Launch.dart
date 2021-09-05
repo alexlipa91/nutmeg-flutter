@@ -1,8 +1,10 @@
 import 'dart:async';
 
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
+import 'package:nutmeg/screens/MatchDetails.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/screens/AvailableMatches.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -10,6 +12,8 @@ import 'package:provider/provider.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/foundation.dart';
+
+final navigatorKey = GlobalKey<NavigatorState>();
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized(); //imp line need to be added first
@@ -30,6 +34,7 @@ void main() {
             create: (context) => SportCentersChangeNotifier()),
       ],
       child: new MaterialApp(
+        navigatorKey: navigatorKey,
         debugShowCheckedModeBanner: false,
         home: new Container(
             decoration: new BoxDecoration(color: Colors.grey.shade400),
@@ -45,7 +50,47 @@ void main() {
   });
 }
 
-class LaunchWidget extends StatelessWidget {
+class LaunchWidget extends StatefulWidget {
+
+  @override
+  State<StatefulWidget> createState() => LaunchWidgetState();
+
+}
+
+class LaunchWidgetState extends State<LaunchWidget> {
+
+  @override
+  void initState() {
+    super.initState();
+    initDynamicLinks();
+  }
+
+  Future<void> handleLink(Uri deepLink) async {
+    if (deepLink.queryParameters.containsKey("id")) {
+      print("handling link ");
+      Navigator.pushReplacement(
+          navigatorKey.currentContext,
+          MaterialPageRoute(
+              builder: (context) => MatchDetails(context.read<MatchesChangeNotifier>()
+                  .getMatch(deepLink.queryParameters["id"]))));
+    }
+  }
+
+  void initDynamicLinks() {
+    FirebaseDynamicLinks.instance.onLink(
+        onSuccess: (PendingDynamicLinkData dynamicLink) async {
+          final Uri deepLink = dynamicLink?.link;
+
+          if (deepLink != null) {
+            handleLink(deepLink);
+          }
+        },
+        onError: (OnLinkErrorException e) async {
+          print(e.message);
+        }
+    );
+  }
+
   Future<void> loadData(BuildContext context) async {
     print("app initialization tasks running");
     await Firebase.initializeApp();
@@ -65,10 +110,19 @@ class LaunchWidget extends StatelessWidget {
     await context.read<UserChangeNotifier>().loadUserIfAvailable();
     await context.read<MatchesChangeNotifier>().refresh();
     await context.read<SportCentersChangeNotifier>().refresh();
-    await Future.delayed(Duration(seconds: 3));
+    await Future.delayed(Duration(seconds: 1));
 
-    await Navigator.pushReplacement(
-        context, MaterialPageRoute(builder: (context) => AvailableMatches()));
+    // check if coming from link
+    final PendingDynamicLinkData data = await FirebaseDynamicLinks.instance.getInitialLink();
+
+    final Uri deepLink = data?.link;
+
+    if (deepLink != null) {
+      await handleLink(deepLink);
+    } else {
+      await Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (context) => AvailableMatches()));
+    }
   }
 
   @override

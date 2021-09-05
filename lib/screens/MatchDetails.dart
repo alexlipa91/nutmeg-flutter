@@ -55,7 +55,7 @@ class MatchDetails extends StatelessWidget {
         sportCenter.neighbourhood + " - " + match.sport.getDisplayTitle();
 
     return Scaffold(
-      appBar: MatchAppBar(),
+      appBar: MatchAppBar(match.documentId),
       body: SingleChildScrollView(
         child: Column(
           // fixme here we are repeating the padding just because cannot be applied globally as MatchInfo doesn't need
