@@ -89,7 +89,7 @@ class BottomBar extends StatelessWidget {
                                   .read<UserChangeNotifier>()
                                   .getUserDetails());
                           await context.read<MatchesChangeNotifier>().refresh();
-                          await context.read<UserChangeNotifier>().refresh();
+                          // await context.read<UserChangeNotifier>().refresh();
                         };
 
                         await showWaitingModal(context, updateState());
@@ -129,7 +129,7 @@ class BottomBar extends StatelessWidget {
                                   .getUserDetails(),
                               value.recap);
                           await context.read<MatchesChangeNotifier>().refresh();
-                          await context.read<UserChangeNotifier>().refresh();
+                          // await context.read<UserChangeNotifier>().refresh();
                         };
 
                         await showWaitingModal(context, updateState());

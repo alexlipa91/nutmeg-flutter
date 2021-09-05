@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:developer';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:nutmeg/db/MatchesFirestore.dart';
@@ -56,25 +59,35 @@ class UserChangeNotifier extends ChangeNotifier {
       UserFirestore.getSpecificUserDetails(uid);
 
   UserDetails _userDetails;
+  StreamSubscription streamSubscription;
 
   UserDetails getUserDetails() => _userDetails;
 
-  refresh() async {
-    _userDetails = await UserFirestore.getSpecificUserDetails(_userDetails.getUid());
-    notifyListeners();
-  }
+  // refresh() async {
+  //   _userDetails = await UserFirestore.getSpecificUserDetails(_userDetails.getUid());
+  //   notifyListeners();
+  // }
 
   Future<void> loginWithGoogle() async {
     _userDetails = await UserFirestore.loginWithGoogle();
     notifyListeners();
+    listenForChanges();
   }
 
   bool isLoggedIn() => _userDetails != null;
 
   Future<void> logout() async {
     await UserFirestore.logout();
+    streamSubscription.cancel();
     _userDetails = null;
     notifyListeners();
+  }
+
+  void listenForChanges() {
+    streamSubscription = UserFirestore.users.doc(_userDetails.documentId).snapshots().listen((event) {
+      _userDetails = UserDetails.fromJson(event.data(), event.id);
+      notifyListeners();
+    });
   }
 
   Future<String> getOrCreateStripeId() async {
@@ -91,7 +104,6 @@ class UserChangeNotifier extends ChangeNotifier {
     return stripeId;
   }
 
-  // fixme separate better user from firebase and from my db
   Future<void> loadUserIfAvailable() async {
     User u = UserFirestore.getCurrentFirestoreUser();
 
@@ -103,6 +115,7 @@ class UserChangeNotifier extends ChangeNotifier {
       } catch (e) {
         print("Found firebase user but couldn't load details: " + e.toString());
       }
+      listenForChanges();
     }
   }
 
