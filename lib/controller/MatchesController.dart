@@ -10,9 +10,10 @@ import 'UserController.dart';
 
 class MatchesController {
 
-  static Future<void> refresh(MatchesState matchesState, String matchId) async {
+  static Future<Match> refresh(MatchesState matchesState, String matchId) async {
     var match = await getMatch(matchId);
     matchesState.setMatch(match);
+    return match;
   }
 
   static Future<void> refreshAll(MatchesState matchesState) async {

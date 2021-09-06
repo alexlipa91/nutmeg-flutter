@@ -27,59 +27,72 @@ class MatchDetails extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var matchesState = context.watch<MatchesState>();
+    var matchesState = context.read<MatchesState>();
 
-    var match = matchesState.getMatch(matchId);
     var user = context.read<UserState>().getUserDetails();
-    var sportCenter =
-        context.read<SportCentersState>().getSportCenter(match.sportCenter);
 
-    var title =
-        sportCenter.neighbourhood + " - " + match.sport.getDisplayTitle();
+    return FutureBuilder(
+        future: MatchesController.refresh(matchesState, matchId),
+        builder: (context, snapshot) {
+          Match match = (snapshot.hasData)
+              ? snapshot.data
+              : matchesState.getMatch(matchId);
 
-    return Scaffold(
-      appBar: MatchAppBar(match.documentId),
-      body: SingleChildScrollView(
-          child: Column(
-        // fixme here we are repeating the padding just because cannot be applied globally as MatchInfo doesn't need
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-              padding: EdgeInsets.only(right: 20, left: 20, bottom: 10),
-              child: Text(title, style: TextPalette.h1Default)),
-          Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20),
-              child: MatchInfo(match, sportCenter)),
-          Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-              child: Text(match.numPlayersGoing().toString() + " players going",
-                  style: TextPalette.bodyText)),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20),
-            child: SingleChildScrollView(
-              clipBehavior: Clip.none,
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                  // fixme pass real data here
-                  children: match
-                      .getOrderedGoingSubscriptions(user)
-                      .map((s) => PlayerCard(s.userId))
-                      .toList()),
+          var sportCenter = context
+              .read<SportCentersState>()
+              .getSportCenter(match.sportCenter);
+
+          var title =
+              sportCenter.neighbourhood + " - " + match.sport.getDisplayTitle();
+
+          return Scaffold(
+            appBar: MatchAppBar(match.documentId),
+            body: SingleChildScrollView(
+              child: Column(
+                // fixme here we are repeating the padding just because cannot be applied globally as MatchInfo doesn't need
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                      padding: EdgeInsets.only(right: 20, left: 20, bottom: 10),
+                      child: Text(title, style: TextPalette.h1Default)),
+                  Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 20),
+                      child: MatchInfo(match, sportCenter)),
+                  Padding(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                      child: Text(
+                          match.numPlayersGoing().toString() + " players going",
+                          style: TextPalette.bodyText)),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20),
+                    child: SingleChildScrollView(
+                      clipBehavior: Clip.none,
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                          // fixme pass real data here
+                          children: match
+                              .getOrderedGoingSubscriptions(user)
+                              .map((s) => PlayerCard(s.userId))
+                              .toList()),
+                    ),
+                  ),
+                  Padding(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      child: Text(
+                        "Details",
+                        style: TextPalette.bodyText,
+                      )),
+                  RuleCard(),
+                  RuleCard(),
+                  MapCard.big(sportCenter)
+                ],
+              ),
             ),
-          ),
-          Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              child: Text(
-                "Details",
-                style: TextPalette.bodyText,
-              )),
-          RuleCard(),
-          RuleCard(),
-          MapCard.big(sportCenter)
-        ],
-      )),
-      bottomNavigationBar: BottomBar(match: match),
-    );
+            bottomNavigationBar: BottomBar(match: match),
+          );
+        });
   }
 }
 
@@ -376,7 +389,7 @@ class MapCard extends StatelessWidget {
 
   MapCard.big(this.sportCenter)
       : margin = EdgeInsets.only(right: 25, left: 25, bottom: 10),
-        height = 100.0,
+        height = 150.0,
         width = null;
 
   @override
@@ -392,12 +405,14 @@ class MapCard extends StatelessWidget {
               width: width,
               child: GoogleMap(
                 onTap: (LatLng latLng) async {
-                  print("launching" + latLng.toString());
+                  print("launching" + latLng.toString() + " with name " + sportCenter.name);
                   MapsLauncher.launchCoordinates(
                       sportCenter.lat, sportCenter.lng, sportCenter.name);
                 },
+                myLocationEnabled: false,
                 myLocationButtonEnabled: false,
                 zoomGesturesEnabled: false,
+                zoomControlsEnabled: false,
                 markers: {
                   Marker(
                       markerId: MarkerId(sportCenter.placeId),

@@ -71,6 +71,8 @@ class Match {
   int numPlayersGoing() =>
       subscriptions.where((s) => s.status == SubscriptionStatus.going).length;
 
+  bool isFull() => numPlayersGoing() == maxPlayers;
+
   Subscription getUserSub(UserDetails user) {
     var userSubFilter = subscriptions.where((s) => s.userId == user.getUid());
     if (userSubFilter.isEmpty) {

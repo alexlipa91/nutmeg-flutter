@@ -337,8 +337,7 @@ class MatchInfo extends StatelessWidget {
                                     style: TextPalette.h2),
                                 Expanded(
                                     child: Text(
-                                        (match.numPlayersGoing() ==
-                                                match.maxPlayers)
+                                        (match.isFull())
                                             ? "Full"
                                             : (match.maxPlayers -
                                                         match.numPlayersGoing())
@@ -367,7 +366,6 @@ class MatchInfo extends StatelessWidget {
         ),
         onTap: () async {
           // fixme why it doesn't rebuild here?
-          await MatchesController.refresh(matchesState, matchId);
           await Navigator.push(
               context,
               MaterialPageRoute(

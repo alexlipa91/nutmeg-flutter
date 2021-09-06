@@ -87,7 +87,7 @@ class BottomBar extends StatelessWidget {
                         await showWaitingModal(context, updateState());
                       }
                     })
-                  : RoundedButton("JOIN GAME", () async {
+                  : (!match.isFull()) ? RoundedButton("JOIN GAME", () async {
                       if (!context.read<UserState>().isLoggedIn()) {
                         bool couldLogIn = await Navigator.push(
                                 context,
@@ -134,7 +134,7 @@ class BottomBar extends StatelessWidget {
                             type: CoolAlertType.error,
                             text: "Payment failed");
                       }
-                    })
+                    }) : Container()
             ],
           ),
         ));
