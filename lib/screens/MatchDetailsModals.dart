@@ -1,5 +1,4 @@
 import 'package:cool_alert/cool_alert.dart';
-import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/controller/PaymentController.dart';
@@ -11,7 +10,6 @@ import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/Buttons.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import 'package:share/share.dart';
 
 import 'Login.dart';
 
@@ -49,11 +47,11 @@ class BottomBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print("user det: " +
-        context.watch<UserChangeNotifier>().getUserDetails().toString());
+    print(
+        "user det: " + context.watch<UserState>().getUserDetails().toString());
 
-    var userSub = (context.watch<UserChangeNotifier>().isLoggedIn())
-        ? match.getUserSub(context.watch<UserChangeNotifier>().getUserDetails())
+    var userSub = (context.watch<UserState>().isLoggedIn())
+        ? match.getUserSub(context.watch<UserState>().getUserDetails())
         : null;
     var isGoing = userSub != null && userSub.status == SubscriptionStatus.going;
 
@@ -84,19 +82,16 @@ class BottomBar extends StatelessWidget {
                         // actually leave
                         Future<void> Function() updateState = () async {
                           await MatchesController.leaveMatch(
-                              match,
-                              context
-                                  .read<UserChangeNotifier>()
-                                  .getUserDetails());
-                          await context.read<MatchesChangeNotifier>().refresh();
-                          // await context.read<UserChangeNotifier>().refresh();
+                              context.watch<MatchesState>(),
+                              match.documentId,
+                              context.read<UserState>());
                         };
 
                         await showWaitingModal(context, updateState());
                       }
                     })
                   : RoundedButton("JOIN GAME", () async {
-                      if (!context.read<UserChangeNotifier>().isLoggedIn()) {
+                      if (!context.read<UserState>().isLoggedIn()) {
                         bool couldLogIn = await Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -122,14 +117,11 @@ class BottomBar extends StatelessWidget {
                       if (value != null && value.status == Status.success) {
                         // update all states
                         Future<Null> Function() updateState = () async {
-                          await MatchesController.joinMatch(
-                              match,
-                              context
-                                  .read<UserChangeNotifier>()
-                                  .getUserDetails(),
+                          MatchesController.joinMatch(
+                              context.watch<MatchesState>(),
+                              match.documentId,
+                              context.read<UserState>(),
                               value.recap);
-                          await context.read<MatchesChangeNotifier>().refresh();
-                          // await context.read<UserChangeNotifier>().refresh();
                         };
 
                         await showWaitingModal(context, updateState());
@@ -159,7 +151,7 @@ class PrepaymentBottomBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var userDetails = context.read<UserChangeNotifier>().getUserDetails();
+    var userDetails = context.read<UserState>().getUserDetails();
 
     return Padding(
       padding: MediaQuery.of(context).viewInsets,
@@ -190,7 +182,7 @@ class PrepaymentBottomBar extends StatelessWidget {
                     children: [
                       CircleAvatar(
                           backgroundImage: NetworkImage(context
-                              .watch<UserChangeNotifier>()
+                              .watch<UserState>()
                               .getUserDetails()
                               .getPhotoUrl()),
                           radius: 15),

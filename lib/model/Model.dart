@@ -239,3 +239,16 @@ class Coupon {
   Map<String, dynamic> toJson() =>
       {'percentage': percentage, 'description': description};
 }
+
+class PaymentRecap {
+  int matchPriceInCents;
+  Coupon couponApplied;
+  int creditsInCentsUsed;
+  int finalPriceToPayInCents;
+
+  int getPriceAfterCoupon() {
+    var percentage = couponApplied.percentage / 100;
+    var discount = (percentage * matchPriceInCents).toInt();
+    return matchPriceInCents - discount;
+  }
+}

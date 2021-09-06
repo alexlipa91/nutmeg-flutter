@@ -1,7 +1,8 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:maps_launcher/maps_launcher.dart';
+import 'package:nutmeg/controller/MatchesController.dart';
+import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
@@ -17,27 +18,6 @@ import 'package:shimmer/shimmer.dart';
 
 import 'MatchDetailsModals.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-  var matchesChangeNotifier = MatchesChangeNotifier();
-  var sportCenterChangeNotifier = SportCentersChangeNotifier();
-
-  await matchesChangeNotifier.refresh();
-  await sportCenterChangeNotifier.refresh();
-
-  runApp(MultiProvider(
-    providers: [
-      ChangeNotifierProvider(create: (context) => UserChangeNotifier()),
-      ChangeNotifierProvider(create: (context) => matchesChangeNotifier),
-      ChangeNotifierProvider(create: (context) => sportCenterChangeNotifier),
-    ],
-    child: new MaterialApp(
-        debugShowCheckedModeBanner: false,
-        home: MatchDetails(matchesChangeNotifier.getMatches().first)),
-  ));
-}
-
 var formatCurrency = NumberFormat.simpleCurrency(name: "EUR");
 
 class MatchDetails extends StatelessWidget {
@@ -47,14 +27,13 @@ class MatchDetails extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    SportCenter sportCenter = context
-        .read<SportCentersChangeNotifier>()
-        .getSportCenter(match.sportCenter);
+    SportCenter sportCenter =
+        context.read<SportCentersState>().getSportCenter(match.sportCenter);
 
     var title =
         sportCenter.neighbourhood + " - " + match.sport.getDisplayTitle();
 
-    var user = context.read<UserChangeNotifier>().getUserDetails();
+    var user = context.read<UserState>().getUserDetails();
 
     return Scaffold(
       appBar: MatchAppBar(match.documentId),
@@ -81,7 +60,8 @@ class MatchDetails extends StatelessWidget {
                 scrollDirection: Axis.horizontal,
                 child: Row(
                     // fixme pass real data here
-                    children: match.getOrderedGoingSubscriptions(user)
+                    children: match
+                        .getOrderedGoingSubscriptions(user)
                         .map((s) => PlayerCard(s.userId))
                         .toList()),
               ),
@@ -267,7 +247,7 @@ class PlayerCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<UserDetails>(
-        future: UserChangeNotifier.getSpecificUserDetails(userId),
+        future: UserController.getUserDetails(userId),
         builder: (context, snapshot) {
           return Container(
               constraints: BoxConstraints(maxWidth: 100),
@@ -297,12 +277,10 @@ class PlayerCard extends StatelessWidget {
                                               Text(snapshot.data.name,
                                                   style: TextPalette.h2),
                                               SizedBox(height: 20),
-                                              // fixme feed real data
                                               Text(
-                                                  context
-                                                          .watch<
-                                                              MatchesChangeNotifier>()
-                                                          .numPlayedByUser(
+                                                  MatchesController.numPlayedByUser(
+                                                              context.watch<
+                                                                  MatchesState>(),
                                                               userId)
                                                           .toString() +
                                                       " games played",

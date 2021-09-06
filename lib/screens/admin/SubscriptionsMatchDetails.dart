@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:nutmeg/model/ChangeNotifiers.dart';
+import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/model/Model.dart';
 import 'package:nutmeg/screens/admin/SubscriptionHistory.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
@@ -48,7 +48,7 @@ class SubscriptionRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<UserDetails>(
-      future: UserChangeNotifier.getSpecificUserDetails(subscription.userId),
+      future: UserController.getUserDetails(subscription.userId),
       builder: (context, snapshot) => (!snapshot.hasData)
           ? Text("loading")
           : InkWell(

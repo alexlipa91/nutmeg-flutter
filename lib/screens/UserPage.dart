@@ -1,23 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:nutmeg/controller/MatchesController.dart';
+import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/screens/admin/Matches.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/AppBar.dart';
 import 'package:nutmeg/widgets/Buttons.dart';
 import 'package:nutmeg/widgets/Containers.dart';
-import 'package:nutmeg/widgets/SplashScreen.dart';
 import 'package:provider/provider.dart';
 
 class UserPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print("building user page");
-    var userDetails = context.watch<UserChangeNotifier>().getUserDetails();
-
-    if (userDetails == null) { // add this to avoid null pointer exceptions at logout
-      return Container();
-    }
+    var userState = context.watch<UserState>();
+    var userDetails = userState.getUserDetails();
 
     return Scaffold(
       appBar: UserPageAppBar(),
@@ -72,9 +69,8 @@ class UserPage extends StatelessWidget {
                       child: Column(
                     children: [
                       Text(
-                          context
-                                  .watch<MatchesChangeNotifier>()
-                                  .numPlayedByUser(userDetails.getUid())
+                          MatchesController.numPlayedByUser(context.watch<MatchesState>(),
+                              userDetails.getUid())
                                   .toString() +
                               " games played",
                           style: TextPalette.h2),
@@ -90,11 +86,8 @@ class UserPage extends StatelessWidget {
               child: Row(
                 children: [Expanded(
                   child: RoundedButton("LOGOUT", () async {
-                    print("pressed logout");
-                    await Navigator.pushReplacement(context,
-                        MaterialPageRoute(
-                            builder: (context) => SplashScreen(context.read<UserChangeNotifier>().logout())));
-                    Navigator.of(context).pop();
+                    await UserController.logout(context.read<UserState>());
+                    Navigator.pop(context);
                   }),
                 )],
               ),
@@ -109,7 +102,6 @@ class UserPage extends StatelessWidget {
                         context,
                         MaterialPageRoute(
                             builder: (context) => AdminAvailableMatches()));
-                    await context.read<MatchesChangeNotifier>().refresh();
                   }),
                 )],
               ),

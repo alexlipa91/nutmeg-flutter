@@ -15,12 +15,17 @@ import 'SubscriptionsMatchDetails.dart';
 
 // main widget
 class AddOrEditMatch extends StatelessWidget {
-  final Match match;
+  final String matchId;
 
-  const AddOrEditMatch({Key key, this.match}) : super(key: key);
+  AddOrEditMatch.update(this.matchId);
+
+  AddOrEditMatch.add():
+      this.matchId = null;
 
   @override
   Widget build(BuildContext context) {
+    var match = context.read<MatchesState>().getMatch(matchId);
+
     return Scaffold(
       appBar: AdminAreaAppBarInverted(),
       body: Container(
@@ -51,9 +56,8 @@ class AddOrEditMatch extends StatelessWidget {
                           MaterialPageRoute(
                               builder: (context) => SubscriptionsMatchDetails(
                                   context
-                                      .watch<MatchesChangeNotifier>()
+                                      .watch<MatchesState>()
                                       .getMatch(match.documentId))));
-                      await context.read<MatchesChangeNotifier>().refresh();
                     }),
                   )
                 ])
@@ -103,7 +107,7 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
   Widget build(BuildContext context) {
     // utility
     var sportCenters =
-        context.read<SportCentersChangeNotifier>().getSportCenters().toList();
+        context.read<SportCentersState>().getSportCenters().toList();
 
     return Scaffold(
         backgroundColor: Colors.transparent,
@@ -132,7 +136,7 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
               DropdownButton<SportCenter>(
                 focusColor: Colors.white,
                 value: context
-                    .read<SportCentersChangeNotifier>()
+                    .read<SportCentersState>()
                     .getSportCenter(sportCenterId),
                 style: TextStyle(color: Colors.white),
                 iconEnabledColor: Colors.black,

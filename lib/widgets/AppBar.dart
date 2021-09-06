@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/screens/Login.dart';
 import 'package:nutmeg/screens/UserPage.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
 import 'package:provider/provider.dart';
+
 
 class NutmegAppBar extends StatelessWidget with PreferredSizeWidget {
   final Color backgroundColor;
@@ -31,7 +33,7 @@ class NutmegAppBar extends StatelessWidget with PreferredSizeWidget {
 class MainAppBar extends NutmegAppBar {
   @override
   Widget build(BuildContext context) {
-    var isLoggedIn = context.watch<UserChangeNotifier>().isLoggedIn();
+    var isLoggedIn = context.watch<UserState>().isLoggedIn();
 
     return NutmegAppBar(
       backgroundColor: Palette.primary,
@@ -107,13 +109,17 @@ class UserPageAppBar extends NutmegAppBar {
 class UserAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    var userDetails = context.watch<UserChangeNotifier>().getUserDetails();
+    var userDetails = context.watch<UserState>().getUserDetails();
     return InkWell(
         child: CircleAvatar(
             backgroundImage: NetworkImage(userDetails.getPhotoUrl()),
             radius: 25),
-        onTap: () => Navigator.push(
-            context, MaterialPageRoute(builder: (context) => new UserPage())));
+        onTap: () async {
+          await UserController.refresh(context.read<UserState>());
+          Navigator.push(
+              context, MaterialPageRoute(builder: (context) => new UserPage()));
+        }
+        );
   }
 }
 

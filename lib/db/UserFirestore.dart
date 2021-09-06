@@ -15,41 +15,6 @@ class UserFirestore {
     return UserDetails.fromJson(data, uid);
   }
 
-  static Future<UserDetails> loginWithGoogle() async {
-    FirebaseAuth auth = FirebaseAuth.instance;
-
-    final GoogleSignIn googleSignIn = GoogleSignIn();
-    googleSignIn.disconnect();
-    final GoogleSignInAccount googleSignInAccount = await googleSignIn.signIn();
-
-    if (googleSignInAccount != null) {
-      final GoogleSignInAuthentication googleSignInAuthentication =
-          await googleSignInAccount.authentication;
-
-      final AuthCredential credential = GoogleAuthProvider.credential(
-        accessToken: googleSignInAuthentication.accessToken,
-        idToken: googleSignInAuthentication.idToken,
-      );
-
-      final UserCredential userCredential =
-          await auth.signInWithCredential(credential);
-
-      var userDetails;
-
-      // check if first time
-      var doc = await users.doc(userCredential.user.uid).get();
-
-      if (!doc.exists) {
-        userDetails = new UserDetails(userCredential.user.uid, false, userCredential.user.photoURL, userCredential.user.displayName, userCredential.user.email);
-        await storeUserDetails(userDetails);
-      } else {
-        userDetails = UserDetails.fromJson(doc.data(), userCredential.user.uid);
-      }
-
-      return userDetails;
-    }
-  }
-
   static Future<void> storeUserDetails(UserDetails userDetails) =>
       users.doc(userDetails.documentId).set(userDetails.toJson());
 

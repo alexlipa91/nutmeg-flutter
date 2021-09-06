@@ -8,6 +8,7 @@ import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:provider/provider.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:nutmeg/model/Model.dart';
+import 'package:provider/provider.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 
 var apiKey =
@@ -22,7 +23,7 @@ void main() async {
 
   runApp(MultiProvider(
     providers: [
-      ChangeNotifierProvider(create: (context) => UserChangeNotifier())
+      ChangeNotifierProvider(create: (context) => UserState())
     ],
     child: MaterialApp(
         debugShowCheckedModeBanner: false,
@@ -150,6 +151,8 @@ class SuccessfulPaymentSimulator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var userDetails = context.read<UserState>().getUserDetails();
+
     payAndJoin() async {
       await Future.delayed(Duration(seconds: 1));
       Navigator.of(context).pop(PaymentOutcome(Status.success, paymentRecap));

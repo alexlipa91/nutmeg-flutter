@@ -32,7 +32,7 @@ class AddMatchState extends State<AddMatch> {
         FirebaseFirestore.instance.collection('matches');
 
     List<SportCenter> sportCenters =
-        context.read<SportCentersChangeNotifier>().getSportCenters();
+        context.read<SportCentersState>().getSportCenters();
 
     return Scaffold(
         body: Padding(
