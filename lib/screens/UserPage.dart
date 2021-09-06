@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:nutmeg/controller/MatchesController.dart';
+import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/screens/admin/Matches.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
@@ -11,7 +13,7 @@ class UserPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var userDetails = context.read<UserChangeNotifier>().getUserDetails();
+    var userDetails = context.read<UserState>().getUserDetails();
 
     return Scaffold(
       appBar: UserPageAppBar(),
@@ -66,9 +68,8 @@ class UserPage extends StatelessWidget {
                       child: Column(
                     children: [
                       Text(
-                          context
-                                  .watch<MatchesChangeNotifier>()
-                                  .numPlayedByUser(userDetails.getUid())
+                          MatchesController.numPlayedByUser(context.watch<MatchesState>(),
+                              userDetails.getUid())
                                   .toString() +
                               " games played",
                           style: TextPalette.h2),
@@ -84,7 +85,7 @@ class UserPage extends StatelessWidget {
               child: Row(
                 children: [Expanded(
                   child: RoundedButton("LOGOUT", () async {
-                    await context.read<UserChangeNotifier>().logout();
+                    await UserController.logout(context.watch<UserState>());
                     Navigator.pop(context);
                   }),
                 )],
@@ -100,7 +101,6 @@ class UserPage extends StatelessWidget {
                         context,
                         MaterialPageRoute(
                             builder: (context) => AdminAvailableMatches()));
-                    await context.read<MatchesChangeNotifier>().refresh();
                   }),
                 )],
               ),

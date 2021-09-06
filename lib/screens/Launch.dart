@@ -3,6 +3,9 @@ import 'dart:async';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
+import 'package:nutmeg/controller/MatchesController.dart';
+import 'package:nutmeg/controller/SportCentersController.dart';
+import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/screens/MatchDetails.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
@@ -28,10 +31,10 @@ void main() {
   runZonedGuarded(() {
     runApp(MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (context) => UserChangeNotifier()),
-        ChangeNotifierProvider(create: (context) => MatchesChangeNotifier()),
+        ChangeNotifierProvider(create: (context) => UserState()),
+        ChangeNotifierProvider(create: (context) => MatchesState()),
         ChangeNotifierProvider(
-            create: (context) => SportCentersChangeNotifier()),
+            create: (context) => SportCentersState()),
       ],
       child: new MaterialApp(
         navigatorKey: navigatorKey,
@@ -71,7 +74,7 @@ class LaunchWidgetState extends State<LaunchWidget> {
       Navigator.pushReplacement(
           navigatorKey.currentContext,
           MaterialPageRoute(
-              builder: (context) => MatchDetails(context.read<MatchesChangeNotifier>()
+              builder: (context) => MatchDetails(context.read<MatchesState>()
                   .getMatch(deepLink.queryParameters["id"]))));
     }
   }
@@ -107,9 +110,13 @@ class LaunchWidgetState extends State<LaunchWidget> {
     }
 
     // check if user is logged in
-    await context.read<UserChangeNotifier>().loadUserIfAvailable();
-    await context.read<MatchesChangeNotifier>().refresh();
-    await context.read<SportCentersChangeNotifier>().refresh();
+    var userDetails = await UserController.getUserIfAvailable();
+    if (userDetails != null) {
+      context.read<UserState>().setUserDetails(userDetails);
+    }
+
+    await MatchesController.refreshAll(context.read<MatchesState>());
+    await SportCentersController.refreshAll(context.read<SportCentersState>());
     await Future.delayed(Duration(seconds: 1));
 
     // check if coming from link

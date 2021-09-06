@@ -12,18 +12,12 @@ class MatchesFirestore {
 
   static Future<List<Match>> fetchMatches() async {
     var querySnapshot = await _ref.get();
-    return await Future.wait(querySnapshot.docs.map((doc) => _createMatchObject(doc)));
+    return querySnapshot.docs.map((e) => e.data()).toList();
   }
 
-  static Future<Match> fetchMatch(Match m) async {
-    var d = await _ref.doc(m.documentId).get();
+  static Future<Match> fetchMatch(String matchId) async {
+    var d = await _ref.doc(matchId).get();
     return d.data();
-  }
-
-  static Future<Match> _createMatchObject(DocumentSnapshot<Match> doc) async {
-    var match = doc.data();
-    match.subscriptions = await SubscriptionsDb.getMatchSubscriptionsLatestState(match.documentId) ?? [];
-    return match;
   }
 
   static Future<String> addMatch(Match m) async {

@@ -23,7 +23,7 @@ void main() async {
 
   runApp(MultiProvider(
     providers: [
-      ChangeNotifierProvider(create: (context) => UserChangeNotifier())
+      ChangeNotifierProvider(create: (context) => UserState())
     ],
     child: MaterialApp(
         debugShowCheckedModeBanner: false,
@@ -151,7 +151,7 @@ class SuccessfulPaymentSimulator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var userDetails = context.read<UserChangeNotifier>().getUserDetails();
+    var userDetails = context.read<UserState>().getUserDetails();
 
     payAndJoin() async {
       await Future.delayed(Duration(seconds: 1));

@@ -1,6 +1,6 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
 import 'package:intl/intl.dart';
@@ -17,29 +17,10 @@ import "package:collection/collection.dart";
 
 import 'MatchDetails.dart';
 
-// use this main for testing only
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-  var matchesChangeNotifier = MatchesChangeNotifier();
-  var sportCenterChangeNotifier = SportCentersChangeNotifier();
-
-  await matchesChangeNotifier.refresh();
-  await sportCenterChangeNotifier.refresh();
-
-  runApp(MultiProvider(
-    providers: [
-      ChangeNotifierProvider(create: (context) => UserChangeNotifier()),
-      ChangeNotifierProvider(create: (context) => matchesChangeNotifier),
-      ChangeNotifierProvider(create: (context) => sportCenterChangeNotifier),
-    ],
-    child: new MaterialApp(
-        debugShowCheckedModeBanner: false, home: AvailableMatches()),
-  ));
-}
 
 // main widget
 class AvailableMatches extends StatelessWidget {
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -122,10 +103,12 @@ class MatchesAreaState extends State<MatchesArea> {
 
   @override
   Widget build(BuildContext context) {
+    var matchesState = context.watch<MatchesState>();
+
     GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
 
     var optionSelected = context.watch<SelectedTapNotifier>().selected;
-    var isLoggedIn = context.watch<UserChangeNotifier>().isLoggedIn();
+    var isLoggedIn = context.watch<UserState>().isLoggedIn();
 
     return (optionSelected == "MY GAMES" && !isLoggedIn)
         ? Center(
@@ -136,7 +119,7 @@ class MatchesAreaState extends State<MatchesArea> {
               setState(() {
                 isLoading = true;
               });
-              await context.read<MatchesChangeNotifier>().refresh();
+              await MatchesController.refreshAll(matchesState);
               setState(() {
                 isLoading = false;
               });
@@ -175,10 +158,10 @@ class MatchesAreaState extends State<MatchesArea> {
   }
 
   static List<Widget> myGamesWidgets(BuildContext context) {
-    var matches = context.watch<MatchesChangeNotifier>().getMatches().where(
+    var matches = context.watch<MatchesState>().getMatches().where(
         (m) {
           var userSubInMatch = m.getUserSub(
-              context.watch<UserChangeNotifier>().getUserDetails());
+              context.watch<UserState>().getUserDetails());
           return userSubInMatch != null &&
               userSubInMatch.status == SubscriptionStatus.going;
         });
@@ -200,9 +183,9 @@ class MatchesAreaState extends State<MatchesArea> {
       widgets.add(TextSeparatorWidget("UPCOMING GAMES"));
       future.sortedBy((e) => e.dateTime).forEachIndexed((index, m) {
         if (index == 0) {
-          widgets.add(MatchInfo.first(m));
+          widgets.add(MatchInfo.first(m.documentId));
         } else {
-          widgets.add(MatchInfo(m));
+          widgets.add(MatchInfo(m.documentId));
         }
       });
     }
@@ -222,7 +205,7 @@ class MatchesAreaState extends State<MatchesArea> {
   }
 
   static List<Widget> allGamesWidgets(BuildContext context) {
-    var matches = context.watch<MatchesChangeNotifier>().getMatchesInFuture();
+    var matches = context.watch<MatchesState>().getMatchesInFuture();
 
     if (matches.isEmpty) {
       return [TextSeparatorWidget("No upcoming games to display.")];
@@ -238,9 +221,9 @@ class MatchesAreaState extends State<MatchesArea> {
       result.add(WeekSeparatorWidget(w));
       grouped[w].sortedBy((e) => e.dateTime).forEachIndexed((index, match) {
         if (index == 0) {
-          result.add(MatchInfo.first(match));
+          result.add(MatchInfo.first(match.documentId));
         } else {
-          result.add(MatchInfo(match));
+          result.add(MatchInfo(match.documentId));
         }
       });
     });
@@ -302,17 +285,20 @@ class MatchInfo extends StatelessWidget {
   static var formatCurrency = NumberFormat.simpleCurrency(name: "EUR");
   static var monthDayFormat = DateFormat('HH:mm');
 
-  final Match match;
+  final String matchId;
   final double topMargin;
 
-  MatchInfo(this.match) : topMargin = 10;
+  MatchInfo(this.matchId) : topMargin = 10;
 
-  MatchInfo.first(this.match) : topMargin = 0;
+  MatchInfo.first(this.matchId) : topMargin = 0;
 
   @override
   Widget build(BuildContext context) {
+    var matchesState = context.watch<MatchesState>();
+    var match = matchesState.getMatch(matchId);
+
     var sportCenter = context
-        .read<SportCentersChangeNotifier>()
+        .read<SportCentersState>()
         .getSportCenter(match.sportCenter);
 
     return InkWell(
@@ -385,9 +371,9 @@ class MatchInfo extends StatelessWidget {
               context,
               MaterialPageRoute(
                   builder: (context) => MatchDetails(context
-                      .watch<MatchesChangeNotifier>()
+                      .watch<MatchesState>()
                       .getMatch(match.documentId))));
-          await context.read<MatchesChangeNotifier>().refresh();
+          await MatchesController.refresh(matchesState, match.documentId);
         });
   }
 }
@@ -464,8 +450,10 @@ class MatchInfoPast extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var matchesState = context.watch<MatchesState>();
+
     var sportCenter = context
-        .read<SportCentersChangeNotifier>()
+        .read<SportCentersState>()
         .getSportCenter(match.sportCenter);
 
     return InkWell(
@@ -516,9 +504,9 @@ class MatchInfoPast extends StatelessWidget {
               context,
               MaterialPageRoute(
                   builder: (context) => MatchDetails(context
-                      .watch<MatchesChangeNotifier>()
+                      .watch<MatchesState>()
                       .getMatch(match.documentId))));
-          await context.read<MatchesChangeNotifier>().refresh();
+          await MatchesController.refresh(matchesState, match.documentId);
         });
   }
 }

@@ -33,7 +33,7 @@ class NutmegAppBar extends StatelessWidget with PreferredSizeWidget {
 class MainAppBar extends NutmegAppBar {
   @override
   Widget build(BuildContext context) {
-    var isLoggedIn = context.watch<UserChangeNotifier>().isLoggedIn();
+    var isLoggedIn = context.watch<UserState>().isLoggedIn();
 
     return NutmegAppBar(
       backgroundColor: Palette.primary,
@@ -109,7 +109,7 @@ class UserPageAppBar extends NutmegAppBar {
 class UserAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    var userDetails = context.watch<UserChangeNotifier>().getUserDetails();
+    var userDetails = context.watch<UserState>().getUserDetails();
     return InkWell(
         child: CircleAvatar(
             backgroundImage: NetworkImage(userDetails.getPhotoUrl()),

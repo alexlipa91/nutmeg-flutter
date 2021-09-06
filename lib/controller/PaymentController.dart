@@ -3,18 +3,6 @@ import 'dart:math';
 import 'package:nutmeg/db/CouponsFirestore.dart';
 import 'package:nutmeg/model/Model.dart';
 
-class PaymentRecap {
-  int matchPriceInCents;
-  Coupon couponApplied;
-  int creditsInCentsUsed;
-  int finalPriceToPayInCents;
-
-  int getPriceAfterCoupon() {
-    var percentage = couponApplied.percentage / 100;
-    var discount = (percentage * matchPriceInCents).toInt();
-    return matchPriceInCents - discount;
-  }
-}
 
 class PaymentController {
 

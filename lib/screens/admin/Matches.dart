@@ -1,6 +1,6 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
 import 'package:intl/intl.dart';
@@ -15,29 +15,10 @@ import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
 import "package:collection/collection.dart";
 
-// use this main for testing only
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-  var matchesChangeNotifier = MatchesChangeNotifier();
-  var sportCenterChangeNotifier = SportCentersChangeNotifier();
-
-  await matchesChangeNotifier.refresh();
-  await sportCenterChangeNotifier.refresh();
-
-  runApp(MultiProvider(
-    providers: [
-      ChangeNotifierProvider(create: (context) => UserChangeNotifier()),
-      ChangeNotifierProvider(create: (context) => matchesChangeNotifier),
-      ChangeNotifierProvider(create: (context) => sportCenterChangeNotifier),
-    ],
-    child: new MaterialApp(
-        debugShowCheckedModeBanner: false, home: AdminAvailableMatches()),
-  ));
-}
 
 // main widget
 class AdminAvailableMatches extends StatelessWidget {
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -65,7 +46,7 @@ class AdminAvailableMatches extends StatelessWidget {
                         Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => AddOrEditMatch()));
+                                builder: (context) => AddOrEditMatch.add()));
                       }),
                       RoundedButton("ADD SPORT CENTER", () {}),
                     ],
@@ -139,7 +120,9 @@ class MatchesAreaState extends State<MatchesArea> {
 
   @override
   Widget build(BuildContext context) {
-    var matches = context.watch<MatchesChangeNotifier>().getMatches();
+    var matchesState = context.watch<MatchesState>();
+
+    var matches = matchesState.getMatches();
     var now = DateTime.now();
 
     GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
@@ -151,7 +134,7 @@ class MatchesAreaState extends State<MatchesArea> {
         setState(() {
           isLoading = true;
         });
-        await context.read<MatchesChangeNotifier>().refresh();
+        await MatchesController.refreshAll(matchesState);
         setState(() {
           isLoading = false;
         });
@@ -178,10 +161,10 @@ class MatchesAreaState extends State<MatchesArea> {
   }
 
   static List<Widget> myGamesWidgets(BuildContext context) {
-    var matches = context.watch<MatchesChangeNotifier>().getMatches().where(
+    var matches = context.watch<MatchesState>().getMatches().where(
         (m) =>
             m.getUserSub(
-                context.watch<UserChangeNotifier>().getUserDetails()) !=
+                context.watch<UserState>().getUserDetails()) !=
             null);
 
     if (matches.isEmpty) {
@@ -253,8 +236,11 @@ class MatchInfo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var sportCenter = context
-        .read<SportCentersChangeNotifier>()
+        .read<SportCentersState>()
         .getSportCenter(match.sportCenter);
+
+    var matchesState = context.read<MatchesState>();
+
     return InkWell(
         child: Padding(
           padding: EdgeInsets.only(top: topMargin),
@@ -330,8 +316,8 @@ class MatchInfo extends StatelessWidget {
           Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (context) => AddOrEditMatch(match: match)));
-          await context.read<MatchesChangeNotifier>().refresh();
+                  builder: (context) => AddOrEditMatch.update(match.documentId)));
+          await MatchesController.refresh(matchesState, match.documentId);
         });
   }
 }
