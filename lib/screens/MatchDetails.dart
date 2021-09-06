@@ -21,63 +21,63 @@ import 'MatchDetailsModals.dart';
 var formatCurrency = NumberFormat.simpleCurrency(name: "EUR");
 
 class MatchDetails extends StatelessWidget {
-  final Match match;
+  final String matchId;
 
-  MatchDetails(this.match);
+  MatchDetails(this.matchId);
 
   @override
   Widget build(BuildContext context) {
-    SportCenter sportCenter =
+    var matchesState = context.watch<MatchesState>();
+
+    var match = matchesState.getMatch(matchId);
+    var user = context.read<UserState>().getUserDetails();
+    var sportCenter =
         context.read<SportCentersState>().getSportCenter(match.sportCenter);
 
     var title =
         sportCenter.neighbourhood + " - " + match.sport.getDisplayTitle();
 
-    var user = context.read<UserState>().getUserDetails();
-
     return Scaffold(
       appBar: MatchAppBar(match.documentId),
       body: SingleChildScrollView(
-        child: Column(
-          // fixme here we are repeating the padding just because cannot be applied globally as MatchInfo doesn't need
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-                padding: EdgeInsets.only(right: 20, left: 20, bottom: 10),
-                child: Text(title, style: TextPalette.h1Default)),
-            Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20),
-                child: MatchInfo(match, sportCenter)),
-            Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-                child: Text(
-                    match.numPlayersGoing().toString() + " players going",
-                    style: TextPalette.bodyText)),
-            Padding(
+          child: Column(
+        // fixme here we are repeating the padding just because cannot be applied globally as MatchInfo doesn't need
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+              padding: EdgeInsets.only(right: 20, left: 20, bottom: 10),
+              child: Text(title, style: TextPalette.h1Default)),
+          Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: SingleChildScrollView(
-                clipBehavior: Clip.none,
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                    // fixme pass real data here
-                    children: match
-                        .getOrderedGoingSubscriptions(user)
-                        .map((s) => PlayerCard(s.userId))
-                        .toList()),
-              ),
+              child: MatchInfo(match, sportCenter)),
+          Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+              child: Text(match.numPlayersGoing().toString() + " players going",
+                  style: TextPalette.bodyText)),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20),
+            child: SingleChildScrollView(
+              clipBehavior: Clip.none,
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                  // fixme pass real data here
+                  children: match
+                      .getOrderedGoingSubscriptions(user)
+                      .map((s) => PlayerCard(s.userId))
+                      .toList()),
             ),
-            Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                child: Text(
-                  "Details",
-                  style: TextPalette.bodyText,
-                )),
-            RuleCard(),
-            RuleCard(),
-            MapCard.big(sportCenter)
-          ],
-        ),
-      ),
+          ),
+          Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              child: Text(
+                "Details",
+                style: TextPalette.bodyText,
+              )),
+          RuleCard(),
+          RuleCard(),
+          MapCard.big(sportCenter)
+        ],
+      )),
       bottomNavigationBar: BottomBar(match: match),
     );
   }
