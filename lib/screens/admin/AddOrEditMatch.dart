@@ -19,12 +19,12 @@ class AddOrEditMatch extends StatelessWidget {
 
   AddOrEditMatch.update(this.matchId);
 
-  AddOrEditMatch.add():
-      this.matchId = null;
+  AddOrEditMatch.add() : this.matchId = null;
 
   @override
   Widget build(BuildContext context) {
-    var match = context.read<MatchesState>().getMatch(matchId);
+    var matchesState = context.read<MatchesState>();
+    var match = matchesState.getMatch(matchId);
 
     return Scaffold(
       appBar: AdminAreaAppBarInverted(),
@@ -35,18 +35,6 @@ class AddOrEditMatch extends StatelessWidget {
           child: Column(
             children: [
               Expanded(child: AddOrEditMatchForm(match: match)),
-              if (match != null)
-                Row(children: [
-                  Expanded(
-                    child: RoundedButton("CANCEL MATCH", () {
-                      CoolAlert.show(
-                          context: context,
-                          type: CoolAlertType.confirm,
-                          text:
-                              "This is going to mark the match as CANCELED, send a push notification to all users currently joining and issue a credit refund (IMPLEMENT THIS).");
-                    }),
-                  )
-                ]),
               if (match != null)
                 Row(children: [
                   Expanded(
@@ -88,6 +76,7 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
   TextEditingController priceController;
   int maxPlayers;
   DateTime dateTime;
+  MatchStatus status;
 
   @override
   void initState() {
@@ -100,6 +89,7 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
             : NumberFormat.decimalPattern().format(match.getPrice()));
     maxPlayers = (match == null) ? null : match.maxPlayers;
     dateTime = (match == null) ? null : match.dateTime;
+    status = (match == null) ? MatchStatus.open : match.status;
     super.initState();
   }
 
@@ -108,6 +98,12 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
     // utility
     var sportCenters =
         context.read<SportCentersState>().getSportCenters().toList();
+
+    Set<int> maxPlayersDropdownItemsSet = Set();
+    maxPlayersDropdownItemsSet.addAll([8, 10, 12, 14]);
+    if (maxPlayers != null) {
+      maxPlayersDropdownItemsSet.add(maxPlayers);
+    }
 
     return Scaffold(
         backgroundColor: Colors.transparent,
@@ -154,6 +150,27 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                   });
                 },
               ),
+              Text("Status", style: TextPalette.linkStyle),
+              DropdownButton<MatchStatus>(
+                focusColor: Colors.white,
+                value: status,
+                style: TextStyle(color: Colors.white),
+                iconEnabledColor: Colors.black,
+                items: MatchStatus.values
+                    .map<DropdownMenuItem<MatchStatus>>((MatchStatus value) {
+                  return DropdownMenuItem<MatchStatus>(
+                      value: value,
+                      child: Text(
+                          value.toString().split(".").last,
+                          style: TextStyle(color: Colors.black)));
+                }).toList(),
+                onChanged: (MatchStatus value) {
+                  setState(() {
+                    status = value;
+                  });
+                },
+              ),
+
               SizedBox(height: 30.0),
               Text("Sport", style: TextPalette.linkStyle),
               DropdownButton<Sport>(
@@ -190,7 +207,9 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                 value: maxPlayers,
                 style: TextStyle(color: Colors.white),
                 iconEnabledColor: Colors.black,
-                items: [8, 10, 12, 14].map<DropdownMenuItem<int>>((int value) {
+                items: maxPlayersDropdownItemsSet
+                    .toList()
+                    .map<DropdownMenuItem<int>>((int value) {
                   return DropdownMenuItem<int>(
                       value: value,
                       child:
@@ -235,7 +254,7 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                                     (double.parse(priceController.value.text) *
                                             100)
                                         .toInt(),
-                                    MatchStatus.open));
+                                    status));
                             CoolAlert.show(
                                 context: context,
                                 type: CoolAlertType.info,
@@ -250,22 +269,45 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                           match.pricePerPersonInCents =
                               (double.parse(priceController.value.text) * 100)
                                   .toInt();
+                          match.status = status;
+
                           var shouldUpdate = await CoolAlert.show(
                             context: context,
                             type: CoolAlertType.confirm,
-                            text: "This is going to update the match with id: \n" +
-                                match.documentId +
-                                "\nAre you sure?",
+                            text:
+                                "This is going to update the match with id: \n" +
+                                    match.documentId +
+                                    "\nAre you sure?",
                             onConfirmBtnTap: () => Navigator.pop(context, true),
                             onCancelBtnTap: () => Navigator.pop(context, false),
                           );
-                          if (shouldUpdate != null && shouldUpdate) {
-                            await MatchesFirestore.editMatch(match);
-                            CoolAlert.show(
-                                context: context,
-                                type: CoolAlertType.info,
-                                text: "Success!");
+                          if (!shouldUpdate) {
+                            return;
                           }
+
+                          if (match.status == MatchStatus.canceled) {
+                            var shouldCancel = await CoolAlert.show(
+                              context: context,
+                              type: CoolAlertType.confirm,
+                              text:
+                              "This is going to cancel the match with id: \n" +
+                                  match.documentId +
+                                  "\nA push notification will be sent to all the going users and a refund should be issued (implmenet this)"
+                                  "\nAre you sure?",
+                              onConfirmBtnTap: () => Navigator.pop(context, true),
+                              onCancelBtnTap: () => Navigator.pop(context, false),
+                            );
+                            if (!shouldCancel) {
+                              return;
+                            }
+                          }
+
+                          await MatchesFirestore.editMatch(match);
+                          await CoolAlert.show(
+                              context: context,
+                              type: CoolAlertType.info,
+                              text: "Success!");
+                          Navigator.pop(context);
                         }
                       } catch (e, stackTrace) {
                         print(stackTrace.toString());

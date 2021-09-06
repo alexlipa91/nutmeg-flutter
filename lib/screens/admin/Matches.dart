@@ -313,7 +313,7 @@ class MatchInfo extends StatelessWidget {
           )),
         ),
         onTap: () async {
-          Navigator.push(
+          await Navigator.push(
               context,
               MaterialPageRoute(
                   builder: (context) => AddOrEditMatch.update(match.documentId)));

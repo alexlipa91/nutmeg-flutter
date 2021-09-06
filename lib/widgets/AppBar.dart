@@ -113,7 +113,7 @@ class UserAvatar extends StatelessWidget {
     return InkWell(
         child: CircleAvatar(
             backgroundImage: NetworkImage(userDetails.getPhotoUrl()),
-            radius: 25),
+            radius: 18),
         onTap: () async {
           await UserController.refresh(context.read<UserState>());
           Navigator.push(
@@ -134,7 +134,7 @@ class AdminAreaAppBar extends NutmegAppBar {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               InkWell(
-                  child: Icon(Icons.arrow_back, color: Palette.white),
+                  child: Icon(Icons.arrow_back, color: Palette.white, size: 32),
                   onTap: () => Navigator.pop(context)),
               UserAvatar()
             ],
@@ -154,7 +154,7 @@ class AdminAreaAppBarInverted extends NutmegAppBar {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               InkWell(
-                  child: Icon(Icons.arrow_back, color: Palette.primary),
+                  child: Icon(Icons.arrow_back, color: Palette.primary, size: 32),
                   onTap: () => Navigator.pop(context)),
               UserAvatar()
             ],

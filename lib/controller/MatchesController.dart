@@ -5,6 +5,7 @@ import 'package:nutmeg/db/SubscriptionsFirestore.dart';
 import 'package:nutmeg/db/UserFirestore.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
+import 'package:nutmeg/screens/PaymentPage.dart';
 
 import 'UserController.dart';
 
@@ -132,4 +133,11 @@ class MatchesController {
                       sub.userId == userId)
                   .isNotEmpty)
           .length;
+
+  static Future<void> changeMatchState(MatchesState matchesState, String matchId, MatchStatus status) async {
+    var match = matchesState.getMatch(matchId);
+    match.status = status;
+    await MatchesFirestore.editMatch(match);
+    matchesState.setMatch(await MatchesFirestore.fetchMatch(matchId));
+  }
 }

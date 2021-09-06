@@ -405,7 +405,6 @@ class MapCard extends StatelessWidget {
               width: width,
               child: GoogleMap(
                 onTap: (LatLng latLng) async {
-                  print("launching" + latLng.toString() + " with name " + sportCenter.name);
                   MapsLauncher.launchCoordinates(
                       sportCenter.lat, sportCenter.lng, sportCenter.name);
                 },
