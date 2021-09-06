@@ -5,19 +5,13 @@ import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/AppBar.dart';
 import 'package:nutmeg/widgets/Buttons.dart';
 import 'package:nutmeg/widgets/Containers.dart';
-import 'package:nutmeg/widgets/SplashScreen.dart';
 import 'package:provider/provider.dart';
 
 class UserPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print("building user page");
-    var userDetails = context.watch<UserChangeNotifier>().getUserDetails();
-
-    if (userDetails == null) { // add this to avoid null pointer exceptions at logout
-      return Container();
-    }
+    var userDetails = context.read<UserChangeNotifier>().getUserDetails();
 
     return Scaffold(
       appBar: UserPageAppBar(),
@@ -90,11 +84,8 @@ class UserPage extends StatelessWidget {
               child: Row(
                 children: [Expanded(
                   child: RoundedButton("LOGOUT", () async {
-                    print("pressed logout");
-                    await Navigator.pushReplacement(context,
-                        MaterialPageRoute(
-                            builder: (context) => SplashScreen(context.read<UserChangeNotifier>().logout())));
-                    Navigator.of(context).pop();
+                    await context.read<UserChangeNotifier>().logout();
+                    Navigator.pop(context);
                   }),
                 )],
               ),
