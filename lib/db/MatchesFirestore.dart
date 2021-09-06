@@ -10,9 +10,9 @@ class MatchesFirestore {
     toFirestore: (match, _) => match.toJson(),
   );
 
-  static Future<List<Match>> fetchMatches() async {
+  static Future<List<String>> fetchMatchesId() async {
     var querySnapshot = await _ref.get();
-    return querySnapshot.docs.map((e) => e.data()).toList();
+    return querySnapshot.docs.map((e) => e.id).toList();
   }
 
   static Future<Match> fetchMatch(String matchId) async {

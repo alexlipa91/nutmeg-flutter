@@ -13,7 +13,8 @@ class UserPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var userDetails = context.read<UserState>().getUserDetails();
+    var userState = context.watch<UserState>();
+    var userDetails = userState.getUserDetails();
 
     return Scaffold(
       appBar: UserPageAppBar(),
@@ -85,7 +86,7 @@ class UserPage extends StatelessWidget {
               child: Row(
                 children: [Expanded(
                   child: RoundedButton("LOGOUT", () async {
-                    await UserController.logout(context.watch<UserState>());
+                    await UserController.logout(context.read<UserState>());
                     Navigator.pop(context);
                   }),
                 )],

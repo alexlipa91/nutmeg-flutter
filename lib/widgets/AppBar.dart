@@ -1,12 +1,12 @@
-import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
+import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/screens/Login.dart';
 import 'package:nutmeg/screens/UserPage.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
 import 'package:provider/provider.dart';
-import 'package:share/share.dart';
+
 
 class NutmegAppBar extends StatelessWidget with PreferredSizeWidget {
   final Color backgroundColor;
@@ -114,8 +114,12 @@ class UserAvatar extends StatelessWidget {
         child: CircleAvatar(
             backgroundImage: NetworkImage(userDetails.getPhotoUrl()),
             radius: 25),
-        onTap: () => Navigator.push(
-            context, MaterialPageRoute(builder: (context) => new UserPage())));
+        onTap: () async {
+          await UserController.refresh(context.read<UserState>());
+          Navigator.push(
+              context, MaterialPageRoute(builder: (context) => new UserPage()));
+        }
+        );
   }
 }
 

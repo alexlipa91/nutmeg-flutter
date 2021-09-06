@@ -9,13 +9,14 @@ import 'package:nutmeg/model/Model.dart';
 import 'UserController.dart';
 
 class MatchesController {
+
   static Future<void> refresh(MatchesState matchesState, String matchId) async {
-    var match = await MatchesFirestore.fetchMatch(matchId);
+    var match = await getMatch(matchId);
     matchesState.setMatch(match);
   }
 
   static Future<void> refreshAll(MatchesState matchesState) async {
-    var matches = await MatchesFirestore.fetchMatches();
+    var matches = await getMatches();
     matchesState.setMatches(matches);
   }
 
@@ -104,19 +105,19 @@ class MatchesController {
     await refresh(matchesState, matchId);
   }
 
-  static Future<Match> _createMatchObject(Match match) async {
+  static Future<Match> getMatch(String matchId) async {
+    var match = await MatchesFirestore.fetchMatch(matchId);
     match.subscriptions =
-        await SubscriptionsController.getMatchSubscriptionsLatestState(
-                match.documentId) ??
+        await SubscriptionsController.getMatchSubscriptionsLatestState(matchId) ??
             [];
     return match;
   }
 
   static Future<List<Match>> getMatches() async {
-    var matches = await MatchesFirestore.fetchMatches();
+    var ids = await MatchesFirestore.fetchMatchesId();
 
     // add subs
-    var addSubsFutures = matches.map((m) => _createMatchObject(m));
+    var addSubsFutures = ids.map((m) => getMatch(m));
     return await Future.wait(addSubsFutures);
   }
 
