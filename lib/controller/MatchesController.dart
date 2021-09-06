@@ -110,6 +110,7 @@ class MatchesController {
     match.subscriptions =
         await SubscriptionsController.getMatchSubscriptionsLatestState(matchId) ??
             [];
+    print("fetched from db " + match.subscriptions.length.toString());
     return match;
   }
 

@@ -71,11 +71,14 @@ class LaunchWidgetState extends State<LaunchWidget> {
   Future<void> handleLink(Uri deepLink) async {
     if (deepLink.queryParameters.containsKey("id")) {
       print("handling link ");
+
+      // todo check if propagates updates
+      var match = navigatorKey.currentContext.read<MatchesState>().getMatch(deepLink.queryParameters["id"]);
+
       Navigator.pushReplacement(
           navigatorKey.currentContext,
           MaterialPageRoute(
-              builder: (context) => MatchDetails(context.read<MatchesState>()
-                  .getMatch(deepLink.queryParameters["id"]))));
+              builder: (context) => MatchDetails(match.documentId)));
     }
   }
 

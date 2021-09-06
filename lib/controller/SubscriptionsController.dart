@@ -1,8 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:nutmeg/controller/PaymentController.dart';
 import 'package:nutmeg/db/SubscriptionsFirestore.dart';
-import 'package:nutmeg/db/UserFirestore.dart';
-import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
 import "package:collection/collection.dart";
 

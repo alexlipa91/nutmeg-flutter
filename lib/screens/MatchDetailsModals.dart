@@ -47,9 +47,6 @@ class BottomBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print(
-        "user det: " + context.watch<UserState>().getUserDetails().toString());
-
     var userSub = (context.watch<UserState>().isLoggedIn())
         ? match.getUserSub(context.watch<UserState>().getUserDetails())
         : null;
@@ -82,7 +79,7 @@ class BottomBar extends StatelessWidget {
                         // actually leave
                         Future<void> Function() updateState = () async {
                           await MatchesController.leaveMatch(
-                              context.watch<MatchesState>(),
+                              context.read<MatchesState>(),
                               match.documentId,
                               context.read<UserState>());
                         };
@@ -118,7 +115,7 @@ class BottomBar extends StatelessWidget {
                         // update all states
                         Future<Null> Function() updateState = () async {
                           MatchesController.joinMatch(
-                              context.watch<MatchesState>(),
+                              context.read<MatchesState>(),
                               match.documentId,
                               context.read<UserState>(),
                               value.recap);

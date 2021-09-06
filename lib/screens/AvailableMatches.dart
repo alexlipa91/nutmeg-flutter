@@ -104,11 +104,12 @@ class MatchesAreaState extends State<MatchesArea> {
   @override
   Widget build(BuildContext context) {
     var matchesState = context.watch<MatchesState>();
+    var userState = context.watch<UserState>();
 
     GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
 
     var optionSelected = context.watch<SelectedTapNotifier>().selected;
-    var isLoggedIn = context.watch<UserState>().isLoggedIn();
+    var isLoggedIn = userState.isLoggedIn();
 
     return (optionSelected == "MY GAMES" && !isLoggedIn)
         ? Center(
@@ -128,8 +129,8 @@ class MatchesAreaState extends State<MatchesArea> {
               var widgets;
               if (!isLoading) {
                 widgets = (optionSelected == "ALL")
-                    ? allGamesWidgets(context)
-                    : myGamesWidgets(context);
+                    ? allGamesWidgets(matchesState)
+                    : myGamesWidgets(matchesState, userState);
               } else {
                 widgets = List<Widget>.filled(5, MatchInfoSkeleton());
               }
@@ -157,11 +158,10 @@ class MatchesAreaState extends State<MatchesArea> {
           );
   }
 
-  static List<Widget> myGamesWidgets(BuildContext context) {
-    var matches = context.watch<MatchesState>().getMatches().where(
+  static List<Widget> myGamesWidgets(MatchesState state, UserState userState) {
+    var matches = state.getMatches().where(
         (m) {
-          var userSubInMatch = m.getUserSub(
-              context.watch<UserState>().getUserDetails());
+          var userSubInMatch = m.getUserSub(userState.getUserDetails());
           return userSubInMatch != null &&
               userSubInMatch.status == SubscriptionStatus.going;
         });
@@ -204,8 +204,8 @@ class MatchesAreaState extends State<MatchesArea> {
     return widgets;
   }
 
-  static List<Widget> allGamesWidgets(BuildContext context) {
-    var matches = context.watch<MatchesState>().getMatchesInFuture();
+  static List<Widget> allGamesWidgets(MatchesState state) {
+    var matches = state.getMatchesInFuture();
 
     if (matches.isEmpty) {
       return [TextSeparatorWidget("No upcoming games to display.")];
@@ -367,12 +367,11 @@ class MatchInfo extends StatelessWidget {
         ),
         onTap: () async {
           // fixme why it doesn't rebuild here?
+          await MatchesController.refresh(matchesState, matchId);
           await Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (context) => MatchDetails(context
-                      .watch<MatchesState>()
-                      .getMatch(match.documentId))));
+                  builder: (context) => MatchDetails(matchId)));
           await MatchesController.refresh(matchesState, match.documentId);
         });
   }
@@ -503,9 +502,7 @@ class MatchInfoPast extends StatelessWidget {
           await Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (context) => MatchDetails(context
-                      .watch<MatchesState>()
-                      .getMatch(match.documentId))));
+                  builder: (context) => MatchDetails(match.documentId)));
           await MatchesController.refresh(matchesState, match.documentId);
         });
   }
