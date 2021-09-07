@@ -58,35 +58,39 @@ class BottomBar extends StatelessWidget {
     var isGoing = userSub != null && userSub.status == SubscriptionStatus.going;
 
     return InfoContainer(
-        child: Padding(
-      padding: EdgeInsets.all(20),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                  (isGoing)
-                      ? "You are going!"
-                      : match.getSpotsLeft().toString() + " spots left",
-                  style: TextPalette.h2),
-            ],
-          ),
-          (isGoing)
-              ? RoundedButton("LEAVE GAME", () async {
-                  await showModalBottomSheet(
-                      context: context,
-                      builder: (context) =>
-                          LeaveMatchConfirmation(match, userSub));
-                })
-              : (!match.isFull())
-                  ? JoinGameButton(match)
-                  : Container()
-        ],
-      ),
-    ));
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                    (isGoing)
+                        ? "You are going!"
+                        : match.getSpotsLeft().toString() + " spots left",
+                    style: TextPalette.h2),
+                SizedBox(height: 20),
+                Text(
+                    (isGoing)
+                        ? match.numPlayersGoing().toString() + " going"
+                        : formatCurrency.format(match.pricePerPersonInCents / 100),
+                    style: TextPalette.bodyText),
+              ],
+            ),
+            (isGoing)
+                ? RoundedButtonLight("LEAVE GAME", () async {
+                    await showModalBottomSheet(
+                        context: context,
+                        builder: (context) =>
+                            LeaveMatchConfirmation(match, userSub));
+                  })
+                : (!match.isFull())
+                    ? JoinGameButton(match)
+                    : Container()
+          ],
+        ));
   }
 }
 
@@ -501,11 +505,10 @@ class PaymentConfirmationButton extends AbstractButtonWithLoader {
 
     Navigator.pop(context, true);
 
-    await showModalBottomSheet(
-        context: context,
-        builder: (context) => GenericInfoModal(
+    GenericInfoModal(
             title: "Something went wrong!",
-            body: "Please contact us for support"));
+            body: "Please contact us for support")
+        .show(context);
   }
 
   Future<void> onPaymentFailure(BuildContext context) async {
@@ -514,11 +517,10 @@ class PaymentConfirmationButton extends AbstractButtonWithLoader {
 
     Navigator.pop(context);
 
-    await showModalBottomSheet(
-        context: context,
-        builder: (context) => GenericInfoModal(
+    GenericInfoModal(
             title: "Something went wrong!",
-            body: "Please try again or contact us for support"));
+            body: "Please try again or contact us for support")
+        .show(context);
   }
 
   @override
@@ -574,13 +576,8 @@ class JoinGameButton extends AbstractButtonWithLoader {
       try {
         AfterLoginCommunication communication = await Navigator.push(
             context, MaterialPageRoute(builder: (context) => Login()));
-        if (communication != null) {
-          await showModalBottomSheet(
-              context: context,
-              builder: (context) =>
-                  GenericInfoModal(title: "Welcome", body: communication.text));
-        }
-
+        await GenericInfoModal(title: "Welcome", body: communication.text)
+            .show(context);
       } catch (e) {
         CoolAlert.show(
             context: context,
@@ -594,13 +591,26 @@ class JoinGameButton extends AbstractButtonWithLoader {
     var paymentRecap = await PaymentController.generatePaymentRecap(
         matchesState, match.documentId, userState);
 
-    await showModalBottomSheet(
-        isScrollControlled: true,
-        context: context,
-        builder: (context) => PrepaymentBottomBar(
-              match: match,
-              recap: paymentRecap,
-            ));
+    GenericInfoModal.withBottom(
+        title: "JOIN THIS GAME",
+        body:
+            "You can cancel up to 24h before the game starting time to get a full refund in credits to use on your next game.\nIf you cancel after this time you won't get a refund.",
+        bottomWidget: Column(
+          children: [
+            Divider(),
+            PaymentDetailsDescription(paymentRecap: paymentRecap),
+            Divider(),
+            Row(
+              children: [
+                Expanded(
+                    child: (paymentRecap.finalPriceToPayInCents() == 0)
+                        ? PaymentConfirmationWithCreditsButton(
+                            match, paymentRecap)
+                        : PaymentConfirmationButton(match, paymentRecap))
+              ],
+            )
+          ],
+        )).show(context);
 
     try {
       joinController.stop();

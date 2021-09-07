@@ -219,7 +219,7 @@ class InfoWidget extends StatelessWidget {
           children: [
             new Icon(
               icon,
-              color: Palette.primary,
+              color: Palette.mediumgrey,
             ),
             SizedBox(
               width: 20,
@@ -252,12 +252,12 @@ class PlayerCard extends StatelessWidget {
     return FutureBuilder<UserDetails>(
         future: UserController.getUserDetails(userId),
         builder: (context, snapshot) {
-          return Container(
-              constraints: BoxConstraints(maxWidth: 100),
-              decoration: infoMatchDecoration,
-              margin: EdgeInsets.only(right: 10),
-              child: Padding(
-                padding: EdgeInsets.all(10),
+          return SizedBox(
+            width: 100,
+            child: InfoContainer(
+                // constraints: BoxConstraints(maxWidth: 100),
+                // decoration: infoMatchDecoration,
+                // margin: EdgeInsets.only(right: 10),
                 child: (snapshot.hasData)
                     ? Column(children: [
                         InkWell(
@@ -334,8 +334,8 @@ class PlayerCard extends StatelessWidget {
                               width: double.infinity,
                               color: Colors.white)
                         ]),
-                      ),
-              ));
+                      )),
+          );
         });
   }
 }

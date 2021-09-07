@@ -78,21 +78,9 @@ class TextPalette {
 
 // ignore for now
 var appTheme = new ThemeData(
-    primaryColor: Colors.green.shade700,
-    accentColor: Colors.white,
-    textTheme: GoogleFonts.latoTextTheme(
-      TextTheme(
-          headline1: TextStyle(
-              color: Colors.white, fontWeight: FontWeight.w700, fontSize: 28),
-          headline2: TextStyle(
-              color: Colors.black, fontWeight: FontWeight.w500, fontSize: 18),
-          headline3: TextStyle(
-              color: Colors.purple, fontWeight: FontWeight.w700, fontSize: 25),
-          bodyText1: TextStyle(
-              color: Colors.black, fontSize: 18, fontWeight: FontWeight.w600),
-          bodyText2: TextStyle(
-              color: Colors.black, fontSize: 12, fontWeight: FontWeight.w500)),
-    ));
+    primaryColor: Palette.primary,
+    accentColor: Palette.light
+);
 
 var defaultErrorMessage = (err, context) =>
     CoolAlert.show(context: context, type: CoolAlertType.error, text: err.toString());

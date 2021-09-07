@@ -54,10 +54,9 @@ class MainAppBar extends NutmegAppBar {
                         var communication = await Navigator.push(context,
                             MaterialPageRoute(builder: (context) => Login()));
                         if (communication != null) {
-                          await showModalBottomSheet(
-                              context: context,
-                              builder: (context) =>
-                                  GenericInfoModal(title: "Welcome", body: communication.text));
+                          GenericInfoModal(
+                                  title: "Welcome", body: communication.text)
+                              .show(context);
                         }
                       }))
           ],

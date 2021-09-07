@@ -15,6 +15,8 @@ class PrimaryButton extends StatelessWidget {
 
   Color getBackgroundColor() => Palette.primary;
 
+  Color getBorderColor() => Colors.white;
+
   TextStyle getTextStyle() => TextPalette.linkStyleInverted;
 
   Function onPressedFunction() => onPressed;
@@ -43,7 +45,7 @@ class PrimaryButton extends StatelessWidget {
         padding: EdgeInsets.symmetric(vertical: 12, horizontal: 0),
         backgroundColor: getBackgroundColor(),
         shape: RoundedRectangleBorder(
-            side: BorderSide(width: 2.0, color: Colors.white),
+            side: BorderSide(width: 2.0, color: getBorderColor()),
             borderRadius: getBorderRadius()));
   }
 
@@ -80,6 +82,14 @@ mixin Alerted on PrimaryButton {
   TextStyle getTextStyle() => TextPalette.linkStyleInverted;
 }
 
+mixin Light on PrimaryButton {
+  Color getBackgroundColor() => Colors.transparent;
+
+  TextStyle getTextStyle() => TextPalette.linkStyle;
+
+  Color getBorderColor() => Palette.primary;
+}
+
 mixin All on PrimaryButton {}
 
 class LeftButtonOff extends PrimaryButton with LeftRounded, Inverted {
@@ -100,6 +110,12 @@ class RightButtonOn extends PrimaryButton with RightRounded, Primary {
 
 class RoundedButton extends PrimaryButton with LeftRounded, RightRounded {
   RoundedButton(String text, Function onPressed) : super(text, onPressed);
+}
+
+class RoundedButtonLight extends PrimaryButton
+    with LeftRounded, RightRounded, Light {
+  RoundedButtonLight(String text, Function onPressed)
+      : super(text, onPressed);
 }
 
 class RoundedButtonAlerted extends PrimaryButton
