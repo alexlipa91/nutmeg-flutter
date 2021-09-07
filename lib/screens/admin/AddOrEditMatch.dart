@@ -2,6 +2,7 @@ import 'package:cool_alert/cool_alert.dart';
 import 'package:date_time_picker/date_time_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/db/MatchesFirestore.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
@@ -48,6 +49,28 @@ class AddOrEditMatch extends StatelessWidget {
                                       .getMatch(match.documentId))));
                     }),
                   )
+                ]),
+              if (match != null && match.cancelledAt == null)
+                Row(children: [
+                  Expanded(
+                    child: RoundedButtonAlerted("CANCEL", () async {
+                      var shouldCancel = await CoolAlert.show(
+                        context: context,
+                        type: CoolAlertType.confirm,
+                        text: "This is going to cancel the match with id: \n" +
+                            match.documentId +
+                            "\nA push notification will be sent to all the going users and a refund should be issued (implmenet this)"
+                                "\nAre you sure?",
+                        onConfirmBtnTap: () => Navigator.pop(context, true),
+                        onCancelBtnTap: () => Navigator.pop(context, false),
+                      );
+
+                      if (shouldCancel) {
+                        await MatchesController.cancelMatch(matchesState, matchId);
+                        Navigator.pop(context);
+                      }
+                    }),
+                  )
                 ])
             ],
           ),
@@ -76,7 +99,6 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
   TextEditingController priceController;
   int maxPlayers;
   DateTime dateTime;
-  MatchStatus status;
   TextEditingController durationController;
 
   @override
@@ -90,7 +112,6 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
             : NumberFormat.decimalPattern().format(match.getPrice()));
     maxPlayers = (match == null) ? null : match.maxPlayers;
     dateTime = (match == null) ? null : match.dateTime;
-    status = (match == null) ? MatchStatus.open : match.status;
     durationController = TextEditingController(
         text: (match == null) ? "60" : match.duration.inMinutes.toString());
     super.initState();
@@ -149,25 +170,6 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
               onChanged: (SportCenter value) {
                 setState(() {
                   sportCenterId = value.placeId;
-                });
-              },
-            ),
-            Text("Status", style: TextPalette.linkStyle),
-            DropdownButton<MatchStatus>(
-              focusColor: Colors.white,
-              value: status,
-              style: TextStyle(color: Colors.white),
-              iconEnabledColor: Colors.black,
-              items: MatchStatus.values
-                  .map<DropdownMenuItem<MatchStatus>>((MatchStatus value) {
-                return DropdownMenuItem<MatchStatus>(
-                    value: value,
-                    child: Text(value.toString().split(".").last,
-                        style: TextStyle(color: Colors.black)));
-              }).toList(),
-              onChanged: (MatchStatus value) {
-                setState(() {
-                  status = value;
                 });
               },
             ),
@@ -261,10 +263,9 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                                   (double.parse(priceController.value.text) *
                                           100)
                                       .toInt(),
-                                  status,
                                   Duration(
                                       minutes: int.parse(
-                                          durationController.value.text))));
+                                          durationController.value.text)), null));
                           CoolAlert.show(
                               context: context,
                               type: CoolAlertType.info,
@@ -279,7 +280,6 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                         match.pricePerPersonInCents =
                             (double.parse(priceController.value.text) * 100)
                                 .toInt();
-                        match.status = status;
 
                         var shouldUpdate = await CoolAlert.show(
                           context: context,
@@ -293,22 +293,6 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                         );
                         if (!shouldUpdate) {
                           return;
-                        }
-
-                        if (match.status == MatchStatus.canceled) {
-                          var shouldCancel = await CoolAlert.show(
-                            context: context,
-                            type: CoolAlertType.confirm,
-                            text: "This is going to cancel the match with id: \n" +
-                                match.documentId +
-                                "\nA push notification will be sent to all the going users and a refund should be issued (implmenet this)"
-                                    "\nAre you sure?",
-                            onConfirmBtnTap: () => Navigator.pop(context, true),
-                            onCancelBtnTap: () => Navigator.pop(context, false),
-                          );
-                          if (!shouldCancel) {
-                            return;
-                          }
                         }
 
                         await MatchesFirestore.editMatch(match);

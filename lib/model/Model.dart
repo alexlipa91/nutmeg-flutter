@@ -3,8 +3,6 @@ import 'package:intl/intl.dart';
 
 var formatCurrency = NumberFormat.simpleCurrency(name: "EUR");
 
-enum MatchStatus { open, played, canceled }
-
 enum SportCenterTags { indoor, outdoor }
 
 enum Sport { fiveAsideFootball }
@@ -30,13 +28,13 @@ class Match {
   Sport sport;
   int pricePerPersonInCents;
   int maxPlayers;
-  MatchStatus status;
   Duration duration;
+  Timestamp cancelledAt;
 
   List<Subscription> subscriptions;
 
   Match(this.dateTime, this.sportCenter, this.sport, this.maxPlayers,
-      this.pricePerPersonInCents, this.status, this.duration);
+      this.pricePerPersonInCents, this.duration, this.cancelledAt);
 
   Match.from(Match m) {
     documentId = m.documentId;
@@ -45,9 +43,9 @@ class Match {
     sport = m.sport;
     pricePerPersonInCents = m.pricePerPersonInCents;
     maxPlayers = m.maxPlayers;
-    status = m.status;
     subscriptions = m.subscriptions;
     duration = m.duration;
+    cancelledAt = m.cancelledAt;
   }
 
   Match.fromJson(Map<String, dynamic> json, String documentId)
@@ -56,8 +54,8 @@ class Match {
         sport = Sport.values[json['sport']],
         pricePerPersonInCents = json['pricePerPerson'],
         maxPlayers = json['maxPlayers'],
-        status = MatchStatus.values[json['status']],
         duration = Duration(minutes: json['durationInMinutes'] ?? 60),
+        cancelledAt = json['cancelledAt'],
         documentId = documentId;
 
   Map<String, dynamic> toJson() => {
@@ -66,7 +64,7 @@ class Match {
         'sport': sport.index,
         'pricePerPerson': pricePerPersonInCents,
         'maxPlayers': maxPlayers,
-        'status': status.index,
+        'cancelledAt': cancelledAt
       };
 
   int getSpotsLeft() => maxPlayers - numPlayersGoing();
@@ -100,6 +98,8 @@ class Match {
   double getPrice() => pricePerPersonInCents / 100;
 
   String getFormattedPrice() => formatCurrency.format(getPrice());
+
+  bool wasCancelled() => cancelledAt != null;
 }
 
 class Subscription {

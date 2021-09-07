@@ -125,7 +125,7 @@ class MatchesController {
   static int numPlayedByUser(MatchesState matchesState, String userId) =>
       matchesState.getMatches()
           .where((m) =>
-              m.status == MatchStatus.played &&
+              !m.wasCancelled() &&
               m.subscriptions
                   .where((sub) =>
                       sub.status == SubscriptionStatus.going &&
@@ -133,10 +133,10 @@ class MatchesController {
                   .isNotEmpty)
           .length;
 
-  static Future<void> changeMatchState(MatchesState matchesState, String matchId, MatchStatus status) async {
+  static Future<void> cancelMatch(MatchesState matchesState, String matchId) async {
     var match = matchesState.getMatch(matchId);
-    match.status = status;
+    match.cancelledAt = Timestamp.fromDate(DateTime.now());
     await MatchesFirestore.editMatch(match);
-    matchesState.setMatch(await MatchesFirestore.fetchMatch(matchId));
+    matchesState.setMatch(await getMatch(matchId));
   }
 }

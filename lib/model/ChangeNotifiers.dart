@@ -23,7 +23,6 @@ class MatchesState extends ChangeNotifier {
 
   void setMatch(Match m) {
     _matches[m.documentId] = m;
-    print("updating ");
     notifyListeners();
   }
 }

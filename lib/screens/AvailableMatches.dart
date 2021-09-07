@@ -206,7 +206,7 @@ class MatchesAreaState extends State<MatchesArea> {
   }
 
   static List<Widget> allGamesWidgets(MatchesState state) {
-    var matches = state.getMatchesInFuture();
+    var matches = state.getMatchesInFuture().where((e) => !e.wasCancelled()).toList();
 
     if (matches.isEmpty) {
       return [TextSeparatorWidget("No upcoming games to display.")];

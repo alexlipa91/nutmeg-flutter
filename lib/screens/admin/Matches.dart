@@ -15,10 +15,8 @@ import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
 import "package:collection/collection.dart";
 
-
 // main widget
 class AdminAvailableMatches extends StatelessWidget {
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -161,11 +159,8 @@ class MatchesAreaState extends State<MatchesArea> {
   }
 
   static List<Widget> myGamesWidgets(BuildContext context) {
-    var matches = context.watch<MatchesState>().getMatches().where(
-        (m) =>
-            m.getUserSub(
-                context.watch<UserState>().getUserDetails()) !=
-            null);
+    var matches = context.watch<MatchesState>().getMatches().where((m) =>
+        m.getUserSub(context.watch<UserState>().getUserDetails()) != null);
 
     if (matches.isEmpty) {
       return [
@@ -235,9 +230,8 @@ class MatchInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var sportCenter = context
-        .read<SportCentersState>()
-        .getSportCenter(match.sportCenter);
+    var sportCenter =
+        context.read<SportCentersState>().getSportCenter(match.sportCenter);
 
     var matchesState = context.read<MatchesState>();
 
@@ -295,13 +289,8 @@ class MatchInfo extends StatelessWidget {
                                 style: TextPalette.h3),
                             Text(sportCenter.name,
                                 style: TextPalette.bodyTextOneLine),
-                            Text(
-                                match.status
-                                    .toString()
-                                    .split(".")
-                                    .last
-                                    .toUpperCase(),
-                                style: TextPalette.linkStyle),
+                            if (match.cancelledAt != null)
+                              Text("CANCELLED", style: TextPalette.linkStyle),
                           ],
                         ),
                       ),
@@ -316,7 +305,8 @@ class MatchInfo extends StatelessWidget {
           await Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (context) => AddOrEditMatch.update(match.documentId)));
+                  builder: (context) =>
+                      AddOrEditMatch.update(match.documentId)));
           await MatchesController.refresh(matchesState, match.documentId);
         });
   }
