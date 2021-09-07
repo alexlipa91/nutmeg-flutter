@@ -4,6 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
+import 'package:nutmeg/widgets/Buttons.dart';
 import 'package:provider/provider.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:nutmeg/model/Model.dart';
@@ -21,9 +22,7 @@ void main() async {
   final sessionId = await Server().createCheckout(customerId, 1000);
 
   runApp(MultiProvider(
-    providers: [
-      ChangeNotifierProvider(create: (context) => UserState())
-    ],
+    providers: [ChangeNotifierProvider(create: (context) => UserState())],
     child: MaterialApp(
         debugShowCheckedModeBanner: false,
         home: CheckoutPage(sessionId: sessionId)),
@@ -47,8 +46,7 @@ class CheckoutPage extends StatefulWidget {
   final PaymentRecap recap;
   final String sessionId;
 
-  const CheckoutPage({Key key, this.sessionId, this.recap})
-      : super(key: key);
+  const CheckoutPage({Key key, this.sessionId, this.recap}) : super(key: key);
 
   @override
   _CheckoutPageState createState() => _CheckoutPageState(recap);
@@ -120,44 +118,73 @@ const kStripeHtmlPage = '''
 </html>
 ''';
 
-
 class Server {
   Future<String> createCheckout(customerId, int amountInCents) async {
-    HttpsCallable callable = FirebaseFunctions.instanceFor(region: "europe-central2").httpsCallable('create-stripe-session');
-    final results = await callable({
-      'customer_id': customerId,
-      'amount_in_cents': amountInCents
-    });
+    HttpsCallable callable =
+        FirebaseFunctions.instanceFor(region: "europe-central2")
+            .httpsCallable('create-stripe-session');
+    final results = await callable(
+        {'customer_id': customerId, 'amount_in_cents': amountInCents});
     return results.data["session_id"];
   }
 
   Future<String> createCustomer(String name, String email) async {
-    HttpsCallable callable = FirebaseFunctions.instanceFor(region: "europe-central2").httpsCallable('create-stripe-customer');
-    final results = await callable({
-      'name': name,
-      'email': email
-    });
+    HttpsCallable callable =
+        FirebaseFunctions.instanceFor(region: "europe-central2")
+            .httpsCallable('create-stripe-customer');
+    final results = await callable({'name': name, 'email': email});
     return results.data["customer_id"];
   }
 }
 
-class SuccessfulPaymentSimulator extends StatelessWidget {
-
+class PaymentSimulator extends StatelessWidget {
   final Match match;
 
-  const SuccessfulPaymentSimulator(this.match);
+  const PaymentSimulator(this.match);
 
   @override
   Widget build(BuildContext context) {
-    payAndJoin() async {
+    future() async {
       await Future.delayed(Duration(seconds: 1));
-      Navigator.of(context).pop(Status.success);
+      var status = await showModalBottomSheet(
+        context: context,
+        builder: (context) => Container(
+          color: Palette.light,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                  padding: EdgeInsets.symmetric(vertical: 20),
+                  child: Text("Choose the outcome of the payment to test",
+                      style: TextPalette.linkStyle)),
+              Padding(
+                padding: EdgeInsets.only(bottom: 20),
+                child: RoundedButton(
+                    "SUCCESS", () => Navigator.pop(context, Status.success)),
+              ),
+              Padding(
+                padding: EdgeInsets.only(bottom: 20),
+                child: RoundedButton("FAILURE",
+                    () => Navigator.pop(context, Status.paymentFailed)),
+              ),
+              Padding(
+                padding: EdgeInsets.only(bottom: 20),
+                child: RoundedButton("CANCELED",
+                    () => Navigator.pop(context, Status.paymentCanceled)),
+              ),
+            ],
+          ),
+        ),
+      );
+
+      Navigator.of(context).pop(status);
     }
 
     return Scaffold(
       backgroundColor: Palette.light,
       body: FutureBuilder(
-          future: payAndJoin().catchError((err, stack) => print(err.toString())),
+          future: future().catchError((err, stack) => print(err.toString())),
           builder: (context, snapshot) {
             return Container(
               color: Palette.primary,
@@ -165,7 +192,8 @@ class SuccessfulPaymentSimulator extends StatelessWidget {
                   child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text("Payment simulator", style: TextPalette.linkStyleInverted),
+                    Text("Payment simulator",
+                        style: TextPalette.linkStyleInverted),
                     (snapshot.hasError)
                         ? Text(snapshot.stackTrace.toString())
                         : Image.asset("assets/nutmeg_white.png",

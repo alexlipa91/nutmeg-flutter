@@ -33,8 +33,7 @@ void main() {
       providers: [
         ChangeNotifierProvider(create: (context) => UserState()),
         ChangeNotifierProvider(create: (context) => MatchesState()),
-        ChangeNotifierProvider(
-            create: (context) => SportCentersState()),
+        ChangeNotifierProvider(create: (context) => SportCentersState()),
       ],
       child: new MaterialApp(
         navigatorKey: navigatorKey,
@@ -54,14 +53,11 @@ void main() {
 }
 
 class LaunchWidget extends StatefulWidget {
-
   @override
   State<StatefulWidget> createState() => LaunchWidgetState();
-
 }
 
 class LaunchWidgetState extends State<LaunchWidget> {
-
   @override
   void initState() {
     super.initState();
@@ -73,7 +69,9 @@ class LaunchWidgetState extends State<LaunchWidget> {
       print("handling link ");
 
       // todo check if propagates updates
-      var match = navigatorKey.currentContext.read<MatchesState>().getMatch(deepLink.queryParameters["id"]);
+      var match = navigatorKey.currentContext
+          .read<MatchesState>()
+          .getMatch(deepLink.queryParameters["id"]);
 
       Navigator.pushReplacement(
           navigatorKey.currentContext,
@@ -85,16 +83,14 @@ class LaunchWidgetState extends State<LaunchWidget> {
   void initDynamicLinks() {
     FirebaseDynamicLinks.instance.onLink(
         onSuccess: (PendingDynamicLinkData dynamicLink) async {
-          final Uri deepLink = dynamicLink?.link;
+      final Uri deepLink = dynamicLink?.link;
 
-          if (deepLink != null) {
-            handleLink(deepLink);
-          }
-        },
-        onError: (OnLinkErrorException e) async {
-          print(e.message);
-        }
-    );
+      if (deepLink != null) {
+        handleLink(deepLink);
+      }
+    }, onError: (OnLinkErrorException e) async {
+      print(e.message);
+    });
   }
 
   Future<void> loadData(BuildContext context) async {
@@ -105,7 +101,8 @@ class LaunchWidgetState extends State<LaunchWidget> {
       // Force disable Crashlytics collection while doing every day development.
       // Temporarily toggle this to true if you want to test crash reporting in your app.
       if (!kIsWeb) {
-        await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(false);
+        await FirebaseCrashlytics.instance
+            .setCrashlyticsCollectionEnabled(false);
       }
     } else {
       // Handle Crashlytics enabled status when not in Debug,
@@ -123,7 +120,8 @@ class LaunchWidgetState extends State<LaunchWidget> {
     await Future.delayed(Duration(seconds: 1));
 
     // check if coming from link
-    final PendingDynamicLinkData data = await FirebaseDynamicLinks.instance.getInitialLink();
+    final PendingDynamicLinkData data =
+        await FirebaseDynamicLinks.instance.getInitialLink();
 
     final Uri deepLink = data?.link;
 
@@ -145,38 +143,56 @@ class LaunchWidgetState extends State<LaunchWidget> {
     };
 
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          color: Palette.primary,
-        ),
-        child: FutureBuilder<void>(
-          future: loadData(context).catchError((err, stacktrace) {
-            print(err);
-            defaultErrorMessage(err, context);
-          }),
-          builder: (context, snapshot) => (snapshot.hasError)
-              ? Text(snapshot.error.toString(),
-                  style: TextPalette.linkStyleInverted)
-              : Center(
-                  child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                      Image.asset("assets/nutmeg_white.png",
-                          width: 116, height: 46),
-                      SizedBox(height: 30),
-                      CircularProgressIndicator(
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(Colors.white)),
-                      FutureBuilder<String>(
-                          future: getVersionFuture(),
-                          builder: (context, snapshot) => Text(
-                              (snapshot.hasData)
-                                  ? snapshot.data
-                                  : "loading version number",
-                              style: TextPalette.linkStyleInverted))
-                    ])),
-        ),
-      ),
-    );
+        body: Container(
+            decoration: BoxDecoration(
+              color: Palette.primary,
+            ),
+            child: FutureBuilder<void>(
+                future: loadData(context).catchError((err, stacktrace) {
+                  print(err);
+                  defaultErrorMessage(err, context);
+                }),
+                builder: (context, snapshot) => (snapshot.hasError)
+                    ? Text(snapshot.error.toString(),
+                        style: TextPalette.linkStyleInverted)
+                    : Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                            Expanded(
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Image.asset("assets/nutmeg_white.png",
+                                          width: 116, height: 46),
+                                      SizedBox(height: 30),
+                                      CircularProgressIndicator(
+                                          valueColor:
+                                              AlwaysStoppedAnimation<Color>(
+                                                  Colors.white)),
+                                    ],
+                                  )
+                                ],
+                              ),
+                            ),
+                            Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  FutureBuilder<String>(
+                                      future: getVersionFuture(),
+                                      builder: (context, snapshot) => Padding(
+                                            padding:
+                                                EdgeInsets.only(bottom: 20),
+                                            child: Text(
+                                                (snapshot.hasData)
+                                                    ? snapshot.data
+                                                    : "loading version number",
+                                                style: TextPalette
+                                                    .linkStyleInverted),
+                                          )),
+                                ])
+                          ]))));
   }
 }

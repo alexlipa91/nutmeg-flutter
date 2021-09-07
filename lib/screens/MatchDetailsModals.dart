@@ -204,7 +204,8 @@ class PaymentDetailsDescription extends StatelessWidget {
               children: [
                 Text("Subtotal", style: TextPalette.h3),
                 Text(
-                  formatCurrency.format(paymentRecap.finalPriceToPayInCents),
+                  formatCurrency
+                      .format(paymentRecap.finalPriceToPayInCents / 100),
                   style: TextPalette.h3,
                 )
               ],
@@ -409,9 +410,11 @@ class LeaveMatchConfirmation extends StatelessWidget {
 class LeaveConfirmationButton extends ButtonWithLoader {
   final Match match;
 
-  static RoundedLoadingButtonController leaveController = RoundedLoadingButtonController();
+  static RoundedLoadingButtonController leaveController =
+      RoundedLoadingButtonController();
 
-  LeaveConfirmationButton(this.match) : super(text: "CONFIRM", controller: leaveController);
+  LeaveConfirmationButton(this.match)
+      : super(text: "CONFIRM", controller: leaveController);
 
   @override
   Future<void> onPressed(BuildContext context) async {
@@ -462,7 +465,8 @@ class PaymentConfirmationWithCreditsButton extends ButtonWithLoader {
   final Match match;
   final PaymentRecap paymentRecap;
 
-  static RoundedLoadingButtonController payConfirmController = RoundedLoadingButtonController();
+  static RoundedLoadingButtonController payConfirmController =
+      RoundedLoadingButtonController();
 
   PaymentConfirmationWithCreditsButton(this.match, this.paymentRecap)
       : super(text: "PAY WITH CREDITS", controller: payConfirmController);
@@ -488,7 +492,8 @@ class PaymentConfirmationButton extends ButtonWithLoader {
   final Match match;
   final PaymentRecap paymentRecap;
 
-  static RoundedLoadingButtonController payConfirmController = RoundedLoadingButtonController();
+  static RoundedLoadingButtonController payConfirmController =
+      RoundedLoadingButtonController();
 
   PaymentConfirmationButton(this.match, this.paymentRecap)
       : super(text: "CONTINUE TO PAYMENT", controller: payConfirmController);
@@ -509,10 +514,8 @@ class PaymentConfirmationButton extends ButtonWithLoader {
     //             sessionId: sessionId,
     //             couponUsed: snapshot.data.id)));
 
-    Status status = await Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => SuccessfulPaymentSimulator(match)));
+    Status status = await Navigator.push(context,
+        MaterialPageRoute(builder: (context) => PaymentSimulator(match)));
 
     if (status == Status.success) {
       await MatchesController.joinMatch(context.read<MatchesState>(),
@@ -529,8 +532,14 @@ class PaymentConfirmationButton extends ButtonWithLoader {
 
       Navigator.pop(context);
     } else if (status == Status.paymentFailed) {
-      CoolAlert.show(
-          context: context, type: CoolAlertType.error, text: "Payment failed");
+      controller.error();
+      await Future.delayed(Duration(seconds: 1));
+
+      Navigator.pop(context);
+
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          duration: Duration(seconds: 1),
+          content: const Text('There was an error with the payment')));
     }
   }
 }
@@ -538,13 +547,14 @@ class PaymentConfirmationButton extends ButtonWithLoader {
 class JoinGameButton extends ButtonWithLoader {
   final Match match;
 
-  static RoundedLoadingButtonController joinController = RoundedLoadingButtonController();
+  static RoundedLoadingButtonController joinController =
+      RoundedLoadingButtonController();
 
-  JoinGameButton(this.match) : super(text: 'JOIN GAME', width: 200, controller: joinController);
+  JoinGameButton(this.match)
+      : super(text: 'JOIN GAME', width: 200, controller: joinController);
 
   @override
-  Future<void> onPressed(
-      BuildContext context) async {
+  Future<void> onPressed(BuildContext context) async {
     var userState = context.read<UserState>();
     var matchesState = context.read<MatchesState>();
 
