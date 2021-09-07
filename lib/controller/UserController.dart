@@ -1,8 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:nutmeg/controller/PromotionController.dart';
 import 'package:nutmeg/db/UserFirestore.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
+import 'package:nutmeg/screens/admin/Matches.dart';
 
 class UserController {
 
@@ -30,7 +32,7 @@ class UserController {
     return null;
   }
 
-  static Future<void> loginWithGoogle(UserState userState) async {
+  static Future<AfterLoginCommunication> loginWithGoogle(UserState userState) async {
     FirebaseAuth auth = FirebaseAuth.instance;
 
     final GoogleSignIn googleSignIn = GoogleSignIn();
@@ -53,22 +55,35 @@ class UserController {
       UserDetails userDetails =
           await UserFirestore.getSpecificUserDetails(userCredential.user.uid);
 
-      if (userDetails != null) {
-        userDetails = new UserDetails(
-            userCredential.user.uid,
-            false,
-            userCredential.user.photoURL,
-            userCredential.user.displayName,
-            userCredential.user.email);
+      var afterLoginComm;
+
+      if (userDetails == null) {
+        userDetails = new UserDetails(userCredential.user.uid, false,
+            userCredential.user.photoURL, userCredential.user.displayName, userCredential.user.email);
+
+        // check if need to give credits todo generalize
+        int credits = await PromotionController.giveFreeCreditsAtLogin();
+        if (credits > 0) {
+          userDetails.creditsInCents = userDetails.creditsInCents + credits;
+          afterLoginComm = AfterLoginCommunication();
+          afterLoginComm.text = MatchInfo.formatCurrency.format(credits / 100) + " were added to your account.\nJoin a match and use them to pay";
+        }
         await UserFirestore.storeUserDetails(userDetails);
       }
 
+      print("setting " + userDetails.toString());
       userState.setUserDetails(userDetails);
+      return afterLoginComm;
     }
+    return null;
   }
 
   static Future<void> logout(UserState userState) async {
     await UserFirestore.logout();
     userState.setUserDetails(null);
   }
+}
+
+class AfterLoginCommunication {
+  String text;
 }

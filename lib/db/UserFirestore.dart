@@ -12,7 +12,7 @@ class UserFirestore {
   static Future<UserDetails> getSpecificUserDetails(String uid) async {
     var doc = await users.doc(uid).get();
     Map<String, dynamic> data = doc.data();
-    return UserDetails.fromJson(data, uid);
+    return (data == null) ? null : UserDetails.fromJson(data, uid);
   }
 
   static Future<void> storeUserDetails(UserDetails userDetails) =>

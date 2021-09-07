@@ -2,6 +2,7 @@ import 'package:cool_alert/cool_alert.dart';
 import 'package:flutter/material.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/controller/PaymentController.dart';
+import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
 import 'package:nutmeg/screens/PaymentPage.dart';
@@ -58,34 +59,34 @@ class BottomBar extends StatelessWidget {
 
     return InfoContainer(
         child: Padding(
-          padding: EdgeInsets.all(20),
-          child: Row(
+      padding: EdgeInsets.all(20),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                      (isGoing)
-                          ? "You are going!"
-                          : match.getSpotsLeft().toString() + " spots left",
-                      style: TextPalette.h2),
-                ],
-              ),
-              (isGoing)
-                  ? RoundedButton("LEAVE GAME", () async {
-                      await showModalBottomSheet(
-                          context: context,
-                          builder: (context) =>
-                              LeaveMatchConfirmation(match, userSub));
-                    })
-                  : (!match.isFull())
-                      ? JoinGameButton(match)
-                      : Container()
+              Text(
+                  (isGoing)
+                      ? "You are going!"
+                      : match.getSpotsLeft().toString() + " spots left",
+                  style: TextPalette.h2),
             ],
           ),
-        ));
+          (isGoing)
+              ? RoundedButton("LEAVE GAME", () async {
+                  await showModalBottomSheet(
+                      context: context,
+                      builder: (context) =>
+                          LeaveMatchConfirmation(match, userSub));
+                })
+              : (!match.isFull())
+                  ? JoinGameButton(match)
+                  : Container()
+        ],
+      ),
+    ));
   }
 }
 
@@ -161,24 +162,6 @@ class PaymentDetailsDescription extends StatelessWidget {
             textAlign: TextAlign.end,
           ))
         ]),
-        if (paymentRecap.couponApplied != null)
-          Row(
-            children: [
-              // adding this here as a trick to align the rows
-              CircleAvatar(backgroundColor: Colors.transparent, radius: 15),
-              SizedBox(width: 10),
-              Text(paymentRecap.couponApplied.description,
-                  style: TextPalette.bodyText),
-              Expanded(
-                  child: Text(
-                "- " +
-                    formatCurrency
-                        .format(paymentRecap.getCouponDiscount() / 100),
-                style: TextPalette.bodyText,
-                textAlign: TextAlign.end,
-              ))
-            ],
-          ),
         if (paymentRecap.creditsInCentsUsed != 0)
           Row(
             children: [
@@ -197,7 +180,7 @@ class PaymentDetailsDescription extends StatelessWidget {
             ],
           ),
         Divider(),
-        if (paymentRecap.finalPriceToPayInCents !=
+        if (paymentRecap.finalPriceToPayInCents() !=
             paymentRecap.matchPriceInCents)
           Padding(
             padding: EdgeInsets.symmetric(vertical: 10),
@@ -207,7 +190,7 @@ class PaymentDetailsDescription extends StatelessWidget {
                 Text("Subtotal", style: TextPalette.h3),
                 Text(
                   formatCurrency
-                      .format(paymentRecap.finalPriceToPayInCents / 100),
+                      .format(paymentRecap.finalPriceToPayInCents() / 100),
                   style: TextPalette.h3,
                 )
               ],
@@ -409,7 +392,7 @@ class LeaveMatchConfirmation extends StatelessWidget {
   }
 }
 
-class LeaveConfirmationButton extends ButtonWithLoader {
+class LeaveConfirmationButton extends AbstractButtonWithLoader {
   final Match match;
 
   static RoundedLoadingButtonController leaveController =
@@ -463,7 +446,7 @@ class LeaveConfirmationButton extends ButtonWithLoader {
   }
 }
 
-class PaymentConfirmationWithCreditsButton extends ButtonWithLoader {
+class PaymentConfirmationWithCreditsButton extends AbstractButtonWithLoader {
   final Match match;
   final PaymentRecap paymentRecap;
 
@@ -490,7 +473,7 @@ class PaymentConfirmationWithCreditsButton extends ButtonWithLoader {
   }
 }
 
-class PaymentConfirmationButton extends ButtonWithLoader {
+class PaymentConfirmationButton extends AbstractButtonWithLoader {
   final Match match;
   final PaymentRecap paymentRecap;
 
@@ -557,11 +540,13 @@ class PaymentConfirmationButton extends ButtonWithLoader {
     Status status = await Navigator.push(context,
         MaterialPageRoute(builder: (context) => PaymentSimulator(match)));
 
-    if (status == Status.success) { // payment was good
+    if (status == Status.success) {
+      // payment was good
       try {
         await MatchesController.joinMatch(context.read<MatchesState>(),
             match.documentId, context.read<UserState>(), paymentRecap);
-      } catch (e) { // payment was good but joining the match was not. This shouldn't happen
+      } catch (e) {
+        // payment was good but joining the match was not. This shouldn't happen
         await onPaymentSuccessButJoinFailure(context);
       }
       await onSuccess(context);
@@ -571,7 +556,7 @@ class PaymentConfirmationButton extends ButtonWithLoader {
   }
 }
 
-class JoinGameButton extends ButtonWithLoader {
+class JoinGameButton extends AbstractButtonWithLoader {
   final Match match;
 
   static RoundedLoadingButtonController joinController =
@@ -586,11 +571,17 @@ class JoinGameButton extends ButtonWithLoader {
     var matchesState = context.read<MatchesState>();
 
     if (!userState.isLoggedIn()) {
-      bool couldLogIn = await Navigator.push(
-              context, MaterialPageRoute(builder: (context) => Login()))
-          .then((isLoginSuccessful) => isLoginSuccessful);
+      try {
+        AfterLoginCommunication communication = await Navigator.push(
+            context, MaterialPageRoute(builder: (context) => Login()));
+        if (communication != null) {
+          await showModalBottomSheet(
+              context: context,
+              builder: (context) =>
+                  GenericInfoModal(title: "Welcome", body: communication.text));
+        }
 
-      if (!couldLogIn) {
+      } catch (e) {
         CoolAlert.show(
             context: context,
             type: CoolAlertType.error,

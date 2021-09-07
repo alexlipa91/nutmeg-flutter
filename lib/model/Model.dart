@@ -247,13 +247,7 @@ class Coupon {
 
 class PaymentRecap {
   int matchPriceInCents;
-  Coupon couponApplied;
   int creditsInCentsUsed;
-  int finalPriceToPayInCents;
 
-  int getCouponDiscount() {
-    var percentage = couponApplied.percentage / 100;
-    var discount = (percentage * matchPriceInCents).toInt();
-    return discount;
-  }
+  finalPriceToPayInCents() => matchPriceInCents - creditsInCentsUsed;
 }

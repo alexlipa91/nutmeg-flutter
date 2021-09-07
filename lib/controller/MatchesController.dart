@@ -40,14 +40,10 @@ class MatchesController {
         var sub = new Subscription(
             userDetails.getUid(),
             SubscriptionStatus.going,
-            paymentStatus.finalPriceToPayInCents,
+            paymentStatus.finalPriceToPayInCents(),
             paymentStatus.creditsInCentsUsed,
             0);
         await SubscriptionsDb.addSubscription(matchId, sub);
-      }
-
-      if (paymentStatus.couponApplied != null) {
-        userDetails.usedCoupons.add(paymentStatus.couponApplied.id);
       }
 
       if (paymentStatus.creditsInCentsUsed > 0) {

@@ -9,15 +9,6 @@ import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/Containers.dart';
 import 'package:provider/provider.dart';
 
-void main() {
-  WidgetsFlutterBinding.ensureInitialized();
-  Authentication.initializeFirebase();
-
-  runApp(new MaterialApp(
-    home: Login(),
-    theme: appTheme,
-  ));
-}
 
 class Login extends StatelessWidget {
   @override
@@ -93,8 +84,9 @@ class GoogleSignInButton extends StatelessWidget {
         context.read<LoginStatusChangeNotifier>().setIsSigningIn(true);
 
         try {
-          await UserController.loginWithGoogle(context.read<UserState>());
-          Navigator.pop(context, true);
+          var communication =
+              await UserController.loginWithGoogle(context.read<UserState>());
+          Navigator.pop(context, communication);
         } on FirebaseAuthException catch (e) {
           showDialog(
               context: context,
@@ -121,8 +113,7 @@ class GoogleSignInButton extends StatelessWidget {
           ),
           Padding(
             padding: const EdgeInsets.only(left: 10),
-            child:
-                Text('CONTINUE WITH GOOGLE', style: TextPalette.bodyText),
+            child: Text('CONTINUE WITH GOOGLE', style: TextPalette.bodyText),
           )
         ],
       ),

@@ -3,10 +3,10 @@ import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/screens/Login.dart';
 import 'package:nutmeg/screens/UserPage.dart';
+import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
 import 'package:provider/provider.dart';
-
 
 class NutmegAppBar extends StatelessWidget with PreferredSizeWidget {
   final Color backgroundColor;
@@ -50,8 +50,16 @@ class MainAppBar extends NutmegAppBar {
                   child: InkWell(
                       child:
                           Text("LOGIN", style: TextPalette.linkStyleInverted),
-                      onTap: () => Navigator.push(context,
-                          MaterialPageRoute(builder: (context) => Login()))))
+                      onTap: () async {
+                        var communication = await Navigator.push(context,
+                            MaterialPageRoute(builder: (context) => Login()));
+                        if (communication != null) {
+                          await showModalBottomSheet(
+                              context: context,
+                              builder: (context) =>
+                                  GenericInfoModal(title: "Welcome", body: communication.text));
+                        }
+                      }))
           ],
         ),
       ),
@@ -60,7 +68,6 @@ class MainAppBar extends NutmegAppBar {
 }
 
 class MatchAppBar extends NutmegAppBar {
-
   final String matchId;
 
   MatchAppBar(this.matchId);
@@ -79,7 +86,8 @@ class MatchAppBar extends NutmegAppBar {
                 onTap: () => Navigator.of(context).pop()),
             InkWell(
                 child: Icon(Icons.share, color: Colors.black),
-                onTap: () async => await DynamicLinks.shareMatchFunction(matchId))
+                onTap: () async =>
+                    await DynamicLinks.shareMatchFunction(matchId))
           ],
         ),
       ),
@@ -118,8 +126,7 @@ class UserAvatar extends StatelessWidget {
           await UserController.refresh(context.read<UserState>());
           Navigator.push(
               context, MaterialPageRoute(builder: (context) => new UserPage()));
-        }
-        );
+        });
   }
 }
 
@@ -154,7 +161,8 @@ class AdminAreaAppBarInverted extends NutmegAppBar {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               InkWell(
-                  child: Icon(Icons.arrow_back, color: Palette.primary, size: 32),
+                  child:
+                      Icon(Icons.arrow_back, color: Palette.primary, size: 32),
                   onTap: () => Navigator.pop(context)),
               UserAvatar()
             ],

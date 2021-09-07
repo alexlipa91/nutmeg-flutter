@@ -7,13 +7,13 @@ import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/AppBar.dart';
 import 'package:nutmeg/widgets/Buttons.dart';
 import 'package:nutmeg/widgets/Containers.dart';
-import 'package:nutmeg/widgets/Texts.dart';
 import 'package:provider/provider.dart';
 
 class UserPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    var userState = context.watch<UserState>();
+    // don't watch this or when logout things will break
+    var userState = context.read<UserState>();
     var userDetails = userState.getUserDetails();
 
     return Scaffold(
@@ -96,14 +96,14 @@ class UserPage extends StatelessWidget {
                   padding: EdgeInsets.symmetric(vertical: 20),
                   child: InfoContainer(
                       child: Column(children: [
-                    LinkInfo(text: "Follow us on Instangram"),
+                    LinkInfo(text: "Follow us on Instagram"),
                     LinkInfo(text: "Terms and Conditions"),
                     Padding(
                       padding: EdgeInsets.only(top: 10),
                       child: Row(
                         children: [
                           Expanded(
-                            child: RoundedButton("LOGOUT", () async {
+                            child: ButtonWithLoader("LOGOUT", () async {
                               await UserController.logout(
                                   context.read<UserState>());
                               Navigator.pop(context);

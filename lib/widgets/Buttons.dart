@@ -108,7 +108,7 @@ class RoundedButtonAlerted extends PrimaryButton
       : super(text, onPressed);
 }
 
-abstract class ButtonWithLoader extends StatelessWidget {
+abstract class AbstractButtonWithLoader extends StatelessWidget {
 
   final String text;
   double width;
@@ -116,7 +116,7 @@ abstract class ButtonWithLoader extends StatelessWidget {
 
   Future<void> onPressed(BuildContext context);
 
-  ButtonWithLoader({double width, this.text, RoundedLoadingButtonController controller}) {
+  AbstractButtonWithLoader({double width, this.text, RoundedLoadingButtonController controller}) {
     this.width = width;
     this.controller = controller;
   }
@@ -136,4 +136,15 @@ abstract class ButtonWithLoader extends StatelessWidget {
       ),
     );
   }
+}
+
+class ButtonWithLoader extends AbstractButtonWithLoader {
+
+  final String text;
+  final Function onTap;
+
+  ButtonWithLoader(this.text, this.onTap): super(width: 0, text: text, controller: RoundedLoadingButtonController());
+
+  @override
+  Future<void> onPressed(BuildContext context) => onTap();
 }
