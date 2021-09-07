@@ -1,12 +1,18 @@
 import 'dart:math';
 
+import 'package:nutmeg/controller/MatchesController.dart';
+import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/db/CouponsFirestore.dart';
+import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
 
 
 class PaymentController {
 
-  static Future<PaymentRecap> generatePaymentRecap(Match m, UserDetails u) async {
+  static Future<PaymentRecap> generatePaymentRecap(MatchesState matchesState, String matchId, UserState userState) async {
+    var m = await MatchesController.refresh(matchesState, matchId);
+    var u = await UserController.refresh(userState);
+
     var result = PaymentRecap();
     result.matchPriceInCents = m.pricePerPersonInCents;
     result.finalPriceToPayInCents = m.pricePerPersonInCents;

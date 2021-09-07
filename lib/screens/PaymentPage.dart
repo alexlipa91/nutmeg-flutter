@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:nutmeg/controller/PaymentController.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:provider/provider.dart';
@@ -145,23 +144,20 @@ class Server {
 class SuccessfulPaymentSimulator extends StatelessWidget {
 
   final Match match;
-  final PaymentRecap paymentRecap;
 
-  const SuccessfulPaymentSimulator({Key key, this.match, this.paymentRecap}) : super(key: key);
+  const SuccessfulPaymentSimulator(this.match);
 
   @override
   Widget build(BuildContext context) {
-    var userDetails = context.read<UserState>().getUserDetails();
-
     payAndJoin() async {
       await Future.delayed(Duration(seconds: 1));
-      Navigator.of(context).pop(PaymentOutcome(Status.success, paymentRecap));
+      Navigator.of(context).pop(Status.success);
     }
 
     return Scaffold(
       backgroundColor: Palette.light,
       body: FutureBuilder(
-          future: payAndJoin(),
+          future: payAndJoin().catchError((err, stack) => print(err.toString())),
           builder: (context, snapshot) {
             return Container(
               color: Palette.primary,

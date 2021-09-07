@@ -10,6 +10,7 @@ import 'package:nutmeg/widgets/AppBar.dart';
 import 'package:nutmeg/widgets/Buttons.dart';
 import 'package:nutmeg/widgets/Containers.dart';
 import 'package:nutmeg/widgets/Texts.dart';
+import 'package:nutmeg/widgets/WaitingScreen.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:week_of_year/week_of_year.dart';
@@ -369,8 +370,11 @@ class MatchInfo extends StatelessWidget {
           await Navigator.push(
               context,
               MaterialPageRoute(
+                  builder: (context) => WaitingScreenLight(toRun: () => MatchesController.refresh(matchesState, match.documentId))));
+          await Navigator.push(
+              context,
+              MaterialPageRoute(
                   builder: (context) => MatchDetails(matchId)));
-          await MatchesController.refresh(matchesState, match.documentId);
         });
   }
 }

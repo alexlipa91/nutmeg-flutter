@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
-import 'package:progress_state_button/iconed_button.dart';
-import 'package:progress_state_button/progress_button.dart';
+import 'package:rounded_loading_button/rounded_loading_button.dart';
+
 
 class PrimaryButton extends StatelessWidget {
   final String text;
@@ -21,16 +21,20 @@ class PrimaryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TextButton(
-      onPressed: onPressedFunction(),
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 25),
-        child: Text(
-          text,
-          style: getTextStyle(),
+    return Container(
+      height: 40,
+      width: 200,
+      child: TextButton(
+        onPressed: onPressedFunction(),
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 25),
+          child: Text(
+            text,
+            style: getTextStyle(),
+          ),
         ),
+        style: getStyle(),
       ),
-      style: getStyle(),
     );
   }
 
@@ -104,48 +108,32 @@ class RoundedButtonAlerted extends PrimaryButton
       : super(text, onPressed);
 }
 
-class ButtonWithLoader extends StatelessWidget {
-  final String text;
-  final Function onPressed;
+abstract class ButtonWithLoader extends StatelessWidget {
 
-  ButtonWithLoader(this.text, this.onPressed);
+  final String text;
+  double width;
+  RoundedLoadingButtonController controller;
+
+  Future<void> onPressed(BuildContext context);
+
+  ButtonWithLoader({double width, this.text, RoundedLoadingButtonController controller}) {
+    this.width = width;
+    this.controller = controller;
+  }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      // width: 30.0,
-      child: ProgressButton(
-        padding: EdgeInsets.all(0),
-          progressIndicatorSize: 10,
-          // height: 10.0,
-          // minWidth: 10,
-          // maxWidth: 35,
-          stateWidgets: {
-            ButtonState.idle: Text(
-              text,
-              style: TextPalette.linkStyleInverted,
-            ),
-            ButtonState.loading: Text(
-              "LOADING",
-              style: TextPalette.linkStyleInverted,
-            ),
-            ButtonState.success: Text(
-              "LOADING",
-              style: TextPalette.linkStyleInverted,
-            ),
-            ButtonState.fail: Text(
-              "LOADING",
-              style: TextPalette.linkStyleInverted,
-            ),
-          },
-          stateColors: {
-            ButtonState.idle: Palette.primary,
-            ButtonState.loading: Palette.primary,
-            ButtonState.fail: Palette.primary,
-            ButtonState.success: Palette.primary,
-          },
-          onPressed: () => onPressed,
-          state: ButtonState.idle),
+      height: 40,
+      width: width,
+      child: RoundedLoadingButton(
+        duration: Duration(milliseconds: 500),
+        child: Text(text, style: TextPalette.linkStyleInverted),
+        onPressed: () => onPressed(context),
+        controller: controller,
+        color: Palette.primary,
+        loaderSize: 25,
+      ),
     );
   }
 }

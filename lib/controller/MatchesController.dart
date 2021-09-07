@@ -5,7 +5,6 @@ import 'package:nutmeg/db/SubscriptionsFirestore.dart';
 import 'package:nutmeg/db/UserFirestore.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
-import 'package:nutmeg/screens/PaymentPage.dart';
 
 import 'UserController.dart';
 

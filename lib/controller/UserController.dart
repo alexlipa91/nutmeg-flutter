@@ -5,10 +5,12 @@ import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
 
 class UserController {
-  static Future<void> refresh(UserState userState) async {
+
+  static Future<UserDetails> refresh(UserState userState) async {
     var userDetails = await UserFirestore.getSpecificUserDetails(
         userState.getUserDetails().getUid());
     userState.setUserDetails(userDetails);
+    return userDetails;
   }
 
   static getUserDetails(String id) => UserFirestore.getSpecificUserDetails(id);

@@ -248,9 +248,9 @@ class PaymentRecap {
   int creditsInCentsUsed;
   int finalPriceToPayInCents;
 
-  int getPriceAfterCoupon() {
+  int getCouponDiscount() {
     var percentage = couponApplied.percentage / 100;
     var discount = (percentage * matchPriceInCents).toInt();
-    return matchPriceInCents - discount;
+    return discount;
   }
 }
