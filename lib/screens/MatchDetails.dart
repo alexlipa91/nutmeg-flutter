@@ -105,7 +105,9 @@ class MatchInfo extends StatelessWidget {
               child: SportCenterImageCarousel(
                   images: sportCenter.getMainPicturesListUrls()))
         ]),
-        InfoWidget(title: getFormattedDate(match.dateTime), icon: Icons.watch),
+        InfoWidget(title: getFormattedDateLong(match.dateTime),
+            subTitle: getStartAndEndHour(match.dateTime, match.duration).join(" - ") + " - " + match.duration.inMinutes.toString() + " min",
+            icon: Icons.watch),
         InfoWidget(
             title: sportCenter.name,
             icon: Icons.place,

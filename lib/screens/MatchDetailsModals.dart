@@ -6,9 +6,11 @@ import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
 import 'package:nutmeg/screens/PaymentPage.dart';
 import 'package:nutmeg/screens/UserPage.dart';
+import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/Buttons.dart';
+import 'package:nutmeg/widgets/Containers.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:rounded_loading_button/rounded_loading_button.dart';
@@ -54,8 +56,7 @@ class BottomBar extends StatelessWidget {
         : null;
     var isGoing = userSub != null && userSub.status == SubscriptionStatus.going;
 
-    return Container(
-        height: 100,
+    return InfoContainer(
         child: Padding(
           padding: EdgeInsets.all(20),
           child: Row(
@@ -63,6 +64,7 @@ class BottomBar extends StatelessWidget {
             children: [
               Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
                       (isGoing)
@@ -498,6 +500,44 @@ class PaymentConfirmationButton extends ButtonWithLoader {
   PaymentConfirmationButton(this.match, this.paymentRecap)
       : super(text: "CONTINUE TO PAYMENT", controller: payConfirmController);
 
+  Future<void> onSuccess(BuildContext context) async {
+    controller.success();
+    await Future.delayed(Duration(seconds: 1));
+
+    Navigator.pop(context, true);
+
+    await showModalBottomSheet(
+        context: context,
+        builder: (context) => PostPaymentSuccessBottomBar(match: match));
+  }
+
+  // fixme deal better with this
+  Future<void> onPaymentSuccessButJoinFailure(BuildContext context) async {
+    controller.error();
+    await Future.delayed(Duration(seconds: 1));
+
+    Navigator.pop(context, true);
+
+    await showModalBottomSheet(
+        context: context,
+        builder: (context) => GenericInfoModal(
+            title: "Something went wrong!",
+            body: "Please contact us for support"));
+  }
+
+  Future<void> onPaymentFailure(BuildContext context) async {
+    controller.error();
+    await Future.delayed(Duration(seconds: 1));
+
+    Navigator.pop(context);
+
+    await showModalBottomSheet(
+        context: context,
+        builder: (context) => GenericInfoModal(
+            title: "Something went wrong!",
+            body: "Please try again or contact us for support"));
+  }
+
   @override
   Future<void> onPressed(BuildContext context) async {
     // final stripeCustomerId = await context
@@ -517,29 +557,16 @@ class PaymentConfirmationButton extends ButtonWithLoader {
     Status status = await Navigator.push(context,
         MaterialPageRoute(builder: (context) => PaymentSimulator(match)));
 
-    if (status == Status.success) {
-      await MatchesController.joinMatch(context.read<MatchesState>(),
-          match.documentId, context.read<UserState>(), paymentRecap);
-
-      controller.success();
-      await Future.delayed(Duration(seconds: 1));
-
-      Navigator.pop(context, true);
-
-      await showModalBottomSheet(
-          context: context,
-          builder: (context) => PostPaymentSuccessBottomBar(match: match));
-
-      Navigator.pop(context);
-    } else if (status == Status.paymentFailed) {
-      controller.error();
-      await Future.delayed(Duration(seconds: 1));
-
-      Navigator.pop(context);
-
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          duration: Duration(seconds: 1),
-          content: const Text('There was an error with the payment')));
+    if (status == Status.success) { // payment was good
+      try {
+        await MatchesController.joinMatch(context.read<MatchesState>(),
+            match.documentId, context.read<UserState>(), paymentRecap);
+      } catch (e) { // payment was good but joining the match was not. This shouldn't happen
+        await onPaymentSuccessButJoinFailure(context);
+      }
+      await onSuccess(context);
+    } else {
+      await onPaymentFailure(context);
     }
   }
 }

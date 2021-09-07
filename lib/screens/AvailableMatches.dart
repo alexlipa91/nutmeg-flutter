@@ -235,7 +235,6 @@ class MatchesAreaState extends State<MatchesArea> {
 
 class News extends StatelessWidget {
   // fixme pass news from db
-
   final GlobalKey<AnimatedListState> _listKey;
 
   News(this._listKey);

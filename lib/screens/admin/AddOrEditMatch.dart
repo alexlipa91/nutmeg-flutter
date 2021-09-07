@@ -77,19 +77,22 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
   int maxPlayers;
   DateTime dateTime;
   MatchStatus status;
+  TextEditingController durationController;
 
   @override
   void initState() {
     // set initial values
     sportCenterId = (match == null) ? null : match.sportCenter;
     sport = (match == null) ? null : match.sport;
-    priceController = new TextEditingController(
+    priceController = TextEditingController(
         text: (match == null)
             ? null
             : NumberFormat.decimalPattern().format(match.getPrice()));
     maxPlayers = (match == null) ? null : match.maxPlayers;
     dateTime = (match == null) ? null : match.dateTime;
     status = (match == null) ? MatchStatus.open : match.status;
+    durationController = TextEditingController(
+        text: (match == null) ? "60" : match.duration.inMinutes.toString());
     super.initState();
   }
 
@@ -107,221 +110,226 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
 
     return Scaffold(
         backgroundColor: Colors.transparent,
-        body: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text("Date and Time", style: TextPalette.linkStyle),
-              DateTimePicker(
-                type: DateTimePickerType.dateTimeSeparate,
-                dateMask: 'd MMM, yyyy',
-                initialDate: dateTime,
-                initialValue: (dateTime != null) ? dateTime.toString() : null,
-                firstDate: DateTime(2000),
-                lastDate: DateTime(2100),
-                icon: Icon(Icons.event),
-                dateLabelText: 'Date',
-                timeLabelText: "Hour",
-                onChanged: (val) {
-                  dateTime = DateTime.parse(val);
-                },
-              ),
-              SizedBox(height: 30.0),
-              Text("SportCenter", style: TextPalette.linkStyle),
-              DropdownButton<SportCenter>(
-                focusColor: Colors.white,
-                value: context
-                    .read<SportCentersState>()
-                    .getSportCenter(sportCenterId),
-                style: TextStyle(color: Colors.white),
-                iconEnabledColor: Colors.black,
-                items: sportCenters
-                    .map<DropdownMenuItem<SportCenter>>((SportCenter value) {
-                  return DropdownMenuItem<SportCenter>(
-                      value: value,
-                      child: Text(
-                          value.getName() == null ? "null" : value.getName(),
-                          style: TextStyle(color: Colors.black)));
-                }).toList(),
-                onChanged: (SportCenter value) {
-                  setState(() {
-                    sportCenterId = value.placeId;
-                  });
-                },
-              ),
-              Text("Status", style: TextPalette.linkStyle),
-              DropdownButton<MatchStatus>(
-                focusColor: Colors.white,
-                value: status,
-                style: TextStyle(color: Colors.white),
-                iconEnabledColor: Colors.black,
-                items: MatchStatus.values
-                    .map<DropdownMenuItem<MatchStatus>>((MatchStatus value) {
-                  return DropdownMenuItem<MatchStatus>(
-                      value: value,
-                      child: Text(
-                          value.toString().split(".").last,
-                          style: TextStyle(color: Colors.black)));
-                }).toList(),
-                onChanged: (MatchStatus value) {
-                  setState(() {
-                    status = value;
-                  });
-                },
-              ),
+        body: ListView(
+          // mainAxisAlignment: MainAxisAlignment.center,
+          // crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Date and Time", style: TextPalette.linkStyle),
+            DateTimePicker(
+              type: DateTimePickerType.dateTimeSeparate,
+              dateMask: 'd MMM, yyyy',
+              initialDate: dateTime,
+              initialValue: (dateTime != null) ? dateTime.toString() : null,
+              firstDate: DateTime(2000),
+              lastDate: DateTime(2100),
+              icon: Icon(Icons.event),
+              dateLabelText: 'Date',
+              timeLabelText: "Hour",
+              onChanged: (val) {
+                dateTime = DateTime.parse(val);
+              },
+            ),
+            SizedBox(height: 20.0),
+            Text("SportCenter", style: TextPalette.linkStyle),
+            DropdownButton<SportCenter>(
+              focusColor: Colors.white,
+              value: context
+                  .read<SportCentersState>()
+                  .getSportCenter(sportCenterId),
+              style: TextStyle(color: Colors.white),
+              iconEnabledColor: Colors.black,
+              items: sportCenters
+                  .map<DropdownMenuItem<SportCenter>>((SportCenter value) {
+                return DropdownMenuItem<SportCenter>(
+                    value: value,
+                    child: Text(
+                        value.getName() == null ? "null" : value.getName(),
+                        style: TextStyle(color: Colors.black)));
+              }).toList(),
+              onChanged: (SportCenter value) {
+                setState(() {
+                  sportCenterId = value.placeId;
+                });
+              },
+            ),
+            Text("Status", style: TextPalette.linkStyle),
+            DropdownButton<MatchStatus>(
+              focusColor: Colors.white,
+              value: status,
+              style: TextStyle(color: Colors.white),
+              iconEnabledColor: Colors.black,
+              items: MatchStatus.values
+                  .map<DropdownMenuItem<MatchStatus>>((MatchStatus value) {
+                return DropdownMenuItem<MatchStatus>(
+                    value: value,
+                    child: Text(value.toString().split(".").last,
+                        style: TextStyle(color: Colors.black)));
+              }).toList(),
+              onChanged: (MatchStatus value) {
+                setState(() {
+                  status = value;
+                });
+              },
+            ),
+            SizedBox(height: 20.0),
+            Text("Sport", style: TextPalette.linkStyle),
+            DropdownButton<Sport>(
+              focusColor: Colors.white,
+              value: sport,
+              //elevation: 5,
+              style: TextStyle(color: Colors.white),
+              iconEnabledColor: Colors.black,
+              items: Sport.values.map<DropdownMenuItem<Sport>>((Sport value) {
+                return DropdownMenuItem<Sport>(
+                    value: value,
+                    child: Text(value.toString().split(".").last,
+                        style: TextPalette.linkStyle));
+              }).toList(),
+              onChanged: (Sport value) {
+                setState(() {
+                  sport = value;
+                });
+              },
+            ),
+            SizedBox(height: 20.0),
+            Text("Price per person (in euro)", style: TextPalette.linkStyle),
+            TextFormField(
+              controller: priceController,
+              decoration: InputDecoration(prefixText: "Euro "),
+              inputFormatters: <TextInputFormatter>[
+                FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d*')),
+              ],
+            ),
+            SizedBox(height: 20.0),
+            Text("Duration (in minutes)", style: TextPalette.linkStyle),
+            TextFormField(
+              controller: durationController,
+              inputFormatters: <TextInputFormatter>[
+                FilteringTextInputFormatter.allow(RegExp(r'\d+')),
+              ],
+            ),
+            SizedBox(height: 20.0),
+            Text("Max players", style: TextPalette.linkStyle),
+            DropdownButton<int>(
+              focusColor: Colors.white,
+              value: maxPlayers,
+              style: TextStyle(color: Colors.white),
+              iconEnabledColor: Colors.black,
+              items: maxPlayersDropdownItemsSet
+                  .toList()
+                  .map<DropdownMenuItem<int>>((int value) {
+                return DropdownMenuItem<int>(
+                    value: value,
+                    child:
+                        Text(value.toString(), style: TextPalette.linkStyle));
+              }).toList(),
+              onChanged: (int value) {
+                setState(() {
+                  maxPlayers = value;
+                });
+              },
+            ),
+            Row(
+              children: [
+                Expanded(
+                  child:
+                      RoundedButton((match == null) ? "ADD" : "EDIT", () async {
+                    try {
+                      if (match == null) {
+                        var shouldAdd = await CoolAlert.show(
+                          context: context,
+                          type: CoolAlertType.confirm,
+                          text:
+                              "This is going to add a new match. Are you sure?",
+                          onConfirmBtnTap: () => Navigator.pop(context, true),
+                          onCancelBtnTap: () => Navigator.pop(context, false),
+                        );
+                        if (shouldAdd) {
+                          assert(dateTime != null, "specify date and time");
+                          assert(sportCenterId != null, "specify sport center");
+                          assert(sport != null, "specify sport");
+                          assert(maxPlayers != null, "specify max players");
+                          assert(priceController.value.text != null,
+                              "specify price");
 
-              SizedBox(height: 30.0),
-              Text("Sport", style: TextPalette.linkStyle),
-              DropdownButton<Sport>(
-                focusColor: Colors.white,
-                value: sport,
-                //elevation: 5,
-                style: TextStyle(color: Colors.white),
-                iconEnabledColor: Colors.black,
-                items: Sport.values.map<DropdownMenuItem<Sport>>((Sport value) {
-                  return DropdownMenuItem<Sport>(
-                      value: value,
-                      child: Text(value.toString().split(".").last,
-                          style: TextPalette.linkStyle));
-                }).toList(),
-                onChanged: (Sport value) {
-                  setState(() {
-                    sport = value;
-                  });
-                },
-              ),
-              SizedBox(height: 30.0),
-              Text("Price per person (in euro)", style: TextPalette.linkStyle),
-              TextFormField(
-                controller: priceController,
-                decoration: InputDecoration(prefixText: "Euro "),
-                inputFormatters: <TextInputFormatter>[
-                  FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d*')),
-                ],
-              ),
-              SizedBox(height: 30.0),
-              Text("Max players", style: TextPalette.linkStyle),
-              DropdownButton<int>(
-                focusColor: Colors.white,
-                value: maxPlayers,
-                style: TextStyle(color: Colors.white),
-                iconEnabledColor: Colors.black,
-                items: maxPlayersDropdownItemsSet
-                    .toList()
-                    .map<DropdownMenuItem<int>>((int value) {
-                  return DropdownMenuItem<int>(
-                      value: value,
-                      child:
-                          Text(value.toString(), style: TextPalette.linkStyle));
-                }).toList(),
-                onChanged: (int value) {
-                  setState(() {
-                    maxPlayers = value;
-                  });
-                },
-              ),
-              Row(
-                children: [
-                  Expanded(
-                    child: RoundedButton((match == null) ? "ADD" : "EDIT",
-                        () async {
-                      try {
-                        if (match == null) {
-                          var shouldAdd = await CoolAlert.show(
+                          var newMatchId = await MatchesFirestore.addMatch(
+                              new Match(
+                                  dateTime,
+                                  sportCenterId,
+                                  sport,
+                                  maxPlayers,
+                                  (double.parse(priceController.value.text) *
+                                          100)
+                                      .toInt(),
+                                  status,
+                                  Duration(
+                                      minutes: int.parse(
+                                          durationController.value.text))));
+                          CoolAlert.show(
+                              context: context,
+                              type: CoolAlertType.info,
+                              text:
+                                  "Success! Added match with id " + newMatchId);
+                        }
+                      } else {
+                        match.dateTime = dateTime;
+                        match.sportCenter = sportCenterId;
+                        match.sport = sport;
+                        match.maxPlayers = maxPlayers;
+                        match.pricePerPersonInCents =
+                            (double.parse(priceController.value.text) * 100)
+                                .toInt();
+                        match.status = status;
+
+                        var shouldUpdate = await CoolAlert.show(
+                          context: context,
+                          type: CoolAlertType.confirm,
+                          text:
+                              "This is going to update the match with id: \n" +
+                                  match.documentId +
+                                  "\nAre you sure?",
+                          onConfirmBtnTap: () => Navigator.pop(context, true),
+                          onCancelBtnTap: () => Navigator.pop(context, false),
+                        );
+                        if (!shouldUpdate) {
+                          return;
+                        }
+
+                        if (match.status == MatchStatus.canceled) {
+                          var shouldCancel = await CoolAlert.show(
                             context: context,
                             type: CoolAlertType.confirm,
-                            text:
-                                "This is going to add a new match. Are you sure?",
-                            onConfirmBtnTap: () => Navigator.pop(context, true),
-                            onCancelBtnTap: () => Navigator.pop(context, false),
-                          );
-                          if (shouldAdd) {
-                            assert(dateTime != null, "specify date and time");
-                            assert(
-                                sportCenterId != null, "specify sport center");
-                            assert(sport != null, "specify sport");
-                            assert(maxPlayers != null, "specify max players");
-                            assert(priceController.value.text != null,
-                                "specify price");
-
-                            var newMatchId = await MatchesFirestore.addMatch(
-                                new Match(
-                                    dateTime,
-                                    sportCenterId,
-                                    sport,
-                                    maxPlayers,
-                                    (double.parse(priceController.value.text) *
-                                            100)
-                                        .toInt(),
-                                    status));
-                            CoolAlert.show(
-                                context: context,
-                                type: CoolAlertType.info,
-                                text: "Success! Added match with id " +
-                                    newMatchId);
-                          }
-                        } else {
-                          match.dateTime = dateTime;
-                          match.sportCenter = sportCenterId;
-                          match.sport = sport;
-                          match.maxPlayers = maxPlayers;
-                          match.pricePerPersonInCents =
-                              (double.parse(priceController.value.text) * 100)
-                                  .toInt();
-                          match.status = status;
-
-                          var shouldUpdate = await CoolAlert.show(
-                            context: context,
-                            type: CoolAlertType.confirm,
-                            text:
-                                "This is going to update the match with id: \n" +
-                                    match.documentId +
+                            text: "This is going to cancel the match with id: \n" +
+                                match.documentId +
+                                "\nA push notification will be sent to all the going users and a refund should be issued (implmenet this)"
                                     "\nAre you sure?",
                             onConfirmBtnTap: () => Navigator.pop(context, true),
                             onCancelBtnTap: () => Navigator.pop(context, false),
                           );
-                          if (!shouldUpdate) {
+                          if (!shouldCancel) {
                             return;
                           }
-
-                          if (match.status == MatchStatus.canceled) {
-                            var shouldCancel = await CoolAlert.show(
-                              context: context,
-                              type: CoolAlertType.confirm,
-                              text:
-                              "This is going to cancel the match with id: \n" +
-                                  match.documentId +
-                                  "\nA push notification will be sent to all the going users and a refund should be issued (implmenet this)"
-                                  "\nAre you sure?",
-                              onConfirmBtnTap: () => Navigator.pop(context, true),
-                              onCancelBtnTap: () => Navigator.pop(context, false),
-                            );
-                            if (!shouldCancel) {
-                              return;
-                            }
-                          }
-
-                          await MatchesFirestore.editMatch(match);
-                          await CoolAlert.show(
-                              context: context,
-                              type: CoolAlertType.info,
-                              text: "Success!");
-                          Navigator.pop(context);
                         }
-                      } catch (e, stackTrace) {
-                        print(stackTrace.toString());
-                        CoolAlert.show(
+
+                        await MatchesFirestore.editMatch(match);
+                        await CoolAlert.show(
                             context: context,
-                            type: CoolAlertType.error,
-                            text: "Error: " + e.toString());
+                            type: CoolAlertType.info,
+                            text: "Success!");
+                        Navigator.pop(context);
                       }
-                    }),
-                  )
-                ],
-              )
-            ],
-          ),
+                    } catch (e, stackTrace) {
+                      print(stackTrace.toString());
+                      CoolAlert.show(
+                          context: context,
+                          type: CoolAlertType.error,
+                          text: "Error: " + e.toString());
+                    }
+                  }),
+                )
+              ],
+            )
+          ],
         ));
   }
 }

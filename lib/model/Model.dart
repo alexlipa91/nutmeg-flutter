@@ -31,11 +31,12 @@ class Match {
   int pricePerPersonInCents;
   int maxPlayers;
   MatchStatus status;
+  Duration duration;
 
   List<Subscription> subscriptions;
 
   Match(this.dateTime, this.sportCenter, this.sport, this.maxPlayers,
-      this.pricePerPersonInCents, this.status);
+      this.pricePerPersonInCents, this.status, this.duration);
 
   Match.from(Match m) {
     documentId = m.documentId;
@@ -46,6 +47,7 @@ class Match {
     maxPlayers = m.maxPlayers;
     status = m.status;
     subscriptions = m.subscriptions;
+    duration = m.duration;
   }
 
   Match.fromJson(Map<String, dynamic> json, String documentId)
@@ -55,6 +57,7 @@ class Match {
         pricePerPersonInCents = json['pricePerPerson'],
         maxPlayers = json['maxPlayers'],
         status = MatchStatus.values[json['status']],
+        duration = Duration(minutes: json['durationInMinutes'] ?? 60),
         documentId = documentId;
 
   Map<String, dynamic> toJson() => {

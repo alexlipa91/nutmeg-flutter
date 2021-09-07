@@ -6,10 +6,13 @@ bool isSameDay(DateTime a, DateTime b) {
   return a.day == b.day && a.month == b.month && a.year == b.year;
 }
 
-var uiDateFormat = new DateFormat("E, MMM dd");
 var uiHourFormat = new DateFormat("HH:mm");
 
-String getFormattedDate(DateTime dateTime) {
+String getFormattedDate(DateTime dateTime) => _getFormattedDate(dateTime, DateFormat("E, MMM dd"));
+
+String getFormattedDateLong(DateTime dateTime) => _getFormattedDate(dateTime, DateFormat("EEEE, MMM dd"));
+
+String _getFormattedDate(DateTime dateTime, DateFormat dateFormat) {
   var now = DateTime.now();
 
   var dayString;
@@ -21,11 +24,16 @@ String getFormattedDate(DateTime dateTime) {
   } else if (now.day == dateTime.day + 1) {
     dayString = "Yesterday";
   } else {
-    dayString = uiDateFormat.format(dateTime);
+    dayString = dateFormat.format(dateTime);
   }
 
   return dayString + " at " + uiHourFormat.format(dateTime);
 }
+
+List<String> getStartAndEndHour(DateTime dateTime, Duration duration) => [
+  uiHourFormat.format(dateTime), uiHourFormat.format(dateTime.add(duration))
+];
+
 
 class DynamicLinks {
   static shareMatchFunction(String matchId) async {
