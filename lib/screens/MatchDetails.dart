@@ -40,45 +40,48 @@ class MatchDetails extends StatelessWidget {
 
     return Scaffold(
       appBar: MatchAppBar(matchId),
-      body: SingleChildScrollView(
-          child: Column(
-        // fixme here we are repeating the padding just because cannot be applied globally as MatchInfo doesn't need
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-              padding: EdgeInsets.only(right: 20, left: 20, bottom: 10),
-              child: Text(title, style: TextPalette.h1Default)),
-          Padding(
+      body: RefreshIndicator(
+        onRefresh: () => MatchesController.refresh(matchesState, matchId),
+        child: SingleChildScrollView(
+            child: Column(
+          // fixme here we are repeating the padding just because cannot be applied globally as MatchInfo doesn't need
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+                padding: EdgeInsets.only(right: 20, left: 20, bottom: 10),
+                child: Text(title, style: TextPalette.h1Default)),
+            Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                child: MatchInfo(match, sportCenter)),
+            Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                child: Text(match.numPlayersGoing().toString() + " players going",
+                    style: TextPalette.bodyText)),
+            Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: MatchInfo(match, sportCenter)),
-          Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-              child: Text(match.numPlayersGoing().toString() + " players going",
-                  style: TextPalette.bodyText)),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20),
-            child: SingleChildScrollView(
-              clipBehavior: Clip.none,
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                  // fixme pass real data here
-                  children: match
-                      .getOrderedGoingSubscriptions(user)
-                      .map((s) => PlayerCard(s.userId))
-                      .toList()),
+              child: SingleChildScrollView(
+                clipBehavior: Clip.none,
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                    // fixme pass real data here
+                    children: match
+                        .getOrderedGoingSubscriptions(user)
+                        .map((s) => PlayerCard(s.userId))
+                        .toList()),
+              ),
             ),
-          ),
-          Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              child: Text(
-                "Details",
-                style: TextPalette.bodyText,
-              )),
-          RuleCard(),
-          RuleCard(),
-          MapCard.big(sportCenter)
-        ],
-      )),
+            Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                child: Text(
+                  "Details",
+                  style: TextPalette.bodyText,
+                )),
+            RuleCard(),
+            RuleCard(),
+            MapCard.big(sportCenter)
+          ],
+        )),
+      ),
       bottomNavigationBar: BottomBar(match: match),
     );
   }
@@ -252,89 +255,92 @@ class PlayerCard extends StatelessWidget {
     return FutureBuilder<UserDetails>(
         future: UserController.getUserDetails(userId),
         builder: (context, snapshot) {
-          return SizedBox(
-            width: 100,
-            child: InfoContainer(
-                // constraints: BoxConstraints(maxWidth: 100),
-                // decoration: infoMatchDecoration,
-                // margin: EdgeInsets.only(right: 10),
-                child: (snapshot.hasData)
-                    ? Column(children: [
-                        InkWell(
-                          onTap: () {
-                            showModalBottomSheet(
-                                context: context,
-                                builder: (context) {
-                                  return Stack(
-                                      alignment:
-                                          AlignmentDirectional.bottomStart,
-                                      clipBehavior: Clip.none,
-                                      children: [
-                                        Container(
-                                          width: double.infinity,
-                                          height: 200,
-                                          color: Palette.white,
-                                          child: Column(
-                                            children: [
-                                              SizedBox(height: 70),
-                                              Text(snapshot.data.name,
-                                                  style: TextPalette.h2),
-                                              SizedBox(height: 20),
-                                              Text(
-                                                  MatchesController.numPlayedByUser(
-                                                              context.watch<
-                                                                  MatchesState>(),
-                                                              userId)
-                                                          .toString() +
-                                                      " games played",
-                                                  style: TextPalette.bodyText)
-                                            ],
+          return Padding(
+            padding: EdgeInsets.only(right: 10),
+            child: SizedBox(
+              width: 100,
+              child: InfoContainer(
+                  // constraints: BoxConstraints(maxWidth: 100),
+                  // decoration: infoMatchDecoration,
+                  // margin: EdgeInsets.only(right: 10),
+                  child: (snapshot.hasData)
+                      ? Column(children: [
+                          InkWell(
+                            onTap: () {
+                              showModalBottomSheet(
+                                  context: context,
+                                  builder: (context) {
+                                    return Stack(
+                                        alignment:
+                                            AlignmentDirectional.bottomStart,
+                                        clipBehavior: Clip.none,
+                                        children: [
+                                          Container(
+                                            width: double.infinity,
+                                            height: 200,
+                                            color: Palette.white,
+                                            child: Column(
+                                              children: [
+                                                SizedBox(height: 70),
+                                                Text(snapshot.data.name,
+                                                    style: TextPalette.h2),
+                                                SizedBox(height: 20),
+                                                Text(
+                                                    MatchesController.numPlayedByUser(
+                                                                context.watch<
+                                                                    MatchesState>(),
+                                                                userId)
+                                                            .toString() +
+                                                        " games played",
+                                                    style: TextPalette.bodyText)
+                                              ],
+                                            ),
                                           ),
-                                        ),
-                                        Positioned(
-                                          top: -30,
-                                          left: 0,
-                                          right: 0,
-                                          child: CircleAvatar(
-                                            backgroundColor: Palette.white,
-                                            radius: 38,
+                                          Positioned(
+                                            top: -30,
+                                            left: 0,
+                                            right: 0,
                                             child: CircleAvatar(
-                                                backgroundImage: NetworkImage(
-                                                    snapshot.data.image),
-                                                radius: 34,
-                                                backgroundColor: Palette.white),
+                                              backgroundColor: Palette.white,
+                                              radius: 38,
+                                              child: CircleAvatar(
+                                                  backgroundImage: NetworkImage(
+                                                      snapshot.data.image),
+                                                  radius: 34,
+                                                  backgroundColor: Palette.white),
+                                            ),
                                           ),
-                                        ),
-                                      ]);
-                                });
-                          },
-                          child: CircleAvatar(
-                              backgroundImage:
-                                  NetworkImage(snapshot.data.image),
-                              radius: 25,
-                              backgroundColor: Palette.white),
-                        ),
-                        SizedBox(height: 10),
-                        Text(snapshot.data.name.split(" ").first,
-                            overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.roboto(
-                                color: Palette.mediumgrey,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w400))
-                      ])
-                    : Shimmer.fromColors(
-                        baseColor: Colors.grey[300],
-                        highlightColor: Colors.grey[100],
-                        child: Column(children: [
-                          CircleAvatar(
-                              radius: 25, backgroundColor: Palette.white),
+                                        ]);
+                                  });
+                            },
+                            child: CircleAvatar(
+                                backgroundImage:
+                                    NetworkImage(snapshot.data.image),
+                                radius: 25,
+                                backgroundColor: Palette.white),
+                          ),
                           SizedBox(height: 10),
-                          Container(
-                              height: 10,
-                              width: double.infinity,
-                              color: Colors.white)
-                        ]),
-                      )),
+                          Text(snapshot.data.name.split(" ").first,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.roboto(
+                                  color: Palette.mediumgrey,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w400))
+                        ])
+                      : Shimmer.fromColors(
+                          baseColor: Colors.grey[300],
+                          highlightColor: Colors.grey[100],
+                          child: Column(children: [
+                            CircleAvatar(
+                                radius: 25, backgroundColor: Palette.white),
+                            SizedBox(height: 10),
+                            Container(
+                                height: 10,
+                                width: double.infinity,
+                                color: Colors.white)
+                          ]),
+                        )),
+            ),
           );
         });
   }

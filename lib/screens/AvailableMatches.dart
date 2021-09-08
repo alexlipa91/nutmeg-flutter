@@ -100,7 +100,7 @@ class MatchesArea extends StatefulWidget {
 class MatchesAreaState extends State<MatchesArea> {
   bool isLoading = false;
 
-  static bool showNews = true;
+  static bool showNews = false;
 
   @override
   Widget build(BuildContext context) {
@@ -140,7 +140,8 @@ class MatchesAreaState extends State<MatchesArea> {
                 padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
                 key: _listKey,
                 initialItemCount:
-                    (showNews) ? widgets.length + 1 : widgets.length,
+                    (showNews) ? widgets.length + 1 :
+                    widgets.length,
                 itemBuilder: (context, index, animation) {
                   if (showNews) {
                     return (index == 0)
@@ -366,10 +367,10 @@ class MatchInfo extends StatelessWidget {
         ),
         onTap: () async {
           // fixme why it doesn't rebuild here?
-          await Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => WaitingScreenLight(toRun: () => MatchesController.refresh(matchesState, match.documentId))));
+          // await Navigator.push(
+          //     context,
+          //     MaterialPageRoute(
+          //         builder: (context) => WaitingScreenLight(toRun: () => MatchesController.refresh(matchesState, match.documentId))));
           await Navigator.push(
               context,
               MaterialPageRoute(

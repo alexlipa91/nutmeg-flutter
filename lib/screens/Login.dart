@@ -9,7 +9,6 @@ import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/Containers.dart';
 import 'package:provider/provider.dart';
 
-
 class Login extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -52,7 +51,12 @@ class LoginArea extends StatelessWidget {
         Container(
             padding: EdgeInsets.symmetric(vertical: 10, horizontal: 35),
             decoration: InfoContainer.boxDecoration,
-            child: GoogleSignInButton()),
+            child: Column(
+              children: [
+                GoogleSignInButton(),
+                FacebookSignInButton(),
+              ],
+            )),
         SizedBox(height: 30),
         CircularProgressIndicator(
             valueColor: AlwaysStoppedAnimation<Color>(
@@ -84,8 +88,8 @@ class GoogleSignInButton extends StatelessWidget {
         context.read<LoginStatusChangeNotifier>().setIsSigningIn(true);
 
         try {
-          var communication =
-              await UserController.loginWithGoogle(context.read<UserState>());
+          var communication = await UserController.continueWithGoogle(
+              context.read<UserState>());
           Navigator.pop(context, communication);
         } on FirebaseAuthException catch (e) {
           showDialog(
@@ -114,6 +118,63 @@ class GoogleSignInButton extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(left: 10),
             child: Text('CONTINUE WITH GOOGLE', style: TextPalette.bodyText),
+          )
+        ],
+      ),
+    );
+  }
+}
+
+class FacebookSignInButton extends StatelessWidget {
+  final Function onPressed;
+
+  const FacebookSignInButton({Key key, this.onPressed}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return OutlinedButton(
+      style: ButtonStyle(
+        backgroundColor: MaterialStateProperty.all(Colors.white),
+        shape: MaterialStateProperty.all(
+          RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(40),
+          ),
+        ),
+      ),
+      onPressed: () async {
+        context.read<LoginStatusChangeNotifier>().setIsSigningIn(true);
+
+        try {
+          var communication = await UserController.continueWithFacebook(
+              context.read<UserState>());
+          Navigator.pop(context, communication);
+        } on FirebaseAuthException catch (e) {
+          showDialog(
+              context: context,
+              builder: (context) {
+                return AlertDialog(content: Text(e.message));
+              });
+        } on PlatformException catch (e) {
+          showDialog(
+              context: context,
+              builder: (context) {
+                return AlertDialog(content: Text(e.code + " " + e.message));
+              });
+        } finally {
+          context.read<LoginStatusChangeNotifier>().setIsSigningIn(false);
+        }
+      },
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Image(
+            image: AssetImage("assets/google_logo.png"),
+            height: 20.0,
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 10),
+            child: Text('CONTINUE WITH FACEBOOK', style: TextPalette.bodyText),
           )
         ],
       ),

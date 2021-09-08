@@ -1,0 +1,5 @@
+<resources>
+    <string name="facebook_app_id">876470106296837</string>
+    <string name="fb_login_protocol_scheme">fb876470106296837</string>
+    <string name="app_name">Nutmeg</string>
+</resources>

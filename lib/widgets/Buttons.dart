@@ -129,20 +129,23 @@ abstract class AbstractButtonWithLoader extends StatelessWidget {
   final String text;
   double width;
   RoundedLoadingButtonController controller;
+  bool shouldAnimate;
 
   Future<void> onPressed(BuildContext context);
 
-  AbstractButtonWithLoader({double width, this.text, RoundedLoadingButtonController controller}) {
+  AbstractButtonWithLoader({double width, this.text, RoundedLoadingButtonController controller, bool shouldAnimate=true}) {
     this.width = width;
     this.controller = controller;
+    this.shouldAnimate = shouldAnimate;
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 40,
-      width: width,
+      // height: 40,
+      width: 200,
       child: RoundedLoadingButton(
+        animateOnTap: shouldAnimate,
         duration: Duration(milliseconds: 500),
         child: Text(text, style: TextPalette.linkStyleInverted),
         onPressed: () => onPressed(context),

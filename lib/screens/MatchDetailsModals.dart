@@ -5,6 +5,7 @@ import 'package:nutmeg/controller/PaymentController.dart';
 import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
+import 'package:nutmeg/screens/Launch.dart';
 import 'package:nutmeg/screens/PaymentPage.dart';
 import 'package:nutmeg/screens/UserPage.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
@@ -59,223 +60,157 @@ class BottomBar extends StatelessWidget {
 
     return InfoContainer(
         child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                    (isGoing)
-                        ? "You are going!"
-                        : match.getSpotsLeft().toString() + " spots left",
-                    style: TextPalette.h2),
-                SizedBox(height: 20),
-                Text(
-                    (isGoing)
-                        ? match.numPlayersGoing().toString() + " going"
-                        : formatCurrency.format(match.pricePerPersonInCents / 100),
-                    style: TextPalette.bodyText),
-              ],
-            ),
-            (isGoing)
-                ? RoundedButtonLight("LEAVE GAME", () async {
-                    await showModalBottomSheet(
-                        context: context,
-                        builder: (context) =>
-                            LeaveMatchConfirmation(match, userSub));
-                  })
-                : (!match.isFull())
-                    ? JoinGameButton(match)
-                    : Container()
+            Text(
+                (isGoing)
+                    ? "You are going!"
+                    : match.getSpotsLeft().toString() + " spots left",
+                style: TextPalette.h2),
+            SizedBox(height: 20),
+            Text(
+                (isGoing)
+                    ? match.numPlayersGoing().toString() + " going"
+                    : formatCurrency.format(match.pricePerPersonInCents / 100),
+                style: TextPalette.bodyText),
           ],
-        ));
-  }
-}
+        ),
+        (isGoing)
+            ? RoundedButtonLight("LEAVE GAME", () async {
+                var hoursToGame = match.dateTime.difference(DateTime.now()).inHours;
 
-class PrepaymentBottomBar extends StatelessWidget {
-  final Match match;
-  final PaymentRecap recap;
-
-  const PrepaymentBottomBar({Key key, this.match, this.recap})
-      : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-        padding: MediaQuery.of(context).viewInsets,
-        child: Container(
-            // fixme why not having borders?
-            decoration: BoxDecoration(
-              color: Palette.white,
-              borderRadius: BorderRadius.only(topRight: Radius.circular(10)),
-            ),
-            child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 30, horizontal: 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    Padding(
-                        padding: EdgeInsets.only(bottom: 20.0),
-                        child: Text("Join this game", style: TextPalette.h2)),
-                    Text(
-                      "You can cancel up to 24h before the game starting time to get a full refund in credits to use on your next game.\nIf you cancel after this time you won't get a refund.",
-                      style: TextPalette.bodyText,
+                await GenericInfoModal.withBottom(
+                    title: "Leaving this game?",
+          body: "You joined this game: " + getFormattedDate(userSub.createdAt.toDate()) +
+          ".\n" + ((hoursToGame < 24)
+          ? "You will not receive a refund since the game is in less than 24 hours."
+              : "We will refund you in credits that you can use in your next games."),
+                bottomWidget: Column(children:
+                    [
+                      Divider(),
+                      Padding(
+                      padding: EdgeInsets.symmetric(vertical: 10.0),
+                      child: Row(
+                        children: [
+                          Text("Credits refund", style: TextPalette.h3),
+                          Expanded(
+                              child: Text(
+                                formatCurrency.format(match.pricePerPersonInCents / 100) +
+                                    " euro",
+                                style: TextPalette.h3,
+                                textAlign: TextAlign.end,
+                              ))
+                        ],
+                      ),
                     ),
-                    Divider(),
-                    PaymentDetailsDescription(paymentRecap: recap),
-                    Divider(),
-                    Row(
+                      Divider(),
+                      Row(
                       children: [
-                        Expanded(
-                            child: (recap.finalPriceToPayInCents == 0)
-                                ? PaymentConfirmationWithCreditsButton(
-                                    match, recap)
-                                : PaymentConfirmationButton(match, recap))
+                        Expanded(child: LeaveConfirmationButton(match)),
                       ],
                     )
-                  ],
-                ))));
+                    ]
+                )).show(context);
+              })
+            : (!match.isFull())
+                ? JoinGameButton(match)
+                : Container()
+      ],
+    ));
   }
 }
 
 class PaymentDetailsDescription extends StatelessWidget {
-  final PaymentRecap paymentRecap;
+  final Match match;
 
-  const PaymentDetailsDescription({Key key, this.paymentRecap})
+  const PaymentDetailsDescription({Key key, this.match})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Row(children: [
-          CircleAvatar(
-              backgroundImage: NetworkImage(
-                  context.watch<UserState>().getUserDetails().getPhotoUrl()),
-              radius: 15),
-          SizedBox(width: 10),
-          Text("1x player", style: TextPalette.h3),
-          Expanded(
-              child: Text(
-            formatCurrency.format(paymentRecap.matchPriceInCents / 100),
-            style: TextPalette.h3,
-            textAlign: TextAlign.end,
-          ))
-        ]),
-        if (paymentRecap.creditsInCentsUsed != 0)
-          Row(
+    var matchesState = context.read<MatchesState>();
+    var userState = context.read<UserState>();
+
+    return FutureBuilder<PaymentRecap>(
+        future: PaymentController.generatePaymentRecap(
+            matchesState, match.documentId, userState),
+        builder: (context, snapshot) {
+
+          var extraCreditsUsed =
+              snapshot.data != null && snapshot.data.creditsInCentsUsed != 0;
+
+          return Column(
             children: [
-              // adding this here as a trick to align the rows
-              CircleAvatar(backgroundColor: Colors.transparent, radius: 15),
-              SizedBox(width: 10),
-              Text('Credits', style: TextPalette.bodyText),
-              Expanded(
-                  child: Text(
-                "- " +
-                    formatCurrency
-                        .format(paymentRecap.creditsInCentsUsed / 100),
-                style: TextPalette.bodyText,
-                textAlign: TextAlign.end,
-              ))
-            ],
-          ),
-        Divider(),
-        if (paymentRecap.finalPriceToPayInCents() !=
-            paymentRecap.matchPriceInCents)
-          Padding(
-            padding: EdgeInsets.symmetric(vertical: 10),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text("Subtotal", style: TextPalette.h3),
-                Text(
-                  formatCurrency
-                      .format(paymentRecap.finalPriceToPayInCents() / 100),
+              Row(children: [
+                CircleAvatar(
+                    backgroundImage: NetworkImage(context
+                        .watch<UserState>()
+                        .getUserDetails()
+                        .getPhotoUrl()),
+                    radius: 15),
+                SizedBox(width: 10),
+                Text("1x player", style: TextPalette.h3),
+                Expanded(
+                    child: Text(
+                  formatCurrency.format(match.pricePerPersonInCents / 100),
                   style: TextPalette.h3,
-                )
-              ],
-            ),
-          )
-      ],
-    );
-    // : Row(
-    //   children: [
-    //     Column(
-    //       children: [
-    //         CircleAvatar(
-    //             backgroundImage: NetworkImage(context
-    //                 .watch<UserState>()
-    //                 .getUserDetails()
-    //                 .getPhotoUrl()),
-    //             radius: 15),
-    //       ],
-    //     ),
-    //     Column(
-    //       children: [
-    //         Row(
-    //           children: [
-    //             Text("1x player", style: TextPalette.h3),
-    //             Expanded(
-    //                 child: Text(
-    //               formatCurrency
-    //                   .format(paymentRecap.matchPriceInCents / 100),
-    //               style: (paymentRecap.couponApplied != null)
-    //                   ? TextPalette.h3WithBar
-    //                   : TextPalette.h3,
-    //               textAlign: TextAlign.end,
-    //             ))
-    //           ],
-    //         ),
-    //         // if (paymentRecap.couponApplied != null)
-    //         //   Padding(
-    //         //     padding: EdgeInsets.symmetric(vertical: 5),
-    //         //     child: Row(
-    //         //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-    //         //         children: [
-    //         //           Padding(
-    //         //             padding: EdgeInsets.only(left: 45),
-    //         //             child: Text(paymentRecap.couponApplied.description,
-    //         //                 style: TextPalette.h3),
-    //         //           ),
-    //         //           Text(
-    //         //             formatCurrency
-    //         //                 .format(paymentRecap.getPriceAfterCoupon() / 100),
-    //         //             style: TextPalette.linkStyle,
-    //         //           )
-    //         //         ]),
-    //         //   ),
-    //         // if (paymentRecap.creditsInCentsUsed > 0)
-    //         //   Padding(
-    //         //     padding: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-    //         //     child: Column(
-    //         //         crossAxisAlignment: CrossAxisAlignment.start,
-    //         //         children: [
-    //         //           Text(
-    //         //               "Using " +
-    //         //                   formatCurrency.format(
-    //         //                       paymentRecap.creditsInCentsUsed / 100) +
-    //         //                   " credits from your balance.",
-    //         //               style: TextPalette.h3),
-    //         //           SizedBox(height: 10),
-    //         //           Text(
-    //         //               (paymentRecap.finalPriceToPayInCents == 0)
-    //         //                   ? "You don't have to pay anything now."
-    //         //                   : "You have to pay " +
-    //         //                   formatCurrency.format(
-    //         //                       paymentRecap.finalPriceToPayInCents /
-    //         //                           100) +
-    //         //                   ".",
-    //         //               style: TextPalette.h3),
-    //         //         ]),
-    //         //   ),
-    //       ],
-    //     )
-    //   ],
-    // ),
+                  textAlign: TextAlign.end,
+                ))
+              ]),
+              if (extraCreditsUsed)
+                Row(
+                  children: [
+                    // adding this here as a trick to align the rows
+                    CircleAvatar(
+                        backgroundColor: Colors.transparent, radius: 15),
+                    SizedBox(width: 10),
+                    Text('Credits', style: TextPalette.bodyText),
+                    Expanded(
+                        child: Text(
+                      "- " +
+                          formatCurrency
+                              .format(snapshot.data.creditsInCentsUsed / 100),
+                      style: TextPalette.bodyText,
+                      textAlign: TextAlign.end,
+                    ))
+                  ],
+                ),
+              if (extraCreditsUsed) Divider(),
+              if (extraCreditsUsed)
+                Padding(
+                  padding: EdgeInsets.symmetric(vertical: 10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text("Subtotal", style: TextPalette.h3),
+                      Text(
+                        formatCurrency.format(
+                            snapshot.data.finalPriceToPayInCents() / 100),
+                        style: TextPalette.h3,
+                      )
+                    ],
+                  ),
+                ),
+              Divider(),
+              Row(
+                children: [
+                  Expanded(
+                      child: (snapshot.data == null)
+                          ? ButtonWithLoader("", () {})
+                          : (extraCreditsUsed)
+                              ? PaymentConfirmationWithCreditsButton(
+                                  match, snapshot.data)
+                              : PaymentConfirmationButton(match, snapshot.data))
+                ],
+              )
+            ],
+          );
+        });
   }
 }
 
@@ -329,73 +264,6 @@ class PostPaymentSuccessBottomBar extends StatelessWidget {
   }
 }
 
-// widget to show when user is leaving
-class LeaveMatchConfirmation extends StatelessWidget {
-  final Match match;
-  final Subscription latestUserSub;
-
-  LeaveMatchConfirmation(this.match, this.latestUserSub);
-
-  @override
-  Widget build(BuildContext context) {
-    var hoursToGame = match.dateTime.difference(DateTime.now()).inHours;
-
-    return Container(
-      // fixme why not having borders?
-      decoration: BoxDecoration(
-        color: Palette.white,
-        borderRadius: BorderRadius.only(topRight: Radius.circular(10)),
-      ),
-      child: Padding(
-        padding: EdgeInsets.symmetric(vertical: 30, horizontal: 20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Padding(
-                padding: EdgeInsets.only(bottom: 20.0),
-                child: Text("Leaving this game?", style: TextPalette.h2)),
-            Text(
-              "You joined this game: " +
-                  getFormattedDate(latestUserSub.createdAt.toDate()) +
-                  ".",
-              style: TextPalette.bodyText,
-            ),
-            Text(
-              (hoursToGame < 24)
-                  ? "You will not receive a refund since the game is in less than 24 hours."
-                  : "We will refund you in credits that you can use in your next games.",
-              style: TextPalette.bodyText,
-            ),
-            Divider(),
-            Padding(
-              padding: EdgeInsets.symmetric(vertical: 10.0),
-              child: Row(
-                children: [
-                  Text("Credits refund", style: TextPalette.h3),
-                  Expanded(
-                      child: Text(
-                    formatCurrency.format(match.pricePerPersonInCents / 100) +
-                        " euro",
-                    style: TextPalette.h3,
-                    textAlign: TextAlign.end,
-                  ))
-                ],
-              ),
-            ),
-            Divider(),
-            Row(
-              children: [
-                Expanded(child: LeaveConfirmationButton(match)),
-              ],
-            )
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 class LeaveConfirmationButton extends AbstractButtonWithLoader {
   final Match match;
 
@@ -410,43 +278,26 @@ class LeaveConfirmationButton extends AbstractButtonWithLoader {
     await MatchesController.leaveMatch(context.read<MatchesState>(),
         match.documentId, context.read<UserState>());
     controller.success();
-    await Future.delayed(Duration(seconds: 1));
+    await Future.delayed(Duration(milliseconds: 500));
     Navigator.of(context).pop(true);
 
-    await showModalBottomSheet(
-        context: context,
-        builder: (context) => Container(
-              margin: EdgeInsets.all(20),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Padding(
-                      padding: EdgeInsets.symmetric(vertical: 5),
-                      child: Text(
-                          formatCurrency
-                                  .format(match.pricePerPersonInCents / 100) +
-                              " credits were added to your account",
-                          style: TextPalette.h3)),
-                  Text(
-                      "You can find your credits in your account page. Next time you join a game they will be automatically used.",
-                      style: TextPalette.bodyText),
-                  Padding(
-                    padding: EdgeInsets.symmetric(vertical: 15),
-                    child: InkWell(
-                        onTap: () {
-                          Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => UserPage()));
-                        },
-                        child: Text("GO TO MY ACCOUNT",
-                            style: TextPalette.linkStyle)),
-                  )
-                ],
-              ),
-            ));
+    GenericInfoModal.withBottom(title: formatCurrency
+        .format(match.pricePerPersonInCents / 100) +
+        " credits were added to your account",
+      body: "You can find your credits in your account page. Next time you join a game they will be automatically used.",
+      bottomWidget: Padding(
+        padding: EdgeInsets.symmetric(vertical: 15),
+        child: InkWell(
+            onTap: () {
+              Navigator.pushReplacement(
+                  navigatorKey.currentContext,
+                  MaterialPageRoute(
+                      builder: (context) => UserPage()));
+            },
+            child: Text("GO TO MY ACCOUNT",
+                style: TextPalette.linkStyle)),
+      )
+    ).show(context);
   }
 }
 
@@ -561,16 +412,16 @@ class PaymentConfirmationButton extends AbstractButtonWithLoader {
 class JoinGameButton extends AbstractButtonWithLoader {
   final Match match;
 
+  // fixme do not animate for now but we still need this controller
   static RoundedLoadingButtonController joinController =
       RoundedLoadingButtonController();
 
   JoinGameButton(this.match)
-      : super(text: 'JOIN GAME', width: 200, controller: joinController);
+      : super(text: 'JOIN GAME', width: 200, controller: joinController, shouldAnimate: false);
 
   @override
   Future<void> onPressed(BuildContext context) async {
     var userState = context.read<UserState>();
-    var matchesState = context.read<MatchesState>();
 
     if (!userState.isLoggedIn()) {
       try {
@@ -588,34 +439,15 @@ class JoinGameButton extends AbstractButtonWithLoader {
       }
     }
 
-    var paymentRecap = await PaymentController.generatePaymentRecap(
-        matchesState, match.documentId, userState);
-
     GenericInfoModal.withBottom(
-        title: "JOIN THIS GAME",
+        title: "Jon this game",
         body:
             "You can cancel up to 24h before the game starting time to get a full refund in credits to use on your next game.\nIf you cancel after this time you won't get a refund.",
         bottomWidget: Column(
           children: [
             Divider(),
-            PaymentDetailsDescription(paymentRecap: paymentRecap),
-            Divider(),
-            Row(
-              children: [
-                Expanded(
-                    child: (paymentRecap.finalPriceToPayInCents() == 0)
-                        ? PaymentConfirmationWithCreditsButton(
-                            match, paymentRecap)
-                        : PaymentConfirmationButton(match, paymentRecap))
-              ],
-            )
+            PaymentDetailsDescription(match: match),
           ],
         )).show(context);
-
-    try {
-      joinController.stop();
-    } catch (e, _) {
-      // didnt' find a better way to deal with this. If the button is disposed and this is still runing the stop would fail
-    }
   }
 }
