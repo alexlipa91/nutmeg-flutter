@@ -2,14 +2,15 @@ import 'dart:convert';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/Buttons.dart';
 import 'package:provider/provider.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:nutmeg/model/Model.dart';
-import 'package:provider/provider.dart';
 import 'package:cloud_functions/cloud_functions.dart';
+
 
 var apiKey =
     "pk_test_51HyCDAGRb87bTNwH1dlHJXwdDSIUhxqPZS3zeytnO7T9dHBxzhwiWO5E0kFYLkVdZbZ2t0LEHxjuPmKFZ32fiMjO00dWLo1DqE";
@@ -33,6 +34,7 @@ enum Status {
   success,
   paymentCanceled,
   paymentFailed,
+  paymentSuccessButJoinFailed
 }
 
 class PaymentOutcome {
@@ -139,45 +141,14 @@ class Server {
 
 class PaymentSimulator extends StatelessWidget {
   final Match match;
+  final PaymentRecap paymentRecap;
 
-  const PaymentSimulator(this.match);
+  const PaymentSimulator(this.match, this.paymentRecap);
 
   @override
   Widget build(BuildContext context) {
     future() async {
-      await Future.delayed(Duration(seconds: 1));
-      var status = await showModalBottomSheet(
-        context: context,
-        builder: (context) => Container(
-          color: Palette.light,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Padding(
-                  padding: EdgeInsets.symmetric(vertical: 20),
-                  child: Text("Choose the outcome of the payment to test",
-                      style: TextPalette.linkStyle)),
-              Padding(
-                padding: EdgeInsets.only(bottom: 20),
-                child: RoundedButton(
-                    "SUCCESS", () => Navigator.pop(context, Status.success)),
-              ),
-              Padding(
-                padding: EdgeInsets.only(bottom: 20),
-                child: RoundedButton("FAILURE",
-                    () => Navigator.pop(context, Status.paymentFailed)),
-              ),
-              Padding(
-                padding: EdgeInsets.only(bottom: 20),
-                child: RoundedButton("CANCELED",
-                    () => Navigator.pop(context, Status.paymentCanceled)),
-              ),
-            ],
-          ),
-        ),
-      );
-
+      Status status = await runPayAndPossiblyJoin(context);
       Navigator.of(context).pop(status);
     }
 
@@ -205,6 +176,72 @@ class PaymentSimulator extends StatelessWidget {
                   ])),
             );
           }),
+    );
+  }
+
+  Future<Status> runPayAndPossiblyJoin(BuildContext context) async {
+    var status = await pay(context);
+
+    if (status == Status.success) {
+      try {
+        await MatchesController.joinMatch(context.read<MatchesState>(),
+            match.documentId, context.read<UserState>(), paymentRecap);
+      } catch (e, s) {
+        print(e);
+        print(s);
+        return Status.paymentSuccessButJoinFailed;
+      }
+    }
+
+    return status;
+  }
+
+  Future<Status> pay(BuildContext context) async {
+    // final stripeCustomerId = await context
+    //     .read<UserChangeNotifier>()
+    //     .getOrCreateStripeId();
+    // print("stripeCustomerId " + stripeCustomerId);
+    // final sessionId = await Server()
+    //     .createCheckout(stripeCustomerId, finalPrice);
+    // print("sessId " + sessionId);
+    //
+    // var value = await Navigator.of(context).push(
+    //     MaterialPageRoute(
+    //         builder: (_) => CheckoutPage(
+    //             sessionId: sessionId,
+    //             couponUsed: snapshot.data.id)));
+
+    await Future.delayed(Duration(seconds: 1));
+    return await showModalBottomSheet(
+      context: context,
+      builder: (context) => Container(
+        color: Palette.light,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+                padding: EdgeInsets.symmetric(vertical: 20),
+                child: Text("Choose the outcome of the payment to test",
+                    style: TextPalette.linkStyle)),
+            Padding(
+              padding: EdgeInsets.only(bottom: 20),
+              child: RoundedButton(
+                  "SUCCESS", () => Navigator.pop(context, Status.success)),
+            ),
+            Padding(
+              padding: EdgeInsets.only(bottom: 20),
+              child: RoundedButton("FAILURE",
+                  () => Navigator.pop(context, Status.paymentFailed)),
+            ),
+            Padding(
+              padding: EdgeInsets.only(bottom: 20),
+              child: RoundedButton("CANCELED",
+                  () => Navigator.pop(context, Status.paymentCanceled)),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

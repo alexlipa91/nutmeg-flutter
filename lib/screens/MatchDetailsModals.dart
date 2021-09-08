@@ -202,7 +202,7 @@ class PaymentDetailsDescription extends StatelessWidget {
                   Expanded(
                       child: (snapshot.data == null)
                           ? ButtonWithLoader("", () {})
-                          : (extraCreditsUsed)
+                          : (snapshot.data.onlyCreditsUsed())
                               ? PaymentConfirmationWithCreditsButton(
                                   match, snapshot.data)
                               : PaymentConfirmationButton(match, snapshot.data))
@@ -211,56 +211,6 @@ class PaymentDetailsDescription extends StatelessWidget {
             ],
           );
         });
-  }
-}
-
-class PostPaymentSuccessBottomBar extends StatelessWidget {
-  final Match match;
-  final PaymentOutcome paymentOutcome;
-
-  const PostPaymentSuccessBottomBar({Key key, this.match, this.paymentOutcome})
-      : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      // fixme why not having borders?
-      decoration: BoxDecoration(
-        color: Palette.white,
-        borderRadius: BorderRadius.only(topRight: Radius.circular(10)),
-      ),
-      child: Padding(
-        padding: EdgeInsets.symmetric(vertical: 30, horizontal: 20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Padding(
-                padding: EdgeInsets.only(bottom: 20.0),
-                child:
-                    Text("You are going to this game", style: TextPalette.h2)),
-            Padding(
-              padding: EdgeInsets.only(bottom: 20.0),
-              child: Text(
-                "You have successfully paid and joined this game.",
-                style: TextPalette.bodyText,
-              ),
-            ),
-            InkWell(
-              onTap: () async =>
-                  await DynamicLinks.shareMatchFunction(match.documentId),
-              child: Row(
-                children: [
-                  Icon(Icons.share, color: Palette.primary),
-                  SizedBox(width: 20),
-                  Text("SHARE", style: TextPalette.linkStyle)
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }
 
@@ -317,42 +267,52 @@ class PaymentConfirmationWithCreditsButton extends AbstractButtonWithLoader {
     await MatchesController.joinMatch(context.read<MatchesState>(),
         match.documentId, context.read<UserState>(), paymentRecap);
 
-    controller.success();
-    await Future.delayed(Duration(seconds: 1));
+    await Future.delayed(Duration(milliseconds: 500));
 
     Navigator.pop(context, true);
 
-    await showModalBottomSheet(
-        context: context,
-        builder: (context) => PostPaymentSuccessBottomBar(match: match));
+    await communicateSuccessToUser(context, match.documentId);
   }
+}
+
+Future<void> communicateSuccessToUser(BuildContext context, String matchId) async {
+  await GenericInfoModal.withBottom(
+    title: "You are going to this game",
+    body: "You have successfully paid and joined this game",
+    bottomWidget: InkWell(
+      onTap: () async =>
+      await DynamicLinks.shareMatchFunction(matchId),
+      child: Row(
+        children: [
+          Icon(Icons.share, color: Palette.primary),
+          SizedBox(width: 20),
+          Text("SHARE", style: TextPalette.linkStyle)
+        ],
+      ),
+    ),
+  ).show(context);
 }
 
 class PaymentConfirmationButton extends AbstractButtonWithLoader {
   final Match match;
   final PaymentRecap paymentRecap;
 
+  // fixme do not animate for now but we still need this controller
   static RoundedLoadingButtonController payConfirmController =
       RoundedLoadingButtonController();
 
   PaymentConfirmationButton(this.match, this.paymentRecap)
-      : super(text: "CONTINUE TO PAYMENT", controller: payConfirmController);
+      : super(text: "CONTINUE TO PAYMENT", controller: payConfirmController, shouldAnimate: false);
 
   Future<void> onSuccess(BuildContext context) async {
-    controller.success();
-    await Future.delayed(Duration(seconds: 1));
-
     Navigator.pop(context, true);
-
-    await showModalBottomSheet(
-        context: context,
-        builder: (context) => PostPaymentSuccessBottomBar(match: match));
+    await communicateSuccessToUser(context, match.documentId);
   }
 
   // fixme deal better with this
   Future<void> onPaymentSuccessButJoinFailure(BuildContext context) async {
-    controller.error();
-    await Future.delayed(Duration(seconds: 1));
+    // controller.error();
+    // await Future.delayed(Duration(seconds: 1));
 
     Navigator.pop(context, true);
 
@@ -363,8 +323,8 @@ class PaymentConfirmationButton extends AbstractButtonWithLoader {
   }
 
   Future<void> onPaymentFailure(BuildContext context) async {
-    controller.error();
-    await Future.delayed(Duration(seconds: 1));
+    // controller.error();
+    // await Future.delayed(Duration(seconds: 1));
 
     Navigator.pop(context);
 
@@ -376,35 +336,19 @@ class PaymentConfirmationButton extends AbstractButtonWithLoader {
 
   @override
   Future<void> onPressed(BuildContext context) async {
-    // final stripeCustomerId = await context
-    //     .read<UserChangeNotifier>()
-    //     .getOrCreateStripeId();
-    // print("stripeCustomerId " + stripeCustomerId);
-    // final sessionId = await Server()
-    //     .createCheckout(stripeCustomerId, finalPrice);
-    // print("sessId " + sessionId);
-    //
-    // var value = await Navigator.of(context).push(
-    //     MaterialPageRoute(
-    //         builder: (_) => CheckoutPage(
-    //             sessionId: sessionId,
-    //             couponUsed: snapshot.data.id)));
-
     Status status = await Navigator.push(context,
-        MaterialPageRoute(builder: (context) => PaymentSimulator(match)));
+        MaterialPageRoute(builder: (context) => PaymentSimulator(match, paymentRecap)));
 
-    if (status == Status.success) {
-      // payment was good
-      try {
-        await MatchesController.joinMatch(context.read<MatchesState>(),
-            match.documentId, context.read<UserState>(), paymentRecap);
-      } catch (e) {
-        // payment was good but joining the match was not. This shouldn't happen
+    switch (status) {
+      case Status.success:
+        await onSuccess(context);
+        break;
+      case Status.paymentSuccessButJoinFailed:
         await onPaymentSuccessButJoinFailure(context);
-      }
-      await onSuccess(context);
-    } else {
-      await onPaymentFailure(context);
+        break;
+      default:
+        await onPaymentFailure(context);
+        break;
     }
   }
 }
@@ -427,8 +371,10 @@ class JoinGameButton extends AbstractButtonWithLoader {
       try {
         AfterLoginCommunication communication = await Navigator.push(
             context, MaterialPageRoute(builder: (context) => Login()));
-        await GenericInfoModal(title: "Welcome", body: communication.text)
-            .show(context);
+        if (communication != null) {
+          await GenericInfoModal(title: "Welcome", body: communication.text)
+              .show(context);
+        }
       } catch (e) {
         CoolAlert.show(
             context: context,

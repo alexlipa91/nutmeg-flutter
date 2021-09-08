@@ -250,4 +250,6 @@ class PaymentRecap {
   int creditsInCentsUsed;
 
   finalPriceToPayInCents() => matchPriceInCents - creditsInCentsUsed;
+
+  onlyCreditsUsed() => matchPriceInCents == creditsInCentsUsed;
 }

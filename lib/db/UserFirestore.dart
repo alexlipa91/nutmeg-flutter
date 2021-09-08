@@ -18,11 +18,7 @@ class UserFirestore {
   static Future<void> storeUserDetails(UserDetails userDetails) =>
       users.doc(userDetails.documentId).set(userDetails.toJson());
 
-  static Future<void> logout() async {
-    var gs = GoogleSignIn();
-    await gs.disconnect();
-    await _auth.signOut();
-  }
+  static Future<void> logout() async => await _auth.signOut();
 
   static storeStripeId(String uid, String stripeId) async =>
       await users.doc(uid).update({"stripeId": stripeId});
