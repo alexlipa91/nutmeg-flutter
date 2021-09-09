@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:maps_launcher/maps_launcher.dart';
+import 'package:map_launcher/map_launcher.dart';
+import 'package:map_launcher/src/models.dart' as m;
 import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
@@ -38,6 +39,8 @@ class MatchDetails extends StatelessWidget {
     var title =
         sportCenter.neighbourhood + " - " + match.sport.getDisplayTitle();
 
+    var subscriptions = match.getOrderedGoingSubscriptions(user);
+
     return Scaffold(
       appBar: MatchAppBar(matchId),
       body: RefreshIndicator(
@@ -55,7 +58,8 @@ class MatchDetails extends StatelessWidget {
                 child: MatchInfo(match, sportCenter)),
             Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-                child: Text(match.numPlayersGoing().toString() + " players going",
+                child: Text(
+                    match.numPlayersGoing().toString() + " players going",
                     style: TextPalette.bodyText)),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
@@ -63,11 +67,11 @@ class MatchDetails extends StatelessWidget {
                 clipBehavior: Clip.none,
                 scrollDirection: Axis.horizontal,
                 child: Row(
-                    // fixme pass real data here
-                    children: match
-                        .getOrderedGoingSubscriptions(user)
-                        .map((s) => PlayerCard(s.userId))
-                        .toList()),
+                    children: (subscriptions.isEmpty)
+                        ? [EmptyPlayerCard(match: match)]
+                        : subscriptions
+                            .map((s) => PlayerCard(s.userId))
+                            .toList()),
               ),
             ),
             Padding(
@@ -108,8 +112,13 @@ class MatchInfo extends StatelessWidget {
               child: SportCenterImageCarousel(
                   images: sportCenter.getMainPicturesListUrls()))
         ]),
-        InfoWidget(title: getFormattedDateLong(match.dateTime),
-            subTitle: getStartAndEndHour(match.dateTime, match.duration).join(" - ") + " - " + match.duration.inMinutes.toString() + " min",
+        InfoWidget(
+            title: getFormattedDateLong(match.dateTime),
+            subTitle:
+                getStartAndEndHour(match.dateTime, match.duration).join(" - ") +
+                    " - " +
+                    match.duration.inMinutes.toString() +
+                    " min",
             icon: Icons.watch),
         InfoWidget(
             title: sportCenter.name,
@@ -307,7 +316,8 @@ class PlayerCard extends StatelessWidget {
                                                   backgroundImage: NetworkImage(
                                                       snapshot.data.image),
                                                   radius: 34,
-                                                  backgroundColor: Palette.white),
+                                                  backgroundColor:
+                                                      Palette.white),
                                             ),
                                           ),
                                         ]);
@@ -344,6 +354,43 @@ class PlayerCard extends StatelessWidget {
           );
         });
   }
+}
+
+class EmptyPlayerCard extends StatelessWidget {
+  final Match match;
+
+  const EmptyPlayerCard({Key key, this.match}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+        padding: EdgeInsets.only(right: 10),
+        child: SizedBox(
+          width: 100,
+          child: InfoContainer(
+              // constraints: BoxConstraints(maxWidth: 100),
+              // decoration: infoMatchDecoration,
+              // margin: EdgeInsets.only(right: 10),
+              child: Column(children: [
+            InkWell(
+              onTap: () => onJoinGameAction(context, match),
+              child: CircleAvatar(
+                  radius: 25,
+                  child: Icon(Icons.add, color: Palette.mediumgrey, size: 24),
+                  backgroundColor: Palette.lightGrey),
+            ),
+            SizedBox(height: 10),
+            Text("Join",
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.roboto(
+                    color: Palette.mediumgrey,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w400))
+          ])),
+        ));
+  }
+
+  Widget buildCard(String text) {}
 }
 
 // single rule card
@@ -401,8 +448,28 @@ class MapCard extends StatelessWidget {
               width: width,
               child: GoogleMap(
                 onTap: (LatLng latLng) async {
-                  MapsLauncher.launchCoordinates(
-                      sportCenter.lat, sportCenter.lng, sportCenter.name);
+                  print("tap");
+                  if (await MapLauncher.isMapAvailable(m.MapType.google)) {
+                    await MapLauncher.showMarker(
+                      mapType: m.MapType.google,
+                      coords: Coords(sportCenter.lat, sportCenter.lng),
+                      title: "",
+                      extraParams: {
+                        "q": sportCenter.name + "," + sportCenter.address,
+                        "z": "16"
+                      },
+                    );
+                  } else if (await MapLauncher.isMapAvailable(
+                      m.MapType.apple)) {
+                    await MapLauncher.showMarker(
+                      mapType: m.MapType.apple,
+                      coords: Coords(sportCenter.lat, sportCenter.lng),
+                      title: "",
+                      // fixme do something
+                    );
+                  } else {
+                    // fixme do something
+                  }
                 },
                 myLocationEnabled: false,
                 myLocationButtonEnabled: false,

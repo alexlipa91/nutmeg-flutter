@@ -364,36 +364,38 @@ class JoinGameButton extends AbstractButtonWithLoader {
       : super(text: 'JOIN GAME', width: 200, controller: joinController, shouldAnimate: false);
 
   @override
-  Future<void> onPressed(BuildContext context) async {
-    var userState = context.read<UserState>();
+  Future<void> onPressed(BuildContext context) async => onJoinGameAction(context, match);
+}
 
-    if (!userState.isLoggedIn()) {
-      try {
-        AfterLoginCommunication communication = await Navigator.push(
-            context, MaterialPageRoute(builder: (context) => Login()));
-        if (communication != null) {
-          await GenericInfoModal(title: "Welcome", body: communication.text)
-              .show(context);
-        }
-      } catch (e) {
-        CoolAlert.show(
-            context: context,
-            type: CoolAlertType.error,
-            text: "Could not login");
-        Navigator.pop(context);
-        return;
+onJoinGameAction(BuildContext context, Match match) async {
+  var userState = context.read<UserState>();
+
+  if (!userState.isLoggedIn()) {
+    try {
+      AfterLoginCommunication communication = await Navigator.push(
+          context, MaterialPageRoute(builder: (context) => Login()));
+      if (communication != null) {
+        await GenericInfoModal(title: "Welcome", body: communication.text)
+            .show(context);
       }
+    } catch (e) {
+      CoolAlert.show(
+          context: context,
+          type: CoolAlertType.error,
+          text: "Could not login");
+      Navigator.pop(context);
+      return;
     }
-
-    GenericInfoModal.withBottom(
-        title: "Jon this game",
-        body:
-            "You can cancel up to 24h before the game starting time to get a full refund in credits to use on your next game.\nIf you cancel after this time you won't get a refund.",
-        bottomWidget: Column(
-          children: [
-            Divider(),
-            PaymentDetailsDescription(match: match),
-          ],
-        )).show(context);
   }
+
+  GenericInfoModal.withBottom(
+      title: "Jon this game",
+      body:
+      "You can cancel up to 24h before the game starting time to get a full refund in credits to use on your next game.\nIf you cancel after this time you won't get a refund.",
+      bottomWidget: Column(
+        children: [
+          Divider(),
+          PaymentDetailsDescription(match: match),
+        ],
+      )).show(context);
 }
