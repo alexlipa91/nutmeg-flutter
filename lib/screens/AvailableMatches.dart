@@ -10,7 +10,6 @@ import 'package:nutmeg/widgets/AppBar.dart';
 import 'package:nutmeg/widgets/Buttons.dart';
 import 'package:nutmeg/widgets/Containers.dart';
 import 'package:nutmeg/widgets/Texts.dart';
-import 'package:nutmeg/widgets/WaitingScreen.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:week_of_year/week_of_year.dart';
@@ -66,7 +65,7 @@ class RoundedTopBar extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Find football games in",
+              Text("Find football gamess in",
                   style: TextPalette.bodyTextInverted),
               Text("Amsterdam", style: TextPalette.h1Inverted),
               SizedBox(height: 24),

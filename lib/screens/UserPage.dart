@@ -18,128 +18,134 @@ class UserPage extends StatelessWidget {
 
     return Scaffold(
       appBar: UserPageAppBar(),
+      bottomSheet: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Padding(
+              padding: EdgeInsets.only(bottom: 20),
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: Image.asset("assets/nutmeg_white.png",
+                    color: Palette.darkgrey, height: 24),
+              ))
+        ],
+      ),
       body: SafeArea(
         child: Container(
             child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 20),
-          child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
+          child: SingleChildScrollView(
+            child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                      padding: EdgeInsets.only(top: 20),
+                      child: Text("Account", style: TextPalette.h1Default)),
+                  Padding(
                     padding: EdgeInsets.only(top: 20),
-                    child: Text("Account", style: TextPalette.h1Default)),
-                Padding(
-                  padding: EdgeInsets.only(top: 20),
-                  child: InfoContainer(
-                      child: Row(
-                    children: [
-                      CircleAvatar(
-                          backgroundImage: NetworkImage(userDetails.image),
-                          radius: 24,
-                          backgroundColor: Palette.white),
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 30),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(userDetails.name, style: TextPalette.h2),
-                            SizedBox(height: 10),
-                            Text(userDetails.email, style: TextPalette.bodyText)
-                          ],
-                        ),
-                      )
-                    ],
-                  )),
-                ),
-                Padding(
-                  padding: EdgeInsets.only(top: 20),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: InfoContainer(
+                    child: InfoContainer(
+                        child: Row(
+                      children: [
+                        CircleAvatar(
+                            backgroundImage: NetworkImage(userDetails.image),
+                            radius: 24,
+                            backgroundColor: Palette.white),
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 30),
                           child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(userDetails.getCreditsAvailable(),
-                                  style: TextPalette.h2),
-                              SizedBox(height: 20),
-                              Text("Available Credits", style: TextPalette.h3)
+                              Text(userDetails.name, style: TextPalette.h2),
+                              SizedBox(height: 10),
+                              Text(userDetails.email, style: TextPalette.bodyText)
                             ],
                           ),
-                        ),
-                      ),
-                      SizedBox(width: 20),
-                      Expanded(
-                        child: InfoContainer(
-                            child: Column(
-                          children: [
-                            Text(
-                                MatchesController.numPlayedByUser(
-                                            context.watch<MatchesState>(),
-                                            userDetails.getUid())
-                                        .toString() +
-                                    " games played",
-                                style: TextPalette.h2),
-                            SizedBox(height: 20),
-                            Text("Games Played", style: TextPalette.h3)
-                          ],
-                        )),
-                      )
-                    ],
+                        )
+                      ],
+                    )),
                   ),
-                ),
-                Padding(
+                  Padding(
                     padding: EdgeInsets.only(top: 20),
-                    child: Text("USEFUL LINKS", style: TextPalette.h4)),
-                Padding(
-                  padding: EdgeInsets.symmetric(vertical: 20),
-                  child: InfoContainer(
-                      child: Column(children: [
-                    LinkInfo(text: "Follow us on Instagram"),
-                    LinkInfo(text: "Terms and Conditions"),
-                    Padding(
-                      padding: EdgeInsets.only(top: 10),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: ButtonWithLoader("LOGOUT", () async {
-                              await UserController.logout(
-                                  context.read<UserState>());
-                              Navigator.pop(context);
-                            }),
-                          )
-                        ],
-                      ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: InfoContainer(
+                            child: Column(
+                              children: [
+                                Text(userDetails.getCreditsAvailable(),
+                                    style: TextPalette.h2),
+                                SizedBox(height: 20),
+                                Text("Available Credits", style: TextPalette.h3)
+                              ],
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 20),
+                        Expanded(
+                          child: InfoContainer(
+                              child: Column(
+                            children: [
+                              Text(
+                                  MatchesController.numPlayedByUser(
+                                              context.watch<MatchesState>(),
+                                              userDetails.getUid())
+                                          .toString() +
+                                      " games played",
+                                  style: TextPalette.h2),
+                              SizedBox(height: 20),
+                              Text("Games Played", style: TextPalette.h3)
+                            ],
+                          )),
+                        )
+                      ],
                     ),
-                    if (userDetails.isAdmin)
+                  ),
+                  Padding(
+                      padding: EdgeInsets.only(top: 20),
+                      child: Text("USEFUL LINKS", style: TextPalette.h4)),
+                  Padding(
+                    padding: EdgeInsets.symmetric(vertical: 20),
+                    child: InfoContainer(
+                        child: Column(children: [
+                      LinkInfo(text: "Follow us on Instagram"),
+                      LinkInfo(text: "Terms and Conditions"),
                       Padding(
                         padding: EdgeInsets.only(top: 10),
                         child: Row(
                           children: [
                             Expanded(
-                              child: RoundedButton("ADMIN AREA", () async {
-                                await Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) =>
-                                            AdminAvailableMatches()));
+                              child: ButtonWithLoader("LOGOUT", () async {
+                                await UserController.logout(
+                                    context.read<UserState>());
+                                Navigator.pop(context);
                               }),
                             )
                           ],
                         ),
-                      )
-                  ])),
-                ),
-                Spacer(),
-                Padding(
-                    padding: EdgeInsets.only(bottom: 20),
-                    child: Align(
-                      alignment: Alignment.center,
-                      child: Image.asset("assets/nutmeg_white.png",
-                          color: Palette.darkgrey, height: 24),
-                    )),
-              ]),
+                      ),
+                      if (userDetails.isAdmin)
+                        Padding(
+                          padding: EdgeInsets.only(top: 10),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: RoundedButton("ADMIN AREA", () async {
+                                  await Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              AdminAvailableMatches()));
+                                }),
+                              )
+                            ],
+                          ),
+                        )
+                    ])),
+                  ),
+                ]),
+          ),
         )),
       ),
     );
