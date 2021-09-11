@@ -58,7 +58,8 @@ class Match {
         cancelledAt = json['cancelledAt'],
         documentId = documentId;
 
-  Map<String, dynamic> toJson() => {
+  Map<String, dynamic> toJson() =>
+      {
         'dateTime': Timestamp.fromDate(dateTime),
         'sportCenter': sportCenter,
         'sport': sport.index,
@@ -70,7 +71,9 @@ class Match {
   int getSpotsLeft() => maxPlayers - numPlayersGoing();
 
   int numPlayersGoing() =>
-      subscriptions.where((s) => s.status == SubscriptionStatus.going).length;
+      subscriptions
+          .where((s) => s.status == SubscriptionStatus.going)
+          .length;
 
   bool isFull() => numPlayersGoing() == maxPlayers;
 
@@ -84,12 +87,15 @@ class Match {
 
   List<Subscription> getOrderedGoingSubscriptions(UserDetails userDetails) {
     // if user is in match place him on top of list
-    var orderedSubscriptions = subscriptions.where((e) => e.status == SubscriptionStatus.going).toList()
-      ..sort((a,b) => a.createdAt.compareTo(b.createdAt));
+    var orderedSubscriptions = subscriptions.where((e) =>
+    e.status == SubscriptionStatus.going).toList()
+      ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
     if (userDetails != null) {
-      var userIndex = orderedSubscriptions.indexWhere((e) => e.userId == userDetails.getUid());
+      var userIndex = orderedSubscriptions.indexWhere((e) =>
+      e.userId == userDetails.getUid());
       if (userIndex != -1) {
-        orderedSubscriptions.insert(0, orderedSubscriptions.removeAt(userIndex));
+        orderedSubscriptions.insert(
+            0, orderedSubscriptions.removeAt(userIndex));
       }
     }
     return orderedSubscriptions;
@@ -124,11 +130,19 @@ class Subscription {
         refundedInCredits = json['refundedInCredits'],
         createdAt = json['createdAt'] ?? null,
         status = SubscriptionStatus.values
-            .firstWhere((e) => e.toString().split(".").last == json['status']);
+            .firstWhere((e) =>
+        e
+            .toString()
+            .split(".")
+            .last == json['status']);
 
-  Map<String, dynamic> toJson() => {
+  Map<String, dynamic> toJson() =>
+      {
         'userId': userId,
-        'status': status.toString().split(".").last,
+        'status': status
+            .toString()
+            .split(".")
+            .last,
         'createdAt': createdAt,
         'paid': paid,
         'paidInCredits': paidInCredits,
@@ -163,9 +177,13 @@ class SportCenter {
   @override
   int get hashCode => super.hashCode;
 
-  String getShortAddress() => address.split(",").first;
+  String getShortAddress() =>
+      address
+          .split(",")
+          .first;
 
-  List<String> getMainPicturesListUrls() => [
+  List<String> getMainPicturesListUrls() =>
+      [
         "assets/sportcentertest_large.png",
         "assets/sportcentertest_large.png",
         "assets/sportcentertest_large.png"
@@ -181,12 +199,11 @@ class UserDetails {
   String email;
   String stripeId;
   int creditsInCents;
-  List<String> usedCoupons;
+  List<String> tokens;
 
-  UserDetails(
-      this.documentId, this.isAdmin, this.image, this.name, this.email)
+  UserDetails(this.documentId, this.isAdmin, this.image, this.name, this.email)
       : creditsInCents = 0,
-        usedCoupons = [];
+        tokens = [];
 
   UserDetails.from(String documentId, UserDetails u)
       : this.documentId = documentId,
@@ -196,7 +213,7 @@ class UserDetails {
         this.email = u.email,
         this.stripeId = u.stripeId,
         this.creditsInCents = u.creditsInCents,
-        this.usedCoupons = u.usedCoupons;
+        this.tokens = u.tokens;
 
   UserDetails.fromJson(Map<String, dynamic> json, String documentId)
       : isAdmin = json["isAdmin"] ?? false,
@@ -205,18 +222,17 @@ class UserDetails {
         email = json["email"],
         creditsInCents = json["credits"],
         stripeId = json["stripeId"] ?? null,
-        usedCoupons = (json["usedCoupons"] != null)
-            ? List<String>.from(json['usedCoupons'])
-            : null,
+        tokens = (json["tokens"] == null) ? [] : List<String>.from(json["tokens"]),
         documentId = documentId;
 
-  Map<String, dynamic> toJson() => {
+  Map<String, dynamic> toJson() =>
+      {
         'isAdmin': isAdmin,
         'image': image,
         'name': name,
         'email': email,
         'credits': creditsInCents,
-        'usedCoupons': usedCoupons
+        'tokens': tokens
       };
 
   String getUid() => documentId;

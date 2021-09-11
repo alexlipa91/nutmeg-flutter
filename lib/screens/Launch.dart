@@ -19,15 +19,8 @@ import 'package:flutter/foundation.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
-Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  // If you're going to use other Firebase services in the background, such as Firestore,
-  // make sure you call `initializeApp` before using other Firebase services.
-  print("Handling a background message: ${message.messageId}");
-}
-
 void main() {
   WidgetsFlutterBinding.ensureInitialized(); //imp line need to be added first
-  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
   if (!kIsWeb) {
     FlutterError.onError = (FlutterErrorDetails details) async {
@@ -119,6 +112,10 @@ class LaunchWidgetState extends State<LaunchWidget> {
 
     // check if user is logged in
     var userDetails = await UserController.getUserIfAvailable();
+
+    // tell the app to save user tokens
+    await UserController.saveUserTokensToDb();
+
     if (userDetails != null) {
       context.read<UserState>().setUserDetails(userDetails);
     }
