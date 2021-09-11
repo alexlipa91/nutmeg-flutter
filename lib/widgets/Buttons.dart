@@ -142,20 +142,18 @@ abstract class AbstractButtonWithLoader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      children: [Expanded(
-        child: Container(
-          // height: 40,
-          // width: 50,
-          child: RoundedLoadingButton(
-            height: 35,
-            animateOnTap: shouldAnimate,
-            duration: Duration(milliseconds: 500),
-            child: Text(text, style: TextPalette.linkStyleInverted),
-            onPressed: () => onPressed(context),
-            controller: controller,
-            color: Palette.primary,
-            loaderSize: 25,
-          ),
+      children: [Container(
+        // height: 40,
+        width: width,
+        child: RoundedLoadingButton(
+          height: 35,
+          animateOnTap: shouldAnimate,
+          duration: Duration(milliseconds: 500),
+          child: Text(text, style: TextPalette.linkStyleInverted),
+          onPressed: () => onPressed(context),
+          controller: controller,
+          color: Palette.primary,
+          loaderSize: 25,
         ),
       )],
     );
