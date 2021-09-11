@@ -141,18 +141,23 @@ abstract class AbstractButtonWithLoader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      // height: 40,
-      width: 200,
-      child: RoundedLoadingButton(
-        animateOnTap: shouldAnimate,
-        duration: Duration(milliseconds: 500),
-        child: Text(text, style: TextPalette.linkStyleInverted),
-        onPressed: () => onPressed(context),
-        controller: controller,
-        color: Palette.primary,
-        loaderSize: 25,
-      ),
+    return Row(
+      children: [Expanded(
+        child: Container(
+          // height: 40,
+          // width: 50,
+          child: RoundedLoadingButton(
+            height: 35,
+            animateOnTap: shouldAnimate,
+            duration: Duration(milliseconds: 500),
+            child: Text(text, style: TextPalette.linkStyleInverted),
+            onPressed: () => onPressed(context),
+            controller: controller,
+            color: Palette.primary,
+            loaderSize: 25,
+          ),
+        ),
+      )],
     );
   }
 }
@@ -163,6 +168,17 @@ class ButtonWithLoader extends AbstractButtonWithLoader {
   final Function onTap;
 
   ButtonWithLoader(this.text, this.onTap): super(width: 0, text: text, controller: RoundedLoadingButtonController());
+
+  @override
+  Future<void> onPressed(BuildContext context) => onTap();
+}
+
+class ButtonWithoutLoader extends AbstractButtonWithLoader {
+
+  final String text;
+  final Function onTap;
+
+  ButtonWithoutLoader(this.text, this.onTap): super(width: 0, text: text, controller: RoundedLoadingButtonController(), shouldAnimate: false);
 
   @override
   Future<void> onPressed(BuildContext context) => onTap();

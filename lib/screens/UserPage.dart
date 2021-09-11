@@ -10,6 +10,7 @@ import 'package:nutmeg/widgets/Containers.dart';
 import 'package:provider/provider.dart';
 
 class UserPage extends StatelessWidget {
+
   @override
   Widget build(BuildContext context) {
     // don't watch this or when logout things will break
@@ -130,7 +131,7 @@ class UserPage extends StatelessWidget {
                           child: Row(
                             children: [
                               Expanded(
-                                child: RoundedButton("ADMIN AREA", () async {
+                                child: ButtonWithoutLoader("ADMIN AREA", () async {
                                   await Navigator.push(
                                       context,
                                       MaterialPageRoute(
