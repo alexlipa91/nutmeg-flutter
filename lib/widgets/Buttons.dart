@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
+import 'package:nutmeg/utils/Utils.dart';
 import 'package:rounded_loading_button/rounded_loading_button.dart';
 
 
@@ -180,4 +181,46 @@ class ButtonWithoutLoader extends AbstractButtonWithLoader {
 
   @override
   Future<void> onPressed(BuildContext context) => onTap();
+}
+
+class ShareButton extends StatefulWidget {
+  final String matchId;
+
+  const ShareButton({Key key, this.matchId}) : super(key: key);
+
+  @override
+  State<StatefulWidget> createState() => ShareButtonState(matchId);
+}
+
+class ShareButtonState extends State<ShareButton> {
+  final String matchId;
+  bool active;
+
+  ShareButtonState(this.matchId);
+
+  @override
+  void initState() {
+    active = false;
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+        child: Icon(Icons.share, color: Colors.black),
+        onTap: () async {
+          if (active) {
+            print("already active");
+            return;
+          }
+          setState(() {
+            active = true;
+          });
+          await DynamicLinks.shareMatchFunction(matchId);
+          setState(() {
+            print("now can go");
+            active = false;
+          });
+        });
+  }
 }

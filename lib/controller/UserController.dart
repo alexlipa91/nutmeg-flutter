@@ -10,6 +10,7 @@ import 'package:nutmeg/screens/admin/Matches.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 
 class UserController {
+
   static Future<UserDetails> refresh(UserState userState) async {
     var userDetails = await UserFirestore.getSpecificUserDetails(
         userState.getUserDetails().getUid());
@@ -26,6 +27,9 @@ class UserController {
       try {
         var existingUserDetails =
             await UserFirestore.getSpecificUserDetails(u.uid);
+
+        await UserController.saveUserTokensToDb();
+
         return UserDetails.from(u.uid, existingUserDetails);
       } catch (e) {
         print("Found firebase user but couldn't load details: " + e.toString());
@@ -35,6 +39,7 @@ class UserController {
   }
 
   static Future<void> saveUserTokensToDb() async {
+    print("saving token");
     // Get the token each time the application loads
     String token = await FirebaseMessaging.instance.getToken();
 
@@ -69,6 +74,7 @@ class UserController {
             " were added to your account.\nJoin a match and use them to pay";
       }
       await UserFirestore.storeUserDetails(userDetails);
+      await UserController.saveUserTokensToDb();
     }
 
     userState.setUserDetails(userDetails);

@@ -82,7 +82,7 @@ class MatchDetails extends StatelessWidget {
                 )),
             RuleCard(),
             RuleCard(),
-            MapCard.big(sportCenter)
+            // MapCard.big(sportCenter)
           ],
         )),
       ),

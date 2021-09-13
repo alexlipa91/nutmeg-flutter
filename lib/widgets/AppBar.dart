@@ -5,7 +5,7 @@ import 'package:nutmeg/screens/Login.dart';
 import 'package:nutmeg/screens/UserPage.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
-import 'package:nutmeg/utils/Utils.dart';
+import 'package:nutmeg/widgets/Buttons.dart';
 import 'package:provider/provider.dart';
 
 class NutmegAppBar extends StatelessWidget with PreferredSizeWidget {
@@ -83,10 +83,7 @@ class MatchAppBar extends NutmegAppBar {
             InkWell(
                 child: Icon(Icons.arrow_back, color: Colors.black),
                 onTap: () => Navigator.of(context).pop()),
-            InkWell(
-                child: Icon(Icons.share, color: Colors.black),
-                onTap: () async =>
-                    await DynamicLinks.shareMatchFunction(matchId))
+            ShareButton(matchId: matchId)
           ],
         ),
       ),
@@ -95,6 +92,7 @@ class MatchAppBar extends NutmegAppBar {
 }
 
 class UserPageAppBar extends NutmegAppBar {
+
   @override
   Widget build(BuildContext context) {
     return NutmegAppBar(
