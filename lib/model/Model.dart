@@ -181,13 +181,6 @@ class SportCenter {
       address
           .split(",")
           .first;
-
-  List<String> getMainPicturesListUrls() =>
-      [
-        "assets/sportcentertest_large.png",
-        "assets/sportcentertest_large.png",
-        "assets/sportcentertest_large.png"
-      ];
 }
 
 class UserDetails {

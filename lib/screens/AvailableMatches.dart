@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
@@ -17,10 +18,8 @@ import "package:collection/collection.dart";
 
 import 'MatchDetails.dart';
 
-
 // main widget
 class AvailableMatches extends StatelessWidget {
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -139,8 +138,7 @@ class MatchesAreaState extends State<MatchesArea> {
                 padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
                 key: _listKey,
                 initialItemCount:
-                    (showNews) ? widgets.length + 1 :
-                    widgets.length,
+                    (showNews) ? widgets.length + 1 : widgets.length,
                 itemBuilder: (context, index, animation) {
                   if (showNews) {
                     return (index == 0)
@@ -160,12 +158,11 @@ class MatchesAreaState extends State<MatchesArea> {
   }
 
   static List<Widget> myGamesWidgets(MatchesState state, UserState userState) {
-    var matches = state.getMatches().where(
-        (m) {
-          var userSubInMatch = m.getUserSub(userState.getUserDetails());
-          return userSubInMatch != null &&
-              userSubInMatch.status == SubscriptionStatus.going;
-        });
+    var matches = state.getMatches().where((m) {
+      var userSubInMatch = m.getUserSub(userState.getUserDetails());
+      return userSubInMatch != null &&
+          userSubInMatch.status == SubscriptionStatus.going;
+    });
 
     if (matches.isEmpty) {
       return [
@@ -206,7 +203,8 @@ class MatchesAreaState extends State<MatchesArea> {
   }
 
   static List<Widget> allGamesWidgets(MatchesState state) {
-    var matches = state.getMatchesInFuture().where((e) => !e.wasCancelled()).toList();
+    var matches =
+        state.getMatchesInFuture().where((e) => !e.wasCancelled()).toList();
 
     if (matches.isEmpty) {
       return [TextSeparatorWidget("No upcoming games to display.")];
@@ -297,9 +295,8 @@ class MatchInfo extends StatelessWidget {
     var matchesState = context.watch<MatchesState>();
     var match = matchesState.getMatch(matchId);
 
-    var sportCenter = context
-        .read<SportCentersState>()
-        .getSportCenter(match.sportCenter);
+    var sportCenter =
+        context.read<SportCentersState>().getSportCenter(match.sportCenter);
 
     return InkWell(
         child: Padding(
@@ -309,15 +306,7 @@ class MatchInfo extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Container(
-                    width: 60,
-                    height: 78,
-                    decoration: BoxDecoration(
-                        image: DecorationImage(
-                            image: AssetImage(
-                                "assets/sportcentertest_thumbnail.png")),
-                        color: Colors.grey,
-                        borderRadius: BorderRadius.all(Radius.circular(10)))),
+                MatchThumbnail(match: match),
                 Expanded(
                   child: Container(
                     child: Align(
@@ -370,11 +359,63 @@ class MatchInfo extends StatelessWidget {
           //     context,
           //     MaterialPageRoute(
           //         builder: (context) => WaitingScreenLight(toRun: () => MatchesController.refresh(matchesState, match.documentId))));
-          await Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => MatchDetails(matchId)));
+          await Navigator.push(context,
+              MaterialPageRoute(builder: (context) => MatchDetails(matchId)));
         });
+  }
+}
+
+class MatchThumbnail extends StatelessWidget {
+  final Match match;
+
+  const MatchThumbnail({Key key, this.match}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    var placeHolder = Container(
+        child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Image.asset("assets/nutmeg_white.png",
+            color: Palette.darkgrey, height: 16),
+        // SizedBox(
+        //   height: 20,
+        // ),
+        // SizedBox(
+        //     height: 10,
+        //     width: 10,
+        //     child: CircularProgressIndicator(
+        //       color: Palette.darkgrey,
+        //       strokeWidth: 2,
+        //     ))
+      ],
+    ));
+
+    return FutureBuilder(
+      future: MatchesController.getMatchThumbnailUrl(match)
+          .catchError((err, stack) {
+        print(err);
+        print(stack);
+      }),
+      builder: (context, snapshot) => Container(
+          width: 60,
+          height: 78,
+          child: (snapshot.hasData)
+              ? CachedNetworkImage(
+                  imageUrl: snapshot.data,
+                  imageBuilder: (context, imageProvider) => Container(
+                      decoration: BoxDecoration(
+                    image: DecorationImage(
+                      image: imageProvider,
+                      fit: BoxFit.fill,
+                    ),
+                    borderRadius: BorderRadius.all(Radius.circular(15)),
+                  )),
+                  placeholder: (context, url) => placeHolder,
+                  errorWidget: (context, url, error) => Icon(Icons.error),
+                )
+              : placeHolder),
+    );
   }
 }
 
@@ -452,9 +493,8 @@ class MatchInfoPast extends StatelessWidget {
   Widget build(BuildContext context) {
     var matchesState = context.watch<MatchesState>();
 
-    var sportCenter = context
-        .read<SportCentersState>()
-        .getSportCenter(match.sportCenter);
+    var sportCenter =
+        context.read<SportCentersState>().getSportCenter(match.sportCenter);
 
     return InkWell(
         child: Padding(

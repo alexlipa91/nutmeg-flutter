@@ -5,6 +5,7 @@ import 'package:nutmeg/db/SubscriptionsFirestore.dart';
 import 'package:nutmeg/db/UserFirestore.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 import 'UserController.dart';
 
@@ -134,5 +135,43 @@ class MatchesController {
     match.cancelledAt = Timestamp.fromDate(DateTime.now());
     await MatchesFirestore.editMatch(match);
     matchesState.setMatch(await getMatch(matchId));
+  }
+
+  // it loads all pictures from the sportcenter in folder sportcenters/<sportcenter_id>/large
+  // if no <sportcenter_id> subfolder it uses "default"
+  static Future<List<String>> getMatchPicturesUrls(Match match) async {
+    var mainFolderRef = await FirebaseStorage.instance.ref("sportcenters").listAll();
+    var listOfFolders = mainFolderRef.prefixes;
+
+    var folder;
+    if (listOfFolders.where((ref) => ref.name == match.sportCenter).isEmpty) {
+      print("no large images found for sportcenter " + match.sportCenter + ". Using default");
+      folder = "default";
+    } else {
+      folder = match.sportCenter;
+    }
+
+    var allRefs = await FirebaseStorage.instance.ref("sportcenters/" + folder + "/large").listAll();
+    var urls = await Future.wait(allRefs.items.map((e) => e.getDownloadURL()));
+    print("returning urls: " + urls.toString());
+    return urls;
+  }
+
+  // it loads the thumbnail picture from the sportcenter at sportcenters/<sportcenter_id>/thumbnail.png
+  // if no <sportcenter_id> subfolder it uses "default"
+  static Future<String> getMatchThumbnailUrl(Match match) async {
+    var listOfFiles = await FirebaseStorage.instance.ref("sportcenters/").listAll();
+
+    var file;
+    if (listOfFiles.prefixes.where((ref) => ref.name == match.sportCenter).isEmpty) {
+      print("no thumbnail images found for sportcenter " + match.sportCenter + ". Using default");
+      file = "sportcenters/default/thumbnail.png";
+    } else {
+      file = "sportcenters/" + match.sportCenter + "/thumbnail.png";
+    }
+
+    var url = await FirebaseStorage.instance.ref(file).getDownloadURL();
+    print("returning url: " + url);
+    return url;
   }
 }

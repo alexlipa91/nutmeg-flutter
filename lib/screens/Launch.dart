@@ -157,6 +157,7 @@ class LaunchWidgetState extends State<LaunchWidget> {
             child: FutureBuilder<void>(
                 future: loadData(context).catchError((err, stacktrace) {
                   print(err);
+                  print(stacktrace);
                   defaultErrorMessage(err, context);
                 }),
                 builder: (context, snapshot) => (snapshot.hasError)

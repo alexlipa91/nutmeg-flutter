@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:map_launcher/map_launcher.dart';
@@ -107,11 +108,7 @@ class MatchInfo extends StatelessWidget {
         child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(children: [
-          Expanded(
-              child: SportCenterImageCarousel(
-                  images: sportCenter.getMainPicturesListUrls()))
-        ]),
+        Row(children: [Expanded(child: SportCenterImageCarousel(match))]),
         InfoWidget(
             title: getFormattedDateLong(match.dateTime),
             subTitle:
@@ -139,73 +136,91 @@ class MatchInfo extends StatelessWidget {
 }
 
 class SportCenterImageCarousel extends StatefulWidget {
-  final List<String> images;
+  final Match match;
 
-  const SportCenterImageCarousel({Key key, this.images}) : super(key: key);
+  const SportCenterImageCarousel(this.match);
 
   @override
-  State<StatefulWidget> createState() => SportCenterImageCarouselState(images);
+  State<StatefulWidget> createState() => SportCenterImageCarouselState(match);
 }
 
 class SportCenterImageCarouselState extends State<SportCenterImageCarousel> {
   int _current = 0;
-  final List<String> images;
+  final Match match;
   final CarouselController _controller = CarouselController();
 
-  SportCenterImageCarouselState(this.images);
+  SportCenterImageCarouselState(this.match);
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        // fixme check animation when slide
-        CarouselSlider(
-          carouselController: _controller,
-          options: CarouselOptions(
-              enableInfiniteScroll: false,
-              viewportFraction: 1,
-              onPageChanged: (index, reason) {
-                setState(() {
-                  _current = index;
-                });
-              }),
-          items: images.map((i) {
-            return Builder(
-              builder: (BuildContext context) {
-                return Container(
-                  decoration: BoxDecoration(
-                      image: DecorationImage(
-                          fit: BoxFit.fill, image: AssetImage(i)),
-                      borderRadius: BorderRadius.all(Radius.circular(15))),
-                );
-              },
-            );
-          }).toList(),
-        ),
-        Positioned(
-          bottom: 10,
-          left: 1,
-          right: 1,
-          child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: images.asMap().entries.map((entry) {
-                return GestureDetector(
-                  onTap: () => _controller.animateToPage(entry.key),
-                  child: Container(
-                    width: 12.0,
-                    height: 12.0,
-                    margin:
-                        EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
-                    decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white
-                            .withOpacity(_current == entry.key ? 0.9 : 0.4)),
-                  ),
-                );
-              }).toList()),
-        ),
-      ],
-    );
+    var placeHolder = Container(
+        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+      Image.asset("assets/nutmeg_white.png",
+          color: Palette.darkgrey, height: 16)
+    ]));
+
+    return FutureBuilder(
+        future: MatchesController.getMatchPicturesUrls(match),
+        builder: (context, snapshot) {
+          List<Widget> itemsToShow = (snapshot.hasData)
+              ? List<Widget>.from(snapshot.data.map((i) => CachedNetworkImage(
+                        imageUrl: i,
+                        imageBuilder: (context, imageProvider) => Container(
+                            decoration: BoxDecoration(
+                          image: DecorationImage(
+                            image: imageProvider,
+                            fit: BoxFit.fill,
+                          ),
+                          borderRadius: BorderRadius.all(Radius.circular(15)),
+                        )),
+                        placeholder: (context, url) => placeHolder,
+                        errorWidget: (context, url, error) => Icon(Icons.error),
+                      )
+                  ))
+              : List<Widget>.from([placeHolder]);
+
+          return Stack(
+            children: [
+              // fixme check animation when slide
+              CarouselSlider(
+                carouselController: _controller,
+                options: CarouselOptions(
+                    enableInfiniteScroll: false,
+                    viewportFraction: 1,
+                    onPageChanged: (index, reason) {
+                      setState(() {
+                        _current = index;
+                      });
+                    }),
+                items: itemsToShow,
+              ),
+              Positioned(
+                bottom: 10,
+                left: 1,
+                right: 1,
+                child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: itemsToShow.asMap().entries.map((entry) {
+                      return GestureDetector(
+                        onTap: () => _controller.animateToPage(entry.key),
+                        child: Container(
+                          width: 12.0,
+                          height: 12.0,
+                          margin: EdgeInsets.symmetric(
+                              vertical: 8.0, horizontal: 4.0),
+                          decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: (itemsToShow.length > 1)
+                                  ? Colors.white.withOpacity(
+                                      _current == entry.key ? 0.9 : 0.4)
+                                  : Colors.transparent),
+                        ),
+                      );
+                    }).toList()),
+              ),
+            ],
+          );
+        });
   }
 }
 

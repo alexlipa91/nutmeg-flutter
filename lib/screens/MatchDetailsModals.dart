@@ -284,7 +284,7 @@ Future<void> communicateSuccessToUser(BuildContext context, String matchId) asyn
       await DynamicLinks.shareMatchFunction(matchId),
       child: Row(
         children: [
-          Icon(Icons.share, color: Palette.primary),
+          ShareButton(matchId: matchId),
           SizedBox(width: 20),
           Text("SHARE", style: TextPalette.linkStyle)
         ],
