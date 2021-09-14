@@ -25,3 +25,10 @@ jobs:
         with:
           lane: playstoreInternalTest
           subdirectory: android
+
+      - name: Deploy to playstore alpha
+        uses: maierj/fastlane-action@v1.4.0
+        if: ${{ startsWith(github.event.head_commit.message, 'PLAYSTORE_ALPHA') }}
+        with:
+          lane: playstoreAlpha
+          subdirectory: android
