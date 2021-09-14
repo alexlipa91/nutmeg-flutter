@@ -1,3 +1,4 @@
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:cool_alert/cool_alert.dart';
 import 'package:date_time_picker/date_time_picker.dart';
 import 'package:flutter/material.dart';
@@ -53,7 +54,7 @@ class AddOrEditMatch extends StatelessWidget {
               if (match != null && match.cancelledAt == null)
                 Row(children: [
                   Expanded(
-                    child: RoundedButtonAlerted("CANCEL", () async {
+                    child: ButtonWithLoader("CANCEL", () async {
                       var shouldCancel = await CoolAlert.show(
                         context: context,
                         type: CoolAlertType.confirm,
@@ -66,7 +67,16 @@ class AddOrEditMatch extends StatelessWidget {
                       );
 
                       if (shouldCancel) {
-                        await MatchesController.cancelMatch(matchesState, matchId);
+                        try {
+                          // await MatchesController.cancelMatch(matchesState, matchId);
+                          HttpsCallable callable = FirebaseFunctions.instance
+                              .httpsCallable('sendCancellationNotification');
+                          await callable.call({"matchId": matchId});
+                        } catch (e, s) {
+                          print("exception occurred");
+                          print(e);
+                          print(s);
+                        }
                         Navigator.pop(context);
                       }
                     }),
@@ -265,7 +275,8 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                                       .toInt(),
                                   Duration(
                                       minutes: int.parse(
-                                          durationController.value.text)), null));
+                                          durationController.value.text)),
+                                  null));
                           CoolAlert.show(
                               context: context,
                               type: CoolAlertType.info,

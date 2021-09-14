@@ -166,7 +166,7 @@ class ButtonWithLoader extends AbstractButtonWithLoader {
   final String text;
   final Function onTap;
 
-  ButtonWithLoader(this.text, this.onTap): super(width: 0, text: text, controller: RoundedLoadingButtonController());
+  ButtonWithLoader(this.text, this.onTap): super(text: text, controller: RoundedLoadingButtonController());
 
   @override
   Future<void> onPressed(BuildContext context) => onTap();

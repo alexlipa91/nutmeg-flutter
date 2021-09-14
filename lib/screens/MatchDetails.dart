@@ -83,7 +83,7 @@ class MatchDetails extends StatelessWidget {
                 )),
             RuleCard(),
             RuleCard(),
-            // MapCard.big(sportCenter)
+            MapCard.big(sportCenter)
           ],
         )),
       ),
@@ -108,7 +108,9 @@ class MatchInfo extends StatelessWidget {
         child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(children: [Expanded(child: SportCenterImageCarousel(match))]),
+        Row(children: [
+          Expanded(child: SportCenterImageCarousel(match))
+        ]),
         InfoWidget(
             title: getFormattedDateLong(match.dateTime),
             subTitle:
@@ -154,6 +156,7 @@ class SportCenterImageCarouselState extends State<SportCenterImageCarousel> {
   @override
   Widget build(BuildContext context) {
     var placeHolder = Container(
+        height: 358,
         child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
       Image.asset("assets/nutmeg_white.png",
           color: Palette.darkgrey, height: 16)

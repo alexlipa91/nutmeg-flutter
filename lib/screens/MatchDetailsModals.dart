@@ -58,70 +58,73 @@ class BottomBar extends StatelessWidget {
         : null;
     var isGoing = userSub != null && userSub.status == SubscriptionStatus.going;
 
-    return InfoContainer(
-        child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-                (isGoing)
-                    ? "You are going!"
-                    : match.getSpotsLeft().toString() + " spots left",
-                style: TextPalette.h2),
-            SizedBox(height: 20),
-            Text(
-                (isGoing)
-                    ? match.numPlayersGoing().toString() + " going"
-                    : formatCurrency.format(match.pricePerPersonInCents / 100),
-                style: TextPalette.bodyText),
-          ],
-        ),
-        (isGoing)
-            ? RoundedButtonLight("LEAVE GAME", () async {
-                var hoursToGame = match.dateTime.difference(DateTime.now()).inHours;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [InfoContainer(
+          child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                  (isGoing)
+                      ? "You are going!"
+                      : match.getSpotsLeft().toString() + " spots left",
+                  style: TextPalette.h2),
+              SizedBox(height: 20),
+              Text(
+                  (isGoing)
+                      ? match.numPlayersGoing().toString() + " going"
+                      : formatCurrency.format(match.pricePerPersonInCents / 100),
+                  style: TextPalette.bodyText),
+            ],
+          ),
+          (isGoing)
+              ? RoundedButtonLight("LEAVE GAME", () async {
+                  var hoursToGame = match.dateTime.difference(DateTime.now()).inHours;
 
-                await GenericInfoModal.withBottom(
-                    title: "Leaving this game?",
-          body: "You joined this game: " + getFormattedDate(userSub.createdAt.toDate()) +
-          ".\n" + ((hoursToGame < 24)
-          ? "You will not receive a refund since the game is in less than 24 hours."
-              : "We will refund you in credits that you can use in your next games."),
-                bottomWidget: Column(children:
-                    [
-                      Divider(),
-                      Padding(
-                      padding: EdgeInsets.symmetric(vertical: 10.0),
-                      child: Row(
-                        children: [
-                          Text("Credits refund", style: TextPalette.h3),
-                          Expanded(
-                              child: Text(
-                                formatCurrency.format(match.pricePerPersonInCents / 100) +
-                                    " euro",
-                                style: TextPalette.h3,
-                                textAlign: TextAlign.end,
-                              ))
-                        ],
+                  await GenericInfoModal.withBottom(
+                      title: "Leaving this game?",
+            body: "You joined this game: " + getFormattedDate(userSub.createdAt.toDate()) +
+            ".\n" + ((hoursToGame < 24)
+            ? "You will not receive a refund since the game is in less than 24 hours."
+                : "We will refund you in credits that you can use in your next games."),
+                  bottomWidget: Column(children:
+                      [
+                        Divider(),
+                        Padding(
+                        padding: EdgeInsets.symmetric(vertical: 10.0),
+                        child: Row(
+                          children: [
+                            Text("Credits refund", style: TextPalette.h3),
+                            Expanded(
+                                child: Text(
+                                  formatCurrency.format(match.pricePerPersonInCents / 100) +
+                                      " euro",
+                                  style: TextPalette.h3,
+                                  textAlign: TextAlign.end,
+                                ))
+                          ],
+                        ),
                       ),
-                    ),
-                      Divider(),
-                      Row(
-                      children: [
-                        Expanded(child: LeaveConfirmationButton(match)),
-                      ],
-                    )
-                    ]
-                )).show(context);
-              })
-            : (!match.isFull())
-                ? JoinGameButton(match)
-                : Container()
-      ],
-    ));
+                        Divider(),
+                        Row(
+                        children: [
+                          Expanded(child: LeaveConfirmationButton(match)),
+                        ],
+                      )
+                      ]
+                  )).show(context);
+                })
+              : (!match.isFull())
+                  ? JoinGameButton(match)
+                  : RoundedButton("JOIN", null)
+        ],
+      ))],
+    );
   }
 }
 

@@ -15,6 +15,8 @@ import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
 import "package:collection/collection.dart";
 
+import '../AvailableMatches.dart';
+
 // main widget
 class AdminAvailableMatches extends StatelessWidget {
   @override
@@ -243,15 +245,7 @@ class MatchInfo extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Container(
-                    width: 60,
-                    height: 78,
-                    decoration: BoxDecoration(
-                        image: DecorationImage(
-                            image: AssetImage(
-                                "assets/sportcentertest_thumbnail.png")),
-                        color: Colors.grey,
-                        borderRadius: BorderRadius.all(Radius.circular(10)))),
+                MatchThumbnail(match: match),
                 Expanded(
                   child: Container(
                     child: Align(

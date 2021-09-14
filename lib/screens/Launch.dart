@@ -120,6 +120,9 @@ class LaunchWidgetState extends State<LaunchWidget> {
     }
 
     await MatchesController.refreshAll(context.read<MatchesState>());
+
+    print("in state " + context.read<MatchesState>().getMatches().length.toString() + " matches");
+
     await SportCentersController.refreshAll(context.read<SportCentersState>());
     await Future.delayed(Duration(seconds: 1));
 
