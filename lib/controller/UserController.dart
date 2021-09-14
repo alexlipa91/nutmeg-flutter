@@ -39,7 +39,6 @@ class UserController {
   }
 
   static Future<void> saveUserTokensToDb() async {
-    print("saving token");
     // Get the token each time the application loads
     String token = await FirebaseMessaging.instance.getToken();
 
@@ -88,6 +87,7 @@ class UserController {
       return;
     }
 
+    print("saving token " + token + " for user " + userId);
     await FirebaseFirestore.instance
         .collection('users')
         .doc(userId)
