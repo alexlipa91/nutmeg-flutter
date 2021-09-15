@@ -153,7 +153,6 @@ class MatchesController {
 
     var allRefs = await FirebaseStorage.instance.ref("sportcenters/" + folder + "/large").listAll();
     var urls = await Future.wait(allRefs.items.map((e) => e.getDownloadURL()));
-    print("returning urls: " + urls.toString());
     return urls;
   }
 
@@ -171,7 +170,6 @@ class MatchesController {
     }
 
     var url = await FirebaseStorage.instance.ref(file).getDownloadURL();
-    print("returning url: " + url);
     return url;
   }
 }

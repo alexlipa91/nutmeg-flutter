@@ -68,7 +68,7 @@ class AddOrEditMatch extends StatelessWidget {
 
                       if (shouldCancel) {
                         try {
-                          // await MatchesController.cancelMatch(matchesState, matchId);
+                          await MatchesController.cancelMatch(matchesState, matchId);
                           HttpsCallable callable = FirebaseFunctions.instance
                               .httpsCallable('sendCancellationNotification');
                           await callable.call({"matchId": matchId});
@@ -120,7 +120,7 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
         text: (match == null)
             ? null
             : NumberFormat.decimalPattern().format(match.getPrice()));
-    maxPlayers = (match == null) ? null : match.maxPlayers;
+    maxPlayers = (match == null) ? 10 : match.maxPlayers;
     dateTime = (match == null) ? null : match.dateTime;
     durationController = TextEditingController(
         text: (match == null) ? "60" : match.duration.inMinutes.toString());
@@ -257,31 +257,43 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                           onCancelBtnTap: () => Navigator.pop(context, false),
                         );
                         if (shouldAdd) {
-                          assert(dateTime != null, "specify date and time");
-                          assert(sportCenterId != null, "specify sport center");
-                          assert(sport != null, "specify sport");
-                          assert(maxPlayers != null, "specify max players");
-                          assert(priceController.value.text != null,
-                              "specify price");
+                          var errors = List<String>.from([
+                            if (dateTime == null)
+                              "specify date and time",
+                            if (sportCenterId == null)
+                              "specify sport center",
+                            if (sport == null)
+                              "specify sport",
+                            if (maxPlayers == null)
+                              "specify max players",
+                            if (priceController.value.text == null)
+                              "specify price",
+                          ]);
 
-                          var newMatchId = await MatchesFirestore.addMatch(
-                              new Match(
-                                  dateTime,
-                                  sportCenterId,
-                                  sport,
-                                  maxPlayers,
-                                  (double.parse(priceController.value.text) *
-                                          100)
-                                      .toInt(),
-                                  Duration(
-                                      minutes: int.parse(
-                                          durationController.value.text)),
-                                  null));
-                          CoolAlert.show(
-                              context: context,
-                              type: CoolAlertType.info,
-                              text:
-                                  "Success! Added match with id " + newMatchId);
+                          if (errors.isEmpty) {
+                            var newMatchId = await MatchesFirestore.addMatch(
+                                new Match(
+                                    dateTime,
+                                    sportCenterId,
+                                    sport,
+                                    maxPlayers,
+                                    (double.parse(priceController.value.text) *
+                                        100)
+                                        .toInt(),
+                                    Duration(
+                                        minutes: int.parse(
+                                            durationController.value.text)),
+                                    null));
+                            CoolAlert.show(
+                                context: context,
+                                type: CoolAlertType.info,
+                                text:
+                                "Success! Added match with id " + newMatchId);
+                          } else {
+                            // fixme new line here
+                            CoolAlert.show(text: errors.join('/n'),
+                                context: context, type: CoolAlertType.error);
+                          }
                         }
                       } else {
                         match.dateTime = dateTime;
