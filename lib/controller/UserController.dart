@@ -73,10 +73,10 @@ class UserController {
             " were added to your account.\nJoin a match and use them to pay";
       }
       await UserFirestore.storeUserDetails(userDetails);
-      await UserController.saveUserTokensToDb();
     }
 
     userState.setUserDetails(userDetails);
+    await UserController.saveUserTokensToDb();
     return afterLoginComm;
   }
 
