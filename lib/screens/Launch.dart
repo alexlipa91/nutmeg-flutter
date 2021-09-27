@@ -2,13 +2,13 @@ import 'dart:async';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/controller/SportCentersController.dart';
 import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/screens/MatchDetails.dart';
+import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/screens/AvailableMatches.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -62,7 +62,9 @@ class LaunchWidgetState extends State<LaunchWidget> {
   @override
   void initState() {
     super.initState();
-    initDynamicLinks();
+    if (!kIsWeb) {
+      initDynamicLinks();
+    }
   }
 
   Future<void> handleLink(Uri deepLink) async {
@@ -121,16 +123,18 @@ class LaunchWidgetState extends State<LaunchWidget> {
 
     await MatchesController.refreshAll(context.read<MatchesState>());
 
-    print("in state " + context.read<MatchesState>().getMatches().length.toString() + " matches");
-
     await SportCentersController.refreshAll(context.read<SportCentersState>());
     await Future.delayed(Duration(seconds: 1));
 
-    // check if coming from link
-    final PendingDynamicLinkData data =
-        await FirebaseDynamicLinks.instance.getInitialLink();
+    Uri deepLink;
 
-    final Uri deepLink = data?.link;
+    if (!kIsWeb) {
+      // check if coming from link
+      final PendingDynamicLinkData data =
+          await FirebaseDynamicLinks.instance.getInitialLink();
+
+      deepLink = data?.link;
+    }
 
     if (deepLink != null) {
       await handleLink(deepLink);
@@ -138,9 +142,6 @@ class LaunchWidgetState extends State<LaunchWidget> {
       await Navigator.pushReplacement(
           context, MaterialPageRoute(builder: (context) => AvailableMatches()));
     }
-
-    // subscribe to nofitications
-    await FirebaseMessaging.instance.subscribeToTopic('match-notifications');
   }
 
   @override
@@ -161,7 +162,10 @@ class LaunchWidgetState extends State<LaunchWidget> {
                 future: loadData(context).catchError((err, stacktrace) {
                   print(err);
                   print(stacktrace);
-                  defaultErrorMessage(err, context);
+                  GenericInfoModal(
+                          title: "Something went wrong!",
+                          body: "Please contact us for support")
+                      .show(context);
                 }),
                 builder: (context, snapshot) => (snapshot.hasError)
                     ? Text(snapshot.error.toString(),
