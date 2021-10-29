@@ -19,11 +19,11 @@ jobs:
 
       - run: sed -i "s/<DATETIME>/$(date +%Y-%m-%d-%T)/" android/fastlane/metadata/android/en-GB/full_description.txt
 
-      - name: Deploy to playstore internal testing
+      - name: Deploy to playstore production
         uses: maierj/fastlane-action@v1.4.0
-        if: ${{ startsWith(github.event.head_commit.message, 'PLAYSTORE_INTERNAL_TESTING') }}
+        if: ${{ startsWith(github.event.head_commit.message, 'PLAYSTORE_PROD') }}
         with:
-          lane: playstoreInternalTest
+          lane: playstoreProd
           subdirectory: android
 
       - name: Deploy to playstore alpha
