@@ -81,8 +81,9 @@ class MatchDetails extends StatelessWidget {
                   "Details",
                   style: TextPalette.bodyText,
                 )),
-            RuleCard(),
-            RuleCard(),
+            RuleCard("Payment Policy", "If you remove yourself more than 15 hours before the kick-off time the amount you paid will be returned to you in credits that you can use in other Nutmeg matches. "
+                "\n\nNo credits or refund will be provided if you drop out of a game less than 15 hours from kick-off."),
+            // RuleCard("t", "b"),
             MapCard.big(sportCenter)
           ],
         )),
@@ -108,9 +109,7 @@ class MatchInfo extends StatelessWidget {
         child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(children: [
-          Expanded(child: SportCenterImageCarousel(match))
-        ]),
+        Row(children: [Expanded(child: SportCenterImageCarousel(match))]),
         InfoWidget(
             title: getFormattedDateLong(match.dateTime),
             subTitle:
@@ -158,28 +157,27 @@ class SportCenterImageCarouselState extends State<SportCenterImageCarousel> {
     var placeHolder = Container(
         height: 358,
         child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-      Image.asset("assets/nutmeg_white.png",
-          color: Palette.darkgrey, height: 16)
-    ]));
+          Image.asset("assets/nutmeg_white.png",
+              color: Palette.darkgrey, height: 16)
+        ]));
 
     return FutureBuilder(
         future: MatchesController.getMatchPicturesUrls(match),
         builder: (context, snapshot) {
           List<Widget> itemsToShow = (snapshot.hasData)
               ? List<Widget>.from(snapshot.data.map((i) => CachedNetworkImage(
-                        imageUrl: i,
-                        imageBuilder: (context, imageProvider) => Container(
-                            decoration: BoxDecoration(
-                          image: DecorationImage(
-                            image: imageProvider,
-                            fit: BoxFit.fill,
-                          ),
-                          borderRadius: BorderRadius.all(Radius.circular(15)),
-                        )),
-                        placeholder: (context, url) => placeHolder,
-                        errorWidget: (context, url, error) => Icon(Icons.error),
-                      )
-                  ))
+                    imageUrl: i,
+                    imageBuilder: (context, imageProvider) => Container(
+                        decoration: BoxDecoration(
+                      image: DecorationImage(
+                        image: imageProvider,
+                        fit: BoxFit.fill,
+                      ),
+                      borderRadius: BorderRadius.all(Radius.circular(15)),
+                    )),
+                    placeholder: (context, url) => placeHolder,
+                    errorWidget: (context, url, error) => Icon(Icons.error),
+                  )))
               : List<Widget>.from([placeHolder]);
 
           return Stack(
@@ -413,6 +411,11 @@ class EmptyPlayerCard extends StatelessWidget {
 
 // single rule card
 class RuleCard extends StatelessWidget {
+  final String title;
+  final String body;
+
+  const RuleCard(this.title, this.body);
+
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
@@ -420,13 +423,13 @@ class RuleCard extends StatelessWidget {
       padding: EdgeInsets.only(left: 20, right: 20, bottom: 15),
       child: InfoContainer(
           child:
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text("Title", style: TextPalette.h2),
+              Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        Text(title, style: TextPalette.h2),
         SizedBox(height: 10),
         ReadMoreText(
-          'Flutter is Google’s mobile UI open source framework to build high-quality native (super fast) interfaces for iOS and Android apps with the unified codebase.',
+          body,
           style: TextPalette.bodyText,
-          trimLines: 2,
+          trimLines: 3,
           colorClickableText: Colors.blue,
           delimiter: "\n\n",
           trimMode: TrimMode.Line,

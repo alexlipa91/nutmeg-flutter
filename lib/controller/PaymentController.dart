@@ -17,6 +17,8 @@ class PaymentController {
 
     if (u.creditsInCents > 0) { // can use
       result.creditsInCentsUsed = min(m.pricePerPersonInCents, u.creditsInCents);
+    } else {
+      result.creditsInCentsUsed = 0;
     }
 
     return result;

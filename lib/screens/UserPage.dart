@@ -8,6 +8,7 @@ import 'package:nutmeg/widgets/AppBar.dart';
 import 'package:nutmeg/widgets/Buttons.dart';
 import 'package:nutmeg/widgets/Containers.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class UserPage extends StatelessWidget {
 
@@ -109,8 +110,19 @@ class UserPage extends StatelessWidget {
                     padding: EdgeInsets.symmetric(vertical: 20),
                     child: InfoContainer(
                         child: Column(children: [
-                      LinkInfo(text: "Follow us on Instagram"),
-                      LinkInfo(text: "Terms and Conditions"),
+                      LinkInfo(text: "Follow us on Instagram", onTap: () async {
+                        var url = 'https://www.instagram.com/nutmegapp/';
+
+                        if (await canLaunch(url)) {
+                          await launch(
+                            url,
+                            universalLinksOnly: true,
+                          );
+                        } else {
+                          throw 'There was a problem to open the url: $url';
+                        }
+                      },),
+                      // LinkInfo(text: "Terms and Conditions"),
                       Padding(
                         padding: EdgeInsets.only(top: 10),
                         child: Row(
@@ -154,21 +166,25 @@ class UserPage extends StatelessWidget {
 
 class LinkInfo extends StatelessWidget {
   final String text;
+  final Function onTap;
 
-  const LinkInfo({Key key, this.text}) : super(key: key);
+  const LinkInfo({Key key, this.text, this.onTap}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(top: 10),
-      child: Column(children: [
-        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-          Text(text, style: TextPalette.h3),
-          SizedBox(height: 20),
-          Icon(Icons.arrow_forward_ios_sharp, size: 14, color: Palette.black),
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: EdgeInsets.only(top: 10),
+        child: Column(children: [
+          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+            Text(text, style: TextPalette.h3),
+            SizedBox(height: 20),
+            Icon(Icons.arrow_forward_ios_sharp, size: 14, color: Palette.black),
+          ]),
+          Divider()
         ]),
-        Divider()
-      ]),
+      ),
     );
   }
 }

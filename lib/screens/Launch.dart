@@ -159,7 +159,17 @@ class LaunchWidgetState extends State<LaunchWidget> {
               color: Palette.primary,
             ),
             child: FutureBuilder<void>(
-                future: loadData(context).catchError((err, stacktrace) {
+                future: loadData(context)
+                //     .timeout(Duration(seconds: 20),
+                //     onTimeout: () async {
+                //   print("timeout");
+                //   GenericInfoModal(
+                //           title: "Something went wrong!",
+                //           body: "Please check your connection")
+                //       .show(context);
+                //       // .then((value) => Navigator.of(context).pop());
+                // })
+                    .catchError((err, stacktrace) {
                   print(err);
                   print(stacktrace);
                   GenericInfoModal(

@@ -4,6 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
+import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/Buttons.dart';
 import 'package:provider/provider.dart';
@@ -14,21 +15,6 @@ import 'package:cloud_functions/cloud_functions.dart';
 
 var apiKey =
     "pk_test_51HyCDAGRb87bTNwH1dlHJXwdDSIUhxqPZS3zeytnO7T9dHBxzhwiWO5E0kFYLkVdZbZ2t0LEHxjuPmKFZ32fiMjO00dWLo1DqE";
-
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-
-  final customerId = await Server().createCustomer("Abc", "abc@gmail.com");
-  final sessionId = await Server().createCheckout(customerId, 1000);
-
-  runApp(MultiProvider(
-    providers: [ChangeNotifierProvider(create: (context) => UserState())],
-    child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        home: CheckoutPage(sessionId: sessionId)),
-  ));
-}
 
 enum Status {
   success,
@@ -47,19 +33,21 @@ class PaymentOutcome {
 class CheckoutPage extends StatefulWidget {
   final PaymentRecap recap;
   final String sessionId;
+  final Match match;
 
-  const CheckoutPage({Key key, this.sessionId, this.recap}) : super(key: key);
+  CheckoutPage(this.sessionId, this.recap, this.match);
 
   @override
-  _CheckoutPageState createState() => _CheckoutPageState(recap);
+  _CheckoutPageState createState() => _CheckoutPageState(recap, match);
 }
 
 class _CheckoutPageState extends State<CheckoutPage> {
   WebViewController _controller;
 
   final PaymentRecap recap;
+  final Match match;
 
-  _CheckoutPageState(this.recap);
+  _CheckoutPageState(this.recap, this.match);
 
   @override
   Widget build(BuildContext context) {
@@ -79,13 +67,23 @@ class _CheckoutPageState extends State<CheckoutPage> {
             _redirectToStripe();
           }
         },
-        navigationDelegate: (NavigationRequest request) {
-          if (request.url.startsWith('https://success.com')) {
-            Navigator.of(context).pop(PaymentOutcome(
-                Status.success, recap)); // <-- Handle success case
-          } else if (request.url.startsWith('https://cancel.com')) {
-            Navigator.of(context).pop(PaymentOutcome(
-                Status.paymentCanceled, recap)); // <-- Handle cancel case
+        navigationDelegate: (NavigationRequest request) async {
+          print(request.url);
+          if (request.url.startsWith('https://example.com/succes')) {
+             var status;
+             try {
+                await MatchesController.joinMatch(context.read<MatchesState>(),
+                    match.documentId, context.read<UserState>(), recap);
+                status = Status.success;
+              } catch (e, s) {
+                print(e);
+                print(s);
+                status = Status.paymentSuccessButJoinFailed;
+              }
+
+              Navigator.pop(context, status); // <-- Handle success case
+          } else if (request.url.startsWith('https://example.com/cancel')) {
+            Navigator.pop(context, Status.paymentCanceled); // <-- Handle cancel case
           }
           return NavigationDecision.navigate;
         },
@@ -197,20 +195,6 @@ class PaymentSimulator extends StatelessWidget {
   }
 
   Future<Status> pay(BuildContext context) async {
-    // final stripeCustomerId = await context
-    //     .read<UserChangeNotifier>()
-    //     .getOrCreateStripeId();
-    // print("stripeCustomerId " + stripeCustomerId);
-    // final sessionId = await Server()
-    //     .createCheckout(stripeCustomerId, finalPrice);
-    // print("sessId " + sessionId);
-    //
-    // var value = await Navigator.of(context).push(
-    //     MaterialPageRoute(
-    //         builder: (_) => CheckoutPage(
-    //             sessionId: sessionId,
-    //             couponUsed: snapshot.data.id)));
-
     await Future.delayed(Duration(seconds: 1));
     return await showModalBottomSheet(
       context: context,
