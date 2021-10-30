@@ -81,8 +81,10 @@ class MatchDetails extends StatelessWidget {
                   "Details",
                   style: TextPalette.bodyText,
                 )),
-            RuleCard("Payment Policy", "If you remove yourself more than 15 hours before the kick-off time the amount you paid will be returned to you in credits that you can use in other Nutmeg matches. "
-                "\n\nNo credits or refund will be provided if you drop out of a game less than 15 hours from kick-off."),
+            RuleCard(
+                "Payment Policy",
+                "If you remove yourself more than 15 hours before the kick-off time the amount you paid will be returned to you in credits that you can use in other Nutmeg matches. "
+                    "\n\nNo credits or refund will be provided if you drop out of a game less than 15 hours from kick-off."),
             // RuleCard("t", "b"),
             MapCard.big(sportCenter)
           ],
@@ -310,14 +312,22 @@ class PlayerCard extends StatelessWidget {
                                                 Text(snapshot.data.name,
                                                     style: TextPalette.h2),
                                                 SizedBox(height: 20),
-                                                Text(
-                                                    MatchesController.numPlayedByUser(
-                                                                context.watch<
-                                                                    MatchesState>(),
-                                                                userId)
-                                                            .toString() +
-                                                        " games played",
-                                                    style: TextPalette.bodyText)
+                                                Builder(builder: (context) {
+                                                  int nPlayed = MatchesController
+                                                      .numPlayedByUser(
+                                                          context.watch<
+                                                              MatchesState>(),
+                                                          userId);
+                                                  return Text(
+                                                      nPlayed.toString() +
+                                                          " " +
+                                                          ((nPlayed == 1)
+                                                              ? "game "
+                                                              : "games ") +
+                                                          "played",
+                                                      style:
+                                                          TextPalette.bodyText);
+                                                })
                                               ],
                                             ),
                                           ),
