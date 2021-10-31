@@ -347,7 +347,8 @@ class PaymentConfirmationButton extends AbstractButtonWithLoader {
     var userDetails = context.read<UserState>().getUserDetails();
 
     var customerId = await Server().createCustomer(userDetails.name, userDetails.email);
-    var sessionId = await Server().createCheckout(customerId, 1000);
+    var sessionId = await Server().createCheckout(customerId,
+        paymentRecap.matchPriceInCents - paymentRecap.creditsInCentsUsed);
 
     Status status = await Navigator.push(
         context,

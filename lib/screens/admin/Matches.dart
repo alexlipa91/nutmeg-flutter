@@ -135,6 +135,7 @@ class MatchesAreaState extends State<MatchesArea> {
           isLoading = true;
         });
         await MatchesController.refreshAll(matchesState);
+        await MatchesController.refreshImages(matchesState);
         setState(() {
           isLoading = false;
         });
@@ -144,9 +145,11 @@ class MatchesAreaState extends State<MatchesArea> {
         if (!isLoading) {
           widgets = (optionSelected == Selection.UPCOMING)
               ? getGamesWidgets(context,
-                  matches.where((m) => m.dateTime.isAfter(now)).toList())
+                  matches.where((m) => m.dateTime.isAfter(now)).toList(),
+              matchesState.getImages())
               : getGamesWidgets(context,
-                  matches.where((m) => m.dateTime.isBefore(now)).toList());
+                  matches.where((m) => m.dateTime.isBefore(now)).toList(),
+              matchesState.getImages());
         } else {
           widgets = List<Widget>.filled(5, MatchInfoSkeleton());
         }
@@ -160,57 +163,15 @@ class MatchesAreaState extends State<MatchesArea> {
     );
   }
 
-  static List<Widget> myGamesWidgets(BuildContext context) {
-    var matches = context.watch<MatchesState>().getMatches().where((m) =>
-        m.getUserSub(context.watch<UserState>().getUserDetails()) != null);
-
-    if (matches.isEmpty) {
-      return [
-        TextSeparatorWidget("No games to display. Book your first game today.")
-      ];
-    }
-
-    var now = DateTime.now();
-
-    List<Match> past = matches.where((m) => m.dateTime.isBefore(now)).toList();
-    List<Match> future = matches.where((m) => m.dateTime.isAfter(now)).toList();
-
-    List<Widget> widgets = [];
-
-    if (future.isNotEmpty) {
-      widgets.add(TextSeparatorWidget("UPCOMING GAMES"));
-      future.forEachIndexed((index, m) {
-        if (index == 0) {
-          widgets.add(MatchInfo.first(m));
-        } else {
-          widgets.add(MatchInfo(m));
-        }
-      });
-    }
-
-    if (past.isNotEmpty) {
-      widgets.add(TextSeparatorWidget("PAST GAMES"));
-      past.forEachIndexed((index, m) {
-        if (index == 0) {
-          widgets.add(MatchInfo.first(m));
-        } else {
-          widgets.add(MatchInfo(m));
-        }
-      });
-    }
-
-    return widgets;
-  }
-
   static List<Widget> getGamesWidgets(
-      BuildContext context, List<Match> matches) {
+      BuildContext context, List<Match> matches, Map<String, String> images) {
     List<Widget> result = [];
 
     matches.forEachIndexed((index, match) {
       if (index == 0) {
-        result.add(MatchInfo.first(match));
+        result.add(MatchInfo.first(match, images[match.documentId]));
       } else {
-        result.add(MatchInfo(match));
+        result.add(MatchInfo(match, images[match.documentId]));
       }
     });
 
@@ -225,10 +186,11 @@ class MatchInfo extends StatelessWidget {
 
   final Match match;
   final double topMargin;
+  final String image;
 
-  MatchInfo(this.match) : topMargin = 10;
+  MatchInfo(this.match, this.image) : topMargin = 10;
 
-  MatchInfo.first(this.match) : topMargin = 0;
+  MatchInfo.first(this.match, this.image) : topMargin = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -245,7 +207,7 @@ class MatchInfo extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                MatchThumbnail(match: match),
+                MatchThumbnail(image: image),
                 Expanded(
                   child: Container(
                     child: Align(

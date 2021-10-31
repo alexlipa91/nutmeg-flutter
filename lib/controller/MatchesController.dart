@@ -22,6 +22,13 @@ class MatchesController {
     matchesState.setMatches(matches);
   }
 
+  static Future<void> refreshImages(MatchesState matchesState) async {
+    Map<String, String> images = Map.fromEntries(await Future.wait(matchesState.getMatches()
+        .map((m) async =>
+        MapEntry(m.documentId, await MatchesController.getMatchThumbnailUrl(m)))));
+    matchesState.setImages(images);
+  }
+
   static Future<void> joinMatch(MatchesState matchesState, String matchId,
       UserState userState, PaymentRecap paymentStatus) async {
     await UserController.refresh(userState);

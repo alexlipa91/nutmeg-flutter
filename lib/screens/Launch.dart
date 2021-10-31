@@ -122,6 +122,7 @@ class LaunchWidgetState extends State<LaunchWidget> {
     }
 
     await MatchesController.refreshAll(context.read<MatchesState>());
+    await MatchesController.refreshImages(context.read<MatchesState>());
 
     await SportCentersController.refreshAll(context.read<SportCentersState>());
     await Future.delayed(Duration(seconds: 1));

@@ -120,6 +120,7 @@ class MatchesAreaState extends State<MatchesArea> {
                 isLoading = true;
               });
               await MatchesController.refreshAll(matchesState);
+              await MatchesController.refreshImages(matchesState);
               setState(() {
                 isLoading = false;
               });
@@ -181,9 +182,9 @@ class MatchesAreaState extends State<MatchesArea> {
       widgets.add(TextSeparatorWidget("UPCOMING GAMES"));
       future.sortedBy((e) => e.dateTime).forEachIndexed((index, m) {
         if (index == 0) {
-          widgets.add(MatchInfo.first(m.documentId));
+          widgets.add(MatchInfo.first(m.documentId, state.getImageUrl(m.documentId)));
         } else {
-          widgets.add(MatchInfo(m.documentId));
+          widgets.add(MatchInfo(m.documentId, state.getImageUrl(m.documentId)));
         }
       });
     }
@@ -220,9 +221,9 @@ class MatchesAreaState extends State<MatchesArea> {
       result.add(WeekSeparatorWidget(w));
       grouped[w].sortedBy((e) => e.dateTime).forEachIndexed((index, match) {
         if (index == 0) {
-          result.add(MatchInfo.first(match.documentId));
+          result.add(MatchInfo.first(match.documentId, state.getImageUrl(match.documentId)));
         } else {
-          result.add(MatchInfo(match.documentId));
+          result.add(MatchInfo(match.documentId, state.getImageUrl(match.documentId)));
         }
       });
     });
@@ -285,10 +286,11 @@ class MatchInfo extends StatelessWidget {
 
   final String matchId;
   final double topMargin;
+  final String image;
 
-  MatchInfo(this.matchId) : topMargin = 10;
+  MatchInfo(this.matchId, this.image) : topMargin = 10;
 
-  MatchInfo.first(this.matchId) : topMargin = 0;
+  MatchInfo.first(this.matchId, this.image) : topMargin = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -306,7 +308,7 @@ class MatchInfo extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                MatchThumbnail(match: match),
+                MatchThumbnail(image: image),
                 Expanded(
                   child: Container(
                     child: Align(
@@ -366,43 +368,17 @@ class MatchInfo extends StatelessWidget {
 }
 
 class MatchThumbnail extends StatelessWidget {
-  final Match match;
+  final String image;
 
-  const MatchThumbnail({Key key, this.match}) : super(key: key);
+  const MatchThumbnail({Key key, this.image}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    var placeHolder = Container(
-        child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Image.asset("assets/nutmeg_white.png",
-            color: Palette.darkgrey, height: 16),
-        // SizedBox(
-        //   height: 20,
-        // ),
-        // SizedBox(
-        //     height: 10,
-        //     width: 10,
-        //     child: CircularProgressIndicator(
-        //       color: Palette.darkgrey,
-        //       strokeWidth: 2,
-        //     ))
-      ],
-    ));
-
-    return FutureBuilder(
-      future: MatchesController.getMatchThumbnailUrl(match)
-          .catchError((err, stack) {
-        print(err);
-        print(stack);
-      }),
-      builder: (context, snapshot) => Container(
+    return Container(
           width: 60,
           height: 78,
-          child: (snapshot.hasData)
-              ? CachedNetworkImage(
-                  imageUrl: snapshot.data,
+          child: CachedNetworkImage(
+                  imageUrl: image,
                   imageBuilder: (context, imageProvider) => Container(
                       decoration: BoxDecoration(
                     image: DecorationImage(
@@ -411,10 +387,9 @@ class MatchThumbnail extends StatelessWidget {
                     ),
                     borderRadius: BorderRadius.all(Radius.circular(15)),
                   )),
-                  placeholder: (context, url) => placeHolder,
+                  // placeholder: (context, url) => placeHolder,
                   errorWidget: (context, url, error) => Icon(Icons.error),
                 )
-              : placeHolder),
     );
   }
 }
