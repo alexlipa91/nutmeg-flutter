@@ -65,7 +65,7 @@ class MatchDetails extends StatelessWidget {
                     return Text(
                         going.toString() +
                             ((going == 1) ? " player" : " players") +
-                            "going",
+                            " going",
                         style: TextPalette.bodyText);
                   },
                 )),
