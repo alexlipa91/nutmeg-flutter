@@ -10,7 +10,6 @@ import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/AppBar.dart';
 import 'package:nutmeg/widgets/Buttons.dart';
 import 'package:nutmeg/widgets/Containers.dart';
-import 'package:nutmeg/widgets/Texts.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
 import "package:collection/collection.dart";
