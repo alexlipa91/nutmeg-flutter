@@ -59,9 +59,16 @@ class MatchDetails extends StatelessWidget {
                 child: MatchInfo(match, sportCenter)),
             Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-                child: Text(
-                    match.numPlayersGoing().toString() + " players going",
-                    style: TextPalette.bodyText)),
+                child: Builder(
+                  builder: (context) {
+                    int going = match.numPlayersGoing();
+                    return Text(
+                        going.toString() +
+                            ((going == 1) ? " player" : " players") +
+                            "going",
+                        style: TextPalette.bodyText);
+                  },
+                )),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
               child: SingleChildScrollView(
