@@ -16,6 +16,7 @@ jobs:
       - run: flutter pub get
 
       - run: flutter build appbundle -t lib/screens/Launch.dart --release
+      - run: flutter build ios -t lib/screens/Launch.dart
 
       - run: sed -i "s/<DATETIME>/$(date +%Y-%m-%d-%T)/" android/fastlane/metadata/android/en-GB/full_description.txt
 
