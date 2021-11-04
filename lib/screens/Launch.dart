@@ -76,7 +76,7 @@ class LaunchWidgetState extends State<LaunchWidget> {
           .read<MatchesState>()
           .getMatch(deepLink.queryParameters["id"]);
 
-      Navigator.pushReplacement(
+      Navigator.push(
           navigatorKey.currentContext,
           MaterialPageRoute(
               builder: (context) => MatchDetails(match.documentId)));
