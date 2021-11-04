@@ -62,5 +62,7 @@
         <string>googlechromes</string>
         <string>comgooglemaps</string>
     </array>
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>Your location is required to show you relevant football matches in your area</string>
 </dict>
 </plist>
