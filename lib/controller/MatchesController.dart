@@ -130,6 +130,7 @@ class MatchesController {
       matchesState.getMatches()
           .where((m) =>
               !m.wasCancelled() &&
+              m.dateTime.isBefore(DateTime.now()) &&
               m.subscriptions
                   .where((sub) =>
                       sub.status == SubscriptionStatus.going &&

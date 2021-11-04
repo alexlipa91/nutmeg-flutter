@@ -21,6 +21,7 @@ class Login extends StatelessWidget {
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
+          leading: Container(),
           actions: [
             Padding(
                 padding: EdgeInsets.only(right: 20),

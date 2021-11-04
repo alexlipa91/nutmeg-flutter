@@ -125,7 +125,7 @@ class BottomBar extends StatelessWidget {
                   })
                 : (!match.isFull())
                     ? JoinGameButton(match: match)
-                    : RoundedButton("JOIN", null)
+                    : RoundedButtonOff("JOIN", null)
           ],
         ))
       ],
@@ -409,17 +409,8 @@ onJoinGameAction(BuildContext context, Match match) async {
       if (communication != null) {
         await GenericInfoModal(title: "Welcome", body: communication.text)
             .show(context);
-
-        GenericInfoModal.withBottom(
-            title: "Jon this game",
-            body:
-            "You can cancel up to 24h before the game starting time to get a full refund in credits to use on your next game.\nIf you cancel after this time you won't get a refund.",
-            bottomWidget: Column(
-              children: [
-                Divider(),
-                PaymentDetailsDescription(match: match),
-              ],
-            )).show(context);
+      } else {
+        return;
       }
     } catch (e) {
       CoolAlert.show(
@@ -428,4 +419,15 @@ onJoinGameAction(BuildContext context, Match match) async {
       return;
     }
   }
+
+  GenericInfoModal.withBottom(
+      title: "Jon this game",
+      body:
+      "You can cancel up to 24h before the game starting time to get a full refund in credits to use on your next game.\nIf you cancel after this time you won't get a refund.",
+      bottomWidget: Column(
+        children: [
+          Divider(),
+          PaymentDetailsDescription(match: match),
+        ],
+      )).show(context);
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
 import 'package:rounded_loading_button/rounded_loading_button.dart';
@@ -77,6 +78,14 @@ mixin Inverted on PrimaryButton {
   TextStyle getTextStyle() => TextPalette.linkStyleInverted;
 }
 
+mixin Off on PrimaryButton {
+  Color getBackgroundColor() => Colors.transparent;
+
+  TextStyle getTextStyle() => TextPalette.buttonOff;
+
+  Color getBorderColor() => Palette.mediumgrey;
+}
+
 mixin Alerted on PrimaryButton {
   Color getBackgroundColor() => Colors.red;
 
@@ -111,6 +120,10 @@ class RightButtonOn extends PrimaryButton with RightRounded, Primary {
 
 class RoundedButton extends PrimaryButton with LeftRounded, RightRounded {
   RoundedButton(String text, Function onPressed) : super(text, onPressed);
+}
+
+class RoundedButtonOff extends PrimaryButton with LeftRounded, RightRounded, Off {
+  RoundedButtonOff(String text, Function onPressed) : super(text, onPressed);
 }
 
 class RoundedButtonLight extends PrimaryButton

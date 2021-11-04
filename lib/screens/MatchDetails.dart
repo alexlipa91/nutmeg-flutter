@@ -126,7 +126,7 @@ class MatchInfo extends StatelessWidget {
                     " - " +
                     match.duration.inMinutes.toString() +
                     " min",
-            icon: Icons.watch),
+            icon: Icons.schedule),
         InfoWidget(
             title: sportCenter.name,
             icon: Icons.place,
@@ -138,7 +138,7 @@ class MatchInfo extends StatelessWidget {
             subTitle: sportCenter.tags.join(", ")),
         InfoWidget(
             title: formatCurrency.format(match.getPrice()),
-            icon: Icons.money,
+            icon: Icons.sell,
             subTitle: "Pay with Ideal"),
       ],
     ));
@@ -164,11 +164,8 @@ class SportCenterImageCarouselState extends State<SportCenterImageCarousel> {
   @override
   Widget build(BuildContext context) {
     var placeHolder = Container(
-        height: 358,
-        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-          Image.asset("assets/nutmeg_white.png",
-              color: Palette.darkgrey, height: 16)
-        ]));
+        height: 358
+    );
 
     return FutureBuilder(
         future: MatchesController.getMatchPicturesUrls(match),
@@ -182,9 +179,9 @@ class SportCenterImageCarouselState extends State<SportCenterImageCarousel> {
                         image: imageProvider,
                         fit: BoxFit.fill,
                       ),
-                      borderRadius: BorderRadius.all(Radius.circular(15)),
+                      // borderRadius: BorderRadius.all(Radius.circular(15)),
                     )),
-                    placeholder: (context, url) => placeHolder,
+                    // placeholder: (context, url) => placeHolder,
                     errorWidget: (context, url, error) => Icon(Icons.error),
                   )))
               : List<Widget>.from([placeHolder]);
@@ -192,41 +189,44 @@ class SportCenterImageCarouselState extends State<SportCenterImageCarousel> {
           return Stack(
             children: [
               // fixme check animation when slide
-              CarouselSlider(
-                carouselController: _controller,
-                options: CarouselOptions(
-                    enableInfiniteScroll: false,
-                    viewportFraction: 1,
-                    onPageChanged: (index, reason) {
-                      setState(() {
-                        _current = index;
-                      });
-                    }),
-                items: itemsToShow,
+              ClipRRect(
+                borderRadius: BorderRadius.all(Radius.circular(15)),
+                child: CarouselSlider(
+                  carouselController: _controller,
+                  options: CarouselOptions(
+                      enableInfiniteScroll: false,
+                      viewportFraction: 1,
+                      onPageChanged: (index, reason) {
+                        setState(() {
+                          _current = index;
+                        });
+                      }),
+                  items: itemsToShow,
+                ),
               ),
               Positioned(
                 bottom: 10,
                 left: 1,
                 right: 1,
                 child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: itemsToShow.asMap().entries.map((entry) {
-                      return GestureDetector(
-                        onTap: () => _controller.animateToPage(entry.key),
-                        child: Container(
-                          width: 12.0,
-                          height: 12.0,
-                          margin: EdgeInsets.symmetric(
-                              vertical: 8.0, horizontal: 4.0),
-                          decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: (itemsToShow.length > 1)
-                                  ? Colors.white.withOpacity(
-                                      _current == entry.key ? 0.9 : 0.4)
-                                  : Colors.transparent),
-                        ),
-                      );
-                    }).toList()),
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: itemsToShow.asMap().entries.map((entry) {
+                        return GestureDetector(
+                          onTap: () => _controller.animateToPage(entry.key),
+                          child: Container(
+                            width: 12.0,
+                            height: 12.0,
+                            margin: EdgeInsets.symmetric(
+                                vertical: 8.0, horizontal: 4.0),
+                            decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: (itemsToShow.length > 1)
+                                    ? Colors.white.withOpacity(
+                                        _current == entry.key ? 0.9 : 0.4)
+                                    : Colors.transparent),
+                          ),
+                        );
+                      }).toList()),
               ),
             ],
           );
@@ -256,7 +256,8 @@ class InfoWidget extends StatelessWidget {
           children: [
             new Icon(
               icon,
-              color: Palette.mediumgrey,
+              size: 20,
+              color: UiUtils.fromHex("#999999"),
             ),
             SizedBox(
               width: 20,
