@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/controller/SportCentersController.dart';
 import 'package:nutmeg/controller/SportsController.dart';
@@ -22,6 +23,7 @@ final navigatorKey = GlobalKey<NavigatorState>();
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized(); //imp line need to be added first
+  SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);
 
   if (!kIsWeb) {
     FlutterError.onError = (FlutterErrorDetails details) async {
