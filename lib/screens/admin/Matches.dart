@@ -47,7 +47,7 @@ class AdminAvailableMatches extends StatelessWidget {
                             MaterialPageRoute(
                                 builder: (context) => AddOrEditMatch.add()));
                       }),
-                      RoundedButton("ADD SPORT CENTER", () {}),
+                      // RoundedButton("ADD SPORT CENTER", () {}),
                     ],
                   ));
         },
@@ -193,8 +193,10 @@ class MatchInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var sportCenter =
-        context.read<SportCentersState>().getSportCenter(match.sportCenter);
+    var loadOnceState = context.read<LoadOnceState>();
+
+    var sportCenter = loadOnceState.getSportCenter(match.sportCenter);
+    var sport = loadOnceState.getSport(match.sport);
 
     var matchesState = context.read<MatchesState>();
 
@@ -222,7 +224,7 @@ class MatchInfo extends StatelessWidget {
                                 Text(
                                     sportCenter.neighbourhood +
                                         " - " +
-                                        match.sport.getDisplayTitle(),
+                                        sport.displayTitle,
                                     style: TextPalette.h2),
                                 Expanded(
                                     child: Text(

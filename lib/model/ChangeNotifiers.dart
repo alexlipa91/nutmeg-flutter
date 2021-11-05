@@ -37,8 +37,9 @@ class MatchesState extends ChangeNotifier {
   Map<String, String> getImages() => _images;
 }
 
-class SportCentersState extends ChangeNotifier {
+class LoadOnceState extends ChangeNotifier {
   Map<String, SportCenter> _sportCenters;
+  Map<String, Sport> _sports;
 
   void setSportCenters(List<SportCenter> newSportCenters) {
     _sportCenters = newSportCenters.groupListsBy((e) => e.placeId)
@@ -46,8 +47,18 @@ class SportCentersState extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setSports(List<Sport> newSports) {
+    _sports = newSports.groupListsBy((e) => e.documentId)
+        .map((key, value) => MapEntry(key, value.first));
+    notifyListeners();
+  }
+
   // fixme break with exception here
   SportCenter getSportCenter(String id) => _sportCenters[id];
+
+  Sport getSport(String id) => _sports[id];
+
+  List<Sport> getSports() => _sports.values.toList();
 
   List<SportCenter> getSportCenters() => _sportCenters.values.toList();
 }

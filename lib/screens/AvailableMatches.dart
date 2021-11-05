@@ -297,8 +297,10 @@ class MatchInfo extends StatelessWidget {
     var matchesState = context.watch<MatchesState>();
     var match = matchesState.getMatch(matchId);
 
-    var sportCenter =
-        context.read<SportCentersState>().getSportCenter(match.sportCenter);
+    var loadOnceState = context.read<LoadOnceState>();
+
+    var sportCenter = loadOnceState.getSportCenter(match.sportCenter);
+    var sport = loadOnceState.getSport(match.sport);
 
     return InkWell(
         child: Padding(
@@ -324,7 +326,7 @@ class MatchInfo extends StatelessWidget {
                                 Text(
                                     sportCenter.neighbourhood +
                                         " - " +
-                                        match.sport.getDisplayTitle(),
+                                        sport.displayTitle,
                                     style: TextPalette.h2),
                                 Expanded(
                                     child: Text(
@@ -468,8 +470,10 @@ class MatchInfoPast extends StatelessWidget {
   Widget build(BuildContext context) {
     var matchesState = context.watch<MatchesState>();
 
-    var sportCenter =
-        context.read<SportCentersState>().getSportCenter(match.sportCenter);
+    var loadOnceState = context.read<LoadOnceState>();
+
+    var sportCenter = loadOnceState.getSportCenter(match.sportCenter);
+    var sport = loadOnceState.getSport(match.sport);
 
     return InkWell(
         child: Padding(
@@ -492,7 +496,7 @@ class MatchInfoPast extends StatelessWidget {
                             Text(
                                 sportCenter.neighbourhood +
                                     " - " +
-                                    match.sport.getDisplayTitle(),
+                                    sport.displayTitle,
                                 style: TextPalette.h2),
                             SizedBox(height: 10),
                             Text(sportCenter.name, style: TextPalette.bodyText),

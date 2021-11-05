@@ -105,7 +105,8 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
   AddOrEditMatchFormState(this.match);
 
   String sportCenterId;
-  Sport sport;
+  String sportCenterSubLocation;
+  String sport;
   TextEditingController priceController;
   int maxPlayers;
   DateTime dateTime;
@@ -115,6 +116,7 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
   void initState() {
     // set initial values
     sportCenterId = (match == null) ? null : match.sportCenter;
+    sportCenterSubLocation = (match == null) ? null : match.sportCenterSubLocation;
     sport = (match == null) ? null : match.sport;
     priceController = TextEditingController(
         text: (match == null)
@@ -130,8 +132,7 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
   @override
   Widget build(BuildContext context) {
     // utility
-    var sportCenters =
-        context.read<SportCentersState>().getSportCenters().toList();
+    var loadOnceState = context.read<LoadOnceState>();
 
     Set<int> maxPlayersDropdownItemsSet = Set();
     maxPlayersDropdownItemsSet.addAll([8, 10, 12, 14]);
@@ -165,11 +166,11 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
             DropdownButton<SportCenter>(
               focusColor: Colors.white,
               value: context
-                  .read<SportCentersState>()
+                  .read<LoadOnceState>()
                   .getSportCenter(sportCenterId),
               style: TextStyle(color: Colors.white),
               iconEnabledColor: Colors.black,
-              items: sportCenters
+              items: loadOnceState.getSportCenters()
                   .map<DropdownMenuItem<SportCenter>>((SportCenter value) {
                 return DropdownMenuItem<SportCenter>(
                     value: value,
@@ -184,22 +185,28 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
               },
             ),
             SizedBox(height: 20.0),
+            Text("SportCenter location additional info (e.g. hall)", style: TextPalette.linkStyle),
+            TextFormField(
+              initialValue: sportCenterSubLocation,
+              onChanged: (v) => sportCenterSubLocation = v,
+            ),
+            SizedBox(height: 20.0),
             Text("Sport", style: TextPalette.linkStyle),
             DropdownButton<Sport>(
               focusColor: Colors.white,
-              value: sport,
+              value: loadOnceState.getSport(sport),
               //elevation: 5,
               style: TextStyle(color: Colors.white),
               iconEnabledColor: Colors.black,
-              items: Sport.values.map<DropdownMenuItem<Sport>>((Sport value) {
+              items: loadOnceState.getSports().map<DropdownMenuItem<Sport>>((Sport value) {
                 return DropdownMenuItem<Sport>(
                     value: value,
-                    child: Text(value.toString().split(".").last,
+                    child: Text(value.displayTitle,
                         style: TextPalette.linkStyle));
               }).toList(),
               onChanged: (Sport value) {
                 setState(() {
-                  sport = value;
+                  sport = value.documentId;
                 });
               },
             ),
@@ -275,6 +282,7 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                                 new Match(
                                     dateTime,
                                     sportCenterId,
+                                    sportCenterSubLocation,
                                     sport,
                                     maxPlayers,
                                     (double.parse(priceController.value.text) *
@@ -298,6 +306,7 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                       } else {
                         match.dateTime = dateTime;
                         match.sportCenter = sportCenterId;
+                        match.sportCenterSubLocation = sportCenterSubLocation;
                         match.sport = sport;
                         match.maxPlayers = maxPlayers;
                         match.pricePerPersonInCents =
@@ -337,6 +346,7 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
               ],
             )
           ],
-        ));
+        )
+      );
   }
 }

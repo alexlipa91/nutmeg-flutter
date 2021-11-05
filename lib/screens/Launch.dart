@@ -5,6 +5,7 @@ import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/controller/SportCentersController.dart';
+import 'package:nutmeg/controller/SportsController.dart';
 import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/screens/MatchDetails.dart';
@@ -34,7 +35,7 @@ void main() {
       providers: [
         ChangeNotifierProvider(create: (context) => UserState()),
         ChangeNotifierProvider(create: (context) => MatchesState()),
-        ChangeNotifierProvider(create: (context) => SportCentersState()),
+        ChangeNotifierProvider(create: (context) => LoadOnceState()),
       ],
       child: new MaterialApp(
         navigatorKey: navigatorKey,
@@ -124,7 +125,8 @@ class LaunchWidgetState extends State<LaunchWidget> {
     await MatchesController.refreshAll(context.read<MatchesState>());
     await MatchesController.refreshImages(context.read<MatchesState>());
 
-    await SportCentersController.refreshAll(context.read<SportCentersState>());
+    await SportCentersController.refreshAll(context.read<LoadOnceState>());
+    await SportsController.refreshAll(context.read<LoadOnceState>());
     await Future.delayed(Duration(seconds: 1));
 
     Uri deepLink;

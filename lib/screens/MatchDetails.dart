@@ -34,11 +34,17 @@ class MatchDetails extends StatelessWidget {
     var match = matchesState.getMatch(matchId);
     var user = context.read<UserState>().getUserDetails();
 
-    var sportCenter =
-        context.read<SportCentersState>().getSportCenter(match.sportCenter);
+    var loadOnceState = context.read<LoadOnceState>();
+
+    var sportCenter = loadOnceState.getSportCenter(match.sportCenter);
+    var sport = loadOnceState.getSport(match.sport);
 
     var title =
-        sportCenter.neighbourhood + " - " + match.sport.getDisplayTitle();
+        sportCenter.neighbourhood + " - " + sport.displayTitle;
+
+    if (match.sportCenterSubLocation != null) {
+      title = title + " - " + match.sportCenterSubLocation;
+    }
 
     var subscriptions = match.getOrderedGoingSubscriptions(user);
 
@@ -56,7 +62,7 @@ class MatchDetails extends StatelessWidget {
                 child: Text(title, style: TextPalette.h1Default)),
             Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20),
-                child: MatchInfo(match, sportCenter)),
+                child: MatchInfo(match, sportCenter, sport)),
             Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
                 child: Builder(
@@ -109,8 +115,9 @@ class MatchInfo extends StatelessWidget {
 
   final Match match;
   final SportCenter sportCenter;
+  final Sport sport;
 
-  MatchInfo(this.match, this.sportCenter);
+  MatchInfo(this.match, this.sportCenter, this.sport);
 
   @override
   Widget build(BuildContext context) {
@@ -132,7 +139,7 @@ class MatchInfo extends StatelessWidget {
             icon: Icons.place,
             subTitle: sportCenter.getShortAddress()),
         InfoWidget(
-            title: match.sport.getDisplayTitle(),
+            title: sport.displayTitle,
             icon: Icons.sports_soccer,
             // todo fix info sport
             subTitle: sportCenter.tags.join(", ")),

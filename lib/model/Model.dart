@@ -3,29 +3,29 @@ import 'package:intl/intl.dart';
 
 var formatCurrency = NumberFormat.simpleCurrency(name: "EUR");
 
-enum SportCenterTags { indoor, outdoor }
-
-enum Sport { fiveAsideFootball }
-
 enum SubscriptionStatus { going, refunded, canceled }
 
-extension SportExtension on Sport {
-  String getDisplayTitle() {
-    switch (this) {
-      case Sport.fiveAsideFootball:
-        return "5v5";
-      default:
-        return "";
-    }
-  }
+class Sport {
+  String documentId;
+
+  String displayTitle;
+
+  Sport(this.displayTitle);
+
+  Sport.fromJson(Map<String, dynamic> json, String documentId)
+      : displayTitle = json["displayTitle"],
+        documentId = documentId;
 }
 
 class Match {
   String documentId;
 
   DateTime dateTime;
+
   String sportCenter;
-  Sport sport;
+  String sportCenterSubLocation;
+
+  String sport;
   int pricePerPersonInCents;
   int maxPlayers;
   Duration duration;
@@ -33,13 +33,14 @@ class Match {
 
   List<Subscription> subscriptions;
 
-  Match(this.dateTime, this.sportCenter, this.sport, this.maxPlayers,
-      this.pricePerPersonInCents, this.duration, this.cancelledAt);
+  Match(this.dateTime, this.sportCenter, this.sportCenterSubLocation, this.sport,
+      this.maxPlayers, this.pricePerPersonInCents, this.duration, this.cancelledAt);
 
   Match.from(Match m) {
     documentId = m.documentId;
     dateTime = m.dateTime;
     sportCenter = m.sportCenter;
+    sportCenterSubLocation = m.sportCenterSubLocation;
     sport = m.sport;
     pricePerPersonInCents = m.pricePerPersonInCents;
     maxPlayers = m.maxPlayers;
@@ -51,7 +52,8 @@ class Match {
   Match.fromJson(Map<String, dynamic> json, String documentId)
       : dateTime = (json['dateTime'] as Timestamp).toDate(),
         sportCenter = json['sportCenter'],
-        sport = Sport.values[json['sport']],
+        sportCenterSubLocation = json['sportCenterSubLocation'],
+        sport = json['sport'],
         pricePerPersonInCents = json['pricePerPerson'],
         maxPlayers = json['maxPlayers'],
         duration = Duration(minutes: json['durationInMinutes'] ?? 60),
@@ -62,7 +64,8 @@ class Match {
       {
         'dateTime': Timestamp.fromDate(dateTime),
         'sportCenter': sportCenter,
-        'sport': sport.index,
+        'sportCenterSubLocation': sportCenterSubLocation,
+        'sport': sport,
         'pricePerPerson': pricePerPersonInCents,
         'maxPlayers': maxPlayers,
         'cancelledAt': cancelledAt
