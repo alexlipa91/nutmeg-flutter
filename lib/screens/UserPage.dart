@@ -5,10 +5,12 @@ import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/screens/admin/Matches.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/AppBar.dart';
+import 'package:nutmeg/widgets/Avatar.dart';
 import 'package:nutmeg/widgets/Buttons.dart';
 import 'package:nutmeg/widgets/Containers.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+
 
 class UserPage extends StatelessWidget {
 
@@ -49,16 +51,14 @@ class UserPage extends StatelessWidget {
                     child: InfoContainer(
                         child: Row(
                       children: [
-                        CircleAvatar(
-                            backgroundImage: NetworkImage(userDetails.image),
-                            radius: 24,
-                            backgroundColor: Palette.white),
+                        UserAvatar(radius: 24),
                         Padding(
                           padding: EdgeInsets.symmetric(horizontal: 30),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(userDetails.name, style: TextPalette.h2),
+                              if (userDetails.name != null)
+                                Text(userDetails.name, style: TextPalette.h2),
                               SizedBox(height: 10),
                               Text(userDetails.email, style: TextPalette.bodyText)
                             ],
@@ -113,54 +113,54 @@ class UserPage extends StatelessWidget {
                       LinkInfo(text: "Follow us on Instagram", onTap: () async {
                         var url = 'https://www.instagram.com/nutmegapp/';
 
-                        if (await canLaunch(url)) {
-                          await launch(
-                            url,
-                            universalLinksOnly: true,
-                          );
-                        } else {
-                          throw 'There was a problem to open the url: $url';
-                        }
-                      },),
-                      // LinkInfo(text: "Terms and Conditions"),
-                      Padding(
-                        padding: EdgeInsets.only(top: 10),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: ButtonWithLoader("LOGOUT", () async {
-                                await UserController.logout(
-                                    context.read<UserState>());
-                                Navigator.pop(context);
-                              }),
-                            )
-                          ],
-                        ),
-                      ),
-                      if (userDetails.isAdmin)
-                        Padding(
-                          padding: EdgeInsets.only(top: 10),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: ButtonWithoutLoader("ADMIN AREA", () async {
-                                  await Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) =>
-                                              AdminAvailableMatches()));
-                                }),
-                              )
-                            ],
+                            if (await canLaunch(url)) {
+                              await launch(
+                                url,
+                                universalLinksOnly: true,
+                              );
+                            } else {
+                              throw 'There was a problem to open the url: $url';
+                            }
+                          },),
+                          // LinkInfo(text: "Terms and Conditions"),
+                          Padding(
+                            padding: EdgeInsets.only(top: 10),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: ButtonWithLoader("LOGOUT", () async {
+                                    await UserController.logout(
+                                        context.read<UserState>());
+                                    Navigator.pop(context);
+                                  }),
+                                )
+                              ],
+                            ),
                           ),
-                        )
-                    ])),
-                  ),
-                ]),
+                          if (userDetails.isAdmin)
+                            Padding(
+                              padding: EdgeInsets.only(top: 10),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: ButtonWithoutLoader("ADMIN AREA", () async {
+                                      await Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  AdminAvailableMatches()));
+                                    }),
+                                  )
+                                ],
+                              ),
+                            )
+                        ])),
+                      ),
+                    ]),
+              ),
+            )),
           ),
-        )),
-      ),
-    );
+        );
   }
 }
 

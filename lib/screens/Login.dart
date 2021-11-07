@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -59,6 +61,8 @@ class LoginArea extends StatelessWidget {
                   children: [
                     SignInButton(provider: Provider.google),
                     SignInButton(provider: Provider.facebook),
+                    if (Platform.isIOS)
+                      SignInButton(provider: Provider.apple),
                   ],
                 )),
               ),
@@ -76,7 +80,7 @@ class LoginArea extends StatelessWidget {
   }
 }
 
-enum Provider { facebook, google }
+enum Provider { facebook, google, apple }
 
 class SignInButton extends StatelessWidget {
 
@@ -103,6 +107,12 @@ class SignInButton extends StatelessWidget {
         backgroundColor = Colors.transparent;
         textStyle = GoogleFonts.roboto(color: Palette.darkgrey, fontSize: 14, fontWeight: FontWeight.w700);
         logoPath = "assets/google_logo.png";
+        break;
+      case Provider.apple :
+        loginFuture = () => UserController.continueWithApple(context.read<UserState>());
+        backgroundColor = Colors.black;
+        textStyle = GoogleFonts.roboto(color: Palette.white, fontSize: 14, fontWeight: FontWeight.w700);
+        logoPath = "assets/apple_logo.png";
         break;
       default :
         throw Exception("Invalid provider");

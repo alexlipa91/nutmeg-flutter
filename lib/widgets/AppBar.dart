@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/screens/Login.dart';
-import 'package:nutmeg/screens/UserPage.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/Buttons.dart';
 import 'package:provider/provider.dart';
+
+import 'Avatar.dart';
 
 class NutmegAppBar extends StatelessWidget with PreferredSizeWidget {
   final Color backgroundColor;
@@ -44,7 +44,7 @@ class MainAppBar extends NutmegAppBar {
           children: [
             Image.asset('assets/nutmeg_white.png', height: 24),
             if (isLoggedIn)
-              UserAvatar()
+              UserAvatarWithRedirect(radius: 18)
             else
               Center(
                   child: InkWell(
@@ -111,22 +111,6 @@ class UserPageAppBar extends NutmegAppBar {
   }
 }
 
-class UserAvatar extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    var userDetails = context.watch<UserState>().getUserDetails();
-    return InkWell(
-        child: CircleAvatar(
-            backgroundImage: NetworkImage(userDetails.getPhotoUrl()),
-            radius: 18),
-        onTap: () async {
-          await UserController.refresh(context.read<UserState>());
-          Navigator.push(
-              context, MaterialPageRoute(builder: (context) => new UserPage()));
-        });
-  }
-}
-
 class AdminAreaAppBar extends NutmegAppBar {
   @override
   Widget build(BuildContext context) {
@@ -140,7 +124,7 @@ class AdminAreaAppBar extends NutmegAppBar {
               InkWell(
                   child: Icon(Icons.arrow_back, color: Palette.white, size: 32),
                   onTap: () => Navigator.pop(context)),
-              UserAvatar()
+              UserAvatarWithRedirect(radius: 18)
             ],
           ),
         ));

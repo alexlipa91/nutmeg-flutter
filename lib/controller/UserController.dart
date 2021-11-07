@@ -8,9 +8,9 @@ import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
 import 'package:nutmeg/screens/admin/Matches.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 class UserController {
-
   static Future<UserDetails> refresh(UserState userState) async {
     var userDetails = await UserFirestore.getSpecificUserDetails(
         userState.getUserDetails().getUid());
@@ -49,7 +49,8 @@ class UserController {
     FirebaseMessaging.instance.onTokenRefresh.listen(_saveTokenToDatabase);
   }
 
-  static Future<AfterLoginCommunication> _login(UserState userState, UserCredential userCredential) async {
+  static Future<AfterLoginCommunication> _login(
+      UserState userState, UserCredential userCredential) async {
     UserDetails userDetails =
         await UserFirestore.getSpecificUserDetails(userCredential.user.uid);
 
@@ -88,10 +89,7 @@ class UserController {
     }
 
     print("saving token " + token + " for user " + userId);
-    await FirebaseFirestore.instance
-        .collection('users')
-        .doc(userId)
-        .update({
+    await FirebaseFirestore.instance.collection('users').doc(userId).update({
       'tokens': FieldValue.arrayUnion([token]),
     });
   }
@@ -115,7 +113,8 @@ class UserController {
     return await _login(userState, await auth.signInWithCredential(credential));
   }
 
-  static Future<AfterLoginCommunication> continueWithFacebook(UserState userState) async {
+  static Future<AfterLoginCommunication> continueWithFacebook(
+      UserState userState) async {
     // Trigger the sign-in flow
     final LoginResult loginResult = await FacebookAuth.instance.login();
 
@@ -124,8 +123,43 @@ class UserController {
         FacebookAuthProvider.credential(loginResult.accessToken.token);
 
     // Once signed in, return the UserCredential
-    var userCred = await FirebaseAuth.instance.signInWithCredential(facebookAuthCredential);
+    var userCred = await FirebaseAuth.instance
+        .signInWithCredential(facebookAuthCredential);
     return await _login(userState, userCred);
+  }
+
+  static Future<AfterLoginCommunication> continueWithApple(
+      UserState userState) async {
+    // To prevent replay attacks with the credential returned from Apple, we
+    // include a nonce in the credential request. When signing in in with
+    // Firebase, the nonce in the id token returned by Apple, is expected to
+    // match the sha256 hash of `rawNonce`.
+    // final rawNonce = generateNonce();
+    // final nonce = sha256ofString(rawNonce);
+
+    // Request credential for the currently signed in Apple account.
+    final appleCredential = await SignInWithApple.getAppleIDCredential(
+      scopes: [
+        AppleIDAuthorizationScopes.email,
+        AppleIDAuthorizationScopes.fullName,
+      ],
+      // nonce: nonce,
+    );
+
+    print(appleCredential.authorizationCode);
+
+    // Create an `OAuthCredential` from the credential returned by Apple.
+    final oauthCredential = OAuthProvider("apple.com").credential(
+      idToken: appleCredential.identityToken,
+      // rawNonce: rawNonce,
+    );
+
+    // Sign in the user with Firebase. If the nonce we generated earlier does
+    // not match the nonce in `appleCredential.identityToken`, sign in will fail.
+    final userCredential =
+        await FirebaseAuth.instance.signInWithCredential(oauthCredential);
+
+    return _login(userState, userCredential);
   }
 
   static Future<void> logout(UserState userState) async {
