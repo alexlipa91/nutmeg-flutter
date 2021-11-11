@@ -287,7 +287,8 @@ Future<void> communicateSuccessToUser(
       onTap: () async => await DynamicLinks.shareMatchFunction(matchId),
       child: Row(
         children: [
-          ShareButton(matchId: matchId),
+          if (!DeviceInfo().name.contains("ipad"))
+            ShareButton(matchId: matchId),
           SizedBox(width: 20),
           Text("SHARE", style: TextPalette.linkStyle)
         ],

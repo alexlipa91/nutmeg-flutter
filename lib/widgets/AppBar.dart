@@ -83,7 +83,8 @@ class MatchAppBar extends NutmegAppBar {
             InkWell(
                 child: Icon(Icons.arrow_back, color: Colors.black),
                 onTap: () => Navigator.of(context).pop()),
-            ShareButton(matchId: matchId)
+            if (!DeviceInfo().name.contains("ipad"))
+              ShareButton(matchId: matchId)
           ],
         ),
       ),

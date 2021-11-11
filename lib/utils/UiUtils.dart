@@ -1,6 +1,7 @@
+import 'dart:io';
 import 'dart:ui';
 
-import 'package:cool_alert/cool_alert.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -84,5 +85,24 @@ var appTheme = new ThemeData(
     accentColor: Palette.light
 );
 
-var defaultErrorMessage = (err, context) =>
-    CoolAlert.show(context: context, type: CoolAlertType.error, text: err.toString());
+class DeviceInfo {
+  static final DeviceInfo _singleton = DeviceInfo._internal();
+
+  String name;
+
+  factory DeviceInfo() {
+    return _singleton;
+  }
+
+  DeviceInfo._internal();
+
+  Future<void> init() async {
+    DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+    if (Platform.isIOS) {
+      name = (await deviceInfo.iosInfo).model.toLowerCase();
+    } else if (Platform.isAndroid) {
+      name = (await deviceInfo.androidInfo).model.toLowerCase();
+    }
+    print("device name is " + name);
+  }
+}

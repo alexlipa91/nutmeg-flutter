@@ -103,6 +103,10 @@ class LaunchWidgetState extends State<LaunchWidget> {
     print("app initialization tasks running");
     await Firebase.initializeApp();
 
+    // fetch device model name
+    var d = DeviceInfo();
+    await d.init();
+
     if (kDebugMode) {
       // Force disable Crashlytics collection while doing every day development.
       // Temporarily toggle this to true if you want to test crash reporting in your app.
