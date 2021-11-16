@@ -381,6 +381,7 @@ class MatchThumbnail extends StatelessWidget {
           height: 78,
           child: CachedNetworkImage(
                   imageUrl: image,
+                  fadeInDuration: Duration(milliseconds: 0),
                   imageBuilder: (context, imageProvider) => Container(
                       decoration: BoxDecoration(
                     image: DecorationImage(

@@ -180,6 +180,7 @@ class SportCenterImageCarouselState extends State<SportCenterImageCarousel> {
           List<Widget> itemsToShow = (snapshot.hasData)
               ? List<Widget>.from(snapshot.data.map((i) => CachedNetworkImage(
                     imageUrl: i,
+                    fadeInDuration: Duration(milliseconds: 0),
                     imageBuilder: (context, imageProvider) => Container(
                         decoration: BoxDecoration(
                       image: DecorationImage(
