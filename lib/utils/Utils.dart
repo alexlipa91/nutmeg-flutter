@@ -18,11 +18,11 @@ String _getFormattedDate(DateTime dateTime, DateFormat dateFormat) {
 
   var dayString;
 
-  if (now.day == dateTime.day) {
+  if (now.day == dateTime.day && now.month == dateTime.month && now.year == dateTime.year) {
     dayString = "Today";
-  } else if (now.day == dateTime.day - 1) {
+  } else if (now.day + 1 == dateTime.day && now.month == dateTime.month && now.year == dateTime.year) {
     dayString = "Tomorrow";
-  } else if (now.day == dateTime.day + 1) {
+  } else if (now.day - 1 == dateTime.day && now.month == dateTime.month && now.year == dateTime.year) {
     dayString = "Yesterday";
   } else {
     dayString = dateFormat.format(dateTime);
