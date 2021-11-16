@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
@@ -127,6 +128,8 @@ class LaunchWidgetState extends State<LaunchWidget> {
       // tell the app to save user tokens
       await UserController.saveUserTokensToDb();
     }
+
+    FirebaseMessaging.instance.subscribeToTopic("nutmeg-generic");
 
     await MatchesController.refreshAll(context.read<MatchesState>());
     await MatchesController.refreshImages(context.read<MatchesState>());
