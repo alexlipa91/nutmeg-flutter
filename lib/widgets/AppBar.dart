@@ -14,7 +14,8 @@ class NutmegAppBar extends StatelessWidget with PreferredSizeWidget {
   final Widget mainRow;
   final SystemUiOverlayStyle systemUiOverlayStyle;
 
-  const NutmegAppBar({Key key, this.backgroundColor, this.mainRow, this.systemUiOverlayStyle})
+  const NutmegAppBar(
+      {Key key, this.backgroundColor, this.mainRow, this.systemUiOverlayStyle})
       : super(key: key);
 
   @override
@@ -38,10 +39,14 @@ class MainAppBar extends NutmegAppBar {
   Widget build(BuildContext context) {
     var isLoggedIn = context.watch<UserState>().isLoggedIn();
 
-    return NutmegAppBar(
-      systemUiOverlayStyle: SystemUiOverlayStyle.light,
+    return AppBar(
+      systemOverlayStyle: SystemUiOverlayStyle.light,
+      centerTitle: false,
       backgroundColor: Palette.primary,
-      mainRow: Padding(
+      automaticallyImplyLeading: false,
+      titleSpacing: 0,
+      elevation: 0,
+      title: Padding(
         padding: EdgeInsets.symmetric(horizontal: 20),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -77,28 +82,30 @@ class MatchAppBar extends NutmegAppBar {
 
   @override
   Widget build(BuildContext context) {
-    return NutmegAppBar(
-      systemUiOverlayStyle: SystemUiOverlayStyle.dark,
-      backgroundColor: Colors.transparent,
-      mainRow: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 20),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            InkWell(
-                child: Icon(Icons.arrow_back, color: Colors.black),
-                onTap: () => Navigator.of(context).pop()),
-            if (!DeviceInfo().name.contains("ipad"))
-              ShareButton(matchId: matchId)
-          ],
-        ),
-      ),
-    );
+    return SliverAppBar(
+        systemOverlayStyle: SystemUiOverlayStyle.dark,
+        centerTitle: false,
+        backgroundColor: Colors.transparent,
+        automaticallyImplyLeading: false,
+        titleSpacing: 0,
+        elevation: 0,
+        title: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              InkWell(
+                  child: Icon(Icons.arrow_back, color: Colors.black),
+                  onTap: () => Navigator.of(context).pop()),
+              if (!DeviceInfo().name.contains("ipad"))
+                ShareButton(matchId: matchId)
+            ],
+          ),
+        ));
   }
 }
 
 class UserPageAppBar extends NutmegAppBar {
-
   @override
   Widget build(BuildContext context) {
     return NutmegAppBar(

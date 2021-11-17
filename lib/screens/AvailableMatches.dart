@@ -22,143 +22,80 @@ import 'MatchDetails.dart';
 class AvailableMatches extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    return MultiProvider(providers: [
+      ChangeNotifierProvider(create: (context) => AvailableMatchesUiState()),
+    ], child: AvailableMatchesList());
+  }
+}
+
+class AvailableMatchesList extends StatelessWidget {
+
+  @override
+  Widget build(BuildContext context) {
+    var matchesState = context.watch<MatchesState>();
+    var userState = context.watch<UserState>();
+    var uiState = context.watch<AvailableMatchesUiState>();
+
+    var optionSelected = uiState.selected;
+
+    var isLoggedIn = userState.isLoggedIn();
+
+    var widgets = List<Widget>.of([
+      MainAppBar(),
+      RoundedTopBar(uiState: uiState)
+    ]);
+
+    if (!context.watch<AvailableMatchesUiState>().loading) {
+      if (optionSelected == "MY GAMES" && !isLoggedIn) {
+        widgets.add(Center(
+            child: Padding(
+                padding: EdgeInsets.only(top: 20),
+                child: Text("LOGIN TO JOIN MATCHES", style: TextPalette.h4)),
+          ));
+      } else {
+        widgets.addAll((optionSelected == "ALL")
+            ? allGamesWidgets(matchesState)
+            : myGamesWidgets(matchesState, userState));
+      }
+    } else {
+      widgets.addAll(List<Widget>.filled(5, MatchInfoSkeleton()));
+    }
+
     return Scaffold(
-      backgroundColor: Palette.primary,
-      appBar: MainAppBar(),
+      backgroundColor: Palette.white,
+      // appBar: MainAppBar(),
       body: MultiProvider(
         providers: [
-          ChangeNotifierProvider(create: (context) => SelectedTapNotifier()),
+          ChangeNotifierProvider(create: (context) => AvailableMatchesUiState()),
         ],
-        child: Container(
-          color: Palette.light,
-          child: Column(
-            children: [
+        child: RefreshIndicator(
+          onRefresh: () async {
+            context.read<AvailableMatchesUiState>().startLoading();
+
+            await MatchesController.refreshAll(matchesState);
+            await MatchesController.refreshImages(matchesState);
+
+            context.read<AvailableMatchesUiState>().loadingDone();
+          },
+          child: CustomScrollView(
+            slivers: [
               // MainAppBar(),
-              RoundedTopBar(),
-              Expanded(child: MatchesArea())
+              SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (BuildContext context, int index) {
+                    return widgets[index];
+                  },
+                  childCount: widgets.length,
+                ),
+              )
             ],
           ),
         ),
       ),
     );
   }
-}
 
-class RoundedTopBar extends StatelessWidget {
-  _getAllFunction(BuildContext context) =>
-      () => context.read<SelectedTapNotifier>().changeToAll();
-
-  _getMyGamesFunction(BuildContext context) =>
-      () => context.read<SelectedTapNotifier>().changeToMyGames();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-        decoration: BoxDecoration(
-            color: Palette.primary,
-            borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(20),
-                bottomRight: Radius.circular(20))),
-        child: Padding(
-          padding: EdgeInsets.only(top: 10, left: 20, right: 20, bottom: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text("Find football games in",
-                  style: TextPalette.bodyTextInverted),
-              Text("Amsterdam", style: TextPalette.h1Inverted),
-              SizedBox(height: 24),
-              Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                context.watch<SelectedTapNotifier>().getCurrentSelection() ==
-                        "ALL"
-                    ? Expanded(
-                        child: LeftButtonOn("ALL", _getAllFunction(context)))
-                    : Expanded(
-                        child: LeftButtonOff("ALL", _getAllFunction(context))),
-                context.watch<SelectedTapNotifier>().getCurrentSelection() ==
-                        "ALL"
-                    ? Expanded(
-                        child: RightButtonOff(
-                            "MY GAMES", _getMyGamesFunction(context)))
-                    : Expanded(
-                        child: RightButtonOn(
-                            "MY GAMES", _getMyGamesFunction(context))),
-              ])
-            ],
-          ),
-        ));
-  }
-}
-
-class MatchesArea extends StatefulWidget {
-  @override
-  State<StatefulWidget> createState() => MatchesAreaState();
-}
-
-class MatchesAreaState extends State<MatchesArea> {
-  bool isLoading = false;
-
-  static bool showNews = false;
-
-  @override
-  Widget build(BuildContext context) {
-    var matchesState = context.watch<MatchesState>();
-    var userState = context.watch<UserState>();
-
-    GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
-
-    var optionSelected = context.watch<SelectedTapNotifier>().selected;
-    var isLoggedIn = userState.isLoggedIn();
-
-    return (optionSelected == "MY GAMES" && !isLoggedIn)
-        ? Center(
-            child: Text("Login to join matches", style: TextPalette.bodyText),
-          )
-        : RefreshIndicator(
-            onRefresh: () async {
-              setState(() {
-                isLoading = true;
-              });
-              await MatchesController.refreshAll(matchesState);
-              await MatchesController.refreshImages(matchesState);
-              setState(() {
-                isLoading = false;
-              });
-            },
-            child: Builder(builder: (BuildContext buildContext) {
-              var widgets;
-              if (!isLoading) {
-                widgets = (optionSelected == "ALL")
-                    ? allGamesWidgets(matchesState)
-                    : myGamesWidgets(matchesState, userState);
-              } else {
-                widgets = List<Widget>.filled(5, MatchInfoSkeleton());
-              }
-
-              return AnimatedList(
-                padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
-                key: _listKey,
-                initialItemCount:
-                    (showNews) ? widgets.length + 1 : widgets.length,
-                itemBuilder: (context, index, animation) {
-                  if (showNews) {
-                    return (index == 0)
-                        ? SlideTransition(
-                            position: Tween<Offset>(
-                              begin: const Offset(-1, 0),
-                              end: Offset(0, 0),
-                            ).animate(animation),
-                            child: News(_listKey))
-                        : widgets[index - 1];
-                  }
-                  return widgets[index];
-                },
-              );
-            }),
-          );
-  }
-
-  static List<Widget> myGamesWidgets(MatchesState state, UserState userState) {
+  List<Widget> myGamesWidgets(MatchesState state, UserState userState) {
     var matches = state.getMatches().where((m) {
       var userSubInMatch = m.getUserSub(userState.getUserDetails());
       return userSubInMatch != null &&
@@ -182,7 +119,8 @@ class MatchesAreaState extends State<MatchesArea> {
       widgets.add(TextSeparatorWidget("UPCOMING GAMES"));
       future.sortedBy((e) => e.dateTime).forEachIndexed((index, m) {
         if (index == 0) {
-          widgets.add(MatchInfo.first(m.documentId, state.getImageUrl(m.documentId)));
+          widgets.add(
+              MatchInfo.first(m.documentId, state.getImageUrl(m.documentId)));
         } else {
           widgets.add(MatchInfo(m.documentId, state.getImageUrl(m.documentId)));
         }
@@ -203,7 +141,7 @@ class MatchesAreaState extends State<MatchesArea> {
     return widgets;
   }
 
-  static List<Widget> allGamesWidgets(MatchesState state) {
+  List<Widget> allGamesWidgets(MatchesState state) {
     var matches =
         state.getMatchesInFuture().where((e) => !e.wasCancelled()).toList();
 
@@ -221,65 +159,76 @@ class MatchesAreaState extends State<MatchesArea> {
       result.add(WeekSeparatorWidget(w));
       grouped[w].sortedBy((e) => e.dateTime).forEachIndexed((index, match) {
         if (index == 0) {
-          result.add(MatchInfo.first(match.documentId, state.getImageUrl(match.documentId)));
+          result.add(MatchInfo.first(
+              match.documentId, state.getImageUrl(match.documentId)));
         } else {
-          result.add(MatchInfo(match.documentId, state.getImageUrl(match.documentId)));
+          result.add(
+              MatchInfo(match.documentId, state.getImageUrl(match.documentId)));
         }
       });
     });
+
+    result.add(result.last);
+    result.add(result.last);
+    result.add(result.last);
+    result.add(result.last);
+    result.add(result.last);
 
     return result;
   }
 }
 
-class News extends StatelessWidget {
-  // fixme pass news from db
-  final GlobalKey<AnimatedListState> _listKey;
+class RoundedTopBar extends StatelessWidget {
 
-  News(this._listKey);
+  final AvailableMatchesUiState uiState;
+
+  const RoundedTopBar({Key key, this.uiState}) : super(key: key);
+
+  _getAllFunction(BuildContext context) =>
+      () => uiState.changeToAll();
+
+  _getMyGamesFunction(BuildContext context) =>
+      () => uiState.changeToMyGames();
 
   @override
   Widget build(BuildContext context) {
-    return Row(children: [
-      Expanded(
-          child: InfoContainer(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              ContainerTitleText(text: "50% off"),
-              Expanded(
-                  child: Align(
-                alignment: Alignment.topRight,
-                child: InkWell(
-                    child: Icon(Icons.close, size: 18),
-                    onTap: () {
-                      _listKey.currentState.removeItem(0, (_, animation) {
-                        // fixme check if there's something better around
-                        return SlideTransition(
-                            position: Tween<Offset>(
-                              begin: const Offset(-3, 0),
-                              end: Offset(0, 0),
-                            ).animate(animation),
-                            child: News(_listKey));
-                      }, duration: Duration(milliseconds: 500));
-                      MatchesAreaState.showNews = false;
-                    }),
-              ))
-            ]),
-            // SizedBox(height: 15),
-            Text(
-              "All games in Amsterdam are 50% off until Sept 4.",
-              style: TextPalette.bodyText,
-            )
-          ],
-        ),
-      )),
-    ]);
+    return Container(
+        decoration: BoxDecoration(
+            color: Palette.primary,
+            borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(20),
+                bottomRight: Radius.circular(20))),
+        child: Padding(
+          padding: EdgeInsets.only(top: 10, left: 20, right: 20, bottom: 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text("Find football games in",
+                  style: TextPalette.bodyTextInverted),
+              Text("Amsterdam", style: TextPalette.h1Inverted),
+              SizedBox(height: 24),
+              Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                uiState.getCurrentSelection() ==
+                        "ALL"
+                    ? Expanded(
+                        child: LeftButtonOn("ALL", _getAllFunction(context)))
+                    : Expanded(
+                        child: LeftButtonOff("ALL", _getAllFunction(context))),
+                uiState.getCurrentSelection() ==
+                        "ALL"
+                    ? Expanded(
+                        child: RightButtonOff(
+                            "MY GAMES", _getMyGamesFunction(context)))
+                    : Expanded(
+                        child: RightButtonOn(
+                            "MY GAMES", _getMyGamesFunction(context))),
+              ])
+            ],
+          ),
+        ));
   }
 }
 
-// widget of info for a single match
 class MatchInfo extends StatelessWidget {
   static var formatCurrency = NumberFormat.simpleCurrency(name: "EUR");
   static var monthDayFormat = DateFormat('HH:mm');
@@ -377,23 +326,22 @@ class MatchThumbnail extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-          width: 60,
-          height: 78,
-          child: CachedNetworkImage(
-                  imageUrl: image,
-                  fadeInDuration: Duration(milliseconds: 0),
-                  imageBuilder: (context, imageProvider) => Container(
-                      decoration: BoxDecoration(
-                    image: DecorationImage(
-                      image: imageProvider,
-                      fit: BoxFit.fill,
-                    ),
-                    borderRadius: BorderRadius.all(Radius.circular(15)),
-                  )),
-                  // placeholder: (context, url) => placeHolder,
-                  errorWidget: (context, url, error) => Icon(Icons.error),
-                )
-    );
+        width: 60,
+        height: 78,
+        child: CachedNetworkImage(
+          imageUrl: image,
+          fadeInDuration: Duration(milliseconds: 0),
+          imageBuilder: (context, imageProvider) => Container(
+              decoration: BoxDecoration(
+            image: DecorationImage(
+              image: imageProvider,
+              fit: BoxFit.fill,
+            ),
+            borderRadius: BorderRadius.all(Radius.circular(15)),
+          )),
+          // placeholder: (context, url) => placeHolder,
+          errorWidget: (context, url, error) => Icon(Icons.error),
+        ));
   }
 }
 
@@ -550,8 +498,8 @@ class WeekSeparatorWidget extends StatelessWidget {
   }
 }
 
-// utility to manage the change between all/my games
-class SelectedTapNotifier extends ChangeNotifier {
+class AvailableMatchesUiState extends ChangeNotifier {
+  bool loading = false;
   String selected = "ALL";
 
   void changeToAll() => _change("ALL");
@@ -559,7 +507,18 @@ class SelectedTapNotifier extends ChangeNotifier {
   void changeToMyGames() => _change("MY GAMES");
 
   void _change(String newSelection) {
+    print("changing");
     selected = newSelection;
+    notifyListeners();
+  }
+
+  void loadingDone() {
+    loading = false;
+    notifyListeners();
+  }
+
+  void startLoading() {
+    loading = true;
     notifyListeners();
   }
 

@@ -39,8 +39,7 @@ class MatchDetails extends StatelessWidget {
     var sportCenter = loadOnceState.getSportCenter(match.sportCenter);
     var sport = loadOnceState.getSport(match.sport);
 
-    var title =
-        sportCenter.neighbourhood + " - " + sport.displayTitle;
+    var title = sportCenter.neighbourhood + " - " + sport.displayTitle;
 
     if (match.sportCenterSubLocation != null) {
       title = title + " - " + match.sportCenterSubLocation;
@@ -48,61 +47,65 @@ class MatchDetails extends StatelessWidget {
 
     var subscriptions = match.getOrderedGoingSubscriptions(user);
 
-    return Scaffold(
-      appBar: MatchAppBar(matchId),
-      body: RefreshIndicator(
-        onRefresh: () => MatchesController.refresh(matchesState, matchId),
+    var widgets = [
+      Padding(
+          padding: EdgeInsets.only(right: 20, left: 20, bottom: 10),
+          child: Text(title, style: TextPalette.h1Default)),
+      Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20),
+          child: MatchInfo(match, sportCenter, sport)),
+      Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+          child: Builder(
+            builder: (context) {
+              int going = match.numPlayersGoing();
+              return Text(
+                  going.toString() +
+                      ((going == 1) ? " player" : " players") +
+                      " going",
+                  style: TextPalette.bodyText);
+            },
+          )),
+      Padding(
+        padding: EdgeInsets.symmetric(horizontal: 20),
         child: SingleChildScrollView(
-            child: Column(
-          // fixme here we are repeating the padding just because cannot be applied globally as MatchInfo doesn't need
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-                padding: EdgeInsets.only(right: 20, left: 20, bottom: 10),
-                child: Text(title, style: TextPalette.h1Default)),
-            Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20),
-                child: MatchInfo(match, sportCenter, sport)),
-            Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-                child: Builder(
-                  builder: (context) {
-                    int going = match.numPlayersGoing();
-                    return Text(
-                        going.toString() +
-                            ((going == 1) ? " player" : " players") +
-                            " going",
-                        style: TextPalette.bodyText);
-                  },
-                )),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20),
-              child: SingleChildScrollView(
-                clipBehavior: Clip.none,
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                    children: (subscriptions.isEmpty)
-                        ? [EmptyPlayerCard(match: match)]
-                        : subscriptions
-                            .map((s) => PlayerCard(s.userId))
-                            .toList()),
-              ),
-            ),
-            Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                child: Text(
-                  "Details",
-                  style: TextPalette.bodyText,
-                )),
-            RuleCard(
-                "Payment Policy",
-                "If you remove yourself more than 15 hours before the kick-off time the amount you paid will be returned to you in credits that you can use in other Nutmeg matches. "
-                    "\n\nNo credits or refund will be provided if you drop out of a game less than 15 hours from kick-off."),
-            // RuleCard("t", "b"),
-            MapCard.big(sportCenter)
-          ],
-        )),
+          clipBehavior: Clip.none,
+          scrollDirection: Axis.horizontal,
+          child: Row(
+              children: (subscriptions.isEmpty)
+                  ? [EmptyPlayerCard(match: match)]
+                  : subscriptions.map((s) => PlayerCard(s.userId)).toList()),
+        ),
       ),
+      Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          child: Text(
+            "Details",
+            style: TextPalette.bodyText,
+          )),
+      RuleCard(
+          "Payment Policy",
+          "If you remove yourself more than 15 hours before the kick-off time the amount you paid will be returned to you in credits that you can use in other Nutmeg matches. "
+              "\n\nNo credits or refund will be provided if you drop out of a game less than 15 hours from kick-off."),
+      MapCard.big(sportCenter)
+    ];
+
+    return Scaffold(
+      body: RefreshIndicator(
+          onRefresh: () => MatchesController.refresh(matchesState, matchId),
+          child: CustomScrollView(
+            slivers: [
+              MatchAppBar(matchId),
+              SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (BuildContext context, int index) {
+                    return widgets[index];
+                  },
+                  childCount: widgets.length,
+                ),
+              )
+            ],
+          )),
       bottomNavigationBar: BottomBar(match: match),
     );
   }
@@ -170,9 +173,7 @@ class SportCenterImageCarouselState extends State<SportCenterImageCarousel> {
 
   @override
   Widget build(BuildContext context) {
-    var placeHolder = Container(
-        height: 358
-    );
+    var placeHolder = Container(height: 358);
 
     return FutureBuilder(
         future: MatchesController.getMatchPicturesUrls(match),
@@ -217,24 +218,24 @@ class SportCenterImageCarouselState extends State<SportCenterImageCarousel> {
                 left: 1,
                 right: 1,
                 child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: itemsToShow.asMap().entries.map((entry) {
-                        return GestureDetector(
-                          onTap: () => _controller.animateToPage(entry.key),
-                          child: Container(
-                            width: 12.0,
-                            height: 12.0,
-                            margin: EdgeInsets.symmetric(
-                                vertical: 8.0, horizontal: 4.0),
-                            decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: (itemsToShow.length > 1)
-                                    ? Colors.white.withOpacity(
-                                        _current == entry.key ? 0.9 : 0.4)
-                                    : Colors.transparent),
-                          ),
-                        );
-                      }).toList()),
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: itemsToShow.asMap().entries.map((entry) {
+                      return GestureDetector(
+                        onTap: () => _controller.animateToPage(entry.key),
+                        child: Container(
+                          width: 12.0,
+                          height: 12.0,
+                          margin: EdgeInsets.symmetric(
+                              vertical: 8.0, horizontal: 4.0),
+                          decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: (itemsToShow.length > 1)
+                                  ? Colors.white.withOpacity(
+                                      _current == entry.key ? 0.9 : 0.4)
+                                  : Colors.transparent),
+                        ),
+                      );
+                    }).toList()),
               ),
             ],
           );
