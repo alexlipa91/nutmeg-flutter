@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/screens/Login.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
@@ -11,13 +12,15 @@ import 'Avatar.dart';
 class NutmegAppBar extends StatelessWidget with PreferredSizeWidget {
   final Color backgroundColor;
   final Widget mainRow;
+  final SystemUiOverlayStyle systemUiOverlayStyle;
 
-  const NutmegAppBar({Key key, this.backgroundColor, this.mainRow})
+  const NutmegAppBar({Key key, this.backgroundColor, this.mainRow, this.systemUiOverlayStyle})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return AppBar(
+        systemOverlayStyle: systemUiOverlayStyle,
         centerTitle: false,
         backgroundColor: backgroundColor,
         automaticallyImplyLeading: false,
@@ -36,6 +39,7 @@ class MainAppBar extends NutmegAppBar {
     var isLoggedIn = context.watch<UserState>().isLoggedIn();
 
     return NutmegAppBar(
+      systemUiOverlayStyle: SystemUiOverlayStyle.light,
       backgroundColor: Palette.primary,
       mainRow: Padding(
         padding: EdgeInsets.symmetric(horizontal: 20),
@@ -74,6 +78,7 @@ class MatchAppBar extends NutmegAppBar {
   @override
   Widget build(BuildContext context) {
     return NutmegAppBar(
+      systemUiOverlayStyle: SystemUiOverlayStyle.dark,
       backgroundColor: Colors.transparent,
       mainRow: Padding(
         padding: EdgeInsets.symmetric(horizontal: 20),
@@ -97,6 +102,7 @@ class UserPageAppBar extends NutmegAppBar {
   @override
   Widget build(BuildContext context) {
     return NutmegAppBar(
+      systemUiOverlayStyle: SystemUiOverlayStyle.dark,
       backgroundColor: Colors.transparent,
       mainRow: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -136,6 +142,7 @@ class AdminAreaAppBarInverted extends NutmegAppBar {
   @override
   Widget build(BuildContext context) {
     return NutmegAppBar(
+        systemUiOverlayStyle: SystemUiOverlayStyle.dark,
         backgroundColor: Palette.light,
         mainRow: Padding(
           padding: EdgeInsets.symmetric(horizontal: 20),
