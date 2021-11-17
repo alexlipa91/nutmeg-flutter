@@ -410,8 +410,6 @@ onJoinGameAction(BuildContext context, Match match) async {
       if (communication != null) {
         await GenericInfoModal(title: "Welcome", body: communication.text)
             .show(context);
-      } else {
-        return;
       }
     } catch (e) {
       CoolAlert.show(
