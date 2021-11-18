@@ -15,10 +15,8 @@ jobs:
 
       - run: flutter pub get
 
-      - run: flutter build appbundle -t lib/screens/Launch.dart --release
+#      - run: flutter build appbundle -t lib/screens/Launch.dart --release
 #      - run: flutter build ios -t lib/screens/Launch.dart
-
-      - run: sed -i "s/<DATETIME>/$(date +%Y-%m-%d-%T)/" android/fastlane/metadata/android/en-GB/full_description.txt
 
       - name: Deploy to playstore production
         uses: maierj/fastlane-action@v1.4.0
@@ -40,3 +38,5 @@ jobs:
         with:
           lane: testflight
           subdirectory: ios
+        env:
+          FASTLANE_PASSWORD: ${{ secrets.FASTLANE_PASSWORD }}
