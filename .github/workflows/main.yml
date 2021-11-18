@@ -40,3 +40,4 @@ jobs:
           subdirectory: ios
         env:
           FASTLANE_PASSWORD: ${{ secrets.FASTLANE_PASSWORD }}
+          APPCONNECT_KEY: ${{ secrets.APPCONNECT_KEY }}
