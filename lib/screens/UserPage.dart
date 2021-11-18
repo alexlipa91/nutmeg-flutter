@@ -57,8 +57,7 @@ class UserPage extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              if (userDetails.name != null)
-                                Text(userDetails.name, style: TextPalette.h2),
+                              Text(userDetails.name ?? "N/A", style: TextPalette.h2),
                               SizedBox(height: 10),
                               Text(userDetails.email, style: TextPalette.bodyText)
                             ],
