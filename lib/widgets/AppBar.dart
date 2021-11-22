@@ -160,7 +160,7 @@ class AdminAreaAppBarInverted extends NutmegAppBar {
                   child:
                       Icon(Icons.arrow_back, color: Palette.primary, size: 32),
                   onTap: () => Navigator.pop(context)),
-              UserAvatar()
+              UserAvatar(24, null)
             ],
           ),
         ));

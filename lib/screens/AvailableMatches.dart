@@ -168,12 +168,6 @@ class AvailableMatchesList extends StatelessWidget {
       });
     });
 
-    result.add(result.last);
-    result.add(result.last);
-    result.add(result.last);
-    result.add(result.last);
-    result.add(result.last);
-
     return result;
   }
 }

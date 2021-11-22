@@ -10,6 +10,7 @@ import 'package:nutmeg/model/Model.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/AppBar.dart';
+import 'package:nutmeg/widgets/Avatar.dart';
 import 'package:nutmeg/widgets/Containers.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -352,28 +353,15 @@ class PlayerCard extends StatelessWidget {
                                             top: -30,
                                             left: 0,
                                             right: 0,
-                                            child: CircleAvatar(
-                                              backgroundColor: Palette.white,
-                                              radius: 38,
-                                              child: CircleAvatar(
-                                                  backgroundImage: NetworkImage(
-                                                      snapshot.data.image),
-                                                  radius: 34,
-                                                  backgroundColor:
-                                                      Palette.white),
-                                            ),
+                                            child:
+                                            UserAvatarWithBorder(snapshot.data)
                                           ),
                                         ]);
                                   });
                             },
-                            child: CircleAvatar(
-                                backgroundImage:
-                                    NetworkImage(snapshot.data.image),
-                                radius: 25,
-                                backgroundColor: Palette.white),
-                          ),
+                            child: UserAvatar(24, snapshot.data)),
                           SizedBox(height: 10),
-                          Text(snapshot.data.name.split(" ").first,
+                          Text((snapshot.data.name ?? "Player").split(" ").first,
                               overflow: TextOverflow.ellipsis,
                               style: GoogleFonts.roboto(
                                   color: Palette.mediumgrey,
