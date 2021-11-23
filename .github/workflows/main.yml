@@ -15,6 +15,9 @@ jobs:
 
       - run: flutter pub get
       - run: echo $APPCONNECT_KEY
+        env:
+          FASTLANE_PASSWORD: ${{ secrets.FASTLANE_PASSWORD }}
+          APPCONNECT_KEY: ${{ secrets.APPCONNECT_KEY }}
 
 #      - run: flutter build appbundle -t lib/screens/Launch.dart --release
 #      - run: flutter build ios -t lib/screens/Launch.dart
