@@ -1,4 +1,4 @@
-# nutmeg
+# Nutmeg
 
 A new Flutter project.
 
