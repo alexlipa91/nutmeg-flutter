@@ -73,14 +73,15 @@ class BottomBar extends StatelessWidget {
                 Text(
                     (isGoing)
                         ? "You are going!"
+                        : (match.getSpotsLeft() == 0) ? "Match Full"
                         : match.getSpotsLeft().toString() + " spots left",
                     style: TextPalette.h2),
                 SizedBox(height: 20),
                 Text(
                     (isGoing)
                         ? match.numPlayersGoing().toString() + " going"
-                        : formatCurrency
-                            .format(match.pricePerPersonInCents / 100),
+                        : (match.getSpotsLeft() == 0) ? "Find another game"
+                        : formatCurrency.format(match.pricePerPersonInCents / 100),
                     style: TextPalette.bodyText),
               ],
             ),
@@ -125,7 +126,7 @@ class BottomBar extends StatelessWidget {
                   })
                 : (!match.isFull())
                     ? JoinGameButton(match: match)
-                    : RoundedButtonOff("JOIN", null)
+                    : RoundedButtonOff("JOIN GAME", null)
           ],
         ))
       ],

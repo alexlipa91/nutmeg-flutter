@@ -76,7 +76,7 @@ class TextPalette {
   static TextStyle linkStyle = GoogleFonts.roboto(color: Palette.primary, fontSize: 14, fontWeight: FontWeight.w700);
   static TextStyle linkStyleInverted = GoogleFonts.roboto(color: Palette.white, fontSize: 14, fontWeight: FontWeight.w700);
 
-  static TextStyle buttonOff = GoogleFonts.roboto(color: Palette.mediumgrey, fontSize: 14, fontWeight: FontWeight.w700);
+  static TextStyle buttonOff = GoogleFonts.roboto(color: Palette.lightGrey, fontSize: 14, fontWeight: FontWeight.w700);
 }
 
 // ignore for now
