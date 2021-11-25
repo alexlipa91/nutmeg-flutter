@@ -36,7 +36,9 @@ platform :ios do
       issuer_id: "549abdc6-6a6f-40f5-b041-c46daa9d6c91",
       key_filepath: "./AuthKey_CTJDHGWL48.p8"
     )
-    get_certificates
+    get_certificates(
+      api_key_path: "./AuthKey_CTJDHGWL48.p8"
+    )
     get_provisioning_profile
     build_app(workspace: "Runner.xcworkspace", scheme: "Runner")
     upload_to_app_store
