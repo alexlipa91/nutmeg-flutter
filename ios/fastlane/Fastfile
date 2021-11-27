@@ -28,7 +28,8 @@ platform :ios do
       default_keychain: true,
       unlock: true,
       timeout: 3600,
-      lock_when_sleeps: true
+      lock_when_sleeps: true,
+      password: "a"
     )
     get_certificates(
         api_key_path: "./api_key_json_file.json"
