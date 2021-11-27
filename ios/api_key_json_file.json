@@ -1,0 +1,7 @@
+{
+  "key_id": "CTJDHGWL48",
+  "issuer_id": "549abdc6-6a6f-40f5-b041-c46daa9d6c91",
+  "key": "-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgWrgGomYPGz3jFGogRxIpBcFJ2wn/f+Odi1epSQ+awyGgCgYIKoZIzj0DAQehRANCAATQiwSGbnAJBy/b5SCjmPQcqdciee29lw2UjD3QB4w2ZGsaonFugn60d441TpYAebO5ujGn8wh0uJL3iOY11k95\n-----END PRIVATE KEY-----",
+  "duration": 1200,
+  "in_house": false
+}
