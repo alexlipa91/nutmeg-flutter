@@ -30,6 +30,11 @@ class AvailableMatches extends StatelessWidget {
 
 class AvailableMatchesList extends StatelessWidget {
 
+  static Image getEmptyStateImage() {
+    var images = ["illustration_01.png", "illustration_02.png", "illustration_03.png"];
+    return Image.asset("assets/empty_state/" + (images..shuffle()).first);
+  }
+
   @override
   Widget build(BuildContext context) {
     var matchesState = context.watch<MatchesState>();
@@ -52,6 +57,11 @@ class AvailableMatchesList extends StatelessWidget {
                 padding: EdgeInsets.only(top: 20),
                 child: Text("LOGIN TO JOIN MATCHES", style: TextPalette.h4)),
           ));
+        widgets.add(Center(
+          child: Padding(
+              padding: EdgeInsets.only(top: 20),
+              child: getEmptyStateImage()),
+        ));
       } else {
         widgets.addAll((optionSelected == "ALL")
             ? allGamesWidgets(matchesState)
@@ -104,7 +114,8 @@ class AvailableMatchesList extends StatelessWidget {
 
     if (matches.isEmpty) {
       return [
-        TextSeparatorWidget("No games to display. Book your first game today.")
+        TextSeparatorWidget("No games to display. Book your first game today."),
+        getEmptyStateImage()
       ];
     }
 
@@ -146,7 +157,10 @@ class AvailableMatchesList extends StatelessWidget {
         state.getMatchesInFuture().where((e) => !e.wasCancelled()).toList();
 
     if (matches.isEmpty) {
-      return [TextSeparatorWidget("No upcoming games to display.")];
+      return [
+        TextSeparatorWidget("No upcoming games to display."),
+        getEmptyStateImage()
+      ];
     }
 
     var grouped = matches.groupListsBy((m) => m.dateTime.weekOfYear);

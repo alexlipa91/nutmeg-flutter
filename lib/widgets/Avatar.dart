@@ -17,7 +17,7 @@ class UserAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     var ud = userDetails ?? context.watch<UserState>().getUserDetails();
 
-    var photoUrl = ud.getPhotoUrl();
+    var photoUrl = (ud == null) ? null : ud.getPhotoUrl();
 
     var backgroundColor = (ud.image == null) ? Palette.primary : null;
     var backgroundImage = (photoUrl == null) ? null : NetworkImage(photoUrl);
