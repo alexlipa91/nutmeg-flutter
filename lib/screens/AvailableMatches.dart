@@ -32,7 +32,7 @@ class AvailableMatchesList extends StatelessWidget {
 
   static Image getEmptyStateImage() {
     var images = ["illustration_01.png", "illustration_02.png", "illustration_03.png"];
-    return Image.asset("assets/empty_state/" + (images..shuffle()).first);
+    return Image.asset("assets/empty_state/" + (images..shuffle())  .first);
   }
 
   @override
@@ -89,7 +89,6 @@ class AvailableMatchesList extends StatelessWidget {
           },
           child: CustomScrollView(
             slivers: [
-              // MainAppBar(),
               SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (BuildContext context, int index) {
@@ -261,7 +260,7 @@ class MatchInfo extends StatelessWidget {
 
     return InkWell(
         child: Padding(
-          padding: EdgeInsets.only(top: topMargin),
+          padding: EdgeInsets.only(top: topMargin, left: 16, right: 16),
           child: InfoContainer(
               child: IntrinsicHeight(
             child: Row(

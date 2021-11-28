@@ -127,6 +127,15 @@ class LaunchWidgetState extends State<LaunchWidget> {
       await UserController.saveUserTokensToDb();
     }
 
+    FirebaseMessaging.instance.requestPermission(
+      alert: true,
+      announcement: false,
+      badge: true,
+      carPlay: false,
+      criticalAlert: false,
+      provisional: false,
+      sound: true,
+    );
     FirebaseMessaging.instance.subscribeToTopic("nutmeg-generic");
 
     await MatchesController.refreshAll(context.read<MatchesState>());

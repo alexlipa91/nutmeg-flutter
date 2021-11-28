@@ -19,7 +19,7 @@ class UserAvatar extends StatelessWidget {
 
     var photoUrl = (ud == null) ? null : ud.getPhotoUrl();
 
-    var backgroundColor = (ud.image == null) ? Palette.primary : null;
+    var backgroundColor = (photoUrl == null) ? Palette.primary : null;
     var backgroundImage = (photoUrl == null) ? null : NetworkImage(photoUrl);
     var child = (photoUrl == null)
         ? Center(
