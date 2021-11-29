@@ -19,8 +19,10 @@ jobs:
           FASTLANE_PASSWORD: ${{ secrets.FASTLANE_PASSWORD }}
           APPCONNECT_KEY: ${{ secrets.APPCONNECT_KEY }}
 
-#      - run: flutter build appbundle -t lib/screens/Launch.dart --release
 #      - run: flutter build ios -t lib/screens/Launch.dart
+
+      - run: flutter build appbundle -t lib/screens/Launch.dart --release
+        if: ${{ startsWith(github.event.head_commit.message, 'PLAYSTORE_') }}
 
       - name: Deploy to playstore production
         uses: maierj/fastlane-action@v1.4.0
