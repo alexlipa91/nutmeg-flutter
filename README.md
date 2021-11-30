@@ -6,7 +6,7 @@ A new Flutter project.
 
 Run
 
-`cd ios && fastalane release`
+`cd ios && fastlane release`
 
 Since the IPA build is not managed by flutter in fastlane the version doesn't get updated properly. For now the way to bump version is to
 
