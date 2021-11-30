@@ -1,54 +1,87 @@
-# This file contains the fastlane.tools configuration
-# You can find the documentation at https://docs.fastlane.tools
-#
-# For a list of all available actions, check out
-#
-#     https://docs.fastlane.tools/actions
-#
-# For a list of all available plugins, check out
-#
-#     https://docs.fastlane.tools/plugins/available-plugins
-#
-
-# Uncomment the line if you want fastlane to automatically update itself
-# update_fastlane
-
 default_platform(:ios)
 
-platform :ios do
-  desc "Push a new release build to TestFlight"
-  lane :testflight do
-    app_store_connect_api_key(
-        key_id: "CTJDHGWL48",
-        issuer_id: "549abdc6-6a6f-40f5-b041-c46daa9d6c91",
-        key_filepath: "./AuthKey_CTJDHGWL48.p8"
-    )
-    create_keychain(
-      name: "KeychainName",
-      default_keychain: true,
-      unlock: true,
-      timeout: 3600,
-      lock_when_sleeps: true,
-      password: "a"
-    )
-    get_certificates(
-        api_key_path: "./api_key_json_file.json"
-    )
-    get_provisioning_profile
-    build_app(workspace: "Runner.xcworkspace", scheme: "Runner")
-    upload_to_testflight
-  end
+DEVELOPER_APP_ID = ENV["DEVELOPER_APP_ID"]
+DEVELOPER_APP_IDENTIFIER = ENV["DEVELOPER_APP_IDENTIFIER"]
+PROVISIONING_PROFILE_SPECIFIER = ENV["PROVISIONING_PROFILE_SPECIFIER"]
+TEMP_KEYCHAIN_USER = ENV["TEMP_KEYCHAIN_USER"]
+TEMP_KEYCHAIN_PASSWORD = ENV["TEMP_KEYCHAIN_PASSWORD"]
+APPLE_ISSUER_ID = ENV["APPLE_ISSUER_ID"]
+APPLE_KEY_ID = ENV["APPLE_KEY_ID"]
+APPLE_KEY_CONTENT = ENV["APPLE_KEY_CONTENT"]
+GIT_AUTHORIZATION = ENV["GIT_AUTHORIZATION"]
 
-  desc "Push a new release build to the App Store"
-  lane :release do
-    app_store_connect_api_key(
-      key_id: "CTJDHGWL48",
-      issuer_id: "549abdc6-6a6f-40f5-b041-c46daa9d6c91",
-      key_filepath: "./AuthKey_CTJDHGWL48.p8"
+def delete_temp_keychain(name)
+  delete_keychain(
+    name: name
+  ) if File.exist? File.expand_path("~/Library/Keychains/#{name}-db")
+end
+
+def create_temp_keychain(name, password)
+  create_keychain(
+    name: name,
+    password: password,
+    unlock: false,
+    timeout: 0
+  )
+end
+
+def ensure_temp_keychain(name, password)
+  delete_temp_keychain(name)
+  create_temp_keychain(name, password)
+end
+
+platform :ios do
+  lane :closed_beta do
+    keychain_name = TEMP_KEYCHAIN_USER
+    keychain_password = TEMP_KEYCHAIN_PASSWORD
+    ensure_temp_keychain(keychain_name, keychain_password)
+
+    api_key = app_store_connect_api_key(
+      key_id: APPLE_KEY_ID,
+      issuer_id: APPLE_ISSUER_ID,
+      key_content: APPLE_KEY_CONTENT,            
+      duration: 1200,            
+      in_house: false
     )
-    get_certificates
-    get_provisioning_profile
-    build_app(workspace: "Runner.xcworkspace", scheme: "Runner")
-    upload_to_app_store
+    
+    increment_build_number(xcodeproj: "Runner.xcodeproj")
+    
+    cocoapods(
+      clean_install: true
+    )
+
+    match(
+      type: 'appstore',
+      app_identifier: "#{DEVELOPER_APP_IDENTIFIER}",
+      git_basic_authorization: Base64.strict_encode64(GIT_AUTHORIZATION),
+      readonly: true,
+      keychain_name: keychain_name,
+      keychain_password: keychain_password,
+      api_key: api_key
+    )
+
+    gym(
+      configuration: "Release",
+      workspace: "Runner.xcworkspace",
+      scheme: "Runner",
+      export_method: "app-store",
+      export_options: {
+        provisioningProfiles: { 
+            DEVELOPER_APP_ID => PROVISIONING_PROFILE_SPECIFIER
+        }
+      }
+    )
+
+    pilot(
+      apple_id: "#{DEVELOPER_APP_ID}",
+      app_identifier: "#{DEVELOPER_APP_IDENTIFIER}",
+      skip_waiting_for_build_processing: true,
+      skip_submission: true,
+      distribute_external: false,
+      notify_external_testers: false,
+      ipa: "./Runner.ipa"
+    )
+
+    delete_temp_keychain(keychain_name)
   end
 end
