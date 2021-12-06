@@ -12,6 +12,7 @@ import 'package:nutmeg/widgets/Buttons.dart';
 import 'package:nutmeg/widgets/Containers.dart';
 import 'package:nutmeg/widgets/Texts.dart';
 import 'package:provider/provider.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:week_of_year/week_of_year.dart';
 import "package:collection/collection.dart";
@@ -30,9 +31,18 @@ class AvailableMatches extends StatelessWidget {
 
 class AvailableMatchesList extends StatelessWidget {
 
-  static Image getEmptyStateImage() {
+  RefreshController _refreshController = RefreshController(initialRefresh: false);
+
+  static List<Widget> getEmptyStateWidgets() {
+    var widgets = List<Widget>.from([]);
+    
     var images = ["illustration_01.png", "illustration_02.png", "illustration_03.png"];
-    return Image.asset("assets/empty_state/" + (images..shuffle())  .first);
+    var emptyStateImage = Image.asset("assets/empty_state/" + (images..shuffle())  .first);
+
+    widgets.add(Center(child: emptyStateImage));
+    widgets.add(Text("No matches so far", style: TextPalette.h1Default, textAlign: TextAlign.center));
+
+    return widgets;
   }
 
   @override
@@ -46,22 +56,24 @@ class AvailableMatchesList extends StatelessWidget {
     var isLoggedIn = userState.isLoggedIn();
 
     var widgets = List<Widget>.of([
-      MainAppBar(),
+      // MainAppBar(),
       RoundedTopBar(uiState: uiState)
     ]);
 
     if (!context.watch<AvailableMatchesUiState>().loading) {
       if (optionSelected == "MY GAMES" && !isLoggedIn) {
-        widgets.add(Center(
-            child: Padding(
-                padding: EdgeInsets.only(top: 20),
-                child: Text("LOGIN TO JOIN MATCHES", style: TextPalette.h4)),
-          ));
-        widgets.add(Center(
-          child: Padding(
-              padding: EdgeInsets.only(top: 20),
-              child: getEmptyStateImage()),
-        ));
+        widgets.addAll(getEmptyStateWidgets());
+        
+        // widgets.add(Center(
+        //     child: Padding(
+        //         padding: EdgeInsets.only(top: 20),
+        //         child: Text("LOGIN TO JOIN MATCHES", style: TextPalette.h4)),
+        //   ));
+        // widgets.add(Center(
+        //   child: Padding(
+        //       padding: EdgeInsets.only(top: 20),
+        //       child: getEmptyStateImage()),
+        // ));
       } else {
         widgets.addAll((optionSelected == "ALL")
             ? allGamesWidgets(matchesState)
@@ -73,12 +85,16 @@ class AvailableMatchesList extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Palette.white,
-      // appBar: MainAppBar(),
+      appBar: MainAppBar(),
       body: MultiProvider(
         providers: [
           ChangeNotifierProvider(create: (context) => AvailableMatchesUiState()),
         ],
-        child: RefreshIndicator(
+        child: SmartRefresher(
+          enablePullDown: true,
+          enablePullUp: false,
+          header: MaterialClassicHeader(),
+          controller: _refreshController,
           onRefresh: () async {
             context.read<AvailableMatchesUiState>().startLoading();
 
@@ -86,18 +102,11 @@ class AvailableMatchesList extends StatelessWidget {
             await MatchesController.refreshImages(matchesState);
 
             context.read<AvailableMatchesUiState>().loadingDone();
+            _refreshController.refreshCompleted();
           },
-          child: CustomScrollView(
-            slivers: [
-              SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (BuildContext context, int index) {
-                    return widgets[index];
-                  },
-                  childCount: widgets.length,
-                ),
-              )
-            ],
+          child: ListView.builder(
+            itemBuilder: (c, i) => widgets[i],
+            itemCount: widgets.length,
           ),
         ),
       ),
@@ -112,10 +121,7 @@ class AvailableMatchesList extends StatelessWidget {
     });
 
     if (matches.isEmpty) {
-      return [
-        TextSeparatorWidget("No games to display. Book your first game today."),
-        getEmptyStateImage()
-      ];
+      return getEmptyStateWidgets();
     }
 
     var now = DateTime.now();
@@ -156,10 +162,7 @@ class AvailableMatchesList extends StatelessWidget {
         state.getMatchesInFuture().where((e) => !e.wasCancelled()).toList();
 
     if (matches.isEmpty) {
-      return [
-        TextSeparatorWidget("No upcoming games to display."),
-        getEmptyStateImage()
-      ];
+      return getEmptyStateWidgets();
     }
 
     var grouped = matches.groupListsBy((m) => m.dateTime.weekOfYear);
@@ -357,7 +360,7 @@ class MatchInfoSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(top: 30),
+      padding: EdgeInsets.only(top: 30, left: 16, right: 16),
       child: InfoContainer(
           child: IntrinsicHeight(
         child: Row(
