@@ -31,7 +31,7 @@ class NutmegAppBar extends StatelessWidget with PreferredSizeWidget {
   }
 
   @override
-  Size get preferredSize => Size.fromHeight(70.0);
+  Size get preferredSize => Size.fromHeight(50.0);
 }
 
 class MainAppBar extends NutmegAppBar {
