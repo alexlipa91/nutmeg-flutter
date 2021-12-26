@@ -51,7 +51,9 @@ class UserAvatarWithRedirect extends StatelessWidget {
           await UserController.refresh(context.read<UserState>());
           Navigator.push(
               context, MaterialPageRoute(builder: (context) => new UserPage()));
-        });
+        },
+      customBorder: CircleBorder(),
+    );
   }
 }
 
