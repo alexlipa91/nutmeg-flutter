@@ -33,11 +33,10 @@ class AvailableMatchesList extends StatelessWidget {
 
   RefreshController _refreshController = RefreshController(initialRefresh: false);
 
-  static List<Widget> getEmptyStateWidgets() {
+  static List<Widget> getEmptyStateWidgets(AvailableMatchesUiState uiState) {
     var widgets = List<Widget>.from([]);
-    
-    var images = ["illustration_01.png", "illustration_02.png", "illustration_03.png"];
-    var emptyStateImage = Image.asset("assets/empty_state/" + (images..shuffle())  .first);
+
+    var emptyStateImage = Image.asset("assets/empty_state/" + uiState.getNextEmptyStateImage());
 
     widgets.add(Center(child: emptyStateImage));
     widgets.add(Text("No matches so far", style: TextPalette.h1Default, textAlign: TextAlign.center));
@@ -56,14 +55,15 @@ class AvailableMatchesList extends StatelessWidget {
     var isLoggedIn = userState.isLoggedIn();
 
     var widgets = List<Widget>.of([
-      // MainAppBar(),
+      // if app bar is in Scaffold will have the problem of the white pixel between Scaffold appBar and body
+      Align(child: MainAppBar(), heightFactor: 0.99,),
       RoundedTopBar(uiState: uiState)
     ]);
 
     if (!context.watch<AvailableMatchesUiState>().loading) {
       if (optionSelected == "MY GAMES" && !isLoggedIn) {
-        widgets.addAll(getEmptyStateWidgets());
-        
+        widgets.addAll(getEmptyStateWidgets(uiState));
+
         // widgets.add(Center(
         //     child: Padding(
         //         padding: EdgeInsets.only(top: 20),
@@ -76,44 +76,51 @@ class AvailableMatchesList extends StatelessWidget {
         // ));
       } else {
         widgets.addAll((optionSelected == "ALL")
-            ? allGamesWidgets(matchesState)
-            : myGamesWidgets(matchesState, userState));
+            ? allGamesWidgets(matchesState, uiState)
+            : myGamesWidgets(matchesState, userState, uiState));
       }
     } else {
       widgets.addAll(List<Widget>.filled(5, MatchInfoSkeleton()));
     }
 
-    return Scaffold(
-      backgroundColor: Palette.white,
-      appBar: MainAppBar(),
-      body: MultiProvider(
-        providers: [
-          ChangeNotifierProvider(create: (context) => AvailableMatchesUiState()),
-        ],
-        child: SmartRefresher(
-          enablePullDown: true,
-          enablePullUp: false,
-          header: MaterialClassicHeader(),
-          controller: _refreshController,
-          onRefresh: () async {
-            context.read<AvailableMatchesUiState>().startLoading();
+    return Container(
+      color: Palette.primary,
+      child: SafeArea(
+        bottom: false,
+        child: Scaffold(
+          backgroundColor: Palette.white,
+          // appBar: MainAppBar(),
+          body: MultiProvider(
+            providers: [
+              ChangeNotifierProvider(create: (context) => AvailableMatchesUiState()),
+            ],
+            child: SmartRefresher(
+              enablePullDown: true,
+              enablePullUp: false,
+              header: MaterialClassicHeader(),
+              controller: _refreshController,
+              onRefresh: () async {
+                context.read<AvailableMatchesUiState>().startLoading();
 
-            await MatchesController.refreshAll(matchesState);
-            await MatchesController.refreshImages(matchesState);
+                await MatchesController.refreshAll(matchesState);
+                await MatchesController.refreshImages(matchesState);
 
-            context.read<AvailableMatchesUiState>().loadingDone();
-            _refreshController.refreshCompleted();
-          },
-          child: ListView.builder(
-            itemBuilder: (c, i) => widgets[i],
-            itemCount: widgets.length,
+                context.read<AvailableMatchesUiState>().loadingDone();
+                _refreshController.refreshCompleted();
+              },
+              child: ListView.builder(
+                itemBuilder: (c, i) => widgets[i],
+                itemCount: widgets.length,
+              ),
+            ),
           ),
         ),
       ),
     );
   }
 
-  List<Widget> myGamesWidgets(MatchesState state, UserState userState) {
+  List<Widget> myGamesWidgets(MatchesState state, UserState userState,
+      AvailableMatchesUiState uiState) {
     var matches = state.getMatches().where((m) {
       var userSubInMatch = m.getUserSub(userState.getUserDetails());
       return userSubInMatch != null &&
@@ -121,7 +128,7 @@ class AvailableMatchesList extends StatelessWidget {
     });
 
     if (matches.isEmpty) {
-      return getEmptyStateWidgets();
+      return getEmptyStateWidgets(uiState);
     }
 
     var now = DateTime.now();
@@ -157,12 +164,12 @@ class AvailableMatchesList extends StatelessWidget {
     return widgets;
   }
 
-  List<Widget> allGamesWidgets(MatchesState state) {
+  List<Widget> allGamesWidgets(MatchesState state, AvailableMatchesUiState uiState) {
     var matches =
         state.getMatchesInFuture().where((e) => !e.wasCancelled()).toList();
 
     if (matches.isEmpty) {
-      return getEmptyStateWidgets();
+      return getEmptyStateWidgets(uiState);
     }
 
     var grouped = matches.groupListsBy((m) => m.dateTime.weekOfYear);
@@ -512,12 +519,15 @@ class AvailableMatchesUiState extends ChangeNotifier {
   bool loading = false;
   String selected = "ALL";
 
+  List<String> emptyStateImages = ["illustration_01.png",
+    "illustration_02.png", "illustration_03.png"];
+  String lastEmptyStateImageShown;
+
   void changeToAll() => _change("ALL");
 
   void changeToMyGames() => _change("MY GAMES");
 
   void _change(String newSelection) {
-    print("changing");
     selected = newSelection;
     notifyListeners();
   }
@@ -533,4 +543,16 @@ class AvailableMatchesUiState extends ChangeNotifier {
   }
 
   String getCurrentSelection() => selected;
+
+  String getNextEmptyStateImage() {
+    while (emptyStateImages.first == lastEmptyStateImageShown) {
+      emptyStateImages.shuffle();
+    }
+
+    lastEmptyStateImageShown = emptyStateImages.first;
+    return lastEmptyStateImageShown;
+  }
+
+  static getEmptyStateImages() => ["illustration_01.png",
+    "illustration_02.png", "illustration_03.png"];
 }
