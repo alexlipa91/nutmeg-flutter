@@ -481,7 +481,7 @@ class MatchInfoPast extends StatelessWidget {
           await Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (context) => MatchDetails(match.documentId)));
+                  builder: (context) => MatchDetails.past(match.documentId)));
           await MatchesController.refresh(matchesState, match.documentId);
         });
   }

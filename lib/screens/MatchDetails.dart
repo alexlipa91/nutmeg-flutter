@@ -25,8 +25,13 @@ var formatCurrency = NumberFormat.simpleCurrency(name: "EUR");
 
 class MatchDetails extends StatelessWidget {
   final String matchId;
+  final bool isPast;
 
-  MatchDetails(this.matchId);
+  MatchDetails(this.matchId):
+        isPast = false;
+
+  MatchDetails.past(this.matchId):
+        isPast = true;
 
   @override
   Widget build(BuildContext context) {
@@ -107,7 +112,7 @@ class MatchDetails extends StatelessWidget {
               )
             ],
           )),
-      bottomNavigationBar: BottomBar(match: match),
+      bottomNavigationBar: (isPast) ? null : BottomBar(match: match)
     );
   }
 }
