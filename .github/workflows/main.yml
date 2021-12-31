@@ -19,8 +19,6 @@ jobs:
           FASTLANE_PASSWORD: ${{ secrets.FASTLANE_PASSWORD }}
           APPCONNECT_KEY: ${{ secrets.APPCONNECT_KEY }}
 
-#      - run: flutter build ios -t lib/screens/Launch.dart
-
       - run: flutter build appbundle -t lib/screens/Launch.dart --release
         if: ${{ startsWith(github.event.head_commit.message, 'PLAYSTORE_') }}
 
@@ -31,19 +29,16 @@ jobs:
           lane: playstoreProd
           subdirectory: android
 
-      - name: Deploy to playstore alpha
-        uses: maierj/fastlane-action@v1.4.0
-        if: ${{ startsWith(github.event.head_commit.message, 'PLAYSTORE_ALPHA') }}
-        with:
-          lane: playstoreAlpha
-          subdirectory: android
+#      - name: Deploy to playstore alpha
+#        uses: maierj/fastlane-action@v1.4.0
+#        if: ${{ startsWith(github.event.head_commit.message, 'PLAYSTORE_ALPHA') }}
+#        with:
+#          lane: playstoreAlpha
+#          subdirectory: android
 
       - name: Deploy to iOS Testflight
         uses: maierj/fastlane-action@v1.4.0
         if: ${{ startsWith(github.event.head_commit.message, 'APPSTORE_TESTFLIGHT') }}
         with:
-          lane: testflight
+          lane: closed_beta
           subdirectory: ios
-        env:
-          FASTLANE_PASSWORD: ${{ secrets.FASTLANE_PASSWORD }}
-          APPCONNECT_KEY: ${{ secrets.APPCONNECT_KEY }}
