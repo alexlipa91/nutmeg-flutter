@@ -37,7 +37,7 @@ jobs:
 #          subdirectory: android
 
       - name: Deploy to iOS Testflight
-        uses: maierj/fastlane-action@v1.4.0
+        uses: maierj/fastlane-action@v2.0.1
         if: ${{ startsWith(github.event.head_commit.message, 'APPSTORE_TESTFLIGHT') }}
         with:
           lane: closed_beta
