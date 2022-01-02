@@ -42,3 +42,4 @@ jobs:
         with:
           lane: closed_beta
           subdirectory: ios
+          verbose: true
