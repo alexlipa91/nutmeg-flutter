@@ -348,9 +348,24 @@ class PaymentConfirmationButton extends AbstractButtonWithLoader {
 
     var userDetails = context.read<UserState>().getUserDetails();
 
-    var customerId = await Server().createCustomer(userDetails.name, userDetails.email);
-    var sessionId = await Server().createCheckout(customerId,
-        paymentRecap.matchPriceInCents - paymentRecap.creditsInCentsUsed);
+    var customerId;
+    var sessionId;
+    try {
+      customerId = await Server().createCustomer(
+          userDetails.name, userDetails.email);
+      sessionId = await Server().createCheckout(customerId,
+          paymentRecap.matchPriceInCents - paymentRecap.creditsInCentsUsed);
+    } catch (e) {
+      print(e);
+      Navigator.pop(context, true);
+
+      GenericInfoModal(
+          title: "Problems with payments API",
+          body: "Please contact us for support")
+          .show(context);
+
+      return;
+    }
 
     Status status = await Navigator.push(
         context,
@@ -421,7 +436,7 @@ onJoinGameAction(BuildContext context, Match match) async {
   }
 
   GenericInfoModal.withBottom(
-      title: "Jon this game",
+      title: "Join this game",
       body:
       "You can cancel up to 24h before the game starting time to get a full refund in credits to use on your next game.\nIf you cancel after this time you won't get a refund.",
       bottomWidget: Column(

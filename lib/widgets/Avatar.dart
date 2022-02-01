@@ -21,9 +21,12 @@ class UserAvatar extends StatelessWidget {
 
     var backgroundColor = (photoUrl == null) ? Palette.primary : null;
     var backgroundImage = (photoUrl == null) ? null : NetworkImage(photoUrl);
+
+    var displayName = ((ud == null) ? "P" : (ud.name ?? ud.email ?? "P")).toUpperCase();
+
     var child = (photoUrl == null)
         ? Center(
-            child: Text((ud.name ?? ud.email ?? "P")[0].toUpperCase(),
+            child: Text(displayName,
                 style: GoogleFonts.roboto(
                     color: Palette.white,
                     fontSize: 24,
