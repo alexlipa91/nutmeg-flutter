@@ -1,8 +1,10 @@
 name: Appstore Deployment
+
 #on:
 #  push:
 #    tags:
 #      - master
+on: push
 
 jobs:
   deploy_ios:
