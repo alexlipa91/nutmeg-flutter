@@ -25,5 +25,5 @@ jobs:
       - name: Deploy to Playstore production
         uses: maierj/fastlane-action@v1.4.0
         with:
-          lane: closed_beta
+          lane: playstoreProd
           subdirectory: android
