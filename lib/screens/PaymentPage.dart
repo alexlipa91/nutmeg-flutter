@@ -1,18 +1,20 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/Buttons.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:nutmeg/model/Model.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 
+var useStripeTest = false;
 
-var apiKey =
-    "pk_live_51HyCDAGRb87bTNwHHFjJ2aRfC6SlNbAaaxOrdaPZ136H3gVdP3BYP9xW4rS0CZnImV5MrlqZWjjJ18smw7zJBhQH00mZP1Fqtm";
+var apiKey = (useStripeTest) ?
+  "pk_test_51HyCDAGRb87bTNwH1dlHJXwdDSIUhxqPZS3zeytnO7T9dHBxzhwiWO5E0kFYLkVdZbZ2t0LEHxjuPmKFZ32fiMjO00dWLo1DqE" :
+"pk_live_51HyCDAGRb87bTNwHHFjJ2aRfC6SlNbAaaxOrdaPZ136H3gVdP3BYP9xW4rS0CZnImV5MrlqZWjjJ18smw7zJBhQH00mZP1Fqtm";
+
 
 enum Status {
   success,
@@ -47,6 +49,13 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
   _CheckoutPageState(this.recap, this.match);
 
+  _launchURL(String url) async {
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Could not launch $url';
+    }}
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -66,7 +75,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
           }
         },
         navigationDelegate: (NavigationRequest request) async {
-          print(request.url);
+          print("requesting " + request.url);
           if (request.url.startsWith('https://example.com/succes')) {
              var status;
              try {
@@ -83,7 +92,11 @@ class _CheckoutPageState extends State<CheckoutPage> {
           } else if (request.url.startsWith('https://example.com/cancel')) {
             Navigator.pop(context, Status.paymentCanceled); // <-- Handle cancel case
           }
-          return NavigationDecision.navigate;
+          if (request.url.startsWith("https") || request.url.startsWith("http")) {
+            return NavigationDecision.navigate;
+          }
+          _launchURL(request.url);
+          return NavigationDecision.prevent;
         },
       ),
     );
@@ -121,7 +134,7 @@ class Server {
         FirebaseFunctions.instanceFor(region: "europe-central2")
             .httpsCallable('create-stripe-session');
     final results = await callable(
-        {'customer_id': customerId, 'amount_in_cents': amountInCents});
+        {'customer_id': customerId, 'amount_in_cents': amountInCents, 'test_mode': useStripeTest});
     return results.data["session_id"];
   }
 
@@ -129,7 +142,7 @@ class Server {
     HttpsCallable callable =
         FirebaseFunctions.instanceFor(region: "europe-central2")
             .httpsCallable('create-stripe-customer');
-    final results = await callable({'name': name, 'email': email});
+    final results = await callable({'name': name, 'email': email, 'test_mode': useStripeTest});
     return results.data["customer_id"];
   }
 }
