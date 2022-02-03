@@ -1,5 +1,5 @@
 on: push
-name: cleans, build and test app (mobile - android)
+name: compile
 jobs:
   build:
     name: build-and-test
