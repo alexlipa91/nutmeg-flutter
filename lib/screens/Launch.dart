@@ -168,8 +168,7 @@ class LaunchWidgetState extends State<LaunchWidget> {
     var getVersionFuture = () async {
       PackageInfo packageInfo = await PackageInfo.fromPlatform();
       String version = packageInfo.version;
-      String code = packageInfo.buildNumber;
-      return version + " " + code;
+      return version;
     };
 
     return Scaffold(

@@ -360,7 +360,7 @@ class PaymentConfirmationButton extends AbstractButtonWithLoader {
       Navigator.pop(context, true);
 
       GenericInfoModal(
-          title: "Problems with payments API",
+          title: "Problems with the Payments",
           body: "Please contact us for support")
           .show(context);
 
