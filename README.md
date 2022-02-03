@@ -1,15 +1,16 @@
 # Nutmeg
 
-A new Flutter project.
+## Rollout
 
-## Releasing iOS
+Versioning is managed in `pubspec.yaml`
 
-Run
+Run `python bump_and_tag.py` to
+- increase the patch version and the build number (e.g. `1.0.10+10` will become `1.0.11+11`)
+- tag the code
 
-`cd ios && fastlane release`
+Afterwards push tags `git push --follow-tags`
 
-Since the IPA build is not managed by flutter in fastlane the version doesn't get updated properly. For now the way to bump version is to
+Github Workflows will deploy in internal tests for Playstore and TestFlight for Appstore.
 
-- change it in `pubspec.yaml`
-- change it in `ios/fastlane/Deliverfile`
-- change it in `ios/Flutter/Generated.xconfig`
+Once you are satisfied with test versions, manually log in in the Playstore or Appstore developer portal and 
+promote the build to production
