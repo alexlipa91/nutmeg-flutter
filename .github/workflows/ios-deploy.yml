@@ -1,0 +1,40 @@
+name: Appstore Deployment
+
+on:
+  push:
+    tags:
+      - v*
+
+jobs:
+  deploy_ios:
+    name: Deploy build to TestFlight
+    runs-on: macOS-latest
+    steps:
+      - name: Checkout code from ref
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.ref }}
+      - name: Run Flutter tasks
+        uses: subosito/flutter-action@v1
+        with:
+          flutter-version: '2.8.0'
+      - run: flutter clean
+      - run: flutter pub get
+      - run: flutter build ios --release --no-codesign -t lib/screens/Launch.dart
+      - name: Deploy iOS Beta to TestFlight via Fastlane
+        uses: maierj/fastlane-action@v1.4.0
+        with:
+          lane: closed_beta
+          subdirectory: ios
+        env:
+          ITC_TEAM_ID: "123691355"
+          APPLICATON_ID: "1592985083"
+          BUNDLE_IDENTIFIER: "com.nutmeg.app"
+          DEVELOPER_PORTAL_TEAM_ID: "CN7XB83K76"
+          FASTLANE_APPLE_ID: "alessandroliparoti@live.it"
+          FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD: "odnv-ruvg-mzoo-enld"
+          MATCH_PASSWORD: "nutmeg"
+          GIT_AUTHORIZATION: "alexlipa91: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"
+          PROVISIONING_PROFILE_SPECIFIER: "match AppStore com.nutmeg.app"
+          TEMP_KEYCHAIN_PASSWORD: "tmp_keychain_pass"
+          TEMP_KEYCHAIN_USER: "tmp_keychain_user"

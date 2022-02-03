@@ -104,8 +104,7 @@ stripe.redirectToCheckout({
         redirectToCheckoutJs); //<--- call the JS function on controller
   }
 
-  String get initialUrl =>
-      'data:text/html;base64,${base64Encode(Utf8Encoder().convert(kStripeHtmlPage))}';
+  String get initialUrl => 'https://nutmegapp.com/internal/checkout_page_start.html';
 }
 
 const kStripeHtmlPage = '''
