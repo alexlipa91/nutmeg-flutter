@@ -370,7 +370,9 @@ class PaymentConfirmationButton extends AbstractButtonWithLoader {
     Status status = await Navigator.push(
         context,
         MaterialPageRoute(
-            builder: (context) => CheckoutPage(sessionId, paymentRecap, match)));
+            builder: (context) =>
+                CheckoutPage(sessionId, paymentRecap, match))
+    );
 
     switch (status) {
       case Status.success:
