@@ -9,6 +9,7 @@ import 'package:nutmeg/controller/SportCentersController.dart';
 import 'package:nutmeg/controller/SportsController.dart';
 import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
+import 'package:nutmeg/model/Model.dart';
 import 'package:nutmeg/screens/MatchDetails.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
@@ -18,6 +19,8 @@ import 'package:provider/provider.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/foundation.dart';
+
+import 'MatchDetailsModals.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
@@ -70,7 +73,35 @@ class LaunchWidgetState extends State<LaunchWidget> {
   }
 
   Future<void> handleLink(Uri deepLink) async {
-    if (deepLink.queryParameters.containsKey("id")) {
+    print("handling dynamic link " + deepLink.toString());
+    if (deepLink.path == "/payment") {
+      var outcome = deepLink.queryParameters["outcome"];
+      var matchId = deepLink.queryParameters["match_id"];
+      var credits = int.parse(deepLink.queryParameters["credits"]);
+      var amount = int.parse(deepLink.queryParameters["amount"]);
+
+      var context = navigatorKey.currentContext;
+
+      if (outcome == "success") {
+        await MatchesController.joinMatch(context.read<MatchesState>(),
+            matchId, context.read<UserState>(), PaymentRecap(amount, credits));
+
+        Navigator.pop(context);
+
+        await communicateSuccessToUser(context,
+            deepLink.queryParameters["match_id"]);
+      } else {
+        Navigator.pop(context);
+
+        await GenericInfoModal(
+            title: "Payment Failed!",
+            body: "Please try again or contact us for support")
+            .show(context);
+      }
+
+      return;
+    }
+    if (deepLink.path == "/match") {
       print("handling link ");
 
       // todo check if propagates updates
@@ -82,6 +113,7 @@ class LaunchWidgetState extends State<LaunchWidget> {
           navigatorKey.currentContext,
           MaterialPageRoute(
               builder: (context) => MatchDetails(match.documentId)));
+      return;
     }
   }
 

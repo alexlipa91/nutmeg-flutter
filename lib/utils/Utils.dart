@@ -47,15 +47,19 @@ class DynamicLinks {
         minimumVersion: 0,
       ),
       iosParameters: IosParameters(
-        bundleId: 'your_ios_bundle_identifier',
+        bundleId: 'com.nutmeg.app',
         minimumVersion: '1',
-        appStoreId: 'your_app_store_id',
+        appStoreId: '1592985083',
       ),
     );
+    var long = await parameters.buildUrl();
     var url = await parameters.buildShortLink();
 
+    print(long);
     print(url.shortUrl);
     // fixme this doesn't wait
     await Share.share("Wanna join this match on Nutmeg?\n" + url.shortUrl.toString());
   }
 }
+
+var isTestPaymentMode = false;

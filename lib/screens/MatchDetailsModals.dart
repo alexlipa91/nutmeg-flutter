@@ -1,5 +1,6 @@
 import 'package:cool_alert/cool_alert.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/controller/PaymentController.dart';
 import 'package:nutmeg/controller/UserController.dart';
@@ -14,8 +15,8 @@ import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/Buttons.dart';
 import 'package:nutmeg/widgets/Containers.dart';
 import 'package:provider/provider.dart';
-import 'package:intl/intl.dart';
 import 'package:rounded_loading_button/rounded_loading_button.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'Login.dart';
 
@@ -62,72 +63,78 @@ class BottomBar extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         InfoContainer(
-            child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                    (isGoing)
-                        ? "You are going!"
-                        : (match.getSpotsLeft() == 0) ? "Match Full"
-                        : match.getSpotsLeft().toString() + " spots left",
-                    style: TextPalette.h2),
-                SizedBox(height: 20),
-                Text(
-                    (isGoing)
-                        ? match.numPlayersGoing().toString() + " going"
-                        : (match.getSpotsLeft() == 0) ? "Find another game"
-                        : formatCurrency.format(match.pricePerPersonInCents / 100),
-                    style: TextPalette.bodyText),
-              ],
-            ),
-            (isGoing)
-                ? RoundedButtonLight("LEAVE GAME", () async {
-                    var hoursToGame =
-                        match.dateTime.difference(DateTime.now()).inHours;
+            child: Padding(
+          padding: EdgeInsets.only(bottom: 20),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                      (isGoing)
+                          ? "You are going!"
+                          : (match.getSpotsLeft() == 0)
+                              ? "Match Full"
+                              : match.getSpotsLeft().toString() + " spots left",
+                      style: TextPalette.h2),
+                  SizedBox(height: 20),
+                  Text(
+                      (isGoing)
+                          ? match.numPlayersGoing().toString() + " going"
+                          : (match.getSpotsLeft() == 0)
+                              ? "Find another game"
+                              : formatCurrency
+                                  .format(match.pricePerPersonInCents / 100),
+                      style: TextPalette.bodyText),
+                ],
+              ),
+              (isGoing)
+                  ? RoundedButtonLight("LEAVE GAME", () async {
+                      var hoursToGame =
+                          match.dateTime.difference(DateTime.now()).inHours;
 
-                    await GenericInfoModal.withBottom(
-                        title: "Leaving this game?",
-                        body: "You joined this game: " +
-                            getFormattedDate(userSub.createdAt.toDate()) +
-                            ".\n" +
-                            ((hoursToGame < 24)
-                                ? "You will not receive a refund since the game is in less than 24 hours."
-                                : "We will refund you in credits that you can use in your next games."),
-                        bottomWidget: Column(children: [
-                          Divider(),
-                          Padding(
-                            padding: EdgeInsets.symmetric(vertical: 10.0),
-                            child: Row(
-                              children: [
-                                Text("Credits refund", style: TextPalette.h3),
-                                Expanded(
-                                    child: Text(
-                                  formatCurrency.format(
-                                          match.pricePerPersonInCents / 100) +
-                                      " euro",
-                                  style: TextPalette.h3,
-                                  textAlign: TextAlign.end,
-                                ))
-                              ],
+                      await GenericInfoModal.withBottom(
+                          title: "Leaving this game?",
+                          body: "You joined this game: " +
+                              getFormattedDate(userSub.createdAt.toDate()) +
+                              ".\n" +
+                              ((hoursToGame < 24)
+                                  ? "You will not receive a refund since the game is in less than 24 hours."
+                                  : "We will refund you in credits that you can use in your next games."),
+                          bottomWidget: Column(children: [
+                            Divider(),
+                            Padding(
+                              padding: EdgeInsets.symmetric(vertical: 10.0),
+                              child: Row(
+                                children: [
+                                  Text("Credits refund", style: TextPalette.h3),
+                                  Expanded(
+                                      child: Text(
+                                    formatCurrency.format(
+                                            match.pricePerPersonInCents / 100) +
+                                        " euro",
+                                    style: TextPalette.h3,
+                                    textAlign: TextAlign.end,
+                                  ))
+                                ],
+                              ),
                             ),
-                          ),
-                          Divider(),
-                          Row(
-                            children: [
-                              Expanded(child: LeaveConfirmationButton(match)),
-                            ],
-                          )
-                        ])).show(context);
-                  })
-                : (!match.isFull())
-                    ? JoinGameButton(match: match)
-                    : RoundedButtonOff("JOIN GAME", null)
-          ],
+                            Divider(),
+                            Row(
+                              children: [
+                                Expanded(child: LeaveConfirmationButton(match)),
+                              ],
+                            )
+                          ])).show(context);
+                    })
+                  : (!match.isFull())
+                      ? JoinGameButton(match: match)
+                      : RoundedButtonOff("JOIN GAME", null)
+            ],
+          ),
         ))
       ],
     );
@@ -312,79 +319,48 @@ class PaymentConfirmationButton extends AbstractButtonWithLoader {
             controller: payConfirmController,
             shouldAnimate: false);
 
-  Future<void> onSuccess(BuildContext context) async {
-    Navigator.pop(context, true);
-    await communicateSuccessToUser(context, match.documentId);
-  }
-
-  // fixme deal better with this
-  Future<void> onPaymentSuccessButJoinFailure(BuildContext context) async {
-    // controller.error();
-    // await Future.delayed(Duration(seconds: 1));
-
-    Navigator.pop(context, true);
-
-    GenericInfoModal(
-            title: "Something went wrong!",
-            body: "Please contact us for support")
-        .show(context);
-  }
-
-  Future<void> onPaymentFailure(BuildContext context) async {
-    // controller.error();
-    // await Future.delayed(Duration(seconds: 1));
-
-    Navigator.pop(context);
-
-    GenericInfoModal(
-            title: "Payment Failed!",
-            body: "Please try again or contact us for support")
-        .show(context);
-  }
-
   @override
   Future<void> onPressed(BuildContext context) async {
     payConfirmController.start();
 
-    var userDetails = context.read<UserState>().getUserDetails();
+    var userState = context.read<UserState>();
+    var userDetails = userState.getUserDetails();
 
-    var customerId;
-    var sessionId;
+    var sessionUrl;
     try {
-      customerId = await Server().createCustomer(
-          userDetails.name, userDetails.email);
-      sessionId = await Server().createCheckout(customerId,
-          paymentRecap.matchPriceInCents - paymentRecap.creditsInCentsUsed);
+      var customerId;
+      if (isTestPaymentMode || userDetails.stripeId == null) {
+        print("generating new stripe customer");
+        var stripeId =
+            await Server().createCustomer(userDetails.name, userDetails.email);
+
+        if (!isTestPaymentMode) {
+          await UserController.storeStripeId(userDetails.documentId, stripeId);
+        }
+        await UserController.refresh(userState);
+        customerId = stripeId;
+      } else {
+        customerId = userDetails.stripeId;
+      }
+
+      sessionUrl = await Server().createCheckout(
+          customerId,
+          paymentRecap.matchPriceInCents - paymentRecap.creditsInCentsUsed,
+          paymentRecap.creditsInCentsUsed,
+          match.documentId);
     } catch (e) {
       print(e);
       Navigator.pop(context, true);
 
       GenericInfoModal(
-          title: "Problems with the Payments",
-          body: "Please contact us for support")
+              title: "Problems with the Payments",
+              body: "Please contact us for support")
           .show(context);
 
       return;
     }
 
-    Status status = await Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) =>
-                CheckoutPage(sessionId, paymentRecap, match))
-    );
-
-    switch (status) {
-      case Status.success:
-        await onSuccess(context);
-        break;
-      case Status.paymentSuccessButJoinFailed:
-        await onPaymentSuccessButJoinFailure(context);
-        break;
-      default:
-        await onPaymentFailure(context);
-        break;
-    }
+    await launch(sessionUrl, forceSafariVC: false);
   }
 }
 
@@ -440,7 +416,7 @@ onJoinGameAction(BuildContext context, Match match) async {
   GenericInfoModal.withBottom(
       title: "Join this game",
       body:
-      "You can cancel up to 24h before the game starting time to get a full refund in credits to use on your next game.\nIf you cancel after this time you won't get a refund.",
+          "You can cancel up to 24h before the game starting time to get a full refund in credits to use on your next game.\nIf you cancel after this time you won't get a refund.",
       bottomWidget: Column(
         children: [
           Divider(),

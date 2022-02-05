@@ -12,14 +12,14 @@ class PaymentController {
     var m = await MatchesController.refresh(matchesState, matchId);
     var u = await UserController.refresh(userState);
 
-    var result = PaymentRecap();
-    result.matchPriceInCents = m.pricePerPersonInCents;
-
+    var creditsUsed;
     if (u.creditsInCents > 0) { // can use
-      result.creditsInCentsUsed = min(m.pricePerPersonInCents, u.creditsInCents);
+      creditsUsed = min(m.pricePerPersonInCents, u.creditsInCents);
     } else {
-      result.creditsInCentsUsed = 0;
+      creditsUsed = 0;
     }
+
+    var result = PaymentRecap(m.pricePerPersonInCents, creditsUsed);
 
     return result;
   }

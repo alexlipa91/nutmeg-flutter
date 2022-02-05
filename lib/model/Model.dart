@@ -258,6 +258,9 @@ class Coupon {
 }
 
 class PaymentRecap {
+
+  PaymentRecap(this.matchPriceInCents, this.creditsInCentsUsed);
+
   int matchPriceInCents;
   int creditsInCentsUsed;
 

@@ -8,10 +8,9 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:nutmeg/model/Model.dart';
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:nutmeg/utils/Utils.dart';
 
-var useStripeTest = false;
-
-var apiKey = (useStripeTest) ?
+var apiKey = (isTestPaymentMode) ?
   "pk_test_51HyCDAGRb87bTNwH1dlHJXwdDSIUhxqPZS3zeytnO7T9dHBxzhwiWO5E0kFYLkVdZbZ2t0LEHxjuPmKFZ32fiMjO00dWLo1DqE" :
 "pk_live_51HyCDAGRb87bTNwHHFjJ2aRfC6SlNbAaaxOrdaPZ136H3gVdP3BYP9xW4rS0CZnImV5MrlqZWjjJ18smw7zJBhQH00mZP1Fqtm";
 
@@ -124,20 +123,23 @@ stripe.redirectToCheckout({
 }
 
 class Server {
-  Future<String> createCheckout(customerId, int amountInCents) async {
+  Future<String> createCheckout(customerId, int amountInCents, int credits, String matchId) async {
     HttpsCallable callable =
         FirebaseFunctions.instanceFor(region: "europe-central2")
             .httpsCallable('create-stripe-session');
     final results = await callable(
-        {'customer_id': customerId, 'amount_in_cents': amountInCents, 'test_mode': useStripeTest});
-    return results.data["session_id"];
+        {'customer_id': customerId, 'amount_in_cents': amountInCents,
+          'match_id': matchId, 'credits': credits,
+          'test_mode': isTestPaymentMode});
+    return results.data["url"];
   }
 
   Future<String> createCustomer(String name, String email) async {
     HttpsCallable callable =
         FirebaseFunctions.instanceFor(region: "europe-central2")
             .httpsCallable('create-stripe-customer');
-    final results = await callable({'name': name, 'email': email, 'test_mode': useStripeTest});
+    final results = await callable({'name': name, 'email': email,
+      'test_mode': isTestPaymentMode});
     return results.data["customer_id"];
   }
 }

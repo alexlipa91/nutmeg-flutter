@@ -94,6 +94,12 @@ class UserController {
     });
   }
 
+  static Future<void> storeStripeId(String userId, String customerId) async {
+    await FirebaseFirestore.instance.collection('users').doc(userId).update({
+      'stripeId': customerId
+    });
+  }
+
   static Future<AfterLoginCommunication> continueWithGoogle(
       UserState userState) async {
     FirebaseAuth auth = FirebaseAuth.instance;
