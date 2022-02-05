@@ -346,13 +346,24 @@ class PaymentConfirmationButton extends AbstractButtonWithLoader {
   Future<void> onPressed(BuildContext context) async {
     payConfirmController.start();
 
-    var userDetails = context.read<UserState>().getUserDetails();
+    var userState = context.read<UserState>();
+    var userDetails = userState.getUserDetails();
 
-    var customerId;
     var sessionId;
     try {
-      customerId = await Server().createCustomer(
-          userDetails.name, userDetails.email);
+      var customerId;
+      if (userDetails.stripeId == null) {
+        print("generating new stripe customer");
+        var stripeId = userDetails.stripeId ?? await Server().createCustomer(
+            userDetails.name, userDetails.email);
+        await UserController.storeStripeId(userDetails.documentId, stripeId);
+        await UserController.refresh(userState);
+
+        customerId = stripeId;
+      } else {
+        customerId = userDetails.stripeId;
+      }
+
       sessionId = await Server().createCheckout(customerId,
           paymentRecap.matchPriceInCents - paymentRecap.creditsInCentsUsed);
     } catch (e) {

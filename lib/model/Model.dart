@@ -228,7 +228,8 @@ class UserDetails {
         'name': name,
         'email': email,
         'credits': creditsInCents,
-        'tokens': tokens
+        'tokens': tokens,
+        'stripeId': stripeId
       };
 
   String getUid() => documentId;
