@@ -39,3 +39,5 @@ jobs:
           PROVISIONING_PROFILE_SPECIFIER: "match AppStore com.nutmeg.app"
           TEMP_KEYCHAIN_PASSWORD: "tmp_keychain_pass"
           TEMP_KEYCHAIN_USER: "tmp_keychain_user"
+          GIT_AUTH_TOKEN: ${{ secrets.GIT_AUTH_TOKEN }}
+
