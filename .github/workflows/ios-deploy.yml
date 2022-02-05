@@ -27,7 +27,7 @@ jobs:
         with:
           lane: closed_beta
           subdirectory: ios
-          verbose: true
+#          verbose: true
         env:
           ITC_TEAM_ID: "123691355"
           APPLICATON_ID: "1592985083"
