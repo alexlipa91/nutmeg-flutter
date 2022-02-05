@@ -34,7 +34,7 @@ jobs:
           FASTLANE_APPLE_ID: "alessandroliparoti@live.it"
           FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD: "odnv-ruvg-mzoo-enld"
           MATCH_PASSWORD: "nutmeg"
-          GIT_AUTHORIZATION: "alexlipa91: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"
+          GIT_AUTHORIZATION: "alexlipa91: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"
           PROVISIONING_PROFILE_SPECIFIER: "match AppStore com.nutmeg.app"
           TEMP_KEYCHAIN_PASSWORD: "tmp_keychain_pass"
           TEMP_KEYCHAIN_USER: "tmp_keychain_user"
