@@ -1,9 +1,7 @@
 name: Appstore Deployment
 
 on:
-  push:
-    tags:
-      - v*
+  push
 
 jobs:
   deploy_ios:
