@@ -15,8 +15,6 @@ class GenericInfoModal<T> {
   const GenericInfoModal({Key key, this.title, this.body}) : bottomWidget = null;
 
   Future<T> show(BuildContext context) {
-    Scaffold.of(context).showBottomSheet((context) => null)
-
     return showModalBottomSheet<T>(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
