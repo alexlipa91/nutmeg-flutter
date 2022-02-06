@@ -1,7 +1,9 @@
 name: Playstore Deployment
 
 on:
-  push
+  push:
+    tags:
+      - v*
 
 jobs:
   deploy_ios:

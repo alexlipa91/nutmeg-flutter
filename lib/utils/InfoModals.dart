@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:nutmeg/screens/Launch.dart';
 
 import 'UiUtils.dart';
 
@@ -14,6 +15,8 @@ class GenericInfoModal<T> {
   const GenericInfoModal({Key key, this.title, this.body}) : bottomWidget = null;
 
   Future<T> show(BuildContext context) {
+    Scaffold.of(context).showBottomSheet((context) => null)
+
     return showModalBottomSheet<T>(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
