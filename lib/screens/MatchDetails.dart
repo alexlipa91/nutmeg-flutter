@@ -45,11 +45,7 @@ class MatchDetails extends StatelessWidget {
     var sportCenter = loadOnceState.getSportCenter(match.sportCenter);
     var sport = loadOnceState.getSport(match.sport);
 
-    var title = sportCenter.neighbourhood + " - " + sport.displayTitle;
-
-    if (match.sportCenterSubLocation != null) {
-      title = title + " - " + match.sportCenterSubLocation;
-    }
+    var title = sportCenter.name + " - " + sport.displayTitle;
 
     var subscriptions = match.getOrderedGoingSubscriptions(user);
 
@@ -67,9 +63,9 @@ class MatchDetails extends StatelessWidget {
               int going = match.numPlayersGoing();
               return Text(
                   going.toString() +
-                      ((going == 1) ? " player" : " players") +
-                      " going",
-                  style: TextPalette.bodyText);
+                      ((going == 1) ? " PLAYER" : " PLAYERS") +
+                      " GOING",
+                  style: TextPalette.h4);
             },
           )),
       Padding(
@@ -91,7 +87,7 @@ class MatchDetails extends StatelessWidget {
           )),
       RuleCard(
           "Payment Policy",
-          "If you remove yourself more than 15 hours before the kick-off time the amount you paid will be returned to you in credits that you can use in other Nutmeg matches. "
+          "If you leave the match more than 15 hours before the kick-off time the amount you paid will be returned to you in credits that you can use in other Nutmeg matches. "
               "\n\nNo credits or refund will be provided if you drop out of a game less than 15 hours from kick-off."),
       MapCard.big(sportCenter)
     ];
@@ -144,7 +140,9 @@ class MatchInfo extends StatelessWidget {
                     " min",
             icon: Icons.schedule),
         InfoWidget(
-            title: sportCenter.name,
+            title:
+            sportCenter.name +
+                (match.sportCenterSubLocation.isNotEmpty ? " - " + match.sportCenterSubLocation : ""),
             icon: Icons.place,
             subTitle: sportCenter.getShortAddress()),
         InfoWidget(
