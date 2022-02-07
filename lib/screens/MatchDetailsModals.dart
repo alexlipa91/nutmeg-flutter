@@ -22,31 +22,6 @@ import 'Login.dart';
 
 var formatCurrency = NumberFormat.simpleCurrency(name: "EUR");
 
-Future<void> showWaitingModal(BuildContext context, Future future) {
-  var futureWithPop = () async {
-    await future;
-    Navigator.pop(context);
-  };
-
-  return showModalBottomSheet(
-      context: context,
-      builder: (context) => FutureBuilder<void>(
-          future: futureWithPop(),
-          builder: (context, snapshot) {
-            if (snapshot.hasError) {
-              throw snapshot.stackTrace;
-            }
-
-            return Container(
-              height: 100,
-              child: Center(
-                child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.black)),
-              ),
-            );
-          }));
-}
-
 class BottomBar extends StatelessWidget {
   final Match match;
 
@@ -303,7 +278,8 @@ Future<void> communicateSuccessToUser(
                 CircleAvatar(
                     radius: 100,
                     backgroundImage: NetworkImage(
-                        "https://media.giphy.com/media/SKAQ4kWov6tdC/giphy.gif")),
+                        "https://media.giphy.com/media/X6v9OaUTlnPuOI1r78/giphy.gif"
+                    )),
                 Padding(padding: EdgeInsets.only(top: 30),
                     child: Text("You are in!", style: TextPalette.h1Default)),
                 Padding(padding: EdgeInsets.only(top: 10),

@@ -511,6 +511,7 @@ class MapCard extends StatelessWidget {
                     // fixme do something
                   }
                 },
+                liteModeEnabled: true,
                 myLocationEnabled: false,
                 myLocationButtonEnabled: false,
                 zoomGesturesEnabled: false,
