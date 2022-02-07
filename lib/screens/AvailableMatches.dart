@@ -271,6 +271,8 @@ class MatchInfo extends StatelessWidget {
     var sportCenter = loadOnceState.getSportCenter(match.sportCenter);
     var sport = loadOnceState.getSport(match.sport);
 
+    var icons = getIcons(context, match);
+
     return InkWell(
         child: Padding(
           padding: EdgeInsets.only(top: topMargin, left: 16, right: 16),
@@ -319,10 +321,11 @@ class MatchInfo extends StatelessWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          Stack(
-                            alignment: Alignment.centerRight,
-                            clipBehavior: Clip.none,
-                            children: getIcons(context, match)
+                          if (icons.isNotEmpty)
+                            Stack(
+                                alignment: Alignment.centerRight,
+                                clipBehavior: Clip.none,
+                                children: icons
                   )
                         ])]
                   ),
@@ -387,6 +390,8 @@ class MatchInfo extends StatelessWidget {
         widgets.add(w);
       }
     }
+
+    print(widgets.length);
 
     return widgets;
   }
