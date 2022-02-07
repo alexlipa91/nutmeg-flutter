@@ -142,7 +142,8 @@ class MatchInfo extends StatelessWidget {
         InfoWidget(
             title:
             sportCenter.name +
-                (match.sportCenterSubLocation.isNotEmpty ? " - " + match.sportCenterSubLocation : ""),
+                (match.sportCenterSubLocation != null
+                    && match.sportCenterSubLocation.isNotEmpty ? " - " + match.sportCenterSubLocation : ""),
             icon: Icons.place,
             subTitle: sportCenter.getShortAddress()),
         InfoWidget(
