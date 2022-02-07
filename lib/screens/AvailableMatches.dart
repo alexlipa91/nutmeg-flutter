@@ -289,7 +289,7 @@ class MatchInfo extends StatelessWidget {
                         Row(
                           children: [
                             Text(
-                                sportCenter.neighbourhood +
+                                sportCenter.name +
                                     " - " +
                                     sport.displayTitle,
                                 style: TextPalette.h2),
