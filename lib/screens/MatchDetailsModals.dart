@@ -288,21 +288,41 @@ class PaymentConfirmationWithCreditsButton extends AbstractButtonWithLoader {
 
 Future<void> communicateSuccessToUser(
     BuildContext context, String matchId) async {
-  await GenericInfoModal.withBottom(
-    title: "You are going to this game",
-    body: "You have successfully paid and joined this game",
-    bottomWidget: InkWell(
-      onTap: () async => await DynamicLinks.shareMatchFunction(matchId),
-      child: Row(
-        children: [
-          if (!DeviceInfo().name.contains("ipad"))
-            ShareButton(matchId: matchId),
-          SizedBox(width: 20),
-          Text("SHARE", style: TextPalette.linkStyle)
-        ],
+  await showModalBottomSheet(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
       ),
-    ),
-  ).show(context);
+      isScrollControlled: true,
+      context: context,
+      builder: (context) => Container(
+              child: Padding(
+            padding: EdgeInsets.symmetric(vertical: 30, horizontal: 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircleAvatar(
+                    radius: 100,
+                    backgroundImage: NetworkImage(
+                        "https://media.giphy.com/media/SKAQ4kWov6tdC/giphy.gif")),
+                Padding(padding: EdgeInsets.only(top: 30),
+                    child: Text("You are in!", style: TextPalette.h1Default)),
+                Padding(padding: EdgeInsets.only(top: 10),
+                    child: Text("You have joined the match.", style: TextPalette.bodyText)),
+                if (!DeviceInfo().name.contains("ipad"))
+                  Padding(
+                    padding: EdgeInsets.only(top: 20),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        ShareButton(matchId: matchId),
+                        SizedBox(width: 5),
+                        Text("SHARE", style: TextPalette.linkStyle)
+                      ],
+                    ),
+                  )
+              ],
+            ),
+          )));
 }
 
 class PaymentConfirmationButton extends AbstractButtonWithLoader {
@@ -417,7 +437,7 @@ onJoinGameAction(BuildContext context, Match match) async {
     GenericInfoModal.withBottom(
         title: "Join this game",
         body:
-        "You can cancel up to 24h before the game starting time to get a full refund in credits to use on your next game.\nIf you cancel after this time you won't get a refund.",
+            "You can cancel up to 24h before the game starting time to get a full refund in credits to use on your next game.\nIf you cancel after this time you won't get a refund.",
         bottomWidget: Column(
           children: [
             Divider(),

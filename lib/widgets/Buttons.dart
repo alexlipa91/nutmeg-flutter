@@ -212,7 +212,7 @@ class ShareButtonState extends State<ShareButton> {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-        child: Icon(Icons.share, color: Colors.black),
+        child: Icon(Icons.share, color: Palette.primary),
         onTap: () async {
           if (active) {
             print("already active");
