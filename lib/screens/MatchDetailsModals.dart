@@ -413,14 +413,16 @@ onJoinGameAction(BuildContext context, Match match) async {
     }
   }
 
-  GenericInfoModal.withBottom(
-      title: "Join this game",
-      body:
-          "You can cancel up to 24h before the game starting time to get a full refund in credits to use on your next game.\nIf you cancel after this time you won't get a refund.",
-      bottomWidget: Column(
-        children: [
-          Divider(),
-          PaymentDetailsDescription(match: match),
-        ],
-      )).show(context);
+  if (userState.isLoggedIn()) {
+    GenericInfoModal.withBottom(
+        title: "Join this game",
+        body:
+        "You can cancel up to 24h before the game starting time to get a full refund in credits to use on your next game.\nIf you cancel after this time you won't get a refund.",
+        bottomWidget: Column(
+          children: [
+            Divider(),
+            PaymentDetailsDescription(match: match),
+          ],
+        )).show(context);
+  }
 }
