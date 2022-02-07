@@ -1,5 +1,9 @@
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
+import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
+import 'package:nutmeg/model/ChangeNotifiers.dart';
+import 'package:nutmeg/model/Model.dart';
+import 'package:provider/src/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 
@@ -60,6 +64,13 @@ class DynamicLinks {
     // fixme this doesn't wait
     await Share.share("Wanna join this match on Nutmeg?\n" + url.shortUrl.toString());
   }
+}
+
+bool isUserLoggedInAndGoing(BuildContext context, Match match) {
+  var userSub = (context.watch<UserState>().isLoggedIn())
+      ? match.getUserSub(context.watch<UserState>().getUserDetails())
+      : null;
+  return userSub != null && userSub.status == SubscriptionStatus.going;
 }
 
 var isTestPaymentMode = false;

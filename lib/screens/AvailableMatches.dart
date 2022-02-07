@@ -1,13 +1,15 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import "package:collection/collection.dart";
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
-import 'package:intl/intl.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/AppBar.dart';
+import 'package:nutmeg/widgets/Avatar.dart';
 import 'package:nutmeg/widgets/Buttons.dart';
 import 'package:nutmeg/widgets/Containers.dart';
 import 'package:nutmeg/widgets/Texts.dart';
@@ -15,7 +17,6 @@ import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:week_of_year/week_of_year.dart';
-import "package:collection/collection.dart";
 
 import 'MatchDetails.dart';
 
@@ -30,16 +31,18 @@ class AvailableMatches extends StatelessWidget {
 }
 
 class AvailableMatchesList extends StatelessWidget {
-
-  RefreshController _refreshController = RefreshController(initialRefresh: false);
+  RefreshController _refreshController =
+      RefreshController(initialRefresh: false);
 
   static List<Widget> getEmptyStateWidgets(AvailableMatchesUiState uiState) {
     var widgets = List<Widget>.from([]);
 
-    var emptyStateImage = Image.asset("assets/empty_state/" + uiState.getNextEmptyStateImage());
+    var emptyStateImage =
+        Image.asset("assets/empty_state/" + uiState.getNextEmptyStateImage());
 
     widgets.add(Center(child: emptyStateImage));
-    widgets.add(Text("No matches so far", style: TextPalette.h1Default, textAlign: TextAlign.center));
+    widgets.add(Text("No matches so far",
+        style: TextPalette.h1Default, textAlign: TextAlign.center));
 
     return widgets;
   }
@@ -56,7 +59,10 @@ class AvailableMatchesList extends StatelessWidget {
 
     var widgets = List<Widget>.of([
       // if app bar is in Scaffold will have the problem of the white pixel between Scaffold appBar and body
-      Align(child: MainAppBar(), heightFactor: 0.99,),
+      Align(
+        child: MainAppBar(),
+        heightFactor: 0.99,
+      ),
       RoundedTopBar(uiState: uiState)
     ]);
 
@@ -92,7 +98,8 @@ class AvailableMatchesList extends StatelessWidget {
           // appBar: MainAppBar(),
           body: MultiProvider(
             providers: [
-              ChangeNotifierProvider(create: (context) => AvailableMatchesUiState()),
+              ChangeNotifierProvider(
+                  create: (context) => AvailableMatchesUiState()),
             ],
             child: SmartRefresher(
               enablePullDown: true,
@@ -164,7 +171,8 @@ class AvailableMatchesList extends StatelessWidget {
     return widgets;
   }
 
-  List<Widget> allGamesWidgets(MatchesState state, AvailableMatchesUiState uiState) {
+  List<Widget> allGamesWidgets(
+      MatchesState state, AvailableMatchesUiState uiState) {
     var matches =
         state.getMatchesInFuture().where((e) => !e.wasCancelled()).toList();
 
@@ -196,16 +204,13 @@ class AvailableMatchesList extends StatelessWidget {
 }
 
 class RoundedTopBar extends StatelessWidget {
-
   final AvailableMatchesUiState uiState;
 
   const RoundedTopBar({Key key, this.uiState}) : super(key: key);
 
-  _getAllFunction(BuildContext context) =>
-      () => uiState.changeToAll();
+  _getAllFunction(BuildContext context) => () => uiState.changeToAll();
 
-  _getMyGamesFunction(BuildContext context) =>
-      () => uiState.changeToMyGames();
+  _getMyGamesFunction(BuildContext context) => () => uiState.changeToMyGames();
 
   @override
   Widget build(BuildContext context) {
@@ -225,14 +230,12 @@ class RoundedTopBar extends StatelessWidget {
               Text("Amsterdam", style: TextPalette.h1Inverted),
               SizedBox(height: 24),
               Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                uiState.getCurrentSelection() ==
-                        "ALL"
+                uiState.getCurrentSelection() == "ALL"
                     ? Expanded(
                         child: LeftButtonOn("ALL", _getAllFunction(context)))
                     : Expanded(
                         child: LeftButtonOff("ALL", _getAllFunction(context))),
-                uiState.getCurrentSelection() ==
-                        "ALL"
+                uiState.getCurrentSelection() == "ALL"
                     ? Expanded(
                         child: RightButtonOff(
                             "MY GAMES", _getMyGamesFunction(context)))
@@ -277,48 +280,53 @@ class MatchInfo extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 MatchThumbnail(image: image),
-                Expanded(
-                  child: Container(
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Padding(
-                        padding: EdgeInsets.only(left: 16),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 15),
+                  child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
                           children: [
-                            Row(
-                              children: [
-                                Text(
-                                    sportCenter.neighbourhood +
-                                        " - " +
-                                        sport.displayTitle,
-                                    style: TextPalette.h2),
-                                Expanded(
-                                    child: Text(
-                                        (match.isFull())
-                                            ? "Full"
-                                            : (match.maxPlayers -
-                                                        match.numPlayersGoing())
-                                                    .toString() +
-                                                " spots left",
-                                        style: GoogleFonts.roboto(
-                                            color: Palette.mediumgrey,
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w400),
-                                        textAlign: TextAlign.right))
-                              ],
-                            ),
-                            Text(getFormattedDate(match.dateTime),
-                                style: TextPalette.h3),
-                            Text(sportCenter.name,
-                                style: TextPalette.bodyTextOneLine),
+                            Text(
+                                sportCenter.neighbourhood +
+                                    " - " +
+                                    sport.displayTitle,
+                                style: TextPalette.h2),
                           ],
                         ),
-                      ),
-                    ),
-                  ),
+                        Text(getFormattedDate(match.dateTime),
+                            style: TextPalette.h3),
+                        Text(
+                            (match.isFull())
+                                ? "Full"
+                                : (match.maxPlayers -
+                                match.numPlayersGoing())
+                                .toString() +
+                                " spots left",
+                            style: GoogleFonts.roboto(
+                                color: Palette.primary,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w400),
+                            textAlign: TextAlign.right),
+                      ]),
                 ),
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Stack(
+                            alignment: Alignment.centerRight,
+                            clipBehavior: Clip.none,
+                            children: getIcons(context, match)
+                  )
+                        ])]
+                  ),
+                )
               ],
             ),
           )),
@@ -332,6 +340,55 @@ class MatchInfo extends StatelessWidget {
           await Navigator.push(context,
               MaterialPageRoute(builder: (context) => MatchDetails(matchId)));
         });
+  }
+
+  List<Widget> getIcons(BuildContext context, Match match) {
+    List<Widget> widgets = [];
+
+    var currentRightOffset = 0.0;
+
+    if (isUserLoggedInAndGoing(context, match) && match.numPlayersGoing() > 1) {
+      widgets.add(Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.all(Radius.circular(50.0)),
+          border: Border.all(
+            color: Colors.white,
+            width: 2.0,
+          ),
+        ),
+        child: CircleAvatar(
+            child: Center(
+                child: Text("+" + (match.numPlayersGoing() - 1).toString(),
+                    style: GoogleFonts.roboto(
+                        color: Palette.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500))),
+            radius: 14,
+            backgroundColor: Palette.primary
+        ),
+      ));
+      currentRightOffset += 25;
+    }
+
+    if (isUserLoggedInAndGoing(context, match)) {
+      var w = Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.all( Radius.circular(50.0)),
+            border: Border.all(
+              color: Colors.white,
+              width: 2.0,
+            ),
+          ),
+          child: UserAvatar(14, context.read<UserState>().getUserDetails()));
+
+      if (currentRightOffset > 0) {
+        widgets.add(Positioned(right: currentRightOffset, child: w));
+      } else {
+        widgets.add(w);
+      }
+    }
+
+    return widgets;
   }
 }
 
@@ -519,8 +576,11 @@ class AvailableMatchesUiState extends ChangeNotifier {
   bool loading = false;
   String selected = "ALL";
 
-  List<String> emptyStateImages = ["illustration_01.png",
-    "illustration_02.png", "illustration_03.png"];
+  List<String> emptyStateImages = [
+    "illustration_01.png",
+    "illustration_02.png",
+    "illustration_03.png"
+  ];
   String lastEmptyStateImageShown;
 
   void changeToAll() => _change("ALL");
@@ -553,6 +613,6 @@ class AvailableMatchesUiState extends ChangeNotifier {
     return lastEmptyStateImageShown;
   }
 
-  static getEmptyStateImages() => ["illustration_01.png",
-    "illustration_02.png", "illustration_03.png"];
+  static getEmptyStateImages() =>
+      ["illustration_01.png", "illustration_02.png", "illustration_03.png"];
 }

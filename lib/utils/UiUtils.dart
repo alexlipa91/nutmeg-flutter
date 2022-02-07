@@ -64,7 +64,7 @@ class TextPalette {
 
   static TextStyle h2 = GoogleFonts.roboto(color: Palette.black, fontSize: 18, fontWeight: FontWeight.w700);
 
-  static TextStyle h3 = GoogleFonts.roboto(color: Palette.black, fontSize: 14, fontWeight: FontWeight.w500);
+  static TextStyle h3 = GoogleFonts.roboto(color: Palette.mediumgrey, fontSize: 14, fontWeight: FontWeight.w500);
   static TextStyle h3WithBar = GoogleFonts.roboto(color: Palette.black, fontSize: 14, fontWeight: FontWeight.w500, decoration: TextDecoration.lineThrough);
 
   static TextStyle h4 = GoogleFonts.roboto(color: Palette.darkgrey, fontSize: 12, fontWeight: FontWeight.w500);
