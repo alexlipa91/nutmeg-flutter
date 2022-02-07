@@ -20,3 +20,6 @@ os.system("git commit -am \"version " + new_tag + "\"")
 
 print("tagging  " + new_tag)
 os.system("git tag " + new_tag)
+
+os.system("git push")
+os.system("git push origin " + new_tag)
