@@ -287,14 +287,7 @@ Future<void> communicateSuccessToUser(
                 if (!DeviceInfo().name.contains("ipad"))
                   Padding(
                     padding: EdgeInsets.only(top: 20),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        ShareButton(matchId: matchId),
-                        SizedBox(width: 5),
-                        Text("SHARE", style: TextPalette.linkStyle)
-                      ],
-                    ),
+                    child: ShareButton.withText(matchId, Palette.primary)
                   )
               ],
             ),

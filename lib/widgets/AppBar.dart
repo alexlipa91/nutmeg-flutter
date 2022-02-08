@@ -98,7 +98,7 @@ class MatchAppBar extends NutmegAppBar {
                   child: Icon(Icons.arrow_back, color: Colors.black),
                   onTap: () => Navigator.of(context).pop()),
               if (!DeviceInfo().name.contains("ipad"))
-                ShareButton(matchId: matchId)
+                ShareButton(matchId, Palette.black)
             ],
           ),
         ));
