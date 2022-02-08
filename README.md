@@ -14,3 +14,12 @@ Github Workflows will deploy in internal tests for Playstore and TestFlight for 
 
 Once you are satisfied with test versions, manually log in in the Playstore or Appstore developer portal and 
 promote the build to production
+
+## Gif image links
+
+Links are stored in `Firestore Database`.
+
+Go to [Firebase console](https://console.firebase.google.com/), select `nutmeg` project and go to `Firestore Database`.
+
+In collection `misc`, select document `gif_joined_match`. It contains an array `links`. Add/Remove elements from 
+this array.
