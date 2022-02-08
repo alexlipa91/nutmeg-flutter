@@ -82,7 +82,7 @@ class AvailableMatchesList extends StatelessWidget {
         // ));
       } else {
         widgets.addAll((optionSelected == "ALL")
-            ? allGamesWidgets(matchesState, uiState)
+            ? allGamesWidgets(matchesState, uiState, userState)
             : myGamesWidgets(matchesState, userState, uiState));
       }
     } else {
@@ -172,10 +172,14 @@ class AvailableMatchesList extends StatelessWidget {
   }
 
   List<Widget> allGamesWidgets(
-      MatchesState state, AvailableMatchesUiState uiState) {
+      MatchesState state, AvailableMatchesUiState uiState, UserState userState) {
     var matches =
-        state.getMatchesInFuture().where((e) => !e.wasCancelled()).toList();
-
+        state.getMatchesInFuture()
+            .where((e) => !e.wasCancelled())
+            .where((e) => (!e.documentId.startsWith("test_match_id")
+            || (userState.isLoggedIn() && userState.getUserDetails().isAdmin)))
+            .toList();
+    
     if (matches.isEmpty) {
       return getEmptyStateWidgets(uiState);
     }
