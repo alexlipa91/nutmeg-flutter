@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
 import 'package:rounded_loading_button/rounded_loading_button.dart';
-
 
 class PrimaryButton extends StatelessWidget {
   final String text;
@@ -122,14 +120,14 @@ class RoundedButton extends PrimaryButton with LeftRounded, RightRounded {
   RoundedButton(String text, Function onPressed) : super(text, onPressed);
 }
 
-class RoundedButtonOff extends PrimaryButton with LeftRounded, RightRounded, Off {
+class RoundedButtonOff extends PrimaryButton
+    with LeftRounded, RightRounded, Off {
   RoundedButtonOff(String text, Function onPressed) : super(text, onPressed);
 }
 
 class RoundedButtonLight extends PrimaryButton
     with LeftRounded, RightRounded, Light {
-  RoundedButtonLight(String text, Function onPressed)
-      : super(text, onPressed);
+  RoundedButtonLight(String text, Function onPressed) : super(text, onPressed);
 }
 
 class RoundedButtonAlerted extends PrimaryButton
@@ -139,14 +137,16 @@ class RoundedButtonAlerted extends PrimaryButton
 }
 
 abstract class AbstractButtonWithLoader extends StatelessWidget {
-
   final String text;
   RoundedLoadingButtonController controller;
   bool shouldAnimate;
 
   Future<void> onPressed(BuildContext context);
 
-  AbstractButtonWithLoader({this.text, RoundedLoadingButtonController controller, bool shouldAnimate=true}) {
+  AbstractButtonWithLoader(
+      {this.text,
+      RoundedLoadingButtonController controller,
+      bool shouldAnimate = true}) {
     this.controller = controller;
     this.shouldAnimate = shouldAnimate;
   }
@@ -167,65 +167,58 @@ abstract class AbstractButtonWithLoader extends StatelessWidget {
 }
 
 class ButtonWithLoader extends AbstractButtonWithLoader {
-
   final String text;
   final Function onTap;
 
-  ButtonWithLoader(this.text, this.onTap): super(text: text, controller: RoundedLoadingButtonController());
+  ButtonWithLoader(this.text, this.onTap)
+      : super(text: text, controller: RoundedLoadingButtonController());
 
   @override
   Future<void> onPressed(BuildContext context) => onTap();
 }
 
 class ButtonWithoutLoader extends AbstractButtonWithLoader {
-
   final String text;
   final Function onTap;
 
-  ButtonWithoutLoader(this.text, this.onTap): super(text: text, controller: RoundedLoadingButtonController(), shouldAnimate: false);
+  ButtonWithoutLoader(this.text, this.onTap)
+      : super(
+            text: text,
+            controller: RoundedLoadingButtonController(),
+            shouldAnimate: false);
 
   @override
   Future<void> onPressed(BuildContext context) => onTap();
 }
 
-class ShareButton extends StatefulWidget {
+class ShareButton extends StatelessWidget {
   final String matchId;
+  final Color color;
+  final bool withText;
 
-  const ShareButton({Key key, this.matchId}) : super(key: key);
+  ShareButton(this.matchId, this.color) : withText = false;
 
-  @override
-  State<StatefulWidget> createState() => ShareButtonState(matchId);
-}
-
-class ShareButtonState extends State<ShareButton> {
-  final String matchId;
-  bool active;
-
-  ShareButtonState(this.matchId);
-
-  @override
-  void initState() {
-    active = false;
-    super.initState();
-  }
+  ShareButton.withText(this.matchId, this.color) : withText = true;
 
   @override
   Widget build(BuildContext context) {
+    var icon = Icon(Icons.share, color: color);
+
+    var child = (withText)
+        ? Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              icon,
+              SizedBox(width: 5),
+              Text("SHARE", style: TextPalette.linkStyle)
+            ],
+          )
+        : icon;
+
     return InkWell(
-        child: Icon(Icons.share, color: Palette.primary),
+        child: child,
         onTap: () async {
-          if (active) {
-            print("already active");
-            return;
-          }
-          setState(() {
-            active = true;
-          });
           await DynamicLinks.shareMatchFunction(matchId);
-          setState(() {
-            print("now can go");
-            active = false;
-          });
         });
   }
 }
