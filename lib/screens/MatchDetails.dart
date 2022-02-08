@@ -82,8 +82,8 @@ class MatchDetails extends StatelessWidget {
       Padding(
           padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
           child: Text(
-            "Details",
-            style: TextPalette.bodyText,
+            "DETAILS",
+            style: TextPalette.h4,
           )),
       RuleCard(
           "Payment Policy",
