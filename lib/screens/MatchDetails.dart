@@ -331,7 +331,7 @@ class PlayerCard extends StatelessWidget {
                                             child: Column(
                                               children: [
                                                 SizedBox(height: 70),
-                                                Text(snapshot.data.name ?? "Player",
+                                                Text(snapshot.data.name ?? snapshot.data.email ?? "Player",
                                                     style: TextPalette.h2),
                                                 SizedBox(height: 20),
                                                 Builder(builder: (context) {

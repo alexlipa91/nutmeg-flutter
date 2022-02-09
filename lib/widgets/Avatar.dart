@@ -26,7 +26,7 @@ class UserAvatar extends StatelessWidget {
 
     var child = (photoUrl == null)
         ? Center(
-            child: Text(displayName,
+            child: Text(displayName[0],
                 style: GoogleFonts.roboto(
                     color: Palette.white,
                     fontSize: 24,
