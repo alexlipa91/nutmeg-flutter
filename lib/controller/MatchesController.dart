@@ -1,13 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:nutmeg/controller/SubscriptionsController.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:nutmeg/db/MatchesFirestore.dart';
 import 'package:nutmeg/db/SubscriptionsFirestore.dart';
-import 'package:nutmeg/db/UserFirestore.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
-import 'UserController.dart';
 
 class MatchesController {
 
@@ -31,90 +29,66 @@ class MatchesController {
 
   static Future<void> joinMatch(MatchesState matchesState, String matchId,
       UserState userState, PaymentRecap paymentStatus) async {
-    await UserController.refresh(userState);
-    await refresh(matchesState, matchId);
 
-    var userDetails = userState.getUserDetails();
-
-    await FirebaseFirestore.instance.runTransaction((transaction) async {
-      var currentUserSub =
-          await SubscriptionsController.getMatchSubscriptionsLatestStatePerUser(
-              userDetails.getUid(), matchId);
-
-      if (currentUserSub != null &&
-          currentUserSub.status == SubscriptionStatus.going) {
-        throw new Exception("Already going");
-      } else {
-        var sub = new Subscription(
-            userDetails.getUid(),
-            SubscriptionStatus.going,
-            paymentStatus.finalPriceToPayInCents(),
-            paymentStatus.creditsInCentsUsed,
-            0);
-        await SubscriptionsDb.addSubscription(matchId, sub);
-      }
-
-      if (paymentStatus.creditsInCentsUsed > 0) {
-        userDetails.creditsInCents =
-            userDetails.creditsInCents - paymentStatus.creditsInCentsUsed;
-      }
-      await UserFirestore.storeUserDetails(userDetails);
+    HttpsCallable callable =
+    FirebaseFunctions.instanceFor(region: "europe-central2")
+        .httpsCallable('add_user_to_match');
+    final results = await callable({
+      'user_id': userState.getUserDetails().documentId,
+      'match_id': matchId,
+      'credits_used': paymentStatus.creditsInCentsUsed,
+      'money_paid': paymentStatus.finalPriceToPayInCents()
     });
-
-    await UserController.refresh(userState);
-    await refresh(matchesState, matchId);
   }
 
   static leaveMatch(
       MatchesState matchesState, String matchId, UserState userState) async {
-    await UserController.refresh(userState);
-    await refresh(matchesState, matchId);
-
-    var userDetails = userState.getUserDetails();
-    var match = matchesState.getMatch(matchId);
-
-    await FirebaseFirestore.instance.runTransaction((transaction) async {
-      var issueRefund = match.dateTime.difference(DateTime.now()).inHours >= 24;
-      var currentUserSub =
-          await SubscriptionsController.getMatchSubscriptionsLatestStatePerUser(
-              userDetails.getUid(), matchId);
-
-      var newSub;
-      if (currentUserSub.status != SubscriptionStatus.going) {
-        throw new Exception("Already not going");
-      } else {
-        var refundInCents = (issueRefund) ? match.pricePerPersonInCents : 0;
-
-        newSub = new Subscription(
-            userDetails.getUid(),
-            (refundInCents == 0)
-                ? SubscriptionStatus.canceled
-                : SubscriptionStatus.refunded,
-            0,
-            0,
-            refundInCents);
-
-        if (refundInCents != 0) {
-          userDetails.creditsInCents =
-              userDetails.creditsInCents + refundInCents;
-        }
-      }
-
-      // update db
-      await UserFirestore.storeUserDetails(userDetails);
-      await SubscriptionsDb.addSubscription(matchId, newSub);
-    });
+    // await UserController.refresh(userState);
+    // await refresh(matchesState, matchId);
+    //
+    // var userDetails = userState.getUserDetails();
+    // var match = matchesState.getMatch(matchId);
+    //
+    // await FirebaseFirestore.instance.runTransaction((transaction) async {
+    //   var issueRefund = match.dateTime.difference(DateTime.now()).inHours >= 24;
+    //   var currentUserSub =
+    //       await SubscriptionsController.getMatchSubscriptionsLatestStatePerUser(
+    //           userDetails.getUid(), matchId);
+    //
+    //   var newSub;
+    //   if (currentUserSub.status != SubscriptionStatus.going) {
+    //     throw new Exception("Already not going");
+    //   } else {
+    //     var refundInCents = (issueRefund) ? match.pricePerPersonInCents : 0;
+    //
+    //     newSub = new Subscription(
+    //         userDetails.getUid(),
+    //         (refundInCents == 0)
+    //             ? SubscriptionStatus.canceled
+    //             : SubscriptionStatus.refunded,
+    //         0,
+    //         0,
+    //         refundInCents);
+    //
+    //     if (refundInCents != 0) {
+    //       userDetails.creditsInCents =
+    //           userDetails.creditsInCents + refundInCents;
+    //     }
+    //   }
+    //
+    //   // update db
+    //   await UserFirestore.storeUserDetails(userDetails);
+    //   await SubscriptionsDb.addSubscription(matchId, newSub);
+    // });
 
     // refresh state
-    await UserController.refresh(userState);
-    await refresh(matchesState, matchId);
+    // await UserController.refresh(userState);
+    // await refresh(matchesState, matchId);
   }
 
   static Future<Match> getMatch(String matchId) async {
     var match = await MatchesFirestore.fetchMatch(matchId);
-    match.subscriptions =
-        await SubscriptionsController.getMatchSubscriptionsLatestState(matchId) ??
-            [];
+    match.going = await SubscriptionsDb.getGoing(matchId) ?? [];
     return match;
   }
 
@@ -131,11 +105,7 @@ class MatchesController {
           .where((m) =>
               !m.wasCancelled() &&
               m.dateTime.isBefore(DateTime.now()) &&
-              m.subscriptions
-                  .where((sub) =>
-                      sub.status == SubscriptionStatus.going &&
-                      sub.userId == userId)
-                  .isNotEmpty)
+              m.going.where((sub) => sub.userId == userId).isNotEmpty)
           .length;
 
   static Future<void> cancelMatch(MatchesState matchesState, String matchId) async {

@@ -30,24 +30,13 @@ class Match {
   int maxPlayers;
   Duration duration;
   Timestamp cancelledAt;
+  String stripePriceId;
 
-  List<Subscription> subscriptions;
+  List<Subscription> going;
+  List<Subscription> cancelled;
 
   Match(this.dateTime, this.sportCenter, this.sportCenterSubLocation, this.sport,
       this.maxPlayers, this.pricePerPersonInCents, this.duration, this.cancelledAt);
-
-  Match.from(Match m) {
-    documentId = m.documentId;
-    dateTime = m.dateTime;
-    sportCenter = m.sportCenter;
-    sportCenterSubLocation = m.sportCenterSubLocation;
-    sport = m.sport;
-    pricePerPersonInCents = m.pricePerPersonInCents;
-    maxPlayers = m.maxPlayers;
-    subscriptions = m.subscriptions;
-    duration = m.duration;
-    cancelledAt = m.cancelledAt;
-  }
 
   Match.fromJson(Map<String, dynamic> json, String documentId)
       : dateTime = (json['dateTime'] as Timestamp).toDate(),
@@ -58,6 +47,7 @@ class Match {
         maxPlayers = json['maxPlayers'],
         duration = Duration(minutes: json['durationInMinutes'] ?? 60),
         cancelledAt = json['cancelledAt'],
+        stripePriceId = json['stripePriceId'],
         documentId = documentId;
 
   Map<String, dynamic> toJson() =>
@@ -68,41 +58,18 @@ class Match {
         'sport': sport,
         'pricePerPerson': pricePerPersonInCents,
         'maxPlayers': maxPlayers,
-        'cancelledAt': cancelledAt
+        'cancelledAt': cancelledAt,
+        'stripePriceId': stripePriceId
       };
 
   int getSpotsLeft() => maxPlayers - numPlayersGoing();
 
-  int numPlayersGoing() =>
-      subscriptions
-          .where((s) => s.status == SubscriptionStatus.going)
-          .length;
+  int numPlayersGoing() => going.length;
 
   bool isFull() => numPlayersGoing() == maxPlayers;
 
-  Subscription getUserSub(UserDetails user) {
-    var userSubFilter = subscriptions.where((s) => s.userId == user.getUid());
-    if (userSubFilter.isEmpty) {
-      return null;
-    }
-    return userSubFilter.first;
-  }
-
-  List<Subscription> getOrderedGoingSubscriptions(UserDetails userDetails) {
-    // if user is in match place him on top of list
-    var orderedSubscriptions = subscriptions.where((e) =>
-    e.status == SubscriptionStatus.going).toList()
-      ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
-    if (userDetails != null) {
-      var userIndex = orderedSubscriptions.indexWhere((e) =>
-      e.userId == userDetails.getUid());
-      if (userIndex != -1) {
-        orderedSubscriptions.insert(
-            0, orderedSubscriptions.removeAt(userIndex));
-      }
-    }
-    return orderedSubscriptions;
-  }
+  bool isUserGoing(UserDetails user) =>
+      going.where((e) => e.userId == user.documentId).isNotEmpty;
 
   double getPrice() => pricePerPersonInCents / 100;
 
@@ -112,44 +79,20 @@ class Match {
 }
 
 class Subscription {
-  String documentId;
-
   String userId;
-  SubscriptionStatus status;
+  String stripeSessionId;
   Timestamp createdAt;
-  int paid;
-  int paidInCredits;
-  int refundedInCredits;
-
-  Subscription(this.userId, this.status, this.paid, this.paidInCredits,
-      this.refundedInCredits)
-      : createdAt = Timestamp.now();
 
   Subscription.fromJson(Map<String, dynamic> json, String documentId)
-      : documentId = documentId,
-        userId = json['userId'],
-        paid = json['paid'],
-        paidInCredits = json['paidInCredits'],
-        refundedInCredits = json['refundedInCredits'],
-        createdAt = json['createdAt'] ?? null,
-        status = SubscriptionStatus.values
-            .firstWhere((e) =>
-        e
-            .toString()
-            .split(".")
-            .last == json['status']);
+      : userId = json['userId'],
+        createdAt = json['createdAt'],
+        stripeSessionId = json["stripeSessionId"];
 
   Map<String, dynamic> toJson() =>
       {
         'userId': userId,
-        'status': status
-            .toString()
-            .split(".")
-            .last,
-        'createdAt': createdAt,
-        'paid': paid,
-        'paidInCredits': paidInCredits,
-        'refundedInCredits': refundedInCredits,
+        'stripeSessionId': stripeSessionId,
+        'createdAt': createdAt
       };
 }
 

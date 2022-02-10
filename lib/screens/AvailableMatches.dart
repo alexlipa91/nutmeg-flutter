@@ -128,11 +128,8 @@ class AvailableMatchesList extends StatelessWidget {
 
   List<Widget> myGamesWidgets(MatchesState state, UserState userState,
       AvailableMatchesUiState uiState) {
-    var matches = state.getMatches().where((m) {
-      var userSubInMatch = m.getUserSub(userState.getUserDetails());
-      return userSubInMatch != null &&
-          userSubInMatch.status == SubscriptionStatus.going;
-    });
+    var matches = state.getMatches()
+        .where((m) => m.isUserGoing(userState.getUserDetails()));
 
     if (matches.isEmpty) {
       return getEmptyStateWidgets(uiState);
@@ -354,7 +351,10 @@ class MatchInfo extends StatelessWidget {
 
     var currentRightOffset = 0.0;
 
-    if (isUserLoggedInAndGoing(context, match) && match.numPlayersGoing() > 1) {
+    var isLoggedInAndGoing = context.watch<UserState>().isLoggedIn() &&
+            match.isUserGoing(context.watch<UserState>().getUserDetails());
+
+    if (isLoggedInAndGoing && match.numPlayersGoing() > 1) {
       widgets.add(Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.all(Radius.circular(50.0)),
@@ -377,7 +377,7 @@ class MatchInfo extends StatelessWidget {
       currentRightOffset += 25;
     }
 
-    if (isUserLoggedInAndGoing(context, match)) {
+    if (isLoggedInAndGoing) {
       var w = Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.all( Radius.circular(50.0)),

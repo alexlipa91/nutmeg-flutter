@@ -47,8 +47,6 @@ class MatchDetails extends StatelessWidget {
 
     var title = sportCenter.name + " - " + sport.displayTitle;
 
-    var subscriptions = match.getOrderedGoingSubscriptions(user);
-
     var widgets = [
       Padding(
           padding: EdgeInsets.only(right: 20, left: 20, bottom: 10),
@@ -74,9 +72,9 @@ class MatchDetails extends StatelessWidget {
           clipBehavior: Clip.none,
           scrollDirection: Axis.horizontal,
           child: Row(
-              children: (subscriptions.isEmpty)
+              children: (match.going.isEmpty)
                   ? [EmptyPlayerCard(match: match)]
-                  : subscriptions.map((s) => PlayerCard(s.userId)).toList()),
+                  : match.going.map((s) => PlayerCard(s.userId)).toList()),
         ),
       ),
       Padding(

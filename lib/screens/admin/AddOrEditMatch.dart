@@ -13,7 +13,6 @@ import 'package:nutmeg/widgets/AppBar.dart';
 import 'package:nutmeg/widgets/Buttons.dart';
 import 'package:provider/provider.dart';
 
-import 'SubscriptionsMatchDetails.dart';
 
 // main widget
 class AddOrEditMatch extends StatelessWidget {
@@ -37,20 +36,6 @@ class AddOrEditMatch extends StatelessWidget {
           child: Column(
             children: [
               Expanded(child: AddOrEditMatchForm(match: match)),
-              if (match != null)
-                Row(children: [
-                  Expanded(
-                    child: RoundedButton("VIEW SUBSCRIPTIONS", () async {
-                      await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => SubscriptionsMatchDetails(
-                                  context
-                                      .watch<MatchesState>()
-                                      .getMatch(match.documentId))));
-                    }),
-                  )
-                ]),
               if (match != null && match.cancelledAt == null)
                 Row(children: [
                   Expanded(

@@ -66,11 +66,4 @@ class DynamicLinks {
   }
 }
 
-bool isUserLoggedInAndGoing(BuildContext context, Match match) {
-  var userSub = (context.watch<UserState>().isLoggedIn())
-      ? match.getUserSub(context.watch<UserState>().getUserDetails())
-      : null;
-  return userSub != null && userSub.status == SubscriptionStatus.going;
-}
-
 var isTestPaymentMode = false;

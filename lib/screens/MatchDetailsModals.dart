@@ -29,10 +29,10 @@ class BottomBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var userSub = (context.watch<UserState>().isLoggedIn())
-        ? match.getUserSub(context.watch<UserState>().getUserDetails())
-        : null;
-    var isGoing = userSub != null && userSub.status == SubscriptionStatus.going;
+    var userState = context.watch<UserState>();
+
+    var isGoing = userState.isLoggedIn()
+        && match.isUserGoing(userState.getUserDetails());
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -70,6 +70,9 @@ class BottomBar extends StatelessWidget {
                   ? RoundedButtonLight("LEAVE GAME", () async {
                       var hoursToGame =
                           match.dateTime.difference(DateTime.now()).inHours;
+
+                      var userSub = match.going
+                          .where((e) => e.userId == userState.getUserDetails().documentId).first;
 
                       await GenericInfoModal.withBottom(
                           title: "Leaving this game?",
@@ -130,8 +133,8 @@ class PaymentDetailsDescription extends StatelessWidget {
         future: PaymentController.generatePaymentRecap(
             matchesState, match.documentId, userState),
         builder: (context, snapshot) {
-          var extraCreditsUsed =
-              snapshot.data != null && snapshot.data.creditsInCentsUsed != 0;
+          // var extraCreditsUsed =
+          //     snapshot.data != null && snapshot.data.creditsInCentsUsed != 0;
 
           return Column(
             children: [
@@ -151,50 +154,52 @@ class PaymentDetailsDescription extends StatelessWidget {
                   textAlign: TextAlign.end,
                 ))
               ]),
-              if (extraCreditsUsed)
-                Row(
-                  children: [
-                    // adding this here as a trick to align the rows
-                    CircleAvatar(
-                        backgroundColor: Colors.transparent, radius: 15),
-                    SizedBox(width: 10),
-                    Text('Credits', style: TextPalette.bodyText),
-                    Expanded(
-                        child: Text(
-                      "- " +
-                          formatCurrency
-                              .format(snapshot.data.creditsInCentsUsed / 100),
-                      style: TextPalette.bodyText,
-                      textAlign: TextAlign.end,
-                    ))
-                  ],
-                ),
-              if (extraCreditsUsed) Divider(),
-              if (extraCreditsUsed)
-                Padding(
-                  padding: EdgeInsets.symmetric(vertical: 10),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text("Subtotal", style: TextPalette.h3),
-                      Text(
-                        formatCurrency.format(
-                            snapshot.data.finalPriceToPayInCents() / 100),
-                        style: TextPalette.h3,
-                      )
-                    ],
-                  ),
-                ),
+              // if (extraCreditsUsed)
+              //   Row(
+              //     children: [
+              //       // adding this here as a trick to align the rows
+              //       CircleAvatar(
+              //           backgroundColor: Colors.transparent, radius: 15),
+              //       SizedBox(width: 10),
+              //       Text('Credits', style: TextPalette.bodyText),
+              //       Expanded(
+              //           child: Text(
+              //         "- " +
+              //             formatCurrency
+              //                 .format(snapshot.data.creditsInCentsUsed / 100),
+              //         style: TextPalette.bodyText,
+              //         textAlign: TextAlign.end,
+              //       ))
+              //     ],
+              //   ),
+              // if (extraCreditsUsed) Divider(),
+              // if (extraCreditsUsed)
+              //   Padding(
+              //     padding: EdgeInsets.symmetric(vertical: 10),
+              //     child: Row(
+              //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              //       children: [
+              //         Text("Subtotal", style: TextPalette.h3),
+              //         Text(
+              //           formatCurrency.format(
+              //               snapshot.data.finalPriceToPayInCents() / 100),
+              //           style: TextPalette.h3,
+              //         )
+              //       ],
+              //     ),
+              //   ),
               Divider(),
               Row(
                 children: [
                   Expanded(
                       child: (snapshot.data == null)
                           ? ButtonWithLoader("", () {})
-                          : (snapshot.data.onlyCreditsUsed())
-                              ? PaymentConfirmationWithCreditsButton(
-                                  match, snapshot.data)
-                              : PaymentConfirmationButton(match, snapshot.data))
+                          :
+                      // (snapshot.data.onlyCreditsUsed())
+                      //         ? PaymentConfirmationWithCreditsButton(
+                      //             match, snapshot.data)
+                      //         :
+          PaymentConfirmationButton(match, snapshot.data))
                 ],
               )
             ],
@@ -320,8 +325,7 @@ class PaymentConfirmationButton extends AbstractButtonWithLoader {
       var customerId;
       if (isTestPaymentMode || userDetails.stripeId == null) {
         print("generating new stripe customer");
-        var stripeId =
-            await Server().createCustomer(userDetails.name, userDetails.email);
+        var stripeId = userDetails.stripeId;
 
         if (!isTestPaymentMode) {
           await UserController.storeStripeId(userDetails.documentId, stripeId);
@@ -332,11 +336,12 @@ class PaymentConfirmationButton extends AbstractButtonWithLoader {
         customerId = userDetails.stripeId;
       }
 
-      sessionUrl = await Server().createCheckout(
-          customerId,
-          paymentRecap.matchPriceInCents - paymentRecap.creditsInCentsUsed,
-          paymentRecap.creditsInCentsUsed,
-          match.documentId);
+      sessionUrl = await PaymentController.createCheckout(
+          match.stripePriceId,
+          userDetails.documentId,
+          match.documentId,
+          match.documentId.startsWith("test_match_id")
+      );
     } catch (e) {
       print(e);
       Navigator.pop(context, true);

@@ -77,19 +77,19 @@ class LaunchWidgetState extends State<LaunchWidget> {
     if (deepLink.path == "/payment") {
       var outcome = deepLink.queryParameters["outcome"];
       var matchId = deepLink.queryParameters["match_id"];
-      var credits = int.parse(deepLink.queryParameters["credits"]);
-      var amount = int.parse(deepLink.queryParameters["amount"]);
 
       var context = navigatorKey.currentContext;
 
       if (outcome == "success") {
-        await MatchesController.joinMatch(context.read<MatchesState>(),
-            matchId, context.read<UserState>(), PaymentRecap(amount, credits));
+        Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => MatchDetails(matchId)),
+            (Route<dynamic> route) => route.isFirst
+        );
 
-        Navigator.pop(context);
+        await MatchesController.refresh(context.read<MatchesState>(), matchId);
 
-        await communicateSuccessToUser(context,
-            deepLink.queryParameters["match_id"]);
+        await communicateSuccessToUser(context, matchId);
       } else {
         Navigator.pop(context);
 
