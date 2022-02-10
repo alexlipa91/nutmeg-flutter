@@ -38,11 +38,10 @@ class MatchDetails extends StatelessWidget {
     var matchesState = context.watch<MatchesState>();
 
     var match = matchesState.getMatch(matchId);
-    var user = context.read<UserState>().getUserDetails();
 
     var loadOnceState = context.read<LoadOnceState>();
 
-    var sportCenter = loadOnceState.getSportCenter(match.sportCenter);
+    var sportCenter = loadOnceState.getSportCenter(match.sportCenterId);
     var sport = loadOnceState.getSport(match.sport);
 
     var title = sportCenter.name + " - " + sport.displayTitle;
@@ -333,11 +332,7 @@ class PlayerCard extends StatelessWidget {
                                                     style: TextPalette.h2),
                                                 SizedBox(height: 20),
                                                 Builder(builder: (context) {
-                                                  int nPlayed = MatchesController
-                                                      .numPlayedByUser(
-                                                          context.watch<
-                                                              MatchesState>(),
-                                                          userId);
+                                                  int nPlayed = context.watch<MatchesState>().getNumPlayedByUser(userId);
                                                   return Text(
                                                       nPlayed.toString() +
                                                           " " +

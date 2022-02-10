@@ -7,7 +7,6 @@ import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
 import 'package:nutmeg/screens/Launch.dart';
-import 'package:nutmeg/screens/PaymentPage.dart';
 import 'package:nutmeg/screens/UserPage.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
@@ -74,10 +73,10 @@ class BottomBar extends StatelessWidget {
                       var userSub = match.going
                           .where((e) => e.userId == userState.getUserDetails().documentId).first;
 
-                      await GenericInfoModal.withBottom(
+                      var success = await GenericInfoModal.withBottom(
                           title: "Leaving this game?",
                           body: "You joined this game: " +
-                              getFormattedDate(userSub.createdAt.toDate()) +
+                              getFormattedDate(userSub.createdAt) +
                               ".\n" +
                               ((hoursToGame < 24)
                                   ? "You will not receive a refund since the game is in less than 24 hours."
@@ -107,6 +106,10 @@ class BottomBar extends StatelessWidget {
                               ],
                             )
                           ])).show(context);
+
+                      if (success != null && success == false) {
+                        UiUtils.showGenericErrorModal(context);
+                      }
                     })
                   : (!match.isFull())
                       ? JoinGameButton(match: match)
@@ -133,6 +136,12 @@ class PaymentDetailsDescription extends StatelessWidget {
         future: PaymentController.generatePaymentRecap(
             matchesState, match.documentId, userState),
         builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            print(snapshot.error);
+            print(snapshot.stackTrace);
+            Navigator.pop(context, false);
+          }
+
           // var extraCreditsUsed =
           //     snapshot.data != null && snapshot.data.creditsInCentsUsed != 0;
 
@@ -199,7 +208,7 @@ class PaymentDetailsDescription extends StatelessWidget {
                       //         ? PaymentConfirmationWithCreditsButton(
                       //             match, snapshot.data)
                       //         :
-          PaymentConfirmationButton(match, snapshot.data))
+                  PaymentConfirmationButton(match, snapshot.data))
                 ],
               )
             ],
@@ -219,26 +228,35 @@ class LeaveConfirmationButton extends AbstractButtonWithLoader {
 
   @override
   Future<void> onPressed(BuildContext context) async {
-    await MatchesController.leaveMatch(context.read<MatchesState>(),
-        match.documentId, context.read<UserState>());
+    try {
+      await MatchesController.leaveMatch(context.read<MatchesState>(),
+          match.documentId, context.read<UserState>());
+    }
+    catch (e, stackTrace) {
+      print(e);
+      print(stackTrace);
+      Navigator.pop(context, false);
+      return;
+    }
+
     controller.success();
     await Future.delayed(Duration(milliseconds: 500));
     Navigator.of(context).pop(true);
 
     GenericInfoModal.withBottom(
-        title: formatCurrency.format(match.pricePerPersonInCents / 100) +
-            " credits were added to your account",
-        body:
-            "You can find your credits in your account page. Next time you join a game they will be automatically used.",
-        bottomWidget: Padding(
-          padding: EdgeInsets.symmetric(vertical: 15),
-          child: InkWell(
-              onTap: () {
-                Navigator.pushReplacement(navigatorKey.currentContext,
-                    MaterialPageRoute(builder: (context) => UserPage()));
-              },
-              child: Text("GO TO MY ACCOUNT", style: TextPalette.linkStyle)),
-        )).show(context);
+          title: formatCurrency.format(match.pricePerPersonInCents / 100) +
+              " credits were added to your account",
+          body:
+          "You can find your credits in your account page. Next time you join a game they will be automatically used.",
+          bottomWidget: Padding(
+            padding: EdgeInsets.symmetric(vertical: 15),
+            child: InkWell(
+                onTap: () {
+                  Navigator.pushReplacement(navigatorKey.currentContext,
+                      MaterialPageRoute(builder: (context) => UserPage()));
+                },
+                child: Text("GO TO MY ACCOUNT", style: TextPalette.linkStyle)),
+          )).show(context);
   }
 }
 
@@ -322,20 +340,6 @@ class PaymentConfirmationButton extends AbstractButtonWithLoader {
 
     var sessionUrl;
     try {
-      var customerId;
-      if (isTestPaymentMode || userDetails.stripeId == null) {
-        print("generating new stripe customer");
-        var stripeId = userDetails.stripeId;
-
-        if (!isTestPaymentMode) {
-          await UserController.storeStripeId(userDetails.documentId, stripeId);
-        }
-        await UserController.refresh(userState);
-        customerId = stripeId;
-      } else {
-        customerId = userDetails.stripeId;
-      }
-
       sessionUrl = await PaymentController.createCheckout(
           match.stripePriceId,
           userDetails.documentId,
@@ -344,14 +348,7 @@ class PaymentConfirmationButton extends AbstractButtonWithLoader {
       );
     } catch (e) {
       print(e);
-      Navigator.pop(context, true);
-
-      GenericInfoModal(
-              title: "Problems with the Payments",
-              body: "Please contact us for support")
-          .show(context);
-
-      return;
+      Navigator.pop(context, false);
     }
 
     await launch(sessionUrl, forceSafariVC: false);
@@ -408,7 +405,7 @@ onJoinGameAction(BuildContext context, Match match) async {
   }
 
   if (userState.isLoggedIn()) {
-    GenericInfoModal.withBottom(
+    var success = await GenericInfoModal.withBottom(
         title: "Join this game",
         body:
             "You can cancel up to 24h before the game starting time to get a full refund in credits to use on your next game.\nIf you cancel after this time you won't get a refund.",
@@ -418,5 +415,8 @@ onJoinGameAction(BuildContext context, Match match) async {
             PaymentDetailsDescription(match: match),
           ],
         )).show(context);
+    if (success != null && !success) {
+      UiUtils.showGenericErrorModal(context);
+    }
   }
 }

@@ -100,7 +100,7 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
   @override
   void initState() {
     // set initial values
-    sportCenterId = (match == null) ? null : match.sportCenter;
+    sportCenterId = (match == null) ? null : match.sportCenterId;
     sportCenterSubLocation = (match == null) ? null : match.sportCenterSubLocation;
     sport = (match == null) ? null : match.sport;
     priceController = TextEditingController(
@@ -249,48 +249,26 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                           onCancelBtnTap: () => Navigator.pop(context, false),
                         );
                         if (shouldAdd) {
-                          var errors = List<String>.from([
-                            if (dateTime == null)
-                              "specify date and time",
-                            if (sportCenterId == null)
-                              "specify sport center",
-                            if (sport == null)
-                              "specify sport",
-                            if (maxPlayers == null)
-                              "specify max players",
-                            if (priceController.value.text == null)
-                              "specify price",
-                          ]);
-
-                          if (errors.isEmpty) {
-                            var newMatchId = await MatchesFirestore.addMatch(
-                                new Match(
-                                    dateTime,
-                                    sportCenterId,
-                                    sportCenterSubLocation,
-                                    sport,
-                                    maxPlayers,
-                                    (double.parse(priceController.value.text) *
-                                        100)
-                                        .toInt(),
-                                    Duration(
-                                        minutes: int.parse(
-                                            durationController.value.text)),
-                                    null));
+                            var newMatchId = await MatchesController.addMatch(
+                                Match(
+                                  dateTime,
+                                  sportCenterId,
+                                  sportCenterSubLocation,
+                                  sport,
+                                  maxPlayers,
+                                  (double.parse(priceController.value.text) * 100).toInt(),
+                                  Duration(minutes: int.parse(durationController.value.text))
+                                )
+                              );
                             CoolAlert.show(
                                 context: context,
                                 type: CoolAlertType.info,
                                 text:
                                 "Success! Added match with id " + newMatchId);
-                          } else {
-                            // fixme new line here
-                            CoolAlert.show(text: errors.join('/n'),
-                                context: context, type: CoolAlertType.error);
                           }
-                        }
                       } else {
                         match.dateTime = dateTime;
-                        match.sportCenter = sportCenterId;
+                        match.sportCenterId = sportCenterId;
                         match.sportCenterSubLocation = sportCenterSubLocation;
                         match.sport = sport;
                         match.maxPlayers = maxPlayers;
@@ -320,7 +298,7 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                         Navigator.pop(context);
                       }
                     } catch (e, stackTrace) {
-                      print(stackTrace.toString());
+                      print(e.toString());
                       CoolAlert.show(
                           context: context,
                           type: CoolAlertType.error,

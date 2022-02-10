@@ -22,7 +22,7 @@ class Match {
 
   DateTime dateTime;
 
-  String sportCenter;
+  String sportCenterId;
   String sportCenterSubLocation;
 
   String sport;
@@ -33,32 +33,37 @@ class Match {
   String stripePriceId;
 
   List<Subscription> going;
-  List<Subscription> cancelled;
+  List<Subscription> refunded;
 
-  Match(this.dateTime, this.sportCenter, this.sportCenterSubLocation, this.sport,
-      this.maxPlayers, this.pricePerPersonInCents, this.duration, this.cancelledAt);
+  Match(this.dateTime, this.sportCenterId, this.sportCenterSubLocation, this.sport,
+      this.maxPlayers, this.pricePerPersonInCents, this.duration);
 
-  Match.fromJson(Map<String, dynamic> json, String documentId)
-      : dateTime = (json['dateTime'] as Timestamp).toDate(),
-        sportCenter = json['sportCenter'],
-        sportCenterSubLocation = json['sportCenterSubLocation'],
-        sport = json['sport'],
-        pricePerPersonInCents = json['pricePerPerson'],
-        maxPlayers = json['maxPlayers'],
-        duration = Duration(minutes: json['durationInMinutes'] ?? 60),
-        cancelledAt = json['cancelledAt'],
-        stripePriceId = json['stripePriceId'],
-        documentId = documentId;
+  Match.fromJson(Map<String, dynamic> jsonInput, String documentId):
+      dateTime = DateTime.parse(jsonInput['dateTime']).toLocal(),
+      sportCenterId = jsonInput['sportCenterId'],
+      sportCenterSubLocation = jsonInput['sportCenterSubLocation'],
+      sport = jsonInput['sport'],
+      pricePerPersonInCents = jsonInput['pricePerPerson'],
+      maxPlayers = jsonInput['maxPlayers'],
+      duration = Duration(minutes: jsonInput['duration'] ?? 60),
+      cancelledAt = jsonInput['cancelledAt'],
+      stripePriceId = jsonInput['stripePriceId'],
+
+      going = List<Subscription>.from(jsonInput["going"]
+          .values.map((m) => Subscription.fromJson(m))),
+
+      documentId = documentId;
 
   Map<String, dynamic> toJson() =>
       {
-        'dateTime': Timestamp.fromDate(dateTime),
-        'sportCenter': sportCenter,
+        'dateTime': dateTime.toUtc().toIso8601String(),
+        'sportCenterId': sportCenterId,
         'sportCenterSubLocation': sportCenterSubLocation,
         'sport': sport,
         'pricePerPerson': pricePerPersonInCents,
         'maxPlayers': maxPlayers,
         'cancelledAt': cancelledAt,
+        'duration': duration.inMinutes,
         'stripePriceId': stripePriceId
       };
 
@@ -81,11 +86,11 @@ class Match {
 class Subscription {
   String userId;
   String stripeSessionId;
-  Timestamp createdAt;
+  DateTime createdAt;
 
-  Subscription.fromJson(Map<String, dynamic> json, String documentId)
+  Subscription.fromJson(Map<String, dynamic> json)
       : userId = json['userId'],
-        createdAt = json['createdAt'],
+        createdAt = DateTime.parse(json['createdAt']).toLocal(),
         stripeSessionId = json["stripeSessionId"];
 
   Map<String, dynamic> toJson() =>
@@ -183,21 +188,6 @@ class UserDetails {
   String getPhotoUrl() => image;
 
   String getCreditsAvailable() => formatCurrency.format(creditsInCents / 100);
-}
-
-class Coupon {
-  String id;
-
-  String description;
-  int percentage;
-
-  Coupon.fromJson(Map<String, dynamic> json, String id)
-      : id = id,
-        description = json["description"],
-        percentage = json["percentage"];
-
-  Map<String, dynamic> toJson() =>
-      {'percentage': percentage, 'description': description};
 }
 
 class PaymentRecap {

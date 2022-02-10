@@ -11,7 +11,7 @@ class SubscriptionsDb {
           .collection(status)
           .withConverter<Subscription>(
         fromFirestore: (snapshot, _) =>
-            Subscription.fromJson(snapshot.data(), snapshot.id),
+            Subscription.fromJson(snapshot.data()),
         toFirestore: (sub, _) => sub.toJson(),
       );
 

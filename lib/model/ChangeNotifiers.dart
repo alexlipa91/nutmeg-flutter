@@ -21,6 +21,10 @@ class MatchesState extends ChangeNotifier {
       .where((m) => m.dateTime.difference(DateTime.now()).inHours > 2)
       .toList();
 
+  int getNumPlayedByUser(String userId) => _matches.values
+      .where((m) => m.cancelledAt == null
+      && m.going.where((s) => s.userId == userId).isNotEmpty).length;
+
   Match getMatch(String matchId) =>
       _matches[matchId];
 

@@ -128,7 +128,8 @@ class AvailableMatchesList extends StatelessWidget {
 
   List<Widget> myGamesWidgets(MatchesState state, UserState userState,
       AvailableMatchesUiState uiState) {
-    var matches = state.getMatches()
+    var matches = state
+        .getMatches()
         .where((m) => m.isUserGoing(userState.getUserDetails()));
 
     if (matches.isEmpty) {
@@ -168,15 +169,15 @@ class AvailableMatchesList extends StatelessWidget {
     return widgets;
   }
 
-  List<Widget> allGamesWidgets(
-      MatchesState state, AvailableMatchesUiState uiState, UserState userState) {
-    var matches =
-        state.getMatchesInFuture()
-            .where((e) => !e.wasCancelled())
-            .where((e) => (!e.documentId.startsWith("test_match_id")
-            || (userState.isLoggedIn() && userState.getUserDetails().isAdmin)))
-            .toList();
-    
+  List<Widget> allGamesWidgets(MatchesState state,
+      AvailableMatchesUiState uiState, UserState userState) {
+    var matches = state
+        .getMatchesInFuture()
+        .where((e) => !e.wasCancelled())
+        .where((e) => (!e.documentId.startsWith("test_match_id") ||
+            (userState.isLoggedIn() && userState.getUserDetails().isAdmin)))
+        .toList();
+
     if (matches.isEmpty) {
       return getEmptyStateWidgets(uiState);
     }
@@ -269,7 +270,7 @@ class MatchInfo extends StatelessWidget {
 
     var loadOnceState = context.read<LoadOnceState>();
 
-    var sportCenter = loadOnceState.getSportCenter(match.sportCenter);
+    var sportCenter = loadOnceState.getSportCenter(match.sportCenterId);
     var sport = loadOnceState.getSport(match.sport);
 
     var icons = getIcons(context, match);
@@ -294,7 +295,11 @@ class MatchInfo extends StatelessWidget {
                             Text(
                                 sportCenter.name +
                                     " - " +
-                                    sport.displayTitle,
+                                    sport.displayTitle +
+                                    (match.documentId
+                                            .startsWith("test_match_id")
+                                        ? " (TESTERS)"
+                                        : ""),
                                 style: TextPalette.h2),
                           ],
                         ),
@@ -303,10 +308,9 @@ class MatchInfo extends StatelessWidget {
                         Text(
                             (match.isFull())
                                 ? "Full"
-                                : (match.maxPlayers -
-                                match.numPlayersGoing())
-                                .toString() +
-                                " spots left",
+                                : (match.maxPlayers - match.numPlayersGoing())
+                                        .toString() +
+                                    " spots left",
                             style: GoogleFonts.roboto(
                                 color: Palette.primary,
                                 fontSize: 14,
@@ -316,20 +320,19 @@ class MatchInfo extends StatelessWidget {
                 ),
                 Expanded(
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          if (icons.isNotEmpty)
-                            Stack(
-                                alignment: Alignment.centerRight,
-                                clipBehavior: Clip.none,
-                                children: icons
-                  )
-                        ])]
-                  ),
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              if (icons.isNotEmpty)
+                                Stack(
+                                    alignment: Alignment.centerRight,
+                                    clipBehavior: Clip.none,
+                                    children: icons)
+                            ])
+                      ]),
                 )
               ],
             ),
@@ -352,7 +355,7 @@ class MatchInfo extends StatelessWidget {
     var currentRightOffset = 0.0;
 
     var isLoggedInAndGoing = context.watch<UserState>().isLoggedIn() &&
-            match.isUserGoing(context.watch<UserState>().getUserDetails());
+        match.isUserGoing(context.watch<UserState>().getUserDetails());
 
     if (isLoggedInAndGoing && match.numPlayersGoing() > 1) {
       widgets.add(Container(
@@ -371,8 +374,7 @@ class MatchInfo extends StatelessWidget {
                         fontSize: 14,
                         fontWeight: FontWeight.w500))),
             radius: 14,
-            backgroundColor: Palette.primary
-        ),
+            backgroundColor: Palette.primary),
       ));
       currentRightOffset += 25;
     }
@@ -380,7 +382,7 @@ class MatchInfo extends StatelessWidget {
     if (isLoggedInAndGoing) {
       var w = Container(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.all( Radius.circular(50.0)),
+            borderRadius: BorderRadius.all(Radius.circular(50.0)),
             border: Border.all(
               color: Colors.white,
               width: 2.0,
@@ -504,7 +506,7 @@ class MatchInfoPast extends StatelessWidget {
 
     var loadOnceState = context.read<LoadOnceState>();
 
-    var sportCenter = loadOnceState.getSportCenter(match.sportCenter);
+    var sportCenter = loadOnceState.getSportCenter(match.sportCenterId);
     var sport = loadOnceState.getSport(match.sport);
 
     return InkWell(
@@ -525,10 +527,7 @@ class MatchInfoPast extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                                sportCenter.neighbourhood +
-                                    " - " +
-                                    sport.displayTitle,
+                            Text(sportCenter.name + " - " + sport.displayTitle,
                                 style: TextPalette.h2),
                             SizedBox(height: 10),
                             Text(sportCenter.name, style: TextPalette.bodyText),

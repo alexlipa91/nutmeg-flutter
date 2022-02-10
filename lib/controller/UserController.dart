@@ -11,6 +11,7 @@ import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 class UserController {
+
   static Future<UserDetails> refresh(UserState userState) async {
     var userDetails = await UserFirestore.getSpecificUserDetails(
         userState.getUserDetails().getUid());
@@ -91,12 +92,6 @@ class UserController {
     print("saving token " + token + " for user " + userId);
     await FirebaseFirestore.instance.collection('users').doc(userId).update({
       'tokens': FieldValue.arrayUnion([token]),
-    });
-  }
-
-  static Future<void> storeStripeId(String userId, String customerId) async {
-    await FirebaseFirestore.instance.collection('users').doc(userId).update({
-      'stripeId': customerId
     });
   }
 

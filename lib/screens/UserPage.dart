@@ -89,10 +89,7 @@ class UserPage extends StatelessWidget {
                               child: Column(
                             children: [
                               Text(
-                                  MatchesController.numPlayedByUser(
-                                              context.watch<MatchesState>(),
-                                              userDetails.getUid())
-                                          .toString(),
+                              context.watch<MatchesState>().getNumPlayedByUser(userDetails.getUid()).toString(),
                                   style: TextPalette.h2),
                               SizedBox(height: 20),
                               Text("Games Played", style: TextPalette.h3)
