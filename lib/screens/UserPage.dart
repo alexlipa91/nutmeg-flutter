@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
+import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
+import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/AppBar.dart';
 import 'package:nutmeg/widgets/Avatar.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:nutmeg/widgets/Containers.dart';
+import 'package:progress_state_button/progress_button.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -39,185 +42,221 @@ class UserPage extends StatelessWidget {
         child: Container(
             child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 20),
-          child: (userState.getUserDetails() == null) ? MatchInfoSkeleton() :
-          SingleChildScrollView(
-            child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                      padding: EdgeInsets.only(top: 20),
-                      child: Text("Account", style: TextPalette.h1Default)),
-                  Padding(
-                    padding: EdgeInsets.only(top: 20),
-                    child: InfoContainer(
-                        child: Row(
+          child: (userState.getUserDetails() == null)
+              ? MatchInfoSkeleton()
+              : SingleChildScrollView(
+                  child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        UserAvatar(24, null),
                         Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 30),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(userDetails.name ?? "N/A",
-                                  style: TextPalette.h2),
-                              SizedBox(height: 10),
-                              Text(userDetails.email,
-                                  style: TextPalette.bodyText)
-                            ],
-                          ),
-                        )
-                      ],
-                    )),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.only(top: 20),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
+                            padding: EdgeInsets.only(top: 20),
+                            child:
+                                Text("Account", style: TextPalette.h1Default)),
+                        Padding(
+                          padding: EdgeInsets.only(top: 20),
                           child: InfoContainer(
-                            child: Column(
-                              children: [
-                                Text(userDetails.getCreditsAvailable(),
-                                    style: TextPalette.h2),
-                                SizedBox(height: 20),
-                                Text("Available Credits", style: TextPalette.h3)
-                              ],
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: 20),
-                        Expanded(
-                          child: InfoContainer(
-                              child: Column(
+                              child: Row(
                             children: [
-                              Text(
-                                  context
-                                      .watch<MatchesState>()
-                                      .getNumPlayedByUser(userDetails.getUid())
-                                      .toString(),
-                                  style: TextPalette.h2),
-                              SizedBox(height: 20),
-                              Text("Games Played", style: TextPalette.h3)
-                            ],
-                          )),
-                        )
-                      ],
-                    ),
-                  ),
-                  Padding(
-                      padding: EdgeInsets.only(top: 20),
-                      child: Text("USEFUL LINKS", style: TextPalette.h4)),
-                  Padding(
-                    padding: EdgeInsets.symmetric(vertical: 20),
-                    child: InfoContainer(
-                        child: Column(children: [
-                      LinkInfo(
-                        text: "Follow us on Instagram",
-                        onTap: () async {
-                          var url = 'https://www.instagram.com/nutmegapp/';
-
-                          if (await canLaunch(url)) {
-                            await launch(
-                              url,
-                              universalLinksOnly: true,
-                            );
-                          } else {
-                            throw 'There was a problem to open the url: $url';
-                          }
-                        },
-                      ),
-                      // LinkInfo(text: "Terms and Conditions"),
-                      Padding(
-                        padding: EdgeInsets.only(top: 10),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: LogoutButton()
-                            )
-                          ],
-                        ),
-                      ),
-                      if (userDetails.isAdmin)
-                        Padding(
-                          padding: EdgeInsets.only(top: 10),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                  child: GenericStatelessButton(
-                                      text: "ADMIN AREA",
-                                      onPressed: () async {
-                                        await Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                                builder: (context) =>
-                                                    AdminAvailableMatches()));
-                                      }))
-                            ],
-                          ),
-                        ),
-                      if (userDetails.isAdmin)
-                        Padding(
-                          padding: EdgeInsets.only(top: 10),
-                          child: Row(
-                            children: [
-                              Text("Test Mode"),
-                              SizedBox(width: 10),
-                              Switch(
-                                value: context.watch<UserState>().isTestMode,
-                                onChanged: (value) => userState
-                                    .setTestMode(!userState.isTestMode),
-                                activeTrackColor: Colors.red,
-                                activeColor: Colors.red,
-                              ),
-                              Expanded(
-                                  child: Text(
-                                      "It allows to see in the UI test matches"))
-                            ],
-                          ),
-                        ),
-                      if (userDetails.isAdmin)
-                        Padding(
-                          padding: EdgeInsets.only(top: 10),
-                          child: Row(
-                            children: [
-                              Text("Update Credits (in cents)"),
-                              SizedBox(width: 10),
-                              Expanded(
-                                child: TextFormField(
-                                  initialValue:
-                                      userDetails.creditsInCents.toString(),
-                                  keyboardType: TextInputType.number,
-                                  inputFormatters: <TextInputFormatter>[
-                                    FilteringTextInputFormatter.digitsOnly
-                                  ], // Only numbers can be
-                                  onChanged: (v) {
-                                    var newValue = int.tryParse(v);
-                                    if (newValue != null)
-                                      creditCount = newValue;
-                                  }
-                                  // entered
-                                ),
-                              ),
-                              SizedBox(width: 10),
-                              Container(
-                                width: 100,
-                                child: GenericStatelessButton(
-                                  text: "UPDATE",
-                                  onPressed: () async {
-                                    userDetails.creditsInCents = creditCount;
-                                    userState.setUserDetails(userDetails);
-                                  }
+                              UserAvatar(24, null),
+                              Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 30),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(userDetails.name ?? "N/A",
+                                        style: TextPalette.h2),
+                                    SizedBox(height: 10),
+                                    Text(userDetails.email,
+                                        style: TextPalette.bodyText)
+                                  ],
                                 ),
                               )
                             ],
+                          )),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.only(top: 20),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: InfoContainer(
+                                  child: Column(
+                                    children: [
+                                      Text(formatCurrency(userDetails.creditsInCents),
+                                          style: TextPalette.h2),
+                                      SizedBox(height: 20),
+                                      Text("Available Credits",
+                                          style: TextPalette.h3)
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              SizedBox(width: 20),
+                              Expanded(
+                                child: InfoContainer(
+                                    child: Column(
+                                  children: [
+                                    Text(
+                                        context
+                                            .watch<MatchesState>()
+                                            .getNumPlayedByUser(
+                                                userDetails.getUid())
+                                            .toString(),
+                                        style: TextPalette.h2),
+                                    SizedBox(height: 20),
+                                    Text("Games Played", style: TextPalette.h3)
+                                  ],
+                                )),
+                              )
+                            ],
                           ),
-                        )
-                    ])),
-                  ),
-                ]),
-          ),
+                        ),
+                        Padding(
+                            padding: EdgeInsets.only(top: 20),
+                            child: Text("USEFUL LINKS", style: TextPalette.h4)),
+                        Padding(
+                          padding: EdgeInsets.symmetric(vertical: 20),
+                          child: InfoContainer(
+                              child: Column(children: [
+                            LinkInfo(
+                              text: "Follow us on Instagram",
+                              onTap: () async {
+                                var url =
+                                    'https://www.instagram.com/nutmegapp/';
+
+                                if (await canLaunch(url)) {
+                                  await launch(
+                                    url,
+                                    universalLinksOnly: true,
+                                  );
+                                } else {
+                                  throw 'There was a problem to open the url: $url';
+                                }
+                              },
+                            ),
+                            // LinkInfo(text: "Terms and Conditions"),
+                            Padding(
+                              padding: EdgeInsets.only(top: 10),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                      child: GenericStatefulButton(
+                                          text: "LOGOUT",
+                                          onPressed:
+                                              (BuildContext context) async {
+                                            context
+                                                .read<GenericButtonState>()
+                                                .change(ButtonState.loading);
+
+                                            try {
+                                              await Future.delayed(
+                                                  Duration(milliseconds: 500),
+                                                  () => UserController.logout(
+                                                      context
+                                                          .read<UserState>()));
+                                              Navigator.of(context).pop();
+                                            } catch (e, stackTrace) {
+                                              print(e);
+                                              print(stackTrace);
+                                              Navigator.pop(context, false);
+                                              return;
+                                            }
+
+                                            await Future.delayed(
+                                                Duration(milliseconds: 500));
+                                            Navigator.of(context).pop(true);
+                                          }))
+                                ],
+                              ),
+                            ),
+                            if (userDetails.isAdmin)
+                              Padding(
+                                padding: EdgeInsets.only(top: 10),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                        child: GenericStatefulButton(
+                                            text: "ADMIN AREA",
+                                            onPressed: (BuildContext context) async {
+                                              await Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          AdminAvailableMatches()));
+                                            }))
+                                  ],
+                                ),
+                              ),
+                            if (userDetails.isAdmin)
+                              Padding(
+                                padding: EdgeInsets.only(top: 10),
+                                child: Row(
+                                  children: [
+                                    Text("Test Mode"),
+                                    SizedBox(width: 10),
+                                    Switch(
+                                      value:
+                                          context.watch<UserState>().isTestMode,
+                                      onChanged: (value) => userState
+                                          .setTestMode(!userState.isTestMode),
+                                      activeTrackColor: Colors.red,
+                                      activeColor: Colors.red,
+                                    ),
+                                    Expanded(
+                                        child: Text(
+                                            "It allows to see in the UI test matches"))
+                                  ],
+                                ),
+                              ),
+                            if (userDetails.isAdmin)
+                              Padding(
+                                padding: EdgeInsets.only(top: 10),
+                                child: Row(
+                                  children: [
+                                    Text("Update Credits (in cents)"),
+                                    SizedBox(width: 10),
+                                    Expanded(
+                                      child: TextFormField(
+                                          initialValue: userDetails
+                                              .creditsInCents
+                                              .toString(),
+                                          keyboardType: TextInputType.number,
+                                          inputFormatters: <TextInputFormatter>[
+                                            FilteringTextInputFormatter
+                                                .digitsOnly
+                                          ], // Only numbers can be
+                                          onChanged: (v) {
+                                            var newValue = int.tryParse(v);
+                                            if (newValue != null)
+                                              creditCount = newValue;
+                                          }
+                                          // entered
+                                          ),
+                                    ),
+                                    SizedBox(width: 10),
+                                    Container(
+                                      width: 100,
+                                      child: GenericStatefulButton(
+                                          text: "UPDATE",
+                                          onPressed: (BuildContext context) async {
+                                            userDetails.creditsInCents =
+                                                creditCount;
+                                            userState
+                                                .setUserDetails(userDetails);
+                                            await UserController.editUser(userDetails);
+                                            await GenericInfoModal(title: "Credits updated",
+                                                body: "Your new balance is: " + formatCurrency(creditCount)).show(context);
+                                          }),
+                                    )
+                                  ],
+                                ),
+                              )
+                          ])),
+                        ),
+                      ]),
+                ),
         )),
       ),
     );

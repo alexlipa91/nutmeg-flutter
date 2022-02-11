@@ -180,7 +180,6 @@ class MatchesAreaState extends State<MatchesArea> {
 
 // widget of info for a single match
 class MatchInfo extends StatelessWidget {
-  static var formatCurrency = NumberFormat.simpleCurrency(name: "EUR");
   static var monthDayFormat = DateFormat('HH:mm');
 
   final Match match;

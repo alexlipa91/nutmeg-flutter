@@ -254,7 +254,6 @@ class RoundedTopBar extends StatelessWidget {
 }
 
 class MatchInfo extends StatelessWidget {
-  static var formatCurrency = NumberFormat.simpleCurrency(name: "EUR");
   static var monthDayFormat = DateFormat('HH:mm');
 
   final String matchId;
@@ -500,7 +499,6 @@ class MatchInfoSkeleton extends StatelessWidget {
 
 // variation of match info for past
 class MatchInfoPast extends StatelessWidget {
-  static var formatCurrency = NumberFormat.simpleCurrency(name: "EUR");
   static var dayFormat = DateFormat('dd MMM');
 
   final Match match;

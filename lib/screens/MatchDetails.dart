@@ -7,6 +7,7 @@ import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
+import 'package:nutmeg/screens/JoinModal.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/AppBar.dart';
@@ -22,7 +23,6 @@ import 'package:shimmer/shimmer.dart';
 
 import 'MatchDetailsModals.dart';
 
-var formatCurrency = NumberFormat.simpleCurrency(name: "EUR");
 
 class ScreenArguments {
   final String matchId;
@@ -119,7 +119,6 @@ class MatchDetails extends StatelessWidget {
 
 // info card
 class MatchInfo extends StatelessWidget {
-  static var formatCurrency = NumberFormat.simpleCurrency(name: "EUR");
   static var dateFormat = DateFormat('MMMM dd \'at\' HH:mm');
 
   final Match match;
@@ -156,7 +155,7 @@ class MatchInfo extends StatelessWidget {
             // todo fix info sport
             subTitle: sportCenter.tags.join(", ")),
         InfoWidget(
-            title: formatCurrency.format(match.getPrice()),
+            title: formatCurrency(match.pricePerPersonInCents),
             icon: Icons.sell,
             subTitle: "Pay with Ideal"),
       ],
@@ -408,7 +407,7 @@ class EmptyPlayerCard extends StatelessWidget {
               // margin: EdgeInsets.only(right: 10),
               child: Column(children: [
             InkWell(
-              onTap: () => JoinButton.onJoinGameAction(context, match),
+              onTap: () => JoinModal.onJoinGameAction(context, match),
               child: CircleAvatar(
                   radius: 25,
                   child: Icon(Icons.add, color: Palette.mediumgrey, size: 24),

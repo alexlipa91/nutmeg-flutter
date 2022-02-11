@@ -8,6 +8,7 @@ import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
 import 'package:nutmeg/screens/admin/Matches.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
+import 'package:nutmeg/utils/Utils.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 class UserController {
@@ -95,7 +96,7 @@ class UserController {
       if (credits > 0) {
         userDetails.creditsInCents = userDetails.creditsInCents + credits;
         afterLoginComm = AfterLoginCommunication();
-        afterLoginComm.text = MatchInfo.formatCurrency.format(credits / 100) +
+        afterLoginComm.text = formatCurrency(credits) +
             " were added to your account.\nJoin a match and use them to pay";
       }
       await addUser(userDetails);

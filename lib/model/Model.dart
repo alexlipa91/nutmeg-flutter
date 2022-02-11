@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 
-var formatCurrency = NumberFormat.simpleCurrency(name: "EUR");
 
 enum SubscriptionStatus { going, refunded, canceled }
 
@@ -79,8 +78,6 @@ class Match {
       going.where((e) => e.userId == user.documentId).isNotEmpty;
 
   double getPrice() => pricePerPersonInCents / 100;
-
-  String getFormattedPrice() => formatCurrency.format(getPrice());
 
   bool wasCancelled() => cancelledAt != null;
 }
@@ -188,8 +185,6 @@ class UserDetails {
   void setStripeId(String stripeId) => stripeId = stripeId;
 
   String getPhotoUrl() => image;
-
-  String getCreditsAvailable() => formatCurrency.format(creditsInCents / 100);
 }
 
 class PaymentRecap {

@@ -35,10 +35,11 @@ String _getFormattedDate(DateTime dateTime, DateFormat dateFormat) {
   return dayString + " at " + uiHourFormat.format(dateTime);
 }
 
+String formatCurrency(int cents) => NumberFormat.simpleCurrency(name: "EUR").format(cents / 100);
+
 List<String> getStartAndEndHour(DateTime dateTime, Duration duration) => [
   uiHourFormat.format(dateTime), uiHourFormat.format(dateTime.add(duration))
 ];
-
 
 class DynamicLinks {
   static shareMatchFunction(String matchId) async {

@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
+import 'package:nutmeg/screens/JoinModal.dart';
+import 'package:nutmeg/screens/LeaveMatchModal.dart';
+import 'package:nutmeg/screens/PayWithCreditsModal.dart';
+import 'package:nutmeg/screens/PayWithMoneyModal.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/Buttons.dart';
-import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:nutmeg/widgets/Containers.dart';
 import 'package:provider/provider.dart';
 
-var formatCurrency = NumberFormat.simpleCurrency(name: "EUR");
 
 class BottomBar extends StatelessWidget {
   final Match match;
@@ -51,8 +52,7 @@ class BottomBar extends StatelessWidget {
                           ? match.numPlayersGoing().toString() + " going"
                           : (match.getSpotsLeft() == 0)
                               ? "Find another game"
-                              : formatCurrency
-                                  .format(match.pricePerPersonInCents / 100),
+                              : formatCurrency(match.pricePerPersonInCents),
                       style: TextPalette.bodyText),
                 ],
               ),
@@ -90,9 +90,7 @@ class BottomBar extends StatelessWidget {
                                             style: TextPalette.h3),
                                         Expanded(
                                             child: Text(
-                                          formatCurrency.format(
-                                                  match.pricePerPersonInCents /
-                                                      100) +
+                                          formatCurrency(match.pricePerPersonInCents) +
                                               " euro",
                                           style: TextPalette.h3,
                                           textAlign: TextAlign.end,
@@ -151,7 +149,7 @@ class PaymentDetailsDescription extends StatelessWidget {
           Text("1x player", style: TextPalette.h3),
           Expanded(
               child: Text(
-            formatCurrency.format(match.pricePerPersonInCents / 100),
+            formatCurrency(match.pricePerPersonInCents),
             style: TextPalette.h3,
             textAlign: TextAlign.end,
           ))
@@ -167,8 +165,7 @@ class PaymentDetailsDescription extends StatelessWidget {
               Expanded(
                   child: Text(
                 "- " +
-                    formatCurrency
-                        .format(paymentRecap.creditsInCentsUsed / 100),
+                    formatCurrency(paymentRecap.creditsInCentsUsed),
                 style: TextPalette.bodyText,
                 textAlign: TextAlign.end,
               ))
@@ -183,8 +180,7 @@ class PaymentDetailsDescription extends StatelessWidget {
               children: [
                 Text("Subtotal", style: TextPalette.h3),
                 Text(
-                  formatCurrency.format(
-                      paymentRecap.finalPriceToPayInCents() / 100),
+                  formatCurrency(paymentRecap.finalPriceToPayInCents()),
                   style: TextPalette.h3,
                 )
               ],
@@ -199,7 +195,7 @@ class PaymentDetailsDescription extends StatelessWidget {
                             ? PayWithCreditsButton(
                                 match: match, paymentRecap: paymentRecap)
                             :
-                    PayWithMoneyButton(match: match, paymentRecap: paymentRecap)
+                    PayWithMoneyButton(match: match)
                 )
           ],
         )
