@@ -26,14 +26,15 @@ class UserController {
 
     if (u != null) {
       try {
-        var existingUserDetails =
-            await UserFirestore.getSpecificUserDetails(u.uid);
+        var userId = u.uid;
 
+        var existingUserDetails = await UserFirestore.getSpecificUserDetails(userId);
         await UserController.saveUserTokensToDb();
 
-        return UserDetails.from(u.uid, existingUserDetails);
-      } catch (e) {
+        return UserDetails.from(userId, existingUserDetails);
+      } catch (e, stack) {
         print("Found firebase user but couldn't load details: " + e.toString());
+        print(stack);
       }
     }
     return null;
@@ -52,15 +53,17 @@ class UserController {
 
   static Future<AfterLoginCommunication> _login(
       UserState userState, UserCredential userCredential) async {
+    var uid = userCredential.user.uid;
+
     UserDetails userDetails =
-        await UserFirestore.getSpecificUserDetails(userCredential.user.uid);
+        await UserFirestore.getSpecificUserDetails(uid);
 
     var afterLoginComm;
 
     // check if first time
     if (userDetails == null) {
       userDetails = new UserDetails(
-          userCredential.user.uid,
+          uid,
           false,
           userCredential.user.photoURL,
           userCredential.user.displayName,

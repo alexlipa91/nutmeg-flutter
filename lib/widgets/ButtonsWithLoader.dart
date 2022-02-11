@@ -327,7 +327,7 @@ class LeaveMatchButtonState extends State<LeaveMatchButton> {
 class AdminAreaButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    var text = "LEAVE MATCH";
+    var text = "ADMIN AREA";
 
     return ProgressButton(
       stateWidgets: stateWidgets(text),
