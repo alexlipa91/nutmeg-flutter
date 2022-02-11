@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
@@ -9,13 +10,16 @@ import 'package:nutmeg/widgets/Containers.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class UserPage extends StatelessWidget {
+import 'admin/Matches.dart';
 
+class UserPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // don't watch this or when logout things will break
-    var userState = context.read<UserState>();
+    var userState = context.watch<UserState>();
     var userDetails = userState.getUserDetails();
+
+    int creditCount = (userDetails == null) ? 0 : userDetails.creditsInCents;
 
     return Scaffold(
       appBar: UserPageAppBar(),
@@ -35,7 +39,8 @@ class UserPage extends StatelessWidget {
         child: Container(
             child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 20),
-          child: SingleChildScrollView(
+          child: (userState.getUserDetails() == null) ? MatchInfoSkeleton() :
+          SingleChildScrollView(
             child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -129,12 +134,7 @@ class UserPage extends StatelessWidget {
                         child: Row(
                           children: [
                             Expanded(
-                              child: Container(),
-                              // ButtonWithLoader("LOGOUT", () async {
-                              //   await UserController.logout(
-                              //       context.read<UserState>());
-                              //   Navigator.pop(context);
-                              // }),
+                              child: LogoutButton()
                             )
                           ],
                         ),
@@ -144,7 +144,16 @@ class UserPage extends StatelessWidget {
                           padding: EdgeInsets.only(top: 10),
                           child: Row(
                             children: [
-                              Expanded(child: AdminAreaButton())
+                              Expanded(
+                                  child: GenericStatelessButton(
+                                      text: "ADMIN AREA",
+                                      onPressed: () async {
+                                        await Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    AdminAvailableMatches()));
+                                      }))
                             ],
                           ),
                         ),
@@ -162,33 +171,49 @@ class UserPage extends StatelessWidget {
                                 activeTrackColor: Colors.red,
                                 activeColor: Colors.red,
                               ),
-                              Expanded(child: Text("It allows to see in the UI test matches"))
+                              Expanded(
+                                  child: Text(
+                                      "It allows to see in the UI test matches"))
                             ],
                           ),
                         ),
-
-                      // todo edit credits
-
-                      // if (userDetails.isAdmin)
-                      //   Padding(
-                      //         padding: EdgeInsets.only(top: 10),
-                      //         child: Row(
-                      //           children: [
-                      //             Text("Update Credits"),
-                      //             SizedBox(width: 10),
-                      //             Switch(
-                      //               value: context.watch<UserState>().isTestMode,
-                      //               onChanged: (value) => userState
-                      //                   .setTestMode(!userState.isTestMode),
-                      //               activeTrackColor: Colors.red,
-                      //               activeColor: Colors.red,
-                      //             ),
-                      //             SizedBox(width: 10),
-                      //             TextButton(onPressed: UserController.up,
-                      //                 child: Text("Update"))
-                      //           ],
-                      //         ),
-                      //       )
+                      if (userDetails.isAdmin)
+                        Padding(
+                          padding: EdgeInsets.only(top: 10),
+                          child: Row(
+                            children: [
+                              Text("Update Credits (in cents)"),
+                              SizedBox(width: 10),
+                              Expanded(
+                                child: TextFormField(
+                                  initialValue:
+                                      userDetails.creditsInCents.toString(),
+                                  keyboardType: TextInputType.number,
+                                  inputFormatters: <TextInputFormatter>[
+                                    FilteringTextInputFormatter.digitsOnly
+                                  ], // Only numbers can be
+                                  onChanged: (v) {
+                                    var newValue = int.tryParse(v);
+                                    if (newValue != null)
+                                      creditCount = newValue;
+                                  }
+                                  // entered
+                                ),
+                              ),
+                              SizedBox(width: 10),
+                              Container(
+                                width: 100,
+                                child: GenericStatelessButton(
+                                  text: "UPDATE",
+                                  onPressed: () async {
+                                    userDetails.creditsInCents = creditCount;
+                                    userState.setUserDetails(userDetails);
+                                  }
+                                ),
+                              )
+                            ],
+                          ),
+                        )
                     ])),
                   ),
                 ]),

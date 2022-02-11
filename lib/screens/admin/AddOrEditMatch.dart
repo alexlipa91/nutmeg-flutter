@@ -1,10 +1,8 @@
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:cool_alert/cool_alert.dart';
 import 'package:date_time_picker/date_time_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
-import 'package:nutmeg/db/MatchesFirestore.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
 import 'package:intl/intl.dart';
@@ -311,7 +309,7 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                           return;
                         }
 
-                        await MatchesFirestore.editMatch(match);
+                        await MatchesController.editMatch(match);
                         await CoolAlert.show(
                             context: context,
                             type: CoolAlertType.info,

@@ -3,8 +3,6 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:nutmeg/db/MatchesFirestore.dart';
-import 'package:nutmeg/db/SubscriptionsFirestore.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
 
@@ -88,11 +86,18 @@ class MatchesController {
     return (resp).data["id"];
   }
 
+  static Future<void> editMatch(Match m) async {
+    HttpsCallable callable =
+    FirebaseFunctions.instanceFor(region: "europe-central2")
+        .httpsCallable('edit_match');
+    await callable({"id": m.documentId, "data": m.toJson()});
+  }
+
   static Future<void> cancelMatch(
       MatchesState matchesState, String matchId) async {
     var match = matchesState.getMatch(matchId);
     match.cancelledAt = Timestamp.fromDate(DateTime.now());
-    await MatchesFirestore.editMatch(match);
+    await editMatch(match);
     matchesState.setMatch(await getMatch(matchId));
   }
 

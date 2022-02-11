@@ -1,9 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:nutmeg/controller/PromotionController.dart';
-import 'package:nutmeg/db/UserFirestore.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
 import 'package:nutmeg/screens/admin/Matches.dart';
@@ -13,23 +13,28 @@ import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 class UserController {
 
   static Future<UserDetails> refresh(UserState userState) async {
-    var userDetails = await UserFirestore.getSpecificUserDetails(
+    var userDetails = await getSpecificUserDetails(
         userState.getUserDetails().getUid());
     userState.setUserDetails(userDetails);
     return userDetails;
   }
 
-  static getUserDetails(String id) => UserFirestore.getSpecificUserDetails(id);
+  static getUserDetails(String id) => getSpecificUserDetails(id);
 
   static Future<UserDetails> getUserIfAvailable() async {
-    User u = UserFirestore.getCurrentFirestoreUser();
+    User u = FirebaseAuth.instance.currentUser;
 
     if (u != null) {
       try {
         var userId = u.uid;
 
-        var existingUserDetails = await UserFirestore.getSpecificUserDetails(userId);
-        await UserController.saveUserTokensToDb();
+        var existingUserDetails = await getSpecificUserDetails(userId);
+
+        if (existingUserDetails == null) {
+          return null;
+        }
+
+        await UserController.saveUserTokensToDb(existingUserDetails);
 
         return UserDetails.from(userId, existingUserDetails);
       } catch (e, stack) {
@@ -40,12 +45,28 @@ class UserController {
     return null;
   }
 
-  static Future<void> saveUserTokensToDb() async {
+  static Future<void> editUser(UserDetails u) async {
+    HttpsCallable callable =
+    FirebaseFunctions.instanceFor(region: "europe-central2")
+        .httpsCallable('edit_user');
+    await callable({"id": u.documentId, "data": u.toJson()});
+  }
+
+  static Future<void> addUser(UserDetails u) async {
+    HttpsCallable callable =
+    FirebaseFunctions.instanceFor(region: "europe-central2")
+        .httpsCallable('add_user');
+    await callable({"id": u.documentId, "data": u.toJson()});
+  }
+
+  static Future<void> saveUserTokensToDb(UserDetails userDetails) async {
     // Get the token each time the application loads
     String token = await FirebaseMessaging.instance.getToken();
 
+    userDetails.tokens.add(token);
+
     // Save the initial token to the database
-    await _saveTokenToDatabase(token);
+    await editUser(userDetails);
 
     // Any time the token refreshes, store this in the database too.
     FirebaseMessaging.instance.onTokenRefresh.listen(_saveTokenToDatabase);
@@ -56,7 +77,7 @@ class UserController {
     var uid = userCredential.user.uid;
 
     UserDetails userDetails =
-        await UserFirestore.getSpecificUserDetails(uid);
+        await getSpecificUserDetails(uid);
 
     var afterLoginComm;
 
@@ -77,11 +98,11 @@ class UserController {
         afterLoginComm.text = MatchInfo.formatCurrency.format(credits / 100) +
             " were added to your account.\nJoin a match and use them to pay";
       }
-      await UserFirestore.storeUserDetails(userDetails);
+      await addUser(userDetails);
     }
 
     userState.setUserDetails(userDetails);
-    await UserController.saveUserTokensToDb();
+    await UserController.saveUserTokensToDb(userDetails);
     return afterLoginComm;
   }
 
@@ -166,8 +187,22 @@ class UserController {
     return _login(userState, userCredential);
   }
 
+  static Future<UserDetails> getSpecificUserDetails(String uid) async {
+    HttpsCallable callable = FirebaseFunctions.instanceFor(region: "europe-central2")
+        .httpsCallable('get_user');
+
+    var resp = await callable({"id": uid});
+    Map<String, dynamic> data = resp.data;
+
+    if (data == null) {
+      return null;
+    }
+
+    return UserDetails.fromJson(data, uid);
+  }
+
   static Future<void> logout(UserState userState) async {
-    await UserFirestore.logout();
+    await FirebaseAuth.instance.signOut();
     userState.setUserDetails(null);
   }
 }

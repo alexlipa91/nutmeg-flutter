@@ -162,7 +162,7 @@ class UserDetails {
         this.tokens = u.tokens;
 
   UserDetails.fromJson(Map<String, dynamic> json, String documentId)
-      : isAdmin = json["isAdmin"] ?? false,
+      : isAdmin = (json["isAdmin"] == null) ? false : json["isAdmin"],
         image = json["image"],
         name = json["name"],
         email = json["email"],

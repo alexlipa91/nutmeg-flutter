@@ -197,7 +197,7 @@ class LaunchWidgetState extends State<LaunchWidget> {
     if (userDetails != null) {
       context.read<UserState>().setUserDetails(userDetails);
       // tell the app to save user tokens
-      await UserController.saveUserTokensToDb();
+      await UserController.saveUserTokensToDb(userDetails);
     }
 
     FirebaseMessaging.instance.requestPermission(

@@ -322,12 +322,24 @@ class LeaveMatchButtonState extends State<LeaveMatchButton> {
   }
 }
 
-// ADMIN AREA
+// LOGOUT
+class LogoutButton extends StatefulWidget {
+  final Match match;
+  final PaymentRecap paymentRecap;
 
-class AdminAreaButton extends StatelessWidget {
+  const LogoutButton({Key key, this.match, this.paymentRecap})
+      : super(key: key);
+
+  @override
+  State<StatefulWidget> createState() => LogoutButtonState();
+}
+
+class LogoutButtonState extends State<LogoutButton> {
+  ButtonState buttonState = ButtonState.idle;
+
   @override
   Widget build(BuildContext context) {
-    var text = "ADMIN AREA";
+    var text = "LOGOUT";
 
     return ProgressButton(
       stateWidgets: stateWidgets(text),
@@ -341,13 +353,52 @@ class AdminAreaButton extends StatelessWidget {
       progressIndicatorSize: 23,
       padding: EdgeInsets.symmetric(horizontal: 10),
       onPressed: () async {
-        await Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) =>
-                    AdminAvailableMatches()));
-      }
+        setState(() {
+          buttonState = ButtonState.loading;
+        });
+
+        try {
+          await Future.delayed(Duration(milliseconds: 500),
+              () => UserController.logout(context.read<UserState>()));
+          Navigator.of(context).pop();
+        } catch (e, stackTrace) {
+          print(e);
+          print(stackTrace);
+          Navigator.pop(context, false);
+          return;
+        }
+
+        await Future.delayed(Duration(milliseconds: 500));
+        Navigator.of(context).pop(true);
+      },
+      state: buttonState,
     );
   }
+}
 
+
+// GENERIC STATELESS BUTTON
+
+class GenericStatelessButton extends StatelessWidget {
+  final String text;
+  final Function onPressed;
+
+  const GenericStatelessButton({Key key, this.text, this.onPressed}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return ProgressButton(
+      stateWidgets: stateWidgets(text),
+      stateColors: stateColors,
+      maxWidth: 202,
+      minWidth: 50,
+      minWidthStates: [ButtonState.success],
+      radius: 32,
+      height: 43,
+      animationDuration: Duration(seconds: 3),
+      progressIndicatorSize: 23,
+      padding: EdgeInsets.symmetric(horizontal: 10),
+      onPressed: () => onPressed()
+    );
+  }
 }
