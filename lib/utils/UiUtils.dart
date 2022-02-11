@@ -5,6 +5,8 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import 'InfoModals.dart';
+
 
 var topBoxDecoration = BoxDecoration(
     color: Palette.primary,
@@ -34,6 +36,10 @@ class UiUtils {
     buffer.write(hexString.replaceFirst('#', ''));
     return Color(int.parse(buffer.toString(), radix: 16));
   }
+
+  static Future<dynamic> showGenericErrorModal(BuildContext context) =>
+      GenericInfoModal(title: "Something went wrong!",
+          body: "Please contact us for support").show(context);
 }
 
 class Palette {

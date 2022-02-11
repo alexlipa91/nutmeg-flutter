@@ -1,17 +1,17 @@
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:nutmeg/controller/SubscriptionsController.dart';
+import 'package:cloud_functions/cloud_functions.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:nutmeg/db/MatchesFirestore.dart';
 import 'package:nutmeg/db/SubscriptionsFirestore.dart';
-import 'package:nutmeg/db/UserFirestore.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-
-import 'UserController.dart';
 
 class MatchesController {
 
-  static Future<Match> refresh(MatchesState matchesState, String matchId) async {
+  static Future<Match> refresh(
+      MatchesState matchesState, String matchId) async {
     var match = await getMatch(matchId);
     matchesState.setMatch(match);
     return match;
@@ -23,122 +23,73 @@ class MatchesController {
   }
 
   static Future<void> refreshImages(MatchesState matchesState) async {
-    Map<String, String> images = Map.fromEntries(await Future.wait(matchesState.getMatches()
-        .map((m) async =>
-        MapEntry(m.documentId, await MatchesController.getMatchThumbnailUrl(m)))));
+    Map<String, String> images = Map.fromEntries(await Future.wait(matchesState
+        .getMatches()
+        .map((m) async => MapEntry(
+            m.documentId, await MatchesController.getMatchThumbnailUrl(m)))));
     matchesState.setImages(images);
   }
 
   static Future<void> joinMatch(MatchesState matchesState, String matchId,
       UserState userState, PaymentRecap paymentStatus) async {
-    await UserController.refresh(userState);
-    await refresh(matchesState, matchId);
-
-    var userDetails = userState.getUserDetails();
-
-    await FirebaseFirestore.instance.runTransaction((transaction) async {
-      var currentUserSub =
-          await SubscriptionsController.getMatchSubscriptionsLatestStatePerUser(
-              userDetails.getUid(), matchId);
-
-      if (currentUserSub != null &&
-          currentUserSub.status == SubscriptionStatus.going) {
-        throw new Exception("Already going");
-      } else {
-        var sub = new Subscription(
-            userDetails.getUid(),
-            SubscriptionStatus.going,
-            paymentStatus.finalPriceToPayInCents(),
-            paymentStatus.creditsInCentsUsed,
-            0);
-        await SubscriptionsDb.addSubscription(matchId, sub);
-      }
-
-      if (paymentStatus.creditsInCentsUsed > 0) {
-        userDetails.creditsInCents =
-            userDetails.creditsInCents - paymentStatus.creditsInCentsUsed;
-      }
-      await UserFirestore.storeUserDetails(userDetails);
+    HttpsCallable callable =
+        FirebaseFunctions.instanceFor(region: "europe-central2")
+            .httpsCallable('add_user_to_match');
+    await callable({
+      'user_id': userState.getUserDetails().documentId,
+      'match_id': matchId,
+      'credits_used': paymentStatus.creditsInCentsUsed,
+      'money_paid': paymentStatus.finalPriceToPayInCents()
     });
-
-    await UserController.refresh(userState);
-    await refresh(matchesState, matchId);
   }
 
   static leaveMatch(
       MatchesState matchesState, String matchId, UserState userState) async {
-    await UserController.refresh(userState);
-    await refresh(matchesState, matchId);
-
-    var userDetails = userState.getUserDetails();
-    var match = matchesState.getMatch(matchId);
-
-    await FirebaseFirestore.instance.runTransaction((transaction) async {
-      var issueRefund = match.dateTime.difference(DateTime.now()).inHours >= 24;
-      var currentUserSub =
-          await SubscriptionsController.getMatchSubscriptionsLatestStatePerUser(
-              userDetails.getUid(), matchId);
-
-      var newSub;
-      if (currentUserSub.status != SubscriptionStatus.going) {
-        throw new Exception("Already not going");
-      } else {
-        var refundInCents = (issueRefund) ? match.pricePerPersonInCents : 0;
-
-        newSub = new Subscription(
-            userDetails.getUid(),
-            (refundInCents == 0)
-                ? SubscriptionStatus.canceled
-                : SubscriptionStatus.refunded,
-            0,
-            0,
-            refundInCents);
-
-        if (refundInCents != 0) {
-          userDetails.creditsInCents =
-              userDetails.creditsInCents + refundInCents;
-        }
-      }
-
-      // update db
-      await UserFirestore.storeUserDetails(userDetails);
-      await SubscriptionsDb.addSubscription(matchId, newSub);
+    HttpsCallable callable =
+        FirebaseFunctions.instanceFor(region: "europe-central2")
+            .httpsCallable('remove_user_from_match');
+    await callable({
+      'user_id': userState.getUserDetails().documentId,
+      'match_id': matchId
     });
 
-    // refresh state
-    await UserController.refresh(userState);
     await refresh(matchesState, matchId);
   }
 
   static Future<Match> getMatch(String matchId) async {
-    var match = await MatchesFirestore.fetchMatch(matchId);
-    match.subscriptions =
-        await SubscriptionsController.getMatchSubscriptionsLatestState(matchId) ??
-            [];
-    return match;
+    HttpsCallable callable = FirebaseFunctions.instanceFor(region: "europe-central2")
+        .httpsCallable('get_match');
+
+    var resp = await callable({'id': matchId});
+    Map<String, dynamic> data = json.decode(resp.data);
+
+    return Match.fromJson(data, matchId);
   }
 
   static Future<List<Match>> getMatches() async {
-    var ids = await MatchesFirestore.fetchMatchesId();
+    HttpsCallable callable =
+    FirebaseFunctions.instanceFor(region: "europe-central2")
+        .httpsCallable('get_all_matches');
 
-    // add subs
-    var addSubsFutures = ids.map((m) => getMatch(m));
-    return await Future.wait(addSubsFutures);
+    var resp = await callable();
+    Map<String, dynamic> data = Map<String, dynamic>.from(resp.data);
+
+    return data.entries.map((e) => Match.fromJson(
+        json.decode(e.value),
+        e.key)).toList();
   }
 
-  static int numPlayedByUser(MatchesState matchesState, String userId) =>
-      matchesState.getMatches()
-          .where((m) =>
-              !m.wasCancelled() &&
-              m.dateTime.isBefore(DateTime.now()) &&
-              m.subscriptions
-                  .where((sub) =>
-                      sub.status == SubscriptionStatus.going &&
-                      sub.userId == userId)
-                  .isNotEmpty)
-          .length;
+  static Future<String> addMatch(Match m) async {
+    HttpsCallable callable =
+        FirebaseFunctions.instanceFor(region: "europe-central2")
+            .httpsCallable('add_match');
+    print(m.toJson());
+    var resp = await callable(m.toJson());
+    return (resp).data["id"];
+  }
 
-  static Future<void> cancelMatch(MatchesState matchesState, String matchId) async {
+  static Future<void> cancelMatch(
+      MatchesState matchesState, String matchId) async {
     var match = matchesState.getMatch(matchId);
     match.cancelledAt = Timestamp.fromDate(DateTime.now());
     await MatchesFirestore.editMatch(match);
@@ -148,18 +99,23 @@ class MatchesController {
   // it loads all pictures from the sportcenter in folder sportcenters/<sportcenter_id>/large
   // if no <sportcenter_id> subfolder it uses "default"
   static Future<List<String>> getMatchPicturesUrls(Match match) async {
-    var mainFolderRef = await FirebaseStorage.instance.ref("sportcenters").listAll();
+    var mainFolderRef =
+        await FirebaseStorage.instance.ref("sportcenters").listAll();
     var listOfFolders = mainFolderRef.prefixes;
 
     var folder;
-    if (listOfFolders.where((ref) => ref.name == match.sportCenter).isEmpty) {
-      print("no large images found for sportcenter " + match.sportCenter + ". Using default");
+    if (listOfFolders.where((ref) => ref.name == match.sportCenterId).isEmpty) {
+      print("no large images found for sportcenter " +
+          match.sportCenterId +
+          ". Using default");
       folder = "default";
     } else {
-      folder = match.sportCenter;
+      folder = match.sportCenterId;
     }
 
-    var allRefs = await FirebaseStorage.instance.ref("sportcenters/" + folder + "/large").listAll();
+    var allRefs = await FirebaseStorage.instance
+        .ref("sportcenters/" + folder + "/large")
+        .listAll();
     var urls = await Future.wait(allRefs.items.map((e) => e.getDownloadURL()));
     return urls;
   }
@@ -167,14 +123,19 @@ class MatchesController {
   // it loads the thumbnail picture from the sportcenter at sportcenters/<sportcenter_id>/thumbnail.png
   // if no <sportcenter_id> subfolder it uses "default"
   static Future<String> getMatchThumbnailUrl(Match match) async {
-    var listOfFiles = await FirebaseStorage.instance.ref("sportcenters/").listAll();
+    var listOfFiles =
+        await FirebaseStorage.instance.ref("sportcenters/").listAll();
 
     var file;
-    if (listOfFiles.prefixes.where((ref) => ref.name == match.sportCenter).isEmpty) {
-      print("no thumbnail images found for sportcenter " + match.sportCenter + ". Using default");
+    if (listOfFiles.prefixes
+        .where((ref) => ref.name == match.sportCenterId)
+        .isEmpty) {
+      print("no thumbnail images found for sportcenter " +
+          match.sportCenterId +
+          ". Using default");
       file = "sportcenters/default/thumbnail.png";
     } else {
-      file = "sportcenters/" + match.sportCenter + "/thumbnail.png";
+      file = "sportcenters/" + match.sportCenterId + "/thumbnail.png";
     }
 
     var url = await FirebaseStorage.instance.ref(file).getDownloadURL();

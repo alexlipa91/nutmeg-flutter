@@ -11,6 +11,7 @@ import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/AppBar.dart';
 import 'package:nutmeg/widgets/Avatar.dart';
+import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:nutmeg/widgets/Containers.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -23,31 +24,34 @@ import 'MatchDetailsModals.dart';
 
 var formatCurrency = NumberFormat.simpleCurrency(name: "EUR");
 
-class MatchDetails extends StatelessWidget {
+class ScreenArguments {
   final String matchId;
   final bool isPast;
 
-  MatchDetails(this.matchId):
-        isPast = false;
+  ScreenArguments(this.matchId, this.isPast);
+}
 
-  MatchDetails.past(this.matchId):
-        isPast = true;
+class MatchDetails extends StatelessWidget {
+
+  static const routeName = "/match";
 
   @override
   Widget build(BuildContext context) {
+    final args = ModalRoute.of(context).settings.arguments as ScreenArguments;
+
+    var matchId = args.matchId;
+    var isPast = args.isPast;
+
     var matchesState = context.watch<MatchesState>();
 
     var match = matchesState.getMatch(matchId);
-    var user = context.read<UserState>().getUserDetails();
 
     var loadOnceState = context.read<LoadOnceState>();
 
-    var sportCenter = loadOnceState.getSportCenter(match.sportCenter);
+    var sportCenter = loadOnceState.getSportCenter(match.sportCenterId);
     var sport = loadOnceState.getSport(match.sport);
 
     var title = sportCenter.name + " - " + sport.displayTitle;
-
-    var subscriptions = match.getOrderedGoingSubscriptions(user);
 
     var widgets = [
       Padding(
@@ -74,9 +78,9 @@ class MatchDetails extends StatelessWidget {
           clipBehavior: Clip.none,
           scrollDirection: Axis.horizontal,
           child: Row(
-              children: (subscriptions.isEmpty)
+              children: (match.going.isEmpty)
                   ? [EmptyPlayerCard(match: match)]
-                  : subscriptions.map((s) => PlayerCard(s.userId)).toList()),
+                  : match.going.map((s) => PlayerCard(s.userId)).toList()),
         ),
       ),
       Padding(
@@ -331,15 +335,11 @@ class PlayerCard extends StatelessWidget {
                                             child: Column(
                                               children: [
                                                 SizedBox(height: 70),
-                                                Text(snapshot.data.name ?? "Player",
+                                                Text(snapshot.data.name ?? snapshot.data.email ?? "Player",
                                                     style: TextPalette.h2),
                                                 SizedBox(height: 20),
                                                 Builder(builder: (context) {
-                                                  int nPlayed = MatchesController
-                                                      .numPlayedByUser(
-                                                          context.watch<
-                                                              MatchesState>(),
-                                                          userId);
+                                                  int nPlayed = context.watch<MatchesState>().getNumPlayedByUser(userId);
                                                   return Text(
                                                       nPlayed.toString() +
                                                           " " +
@@ -408,7 +408,7 @@ class EmptyPlayerCard extends StatelessWidget {
               // margin: EdgeInsets.only(right: 10),
               child: Column(children: [
             InkWell(
-              onTap: () => onJoinGameAction(context, match),
+              onTap: () => JoinButton.onJoinGameAction(context, match),
               child: CircleAvatar(
                   radius: 25,
                   child: Icon(Icons.add, color: Palette.mediumgrey, size: 24),
