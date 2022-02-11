@@ -35,8 +35,10 @@ class Match {
   List<Subscription> going;
   List<Subscription> refunded;
 
+  bool isTest;
+
   Match(this.dateTime, this.sportCenterId, this.sportCenterSubLocation, this.sport,
-      this.maxPlayers, this.pricePerPersonInCents, this.duration);
+      this.maxPlayers, this.pricePerPersonInCents, this.duration, this.isTest);
 
   Match.fromJson(Map<String, dynamic> jsonInput, String documentId):
       dateTime = DateTime.parse(jsonInput['dateTime']).toLocal(),
@@ -48,10 +50,9 @@ class Match {
       duration = Duration(minutes: jsonInput['duration'] ?? 60),
       cancelledAt = jsonInput['cancelledAt'],
       stripePriceId = jsonInput['stripePriceId'],
-
       going = List<Subscription>.from(jsonInput["going"]
           .values.map((m) => Subscription.fromJson(m))),
-
+      isTest = jsonInput["isTest"] ?? false,
       documentId = documentId;
 
   Map<String, dynamic> toJson() =>
@@ -64,7 +65,8 @@ class Match {
         'maxPlayers': maxPlayers,
         'cancelledAt': cancelledAt,
         'duration': duration.inMinutes,
-        'stripePriceId': stripePriceId
+        'stripePriceId': stripePriceId,
+        'isTest': isTest
       };
 
   int getSpotsLeft() => maxPlayers - numPlayersGoing();

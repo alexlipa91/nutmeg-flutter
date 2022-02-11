@@ -9,7 +9,6 @@ import 'package:nutmeg/controller/SportCentersController.dart';
 import 'package:nutmeg/controller/SportsController.dart';
 import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
-import 'package:nutmeg/model/Model.dart';
 import 'package:nutmeg/screens/MatchDetails.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
@@ -48,6 +47,10 @@ void main() {
             decoration: new BoxDecoration(color: Colors.grey.shade400),
             child: Center(child: new LaunchWidget())),
         theme: appTheme,
+        routes: {
+          AvailableMatches.routeName: (context) => AvailableMatches(),
+          MatchDetails.routeName: (context) => MatchDetails(),
+        },
       ),
     ));
   }, (Object error, StackTrace stackTrace) {
@@ -81,11 +84,44 @@ class LaunchWidgetState extends State<LaunchWidget> {
       var context = navigatorKey.currentContext;
 
       if (outcome == "success") {
-        Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (context) => MatchDetails(matchId)),
-            (Route<dynamic> route) => route.isFirst
+        // fixme
+        Navigator.popUntil(context, (route) =>
+          route.settings.name == MatchDetails.routeName
+            ||
+          route.isFirst
         );
+
+        // print(ModalRoute.of(context));
+
+        // if (ModalRoute.of(context).isFirst) {
+        //   await Navigator.of(context).pushNamedAndRemoveUntil(
+        //       MatchDetails.routeName,
+        //           (route) => route.isCurrent && route.settings.name == MatchDetails.routeName
+        //           ? false
+        //           : true,
+        //     arguments: ScreenArguments(
+        //       matchId,
+        //       false
+        //     ),
+        //   );
+        // }
+
+        // Navigator.of(context).pushNamedAndRemoveUntil(
+        //     MatchDetails.routeName,
+        //         (route) => route.isCurrent && route.settings.name == MatchDetails.routeName
+        //         ? false
+        //         : true,
+        //   arguments: ScreenArguments(
+        //     matchId,
+        //     false
+        //   ),
+        // );
+
+        // Navigator.pushAndRemoveUntil(
+        //     context,
+        //     MaterialPageRoute(builder: (context) => MatchDetails(matchId)),
+        //     (Route<dynamic> route) => route.isFirst
+        // );
 
         await MatchesController.refresh(context.read<MatchesState>(), matchId);
 
@@ -109,10 +145,14 @@ class LaunchWidgetState extends State<LaunchWidget> {
           .read<MatchesState>()
           .getMatch(deepLink.queryParameters["id"]);
 
-      Navigator.push(
-          navigatorKey.currentContext,
-          MaterialPageRoute(
-              builder: (context) => MatchDetails(match.documentId)));
+      await Navigator.pushNamed(
+        context,
+        MatchDetails.routeName,
+        arguments: ScreenArguments(
+          match.documentId,
+          false,
+        ),
+      );
       return;
     }
   }
@@ -190,8 +230,7 @@ class LaunchWidgetState extends State<LaunchWidget> {
     if (deepLink != null) {
       await handleLink(deepLink);
     } else {
-      await Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (context) => AvailableMatches()));
+      await Navigator.pushReplacementNamed(context, AvailableMatches.routeName);
     }
   }
 

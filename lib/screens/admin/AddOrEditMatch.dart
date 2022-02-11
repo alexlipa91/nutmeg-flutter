@@ -96,6 +96,7 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
   int maxPlayers;
   DateTime dateTime;
   TextEditingController durationController;
+  bool testMatch;
 
   @override
   void initState() {
@@ -111,12 +112,14 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
     dateTime = (match == null) ? null : match.dateTime;
     durationController = TextEditingController(
         text: (match == null) ? "60" : match.duration.inMinutes.toString());
+    testMatch = false;
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     // utility
+    var matchState = context.read<MatchesState>();
     var loadOnceState = context.read<LoadOnceState>();
 
     Set<int> maxPlayersDropdownItemsSet = Set();
@@ -235,6 +238,22 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
             ),
             Row(
               children: [
+                Text("Test Match"),
+                SizedBox(width: 10),
+                Switch(
+                  value: testMatch,
+                  onChanged: (value) {
+                    setState(() {
+                      testMatch = value;
+                    });
+                  },
+                  activeTrackColor: Colors.red,
+                  activeColor: Colors.red,
+                ),
+              ],
+            ),
+            Row(
+              children: [
                 Expanded(
                   child:
                       RoundedButton((match == null) ? "ADD" : "EDIT", () async {
@@ -257,9 +276,11 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                                   sport,
                                   maxPlayers,
                                   (double.parse(priceController.value.text) * 100).toInt(),
-                                  Duration(minutes: int.parse(durationController.value.text))
+                                  Duration(minutes: int.parse(durationController.value.text)),
+                                  testMatch
                                 )
                               );
+                            await MatchesController.refresh(matchState, newMatchId);
                             CoolAlert.show(
                                 context: context,
                                 type: CoolAlertType.info,

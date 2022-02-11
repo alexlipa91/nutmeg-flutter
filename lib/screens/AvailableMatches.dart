@@ -22,6 +22,9 @@ import 'MatchDetails.dart';
 
 // main widget
 class AvailableMatches extends StatelessWidget {
+
+  static const routeName = "/availableMatches";
+
   @override
   Widget build(BuildContext context) {
     return MultiProvider(providers: [
@@ -174,8 +177,7 @@ class AvailableMatchesList extends StatelessWidget {
     var matches = state
         .getMatchesInFuture()
         .where((e) => !e.wasCancelled())
-        .where((e) => (!e.documentId.startsWith("test_match_id") ||
-            (userState.isLoggedIn() && userState.getUserDetails().isAdmin)))
+        .where((e) => (!e.isTest || userState.isTestMode))
         .toList();
 
     if (matches.isEmpty) {
@@ -295,11 +297,7 @@ class MatchInfo extends StatelessWidget {
                             Text(
                                 sportCenter.name +
                                     " - " +
-                                    sport.displayTitle +
-                                    (match.documentId
-                                            .startsWith("test_match_id")
-                                        ? " (TESTERS)"
-                                        : ""),
+                                    sport.displayTitle,
                                 style: TextPalette.h2),
                           ],
                         ),
@@ -310,7 +308,12 @@ class MatchInfo extends StatelessWidget {
                                 ? "Full"
                                 : (match.maxPlayers - match.numPlayersGoing())
                                         .toString() +
-                                    " spots left",
+                                    " spots left"
+                                + (match.documentId
+                                        .startsWith("test_match_id")
+                                        ? " (VISIBLE TO TESTERS)"
+                                        : "")
+                            ,
                             style: GoogleFonts.roboto(
                                 color: Palette.primary,
                                 fontSize: 14,
@@ -321,8 +324,12 @@ class MatchInfo extends StatelessWidget {
                 Expanded(
                   child: Column(
                       mainAxisAlignment: MainAxisAlignment.end,
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
+                        if (match.isTest)
+                          CircleAvatar(child: Text("T",
+                              style: TextPalette.linkStyleInverted), radius: 12,
+                              backgroundColor: Colors.red),
                         Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
@@ -339,13 +346,16 @@ class MatchInfo extends StatelessWidget {
           )),
         ),
         onTap: () async {
-          // fixme why it doesn't rebuild here?
-          // await Navigator.push(
-          //     context,
-          //     MaterialPageRoute(
-          //         builder: (context) => WaitingScreenLight(toRun: () => MatchesController.refresh(matchesState, match.documentId))));
-          await Navigator.push(context,
-              MaterialPageRoute(builder: (context) => MatchDetails(matchId)));
+          await Navigator.pushNamed(
+            context,
+            MatchDetails.routeName,
+            arguments: ScreenArguments(
+              match.documentId,
+              false,
+            ),
+          );
+          // await Navigator.push(context,
+          //     MaterialPageRoute(builder: (context) => MatchDetails(matchId)));
         });
   }
 
@@ -550,10 +560,14 @@ class MatchInfoPast extends StatelessWidget {
         ),
         onTap: () async {
           // fixme why it doesn't rebuild here?
-          await Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => MatchDetails.past(match.documentId)));
+          await Navigator.pushNamed(
+            context,
+            MatchDetails.routeName,
+            arguments: ScreenArguments(
+              match.documentId,
+              true,
+            ),
+          );
           await MatchesController.refresh(matchesState, match.documentId);
         });
   }

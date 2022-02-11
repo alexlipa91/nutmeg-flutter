@@ -70,11 +70,17 @@ class LoadOnceState extends ChangeNotifier {
 class UserState extends ChangeNotifier {
 
   UserDetails _userDetails;
+  bool isTestMode = false;
 
   UserDetails getUserDetails() => _userDetails;
 
   void setUserDetails(UserDetails u) {
     _userDetails = u;
+    notifyListeners();
+  }
+
+  void setTestMode(bool value) {
+    isTestMode = value;
     notifyListeners();
   }
 

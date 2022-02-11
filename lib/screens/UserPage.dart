@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/screens/admin/Matches.dart';
@@ -11,9 +10,7 @@ import 'package:nutmeg/widgets/Containers.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-
 class UserPage extends StatelessWidget {
-
   @override
   Widget build(BuildContext context) {
     // don't watch this or when logout things will break
@@ -57,9 +54,11 @@ class UserPage extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(userDetails.name ?? "N/A", style: TextPalette.h2),
+                              Text(userDetails.name ?? "N/A",
+                                  style: TextPalette.h2),
                               SizedBox(height: 10),
-                              Text(userDetails.email, style: TextPalette.bodyText)
+                              Text(userDetails.email,
+                                  style: TextPalette.bodyText)
                             ],
                           ),
                         )
@@ -89,7 +88,10 @@ class UserPage extends StatelessWidget {
                               child: Column(
                             children: [
                               Text(
-                              context.watch<MatchesState>().getNumPlayedByUser(userDetails.getUid()).toString(),
+                                  context
+                                      .watch<MatchesState>()
+                                      .getNumPlayedByUser(userDetails.getUid())
+                                      .toString(),
                                   style: TextPalette.h2),
                               SizedBox(height: 20),
                               Text("Games Played", style: TextPalette.h3)
@@ -106,57 +108,79 @@ class UserPage extends StatelessWidget {
                     padding: EdgeInsets.symmetric(vertical: 20),
                     child: InfoContainer(
                         child: Column(children: [
-                      LinkInfo(text: "Follow us on Instagram", onTap: () async {
-                        var url = 'https://www.instagram.com/nutmegapp/';
+                      LinkInfo(
+                        text: "Follow us on Instagram",
+                        onTap: () async {
+                          var url = 'https://www.instagram.com/nutmegapp/';
 
-                            if (await canLaunch(url)) {
-                              await launch(
-                                url,
-                                universalLinksOnly: true,
-                              );
-                            } else {
-                              throw 'There was a problem to open the url: $url';
-                            }
-                          },),
-                          // LinkInfo(text: "Terms and Conditions"),
-                          Padding(
-                            padding: EdgeInsets.only(top: 10),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: ButtonWithLoader("LOGOUT", () async {
-                                    await UserController.logout(
-                                        context.read<UserState>());
-                                    Navigator.pop(context);
-                                  }),
-                                )
-                              ],
-                            ),
-                          ),
-                          if (userDetails.isAdmin)
-                            Padding(
-                              padding: EdgeInsets.only(top: 10),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    child: ButtonWithoutLoader("ADMIN AREA", () async {
-                                      await Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                              builder: (context) =>
-                                                  AdminAvailableMatches()));
-                                    }),
-                                  )
-                                ],
-                              ),
-                            )
-                        ])),
+                          if (await canLaunch(url)) {
+                            await launch(
+                              url,
+                              universalLinksOnly: true,
+                            );
+                          } else {
+                            throw 'There was a problem to open the url: $url';
+                          }
+                        },
                       ),
-                    ]),
-              ),
-            )),
+                      // LinkInfo(text: "Terms and Conditions"),
+                      Padding(
+                        padding: EdgeInsets.only(top: 10),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: ButtonWithLoader("LOGOUT", () async {
+                                await UserController.logout(
+                                    context.read<UserState>());
+                                Navigator.pop(context);
+                              }),
+                            )
+                          ],
+                        ),
+                      ),
+                      if (userDetails.isAdmin)
+                        Padding(
+                          padding: EdgeInsets.only(top: 10),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child:
+                                    ButtonWithoutLoader("ADMIN AREA", () async {
+                                  await Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              AdminAvailableMatches()));
+                                }),
+                              )
+                            ],
+                          ),
+                        ),
+                      if (userDetails.isAdmin)
+                        Padding(
+                          padding: EdgeInsets.only(top: 10),
+                          child: Row(
+                            children: [
+                              Text("Test Mode"),
+                              SizedBox(width: 10),
+                              Switch(
+                                value: context.watch<UserState>().isTestMode,
+                                onChanged: (value) => userState
+                                    .setTestMode(!userState.isTestMode),
+                                activeTrackColor: Colors.red,
+                                activeColor: Colors.red,
+                              ),
+                              Expanded(child: Text("It allows to see in the UI test matches"))
+                            ],
+                          ),
+                        )
+                    ])),
+                  ),
+                ]),
           ),
-        );
+        )),
+      ),
+    );
   }
 }
 

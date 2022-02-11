@@ -23,18 +23,24 @@ import 'MatchDetailsModals.dart';
 
 var formatCurrency = NumberFormat.simpleCurrency(name: "EUR");
 
-class MatchDetails extends StatelessWidget {
+class ScreenArguments {
   final String matchId;
   final bool isPast;
 
-  MatchDetails(this.matchId):
-        isPast = false;
+  ScreenArguments(this.matchId, this.isPast);
+}
 
-  MatchDetails.past(this.matchId):
-        isPast = true;
+class MatchDetails extends StatelessWidget {
+
+  static const routeName = "/match";
 
   @override
   Widget build(BuildContext context) {
+    final args = ModalRoute.of(context).settings.arguments as ScreenArguments;
+
+    var matchId = args.matchId;
+    var isPast = args.isPast;
+
     var matchesState = context.watch<MatchesState>();
 
     var match = matchesState.getMatch(matchId);

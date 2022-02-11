@@ -284,39 +284,6 @@ class PaymentConfirmationWithCreditsButton extends AbstractButtonWithLoader {
   }
 }
 
-Future<void> communicateSuccessToUser(
-    BuildContext context, String matchId) async {
-  await showModalBottomSheet(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
-      ),
-      isScrollControlled: true,
-      context: context,
-      builder: (context) => Container(
-              child: Padding(
-            padding: EdgeInsets.symmetric(vertical: 30, horizontal: 20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                CircleAvatar(
-                    radius: 100,
-                    backgroundImage: NetworkImage(
-                        "https://media.giphy.com/media/X6v9OaUTlnPuOI1r78/giphy.gif"
-                    )),
-                Padding(padding: EdgeInsets.only(top: 30),
-                    child: Text("You are in!", style: TextPalette.h1Default)),
-                Padding(padding: EdgeInsets.only(top: 10),
-                    child: Text("You have joined the match.", style: TextPalette.bodyText)),
-                if (!DeviceInfo().name.contains("ipad"))
-                  Padding(
-                    padding: EdgeInsets.only(top: 20),
-                    child: ShareButton.withText(matchId, Palette.primary)
-                  )
-              ],
-            ),
-          )));
-}
-
 class PaymentConfirmationButton extends AbstractButtonWithLoader {
   final Match match;
   final PaymentRecap paymentRecap;
@@ -344,7 +311,7 @@ class PaymentConfirmationButton extends AbstractButtonWithLoader {
           match.stripePriceId,
           userDetails.documentId,
           match.documentId,
-          match.documentId.startsWith("test_match_id")
+          match.isTest
       );
     } catch (e) {
       print(e);
@@ -378,14 +345,15 @@ class JoinGameButtonNoSize extends AbstractButtonWithLoader {
       : super(
             text: 'JOIN GAME',
             controller: joinController,
-            shouldAnimate: false);
+            shouldAnimate: true);
 
   @override
   Future<void> onPressed(BuildContext context) async =>
       onJoinGameAction(context, match);
 }
 
-onJoinGameAction(BuildContext context, Match match) async {
+
+void onJoinGameAction(BuildContext context, Match match) async {
   var userState = context.read<UserState>();
 
   if (!userState.isLoggedIn()) {
@@ -419,4 +387,36 @@ onJoinGameAction(BuildContext context, Match match) async {
       UiUtils.showGenericErrorModal(context);
     }
   }
+}
+
+Future<void> communicateSuccessToUser(BuildContext context, String matchId) async {
+  await showModalBottomSheet(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
+      ),
+      isScrollControlled: true,
+      context: context,
+      builder: (context) => Container(
+          child: Padding(
+            padding: EdgeInsets.symmetric(vertical: 30, horizontal: 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircleAvatar(
+                    radius: 100,
+                    backgroundImage: NetworkImage(
+                        "https://media.giphy.com/media/X6v9OaUTlnPuOI1r78/giphy.gif"
+                    )),
+                Padding(padding: EdgeInsets.only(top: 30),
+                    child: Text("You are in!", style: TextPalette.h1Default)),
+                Padding(padding: EdgeInsets.only(top: 10),
+                    child: Text("You have joined the match.", style: TextPalette.bodyText)),
+                if (!DeviceInfo().name.contains("ipad"))
+                  Padding(
+                      padding: EdgeInsets.only(top: 20),
+                      child: ShareButton.withText(matchId, Palette.primary)
+                  )
+              ],
+            ),
+          )));
 }
