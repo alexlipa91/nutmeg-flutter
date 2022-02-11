@@ -85,11 +85,11 @@ class LaunchWidgetState extends State<LaunchWidget> {
 
       if (outcome == "success") {
         // fixme
-        Navigator.popUntil(context, (route) =>
-          route.settings.name == MatchDetails.routeName
-            ||
-          route.isFirst
-        );
+        // Navigator.popUntil(context, (route) =>
+        //   route.settings.name == MatchDetails.routeName
+        //     ||
+        //   route.isFirst
+        // );
 
         // print(ModalRoute.of(context));
 
@@ -125,6 +125,7 @@ class LaunchWidgetState extends State<LaunchWidget> {
 
         await MatchesController.refresh(context.read<MatchesState>(), matchId);
 
+        Navigator.pop(context);
         await communicateSuccessToUser(context, matchId);
       } else {
         Navigator.pop(context);

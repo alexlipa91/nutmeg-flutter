@@ -11,6 +11,7 @@ import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/AppBar.dart';
 import 'package:nutmeg/widgets/Avatar.dart';
+import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:nutmeg/widgets/Containers.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -407,7 +408,7 @@ class EmptyPlayerCard extends StatelessWidget {
               // margin: EdgeInsets.only(right: 10),
               child: Column(children: [
             InkWell(
-              onTap: () => onJoinGameAction(context, match),
+              onTap: () => JoinButton.onJoinGameAction(context, match),
               child: CircleAvatar(
                   radius: 25,
                   child: Icon(Icons.add, color: Palette.mediumgrey, size: 24),

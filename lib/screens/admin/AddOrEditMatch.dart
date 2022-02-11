@@ -39,32 +39,32 @@ class AddOrEditMatch extends StatelessWidget {
               if (match != null && match.cancelledAt == null)
                 Row(children: [
                   Expanded(
-                    child: ButtonWithLoader("CANCEL", () async {
-                      var shouldCancel = await CoolAlert.show(
-                        context: context,
-                        type: CoolAlertType.confirm,
-                        text: "This is going to cancel the match with id: \n" +
-                            match.documentId +
-                            "\nA push notification will be sent to all the going users and a refund should be issued (implmenet this)"
-                                "\nAre you sure?",
-                        onConfirmBtnTap: () => Navigator.pop(context, true),
-                        onCancelBtnTap: () => Navigator.pop(context, false),
-                      );
-
-                      if (shouldCancel) {
-                        try {
-                          await MatchesController.cancelMatch(matchesState, matchId);
-                          HttpsCallable callable = FirebaseFunctions.instance
-                              .httpsCallable('sendCancellationNotification');
-                          await callable.call({"matchId": matchId});
-                        } catch (e, s) {
-                          print("exception occurred");
-                          print(e);
-                          print(s);
-                        }
-                        Navigator.pop(context);
-                      }
-                    }),
+                    // child: ButtonWithLoader("CANCEL", () async {
+                    //   var shouldCancel = await CoolAlert.show(
+                    //     context: context,
+                    //     type: CoolAlertType.confirm,
+                    //     text: "This is going to cancel the match with id: \n" +
+                    //         match.documentId +
+                    //         "\nA push notification will be sent to all the going users and a refund should be issued (implmenet this)"
+                    //             "\nAre you sure?",
+                    //     onConfirmBtnTap: () => Navigator.pop(context, true),
+                    //     onCancelBtnTap: () => Navigator.pop(context, false),
+                    //   );
+                    //
+                    //   if (shouldCancel) {
+                    //     try {
+                    //       await MatchesController.cancelMatch(matchesState, matchId);
+                    //       HttpsCallable callable = FirebaseFunctions.instance
+                    //           .httpsCallable('sendCancellationNotification');
+                    //       await callable.call({"matchId": matchId});
+                    //     } catch (e, s) {
+                    //       print("exception occurred");
+                    //       print(e);
+                    //       print(s);
+                    //     }
+                    //     Navigator.pop(context);
+                    //   }
+                    // }),
                   )
                 ])
             ],

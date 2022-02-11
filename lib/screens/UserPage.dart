@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
-import 'package:nutmeg/screens/admin/Matches.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/AppBar.dart';
 import 'package:nutmeg/widgets/Avatar.dart';
-import 'package:nutmeg/widgets/Buttons.dart';
+import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:nutmeg/widgets/Containers.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class UserPage extends StatelessWidget {
+
   @override
   Widget build(BuildContext context) {
     // don't watch this or when logout things will break
@@ -129,11 +129,12 @@ class UserPage extends StatelessWidget {
                         child: Row(
                           children: [
                             Expanded(
-                              child: ButtonWithLoader("LOGOUT", () async {
-                                await UserController.logout(
-                                    context.read<UserState>());
-                                Navigator.pop(context);
-                              }),
+                              child: Container(),
+                              // ButtonWithLoader("LOGOUT", () async {
+                              //   await UserController.logout(
+                              //       context.read<UserState>());
+                              //   Navigator.pop(context);
+                              // }),
                             )
                           ],
                         ),
@@ -143,16 +144,7 @@ class UserPage extends StatelessWidget {
                           padding: EdgeInsets.only(top: 10),
                           child: Row(
                             children: [
-                              Expanded(
-                                child:
-                                    ButtonWithoutLoader("ADMIN AREA", () async {
-                                  await Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) =>
-                                              AdminAvailableMatches()));
-                                }),
-                              )
+                              Expanded(child: AdminAreaButton())
                             ],
                           ),
                         ),
@@ -173,7 +165,30 @@ class UserPage extends StatelessWidget {
                               Expanded(child: Text("It allows to see in the UI test matches"))
                             ],
                           ),
-                        )
+                        ),
+
+                      // todo edit credits
+
+                      // if (userDetails.isAdmin)
+                      //   Padding(
+                      //         padding: EdgeInsets.only(top: 10),
+                      //         child: Row(
+                      //           children: [
+                      //             Text("Update Credits"),
+                      //             SizedBox(width: 10),
+                      //             Switch(
+                      //               value: context.watch<UserState>().isTestMode,
+                      //               onChanged: (value) => userState
+                      //                   .setTestMode(!userState.isTestMode),
+                      //               activeTrackColor: Colors.red,
+                      //               activeColor: Colors.red,
+                      //             ),
+                      //             SizedBox(width: 10),
+                      //             TextButton(onPressed: UserController.up,
+                      //                 child: Text("Update"))
+                      //           ],
+                      //         ),
+                      //       )
                     ])),
                   ),
                 ]),

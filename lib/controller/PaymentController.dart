@@ -28,7 +28,7 @@ class PaymentController {
     var m = await MatchesController.refresh(matchesState, matchId);
     var u = await UserController.refresh(userState);
 
-    var creditsUsed;
+    int creditsUsed;
     if (u.creditsInCents > 0) {
       // can use
       creditsUsed = min(m.pricePerPersonInCents, u.creditsInCents);
