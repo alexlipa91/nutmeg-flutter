@@ -1,23 +1,24 @@
 import 'dart:async';
 
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/controller/SportCentersController.dart';
 import 'package:nutmeg/controller/SportsController.dart';
 import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
+import 'package:nutmeg/screens/AvailableMatches.dart';
 import 'package:nutmeg/screens/MatchDetails.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
-import 'package:nutmeg/screens/AvailableMatches.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
-import 'package:firebase_crashlytics/firebase_crashlytics.dart';
-import 'package:flutter/foundation.dart' show kDebugMode;
-import 'package:flutter/foundation.dart';
 
 import 'MatchDetailsModals.dart';
 
@@ -131,8 +132,8 @@ class LaunchWidgetState extends State<LaunchWidget> {
         Navigator.pop(context);
 
         await GenericInfoModal(
-            title: "Payment Failed!",
-            body: "Please try again or contact us for support")
+                title: "Payment Failed!",
+                body: "Please try again or contact us for support")
             .show(context);
       }
 
@@ -243,6 +244,48 @@ class LaunchWidgetState extends State<LaunchWidget> {
       return version;
     };
 
+    var images = Row(
+      children: [
+        Expanded(child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Align(alignment: Alignment.topLeft, child: SvgPicture.asset('assets/blob_top_left.svg')),
+          SvgPicture.asset('assets/blob_middle_middle.svg', width: MediaQuery.of(context).size.width),
+          Align(alignment: Alignment.bottomRight, child: SvgPicture.asset('assets/blob_bottom_right.svg'))
+    ]))]);
+
+    var mainWidgets =
+        Column(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+      Expanded(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset("assets/nutmeg_white.png", width: 116, height: 46),
+                SizedBox(height: 30),
+                CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
+              ],
+            )
+          ],
+        ),
+      ),
+      Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+        FutureBuilder<String>(
+            future: getVersionFuture(),
+            builder: (context, snapshot) => Padding(
+                  padding: EdgeInsets.only(bottom: 20),
+                  child: Text(
+                      (snapshot.hasData)
+                          ? snapshot.data
+                          : "loading version number",
+                      style: TextPalette.linkStyleInverted),
+                )),
+      ])
+    ]);
+
     return Scaffold(
         body: Container(
             decoration: BoxDecoration(
@@ -250,15 +293,15 @@ class LaunchWidgetState extends State<LaunchWidget> {
             ),
             child: FutureBuilder<void>(
                 future: loadData(context)
-                //     .timeout(Duration(seconds: 20),
-                //     onTimeout: () async {
-                //   print("timeout");
-                //   GenericInfoModal(
-                //           title: "Something went wrong!",
-                //           body: "Please check your connection")
-                //       .show(context);
-                //       // .then((value) => Navigator.of(context).pop());
-                // })
+                    //     .timeout(Duration(seconds: 20),
+                    //     onTimeout: () async {
+                    //   print("timeout");
+                    //   GenericInfoModal(
+                    //           title: "Something went wrong!",
+                    //           body: "Please check your connection")
+                    //       .show(context);
+                    //       // .then((value) => Navigator.of(context).pop());
+                    // })
                     .catchError((err, stacktrace) {
                   print(err);
                   print(stacktrace);
@@ -270,44 +313,7 @@ class LaunchWidgetState extends State<LaunchWidget> {
                 builder: (context, snapshot) => (snapshot.hasError)
                     ? Text(snapshot.error.toString(),
                         style: TextPalette.linkStyleInverted)
-                    : Column(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                            Expanded(
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Image.asset("assets/nutmeg_white.png",
-                                          width: 116, height: 46),
-                                      SizedBox(height: 30),
-                                      CircularProgressIndicator(
-                                          valueColor:
-                                              AlwaysStoppedAnimation<Color>(
-                                                  Colors.white)),
-                                    ],
-                                  )
-                                ],
-                              ),
-                            ),
-                            Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  FutureBuilder<String>(
-                                      future: getVersionFuture(),
-                                      builder: (context, snapshot) => Padding(
-                                            padding:
-                                                EdgeInsets.only(bottom: 20),
-                                            child: Text(
-                                                (snapshot.hasData)
-                                                    ? snapshot.data
-                                                    : "loading version number",
-                                                style: TextPalette
-                                                    .linkStyleInverted),
-                                          )),
-                                ])
-                          ]))));
+                    : Stack(children: [images, mainWidgets])
+            )));
   }
 }
