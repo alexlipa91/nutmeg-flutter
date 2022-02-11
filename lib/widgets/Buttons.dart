@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
-import 'package:rounded_loading_button/rounded_loading_button.dart';
+
 
 class PrimaryButton extends StatelessWidget {
   final String text;
@@ -134,61 +134,6 @@ class RoundedButtonAlerted extends PrimaryButton
     with LeftRounded, RightRounded, Alerted {
   RoundedButtonAlerted(String text, Function onPressed)
       : super(text, onPressed);
-}
-
-abstract class AbstractButtonWithLoader extends StatelessWidget {
-  final String text;
-  RoundedLoadingButtonController controller;
-  bool shouldAnimate;
-
-  Future<void> onPressed(BuildContext context);
-
-  AbstractButtonWithLoader(
-      {this.text,
-      RoundedLoadingButtonController controller,
-      bool shouldAnimate = true}) {
-    this.controller = controller;
-    this.shouldAnimate = shouldAnimate;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return RoundedLoadingButton(
-      height: 35,
-      animateOnTap: shouldAnimate,
-      duration: Duration(milliseconds: 500),
-      child: Text(text, style: TextPalette.linkStyleInverted),
-      onPressed: () => onPressed(context),
-      controller: controller,
-      color: Palette.primary,
-      loaderSize: 25,
-    );
-  }
-}
-
-class ButtonWithLoader extends AbstractButtonWithLoader {
-  final String text;
-  final Function onTap;
-
-  ButtonWithLoader(this.text, this.onTap)
-      : super(text: text, controller: RoundedLoadingButtonController());
-
-  @override
-  Future<void> onPressed(BuildContext context) => onTap();
-}
-
-class ButtonWithoutLoader extends AbstractButtonWithLoader {
-  final String text;
-  final Function onTap;
-
-  ButtonWithoutLoader(this.text, this.onTap)
-      : super(
-            text: text,
-            controller: RoundedLoadingButtonController(),
-            shouldAnimate: false);
-
-  @override
-  Future<void> onPressed(BuildContext context) => onTap();
 }
 
 class ShareButton extends StatelessWidget {

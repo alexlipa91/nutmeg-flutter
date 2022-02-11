@@ -13,7 +13,6 @@ import 'package:nutmeg/widgets/AppBar.dart';
 import 'package:nutmeg/widgets/Buttons.dart';
 import 'package:provider/provider.dart';
 
-import 'SubscriptionsMatchDetails.dart';
 
 // main widget
 class AddOrEditMatch extends StatelessWidget {
@@ -37,49 +36,35 @@ class AddOrEditMatch extends StatelessWidget {
           child: Column(
             children: [
               Expanded(child: AddOrEditMatchForm(match: match)),
-              if (match != null)
-                Row(children: [
-                  Expanded(
-                    child: RoundedButton("VIEW SUBSCRIPTIONS", () async {
-                      await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => SubscriptionsMatchDetails(
-                                  context
-                                      .watch<MatchesState>()
-                                      .getMatch(match.documentId))));
-                    }),
-                  )
-                ]),
               if (match != null && match.cancelledAt == null)
                 Row(children: [
                   Expanded(
-                    child: ButtonWithLoader("CANCEL", () async {
-                      var shouldCancel = await CoolAlert.show(
-                        context: context,
-                        type: CoolAlertType.confirm,
-                        text: "This is going to cancel the match with id: \n" +
-                            match.documentId +
-                            "\nA push notification will be sent to all the going users and a refund should be issued (implmenet this)"
-                                "\nAre you sure?",
-                        onConfirmBtnTap: () => Navigator.pop(context, true),
-                        onCancelBtnTap: () => Navigator.pop(context, false),
-                      );
-
-                      if (shouldCancel) {
-                        try {
-                          await MatchesController.cancelMatch(matchesState, matchId);
-                          HttpsCallable callable = FirebaseFunctions.instance
-                              .httpsCallable('sendCancellationNotification');
-                          await callable.call({"matchId": matchId});
-                        } catch (e, s) {
-                          print("exception occurred");
-                          print(e);
-                          print(s);
-                        }
-                        Navigator.pop(context);
-                      }
-                    }),
+                    // child: ButtonWithLoader("CANCEL", () async {
+                    //   var shouldCancel = await CoolAlert.show(
+                    //     context: context,
+                    //     type: CoolAlertType.confirm,
+                    //     text: "This is going to cancel the match with id: \n" +
+                    //         match.documentId +
+                    //         "\nA push notification will be sent to all the going users and a refund should be issued (implmenet this)"
+                    //             "\nAre you sure?",
+                    //     onConfirmBtnTap: () => Navigator.pop(context, true),
+                    //     onCancelBtnTap: () => Navigator.pop(context, false),
+                    //   );
+                    //
+                    //   if (shouldCancel) {
+                    //     try {
+                    //       await MatchesController.cancelMatch(matchesState, matchId);
+                    //       HttpsCallable callable = FirebaseFunctions.instance
+                    //           .httpsCallable('sendCancellationNotification');
+                    //       await callable.call({"matchId": matchId});
+                    //     } catch (e, s) {
+                    //       print("exception occurred");
+                    //       print(e);
+                    //       print(s);
+                    //     }
+                    //     Navigator.pop(context);
+                    //   }
+                    // }),
                   )
                 ])
             ],
@@ -111,11 +96,12 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
   int maxPlayers;
   DateTime dateTime;
   TextEditingController durationController;
+  bool testMatch;
 
   @override
   void initState() {
     // set initial values
-    sportCenterId = (match == null) ? null : match.sportCenter;
+    sportCenterId = (match == null) ? null : match.sportCenterId;
     sportCenterSubLocation = (match == null) ? null : match.sportCenterSubLocation;
     sport = (match == null) ? null : match.sport;
     priceController = TextEditingController(
@@ -126,12 +112,14 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
     dateTime = (match == null) ? null : match.dateTime;
     durationController = TextEditingController(
         text: (match == null) ? "60" : match.duration.inMinutes.toString());
+    testMatch = false;
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     // utility
+    var matchState = context.read<MatchesState>();
     var loadOnceState = context.read<LoadOnceState>();
 
     Set<int> maxPlayersDropdownItemsSet = Set();
@@ -250,6 +238,22 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
             ),
             Row(
               children: [
+                Text("Test Match"),
+                SizedBox(width: 10),
+                Switch(
+                  value: testMatch,
+                  onChanged: (value) {
+                    setState(() {
+                      testMatch = value;
+                    });
+                  },
+                  activeTrackColor: Colors.red,
+                  activeColor: Colors.red,
+                ),
+              ],
+            ),
+            Row(
+              children: [
                 Expanded(
                   child:
                       RoundedButton((match == null) ? "ADD" : "EDIT", () async {
@@ -264,48 +268,28 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                           onCancelBtnTap: () => Navigator.pop(context, false),
                         );
                         if (shouldAdd) {
-                          var errors = List<String>.from([
-                            if (dateTime == null)
-                              "specify date and time",
-                            if (sportCenterId == null)
-                              "specify sport center",
-                            if (sport == null)
-                              "specify sport",
-                            if (maxPlayers == null)
-                              "specify max players",
-                            if (priceController.value.text == null)
-                              "specify price",
-                          ]);
-
-                          if (errors.isEmpty) {
-                            var newMatchId = await MatchesFirestore.addMatch(
-                                new Match(
-                                    dateTime,
-                                    sportCenterId,
-                                    sportCenterSubLocation,
-                                    sport,
-                                    maxPlayers,
-                                    (double.parse(priceController.value.text) *
-                                        100)
-                                        .toInt(),
-                                    Duration(
-                                        minutes: int.parse(
-                                            durationController.value.text)),
-                                    null));
+                            var newMatchId = await MatchesController.addMatch(
+                                Match(
+                                  dateTime,
+                                  sportCenterId,
+                                  sportCenterSubLocation,
+                                  sport,
+                                  maxPlayers,
+                                  (double.parse(priceController.value.text) * 100).toInt(),
+                                  Duration(minutes: int.parse(durationController.value.text)),
+                                  testMatch
+                                )
+                              );
+                            await MatchesController.refresh(matchState, newMatchId);
                             CoolAlert.show(
                                 context: context,
                                 type: CoolAlertType.info,
                                 text:
                                 "Success! Added match with id " + newMatchId);
-                          } else {
-                            // fixme new line here
-                            CoolAlert.show(text: errors.join('/n'),
-                                context: context, type: CoolAlertType.error);
                           }
-                        }
                       } else {
                         match.dateTime = dateTime;
-                        match.sportCenter = sportCenterId;
+                        match.sportCenterId = sportCenterId;
                         match.sportCenterSubLocation = sportCenterSubLocation;
                         match.sport = sport;
                         match.maxPlayers = maxPlayers;
@@ -335,7 +319,7 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                         Navigator.pop(context);
                       }
                     } catch (e, stackTrace) {
-                      print(stackTrace.toString());
+                      print(e.toString());
                       CoolAlert.show(
                           context: context,
                           type: CoolAlertType.error,

@@ -21,6 +21,10 @@ class MatchesState extends ChangeNotifier {
       .where((m) => m.dateTime.difference(DateTime.now()).inHours > 2)
       .toList();
 
+  int getNumPlayedByUser(String userId) => _matches.values
+      .where((m) => m.cancelledAt == null
+      && m.going.where((s) => s.userId == userId).isNotEmpty).length;
+
   Match getMatch(String matchId) =>
       _matches[matchId];
 
@@ -66,11 +70,17 @@ class LoadOnceState extends ChangeNotifier {
 class UserState extends ChangeNotifier {
 
   UserDetails _userDetails;
+  bool isTestMode = false;
 
   UserDetails getUserDetails() => _userDetails;
 
   void setUserDetails(UserDetails u) {
     _userDetails = u;
+    notifyListeners();
+  }
+
+  void setTestMode(bool value) {
+    isTestMode = value;
     notifyListeners();
   }
 

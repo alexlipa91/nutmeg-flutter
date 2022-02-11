@@ -195,7 +195,7 @@ class MatchInfo extends StatelessWidget {
   Widget build(BuildContext context) {
     var loadOnceState = context.read<LoadOnceState>();
 
-    var sportCenter = loadOnceState.getSportCenter(match.sportCenter);
+    var sportCenter = loadOnceState.getSportCenter(match.sportCenterId);
     var sport = loadOnceState.getSport(match.sport);
 
     var matchesState = context.read<MatchesState>();

@@ -1,9 +1,5 @@
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
-import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
-import 'package:nutmeg/model/ChangeNotifiers.dart';
-import 'package:nutmeg/model/Model.dart';
-import 'package:provider/src/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 
@@ -18,16 +14,20 @@ String getFormattedDate(DateTime dateTime) => _getFormattedDate(dateTime, DateFo
 String getFormattedDateLong(DateTime dateTime) => _getFormattedDate(dateTime, DateFormat("EEEE, MMM dd"));
 
 String _getFormattedDate(DateTime dateTime, DateFormat dateFormat) {
-  var now = DateTime.now();
+  final now = DateTime.now();
+  final today = DateTime(now.year, now.month, now.day);
+  final yesterday = DateTime(now.year, now.month, now.day - 1);
+  final tomorrow = DateTime(now.year, now.month, now.day + 1);
 
   var dayString;
 
-  if (now.day == dateTime.day && now.month == dateTime.month && now.year == dateTime.year) {
+  final aDate = DateTime(dateTime.year, dateTime.month, dateTime.day);
+  if(aDate == today) {
     dayString = "Today";
-  } else if (now.day + 1 == dateTime.day && now.month == dateTime.month && now.year == dateTime.year) {
-    dayString = "Tomorrow";
-  } else if (now.day - 1 == dateTime.day && now.month == dateTime.month && now.year == dateTime.year) {
+  } else if(aDate == yesterday) {
     dayString = "Yesterday";
+  } else if(aDate == tomorrow) {
+    dayString = "Tomorrow";
   } else {
     dayString = dateFormat.format(dateTime);
   }
@@ -64,13 +64,6 @@ class DynamicLinks {
     // fixme this doesn't wait
     await Share.share("Wanna join this match on Nutmeg?\n" + url.shortUrl.toString());
   }
-}
-
-bool isUserLoggedInAndGoing(BuildContext context, Match match) {
-  var userSub = (context.watch<UserState>().isLoggedIn())
-      ? match.getUserSub(context.watch<UserState>().getUserDetails())
-      : null;
-  return userSub != null && userSub.status == SubscriptionStatus.going;
 }
 
 var isTestPaymentMode = false;
