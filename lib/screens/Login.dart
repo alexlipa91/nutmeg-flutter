@@ -101,19 +101,19 @@ class SignInButton extends StatelessWidget {
         loginFuture = () => UserController.continueWithFacebook(context.read<UserState>());
         backgroundColor = UiUtils.fromHex("#4267B2");
         textStyle = GoogleFonts.roboto(color: Palette.white, fontSize: 14, fontWeight: FontWeight.w700);
-        logoPath = "assets/fb_logo.png";
+        logoPath = "assets/login/fb_logo.png";
         break;
       case Provider.google :
         loginFuture = () => UserController.continueWithGoogle(context.read<UserState>());
         backgroundColor = Colors.transparent;
         textStyle = GoogleFonts.roboto(color: Palette.darkgrey, fontSize: 14, fontWeight: FontWeight.w700);
-        logoPath = "assets/google_logo.png";
+        logoPath = "assets/login/google_logo.png";
         break;
       case Provider.apple :
         loginFuture = () => UserController.continueWithApple(context.read<UserState>());
         backgroundColor = Colors.black;
         textStyle = GoogleFonts.roboto(color: Palette.white, fontSize: 14, fontWeight: FontWeight.w700);
-        logoPath = "assets/apple_logo.png";
+        logoPath = "assets/login/apple_logo.png";
         break;
       default :
         throw Exception("Invalid provider");

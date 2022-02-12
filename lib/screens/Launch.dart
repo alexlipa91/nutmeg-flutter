@@ -255,9 +255,9 @@ class LaunchWidgetState extends State<LaunchWidget> {
         Expanded(child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Align(alignment: Alignment.topLeft, child: SvgPicture.asset('assets/blob_top_left.svg')),
-          SvgPicture.asset('assets/blob_middle_middle.svg', width: MediaQuery.of(context).size.width),
-          Align(alignment: Alignment.bottomRight, child: SvgPicture.asset('assets/blob_bottom_right.svg'))
+          Align(alignment: Alignment.topLeft, child: SvgPicture.asset('assets/launch/blob_top_left.svg')),
+          SvgPicture.asset('assets/launch/blob_middle_middle.svg', width: MediaQuery.of(context).size.width),
+          Align(alignment: Alignment.bottomRight, child: SvgPicture.asset('assets/launch/blob_bottom_right.svg'))
     ]))]);
 
     var mainWidgets =
