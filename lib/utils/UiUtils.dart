@@ -19,8 +19,11 @@ class UiUtils {
   }
 
   static Future<dynamic> showGenericErrorModal(BuildContext context) =>
-      GenericInfoModal(title: "Something went wrong!",
-          body: "Please contact us for support").show(context);
+      showGenericErrorModalWithText(context, "Please contact us for support");
+
+  static Future<dynamic> showGenericErrorModalWithText(BuildContext context,
+      String bodyText) =>
+      GenericInfoModal(title: "Something went wrong!", body: bodyText).show(context);
 }
 
 class Palette {

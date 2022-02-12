@@ -6,6 +6,7 @@ import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
 import 'package:intl/intl.dart';
+import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/AppBar.dart';
 import 'package:nutmeg/widgets/Buttons.dart';
@@ -36,7 +37,7 @@ class AddOrEditMatch extends StatelessWidget {
               Expanded(child: AddOrEditMatchForm(match: match)),
               if (match != null && match.cancelledAt == null)
                 Row(children: [
-                  Expanded(
+                  // Expanded(
                     // child: ButtonWithLoader("CANCEL", () async {
                     //   var shouldCancel = await CoolAlert.show(
                     //     context: context,
@@ -63,7 +64,7 @@ class AddOrEditMatch extends StatelessWidget {
                     //     Navigator.pop(context);
                     //   }
                     // }),
-                  )
+                  // )
                 ])
             ],
           ),
@@ -279,11 +280,8 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                                 )
                               );
                             await MatchesController.refresh(matchesState, newMatchId);
-                            CoolAlert.show(
-                                context: context,
-                                type: CoolAlertType.info,
-                                text:
-                                "Success! Added match with id " + newMatchId);
+                            await GenericInfoModal(title: "Success",
+                            body: "Added match with id:\n" + newMatchId).show(context);
                           }
                       } else {
                         match.dateTime = dateTime;
@@ -310,19 +308,14 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                         }
 
                         await MatchesController.editMatch(matchesState, match);
-                        await CoolAlert.show(
-                            context: context,
-                            type: CoolAlertType.info,
-                            text: "Success!");
+                        await GenericInfoModal(title: "Success!",
+                            body: "Match with id " + match.documentId + " successfully modified").show(context);
                         Navigator.pop(context);
                       }
                     } catch (e, stackTrace) {
                       print(e);
                       print(stackTrace);
-                      CoolAlert.show(
-                          context: context,
-                          type: CoolAlertType.error,
-                          text: "Error: " + e.toString());
+                      UiUtils.showGenericErrorModal(context);
                     }
                   }),
                 )

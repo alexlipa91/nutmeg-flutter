@@ -46,10 +46,7 @@ class JoinModal {
         }
       } catch (e) {
         // fixme proper alert
-        CoolAlert.show(
-            context: context,
-            type: CoolAlertType.error,
-            text: "Could not login");
+        UiUtils.showGenericErrorModal(context);
         Navigator.pop(context);
         return;
       }
