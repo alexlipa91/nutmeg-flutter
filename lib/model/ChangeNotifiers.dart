@@ -18,15 +18,14 @@ class MatchesState extends ChangeNotifier {
   String getImageUrl(String matchId) => _images[matchId];
 
   List<Match> getMatchesInFuture() => getMatches()
-      .where((m) => m.dateTime.difference(DateTime.now()).inHours > 2)
+      .where((m) => m.dateTime.difference(DateTime.now()).inMinutes > 1)
       .toList();
 
   int getNumPlayedByUser(String userId) => _matches.values
       .where((m) => m.cancelledAt == null
       && m.going.where((s) => s.userId == userId).isNotEmpty).length;
 
-  Match getMatch(String matchId) =>
-      _matches[matchId];
+  Match getMatch(String matchId) => _matches[matchId];
 
   void setMatch(Match m) {
     _matches[m.documentId] = m;

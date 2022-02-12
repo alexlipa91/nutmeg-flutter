@@ -3,10 +3,6 @@ import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
 
 
-bool isSameDay(DateTime a, DateTime b) {
-  return a.day == b.day && a.month == b.month && a.year == b.year;
-}
-
 var uiHourFormat = new DateFormat("HH:mm");
 
 String getFormattedDate(DateTime dateTime) => _getFormattedDate(dateTime, DateFormat("E, MMM dd"));

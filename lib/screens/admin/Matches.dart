@@ -3,7 +3,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
-import 'package:intl/intl.dart';
 import 'package:nutmeg/screens/admin/AddOrEditMatch.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
@@ -180,8 +179,6 @@ class MatchesAreaState extends State<MatchesArea> {
 
 // widget of info for a single match
 class MatchInfo extends StatelessWidget {
-  static var monthDayFormat = DateFormat('HH:mm');
-
   final Match match;
   final double topMargin;
   final String image;

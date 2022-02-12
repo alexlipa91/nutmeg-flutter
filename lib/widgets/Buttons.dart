@@ -3,6 +3,8 @@ import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
 
 
+// MAIN PAGE BUTTONS
+
 class PrimaryButton extends StatelessWidget {
   final String text;
   final Function onPressed;
@@ -135,6 +137,8 @@ class RoundedButtonAlerted extends PrimaryButton
   RoundedButtonAlerted(String text, Function onPressed)
       : super(text, onPressed);
 }
+
+// OTHER BUTTONS
 
 class ShareButton extends StatelessWidget {
   final String matchId;

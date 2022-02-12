@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import 'UiUtils.dart';
 
+
 class GenericInfoModal<T> {
 
   final String title;

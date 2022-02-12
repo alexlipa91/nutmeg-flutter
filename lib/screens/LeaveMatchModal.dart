@@ -8,7 +8,6 @@ import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:progress_state_button/progress_button.dart';
 import 'package:provider/provider.dart';
-import 'package:intl/intl.dart';
 
 
 import 'Launch.dart';

@@ -12,7 +12,6 @@ import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/AppBar.dart';
 import 'package:nutmeg/widgets/Avatar.dart';
-import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:nutmeg/widgets/Containers.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -21,7 +20,7 @@ import 'package:readmore/readmore.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:shimmer/shimmer.dart';
 
-import 'MatchDetailsModals.dart';
+import 'BottomBarMatch.dart';
 
 
 class ScreenArguments {
@@ -112,7 +111,7 @@ class MatchDetails extends StatelessWidget {
               )
             ],
           )),
-      bottomNavigationBar: (isPast) ? null : BottomBar(match: match)
+      bottomNavigationBar: (isPast) ? null : BottomBarMatch(match: match)
     );
   }
 }

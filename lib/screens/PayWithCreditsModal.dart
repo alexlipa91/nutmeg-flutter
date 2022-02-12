@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
+import 'package:nutmeg/screens/PaymentDetailsDescription.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:progress_state_button/progress_button.dart';
 import 'package:provider/provider.dart';
 
-import 'MatchDetailsModals.dart';
 
 class PayWithCreditsButton extends StatelessWidget {
 
@@ -28,7 +28,7 @@ class PayWithCreditsButton extends StatelessWidget {
           context.read<GenericButtonState>().change(ButtonState.idle);
 
           Navigator.pop(context, true);
-          await communicateSuccessToUser(context, match.documentId);
+          await PaymentDetailsDescription.communicateSuccessToUser(context, match.documentId);
         },
       );
 }

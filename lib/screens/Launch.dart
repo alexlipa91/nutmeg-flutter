@@ -16,12 +16,11 @@ import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/screens/AvailableMatches.dart';
 import 'package:nutmeg/screens/MatchDetails.dart';
+import 'package:nutmeg/screens/PaymentDetailsDescription.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
-
-import 'MatchDetailsModals.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
@@ -48,7 +47,10 @@ void main() {
         home: new Container(
             decoration: new BoxDecoration(color: Colors.grey.shade400),
             child: Center(child: new LaunchWidget())),
-        theme: appTheme,
+        theme: new ThemeData(
+            primaryColor: Palette.primary,
+            accentColor: Palette.light
+        ),
         routes: {
           AvailableMatches.routeName: (context) => AvailableMatches(),
           MatchDetails.routeName: (context) => MatchDetails(),
@@ -128,7 +130,7 @@ class LaunchWidgetState extends State<LaunchWidget> {
         await MatchesController.refresh(context.read<MatchesState>(), matchId);
 
         Navigator.pop(context);
-        await communicateSuccessToUser(context, matchId);
+        await PaymentDetailsDescription.communicateSuccessToUser(context, matchId);
       } else {
         Navigator.pop(context);
 

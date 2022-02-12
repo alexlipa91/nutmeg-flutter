@@ -11,7 +11,7 @@ import 'package:progress_state_button/progress_button.dart';
 import 'package:provider/provider.dart';
 
 import 'Login.dart';
-import 'MatchDetailsModals.dart';
+import 'PaymentDetailsDescription.dart';
 
 class JoinButton extends StatelessWidget {
 

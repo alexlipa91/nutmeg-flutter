@@ -1,8 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:intl/intl.dart';
 
-
-enum SubscriptionStatus { going, refunded, canceled }
 
 class Sport {
   String documentId;

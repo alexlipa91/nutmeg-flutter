@@ -117,7 +117,7 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
   @override
   Widget build(BuildContext context) {
     // utility
-    var matchState = context.read<MatchesState>();
+    var matchesState = context.read<MatchesState>();
     var loadOnceState = context.read<LoadOnceState>();
 
     Set<int> maxPlayersDropdownItemsSet = Set();
@@ -278,7 +278,7 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                                   testMatch
                                 )
                               );
-                            await MatchesController.refresh(matchState, newMatchId);
+                            await MatchesController.refresh(matchesState, newMatchId);
                             CoolAlert.show(
                                 context: context,
                                 type: CoolAlertType.info,
@@ -309,7 +309,7 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                           return;
                         }
 
-                        await MatchesController.editMatch(match);
+                        await MatchesController.editMatch(matchesState, match);
                         await CoolAlert.show(
                             context: context,
                             type: CoolAlertType.info,
@@ -317,7 +317,8 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                         Navigator.pop(context);
                       }
                     } catch (e, stackTrace) {
-                      print(e.toString());
+                      print(e);
+                      print(stackTrace);
                       CoolAlert.show(
                           context: context,
                           type: CoolAlertType.error,

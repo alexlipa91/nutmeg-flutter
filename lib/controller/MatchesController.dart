@@ -1,13 +1,11 @@
 import 'dart:convert';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:nutmeg/controller/CloudFunctionsUtils.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
 
 class MatchesController {
-
   static Future<Match> refresh(
       MatchesState matchesState, String matchId) async {
     var match = await getMatch(matchId);
@@ -30,10 +28,7 @@ class MatchesController {
 
   static Future<void> joinMatch(MatchesState matchesState, String matchId,
       UserState userState, PaymentRecap paymentStatus) async {
-    HttpsCallable callable =
-        FirebaseFunctions.instanceFor(region: "europe-central2")
-            .httpsCallable('add_user_to_match');
-    await callable({
+    await CloudFunctionsUtils.callFunction("add_user_to_match", {
       'user_id': userState.getUserDetails().documentId,
       'match_id': matchId,
       'credits_used': paymentStatus.creditsInCentsUsed,
@@ -43,62 +38,36 @@ class MatchesController {
 
   static leaveMatch(
       MatchesState matchesState, String matchId, UserState userState) async {
-    HttpsCallable callable =
-        FirebaseFunctions.instanceFor(region: "europe-central2")
-            .httpsCallable('remove_user_from_match');
-    await callable({
+    await CloudFunctionsUtils.callFunction("remove_user_from_match", {
       'user_id': userState.getUserDetails().documentId,
       'match_id': matchId
     });
-
     await refresh(matchesState, matchId);
   }
 
-  static Future<Match> getMatch(String matchId) async {
-    HttpsCallable callable = FirebaseFunctions.instanceFor(region: "europe-central2")
-        .httpsCallable('get_match');
-
-    var resp = await callable({'id': matchId});
-    Map<String, dynamic> data = json.decode(resp.data);
-
-    return Match.fromJson(data, matchId);
-  }
+  static Future<Match> getMatch(String matchId) async => Match.fromJson(
+      await CloudFunctionsUtils.callFunction("get_match", {'id': matchId}),
+      matchId);
 
   static Future<List<Match>> getMatches() async {
-    HttpsCallable callable =
-    FirebaseFunctions.instanceFor(region: "europe-central2")
-        .httpsCallable('get_all_matches');
+    var resp = await CloudFunctionsUtils.callFunction("get_all_matches", {});
 
-    var resp = await callable();
-    Map<String, dynamic> data = Map<String, dynamic>.from(resp.data);
+    Map<String, dynamic> data = Map<String, dynamic>.from(resp);
 
-    return data.entries.map((e) => Match.fromJson(
-        json.decode(e.value),
-        e.key)).toList();
+    return data.entries
+        .map((e) => Match.fromJson(json.decode(e.value), e.key))
+        .toList();
   }
 
   static Future<String> addMatch(Match m) async {
-    HttpsCallable callable =
-        FirebaseFunctions.instanceFor(region: "europe-central2")
-            .httpsCallable('add_match');
-    print(m.toJson());
-    var resp = await callable(m.toJson());
-    return (resp).data["id"];
+    var resp = await CloudFunctionsUtils.callFunction("add_match", m.toJson());
+    return resp["id"];
   }
 
-  static Future<void> editMatch(Match m) async {
-    HttpsCallable callable =
-    FirebaseFunctions.instanceFor(region: "europe-central2")
-        .httpsCallable('edit_match');
-    await callable({"id": m.documentId, "data": m.toJson()});
-  }
-
-  static Future<void> cancelMatch(
-      MatchesState matchesState, String matchId) async {
-    var match = matchesState.getMatch(matchId);
-    match.cancelledAt = Timestamp.fromDate(DateTime.now());
-    await editMatch(match);
-    matchesState.setMatch(await getMatch(matchId));
+  static Future<void> editMatch(MatchesState matchesState, Match m) async {
+    matchesState.setMatch(m);
+    await CloudFunctionsUtils.callFunction(
+        "edit_match", {"id": m.documentId, "data": m.toJson()});
   }
 
   // it loads all pictures from the sportcenter in folder sportcenters/<sportcenter_id>/large
@@ -110,9 +79,6 @@ class MatchesController {
 
     var folder;
     if (listOfFolders.where((ref) => ref.name == match.sportCenterId).isEmpty) {
-      print("no large images found for sportcenter " +
-          match.sportCenterId +
-          ". Using default");
       folder = "default";
     } else {
       folder = match.sportCenterId;
@@ -135,9 +101,6 @@ class MatchesController {
     if (listOfFiles.prefixes
         .where((ref) => ref.name == match.sportCenterId)
         .isEmpty) {
-      print("no thumbnail images found for sportcenter " +
-          match.sportCenterId +
-          ". Using default");
       file = "sportcenters/default/thumbnail.png";
     } else {
       file = "sportcenters/" + match.sportCenterId + "/thumbnail.png";

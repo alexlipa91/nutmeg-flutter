@@ -5,19 +5,6 @@ import 'package:progress_state_button/progress_button.dart';
 import 'package:provider/provider.dart';
 import 'package:provider/src/provider.dart';
 
-var stateWidgets = (text) => {
-      ButtonState.idle: Text(text, style: TextPalette.linkStyleInverted),
-      ButtonState.loading: Text(text, style: TextPalette.linkStyleInverted),
-      ButtonState.fail: Text(text, style: TextPalette.linkStyleInverted),
-      ButtonState.success: Icon(Icons.check_circle, color: Colors.white)
-    };
-
-var stateColors = {
-  ButtonState.idle: Palette.primary,
-  ButtonState.loading: Palette.primary,
-  ButtonState.fail: Palette.primary,
-  ButtonState.success: Palette.primary
-};
 
 // GENERIC STATEFUL BUTTON
 
@@ -45,8 +32,18 @@ class GenericStatefulButton extends StatelessWidget {
       ],
       child: Builder(
         builder: (context) => ProgressButton(
-          stateWidgets: stateWidgets(text),
-          stateColors: stateColors,
+          stateWidgets: {
+            ButtonState.idle: Text(text, style: TextPalette.linkStyleInverted),
+            ButtonState.loading: Text(text, style: TextPalette.linkStyleInverted),
+            ButtonState.fail: Text(text, style: TextPalette.linkStyleInverted),
+            ButtonState.success: Icon(Icons.check_circle, color: Colors.white)
+          },
+          stateColors: {
+            ButtonState.idle: Palette.primary,
+            ButtonState.loading: Palette.primary,
+            ButtonState.fail: Palette.primary,
+            ButtonState.success: Palette.primary
+          },
           maxWidth: 202,
           minWidth: 50,
           minWidthStates: [ButtonState.success],

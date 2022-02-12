@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:cloud_functions/cloud_functions.dart';
+import 'package:nutmeg/controller/CloudFunctionsUtils.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
@@ -9,24 +9,23 @@ import 'package:nutmeg/model/Model.dart';
 import 'UserController.dart';
 
 class PaymentController {
+
   static Future<String> createCheckout(
       String stripePriceId, String userId, String matchId, testMode) async {
-    HttpsCallable callable =
-        FirebaseFunctions.instanceFor(region: "europe-central2")
-            .httpsCallable('create_stripe_checkout');
-    final results = await callable({
-      'price_id': stripePriceId,
-      'match_id': matchId,
-      'user_id': userId,
-      'test_mode': testMode
-    });
-    return results.data["url"];
+    var result = await CloudFunctionsUtils.callFunction("create_stripe_checkout",
+        {
+          'price_id': stripePriceId,
+          'match_id': matchId,
+          'user_id': userId,
+          'test_mode': testMode
+        });
+    return result["url"];
   }
 
   static Future<PaymentRecap> generatePaymentRecap(
       MatchesState matchesState, String matchId, UserState userState) async {
     var m = await MatchesController.refresh(matchesState, matchId);
-    var u = await UserController.refresh(userState);
+    var u = await UserController.refreshCurrentUser(userState);
 
     int creditsUsed;
     if (u.creditsInCents > 0) {

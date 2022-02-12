@@ -1,4 +1,3 @@
-import 'package:nutmeg/db/SportCentersFirestore.dart';
 import 'package:nutmeg/db/SportsFirestore.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 

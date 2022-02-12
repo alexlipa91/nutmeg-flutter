@@ -1,26 +1,23 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:nutmeg/controller/CloudFunctionsUtils.dart';
 import 'package:nutmeg/controller/PromotionController.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
-import 'package:nutmeg/screens/admin/Matches.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:nutmeg/utils/Utils.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 class UserController {
 
-  static Future<UserDetails> refresh(UserState userState) async {
-    var userDetails = await getSpecificUserDetails(
+  static Future<UserDetails> refreshCurrentUser(UserState userState) async {
+    var userDetails = await getUserDetails(
         userState.getUserDetails().getUid());
     userState.setUserDetails(userDetails);
     return userDetails;
   }
-
-  static getUserDetails(String id) => getSpecificUserDetails(id);
 
   static Future<UserDetails> getUserIfAvailable() async {
     User u = FirebaseAuth.instance.currentUser;
@@ -29,7 +26,7 @@ class UserController {
       try {
         var userId = u.uid;
 
-        var existingUserDetails = await getSpecificUserDetails(userId);
+        var existingUserDetails = await getUserDetails(userId);
 
         if (existingUserDetails == null) {
           return null;
@@ -46,19 +43,11 @@ class UserController {
     return null;
   }
 
-  static Future<void> editUser(UserDetails u) async {
-    HttpsCallable callable =
-    FirebaseFunctions.instanceFor(region: "europe-central2")
-        .httpsCallable('edit_user');
-    await callable({"id": u.documentId, "data": u.toJson()});
-  }
+  static Future<void> editUser(UserDetails u) async =>
+      await CloudFunctionsUtils.callFunction("edit_user", u.toJson());
 
-  static Future<void> addUser(UserDetails u) async {
-    HttpsCallable callable =
-    FirebaseFunctions.instanceFor(region: "europe-central2")
-        .httpsCallable('add_user');
-    await callable({"id": u.documentId, "data": u.toJson()});
-  }
+  static Future<void> addUser(UserDetails u) async =>
+      await CloudFunctionsUtils.callFunction("add_user", u.toJson());
 
   static Future<void> saveUserTokensToDb(UserDetails userDetails) async {
     // Get the token each time the application loads
@@ -77,8 +66,7 @@ class UserController {
       UserState userState, UserCredential userCredential) async {
     var uid = userCredential.user.uid;
 
-    UserDetails userDetails =
-        await getSpecificUserDetails(uid);
+    UserDetails userDetails = await getUserDetails(uid);
 
     var afterLoginComm;
 
@@ -172,8 +160,6 @@ class UserController {
       // nonce: nonce,
     );
 
-    print(appleCredential.authorizationCode);
-
     // Create an `OAuthCredential` from the credential returned by Apple.
     final oauthCredential = OAuthProvider("apple.com").credential(
       idToken: appleCredential.identityToken,
@@ -188,18 +174,15 @@ class UserController {
     return _login(userState, userCredential);
   }
 
-  static Future<UserDetails> getSpecificUserDetails(String uid) async {
-    HttpsCallable callable = FirebaseFunctions.instanceFor(region: "europe-central2")
-        .httpsCallable('get_user');
+  static Future<UserDetails> getUserDetails(String uid) async {
+    var resp = await CloudFunctionsUtils.callFunction("get_user",
+        {"id": uid});
 
-    var resp = await callable({"id": uid});
-    Map<String, dynamic> data = resp.data;
-
-    if (data == null) {
+    if (resp == null) {
       return null;
     }
 
-    return UserDetails.fromJson(data, uid);
+    return UserDetails.fromJson(resp, uid);
   }
 
   static Future<void> logout(UserState userState) async {

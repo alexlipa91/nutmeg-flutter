@@ -8,25 +8,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'InfoModals.dart';
 
 
-var topBoxDecoration = BoxDecoration(
-    color: Palette.primary,
-    borderRadius: BorderRadius.only(
-        bottomLeft: Radius.circular(20), bottomRight: Radius.circular(20)));
-
-var infoMatchDecoration = BoxDecoration(
-  border: Border.all(color: Colors.transparent),
-  color: Colors.white,
-  borderRadius: BorderRadius.all(Radius.circular(20)),
-  boxShadow: [
-    BoxShadow(
-      color: Colors.grey.withOpacity(0.5),
-      spreadRadius: 5,
-      blurRadius: 7,
-      offset: Offset(0, 3), // changes position of shadow
-    ),
-  ],
-);
-
 class UiUtils {
 
   /// String is in the format "aabbcc" or "ffaabbcc" with an optional leading "#".
@@ -84,12 +65,6 @@ class TextPalette {
 
   static TextStyle buttonOff = GoogleFonts.roboto(color: Palette.lightGrey, fontSize: 14, fontWeight: FontWeight.w700);
 }
-
-// ignore for now
-var appTheme = new ThemeData(
-    primaryColor: Palette.primary,
-    accentColor: Palette.light
-);
 
 class DeviceInfo {
   static final DeviceInfo _singleton = DeviceInfo._internal();
