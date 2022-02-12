@@ -19,7 +19,7 @@ class UserAvatar extends StatelessWidget {
 
     var photoUrl = (ud == null) ? null : ud.getPhotoUrl();
 
-    var backgroundColor = (photoUrl == null) ? Palette.primary : null;
+    var backgroundColor = (photoUrl == null) ? Palette.primary : Colors.indigoAccent;
     var backgroundImage = (photoUrl == null) ? null : NetworkImage(photoUrl);
 
     var displayName = ((ud == null) ? "P" : (ud.name ?? ud.email ?? "P")).toUpperCase();

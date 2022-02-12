@@ -312,9 +312,6 @@ class PlayerCard extends StatelessWidget {
             child: SizedBox(
               width: 100,
               child: InfoContainer(
-                  // constraints: BoxConstraints(maxWidth: 100),
-                  // decoration: infoMatchDecoration,
-                  // margin: EdgeInsets.only(right: 10),
                   child: (snapshot.hasData)
                       ? Column(children: [
                           InkWell(

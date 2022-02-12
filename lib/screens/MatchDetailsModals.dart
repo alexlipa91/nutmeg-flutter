@@ -11,7 +11,7 @@ import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/Buttons.dart';
 import 'package:nutmeg/widgets/Containers.dart';
 import 'package:provider/provider.dart';
-
+import 'package:transparent_image/transparent_image.dart';
 
 class BottomBar extends StatelessWidget {
   final Match match;
@@ -90,7 +90,8 @@ class BottomBar extends StatelessWidget {
                                             style: TextPalette.h3),
                                         Expanded(
                                             child: Text(
-                                          formatCurrency(match.pricePerPersonInCents) +
+                                          formatCurrency(
+                                                  match.pricePerPersonInCents) +
                                               " euro",
                                           style: TextPalette.h3,
                                           textAlign: TextAlign.end,
@@ -102,8 +103,9 @@ class BottomBar extends StatelessWidget {
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      Expanded(child: LeaveMatchButton(match: match)
-                                          ),
+                                      Expanded(
+                                          child:
+                                              LeaveMatchButton(match: match)),
                                     ],
                                   )
                                 ])).show(context);
@@ -158,14 +160,12 @@ class PaymentDetailsDescription extends StatelessWidget {
           Row(
             children: [
               // adding this here as a trick to align the rows
-              CircleAvatar(
-                  backgroundColor: Colors.transparent, radius: 15),
+              CircleAvatar(backgroundColor: Colors.transparent, radius: 15),
               SizedBox(width: 10),
               Text('Credits', style: TextPalette.bodyText),
               Expanded(
                   child: Text(
-                "- " +
-                    formatCurrency(paymentRecap.creditsInCentsUsed),
+                "- " + formatCurrency(paymentRecap.creditsInCentsUsed),
                 style: TextPalette.bodyText,
                 textAlign: TextAlign.end,
               ))
@@ -190,124 +190,16 @@ class PaymentDetailsDescription extends StatelessWidget {
         Row(
           children: [
             Expanded(
-                child:
-    (paymentRecap.finalPriceToPayInCents() == 0)
-                            ? PayWithCreditsButton(
-                                match: match, paymentRecap: paymentRecap)
-                            :
-                    PayWithMoneyButton(match: match)
-                )
+                child: (paymentRecap.finalPriceToPayInCents() == 0)
+                    ? PayWithCreditsButton(
+                        match: match, paymentRecap: paymentRecap)
+                    : PayWithMoneyButton(match: match))
           ],
         )
       ],
     );
   }
 }
-
-// class LeaveConfirmationButton extends AbstractButtonWithLoader {
-//   final Match match;
-//
-//   static RoundedLoadingButtonController leaveController =
-//       RoundedLoadingButtonController();
-//
-//   LeaveConfirmationButton(this.match)
-//       : super(text: "CONFIRM", controller: leaveController);
-//
-//   @override
-//   Future<void> onPressed(BuildContext context) async {
-//     try {
-//       await MatchesController.leaveMatch(context.read<MatchesState>(),
-//           match.documentId, context.read<UserState>());
-//     }
-//     catch (e, stackTrace) {
-//       print(e);
-//       print(stackTrace);
-//       Navigator.pop(context, false);
-//       return;
-//     }
-//
-//     controller.success();
-//     await Future.delayed(Duration(milliseconds: 500));
-//     Navigator.of(context).pop(true);
-//
-//     GenericInfoModal.withBottom(
-//           title: formatCurrency.format(match.pricePerPersonInCents / 100) +
-//               " credits were added to your account",
-//           body:
-//           "You can find your credits in your account page. Next time you join a game they will be automatically used.",
-//           bottomWidget: Padding(
-//             padding: EdgeInsets.symmetric(vertical: 15),
-//             child: InkWell(
-//                 onTap: () {
-//                   Navigator.pushReplacement(navigatorKey.currentContext,
-//                       MaterialPageRoute(builder: (context) => UserPage()));
-//                 },
-//                 child: Text("GO TO MY ACCOUNT", style: TextPalette.linkStyle)),
-//           )).show(context);
-//   }
-// }
-//
-// class PaymentConfirmationWithCreditsButton extends AbstractButtonWithLoader {
-//   final Match match;
-//   final PaymentRecap paymentRecap;
-//
-//   static RoundedLoadingButtonController payConfirmController =
-//       RoundedLoadingButtonController();
-//
-//   PaymentConfirmationWithCreditsButton(this.match, this.paymentRecap)
-//       : super(text: "PAY WITH CREDITS", controller: payConfirmController);
-//
-//   @override
-//   Future<void> onPressed(BuildContext context) async {
-//     // update all states
-//     await MatchesController.joinMatch(context.read<MatchesState>(),
-//         match.documentId, context.read<UserState>(), paymentRecap);
-//
-//     await Future.delayed(Duration(milliseconds: 500));
-//
-//     Navigator.pop(context, true);
-//
-//     await communicateSuccessToUser(context, match.documentId);
-//   }
-// }
-//
-// class PaymentConfirmationButton extends AbstractButtonWithLoader {
-//   final Match match;
-//   final PaymentRecap paymentRecap;
-//
-//   // fixme do not animate for now but we still need this controller
-//   static RoundedLoadingButtonController payConfirmController =
-//       RoundedLoadingButtonController();
-//
-//   PaymentConfirmationButton(this.match, this.paymentRecap)
-//       : super(
-//             text: "CONTINUE TO PAYMENT",
-//             controller: payConfirmController,
-//             shouldAnimate: false);
-//
-//   @override
-//   Future<void> onPressed(BuildContext context) async {
-//     payConfirmController.start();
-//
-//     var userState = context.read<UserState>();
-//     var userDetails = userState.getUserDetails();
-//
-//     var sessionUrl;
-//     try {
-//       sessionUrl = await PaymentController.createCheckout(
-//           match.stripePriceId,
-//           userDetails.documentId,
-//           match.documentId,
-//           match.isTest
-//       );
-//     } catch (e) {
-//       print(e);
-//       Navigator.pop(context, false);
-//     }
-//
-//     await launch(sessionUrl, forceSafariVC: false);
-//   }
-// }
 
 Future<void> communicateSuccessToUser(
     BuildContext context, String matchId) async {
@@ -324,9 +216,13 @@ Future<void> communicateSuccessToUser(
               mainAxisSize: MainAxisSize.min,
               children: [
                 CircleAvatar(
-                    radius: 100,
-                    backgroundImage: NetworkImage(
-                        "https://media.giphy.com/media/X6v9OaUTlnPuOI1r78/giphy.gif")),
+                  radius: 100,
+                  backgroundColor: Palette.lightGrey,
+                  backgroundImage: FadeInImage.memoryNetwork(
+                    placeholder: kTransparentImage,
+                    image: context.read<LoadOnceState>().getRandomGif(),
+                  ).image,
+                ),
                 Padding(
                     padding: EdgeInsets.only(top: 30),
                     child: Text("You are in!", style: TextPalette.h1Default)),

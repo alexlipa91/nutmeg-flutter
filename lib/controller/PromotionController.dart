@@ -1,4 +1,4 @@
-import 'package:nutmeg/db/CouponsFirestore.dart';
+import 'package:nutmeg/db/MiscFirestore.dart';
 
 
 class PromotionController {

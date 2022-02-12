@@ -22,7 +22,6 @@ import 'MatchDetails.dart';
 
 // main widget
 class AvailableMatches extends StatelessWidget {
-
   static const routeName = "/availableMatches";
 
   @override
@@ -40,12 +39,13 @@ class AvailableMatchesList extends StatelessWidget {
   static List<Widget> getEmptyStateWidgets(AvailableMatchesUiState uiState) {
     var widgets = List<Widget>.from([]);
 
-    var emptyStateImage =
-        Image.asset("assets/empty_state/" + uiState.getNextEmptyStateImage());
+    var emptyStateImage = Image.asset("assets/empty_state/illustration_01.png");
 
     widgets.add(Center(child: emptyStateImage));
-    widgets.add(Text("No matches so far",
-        style: TextPalette.h1Default, textAlign: TextAlign.center));
+    widgets.add(Expanded(
+      child: Text("No matches so far",
+          style: TextPalette.h1Default, textAlign: TextAlign.center),
+    ));
 
     return widgets;
   }
@@ -57,40 +57,28 @@ class AvailableMatchesList extends StatelessWidget {
     var uiState = context.watch<AvailableMatchesUiState>();
 
     var optionSelected = uiState.selected;
-
     var isLoggedIn = userState.isLoggedIn();
+    var isLoading = context.watch<AvailableMatchesUiState>().loading;
 
-    var widgets = List<Widget>.of([
+    var topWidgets = List<Widget>.of([
       // if app bar is in Scaffold will have the problem of the white pixel between Scaffold appBar and body
       Align(
         child: MainAppBar(),
         heightFactor: 0.99,
       ),
-      RoundedTopBar(uiState: uiState)
+      RoundedTopBar(uiState: uiState),
     ]);
 
-    if (!context.watch<AvailableMatchesUiState>().loading) {
-      if (optionSelected == "MY GAMES" && !isLoggedIn) {
-        widgets.addAll(getEmptyStateWidgets(uiState));
-
-        // widgets.add(Center(
-        //     child: Padding(
-        //         padding: EdgeInsets.only(top: 20),
-        //         child: Text("LOGIN TO JOIN MATCHES", style: TextPalette.h4)),
-        //   ));
-        // widgets.add(Center(
-        //   child: Padding(
-        //       padding: EdgeInsets.only(top: 20),
-        //       child: getEmptyStateImage()),
-        // ));
-      } else {
-        widgets.addAll((optionSelected == "ALL")
-            ? allGamesWidgets(matchesState, uiState, userState)
-            : myGamesWidgets(matchesState, userState, uiState));
-      }
+    List<Widget> matchWidgets;
+    if (optionSelected == "ALL") {
+      matchWidgets = allGamesWidgets(matchesState, uiState, userState);
+    } else if (isLoggedIn) {
+      matchWidgets = myGamesWidgets(matchesState, userState, uiState);
     } else {
-      widgets.addAll(List<Widget>.filled(5, MatchInfoSkeleton()));
+      matchWidgets = [];
     }
+
+    var waitingWidgets = List<Widget>.filled(5, MatchInfoSkeleton());
 
     return Container(
       color: Palette.primary,
@@ -118,9 +106,19 @@ class AvailableMatchesList extends StatelessWidget {
                 context.read<AvailableMatchesUiState>().loadingDone();
                 _refreshController.refreshCompleted();
               },
-              child: ListView.builder(
-                itemBuilder: (c, i) => widgets[i],
-                itemCount: widgets.length,
+              child: (matchWidgets.isEmpty) ?
+                Column(mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: topWidgets
+                        + getEmptyStateWidgets(uiState)
+                ) :
+              ListView.builder(
+                itemBuilder: (c, i) {
+                  var coreWidgets = (isLoading) ? waitingWidgets : matchWidgets;
+                  var list = topWidgets + coreWidgets;
+                  return list[i];
+                },
+                itemCount: topWidgets.length +
+                  ((isLoading) ? waitingWidgets.length : matchWidgets.length),
               ),
             ),
           ),
@@ -134,10 +132,6 @@ class AvailableMatchesList extends StatelessWidget {
     var matches = state
         .getMatches()
         .where((m) => m.isUserGoing(userState.getUserDetails()));
-
-    if (matches.isEmpty) {
-      return getEmptyStateWidgets(uiState);
-    }
 
     var now = DateTime.now();
 
@@ -179,10 +173,6 @@ class AvailableMatchesList extends StatelessWidget {
         .where((e) => !e.wasCancelled())
         .where((e) => (!e.isTest || userState.isTestMode))
         .toList();
-
-    if (matches.isEmpty) {
-      return getEmptyStateWidgets(uiState);
-    }
 
     var grouped = matches.groupListsBy((m) => m.dateTime.weekOfYear);
 
@@ -293,31 +283,22 @@ class MatchInfo extends StatelessWidget {
                       children: [
                         Row(
                           children: [
-                            Text(
-                                sportCenter.name +
-                                    " - " +
-                                    sport.displayTitle,
+                            Text(sportCenter.name + " - " + sport.displayTitle,
                                 style: TextPalette.h2),
                           ],
                         ),
                         Text(getFormattedDate(match.dateTime),
                             style: TextPalette.h3),
-                        Text(
-                            (match.isFull())
-                                ? "Full"
-                                : (match.maxPlayers - match.numPlayersGoing())
+                        (match.isFull())
+                            ? Text("Full",
+                                style: TextPalette.bodyText,
+                                textAlign: TextAlign.right)
+                            : Text(
+                                (match.maxPlayers - match.numPlayersGoing())
                                         .toString() +
-                                    " spots left"
-                                + (match.documentId
-                                        .startsWith("test_match_id")
-                                        ? " (VISIBLE TO TESTERS)"
-                                        : "")
-                            ,
-                            style: GoogleFonts.roboto(
-                                color: Palette.primary,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w400),
-                            textAlign: TextAlign.right),
+                                    " spots left",
+                                style: TextPalette.linkStyle,
+                                textAlign: TextAlign.right),
                       ]),
                 ),
                 Expanded(
@@ -326,8 +307,10 @@ class MatchInfo extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         if (match.isTest)
-                          CircleAvatar(child: Text("T",
-                              style: TextPalette.linkStyleInverted), radius: 12,
+                          CircleAvatar(
+                              child: Text("T",
+                                  style: TextPalette.linkStyleInverted),
+                              radius: 12,
                               backgroundColor: Colors.red),
                         Row(
                             mainAxisAlignment: MainAxisAlignment.end,
@@ -623,16 +606,4 @@ class AvailableMatchesUiState extends ChangeNotifier {
   }
 
   String getCurrentSelection() => selected;
-
-  String getNextEmptyStateImage() {
-    while (emptyStateImages.first == lastEmptyStateImageShown) {
-      emptyStateImages.shuffle();
-    }
-
-    lastEmptyStateImageShown = emptyStateImages.first;
-    return lastEmptyStateImageShown;
-  }
-
-  static getEmptyStateImages() =>
-      ["illustration_01.png", "illustration_02.png", "illustration_03.png"];
 }

@@ -44,6 +44,7 @@ class MatchesState extends ChangeNotifier {
 class LoadOnceState extends ChangeNotifier {
   Map<String, SportCenter> _sportCenters;
   Map<String, Sport> _sports;
+  List<String> joinedGifs;
 
   void setSportCenters(List<SportCenter> newSportCenters) {
     _sportCenters = newSportCenters.groupListsBy((e) => e.placeId)
@@ -57,6 +58,8 @@ class LoadOnceState extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setJoinedGifs(List<String> urls) => joinedGifs = urls;
+
   // fixme break with exception here
   SportCenter getSportCenter(String id) => _sportCenters[id];
 
@@ -65,6 +68,8 @@ class LoadOnceState extends ChangeNotifier {
   List<Sport> getSports() => _sports.values.toList();
 
   List<SportCenter> getSportCenters() => _sportCenters.values.toList();
+
+  String getRandomGif() => (joinedGifs..shuffle()).first;
 }
 
 class UserState extends ChangeNotifier {

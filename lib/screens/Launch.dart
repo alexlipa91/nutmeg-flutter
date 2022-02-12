@@ -9,6 +9,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
+import 'package:nutmeg/controller/MiscController.dart';
 import 'package:nutmeg/controller/SportCentersController.dart';
 import 'package:nutmeg/controller/SportsController.dart';
 import 'package:nutmeg/controller/UserController.dart';
@@ -215,9 +216,12 @@ class LaunchWidgetState extends State<LaunchWidget> {
     await MatchesController.refreshAll(context.read<MatchesState>());
     await MatchesController.refreshImages(context.read<MatchesState>());
 
+    // load static data
     await SportCentersController.refreshAll(context.read<LoadOnceState>());
     await SportsController.refreshAll(context.read<LoadOnceState>());
-    await Future.delayed(Duration(seconds: 1));
+    await MiscController.getGifs(context.read<LoadOnceState>());
+
+    await Future.delayed(Duration(milliseconds: 500));
 
     Uri deepLink;
 
