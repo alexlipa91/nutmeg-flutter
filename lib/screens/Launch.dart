@@ -87,6 +87,9 @@ class LaunchWidgetState extends State<LaunchWidget> {
 
       var context = navigatorKey.currentContext;
 
+      await MatchesController.refresh(context.read<MatchesState>(), matchId);
+      Navigator.pop(context);
+
       if (outcome == "success") {
         // fixme
         // Navigator.popUntil(context, (route) =>
@@ -127,13 +130,8 @@ class LaunchWidgetState extends State<LaunchWidget> {
         //     (Route<dynamic> route) => route.isFirst
         // );
 
-        await MatchesController.refresh(context.read<MatchesState>(), matchId);
-
-        Navigator.pop(context);
         await PaymentDetailsDescription.communicateSuccessToUser(context, matchId);
       } else {
-        Navigator.pop(context);
-
         await GenericInfoModal(
                 title: "Payment Failed!",
                 body: "Please try again")

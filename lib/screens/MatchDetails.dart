@@ -92,7 +92,7 @@ class MatchDetails extends StatelessWidget {
           "Payment Policy",
           "If you leave the match more than 15 hours before the kick-off time the amount you paid will be returned to you in credits that you can use in other Nutmeg matches. "
               "\n\nNo credits or refund will be provided if you drop out of a game less than 15 hours from kick-off."),
-      MapCard.big(sportCenter)
+      // MapCard.big(sportCenter)
     ];
 
     return Scaffold(
@@ -256,9 +256,10 @@ class InfoWidget extends StatelessWidget {
   final IconData icon;
   final String subTitle;
 
-  Widget rightWidget;
+  final Widget rightWidget;
 
-  InfoWidget({this.title, this.icon, this.subTitle});
+  InfoWidget({this.title, this.icon, this.subTitle})
+      : rightWidget = null;
 
   InfoWidget.withRightWidget(
       {this.title, this.icon, this.subTitle, Widget rightWidget})
@@ -483,7 +484,6 @@ class MapCard extends StatelessWidget {
               width: width,
               child: GoogleMap(
                 onTap: (LatLng latLng) async {
-                  print("tap");
                   if (await MapLauncher.isMapAvailable(m.MapType.google)) {
                     await MapLauncher.showMarker(
                       mapType: m.MapType.google,
