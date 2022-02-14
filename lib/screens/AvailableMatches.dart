@@ -301,7 +301,7 @@ class MatchInfo extends StatelessWidget {
                                 (match.maxPlayers - match.numPlayersGoing())
                                         .toString() +
                                     " spots left",
-                                style: TextPalette.linkStyle,
+                                style: TextPalette.bodyTextPrimary,
                                 textAlign: TextAlign.right),
                       ]),
                 ),

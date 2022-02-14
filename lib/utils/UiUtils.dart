@@ -60,6 +60,8 @@ class TextPalette {
   static TextStyle h4 = GoogleFonts.roboto(color: Palette.darkgrey, fontSize: 12, fontWeight: FontWeight.w500);
 
   static TextStyle bodyText = GoogleFonts.roboto(color: Palette.mediumgrey, fontSize: 14, fontWeight: FontWeight.w400, height: 1.6);
+  static TextStyle bodyTextPrimary = GoogleFonts.roboto(color: Palette.primary, fontSize: 14, fontWeight: FontWeight.w400, height: 1.6);
+
   static TextStyle bodyTextOneLine = GoogleFonts.roboto(color: Palette.mediumgrey, fontSize: 14, fontWeight: FontWeight.w400);
   static TextStyle bodyTextInverted = GoogleFonts.roboto(color: Palette.white, fontSize: 14, fontWeight: FontWeight.w400, height: 1.6);
 
