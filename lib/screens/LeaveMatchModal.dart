@@ -23,7 +23,7 @@ class LeaveMatchButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) =>
       GenericStatefulButton(
-        text: "LEAVE MATCH",
+        text: "CONFIRM",
         onPressed: (BuildContext context) async {
           context.read<GenericButtonState>().change(ButtonState.loading);
 

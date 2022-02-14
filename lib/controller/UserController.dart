@@ -1,20 +1,18 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:nutmeg/controller/CloudFunctionsUtils.dart';
 import 'package:nutmeg/controller/PromotionController.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
-import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:nutmeg/utils/Utils.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 class UserController {
-
   static Future<UserDetails> refreshCurrentUser(UserState userState) async {
-    var userDetails = await getUserDetails(
-        userState.getUserDetails().getUid());
+    var userDetails = await getUserDetails(userState.getUserDetails().getUid());
     userState.setUserDetails(userDetails);
     return userDetails;
   }
@@ -32,7 +30,12 @@ class UserController {
           return null;
         }
 
-        await UserController.saveUserTokensToDb(existingUserDetails);
+        try {
+          await UserController.saveUserTokensToDb(existingUserDetails);
+        } catch (e, stack) {
+          print("Failed to save user token in DB " + e);
+          print(stack);
+        }
 
         return UserDetails.from(userId, existingUserDetails);
       } catch (e, stack) {
@@ -44,10 +47,13 @@ class UserController {
   }
 
   static Future<void> editUser(UserDetails u) async =>
-      await CloudFunctionsUtils.callFunction("edit_user", u.toJson());
+      await CloudFunctionsUtils.callFunction(
+          "edit_user", {"id": u.documentId, "data": u.toJson()});
 
   static Future<void> addUser(UserDetails u) async =>
-      await CloudFunctionsUtils.callFunction("add_user", u.toJson());
+      await CloudFunctionsUtils.callFunction("add_user", {
+        "id": u.documentId,
+        "data": u.toJson()});
 
   static Future<void> saveUserTokensToDb(UserDetails userDetails) async {
     // Get the token each time the application loads
@@ -72,12 +78,8 @@ class UserController {
 
     // check if first time
     if (userDetails == null) {
-      userDetails = new UserDetails(
-          uid,
-          false,
-          userCredential.user.photoURL,
-          userCredential.user.displayName,
-          userCredential.user.email);
+      userDetails = new UserDetails(uid, false, userCredential.user.photoURL,
+          userCredential.user.displayName, userCredential.user.email);
 
       // check if need to give credits todo generalize
       int credits = await PromotionController.giveFreeCreditsAtLogin();
@@ -175,8 +177,7 @@ class UserController {
   }
 
   static Future<UserDetails> getUserDetails(String uid) async {
-    var resp = await CloudFunctionsUtils.callFunction("get_user",
-        {"id": uid});
+    var resp = await CloudFunctionsUtils.callFunction("get_user", {"id": uid});
 
     if (resp == null) {
       return null;

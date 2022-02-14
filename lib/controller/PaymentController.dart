@@ -10,11 +10,9 @@ import 'UserController.dart';
 
 class PaymentController {
 
-  static Future<String> createCheckout(
-      String stripePriceId, String userId, String matchId, testMode) async {
+  static Future<String> createCheckout(String userId, String matchId, testMode) async {
     var result = await CloudFunctionsUtils.callFunction("create_stripe_checkout",
         {
-          'price_id': stripePriceId,
           'match_id': matchId,
           'user_id': userId,
           'test_mode': testMode

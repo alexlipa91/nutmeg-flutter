@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:cloud_functions/cloud_functions.dart';
 
 
@@ -9,8 +7,12 @@ class CloudFunctionsUtils {
 
   static Future<Map<String, dynamic>> callFunction
       (String name, Map<String, dynamic> data) async {
-    HttpsCallable callable = _client.httpsCallable('add_user_to_match');
-    var resp = await callable(data);
-    return json.decode(resp.data);
+    HttpsCallable callable = _client.httpsCallable(name);
+    try {
+      var resp = await callable(data);
+      return resp.data;
+    } on FirebaseFunctionsException catch (e) {
+      print(e);
+    }
   }
 }

@@ -27,7 +27,6 @@ class PayWithMoneyButton extends StatelessWidget {
           var sessionUrl;
           try {
             sessionUrl = await PaymentController.createCheckout(
-                match.stripePriceId,
                 userDetails.documentId,
                 match.documentId,
                 match.isTest);

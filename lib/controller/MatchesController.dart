@@ -45,9 +45,11 @@ class MatchesController {
     await refresh(matchesState, matchId);
   }
 
-  static Future<Match> getMatch(String matchId) async => Match.fromJson(
-      await CloudFunctionsUtils.callFunction("get_match", {'id': matchId}),
-      matchId);
+  static Future<Match> getMatch(String matchId) async {
+    var resp = await CloudFunctionsUtils.callFunction("get_match", {'id': matchId});
+    var match = Match.fromJson(resp, matchId);
+    return match;
+  }
 
   static Future<List<Match>> getMatches() async {
     var resp = await CloudFunctionsUtils.callFunction("get_all_matches", {});
@@ -55,7 +57,7 @@ class MatchesController {
     Map<String, dynamic> data = Map<String, dynamic>.from(resp);
 
     return data.entries
-        .map((e) => Match.fromJson(json.decode(e.value), e.key))
+        .map((e) => Match.fromJson(Map<String, dynamic>.from(e.value), e.key))
         .toList();
   }
 

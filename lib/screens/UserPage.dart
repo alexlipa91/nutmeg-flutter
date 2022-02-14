@@ -44,7 +44,7 @@ class UserPage extends StatelessWidget {
             child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 20),
           child: (userState.getUserDetails() == null)
-              ? MatchInfoSkeleton()
+              ? Container()
               : SingleChildScrollView(
                   child: Column(
                       mainAxisSize: MainAxisSize.min,
@@ -167,7 +167,6 @@ class UserPage extends StatelessWidget {
 
                                             await Future.delayed(
                                                 Duration(milliseconds: 500));
-                                            Navigator.of(context).pop(true);
                                           }))
                                 ],
                               ),

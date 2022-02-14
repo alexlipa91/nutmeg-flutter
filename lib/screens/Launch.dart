@@ -136,7 +136,7 @@ class LaunchWidgetState extends State<LaunchWidget> {
 
         await GenericInfoModal(
                 title: "Payment Failed!",
-                body: "Please try again or contact us for support")
+                body: "Please try again")
             .show(context);
       }
 

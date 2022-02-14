@@ -33,22 +33,22 @@ class AvailableMatches extends StatelessWidget {
 }
 
 class AvailableMatchesList extends StatelessWidget {
-  RefreshController _refreshController =
+  final RefreshController _refreshController =
       RefreshController(initialRefresh: false);
 
-  static List<Widget> getEmptyStateWidgets(AvailableMatchesUiState uiState) {
-    var widgets = List<Widget>.from([]);
-
-    var emptyStateImage = Image.asset("assets/empty_state/illustration_01.png");
-
-    widgets.add(Center(child: emptyStateImage));
-    widgets.add(Expanded(
-      child: Text("No matches so far",
-          style: TextPalette.h1Default, textAlign: TextAlign.center),
-    ));
-
-    return widgets;
-  }
+  static Widget getEmptyStateWidget(AvailableMatchesUiState uiState) =>
+      Padding(
+        padding: EdgeInsets.only(bottom: 20),
+        child: Container(
+          child: Column(children: [
+            Image.asset("assets/empty_state/illustration_"
+                + ((uiState.selected == Status.ALL) ? "01" : "02")
+                + ".png", height: 400),
+            Text("No matches here",
+                style: TextPalette.h1Default, textAlign: TextAlign.center)
+          ],),
+        ),
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -70,7 +70,7 @@ class AvailableMatchesList extends StatelessWidget {
     ]);
 
     List<Widget> matchWidgets;
-    if (optionSelected == "ALL") {
+    if (optionSelected == Status.ALL) {
       matchWidgets = allGamesWidgets(matchesState, uiState, userState);
     } else if (isLoggedIn) {
       matchWidgets = myGamesWidgets(matchesState, userState, uiState);
@@ -106,20 +106,24 @@ class AvailableMatchesList extends StatelessWidget {
                 context.read<AvailableMatchesUiState>().loadingDone();
                 _refreshController.refreshCompleted();
               },
-              child: (matchWidgets.isEmpty) ?
-                Column(mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: topWidgets
-                        + getEmptyStateWidgets(uiState)
-                ) :
-              ListView.builder(
-                itemBuilder: (c, i) {
-                  var coreWidgets = (isLoading) ? waitingWidgets : matchWidgets;
-                  var list = topWidgets + coreWidgets;
-                  return list[i];
-                },
-                itemCount: topWidgets.length +
-                  ((isLoading) ? waitingWidgets.length : matchWidgets.length),
-              ),
+              child: (matchWidgets.isEmpty)
+                  ? Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Column(children: topWidgets),
+                        getEmptyStateWidget(uiState)])
+                  : ListView.builder(
+                      itemBuilder: (c, i) {
+                        var coreWidgets =
+                            (isLoading) ? waitingWidgets : matchWidgets;
+                        var list = topWidgets + coreWidgets;
+                        return list[i];
+                      },
+                      itemCount: topWidgets.length +
+                          ((isLoading)
+                              ? waitingWidgets.length
+                              : matchWidgets.length),
+                    ),
             ),
           ),
         ),
@@ -202,9 +206,9 @@ class RoundedTopBar extends StatelessWidget {
 
   const RoundedTopBar({Key key, this.uiState}) : super(key: key);
 
-  _getAllFunction(BuildContext context) => () => uiState.changeToAll();
+  _getAllFunction(BuildContext context) => () => uiState.changeTo(Status.ALL);
 
-  _getMyGamesFunction(BuildContext context) => () => uiState.changeToMyGames();
+  _getMyGamesFunction(BuildContext context) => () => uiState.changeTo(Status.MY_GAMES);
 
   @override
   Widget build(BuildContext context) {
@@ -224,17 +228,17 @@ class RoundedTopBar extends StatelessWidget {
               Text("Amsterdam", style: TextPalette.h1Inverted),
               SizedBox(height: 24),
               Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                uiState.getCurrentSelection() == "ALL"
+                uiState.getCurrentSelection() == Status.ALL
                     ? Expanded(
                         child: LeftButtonOn("ALL", _getAllFunction(context)))
                     : Expanded(
                         child: LeftButtonOff("ALL", _getAllFunction(context))),
-                uiState.getCurrentSelection() == "ALL"
+                uiState.getCurrentSelection() == Status.MY_GAMES
                     ? Expanded(
-                        child: RightButtonOff(
+                        child: RightButtonOn(
                             "MY GAMES", _getMyGamesFunction(context)))
                     : Expanded(
-                        child: RightButtonOn(
+                        child: RightButtonOff(
                             "MY GAMES", _getMyGamesFunction(context))),
               ])
             ],
@@ -575,22 +579,17 @@ class WeekSeparatorWidget extends StatelessWidget {
   }
 }
 
+enum Status {
+  ALL,
+  MY_GAMES
+}
+
 class AvailableMatchesUiState extends ChangeNotifier {
+
   bool loading = false;
-  String selected = "ALL";
+  Status selected = Status.ALL;
 
-  List<String> emptyStateImages = [
-    "illustration_01.png",
-    "illustration_02.png",
-    "illustration_03.png"
-  ];
-  String lastEmptyStateImageShown;
-
-  void changeToAll() => _change("ALL");
-
-  void changeToMyGames() => _change("MY GAMES");
-
-  void _change(String newSelection) {
+  void changeTo(Status newSelection) {
     selected = newSelection;
     notifyListeners();
   }
@@ -605,5 +604,5 @@ class AvailableMatchesUiState extends ChangeNotifier {
     notifyListeners();
   }
 
-  String getCurrentSelection() => selected;
+  Status getCurrentSelection() => selected;
 }

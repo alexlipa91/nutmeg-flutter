@@ -4,8 +4,8 @@ import "package:collection/collection.dart";
 
 
 class MatchesState extends ChangeNotifier {
-  Map<String, Match> _matches;
-  Map<String, String> _images;
+  Map<String, Match> _matches = Map();
+  Map<String, String> _images = Map();
 
   void setMatches(List<Match> newMatches) {
     _matches = newMatches.groupListsBy((e) => e.documentId)

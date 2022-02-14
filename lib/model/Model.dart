@@ -26,7 +26,6 @@ class Match {
   int maxPlayers;
   Duration duration;
   Timestamp cancelledAt;
-  String stripePriceId;
 
   List<Subscription> going;
   List<Subscription> refunded;
@@ -45,11 +44,18 @@ class Match {
       maxPlayers = jsonInput['maxPlayers'],
       duration = Duration(minutes: jsonInput['duration'] ?? 60),
       cancelledAt = jsonInput['cancelledAt'],
-      stripePriceId = jsonInput['stripePriceId'],
-      going = List<Subscription>.from(jsonInput["going"]
-          .values.map((m) => Subscription.fromJson(m))),
       isTest = jsonInput["isTest"] ?? false,
+
+      going = _readSubscriptions("going", jsonInput),
+      refunded = _readSubscriptions("refunded", jsonInput),
+
       documentId = documentId;
+
+  static List<Subscription> _readSubscriptions(String fieldName, Map<String, dynamic> json) {
+      var field = Map<String, dynamic>.from(json[fieldName]);
+      return List<Subscription>.from(field.values.map((sub) =>
+          Subscription.fromJson(Map<String, dynamic>.from(sub))));
+  }
 
   Map<String, dynamic> toJson() =>
       {
@@ -61,7 +67,6 @@ class Match {
         'maxPlayers': maxPlayers,
         'cancelledAt': cancelledAt,
         'duration': duration.inMinutes,
-        'stripePriceId': stripePriceId,
         'isTest': isTest
       };
 
@@ -139,11 +144,11 @@ class UserDetails {
   String email;
   String stripeId;
   int creditsInCents;
-  List<String> tokens;
+  Set<String> tokens;
 
   UserDetails(this.documentId, this.isAdmin, this.image, this.name, this.email)
       : creditsInCents = 0,
-        tokens = [];
+        tokens = Set.of([]);
 
   UserDetails.from(String documentId, UserDetails u)
       : this.documentId = documentId,
@@ -162,7 +167,7 @@ class UserDetails {
         email = json["email"],
         creditsInCents = json["credits"],
         stripeId = json["stripeId"] ?? null,
-        tokens = (json["tokens"] == null) ? [] : List<String>.from(json["tokens"]),
+        tokens = (json["tokens"] == null) ? [] : Set<String>.from(json["tokens"]),
         documentId = documentId;
 
   Map<String, dynamic> toJson() =>
@@ -172,7 +177,7 @@ class UserDetails {
         'name': name,
         'email': email,
         'credits': creditsInCents,
-        'tokens': tokens
+        'tokens': tokens.toList()
       };
 
   String getUid() => documentId;
