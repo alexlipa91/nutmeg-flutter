@@ -1,6 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:intl/intl.dart';
 import 'package:map_launcher/map_launcher.dart';
 import 'package:map_launcher/src/models.dart' as m;
 import 'package:nutmeg/controller/MatchesController.dart';
@@ -14,14 +17,10 @@ import 'package:nutmeg/widgets/AppBar.dart';
 import 'package:nutmeg/widgets/Avatar.dart';
 import 'package:nutmeg/widgets/Containers.dart';
 import 'package:provider/provider.dart';
-import 'package:intl/intl.dart';
-import 'package:carousel_slider/carousel_slider.dart';
 import 'package:readmore/readmore.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:shimmer/shimmer.dart';
 
 import 'BottomBarMatch.dart';
-
 
 class ScreenArguments {
   final String matchId;
@@ -31,7 +30,6 @@ class ScreenArguments {
 }
 
 class MatchDetails extends StatelessWidget {
-
   static const routeName = "/match";
 
   @override
@@ -96,23 +94,22 @@ class MatchDetails extends StatelessWidget {
     ];
 
     return Scaffold(
-      body: RefreshIndicator(
-          onRefresh: () => MatchesController.refresh(matchesState, matchId),
-          child: CustomScrollView(
-            slivers: [
-              MatchAppBar(matchId),
-              SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (BuildContext context, int index) {
-                    return widgets[index];
-                  },
-                  childCount: widgets.length,
-                ),
-              )
-            ],
-          )),
-      bottomNavigationBar: (isPast) ? null : BottomBarMatch(match: match)
-    );
+        body: RefreshIndicator(
+            onRefresh: () => MatchesController.refresh(matchesState, matchId),
+            child: CustomScrollView(
+              slivers: [
+                MatchAppBar(matchId),
+                SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (BuildContext context, int index) {
+                      return widgets[index];
+                    },
+                    childCount: widgets.length,
+                  ),
+                )
+              ],
+            )),
+        bottomNavigationBar: (isPast) ? null : BottomBarMatch(match: match));
   }
 }
 
@@ -141,13 +138,42 @@ class MatchInfo extends StatelessWidget {
                     match.duration.inMinutes.toString() +
                     " min",
             icon: Icons.schedule),
-        InfoWidget(
-            title:
-            sportCenter.name +
-                (match.sportCenterSubLocation != null
-                    && match.sportCenterSubLocation.isNotEmpty ? " - " + match.sportCenterSubLocation : ""),
-            icon: Icons.place,
-            subTitle: sportCenter.getShortAddress()),
+        Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () async {
+              if (await MapLauncher.isMapAvailable(m.MapType.google)) {
+                await MapLauncher.showMarker(
+                  mapType: m.MapType.google,
+                  coords: Coords(sportCenter.lat, sportCenter.lng),
+                  title: "",
+                  extraParams: {
+                    "q": sportCenter.name + "," + sportCenter.address,
+                    "z": "16"
+                  },
+                );
+              } else if (await MapLauncher.isMapAvailable(m.MapType.apple)) {
+                await MapLauncher.showMarker(
+                  mapType: m.MapType.apple,
+                  coords: Coords(sportCenter.lat, sportCenter.lng),
+                  title: "",
+                  // fixme do something
+                );
+              } else {
+                // fixme do something
+              }
+            },
+            splashColor: Palette.lightGrey,
+            child: InfoWidget.withRightWidget(
+                title: sportCenter.name +
+                    (match.sportCenterSubLocation != null &&
+                            match.sportCenterSubLocation.isNotEmpty
+                        ? " - " + match.sportCenterSubLocation
+                        : ""),
+                icon: Icons.place,
+                subTitle: sportCenter.getShortAddress()),
+          ),
+        ),
         InfoWidget(
             title: sport.displayTitle,
             icon: Icons.sports_soccer,
@@ -258,8 +284,7 @@ class InfoWidget extends StatelessWidget {
 
   final Widget rightWidget;
 
-  InfoWidget({this.title, this.icon, this.subTitle})
-      : rightWidget = null;
+  InfoWidget({this.title, this.icon, this.subTitle}) : rightWidget = null;
 
   InfoWidget.withRightWidget(
       {this.title, this.icon, this.subTitle, Widget rightWidget})
@@ -290,7 +315,13 @@ class InfoWidget extends StatelessWidget {
                   Text(subTitle, style: TextPalette.bodyText)
               ],
             ),
-            if (rightWidget != null) Expanded(child: rightWidget)
+            if (rightWidget != null)
+              Expanded(
+                  child: Padding(
+                padding: EdgeInsets.only(right: 25),
+                child:
+                    Align(alignment: Alignment.centerRight, child: rightWidget),
+              ))
           ],
         ));
   }
@@ -315,53 +346,59 @@ class PlayerCard extends StatelessWidget {
                   child: (snapshot.hasData)
                       ? Column(children: [
                           InkWell(
-                            onTap: () {
-                              showModalBottomSheet(
-                                  context: context,
-                                  builder: (context) {
-                                    return Stack(
-                                        alignment:
-                                            AlignmentDirectional.bottomStart,
-                                        clipBehavior: Clip.none,
-                                        children: [
-                                          Container(
-                                            width: double.infinity,
-                                            height: 200,
-                                            color: Palette.white,
-                                            child: Column(
-                                              children: [
-                                                SizedBox(height: 70),
-                                                Text(snapshot.data.name ?? snapshot.data.email ?? "Player",
-                                                    style: TextPalette.h2),
-                                                SizedBox(height: 20),
-                                                Builder(builder: (context) {
-                                                  int nPlayed = context.watch<MatchesState>().getNumPlayedByUser(userId);
-                                                  return Text(
-                                                      nPlayed.toString() +
-                                                          " " +
-                                                          ((nPlayed == 1)
-                                                              ? "game "
-                                                              : "games ") +
-                                                          "played",
-                                                      style:
-                                                          TextPalette.bodyText);
-                                                })
-                                              ],
+                              onTap: () {
+                                showModalBottomSheet(
+                                    context: context,
+                                    builder: (context) {
+                                      return Stack(
+                                          alignment:
+                                              AlignmentDirectional.bottomStart,
+                                          clipBehavior: Clip.none,
+                                          children: [
+                                            Container(
+                                              width: double.infinity,
+                                              height: 200,
+                                              color: Palette.white,
+                                              child: Column(
+                                                children: [
+                                                  SizedBox(height: 70),
+                                                  Text(
+                                                      snapshot.data.name ??
+                                                          snapshot.data.email ??
+                                                          "Player",
+                                                      style: TextPalette.h2),
+                                                  SizedBox(height: 20),
+                                                  Builder(builder: (context) {
+                                                    int nPlayed = context
+                                                        .watch<MatchesState>()
+                                                        .getNumPlayedByUser(
+                                                            userId);
+                                                    return Text(
+                                                        nPlayed.toString() +
+                                                            " " +
+                                                            ((nPlayed == 1)
+                                                                ? "game "
+                                                                : "games ") +
+                                                            "played",
+                                                        style: TextPalette
+                                                            .bodyText);
+                                                  })
+                                                ],
+                                              ),
                                             ),
-                                          ),
-                                          Positioned(
-                                            top: -30,
-                                            left: 0,
-                                            right: 0,
-                                            child:
-                                            UserAvatarWithBorder(snapshot.data)
-                                          ),
-                                        ]);
-                                  });
-                            },
-                            child: UserAvatar(24, snapshot.data)),
+                                            Positioned(
+                                                top: -30,
+                                                left: 0,
+                                                right: 0,
+                                                child: UserAvatarWithBorder(
+                                                    snapshot.data)),
+                                          ]);
+                                    });
+                              },
+                              child: UserAvatar(24, snapshot.data)),
                           SizedBox(height: 10),
-                          Text((snapshot.data.name ?? "Player").split(" ").first,
+                          Text(
+                              (snapshot.data.name ?? "Player").split(" ").first,
                               overflow: TextOverflow.ellipsis,
                               style: GoogleFonts.roboto(
                                   color: Palette.mediumgrey,
