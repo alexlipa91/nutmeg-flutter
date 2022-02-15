@@ -17,6 +17,8 @@ import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:week_of_year/week_of_year.dart';
+import 'package:flutter/foundation.dart';
+
 
 import 'MatchDetails.dart';
 
@@ -33,6 +35,20 @@ class AvailableMatches extends StatelessWidget {
 }
 
 class AvailableMatchesList extends StatelessWidget {
+
+  static Future<void> refreshPageState(
+      MatchesState matchesState,
+      AvailableMatchesUiState availableMatchesUiState,
+      RefreshController refreshController) async {
+
+    availableMatchesUiState.startLoading();
+    await MatchesController.refreshAll(matchesState);
+    await MatchesController.refreshImages(matchesState);
+    availableMatchesUiState.loadingDone();
+
+    refreshController.refreshCompleted();
+  }
+
   final RefreshController _refreshController =
       RefreshController(initialRefresh: false);
 
@@ -53,8 +69,12 @@ class AvailableMatchesList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var matchesState = context.watch<MatchesState>();
-    var userState = context.watch<UserState>();
     var uiState = context.watch<AvailableMatchesUiState>();
+    var userState = context.watch<UserState>();
+
+    WidgetsBinding.instance.addObserver(LifecycleEventHandler(
+        resumeCallBack: () => refreshPageState(matchesState, uiState,
+            _refreshController)));
 
     var optionSelected = uiState.selected;
     var isLoggedIn = userState.isLoggedIn();
@@ -98,13 +118,7 @@ class AvailableMatchesList extends StatelessWidget {
               header: MaterialClassicHeader(),
               controller: _refreshController,
               onRefresh: () async {
-                context.read<AvailableMatchesUiState>().startLoading();
-
-                await MatchesController.refreshAll(matchesState);
-                await MatchesController.refreshImages(matchesState);
-
-                context.read<AvailableMatchesUiState>().loadingDone();
-                _refreshController.refreshCompleted();
+                await refreshPageState(matchesState, uiState, _refreshController);
               },
               child: (matchWidgets.isEmpty)
                   ? Column(
@@ -606,4 +620,29 @@ class AvailableMatchesUiState extends ChangeNotifier {
   }
 
   Status getCurrentSelection() => selected;
+}
+
+class LifecycleEventHandler extends WidgetsBindingObserver {
+  final AsyncCallback resumeCallBack;
+
+  LifecycleEventHandler({
+    this.resumeCallBack,
+  });
+
+  @override
+  Future<void> didChangeAppLifecycleState(AppLifecycleState state) async {
+    switch (state) {
+      case AppLifecycleState.resumed:
+        if (resumeCallBack != null) {
+          await resumeCallBack();
+        }
+        break;
+      case AppLifecycleState.inactive:
+        break;
+      case AppLifecycleState.paused:
+        break;
+      case AppLifecycleState.detached:
+        break;
+    }
+  }
 }
