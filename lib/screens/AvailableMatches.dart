@@ -135,6 +135,7 @@ class AvailableMatchesList extends StatelessWidget {
       AvailableMatchesUiState uiState) {
     var matches = state
         .getMatches()
+        .where((e) => (!e.isTest || userState.isTestMode))
         .where((m) => m.isUserGoing(userState.getUserDetails()));
 
     var now = DateTime.now();
