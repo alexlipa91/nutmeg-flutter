@@ -148,7 +148,7 @@ class LaunchWidgetState extends State<LaunchWidget> {
           .read<MatchesState>()
           .getMatch(deepLink.queryParameters["id"]);
 
-      await Navigator.pushNamed(
+      await Navigator.pushReplacementNamed(
         context,
         MatchDetails.routeName,
         arguments: ScreenArguments(
