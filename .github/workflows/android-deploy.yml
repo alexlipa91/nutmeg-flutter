@@ -1,15 +1,16 @@
 name: Playstore Deployment
 
 on:
-  push:
-    tags:
-      - v*
+  push
+#    tags:
+#      - v*
 
 jobs:
   deploy_android:
     name: Deploy build to Playstore (internal test)
     runs-on: ubuntu-latest
     steps:
+      - run: pwd
       - run: echo $ANDROID_JSON | base64 -d > android/nutmeg-9099c-c70a0f6cba3d.json
         env:
           ANDROID_JSON: ${{ secrets.ANDROID_JSON }}

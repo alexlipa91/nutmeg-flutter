@@ -1,16 +1,14 @@
 name: Appstore Deployment
 
 on:
-  push:
-    tags:
-      - v*
+  push
 
 jobs:
   deploy_ios:
     name: Deploy build to TestFlight
     runs-on: macOS-latest
     steps:
-      - run: echo $P8_KEY | base64 -d > ios/AuthKey_CTJDHGWL48.p8
+      - run: pwd; echo $P8_KEY | base64 -d > ios/AuthKey_CTJDHGWL48.p8
         env:
           P8_KEY: ${{ secrets.P8_KEY }}
       - name: Checkout code from ref
