@@ -27,16 +27,8 @@ class LeaveMatchButton extends StatelessWidget {
         onPressed: (BuildContext context) async {
           context.read<GenericButtonState>().change(ButtonState.loading);
 
-          try {
-            await MatchesController.leaveMatch(context.read<MatchesState>(),
-                match.documentId, context.read<UserState>());
-          } catch (e, stackTrace) {
-            print(e);
-            print(stackTrace);
-            Navigator.pop(context, false);
-            return;
-          }
-
+          await MatchesController.leaveMatch(context.read<MatchesState>(),
+              match.documentId, context.read<UserState>());
           await Future.delayed(Duration(milliseconds: 500));
           Navigator.of(context).pop(true);
 

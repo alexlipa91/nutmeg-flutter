@@ -5,8 +5,6 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import 'InfoModals.dart';
-
 
 class UiUtils {
 
@@ -17,13 +15,6 @@ class UiUtils {
     buffer.write(hexString.replaceFirst('#', ''));
     return Color(int.parse(buffer.toString(), radix: 16));
   }
-
-  static Future<dynamic> showGenericErrorModal(BuildContext context) =>
-      showGenericErrorModalWithText(context, "Please contact us for support");
-
-  static Future<dynamic> showGenericErrorModalWithText(BuildContext context,
-      String bodyText) =>
-      GenericInfoModal(title: "Something went wrong!", body: bodyText).show(context);
 }
 
 class Palette {

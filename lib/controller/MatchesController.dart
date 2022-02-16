@@ -96,6 +96,7 @@ class MatchesController {
   // it loads the thumbnail picture from the sportcenter at sportcenters/<sportcenter_id>/thumbnail.png
   // if no <sportcenter_id> subfolder it uses "default"
   static Future<String> getMatchThumbnailUrl(Match match) async {
+    print(match.documentId);
     var listOfFiles =
         await FirebaseStorage.instance.ref("sportcenters/").listAll();
 
@@ -109,6 +110,7 @@ class MatchesController {
     }
 
     var url = await FirebaseStorage.instance.ref(file).getDownloadURL();
+    print(url);
     return url;
   }
 }

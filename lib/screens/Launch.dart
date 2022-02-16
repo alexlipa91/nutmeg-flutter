@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
@@ -21,6 +22,9 @@ import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
+import 'package:version/version.dart';
+
+import '../Exceptions.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
@@ -33,6 +37,12 @@ void main() {
       await FirebaseCrashlytics.instance.recordFlutterError(details);
     };
   }
+
+  FutureBuilder.debugRethrowError = true;
+  FlutterError.onError = (FlutterErrorDetails details) {
+    FlutterError.presentError(details);
+    exit(1);
+  };
 
   runZonedGuarded(() {
     runApp(MultiProvider(
@@ -57,8 +67,9 @@ void main() {
         },
       ),
     ));
-  }, (Object error, StackTrace stackTrace) {
+  }, (Object error, StackTrace stackTrace) async {
     print("**** ZONED EXCEPTION ****");
+    await ErrorHandlingUtils.handleError(error, stackTrace, navigatorKey.currentContext);
     if (!kIsWeb) {
       FirebaseCrashlytics.instance.recordError(error, stackTrace);
     }
@@ -174,12 +185,18 @@ class LaunchWidgetState extends State<LaunchWidget> {
   }
 
   Future<void> loadData(BuildContext context) async {
-    print("app initialization tasks running");
     await Firebase.initializeApp();
 
     // fetch device model name
     var d = DeviceInfo();
     await d.init();
+
+    // check if update is necessary
+    var current = await getVersion();
+    var minimumRequired = await MiscController.getMinimumVersion();
+
+    if (current < minimumRequired)
+      throw OutdatedAppException();
 
     if (kDebugMode) {
       // Force disable Crashlytics collection while doing every day development.
@@ -213,15 +230,18 @@ class LaunchWidgetState extends State<LaunchWidget> {
     );
     FirebaseMessaging.instance.subscribeToTopic("nutmeg-generic");
 
+    // DATA LOAD
+    // fixme make images independent from matches and then this call can be parallelized too
     await MatchesController.refreshAll(context.read<MatchesState>());
-    await MatchesController.refreshImages(context.read<MatchesState>());
 
-    // load static data
-    await SportCentersController.refreshAll(context.read<LoadOnceState>());
-    await SportsController.refreshAll(context.read<LoadOnceState>());
-    await MiscController.getGifs(context.read<LoadOnceState>());
+    var futures = [
+      MatchesController.refreshImages(context.read<MatchesState>()),
+      SportCentersController.refreshAll(context.read<LoadOnceState>()),
+      SportsController.refreshAll(context.read<LoadOnceState>()),
+      MiscController.getGifs(context.read<LoadOnceState>())
+    ];
 
-    await Future.delayed(Duration(milliseconds: 500));
+    await Future.wait(futures);
 
     Uri deepLink;
 
@@ -240,14 +260,15 @@ class LaunchWidgetState extends State<LaunchWidget> {
     }
   }
 
+  static Future<Version> getVersion() async {
+    PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    var versionParts = packageInfo.version.split(".");
+    return Version(int.parse(versionParts[0]), int.parse(versionParts[1]),
+        int.parse(versionParts[2]));
+  }
+
   @override
   Widget build(BuildContext context) {
-    var getVersionFuture = () async {
-      PackageInfo packageInfo = await PackageInfo.fromPlatform();
-      String version = packageInfo.version;
-      return version;
-    };
-
     var images = Row(
       children: [
         Expanded(child: Column(
@@ -277,14 +298,14 @@ class LaunchWidgetState extends State<LaunchWidget> {
         ),
       ),
       Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-        FutureBuilder<String>(
-            future: getVersionFuture(),
+        FutureBuilder<Version>(
+            future: getVersion(),
             builder: (context, snapshot) => Padding(
                   padding: EdgeInsets.only(bottom: 20),
                   child: Text(
                       (snapshot.hasData)
-                          ? snapshot.data
-                          : "loading version number",
+                          ? snapshot.data.toString()
+                          : "",
                       style: TextPalette.linkStyleInverted),
                 )),
       ])
@@ -296,28 +317,18 @@ class LaunchWidgetState extends State<LaunchWidget> {
               color: Palette.primary,
             ),
             child: FutureBuilder<void>(
-                future: loadData(context)
-                    //     .timeout(Duration(seconds: 20),
-                    //     onTimeout: () async {
-                    //   print("timeout");
-                    //   GenericInfoModal(
-                    //           title: "Something went wrong!",
-                    //           body: "Please check your connection")
-                    //       .show(context);
-                    //       // .then((value) => Navigator.of(context).pop());
-                    // })
-                    .catchError((err, stacktrace) {
-                  print(err);
-                  print(stacktrace);
-                  GenericInfoModal(
-                          title: "Something went wrong!",
-                          body: "Please contact us for support")
-                      .show(context);
-                }),
-                builder: (context, snapshot) => (snapshot.hasError)
-                    ? Text(snapshot.error.toString(),
-                        style: TextPalette.linkStyleInverted)
-                    : Stack(children: [images, mainWidgets])
+                future: loadData(context),
+                    // .catchError((err, stacktrace) async {
+                    //   await ErrorHandlingUtils.handleError(err, stacktrace, context);
+                    //   Future.delayed(Duration(seconds: 1), () {});
+                    //   SystemChannels.platform.invokeMethod('SystemNavigator.pop');
+                //   ),
+                builder: (context, snapshot) =>
+                // (snapshot.hasError)
+                //     ? Text(snapshot.error.toString(),
+                //         style: TextPalette.linkStyleInverted)
+                //     :
+                Stack(children: [images, mainWidgets])
             )));
   }
 }

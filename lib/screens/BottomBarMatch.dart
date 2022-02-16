@@ -68,7 +68,7 @@ class BottomBarMatch extends StatelessWidget {
                                     userState.getUserDetails().documentId)
                                 .first;
 
-                            var success = await GenericInfoModal.withBottom(
+                            await GenericInfoModal.withBottom(
                                 title: "Leaving this game?",
                                 body: "You joined this game: " +
                                     getFormattedDate(userSub.createdAt) +
@@ -106,10 +106,6 @@ class BottomBarMatch extends StatelessWidget {
                                     ],
                                   )
                                 ])).show(context);
-
-                            if (success != null && success == false) {
-                              UiUtils.showGenericErrorModal(context);
-                            }
                           })
                         : (!match.isFull())
                             ? JoinButton(match: match)

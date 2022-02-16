@@ -407,9 +407,6 @@ class MatchInfo extends StatelessWidget {
         widgets.add(w);
       }
     }
-
-    print(widgets.length);
-
     return widgets;
   }
 }

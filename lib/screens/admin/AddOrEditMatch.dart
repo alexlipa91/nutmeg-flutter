@@ -2,6 +2,7 @@ import 'package:cool_alert/cool_alert.dart';
 import 'package:date_time_picker/date_time_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:nutmeg/Exceptions.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
@@ -313,9 +314,7 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                         Navigator.pop(context);
                       }
                     } catch (e, stackTrace) {
-                      print(e);
-                      print(stackTrace);
-                      UiUtils.showGenericErrorModal(context);
+                      ErrorHandlingUtils.handleError(e, stackTrace, context);
                     }
                   }),
                 )
