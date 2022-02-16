@@ -234,14 +234,14 @@ class LaunchWidgetState extends State<LaunchWidget> {
     // fixme make images independent from matches and then this call can be parallelized too
     await MatchesController.refreshAll(context.read<MatchesState>());
 
-    var futures = [
-      MatchesController.refreshImages(context.read<MatchesState>()),
-      SportCentersController.refreshAll(context.read<LoadOnceState>()),
-      SportsController.refreshAll(context.read<LoadOnceState>()),
-      MiscController.getGifs(context.read<LoadOnceState>())
-    ];
+    // var futures = [
+    await MatchesController.refreshImages(context.read<MatchesState>()),
+    await SportCentersController.refreshAll(context.read<LoadOnceState>()),
+    await SportsController.refreshAll(context.read<LoadOnceState>()),
+    await MiscController.getGifs(context.read<LoadOnceState>())
+    // ];
 
-    await Future.wait(futures);
+    // await Future.wait(futures);
 
     Uri deepLink;
 
