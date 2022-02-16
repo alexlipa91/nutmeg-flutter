@@ -5,7 +5,7 @@ import 'package:nutmeg/utils/InfoModals.dart';
 class ErrorHandlingUtils {
   static Future<void> handleError(
       Exception e, StackTrace stackTrace, BuildContext context) {
-    print(e);
+    print("handling error: " + e.toString());
     print(stackTrace);
 
     switch (e.runtimeType) {
@@ -17,10 +17,10 @@ class ErrorHandlingUtils {
             .then((value) =>
                 SystemChannels.platform.invokeMethod('SystemNavigator.pop'));
       default:
-        return GenericInfoModal(
-                title: "Something went wrong!",
-                body: "Please contact us for support.")
-            .show(context);
+        // return GenericInfoModal(
+        //         title: "Something went wrong!",
+        //         body: "Please contact us for support.")
+        //     .show(context);
     }
   }
 }
