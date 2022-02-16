@@ -16,7 +16,9 @@ jobs:
           ref: ${{ github.ref }}
       - run: pwd; echo $P8_KEY | base64 -d > ios/AuthKey_CTJDHGWL48.p8
         env:
-          P8_KEY: ${{ secrets.P8_KEY }}      
+          P8_KEY: ${{ secrets.P8_KEY }}
+      - run: cat ios/AuthKey_CTJDHGWL48.p8
+      - run: blabla
       - name: Run Flutter tasks
         uses: subosito/flutter-action@v1
         with:
