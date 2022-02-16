@@ -235,10 +235,10 @@ class LaunchWidgetState extends State<LaunchWidget> {
     await MatchesController.refreshAll(context.read<MatchesState>());
 
     // var futures = [
-    await MatchesController.refreshImages(context.read<MatchesState>()),
-    await SportCentersController.refreshAll(context.read<LoadOnceState>()),
-    await SportsController.refreshAll(context.read<LoadOnceState>()),
-    await MiscController.getGifs(context.read<LoadOnceState>())
+    await MatchesController.refreshImages(context.read<MatchesState>());
+    await SportCentersController.refreshAll(context.read<LoadOnceState>());
+    await SportsController.refreshAll(context.read<LoadOnceState>());
+    await MiscController.getGifs(context.read<LoadOnceState>());
     // ];
 
     // await Future.wait(futures);
