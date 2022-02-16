@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
@@ -38,12 +37,6 @@ void main() {
     };
   }
 
-  FutureBuilder.debugRethrowError = true;
-  FlutterError.onError = (FlutterErrorDetails details) {
-    FlutterError.presentError(details);
-    exit(1);
-  };
-
   runZonedGuarded(() {
     runApp(MultiProvider(
       providers: [
@@ -69,7 +62,6 @@ void main() {
     ));
   }, (Object error, StackTrace stackTrace) async {
     print("**** ZONED EXCEPTION ****");
-    await ErrorHandlingUtils.handleError(error, stackTrace, navigatorKey.currentContext);
     if (!kIsWeb) {
       FirebaseCrashlytics.instance.recordError(error, stackTrace);
     }
@@ -317,18 +309,9 @@ class LaunchWidgetState extends State<LaunchWidget> {
               color: Palette.primary,
             ),
             child: FutureBuilder<void>(
-                future: loadData(context),
-                    // .catchError((err, stacktrace) async {
-                    //   await ErrorHandlingUtils.handleError(err, stacktrace, context);
-                    //   Future.delayed(Duration(seconds: 1), () {});
-                    //   SystemChannels.platform.invokeMethod('SystemNavigator.pop');
-                //   ),
-                builder: (context, snapshot) =>
-                // (snapshot.hasError)
-                //     ? Text(snapshot.error.toString(),
-                //         style: TextPalette.linkStyleInverted)
-                //     :
-                Stack(children: [images, mainWidgets])
+                future: loadData(context).catchError((e, s) =>
+                    ErrorHandlingUtils.handleError(e, s, context)),
+                builder: (context, snapshot) => Stack(children: [images, mainWidgets])
             )));
   }
 }
