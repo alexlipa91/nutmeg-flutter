@@ -39,12 +39,17 @@ class AvailableMatchesList extends StatelessWidget {
   static Future<void> refreshPageState(
       MatchesState matchesState,
       AvailableMatchesUiState availableMatchesUiState,
-      RefreshController refreshController) async {
+      RefreshController refreshController,
+      bool showSkeletonWhileLoading
+      ) async {
+    refreshController.requestLoading();
 
-    availableMatchesUiState.startLoading();
+    if (showSkeletonWhileLoading)
+      availableMatchesUiState.startLoading();
     await MatchesController.refreshAll(matchesState);
     await MatchesController.refreshImages(matchesState);
-    availableMatchesUiState.loadingDone();
+    if (showSkeletonWhileLoading)
+      availableMatchesUiState.loadingDone();
 
     refreshController.refreshCompleted();
   }
@@ -73,8 +78,7 @@ class AvailableMatchesList extends StatelessWidget {
     var userState = context.watch<UserState>();
 
     WidgetsBinding.instance.addObserver(LifecycleEventHandler(
-        resumeCallBack: () => refreshPageState(matchesState, uiState,
-            _refreshController)));
+        resumeCallBack: () => _refreshController.requestRefresh()));
 
     var optionSelected = uiState.selected;
     var isLoggedIn = userState.isLoggedIn();
@@ -118,7 +122,10 @@ class AvailableMatchesList extends StatelessWidget {
               header: MaterialClassicHeader(),
               controller: _refreshController,
               onRefresh: () async {
-                await refreshPageState(matchesState, uiState, _refreshController);
+                await refreshPageState(matchesState, uiState, _refreshController, false);
+              },
+              onLoading: () async {
+                await refreshPageState(matchesState, uiState, _refreshController, true);
               },
               child: (matchWidgets.isEmpty)
                   ? Column(
@@ -164,9 +171,9 @@ class AvailableMatchesList extends StatelessWidget {
       future.sortedBy((e) => e.dateTime).forEachIndexed((index, m) {
         if (index == 0) {
           widgets.add(
-              MatchInfo.first(m.documentId, state.getImageUrl(m.documentId)));
+              MatchInfo.first(m.documentId, state.getImageUrl(m.documentId), _refreshController));
         } else {
-          widgets.add(MatchInfo(m.documentId, state.getImageUrl(m.documentId)));
+          widgets.add(MatchInfo(m.documentId, state.getImageUrl(m.documentId), _refreshController));
         }
       });
     }
@@ -204,10 +211,10 @@ class AvailableMatchesList extends StatelessWidget {
       grouped[w].sortedBy((e) => e.dateTime).forEachIndexed((index, match) {
         if (index == 0) {
           result.add(MatchInfo.first(
-              match.documentId, state.getImageUrl(match.documentId)));
+              match.documentId, state.getImageUrl(match.documentId), _refreshController));
         } else {
           result.add(
-              MatchInfo(match.documentId, state.getImageUrl(match.documentId)));
+              MatchInfo(match.documentId, state.getImageUrl(match.documentId), _refreshController));
         }
       });
     });
@@ -268,10 +275,11 @@ class MatchInfo extends StatelessWidget {
   final String matchId;
   final double topMargin;
   final String image;
+  final RefreshController refreshController;
 
-  MatchInfo(this.matchId, this.image) : topMargin = 10;
+  MatchInfo(this.matchId, this.image, this.refreshController) : topMargin = 10;
 
-  MatchInfo.first(this.matchId, this.image) : topMargin = 0;
+  MatchInfo.first(this.matchId, this.image, this.refreshController) : topMargin = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -355,8 +363,7 @@ class MatchInfo extends StatelessWidget {
               false,
             ),
           );
-          // await Navigator.push(context,
-          //     MaterialPageRoute(builder: (context) => MatchDetails(matchId)));
+          refreshController.requestRefresh();
         });
   }
 
@@ -628,6 +635,7 @@ class LifecycleEventHandler extends WidgetsBindingObserver {
 
   @override
   Future<void> didChangeAppLifecycleState(AppLifecycleState state) async {
+    print(state.toString());
     switch (state) {
       case AppLifecycleState.resumed:
         if (resumeCallBack != null) {
