@@ -48,14 +48,18 @@ class UserAvatarWithRedirect extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-        child: UserAvatar(radius, null),
-        onTap: () async {
-          await UserController.refreshCurrentUser(context.read<UserState>());
-          Navigator.push(
-              context, MaterialPageRoute(builder: (context) => new UserPage()));
-        },
-      customBorder: CircleBorder(),
+    return Container(
+      height: 40,
+      width: 40,
+      child: InkWell(
+          child: UserAvatar(radius, null),
+          onTap: () async {
+            await UserController.refreshCurrentUser(context.read<UserState>());
+            Navigator.push(
+                context, MaterialPageRoute(builder: (context) => new UserPage()));
+          },
+        customBorder: CircleBorder(),
+      ),
     );
   }
 }

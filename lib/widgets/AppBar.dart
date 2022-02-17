@@ -55,19 +55,22 @@ class MainAppBar extends NutmegAppBar {
             if (isLoggedIn)
               UserAvatarWithRedirect(radius: 18)
             else
-              Center(
-                  child: InkWell(
+              InkWell(
+                onTap: () async {
+                  var communication = await Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => Login()));
+                  if (communication != null) {
+                    GenericInfoModal(title: "Welcome", body: communication.text)
+                        .show(context);
+                  }
+                },
+                child: Container(
+                  height: 40,
+                  child: Center(
                       child:
-                          Text("LOGIN", style: TextPalette.linkStyleInverted),
-                      onTap: () async {
-                        var communication = await Navigator.push(context,
-                            MaterialPageRoute(builder: (context) => Login()));
-                        if (communication != null) {
-                          GenericInfoModal(
-                                  title: "Welcome", body: communication.text)
-                              .show(context);
-                        }
-                      }))
+                          Text("LOGIN", style: TextPalette.linkStyleInverted)),
+                ),
+              )
           ],
         ),
       ),
@@ -98,11 +101,12 @@ class MatchAppBar extends NutmegAppBar {
             InkWell(
                 splashColor: Palette.lightGrey,
                 child: Container(
-                height: tapSize,
-                width: tapSize,
-                child: Icon(Icons.arrow_back, color: Colors.black, size: iconsSize),
-              ),
-              onTap: () => Navigator.of(context).pop()),
+                  height: tapSize,
+                  width: tapSize,
+                  child: Icon(Icons.arrow_back,
+                      color: Colors.black, size: iconsSize),
+                ),
+                onTap: () => Navigator.of(context).pop()),
             if (!DeviceInfo().name.contains("ipad"))
               ShareButton(matchId, Palette.black, iconsSize, tapSize)
           ],

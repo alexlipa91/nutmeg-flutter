@@ -164,9 +164,6 @@ class UserPage extends StatelessWidget {
                                               Navigator.pop(context, false);
                                               return;
                                             }
-
-                                            await Future.delayed(
-                                                Duration(milliseconds: 500));
                                           }))
                                 ],
                               ),

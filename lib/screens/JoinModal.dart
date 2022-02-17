@@ -22,7 +22,6 @@ class JoinButton extends StatelessWidget {
     text: "JOIN",
     onPressed: (BuildContext context) async {
       context.read<GenericButtonState>().change(ButtonState.loading);
-      await Future.delayed(Duration(milliseconds: 500));
       await JoinModal.onJoinGameAction(context, match);
       context.read<GenericButtonState>().change(ButtonState.idle);
     },

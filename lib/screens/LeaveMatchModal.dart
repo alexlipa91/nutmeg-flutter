@@ -29,7 +29,6 @@ class LeaveMatchButton extends StatelessWidget {
 
           await MatchesController.leaveMatch(context.read<MatchesState>(),
               match.documentId, context.read<UserState>());
-          await Future.delayed(Duration(milliseconds: 500));
           Navigator.of(context).pop(true);
 
           GenericInfoModal.withBottom(
