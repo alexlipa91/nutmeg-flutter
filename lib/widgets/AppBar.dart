@@ -82,6 +82,9 @@ class MatchAppBar extends NutmegAppBar {
 
   @override
   Widget build(BuildContext context) {
+    var iconsSize = 25.0;
+    var tapSize = 40.0;
+
     return SliverAppBar(
         systemOverlayStyle: SystemUiOverlayStyle.dark,
         centerTitle: false,
@@ -89,18 +92,20 @@ class MatchAppBar extends NutmegAppBar {
         automaticallyImplyLeading: false,
         titleSpacing: 0,
         elevation: 0,
-        title: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              InkWell(
-                  child: Icon(Icons.arrow_back, color: Colors.black),
-                  onTap: () => Navigator.of(context).pop()),
-              if (!DeviceInfo().name.contains("ipad"))
-                ShareButton(matchId, Palette.black)
-            ],
-          ),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            InkWell(
+                splashColor: Palette.lightGrey,
+                child: Container(
+                height: tapSize,
+                width: tapSize,
+                child: Icon(Icons.arrow_back, color: Colors.black, size: iconsSize),
+              ),
+              onTap: () => Navigator.of(context).pop()),
+            if (!DeviceInfo().name.contains("ipad"))
+              ShareButton(matchId, Palette.black, iconsSize, tapSize)
+          ],
         ));
   }
 }

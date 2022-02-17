@@ -144,25 +144,51 @@ class ShareButton extends StatelessWidget {
   final String matchId;
   final Color color;
   final bool withText;
+  final double iconSize;
+  final double tappableSize;
 
-  ShareButton(this.matchId, this.color) : withText = false;
-
-  ShareButton.withText(this.matchId, this.color) : withText = true;
+  ShareButton(this.matchId, this.color, [double size = 20, double tappableSize = 40])
+      : withText = false,
+        tappableSize = tappableSize,
+        iconSize = size;
 
   @override
   Widget build(BuildContext context) {
-    var icon = Icon(Icons.share, color: color);
+    var icon = Icon(Icons.share, color: color, size: iconSize);
 
-    var child = (withText)
-        ? Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              icon,
-              SizedBox(width: 5),
-              Text("SHARE", style: TextPalette.linkStyle)
-            ],
-          )
-        : icon;
+    return InkWell(
+      splashColor: Palette.lightGrey,
+      onTap: () async {await DynamicLinks.shareMatchFunction(matchId);},
+      child: Container(
+        width: tappableSize,
+        height: tappableSize,
+        child: icon),
+    );
+  }
+}
+
+class ShareButtonWithText extends StatelessWidget {
+  final String matchId;
+  final Color color;
+  final bool withText;
+  final double iconSize;
+
+  ShareButtonWithText(this.matchId, this.color, [double size = 20])
+      : withText = false,
+        iconSize = size;
+
+  @override
+  Widget build(BuildContext context) {
+    var icon = Icon(Icons.share, color: color, size: iconSize);
+
+    var child = Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        icon,
+        SizedBox(width: 5),
+        Text("SHARE", style: TextPalette.linkStyle)
+      ],
+    );
 
     return InkWell(
         child: child,

@@ -111,7 +111,7 @@ class PaymentDetailsDescription extends StatelessWidget {
                   if (!DeviceInfo().name.contains("ipad"))
                     Padding(
                         padding: EdgeInsets.only(top: 20),
-                        child: ShareButton.withText(matchId, Palette.primary))
+                        child: ShareButtonWithText(matchId, Palette.primary))
                 ],
               ),
             )));
