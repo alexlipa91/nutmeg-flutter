@@ -1,3 +1,4 @@
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
@@ -7,6 +8,7 @@ class ErrorHandlingUtils {
       Exception e, StackTrace stackTrace, BuildContext context) {
     print("handling error: " + e.toString());
     print(stackTrace);
+    FirebaseCrashlytics.instance.recordError(e, stackTrace);
 
     switch (e.runtimeType) {
       case OutdatedAppException:
