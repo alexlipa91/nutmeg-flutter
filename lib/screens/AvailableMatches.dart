@@ -16,7 +16,6 @@ import 'package:nutmeg/widgets/Texts.dart';
 import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:week_of_year/week_of_year.dart';
 import 'package:flutter/foundation.dart';
 
 
@@ -189,7 +188,7 @@ class AvailableMatchesListState extends State<AvailableMatchesList> {
 
     if (past.isNotEmpty) {
       widgets.add(TextSeparatorWidget("PAST GAMES"));
-      past.sortedBy((e) => e.dateTime).forEachIndexed((index, m) {
+      past.sortedBy((e) => e.dateTime).reversed.forEachIndexed((index, m) {
         if (index == 0) {
           widgets.add(MatchInfoPast.first(m));
         } else {
@@ -210,7 +209,14 @@ class AvailableMatchesListState extends State<AvailableMatchesList> {
         .where((e) => (!e.isTest || userState.isTestMode))
         .toList();
 
-    var grouped = matches.groupListsBy((m) => m.dateTime.weekOfYear);
+    var beginningOfCurrentWeek = getBeginningOfTheWeek(DateTime.now());
+
+    // group by delta of days from first day of the week
+    var grouped = matches.groupListsBy((m) {
+      var durationDifference = getBeginningOfTheWeek(m.dateTime)
+          .difference(beginningOfCurrentWeek);
+      return durationDifference.inDays ~/ 7;
+    });
 
     List<int> sortedWeeks = grouped.keys.toList()..sort();
 
@@ -376,8 +382,6 @@ class MatchInfo extends StatelessWidget {
             ),
           );
           await refreshController.requestRefresh();
-          // await Navigator.push(context,
-          //     MaterialPageRoute(builder: (context) => MatchDetails(matchId)));
         });
   }
 
@@ -539,7 +543,7 @@ class MatchInfoPast extends StatelessWidget {
 
     return InkWell(
         child: Padding(
-          padding: EdgeInsets.only(top: topMargin),
+          padding: EdgeInsets.only(top: topMargin, right: 16, left: 16),
           child: InfoContainer(
               child: IntrinsicHeight(
             child: Row(
@@ -592,20 +596,18 @@ class MatchInfoPast extends StatelessWidget {
 }
 
 class WeekSeparatorWidget extends StatelessWidget {
-  final int weekNumber;
+  final int weekDelta;
 
-  const WeekSeparatorWidget(this.weekNumber);
+  const WeekSeparatorWidget(this.weekDelta);
 
   @override
   Widget build(BuildContext context) => TextSeparatorWidget(_getWeekDesc());
 
   _getWeekDesc() {
-    var currentWeek = DateTime.now().weekOfYear;
-
-    if (currentWeek == weekNumber) {
+    if (weekDelta == 0) {
       return "THIS WEEK";
     }
-    if (currentWeek + 1 == weekNumber) {
+    if (weekDelta == 1) {
       return "NEXT WEEK";
     }
     return "IN MORE THAN TWO WEEKS";
@@ -619,21 +621,10 @@ enum Status {
 
 class AvailableMatchesUiState extends ChangeNotifier {
 
-  bool loading = false;
   Status selected = Status.ALL;
 
   void changeTo(Status newSelection) {
     selected = newSelection;
-    notifyListeners();
-  }
-
-  void loadingDone() {
-    loading = false;
-    notifyListeners();
-  }
-
-  void startLoading() {
-    loading = true;
     notifyListeners();
   }
 

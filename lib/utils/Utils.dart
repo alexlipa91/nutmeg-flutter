@@ -1,4 +1,5 @@
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -61,3 +62,8 @@ class DynamicLinks {
 }
 
 var isTestPaymentMode = false;
+
+DateTime getBeginningOfTheWeek(DateTime dateTime) {
+  var currentDay = dateTime.weekday;
+  return DateUtils.dateOnly(dateTime.subtract(Duration(days: currentDay - 1)));
+}
