@@ -5,7 +5,6 @@ import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
-import 'package:progress_state_button/progress_button.dart';
 import 'package:provider/provider.dart';
 
 import 'Login.dart';
@@ -18,13 +17,15 @@ class JoinButton extends StatelessWidget {
   const JoinButton({Key key, this.match}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) => GenericStatefulButton(
-    text: "JOIN",
-    onPressed: (BuildContext context) async {
-      context.read<GenericButtonState>().change(ButtonState.loading);
+  Widget build(BuildContext context) => GenericButtonWithLoader(
+    "JOIN",
+    (BuildContext context) async {
+      context.read<GenericButtonWithLoaderState>().change(true);
+      await Future.delayed(Duration(seconds: 4));
       await JoinModal.onJoinGameAction(context, match);
-      context.read<GenericButtonState>().change(ButtonState.idle);
+      context.read<GenericButtonWithLoaderState>().change(false);
     },
+    Primary(),
   );
 }
 

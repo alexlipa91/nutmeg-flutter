@@ -143,13 +143,13 @@ class UserPage extends StatelessWidget {
                               child: Row(
                                 children: [
                                   Expanded(
-                                      child: GenericStatefulButton(
-                                          text: "LOGOUT",
-                                          onPressed:
+                                      child: GenericButtonWithLoader(
+                                          "LOGOUT",
+
                                               (BuildContext context) async {
                                             context
-                                                .read<GenericButtonState>()
-                                                .change(ButtonState.loading);
+                                                .read<GenericButtonWithLoaderState>()
+                                                .change(true);
 
                                             try {
                                               await Future.delayed(
@@ -164,7 +164,10 @@ class UserPage extends StatelessWidget {
                                               Navigator.pop(context, false);
                                               return;
                                             }
-                                          }))
+                                          },
+                                         Primary(),
+                                      ),
+                                  )
                                 ],
                               ),
                             ),
@@ -174,15 +177,17 @@ class UserPage extends StatelessWidget {
                                 child: Row(
                                   children: [
                                     Expanded(
-                                        child: GenericStatefulButton(
-                                            text: "ADMIN AREA",
-                                            onPressed: (BuildContext context) async {
+                                        child: GenericButtonWithLoader(
+                                            "ADMIN AREA",
+                                            (BuildContext context) async {
                                               await Navigator.push(
                                                   context,
                                                   MaterialPageRoute(
                                                       builder: (context) =>
                                                           AdminAvailableMatches()));
-                                            }))
+                                            },
+                                            Primary(),
+                                        ))
                                   ],
                                 ),
                               ),
@@ -235,9 +240,9 @@ class UserPage extends StatelessWidget {
                                     SizedBox(width: 10),
                                     Container(
                                       width: 100,
-                                      child: GenericStatefulButton(
-                                          text: "UPDATE",
-                                          onPressed: (BuildContext context) async {
+                                      child: GenericButtonWithLoader(
+                                          "UPDATE",
+                                          (BuildContext context) async {
                                             userDetails.creditsInCents =
                                                 creditCount;
                                             userState
@@ -245,7 +250,8 @@ class UserPage extends StatelessWidget {
                                             await UserController.editUser(userDetails);
                                             await GenericInfoModal(title: "Credits updated",
                                                 body: "Your new balance is: " + formatCurrency(creditCount)).show(context);
-                                          }),
+                                          },
+                                          Primary()),
                                     )
                                   ],
                                 ),

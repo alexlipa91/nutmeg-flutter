@@ -22,10 +22,10 @@ class LeaveMatchButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) =>
-      GenericStatefulButton(
-        text: "CONFIRM",
-        onPressed: (BuildContext context) async {
-          context.read<GenericButtonState>().change(ButtonState.loading);
+      GenericButtonWithLoader(
+        "CONFIRM",
+        (BuildContext context) async {
+          context.read<GenericButtonWithLoaderState>().change(true);
 
           await MatchesController.leaveMatch(context.read<MatchesState>(),
               match.documentId, context.read<UserState>());
@@ -46,6 +46,7 @@ class LeaveMatchButton extends StatelessWidget {
                     child:
                     Text("GO TO MY ACCOUNT", style: TextPalette.linkStyle)),
               )).show(context);
-        }
+        },
+        Secondary(),
       );
 }

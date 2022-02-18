@@ -1,67 +1,82 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
-import 'package:progress_state_button/progress_button.dart';
 import 'package:provider/provider.dart';
 import 'package:provider/src/provider.dart';
 
-// GENERIC STATEFUL BUTTON
 
-class GenericButtonState extends ChangeNotifier {
-  ButtonState buttonState = ButtonState.idle;
+// GENERIC BUTTON WITH LOADER
+class GenericButtonWithLoaderState extends ChangeNotifier {
+  bool isLoading = false;
 
-  change(ButtonState b) {
-    buttonState = b;
+  change(bool b) {
+    isLoading = b;
     notifyListeners();
   }
 }
 
-class GenericStatefulButton extends StatelessWidget {
+class GenericButtonWithLoader extends StatelessWidget {
   final String text;
   final Function onPressed;
+  final ButtonType buttonType;
 
-  const GenericStatefulButton({Key key, this.text, this.onPressed})
-      : super(key: key);
+  GenericButtonWithLoader(this.text, this.onPressed, this.buttonType);
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (context) => GenericButtonState()),
+        ChangeNotifierProvider(
+            create: (context) => GenericButtonWithLoaderState()),
       ],
       child: Builder(
         builder: (context) {
-          var color = Palette.primary;
+          var _isLoading =
+              context.watch<GenericButtonWithLoaderState>().isLoading;
 
-          return ProgressButton(
-            stateWidgets: {
-              ButtonState.idle:
-                  Text(text, style: TextPalette.linkStyleInverted),
-              ButtonState.loading:
-                  Text(text, style: TextPalette.linkStyleInverted),
-              ButtonState.fail:
-                  Text(text, style: TextPalette.linkStyleInverted),
-              ButtonState.success: Icon(Icons.check_circle, color: Colors.white)
-            },
-            stateColors: {
-              ButtonState.idle: color,
-              ButtonState.loading: color,
-              ButtonState.fail: color,
-              ButtonState.success: color
-            },
-            maxWidth: 202,
-            minWidth: 50,
-            minWidthStates: [ButtonState.success],
-            radius: 50,
-            height: 40,
-            animationDuration: Duration(seconds: 3),
-            progressIndicatorSize: 23,
-            padding: EdgeInsets.symmetric(horizontal: 10),
-            onPressed: () => onPressed(context),
-            state: context.watch<GenericButtonState>().buttonState,
+          return ElevatedButton(
+            child: _isLoading
+                ? SizedBox(
+                    height: buttonType.textStyle.fontSize,
+                    width: buttonType.textStyle.fontSize,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: buttonType.loaderColor,
+                    ),
+                  )
+                : Text(text, style: buttonType.textStyle),
+            onPressed: _isLoading ? null : () => onPressed(context),
+            style: ButtonStyle(
+              backgroundColor: MaterialStateProperty.all<Color>(buttonType.backgroundColor),
+              shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(50.0))),
+              side: MaterialStateProperty.all<BorderSide>(
+                  BorderSide(color: buttonType.borderColor, width: 2)),
+            ),
           );
         },
       ),
     );
   }
+}
+
+abstract class ButtonType {
+  Color backgroundColor;
+  TextStyle textStyle;
+  Color borderColor;
+  Color loaderColor;
+}
+
+class Primary extends ButtonType {
+  Color backgroundColor = Palette.primary;
+  TextStyle textStyle = TextPalette.linkStyleInverted;
+  Color borderColor = Palette.primary;
+  Color loaderColor = Palette.white;
+}
+
+class Secondary extends ButtonType {
+  Color backgroundColor = Palette.white;
+  TextStyle textStyle = TextPalette.linkStyle;
+  Color borderColor = Palette.primary;
+  Color loaderColor = Palette.primary;
 }

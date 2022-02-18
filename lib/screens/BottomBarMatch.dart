@@ -54,63 +54,67 @@ class BottomBarMatch extends StatelessWidget {
                 ],
               ),
               Expanded(
-                child: Column(
-                  children: [
-                    (isGoing)
-                        ? RoundedButtonLight("LEAVE GAME", () async {
-                            var hoursToGame = match.dateTime
-                                .difference(DateTime.now())
-                                .inHours;
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      (isGoing)
+                          ? RoundedButtonLight("LEAVE GAME", () async {
+                              var hoursToGame = match.dateTime
+                                  .difference(DateTime.now())
+                                  .inHours;
 
-                            var userSub = match.going
-                                .where((e) =>
-                                    e.userId ==
-                                    userState.getUserDetails().documentId)
-                                .first;
+                              var userSub = match.going
+                                  .where((e) =>
+                                      e.userId ==
+                                      userState.getUserDetails().documentId)
+                                  .first;
 
-                            await GenericInfoModal.withBottom(
-                                title: "Leaving this game?",
-                                body: "You joined this game: " +
-                                    getFormattedDate(userSub.createdAt) +
-                                    ".\n" +
-                                    ((hoursToGame < 24)
-                                        ? "You will not receive a refund since the game is in less than 24 hours."
-                                        : "We will refund you in credits that you can use in your next games."),
-                                bottomWidget: Column(children: [
-                                  Divider(),
-                                  Padding(
-                                    padding:
-                                        EdgeInsets.symmetric(vertical: 10.0),
-                                    child: Row(
-                                      children: [
-                                        Text("Credits refund",
-                                            style: TextPalette.h3),
-                                        Expanded(
-                                            child: Text(
-                                          formatCurrency(
-                                                  match.pricePerPersonInCents) +
-                                              " euro",
-                                          style: TextPalette.h3,
-                                          textAlign: TextAlign.end,
-                                        ))
-                                      ],
+                              await GenericInfoModal.withBottom(
+                                  title: "Leaving this game?",
+                                  body: "You joined this game: " +
+                                      getFormattedDate(userSub.createdAt) +
+                                      ".\n" +
+                                      ((hoursToGame < 24)
+                                          ? "You will not receive a refund since the game is in less than 24 hours."
+                                          : "We will refund you in credits that you can use in your next games."),
+                                  bottomWidget: Column(children: [
+                                    Divider(),
+                                    Padding(
+                                      padding:
+                                          EdgeInsets.symmetric(vertical: 10.0),
+                                      child: Row(
+                                        children: [
+                                          Text("Credits refund",
+                                              style: TextPalette.h3),
+                                          Expanded(
+                                              child: Text(
+                                            formatCurrency(
+                                                    match.pricePerPersonInCents) +
+                                                " euro",
+                                            style: TextPalette.h3,
+                                            textAlign: TextAlign.end,
+                                          ))
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                  Divider(),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Expanded(
-                                          child:
-                                              LeaveMatchButton(match: match)),
-                                    ],
-                                  )
-                                ])).show(context);
-                          })
-                        : (!match.isFull())
-                            ? JoinButton(match: match)
-                            : RoundedButtonOff("JOIN GAME", null),
-                  ],
+                                    Divider(),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Expanded(
+                                            child:
+                                                LeaveMatchButton(match: match)),
+                                      ],
+                                    )
+                                  ])).show(context);
+                            })
+                          : (!match.isFull())
+                              ? JoinButton(match: match)
+                              : RoundedButtonOff("JOIN GAME", null),
+                    ],
+                  ),
                 ),
               )
             ],

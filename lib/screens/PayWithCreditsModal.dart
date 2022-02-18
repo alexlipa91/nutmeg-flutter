@@ -17,18 +17,19 @@ class PayWithCreditsButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) =>
-      GenericStatefulButton(
-        text: "PAY WITH CREDITS",
-        onPressed: (BuildContext context) async {
-          context.read<GenericButtonState>().change(ButtonState.loading);
+      GenericButtonWithLoader(
+        "PAY WITH CREDITS",
+        (BuildContext context) async {
+          context.read<GenericButtonWithLoaderState>().change(true);
 
           await MatchesController.joinMatch(context.read<MatchesState>(),
               match.documentId, context.read<UserState>(), paymentRecap);
           await Future.delayed(Duration(milliseconds: 500));
-          context.read<GenericButtonState>().change(ButtonState.idle);
+          context.read<GenericButtonWithLoaderState>().change(false);
 
           Navigator.pop(context, true);
           await PaymentDetailsDescription.communicateSuccessToUser(context, match.documentId);
         },
+        Primary(),
       );
 }

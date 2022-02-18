@@ -16,10 +16,10 @@ class PayWithMoneyButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) =>
-      GenericStatefulButton(
-        text: "CONTINUE TO PAYMENT",
-        onPressed: (BuildContext context) async {
-          context.read<GenericButtonState>().change(ButtonState.loading);
+      GenericButtonWithLoader(
+        "CONTINUE TO PAYMENT",
+        (BuildContext context) async {
+          context.read<GenericButtonWithLoaderState>().change(true);
 
           var userState = context.read<UserState>();
           var userDetails = userState.getUserDetails();
@@ -37,5 +37,6 @@ class PayWithMoneyButton extends StatelessWidget {
 
           await launch(sessionUrl, forceSafariVC: false);
         },
+        Primary(),
       );
 }

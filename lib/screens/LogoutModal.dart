@@ -3,7 +3,6 @@ import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
-import 'package:progress_state_button/progress_button.dart';
 import 'package:provider/provider.dart';
 
 
@@ -15,10 +14,10 @@ class LogOutButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) =>
-      GenericStatefulButton(
-        text: "LOGOUT",
-        onPressed: (BuildContext context) async {
-          context.read<GenericButtonState>().change(ButtonState.loading);
+      GenericButtonWithLoader(
+        "LOGOUT",
+        (BuildContext context) async {
+          context.read<GenericButtonWithLoaderState>().change(true);
 
           try {
             await Future.delayed(Duration(milliseconds: 500),
@@ -33,6 +32,7 @@ class LogOutButton extends StatelessWidget {
 
           await Future.delayed(Duration(milliseconds: 500));
           Navigator.of(context).pop(true);
-        }
+        },
+        Primary(),
       );
 }
