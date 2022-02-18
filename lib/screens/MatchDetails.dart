@@ -64,9 +64,7 @@ class MatchDetails extends StatelessWidget {
             builder: (context) {
               int going = match.numPlayersGoing();
               return Text(
-                  going.toString() +
-                      ((going == 1) ? " PLAYER" : " PLAYERS") +
-                      " GOING",
+                  going.toString() + "/" + match.maxPlayers.toString() + " PLAYERS JOINED",
                   style: TextPalette.h4);
             },
           )),
@@ -440,9 +438,6 @@ class EmptyPlayerCard extends StatelessWidget {
         child: SizedBox(
           width: 100,
           child: InfoContainer(
-              // constraints: BoxConstraints(maxWidth: 100),
-              // decoration: infoMatchDecoration,
-              // margin: EdgeInsets.only(right: 10),
               child: Column(children: [
             InkWell(
               onTap: () => JoinModal.onJoinGameAction(context, match),

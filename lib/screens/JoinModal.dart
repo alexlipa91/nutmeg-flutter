@@ -49,7 +49,7 @@ class JoinModal {
       await GenericInfoModal.withBottom(
           title: "Join this game",
           body:
-              "You can cancel up to 24h before the game starting time to get a full refund in credits to use on your next game.\nIf you cancel after this time you won't get a refund.",
+              "You can cancel up to 24h before the game time to get a full refund in credits to use on your next game.\nAfter that, you won't get a refund.",
           bottomWidget: Column(
             children: [
               Divider(),

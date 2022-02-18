@@ -95,21 +95,26 @@ class MatchAppBar extends NutmegAppBar {
         automaticallyImplyLeading: false,
         titleSpacing: 0,
         elevation: 0,
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            InkWell(
-                splashColor: Palette.lightGrey,
-                child: Container(
-                  height: tapSize,
-                  width: tapSize,
-                  child: Icon(Icons.arrow_back,
-                      color: Colors.black, size: iconsSize),
-                ),
-                onTap: () => Navigator.of(context).pop()),
-            if (!DeviceInfo().name.contains("ipad"))
-              ShareButton(matchId, Palette.black, iconsSize, tapSize)
-          ],
+        title: Container(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 10),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                InkWell(
+                    splashColor: Palette.lightGrey,
+                    child: Container(
+                      height: tapSize,
+                      width: tapSize,
+                      child: Icon(Icons.arrow_back,
+                          color: Colors.black, size: iconsSize),
+                    ),
+                    onTap: () => Navigator.of(context).pop()),
+                if (!DeviceInfo().name.contains("ipad"))
+                  ShareButton(matchId, Palette.black, iconsSize, tapSize)
+              ],
+            ),
+          ),
         ));
   }
 }

@@ -144,8 +144,6 @@ class LaunchWidgetState extends State<LaunchWidget> {
       return;
     }
     if (deepLink.path == "/match") {
-      print("handling link ");
-
       // todo check if propagates updates
       var match = navigatorKey.currentContext
           .read<MatchesState>()

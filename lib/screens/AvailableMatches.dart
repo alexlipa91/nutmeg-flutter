@@ -50,11 +50,10 @@ class AvailableMatchesListState extends State<AvailableMatchesList> {
     future = MatchesController.init(context.read<MatchesState>());
   }
 
-  static Future<void> refreshPageState(
-      MatchesState matchesState,
-      RefreshController refreshController) async {
+  Future<void> refreshPageState(
+      MatchesState matchesState) async {
     await MatchesController.refreshAll(matchesState);
-    refreshController.refreshCompleted();
+    _refreshController.refreshCompleted();
   }
 
   static Widget getEmptyStateWidget(AvailableMatchesUiState uiState) =>
@@ -71,18 +70,21 @@ class AvailableMatchesListState extends State<AvailableMatchesList> {
         ),
       );
 
-  static var _refreshController = RefreshController(initialRefresh: false);
+  var _refreshController = RefreshController(initialRefresh: false);
 
   @override
   Widget build(BuildContext context) {
-
     var matchesState = context.watch<MatchesState>();
     var uiState = context.watch<AvailableMatchesUiState>();
     var userState = context.watch<UserState>();
     var loadOnceState = context.read<LoadOnceState>();
 
     WidgetsBinding.instance.addObserver(LifecycleEventHandler(
-        resumeCallBack: () => _refreshController.requestRefresh()));
+        resumeCallBack: () async {
+          if (mounted) {
+            _refreshController.requestRefresh();
+          }
+        }));
 
     var optionSelected = uiState.selected;
     var isLoggedIn = userState.isLoggedIn();
@@ -126,7 +128,7 @@ class AvailableMatchesListState extends State<AvailableMatchesList> {
                 header: MaterialClassicHeader(),
                 controller: _refreshController,
                 onRefresh: () async {
-                  await refreshPageState(matchesState, _refreshController);
+                  await refreshPageState(matchesState);
                 },
                 child: (matchWidgets != null && matchWidgets.isEmpty)
                     ? Column(
