@@ -72,7 +72,7 @@ class PaymentDetailsDescription extends StatelessWidget {
                 child: (paymentRecap.finalPriceToPayInCents() == 0)
                     ? PayWithCreditsButton(
                         match: match, paymentRecap: paymentRecap)
-                    : PayWithMoneyButton(match: match))
+                    : PayWithMoneyButton(match: match, paymentRecap: paymentRecap))
           ],
         )
       ],

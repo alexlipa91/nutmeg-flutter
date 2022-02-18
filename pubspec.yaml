@@ -56,7 +56,6 @@ dependencies:
   sign_in_with_apple: ^3.2.0
   device_info_plus: ^3.1.1
   pull_to_refresh: ^2.0.0
-  progress_state_button: ^1.0.4
   flutter_svg: ^1.0.3
   transparent_image: ^2.0.0
   version: ^2.0.0

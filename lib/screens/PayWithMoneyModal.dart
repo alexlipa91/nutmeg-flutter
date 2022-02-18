@@ -3,7 +3,6 @@ import 'package:nutmeg/controller/PaymentController.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
-import 'package:progress_state_button/progress_button.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -11,8 +10,9 @@ import 'package:url_launcher/url_launcher.dart';
 class PayWithMoneyButton extends StatelessWidget {
 
   final Match match;
+  final PaymentRecap paymentRecap;
 
-  const PayWithMoneyButton({Key key, this.match}) : super(key: key);
+  const PayWithMoneyButton({Key key, this.match, this.paymentRecap}) : super(key: key);
 
   @override
   Widget build(BuildContext context) =>
@@ -29,6 +29,7 @@ class PayWithMoneyButton extends StatelessWidget {
             sessionUrl = await PaymentController.createCheckout(
                 userDetails.documentId,
                 match.documentId,
+                paymentRecap.creditsInCentsUsed,
                 match.isTest);
           } catch (e) {
             print(e);

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
+import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
-import 'package:progress_state_button/progress_button.dart';
 import 'package:provider/provider.dart';
 
 
@@ -39,7 +39,8 @@ class LeaveMatchButton extends StatelessWidget {
               bottomWidget: Padding(
                 padding: EdgeInsets.symmetric(vertical: 15),
                 child: InkWell(
-                    onTap: () {
+                    onTap: () async {
+                      await UserController.refreshCurrentUser(context.read<UserState>());
                       Navigator.pushReplacement(navigatorKey.currentContext,
                           MaterialPageRoute(builder: (context) => UserPage()));
                     },
