@@ -485,7 +485,7 @@ class RuleCard extends StatelessWidget {
         ReadMoreText(
           body,
           style: TextPalette.bodyText,
-          trimLines: 3,
+          trimLines: 4,
           colorClickableText: Colors.blue,
           delimiter: "\n\n",
           trimMode: TrimMode.Line,

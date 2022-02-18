@@ -132,12 +132,6 @@ class RoundedButtonLight extends PrimaryButton
   RoundedButtonLight(String text, Function onPressed) : super(text, onPressed);
 }
 
-class RoundedButtonAlerted extends PrimaryButton
-    with LeftRounded, RightRounded, Alerted {
-  RoundedButtonAlerted(String text, Function onPressed)
-      : super(text, onPressed);
-}
-
 // OTHER BUTTONS
 
 class ShareButton extends StatelessWidget {
