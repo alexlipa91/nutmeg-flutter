@@ -229,8 +229,6 @@ class LaunchWidgetState extends State<LaunchWidget> {
       MiscController.getGifs(context.read<LoadOnceState>())
     ];
 
-    MatchesController.refreshAll(context.read<MatchesState>());
-
     await Future.wait(futures);
 
     Uri deepLink;

@@ -172,7 +172,10 @@ class MatchInfo extends StatelessWidget {
                         ? " - " + match.sportCenterSubLocation
                         : ""),
                 icon: Icons.place,
-                subTitle: sportCenter.getShortAddress()),
+                subTitle: sportCenter.getShortAddress(), 
+                rightWidget: ClipRRect(
+                    borderRadius: BorderRadius.circular(15.0),
+                    child: Image.asset("assets/map.png", height: 45))),
           ),
         ),
         InfoWidget(

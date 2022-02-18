@@ -34,7 +34,22 @@ class AvailableMatches extends StatelessWidget {
   }
 }
 
-class AvailableMatchesList extends StatelessWidget {
+class AvailableMatchesList extends StatefulWidget {
+
+  @override
+  State<StatefulWidget> createState() => AvailableMatchesListState();
+}
+
+
+class AvailableMatchesListState extends State<AvailableMatchesList> {
+
+  var future;
+
+  @override
+  void initState() {
+    super.initState();
+    future = MatchesController.init(context.read<MatchesState>());
+  }
 
   static Future<void> refreshPageState(
       MatchesState matchesState,
@@ -105,32 +120,34 @@ class AvailableMatchesList extends StatelessWidget {
               ChangeNotifierProvider(
                   create: (context) => AvailableMatchesUiState()),
             ],
-            child: SmartRefresher(
-              enablePullDown: true,
-              enablePullUp: false,
-              header: MaterialClassicHeader(),
-              controller: _refreshController,
-              onRefresh: () async {
-                await refreshPageState(matchesState, _refreshController);
-              },
-              child: (matchWidgets != null && matchWidgets.isEmpty)
-                  ? Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Column(children: topWidgets),
-                        getEmptyStateWidget(uiState)])
-                  : ListView.builder(
-                      itemBuilder: (c, i) {
-                        var coreWidgets =
-                            (matchWidgets == null) ? waitingWidgets : matchWidgets;
-                        var list = topWidgets + coreWidgets;
-                        return list[i];
-                      },
-                      itemCount: topWidgets.length +
-                          ((matchWidgets == null)
-                              ? waitingWidgets.length
-                              : matchWidgets.length),
-                    ),
+            child: FutureBuilder(
+              builder: (context, snapshot) => SmartRefresher(
+                enablePullDown: true,
+                enablePullUp: false,
+                header: MaterialClassicHeader(),
+                controller: _refreshController,
+                onRefresh: () async {
+                  await refreshPageState(matchesState, _refreshController);
+                },
+                child: (matchWidgets != null && matchWidgets.isEmpty)
+                    ? Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Column(children: topWidgets),
+                          getEmptyStateWidget(uiState)])
+                    : ListView.builder(
+                        itemBuilder: (c, i) {
+                          var coreWidgets =
+                              (matchWidgets == null) ? waitingWidgets : matchWidgets;
+                          var list = topWidgets + coreWidgets;
+                          return list[i];
+                        },
+                        itemCount: topWidgets.length +
+                            ((matchWidgets == null)
+                                ? waitingWidgets.length
+                                : matchWidgets.length),
+                      ),
+              ),
             ),
           ),
         ),
