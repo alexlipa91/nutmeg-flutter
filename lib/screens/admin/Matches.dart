@@ -133,7 +133,6 @@ class MatchesAreaState extends State<MatchesArea> {
           isLoading = true;
         });
         await MatchesController.refreshAll(matchesState);
-        await MatchesController.refreshImages(matchesState);
         setState(() {
           isLoading = false;
         });
@@ -143,11 +142,9 @@ class MatchesAreaState extends State<MatchesArea> {
         if (!isLoading) {
           widgets = (optionSelected == Selection.UPCOMING)
               ? getGamesWidgets(context,
-                  matches.where((m) => m.dateTime.isAfter(now)).toList(),
-              matchesState.getImages())
+                  matches.where((m) => m.dateTime.isAfter(now)).toList())
               : getGamesWidgets(context,
-                  matches.where((m) => m.dateTime.isBefore(now)).toList(),
-              matchesState.getImages());
+                  matches.where((m) => m.dateTime.isBefore(now)).toList());
         } else {
           widgets = List<Widget>.filled(5, MatchInfoSkeleton());
         }
@@ -161,15 +158,17 @@ class MatchesAreaState extends State<MatchesArea> {
     );
   }
 
-  static List<Widget> getGamesWidgets(
-      BuildContext context, List<Match> matches, Map<String, String> images) {
+  static List<Widget> getGamesWidgets(BuildContext context, List<Match> matches) {
     List<Widget> result = [];
 
+    var loadOnceState = context.read<LoadOnceState>();
+
     matches.forEachIndexed((index, match) {
+      var image = loadOnceState.getSportCenter(match.sportCenterId).thumbnailUrl;
       if (index == 0) {
-        result.add(MatchInfo.first(match, images[match.documentId]));
+        result.add(MatchInfo.first(match, image));
       } else {
-        result.add(MatchInfo(match, images[match.documentId]));
+        result.add(MatchInfo(match, image));
       }
     });
 

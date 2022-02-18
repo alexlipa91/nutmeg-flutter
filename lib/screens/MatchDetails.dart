@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:map_launcher/map_launcher.dart';
 import 'package:map_launcher/src/models.dart' as m;
 import 'package:nutmeg/controller/MatchesController.dart';
+import 'package:nutmeg/controller/SportCentersController.dart';
 import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
@@ -209,7 +210,7 @@ class SportCenterImageCarouselState extends State<SportCenterImageCarousel> {
     var placeHolder = Container(height: 358);
 
     return FutureBuilder(
-        future: MatchesController.getMatchPicturesUrls(match),
+        future: SportCentersController.getSportCenterPicturesUrls(match.sportCenterId),
         builder: (context, snapshot) {
           List<Widget> itemsToShow = (snapshot.hasData)
               ? List<Widget>.from(snapshot.data.map((i) => CachedNetworkImage(

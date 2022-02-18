@@ -53,11 +53,8 @@ class DynamicLinks {
         appStoreId: '1592985083',
       ),
     );
-    var long = await parameters.buildUrl();
     var url = await parameters.buildShortLink();
 
-    print(long);
-    print(url.shortUrl);
     // fixme this doesn't wait
     await Share.share("Wanna join this match on Nutmeg?\n" + url.shortUrl.toString());
   }

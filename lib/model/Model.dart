@@ -112,6 +112,9 @@ class SportCenter {
   String address;
   List<String> tags;
 
+  String thumbnailUrl;
+  List<String> imagesUrls;
+
   SportCenter.fromJson(Map<String, dynamic> json, String documentId)
       : placeId = documentId,
         name = json['name'],

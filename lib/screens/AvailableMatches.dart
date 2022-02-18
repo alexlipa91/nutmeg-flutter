@@ -38,24 +38,10 @@ class AvailableMatchesList extends StatelessWidget {
 
   static Future<void> refreshPageState(
       MatchesState matchesState,
-      AvailableMatchesUiState availableMatchesUiState,
-      RefreshController refreshController,
-      bool showSkeletonWhileLoading
-      ) async {
-    refreshController.requestLoading();
-
-    if (showSkeletonWhileLoading)
-      availableMatchesUiState.startLoading();
+      RefreshController refreshController) async {
     await MatchesController.refreshAll(matchesState);
-    await MatchesController.refreshImages(matchesState);
-    if (showSkeletonWhileLoading)
-      availableMatchesUiState.loadingDone();
-
     refreshController.refreshCompleted();
   }
-
-  final RefreshController _refreshController =
-      RefreshController(initialRefresh: false);
 
   static Widget getEmptyStateWidget(AvailableMatchesUiState uiState) =>
       Padding(
@@ -71,18 +57,21 @@ class AvailableMatchesList extends StatelessWidget {
         ),
       );
 
+  static var _refreshController = RefreshController(initialRefresh: false);
+
   @override
   Widget build(BuildContext context) {
+
     var matchesState = context.watch<MatchesState>();
     var uiState = context.watch<AvailableMatchesUiState>();
     var userState = context.watch<UserState>();
+    var loadOnceState = context.read<LoadOnceState>();
 
     WidgetsBinding.instance.addObserver(LifecycleEventHandler(
         resumeCallBack: () => _refreshController.requestRefresh()));
 
     var optionSelected = uiState.selected;
     var isLoggedIn = userState.isLoggedIn();
-    var isLoading = context.watch<AvailableMatchesUiState>().loading;
 
     var topWidgets = List<Widget>.of([
       // if app bar is in Scaffold will have the problem of the white pixel between Scaffold appBar and body
@@ -94,12 +83,12 @@ class AvailableMatchesList extends StatelessWidget {
     ]);
 
     List<Widget> matchWidgets;
-    if (optionSelected == Status.ALL) {
-      matchWidgets = allGamesWidgets(matchesState, uiState, userState);
-    } else if (isLoggedIn) {
-      matchWidgets = myGamesWidgets(matchesState, userState, uiState);
-    } else {
-      matchWidgets = [];
+    if (optionSelected == Status.ALL && matchesState.getMatches() != null) {
+      matchWidgets = allGamesWidgets(matchesState, uiState, userState,
+          loadOnceState, _refreshController);
+    } else if (isLoggedIn && matchesState.getMatches() != null) {
+      matchWidgets = myGamesWidgets(matchesState, userState, uiState,
+          loadOnceState, _refreshController);
     }
 
     var waitingWidgets = List<Widget>.filled(5, MatchInfoSkeleton());
@@ -122,12 +111,9 @@ class AvailableMatchesList extends StatelessWidget {
               header: MaterialClassicHeader(),
               controller: _refreshController,
               onRefresh: () async {
-                await refreshPageState(matchesState, uiState, _refreshController, false);
+                await refreshPageState(matchesState, _refreshController);
               },
-              onLoading: () async {
-                await refreshPageState(matchesState, uiState, _refreshController, true);
-              },
-              child: (matchWidgets.isEmpty)
+              child: (matchWidgets != null && matchWidgets.isEmpty)
                   ? Column(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
@@ -136,12 +122,12 @@ class AvailableMatchesList extends StatelessWidget {
                   : ListView.builder(
                       itemBuilder: (c, i) {
                         var coreWidgets =
-                            (isLoading) ? waitingWidgets : matchWidgets;
+                            (matchWidgets == null) ? waitingWidgets : matchWidgets;
                         var list = topWidgets + coreWidgets;
                         return list[i];
                       },
                       itemCount: topWidgets.length +
-                          ((isLoading)
+                          ((matchWidgets == null)
                               ? waitingWidgets.length
                               : matchWidgets.length),
                     ),
@@ -153,7 +139,8 @@ class AvailableMatchesList extends StatelessWidget {
   }
 
   List<Widget> myGamesWidgets(MatchesState state, UserState userState,
-      AvailableMatchesUiState uiState) {
+      AvailableMatchesUiState uiState, LoadOnceState loadOnceState,
+      RefreshController refreshController) {
     var matches = state
         .getMatches()
         .where((e) => (!e.isTest || userState.isTestMode))
@@ -171,9 +158,14 @@ class AvailableMatchesList extends StatelessWidget {
       future.sortedBy((e) => e.dateTime).forEachIndexed((index, m) {
         if (index == 0) {
           widgets.add(
-              MatchInfo.first(m.documentId, state.getImageUrl(m.documentId), _refreshController));
+              MatchInfo.first(m.documentId,
+                  loadOnceState.getSportCenter(m.sportCenterId).thumbnailUrl,
+                  refreshController)
+          );
         } else {
-          widgets.add(MatchInfo(m.documentId, state.getImageUrl(m.documentId), _refreshController));
+          widgets.add(MatchInfo(m.documentId,
+              loadOnceState.getSportCenter(m.sportCenterId).thumbnailUrl,
+              refreshController));
         }
       });
     }
@@ -193,7 +185,8 @@ class AvailableMatchesList extends StatelessWidget {
   }
 
   List<Widget> allGamesWidgets(MatchesState state,
-      AvailableMatchesUiState uiState, UserState userState) {
+      AvailableMatchesUiState uiState, UserState userState,
+      LoadOnceState loadOnceState, RefreshController refreshController) {
     var matches = state
         .getMatchesInFuture()
         .where((e) => !e.wasCancelled())
@@ -211,10 +204,12 @@ class AvailableMatchesList extends StatelessWidget {
       grouped[w].sortedBy((e) => e.dateTime).forEachIndexed((index, match) {
         if (index == 0) {
           result.add(MatchInfo.first(
-              match.documentId, state.getImageUrl(match.documentId), _refreshController));
+              match.documentId, loadOnceState.getSportCenter(match.sportCenterId).thumbnailUrl,
+          refreshController));
         } else {
           result.add(
-              MatchInfo(match.documentId, state.getImageUrl(match.documentId), _refreshController));
+              MatchInfo(match.documentId, loadOnceState.getSportCenter(match.sportCenterId).thumbnailUrl,
+              refreshController));
         }
       });
     });
@@ -363,7 +358,9 @@ class MatchInfo extends StatelessWidget {
               false,
             ),
           );
-          refreshController.requestRefresh();
+          await refreshController.requestRefresh();
+          // await Navigator.push(context,
+          //     MaterialPageRoute(builder: (context) => MatchDetails(matchId)));
         });
   }
 
@@ -635,7 +632,6 @@ class LifecycleEventHandler extends WidgetsBindingObserver {
 
   @override
   Future<void> didChangeAppLifecycleState(AppLifecycleState state) async {
-    print(state.toString());
     switch (state) {
       case AppLifecycleState.resumed:
         if (resumeCallBack != null) {

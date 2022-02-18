@@ -4,8 +4,7 @@ import "package:collection/collection.dart";
 
 
 class MatchesState extends ChangeNotifier {
-  Map<String, Match> _matches = Map();
-  Map<String, String> _images = Map();
+  Map<String, Match> _matches;
 
   void setMatches(List<Match> newMatches) {
     _matches = newMatches.groupListsBy((e) => e.documentId)
@@ -13,9 +12,12 @@ class MatchesState extends ChangeNotifier {
     notifyListeners();
   }
 
-  List<Match> getMatches() => _matches.values.toList()..sort((a, b) => b.dateTime.compareTo(a.dateTime));
-
-  String getImageUrl(String matchId) => _images[matchId];
+  List<Match> getMatches() {
+    if (_matches == null) {
+      return null;
+    }
+    return _matches.values.toList()..sort((a, b) => b.dateTime.compareTo(a.dateTime));
+  }
 
   List<Match> getMatchesInFuture() => getMatches()
       .where((m) => m.dateTime.difference(DateTime.now()).inMinutes > 1)
@@ -31,13 +33,6 @@ class MatchesState extends ChangeNotifier {
     _matches[m.documentId] = m;
     notifyListeners();
   }
-
-  void setImages(Map<String, String> images) {
-    _images = images;
-    notifyListeners();
-  }
-
-  Map<String, String> getImages() => _images;
 }
 
 class LoadOnceState extends ChangeNotifier {
