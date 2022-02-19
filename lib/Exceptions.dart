@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 
+
 class ErrorHandlingUtils {
   static Future<void> handleError(
       Exception e, StackTrace stackTrace, BuildContext context) {

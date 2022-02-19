@@ -7,6 +7,7 @@ import 'package:nutmeg/screens/UserPage.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:provider/provider.dart';
 
+
 class UserAvatar extends StatelessWidget {
   final double radius;
   final UserDetails userDetails;

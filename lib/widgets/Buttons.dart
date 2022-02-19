@@ -4,7 +4,6 @@ import 'package:nutmeg/utils/Utils.dart';
 
 
 // MAIN PAGE BUTTONS
-
 class PrimaryButton extends StatelessWidget {
   final String text;
   final Function onPressed;

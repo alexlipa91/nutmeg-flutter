@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 
+
 class InfoContainer extends StatelessWidget {
 
   static var borderRadius = BorderRadius.all(Radius.circular(10));

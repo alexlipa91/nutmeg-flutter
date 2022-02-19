@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 
 import 'Avatar.dart';
 
+
 class NutmegAppBar extends StatelessWidget with PreferredSizeWidget {
   final Color backgroundColor;
   final Widget mainRow;
