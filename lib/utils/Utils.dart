@@ -57,7 +57,7 @@ class DynamicLinks {
     var url = await parameters.buildShortLink();
 
     // fixme this doesn't wait
-    await Share.share("Wanna join this match on Nutmeg?\n" + url.shortUrl.toString());
+    await Share.share("Checkout this match on Nutmeg!\n" + url.shortUrl.toString());
   }
 }
 
