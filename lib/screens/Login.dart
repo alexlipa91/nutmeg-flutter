@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
@@ -14,6 +15,22 @@ import 'package:provider/provider.dart';
 class Login extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    var images = Row(children: [
+      Expanded(
+          child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Align(
+                    alignment: Alignment.topLeft,
+                    child: SvgPicture.asset('assets/launch/blob_top_left.svg')),
+                SvgPicture.asset('assets/launch/blob_middle_middle.svg',
+                    width: MediaQuery.of(context).size.width),
+                Align(
+                    alignment: Alignment.bottomRight,
+                    child: SvgPicture.asset('assets/launch/blob_bottom_right.svg'))
+              ]))
+    ]);
+
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
@@ -31,13 +48,17 @@ class Login extends StatelessWidget {
                 child: InkWell(
                   child: Icon(Icons.close),
                   onTap: () => Navigator.pop(context),
-                ))
+                )
+            )
           ],
         ),
-        body: Container(
+        body: Stack(children: [
+          Container(
             constraints: BoxConstraints.expand(),
-            decoration: new BoxDecoration(color: Palette.primary),
-            child: LoginArea()),
+            decoration: new BoxDecoration(color: Palette.primary)),
+          images,
+          LoginArea()
+        ])
       ),
     );
   }
