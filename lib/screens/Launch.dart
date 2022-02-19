@@ -80,6 +80,7 @@ class LaunchWidgetState extends State<LaunchWidget> {
     if (!kIsWeb) {
       initDynamicLinks();
     }
+    loadData(context);
   }
 
   Future<void> handleLink(Uri deepLink) async {
@@ -90,57 +91,31 @@ class LaunchWidgetState extends State<LaunchWidget> {
 
       var context = navigatorKey.currentContext;
 
-      await MatchesController.refresh(context.read<MatchesState>(), matchId);
-      Navigator.pop(context);
+      var found = false;
+      Navigator.popUntil(context, (route) {
+                found = route.settings.name == MatchDetails.routeName;
+                return found;
+              });
 
-      if (outcome == "success") {
-        // fixme
-        // Navigator.popUntil(context, (route) =>
-        //   route.settings.name == MatchDetails.routeName
-        //     ||
-        //   route.isFirst
-        // );
+      if (!found) {
+        Navigator.of(context).pushNamed(AvailableMatches.routeName);
 
-        // print(ModalRoute.of(context));
-
-        // if (ModalRoute.of(context).isFirst) {
-        //   await Navigator.of(context).pushNamedAndRemoveUntil(
-        //       MatchDetails.routeName,
-        //           (route) => route.isCurrent && route.settings.name == MatchDetails.routeName
-        //           ? false
-        //           : true,
-        //     arguments: ScreenArguments(
-        //       matchId,
-        //       false
-        //     ),
-        //   );
-        // }
-
-        // Navigator.of(context).pushNamedAndRemoveUntil(
-        //     MatchDetails.routeName,
-        //         (route) => route.isCurrent && route.settings.name == MatchDetails.routeName
-        //         ? false
-        //         : true,
-        //   arguments: ScreenArguments(
-        //     matchId,
-        //     false
-        //   ),
-        // );
-
-        // Navigator.pushAndRemoveUntil(
-        //     context,
-        //     MaterialPageRoute(builder: (context) => MatchDetails(matchId)),
-        //     (Route<dynamic> route) => route.isFirst
-        // );
-
-        await PaymentDetailsDescription.communicateSuccessToUser(context, matchId);
-      } else {
-        await GenericInfoModal(
-                title: "Payment Failed!",
-                body: "Please try again")
-            .show(context);
+        Navigator.of(context).pushNamed(MatchDetails.routeName,
+            arguments: ScreenArguments(
+                matchId,
+                false
+            ),
+        );
       }
 
+      if (outcome == "success") {
+        await MatchesController.refreshAll(context.read<MatchesState>());
+        PaymentDetailsDescription.communicateSuccessToUser(context, matchId);
+      } else {
+        await GenericInfoModal(
+                title: "Payment Failed!", body: "Please try again")
+            .show(context);
+      }
       return;
     }
     if (deepLink.path == "/match") {
@@ -240,9 +215,10 @@ class LaunchWidgetState extends State<LaunchWidget> {
     }
 
     if (deepLink != null) {
-      await handleLink(deepLink);
+      handleLink(deepLink);
     } else {
-      await Navigator.pushReplacementNamed(context, AvailableMatches.routeName);
+      // await
+      Navigator.pushReplacementNamed(context, AvailableMatches.routeName);
     }
   }
 
@@ -255,15 +231,21 @@ class LaunchWidgetState extends State<LaunchWidget> {
 
   @override
   Widget build(BuildContext context) {
-    var images = Row(
-      children: [
-        Expanded(child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Align(alignment: Alignment.topLeft, child: SvgPicture.asset('assets/launch/blob_top_left.svg')),
-          SvgPicture.asset('assets/launch/blob_middle_middle.svg', width: MediaQuery.of(context).size.width),
-          Align(alignment: Alignment.bottomRight, child: SvgPicture.asset('assets/launch/blob_bottom_right.svg'))
-    ]))]);
+    var images = Row(children: [
+      Expanded(
+          child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+            Align(
+                alignment: Alignment.topLeft,
+                child: SvgPicture.asset('assets/launch/blob_top_left.svg')),
+            SvgPicture.asset('assets/launch/blob_middle_middle.svg',
+                width: MediaQuery.of(context).size.width),
+            Align(
+                alignment: Alignment.bottomRight,
+                child: SvgPicture.asset('assets/launch/blob_bottom_right.svg'))
+          ]))
+    ]);
 
     var mainWidgets =
         Column(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
@@ -302,10 +284,8 @@ class LaunchWidgetState extends State<LaunchWidget> {
             decoration: BoxDecoration(
               color: Palette.primary,
             ),
-            child: FutureBuilder<void>(
-                future: loadData(context).catchError((e, s) =>
-                    ErrorHandlingUtils.handleError(e, s, context)),
-                builder: (context, snapshot) => Stack(children: [images, mainWidgets])
-            )));
+            child: Stack(children: [images, mainWidgets])
+        )
+    );
   }
 }

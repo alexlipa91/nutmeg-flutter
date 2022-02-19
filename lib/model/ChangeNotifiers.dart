@@ -27,7 +27,7 @@ class MatchesState extends ChangeNotifier {
       .where((m) => m.cancelledAt == null
       && m.going.where((s) => s.userId == userId).isNotEmpty).length;
 
-  Match getMatch(String matchId) => _matches[matchId];
+  Match getMatch(String matchId) => (_matches == null) ? null : _matches[matchId];
 
   void setMatch(Match m) {
     _matches[m.documentId] = m;

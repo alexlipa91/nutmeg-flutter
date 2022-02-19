@@ -31,6 +31,8 @@ class LeaveMatchButton extends StatelessWidget {
               match.documentId, context.read<UserState>());
           Navigator.of(context).pop(true);
 
+          var userState = context.read<UserState>();
+
           GenericInfoModal.withBottom(
               title: formatCurrency(match.pricePerPersonInCents) +
                   " credits were added to your account",
@@ -40,7 +42,7 @@ class LeaveMatchButton extends StatelessWidget {
                 padding: EdgeInsets.symmetric(vertical: 15),
                 child: InkWell(
                     onTap: () async {
-                      await UserController.refreshCurrentUser(context.read<UserState>());
+                      await UserController.refreshCurrentUser(userState);
                       Navigator.pushReplacement(navigatorKey.currentContext,
                           MaterialPageRoute(builder: (context) => UserPage()));
                     },

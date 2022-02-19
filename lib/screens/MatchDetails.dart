@@ -44,6 +44,10 @@ class MatchDetails extends StatelessWidget {
 
     var match = matchesState.getMatch(matchId);
 
+    if (match == null) {
+      return Container();
+    }
+
     var loadOnceState = context.read<LoadOnceState>();
 
     var sportCenter = loadOnceState.getSportCenter(match.sportCenterId);
