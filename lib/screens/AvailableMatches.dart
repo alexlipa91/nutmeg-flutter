@@ -172,7 +172,7 @@ class AvailableMatchesListState extends State<AvailableMatchesList> {
     List<Widget> widgets = [];
 
     if (future.isNotEmpty) {
-      widgets.add(TextSeparatorWidget("UPCOMING GAMES"));
+      widgets.add(TextSeparatorWidget("UPCOMING MATCHES"));
       future.sortedBy((e) => e.dateTime).forEachIndexed((index, m) {
         if (index == 0) {
           widgets.add(
@@ -189,7 +189,7 @@ class AvailableMatchesListState extends State<AvailableMatchesList> {
     }
 
     if (past.isNotEmpty) {
-      widgets.add(TextSeparatorWidget("PAST GAMES"));
+      widgets.add(TextSeparatorWidget("PAST MATCHES"));
       past.sortedBy((e) => e.dateTime).reversed.forEachIndexed((index, m) {
         if (index == 0) {
           widgets.add(MatchInfoPast.first(m));
@@ -265,7 +265,7 @@ class RoundedTopBar extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Find football games in",
+              Text("Find football matches in",
                   style: TextPalette.bodyTextInverted),
               Text("Amsterdam", style: TextPalette.h1Inverted),
               SizedBox(height: 24),
@@ -278,10 +278,10 @@ class RoundedTopBar extends StatelessWidget {
                 uiState.getCurrentSelection() == Status.MY_GAMES
                     ? Expanded(
                         child: RightButtonOn(
-                            "MY GAMES", _getMyGamesFunction(context)))
+                            "MY MATCHES", _getMyGamesFunction(context)))
                     : Expanded(
                         child: RightButtonOff(
-                            "MY GAMES", _getMyGamesFunction(context))),
+                            "MY MATCHES", _getMyGamesFunction(context))),
               ])
             ],
           ),

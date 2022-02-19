@@ -106,7 +106,7 @@ class UserPage extends StatelessWidget {
                                             .toString(),
                                         style: TextPalette.h2),
                                     SizedBox(height: 20),
-                                    Text("Games Played", style: TextPalette.h3)
+                                    Text("Matches Played", style: TextPalette.h3)
                                   ],
                                 )),
                               )

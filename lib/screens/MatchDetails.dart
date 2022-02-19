@@ -383,8 +383,8 @@ class PlayerCard extends StatelessWidget {
                                                         nPlayed.toString() +
                                                             " " +
                                                             ((nPlayed == 1)
-                                                                ? "game "
-                                                                : "games ") +
+                                                                ? "match "
+                                                                : "matches ") +
                                                             "played",
                                                         style: TextPalette
                                                             .bodyText);

@@ -47,7 +47,7 @@ class JoinModal {
           matchesState, match.documentId, userState);
 
       await GenericInfoModal.withBottom(
-          title: "Join this game",
+          title: "Join this match",
           body:
               "You can cancel up to 24h before the game time to get a full refund in credits to use on your next game.\nAfter that, you won't get a refund.",
           bottomWidget: Column(

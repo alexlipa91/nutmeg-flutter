@@ -48,7 +48,7 @@ class BottomBarMatch extends StatelessWidget {
                       (isGoing)
                           ? match.numPlayersGoing().toString() + " going"
                           : (match.getSpotsLeft() == 0)
-                              ? "Find another game"
+                              ? "Find another match"
                               : formatCurrency(match.pricePerPersonInCents),
                       style: TextPalette.bodyText),
                 ],
@@ -60,7 +60,7 @@ class BottomBarMatch extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       (isGoing)
-                          ? RoundedButtonLight("LEAVE GAME", () async {
+                          ? RoundedButtonLight("LEAVE MATCH", () async {
                               var hoursToGame = match.dateTime
                                   .difference(DateTime.now())
                                   .inHours;
@@ -72,8 +72,8 @@ class BottomBarMatch extends StatelessWidget {
                                   .first;
 
                               await GenericInfoModal.withBottom(
-                                  title: "Leaving this game?",
-                                  body: "You joined this game: " +
+                                  title: "Leaving this match?",
+                                  body: "You joined this match: " +
                                       getFormattedDate(userSub.createdAt) +
                                       ".\n" +
                                       ((hoursToGame < 24)
@@ -112,7 +112,7 @@ class BottomBarMatch extends StatelessWidget {
                             })
                           : (!match.isFull())
                               ? JoinButton(match: match)
-                              : RoundedButtonOff("JOIN GAME", null),
+                              : RoundedButtonOff("JOIN MATCH", null),
                     ],
                   ),
                 ),
