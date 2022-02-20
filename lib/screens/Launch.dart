@@ -120,11 +120,11 @@ class LaunchWidgetState extends State<LaunchWidget> {
       return;
     }
     if (deepLink.path == "/match") {
-      var matchesState = navigatorKey.currentContext
-          .read<MatchesState>();
+      var context = navigatorKey.currentContext;
+
+      var matchesState = context.read<MatchesState>();
 
       await MatchesController.init(matchesState);
-      print(matchesState.getMatches());
 
       var match = matchesState.getMatch(deepLink.queryParameters["id"]);
 
