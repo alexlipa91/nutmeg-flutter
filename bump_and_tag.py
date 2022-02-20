@@ -10,12 +10,13 @@ for line in fileinput.input("pubspec.yaml", inplace=True):
         (version, build) = version_and_build.split("+")
 
         (major, minor, patch) = version.split(".")
-        new_version = major + "." + minor + "." + str(int(patch) + 1) + "+" + str(int(build) + 1)
+        new_version = major + "." + minor + "." + patch + "+" + str(int(build) + 1)
         new_tag = "v" + new_version
         line = "version: " + new_version + "\n"
     sys.stdout.write(line)
 
 print("version set at " + new_tag + "...committing")
+sys.exit(-1)
 os.system("git commit -am \"version " + new_tag + "\"")
 
 print("tagging  " + new_tag)
