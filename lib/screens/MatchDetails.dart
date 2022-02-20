@@ -212,13 +212,22 @@ class SportCenterImageCarouselState extends State<SportCenterImageCarousel> {
 
   @override
   Widget build(BuildContext context) {
-    var placeHolder = Container(height: 358);
+    var placeHolder = Container(height: 358,
+    child: Shimmer.fromColors(
+      baseColor: Colors.grey[300],
+      highlightColor: Colors.grey[100],
+      child: Container(
+          decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.all(Radius.circular(10)))),
+    ));
 
     return FutureBuilder(
         future: SportCentersController.getSportCenterPicturesUrls(match.sportCenterId),
         builder: (context, snapshot) {
           List<Widget> itemsToShow = (snapshot.hasData)
-              ? List<Widget>.from(snapshot.data.map((i) => CachedNetworkImage(
+              ? List<Widget>.from(snapshot.data.map((i) =>
+              CachedNetworkImage(
                     imageUrl: i,
                     fadeInDuration: Duration(milliseconds: 0),
                     imageBuilder: (context, imageProvider) => Container(
@@ -227,9 +236,8 @@ class SportCenterImageCarouselState extends State<SportCenterImageCarousel> {
                         image: imageProvider,
                         fit: BoxFit.fill,
                       ),
-                      // borderRadius: BorderRadius.all(Radius.circular(15)),
                     )),
-                    // placeholder: (context, url) => placeHolder,
+                    placeholder: (context, imageProvider) => placeHolder,
                     errorWidget: (context, url, error) => Icon(Icons.error),
                   )))
               : List<Widget>.from([placeHolder]);
