@@ -3,7 +3,7 @@ name: Appstore Deployment
 on:
   push:
     tags:
-      - v*.*.*-beta+*
+      - v*
 
 jobs:
   deploy_ios:
