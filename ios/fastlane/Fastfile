@@ -54,7 +54,8 @@ platform :ios do
       skip_submission: true,
       distribute_external: false,
       notify_external_testers: false,
-      ipa: "./Runner.ipa"
+      ipa: "./Runner.ipa",
+      skip_build_archive: "/Users/runner/work/nutmeg-flutter/nutmeg-flutter/build/ios/iphoneos/Runner.app"
     )
     delete_temp_keychain(keychain_name)
   end
