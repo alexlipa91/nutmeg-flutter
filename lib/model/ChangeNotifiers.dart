@@ -25,7 +25,9 @@ class MatchesState extends ChangeNotifier {
 
   int getNumPlayedByUser(String userId) => _matches.values
       .where((m) => m.cancelledAt == null
-      && m.going.where((s) => s.userId == userId).isNotEmpty).length;
+      && m.dateTime.isBefore(DateTime.now())
+      && m.going.where((s) => s.userId == userId).isNotEmpty)
+      .length;
 
   Match getMatch(String matchId) => (_matches == null) ? null : _matches[matchId];
 
