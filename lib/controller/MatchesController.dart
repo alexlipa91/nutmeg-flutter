@@ -12,7 +12,7 @@ class MatchesController {
 
   static Future<void> init(MatchesState matchesState) async {
     if (matchesState.getMatches() == null) {
-      refreshAll(matchesState);
+      await refreshAll(matchesState);
     }
   }
 

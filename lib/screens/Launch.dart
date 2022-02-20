@@ -119,12 +119,17 @@ class LaunchWidgetState extends State<LaunchWidget> {
       return;
     }
     if (deepLink.path == "/match") {
-      // todo check if propagates updates
-      var match = navigatorKey.currentContext
-          .read<MatchesState>()
-          .getMatch(deepLink.queryParameters["id"]);
+      var matchesState = navigatorKey.currentContext
+          .read<MatchesState>();
 
-      await Navigator.pushReplacementNamed(
+      await MatchesController.init(matchesState);
+      print(matchesState.getMatches());
+
+      var match = matchesState.getMatch(deepLink.queryParameters["id"]);
+
+      Navigator.of(context).pushReplacementNamed(AvailableMatches.routeName);
+
+      Navigator.pushNamed(
         context,
         MatchDetails.routeName,
         arguments: ScreenArguments(
