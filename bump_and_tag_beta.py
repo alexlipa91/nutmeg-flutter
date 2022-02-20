@@ -16,7 +16,6 @@ for line in fileinput.input("pubspec.yaml", inplace=True):
     sys.stdout.write(line)
 
 print("version set at " + new_tag + "...committing")
-sys.exit(-1)
 os.system("git commit -am \"version " + new_tag + "\"")
 
 print("tagging  " + new_tag)
