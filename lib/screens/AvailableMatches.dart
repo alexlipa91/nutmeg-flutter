@@ -99,12 +99,18 @@ class AvailableMatchesListState extends State<AvailableMatchesList> {
     ]);
 
     List<Widget> matchWidgets;
-    if (optionSelected == Status.ALL && matchesState.getMatches() != null) {
-      matchWidgets = allGamesWidgets(matchesState, uiState, userState,
-          loadOnceState, _refreshController);
-    } else if (isLoggedIn && matchesState.getMatches() != null) {
-      matchWidgets = myGamesWidgets(matchesState, userState, uiState,
-          loadOnceState, _refreshController);
+    if (matchesState.getMatches() != null) {
+      if (optionSelected == Status.ALL) {
+        matchWidgets = allGamesWidgets(matchesState, uiState, userState,
+            loadOnceState, _refreshController);
+      } else {
+        if (isLoggedIn) {
+          matchWidgets = myGamesWidgets(matchesState, userState, uiState,
+              loadOnceState, _refreshController);
+        } else {
+          matchWidgets = [];
+        }
+      }
     }
 
     var waitingWidgets = List<Widget>.filled(5, MatchInfoSkeleton());
