@@ -214,11 +214,11 @@ class SportCenterImageCarouselState extends State<SportCenterImageCarousel> {
   Widget build(BuildContext context) {
     var placeHolder = Container(height: 358,
     child: Shimmer.fromColors(
-      baseColor: Colors.grey[300],
-      highlightColor: Colors.grey[100],
+      baseColor: Palette.lightGrey,
+      highlightColor: Palette.lightGrey,
       child: Container(
           decoration: BoxDecoration(
-              color: Colors.white,
+              color: Palette.white,
               borderRadius: BorderRadius.all(Radius.circular(10)))),
     ));
 

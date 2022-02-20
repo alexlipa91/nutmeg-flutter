@@ -264,19 +264,7 @@ class LaunchWidgetState extends State<LaunchWidget> {
             )
           ],
         ),
-      ),
-      Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-        FutureBuilder<Version>(
-            future: getVersion(),
-            builder: (context, snapshot) => Padding(
-                  padding: EdgeInsets.only(bottom: 20),
-                  child: Text(
-                      (snapshot.hasData)
-                          ? snapshot.data.toString()
-                          : "",
-                      style: TextPalette.linkStyleInverted),
-                )),
-      ])
+      )
     ]);
 
     return Scaffold(

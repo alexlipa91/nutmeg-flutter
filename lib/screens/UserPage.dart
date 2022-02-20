@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
+import 'package:nutmeg/screens/Launch.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
@@ -254,9 +255,16 @@ class UserPage extends StatelessWidget {
                                     )
                                   ],
                                 ),
-                              )
+                              ),
                           ])),
                         ),
+                        Align(
+                            alignment: Alignment.centerRight,
+                            child: FutureBuilder(
+                                future: LaunchWidgetState.getVersion(),
+                                builder: (context, snapshot) =>
+                                    Text("v" + ((snapshot.hasData) ? snapshot.data.toString() : ""),
+                                        style: TextPalette.bodyText)))
                       ]),
                 ),
         )),
