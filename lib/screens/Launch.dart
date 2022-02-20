@@ -21,6 +21,7 @@ import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
+import 'package:tuple/tuple.dart';
 import 'package:version/version.dart';
 
 import '../Exceptions.dart';
@@ -162,7 +163,7 @@ class LaunchWidgetState extends State<LaunchWidget> {
     await d.init();
 
     // check if update is necessary
-    var current = await getVersion();
+    var current = (await getVersion()).item1;
     var minimumRequired = await MiscController.getMinimumVersion();
 
     if (current < minimumRequired)
@@ -227,11 +228,14 @@ class LaunchWidgetState extends State<LaunchWidget> {
     }
   }
 
-  static Future<Version> getVersion() async {
+  static Future<Tuple2<Version, String>> getVersion() async {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
     var versionParts = packageInfo.version.split(".");
-    return Version(int.parse(versionParts[0]), int.parse(versionParts[1]),
-        int.parse(versionParts[2]));
+    return Tuple2<Version, String>(
+        Version(int.parse(versionParts[0]), int.parse(versionParts[1]),
+        int.parse(versionParts[2])),
+      packageInfo.buildNumber
+    );
   }
 
   @override

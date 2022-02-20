@@ -11,7 +11,9 @@ import 'package:nutmeg/widgets/Avatar.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:nutmeg/widgets/Containers.dart';
 import 'package:provider/provider.dart';
+import 'package:tuple/tuple.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:version/version.dart';
 
 import 'admin/Matches.dart';
 
@@ -260,10 +262,13 @@ class UserPage extends StatelessWidget {
                         ),
                         Align(
                             alignment: Alignment.centerRight,
-                            child: FutureBuilder(
+                            child: FutureBuilder<Tuple2<Version, String>>(
                                 future: LaunchWidgetState.getVersion(),
                                 builder: (context, snapshot) =>
-                                    Text("v" + ((snapshot.hasData) ? snapshot.data.toString() : ""),
+                                    Text("v" + ((snapshot.hasData) ?
+                                    (snapshot.data.item1.toString()
+                                        + " build "
+                                        + snapshot.data.item2) : ""),
                                         style: TextPalette.bodyText)))
                       ]),
                 ),
