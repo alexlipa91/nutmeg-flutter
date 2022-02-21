@@ -27,8 +27,7 @@ class Match {
   Duration duration;
   Timestamp cancelledAt;
 
-  List<Subscription> going;
-  List<Subscription> refunded;
+  Map<String, DateTime> going;
 
   bool isTest;
 
@@ -45,16 +44,13 @@ class Match {
       duration = Duration(minutes: jsonInput['duration'] ?? 60),
       cancelledAt = jsonInput['cancelledAt'],
       isTest = jsonInput["isTest"] ?? false,
-
-      going = _readSubscriptions("going", jsonInput),
-      refunded = _readSubscriptions("refunded", jsonInput),
-
+      going = _readGoing(jsonInput),
       documentId = documentId;
 
-  static List<Subscription> _readSubscriptions(String fieldName, Map<String, dynamic> json) {
-      var field = Map<String, dynamic>.from(json[fieldName]);
-      return List<Subscription>.from(field.values.map((sub) =>
-          Subscription.fromJson(Map<String, dynamic>.from(sub))));
+  static Map<String, DateTime> _readGoing(Map<String, dynamic> json) {
+    var map = Map<String, dynamic>.from(json["going"] ?? {});
+    var x = map.map((key, value) => MapEntry(key, DateTime.parse(value["createdAt"])));
+    return x;
   }
 
   Map<String, dynamic> toJson() =>
@@ -76,30 +72,11 @@ class Match {
 
   bool isFull() => numPlayersGoing() == maxPlayers;
 
-  bool isUserGoing(UserDetails user) =>
-      going.where((e) => e.userId == user.documentId).isNotEmpty;
+  bool isUserGoing(UserDetails user) => going.containsKey(user.documentId);
 
   double getPrice() => pricePerPersonInCents / 100;
 
   bool wasCancelled() => cancelledAt != null;
-}
-
-class Subscription {
-  String userId;
-  String stripeSessionId;
-  DateTime createdAt;
-
-  Subscription.fromJson(Map<String, dynamic> json)
-      : userId = json['userId'],
-        createdAt = DateTime.parse(json['createdAt']).toLocal(),
-        stripeSessionId = json["stripeSessionId"];
-
-  Map<String, dynamic> toJson() =>
-      {
-        'userId': userId,
-        'stripeSessionId': stripeSessionId,
-        'createdAt': createdAt
-      };
 }
 
 class SportCenter {

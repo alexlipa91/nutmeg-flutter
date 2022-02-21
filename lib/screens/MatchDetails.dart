@@ -80,7 +80,7 @@ class MatchDetails extends StatelessWidget {
           child: Row(
               children: (match.going.isEmpty)
                   ? [EmptyPlayerCard(match: match)]
-                  : match.going.map((s) => PlayerCard(s.userId)).toList()),
+                  : match.going.keys.map((s) => PlayerCard(s)).toList()),
         ),
       ),
       Padding(

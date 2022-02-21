@@ -65,16 +65,12 @@ class BottomBarMatch extends StatelessWidget {
                                   .difference(DateTime.now())
                                   .inHours;
 
-                              var userSub = match.going
-                                  .where((e) =>
-                                      e.userId ==
-                                      userState.getUserDetails().documentId)
-                                  .first;
+                              var createdAt = match.going[userState.getUserDetails().documentId];
 
                               await GenericInfoModal.withBottom(
                                   title: "Leaving this match?",
                                   body: "You joined this match: " +
-                                      getFormattedDate(userSub.createdAt) +
+                                      getFormattedDate(createdAt) +
                                       ".\n" +
                                       ((hoursToGame < 24)
                                           ? "You will not receive a refund since the game is in less than 24 hours."

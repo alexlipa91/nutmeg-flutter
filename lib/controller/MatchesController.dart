@@ -41,13 +41,13 @@ class MatchesController {
   }
 
   static Future<Match> getMatch(String matchId) async {
-    var resp = await CloudFunctionsUtils.callFunction("get_match", {'id': matchId});
+    var resp = await CloudFunctionsUtils.callFunction("get_match_v2", {'id': matchId});
     var match = Match.fromJson(resp, matchId);
     return match;
   }
 
   static Future<List<Match>> getMatches() async {
-    var resp = await CloudFunctionsUtils.callFunction("get_all_matches", {});
+    var resp = await CloudFunctionsUtils.callFunction("get_all_matches_v2", {});
 
     Map<String, dynamic> data = Map<String, dynamic>.from(resp);
 
