@@ -77,6 +77,11 @@ class Match {
   double getPrice() => pricePerPersonInCents / 100;
 
   bool wasCancelled() => cancelledAt != null;
+
+  List<String> getGoingUsersByTime() {
+    var entries = going.entries.toList()..sort((e1,e2) => -e1.value.compareTo(e2.value));
+    return entries.map((e) => e.key).toList();
+  }
 }
 
 class SportCenter {
