@@ -50,6 +50,6 @@ class LeaveMatchButton extends StatelessWidget {
                     Text("GO TO MY ACCOUNT", style: TextPalette.linkStyle)),
               )).show(context);
         },
-        Secondary(),
+        Primary(),
       );
 }
