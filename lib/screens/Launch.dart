@@ -81,7 +81,8 @@ class LaunchWidgetState extends State<LaunchWidget> {
     if (!kIsWeb) {
       initDynamicLinks();
     }
-    loadData(context);
+    loadData(context)
+        .catchError((e, s) => ErrorHandlingUtils.handleError(e, s, context));
   }
 
   Future<void> handleLink(Uri deepLink) async {
