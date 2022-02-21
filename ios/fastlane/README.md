@@ -23,6 +23,14 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 
 
 
+### ios submit_for_review
+
+```sh
+[bundle exec] fastlane ios submit_for_review
+```
+
+
+
 ----
 
 This README.md is auto-generated and will be re-generated every time [_fastlane_](https://fastlane.tools) is run.

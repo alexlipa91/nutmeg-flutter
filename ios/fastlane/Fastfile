@@ -58,4 +58,20 @@ platform :ios do
     )
     delete_temp_keychain(keychain_name)
   end
+
+  lane :submit_for_review do
+    deliver(
+        build_number: options[:build_number],
+        submit_for_review: true,
+        automatic_release: true,
+        force: true, # Skip HTMl report verification
+        skip_metadata: true,
+        skip_screenshots: true,
+        skip_binary_upload: true,
+        run_precheck_before_submit: false,
+        username: "alessandroliparoti@live.it",
+        app_identifier: "com.nutmeg.app",
+        submission_information: { add_id_info_uses_idfa: false }
+    )
+  end
 end
