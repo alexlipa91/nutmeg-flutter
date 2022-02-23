@@ -10,6 +10,7 @@ class PaymentDetailsDescription {
 
   static Future<void> communicateSuccessToUser(
       BuildContext context, String matchId) async {
+    var gif = context.read<LoadOnceState>().getRandomGif();
     await showModalBottomSheet(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
@@ -27,7 +28,7 @@ class PaymentDetailsDescription {
                     backgroundColor: Palette.lighterGrey,
                     backgroundImage: FadeInImage.memoryNetwork(
                       placeholder: kTransparentImage,
-                      image: context.read<LoadOnceState>().getRandomGif(),
+                      image: gif,
                     ).image,
                   ),
                   Padding(
