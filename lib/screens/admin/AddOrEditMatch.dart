@@ -282,7 +282,7 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                               );
                             await MatchesController.refresh(matchesState, newMatchId);
                             await GenericInfoModal(title: "Success",
-                            body: "Added match with id:\n" + newMatchId).show(context);
+                            description: "Added match with id:\n" + newMatchId).show(context);
                           }
                       } else {
                         match.dateTime = dateTime;
@@ -310,7 +310,7 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
 
                         await MatchesController.editMatch(matchesState, match);
                         await GenericInfoModal(title: "Success!",
-                            body: "Match with id " + match.documentId + " successfully modified").show(context);
+                            description: "Match with id " + match.documentId + " successfully modified").show(context);
                         Navigator.pop(context);
                       }
                     } catch (e, stackTrace) {

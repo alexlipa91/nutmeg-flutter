@@ -15,7 +15,7 @@ class ErrorHandlingUtils {
       case OutdatedAppException:
         return GenericInfoModal(
                 title: "Outdated app version!",
-                body: "Please update the app from the store before continuing.")
+                description: "Please update the app from the store before continuing.")
             .show(context)
             .then((value) =>
                 SystemChannels.platform.invokeMethod('SystemNavigator.pop'));

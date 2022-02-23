@@ -22,10 +22,10 @@ class LeaveButton extends StatelessWidget {
   Widget build(BuildContext context) => GenericButtonWithLoader(
         "LEAVE MATCH",
         (BuildContext context) async {
-          await GenericInfoModal.withBottom(
-              title: "Leaving this match?",
-              body: "We will refund you in credits that you can use in your next matches.",
-              bottomWidget: [
+          await GenericInfoModal(
+              title: "Leave this match?",
+              description: "We will refund you in credits that you can use in your next matches.",
+              content:
               ModalPaymentDescriptionArea(
                 rows: [],
                 finalRow: Row(
@@ -39,9 +39,10 @@ class LeaveButton extends StatelessWidget {
                         ))
                   ],
                 ),
-              )]).show(context);
+              ), action: Row(children: [Expanded(child: ConfirmLeaveMatchButton(match: match))])
+              ).show(context);
         },
-        Secondary(),
+        Primary(),
       );
 }
 
@@ -62,22 +63,21 @@ class ConfirmLeaveMatchButton extends StatelessWidget {
 
           var userState = context.read<UserState>();
 
-          GenericInfoModal.withBottom(
+          GenericInfoModal(
               title: formatCurrency(match.pricePerPersonInCents) +
                   " credits were added to your account",
-              body:
+              description:
                   "You can find your credits in your account page. Next time you join a game they will be automatically used.",
-              bottomWidget: [Padding(
-                padding: EdgeInsets.symmetric(vertical: 15),
-                child: InkWell(
-                    onTap: () async {
-                      await UserController.refreshCurrentUser(userState);
-                      Navigator.pushReplacement(navigatorKey.currentContext,
-                          MaterialPageRoute(builder: (context) => UserPage()));
-                    },
-                    child:
-                        Text("GO TO MY ACCOUNT", style: TextPalette.linkStyle)),
-              )]).show(context);
+              action: InkWell(
+                  onTap: () async {
+                    await UserController.refreshCurrentUser(userState);
+                    Navigator.pushReplacement(navigatorKey.currentContext,
+                        MaterialPageRoute(builder: (context) => UserPage()));
+                  },
+                  child:
+                      Padding(
+                          padding: EdgeInsets.only(top: 8),
+                          child: Text("GO TO MY ACCOUNT", style: TextPalette.linkStyle)))).show(context);
         },
         Primary(),
       );

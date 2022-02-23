@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
-import 'package:nutmeg/utils/Utils.dart';
 
 
 class ModalPaymentDescriptionArea extends StatelessWidget {
-
-  static var divider = Divider(color: Palette.mediumgrey);
+  static var divider = Divider(color: Palette.lightGrey, height: 0);
 
   final List<Widget> rows;
   final Widget finalRow;
@@ -18,17 +16,21 @@ class ModalPaymentDescriptionArea extends StatelessWidget {
     var rowWidgets = [];
     if (rows.isNotEmpty) {
       rowWidgets.add(divider);
-      rowWidgets.addAll(rows);
+      rowWidgets.add(SizedBox(height: 16));
+      rowWidgets.addAll(rows.map((r) => Padding(
+            padding: EdgeInsets.only(top: 4, bottom: 4),
+            child: r,
+          )));
+      rowWidgets.add(SizedBox(height: 16));
     }
     rowWidgets.add(divider);
+    rowWidgets.add(SizedBox(height: 16));
     rowWidgets.add(finalRow);
+    rowWidgets.add(SizedBox(height: 16));
 
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 12),
-      child: Container(
-        child: Column(
-          children: List<Widget>.from(interleave(rowWidgets, SizedBox(height: 12))),
-        ),
+    return Container(
+      child: Column(
+        children: List<Widget>.from(rowWidgets),
       ),
     );
   }

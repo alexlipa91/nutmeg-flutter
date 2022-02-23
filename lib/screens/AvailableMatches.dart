@@ -331,7 +331,7 @@ class MatchInfo extends StatelessWidget {
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 15),
                   child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
@@ -340,8 +340,13 @@ class MatchInfo extends StatelessWidget {
                                 style: TextPalette.h2),
                           ],
                         ),
+                        SizedBox(height: 12,),
                         Text(getFormattedDate(match.dateTime),
-                            style: TextPalette.h3),
+                            style:
+                            TextPalette.getH3(Palette.mediumgrey
+                          )
+                        ),
+                        SizedBox(height: 8,),
                         (match.isFull())
                             ? Text("Full",
                                 style: TextPalette.bodyText,

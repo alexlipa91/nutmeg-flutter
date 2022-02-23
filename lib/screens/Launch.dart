@@ -115,7 +115,7 @@ class LaunchWidgetState extends State<LaunchWidget> {
         PaymentDetailsDescription.communicateSuccessToUser(context, matchId);
       } else {
         await GenericInfoModal(
-                title: "Payment Failed!", body: "Please try again")
+                title: "Payment Failed!", description: "Please try again")
             .show(context);
       }
       return;

@@ -32,12 +32,13 @@ class JoinButton extends StatelessWidget {
 }
 
 class JoinModal {
-  static ModalPaymentDescriptionArea getModalDescriptionArea(
+  static Widget getModalDescriptionArea(
       BuildContext context, PaymentRecap paymentRecap) {
     var widgets = [
       Row(children: [
         Container(
-          height: 24, width: 24,
+          height: 24,
+          width: 24,
           child: CircleAvatar(
               backgroundColor: Colors.transparent,
               backgroundImage: NetworkImage(
@@ -82,8 +83,7 @@ class JoinModal {
     );
 
     return ModalPaymentDescriptionArea(
-        rows: List<Widget>.from(widgets),
-        finalRow: finalRow);
+        rows: List<Widget>.from(widgets), finalRow: finalRow);
   }
 
   static var onJoinGameAction = (BuildContext context, Match match) async {
@@ -94,7 +94,7 @@ class JoinModal {
       AfterLoginCommunication communication = await Navigator.push(
           context, MaterialPageRoute(builder: (context) => Login()));
       if (communication != null) {
-        await GenericInfoModal(title: "Welcome", body: communication.text)
+        await GenericInfoModal(title: "Welcome", description: communication.text)
             .show(context);
       }
     }
@@ -103,21 +103,19 @@ class JoinModal {
       var paymentRecap = await PaymentController.generatePaymentRecap(
           matchesState, match.documentId, userState);
 
-      await GenericInfoModal.withBottom(
+      await GenericInfoModal(
           title: "Join this match",
-          body:
+          description:
               "You can cancel up to 24h before the game time to get a full refund in credits to use on your next game.\nAfter that, you won't get a refund.",
-          bottomWidget: [
-            getModalDescriptionArea(context, paymentRecap),
-            Row(children: [
-              Expanded(
-                  child: (paymentRecap.finalPriceToPayInCents() == 0)
-                      ? PayWithCreditsButton(
-                          match: match, paymentRecap: paymentRecap)
-                      : PayWithMoneyButton(
-                          match: match, paymentRecap: paymentRecap))
-            ])
-          ]).show(context);
+          content: getModalDescriptionArea(context, paymentRecap),
+          action: Row(children: [
+            Expanded(
+                child: (paymentRecap.finalPriceToPayInCents() == 0)
+                    ? PayWithCreditsButton(
+                        match: match, paymentRecap: paymentRecap)
+                    : PayWithMoneyButton(
+                        match: match, paymentRecap: paymentRecap))
+          ])).show(context);
     }
   };
 }

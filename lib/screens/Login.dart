@@ -161,7 +161,7 @@ class SignInButton extends StatelessWidget {
                   print(e);
                   print(stack);
                   GenericInfoModal(title: "Sign-in failed",
-                      body: "Please try again or reach out for support").show(context);
+                      description: "Please try again or reach out for support").show(context);
                 } finally {
                   context
                       .read<LoginStatusChangeNotifier>()

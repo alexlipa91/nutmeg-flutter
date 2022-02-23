@@ -29,7 +29,7 @@ class UserAvatar extends StatelessWidget {
         ? Center(
             child: Text(displayName[0],
                 style: GoogleFonts.roboto(
-                    color: Palette.white,
+                    color: Palette.mediumgrey,
                     fontSize: 24,
                     fontWeight: FontWeight.w500)))
         : null;

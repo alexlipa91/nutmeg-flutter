@@ -251,7 +251,7 @@ class UserPage extends StatelessWidget {
                                                 .setUserDetails(userDetails);
                                             await UserController.editUser(userDetails);
                                             await GenericInfoModal(title: "Credits updated",
-                                                body: "Your new balance is: " + formatCurrency(creditCount)).show(context);
+                                                description: "Your new balance is: " + formatCurrency(creditCount)).show(context);
                                           },
                                           Primary()),
                                     )
