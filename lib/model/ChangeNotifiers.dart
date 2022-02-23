@@ -20,7 +20,7 @@ class MatchesState extends ChangeNotifier {
   }
 
   List<Match> getMatchesInFuture() => getMatches()
-      .where((m) => m.dateTime.difference(DateTime.now()).inMinutes > 1)
+      .where((m) => m.dateTime.isAfter(DateTime.now()))
       .toList();
 
   int getNumPlayedByUser(String userId) => _matches.values

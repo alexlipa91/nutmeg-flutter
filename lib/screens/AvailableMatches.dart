@@ -120,7 +120,7 @@ class AvailableMatchesListState extends State<AvailableMatchesList> {
       child: SafeArea(
         bottom: false,
         child: Scaffold(
-          backgroundColor: Palette.white,
+          backgroundColor: Palette.light,
           // appBar: MainAppBar(),
           body: MultiProvider(
             providers: [

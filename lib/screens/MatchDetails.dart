@@ -97,6 +97,7 @@ class MatchDetails extends StatelessWidget {
     ];
 
     return Scaffold(
+      backgroundColor: Palette.light,
         body: RefreshIndicator(
             onRefresh: () => MatchesController.refresh(matchesState, matchId),
             child: CustomScrollView(

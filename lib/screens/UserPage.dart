@@ -28,6 +28,7 @@ class UserPage extends StatelessWidget {
     int creditCount = (userDetails == null) ? 0 : userDetails.creditsInCents;
 
     return Scaffold(
+      backgroundColor: Palette.light,
       appBar: UserPageAppBar(),
       bottomSheet: Column(
         mainAxisSize: MainAxisSize.min,
