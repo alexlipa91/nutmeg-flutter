@@ -112,7 +112,8 @@ class MatchDetails extends StatelessWidget {
                 )
               ],
             )),
-        bottomNavigationBar: (isPast) ? null : BottomBarMatch(match: match));
+        bottomNavigationBar: (isPast) ? null : SafeArea(child: BottomBarMatch(match: match))
+    );
   }
 }
 
@@ -166,7 +167,7 @@ class MatchInfo extends StatelessWidget {
                 // fixme do something
               }
             },
-            splashColor: Palette.lightGrey,
+            splashColor: Palette.lighterGrey,
             child: InfoWidget.withRightWidget(
                 title: sportCenter.name +
                     (match.sportCenterSubLocation != null &&
@@ -214,8 +215,8 @@ class SportCenterImageCarouselState extends State<SportCenterImageCarousel> {
   Widget build(BuildContext context) {
     var placeHolder = Container(height: 358,
     child: Shimmer.fromColors(
-      baseColor: Palette.lightGrey,
-      highlightColor: Palette.lightGrey,
+      baseColor: Palette.lighterGrey,
+      highlightColor: Palette.lighterGrey,
       child: Container(
           decoration: BoxDecoration(
               color: Palette.white,
@@ -456,7 +457,7 @@ class EmptyPlayerCard extends StatelessWidget {
               child: CircleAvatar(
                   radius: 25,
                   child: Icon(Icons.add, color: Palette.mediumgrey, size: 24),
-                  backgroundColor: Palette.lightGrey),
+                  backgroundColor: Palette.lighterGrey),
             ),
             SizedBox(height: 10),
             Text("Join",

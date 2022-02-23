@@ -3,11 +3,9 @@ import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
 import 'package:nutmeg/screens/JoinModal.dart';
 import 'package:nutmeg/screens/LeaveMatchModal.dart';
-import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
-import 'package:nutmeg/widgets/Buttons.dart';
-import 'package:nutmeg/widgets/Containers.dart';
+import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:provider/provider.dart';
 
 
@@ -22,100 +20,56 @@ class BottomBarMatch extends StatelessWidget {
     var isGoing =
         userState.isLoggedIn() && match.isUserGoing(userState.getUserDetails());
 
+    var button = (isGoing) ? LeaveButton(match: match)
+        : (!match.isFull())
+        ? JoinButton(match: match)
+        : GenericButtonWithLoader("JOIN MATCH", null, Disabled());
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        InfoContainer(
-            child: Padding(
-          padding: EdgeInsets.only(bottom: 20),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                      (isGoing)
-                          ? "You are going!"
-                          : (match.getSpotsLeft() == 0)
-                              ? "Match Full"
-                              : match.getSpotsLeft().toString() + " spots left",
-                      style: TextPalette.h2),
-                  SizedBox(height: 20),
-                  Text(
-                      (isGoing)
-                          ? match.numPlayersGoing().toString() + " going"
-                          : (match.getSpotsLeft() == 0)
-                              ? "Find another match"
-                              : formatCurrency(match.pricePerPersonInCents),
-                      style: TextPalette.bodyText),
-                ],
-              ),
-              Expanded(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20),
+        Container(
+          child: Padding(
+            padding: EdgeInsets.all(16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      (isGoing)
-                          ? RoundedButtonLight("LEAVE MATCH", () async {
-                              var hoursToGame = match.dateTime
-                                  .difference(DateTime.now())
-                                  .inHours;
-
-                              var createdAt = match.going[userState.getUserDetails().documentId];
-
-                              await GenericInfoModal.withBottom(
-                                  title: "Leaving this match?",
-                                  body: "You joined this match: " +
-                                      getFormattedDate(createdAt) +
-                                      ".\n" +
-                                      ((hoursToGame < 24)
-                                          ? "You will not receive a refund since the game is in less than 24 hours."
-                                          : "We will refund you in credits that you can use in your next games."),
-                                  bottomWidget: Column(children: [
-                                    Divider(),
-                                    Padding(
-                                      padding:
-                                          EdgeInsets.symmetric(vertical: 10.0),
-                                      child: Row(
-                                        children: [
-                                          Text("Credits refund",
-                                              style: TextPalette.h3),
-                                          Expanded(
-                                              child: Text(
-                                            formatCurrency(
-                                                    match.pricePerPersonInCents) +
-                                                " euro",
-                                            style: TextPalette.h3,
-                                            textAlign: TextAlign.end,
-                                          ))
-                                        ],
-                                      ),
-                                    ),
-                                    Divider(),
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        Expanded(
-                                            child:
-                                                LeaveMatchButton(match: match)),
-                                      ],
-                                    )
-                                  ])).show(context);
-                            })
-                          : (!match.isFull())
-                              ? JoinButton(match: match)
-                              : RoundedButtonOff("JOIN MATCH", null),
+                      Text(
+                          (isGoing)
+                              ? "You are in!"
+                              : (match.getSpotsLeft() == 0)
+                                  ? "Match Full"
+                                  : match.getSpotsLeft().toString() + " spots left",
+                          style: TextPalette.h2),
+                      SizedBox(height: 4,),
+                      Text(
+                          (isGoing)
+                              ? match.numPlayersGoing().toString() + " going"
+                              : (match.getSpotsLeft() == 0)
+                                  ? "Find another match"
+                                  : formatCurrency(match.pricePerPersonInCents),
+                          style: TextPalette.bodyText),
                     ],
                   ),
                 ),
-              )
-            ],
+                Container(
+                  child: button,
+                  // Text("try"),
+                  // Column(
+                  //   crossAxisAlignment: CrossAxisAlignment.stretch,
+                  //   children: [button],
+                  // ),
+                )
+              ],
+            ),
           ),
-        ))
+        )
       ],
     );
   }

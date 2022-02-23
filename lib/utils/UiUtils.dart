@@ -25,14 +25,16 @@ class Palette {
   static var destructive = UiUtils.fromHex("#E34D4F");
 
   //for background
-  static var light = UiUtils.fromHex("#F3F5FA");
+  static var light = UiUtils.fromHex("#F7F7F7");
 
   //text
   static var mediumgrey = UiUtils.fromHex("#787878");
   static var darkgrey = UiUtils.fromHex("#444444");
   static var black = UiUtils.fromHex("#1E1E24");
 
-  static var lightGrey = Colors.grey.shade200; // used for background
+  static var lightGrey = UiUtils.fromHex("#C2C2C2");
+
+  static var lighterGrey = Colors.grey.shade200; // used for background
   static var green = Colors.green.shade700;
 
   static var white = Colors.white;
@@ -59,7 +61,9 @@ class TextPalette {
   static TextStyle linkStyle = GoogleFonts.roboto(color: Palette.primary, fontSize: 14, fontWeight: FontWeight.w700);
   static TextStyle linkStyleInverted = GoogleFonts.roboto(color: Palette.white, fontSize: 14, fontWeight: FontWeight.w700);
 
-  static TextStyle buttonOff = GoogleFonts.roboto(color: Palette.lightGrey, fontSize: 14, fontWeight: FontWeight.w700);
+  static TextStyle getLinkStyle(Color color) => GoogleFonts.roboto(color: color, fontSize: 14, fontWeight: FontWeight.w700);
+
+  static TextStyle buttonOff = GoogleFonts.roboto(color: Palette.lighterGrey, fontSize: 14, fontWeight: FontWeight.w700);
 }
 
 class DeviceInfo {

@@ -21,27 +21,26 @@ class GenericInfoModal<T> {
         ),
         isScrollControlled: true,
         context: context,
-        builder: (context) => Container(
-          child: Padding(
-            padding: EdgeInsets.symmetric(vertical: 30, horizontal: 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                Padding(
-                    padding: EdgeInsets.only(bottom: 20.0),
-                    child:
-                    Text(title, style: TextPalette.h2)),
-                Padding(
-                  padding: EdgeInsets.only(bottom: 20.0),
-                  child: Text(
+        builder: (context) => SafeArea(
+          child: Container(
+            child: Padding(
+              // make 32 if find visual cue
+              padding: EdgeInsets.only(bottom: 16, top: 24, left: 16, right: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Text(title, style: TextPalette.h2),
+                  SizedBox(height: 12),
+                  Text(
                     body,
                     style: TextPalette.bodyText,
                   ),
-                ),
-                if (bottomWidget != null)
-                  bottomWidget
-              ],
+                  SizedBox(height: 12),
+                  if (bottomWidget != null)
+                    bottomWidget
+                ],
+              ),
             ),
           ),
         )

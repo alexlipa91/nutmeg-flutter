@@ -18,7 +18,7 @@ class JoinButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => GenericButtonWithLoader(
-    "JOIN",
+    "JOIN MATCH",
     (BuildContext context) async {
       context.read<GenericButtonWithLoaderState>().change(true);
       await JoinModal.onJoinGameAction(context, match);

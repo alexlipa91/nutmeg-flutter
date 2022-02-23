@@ -121,16 +121,6 @@ class RoundedButton extends PrimaryButton with LeftRounded, RightRounded {
   RoundedButton(String text, Function onPressed) : super(text, onPressed);
 }
 
-class RoundedButtonOff extends PrimaryButton
-    with LeftRounded, RightRounded, Off {
-  RoundedButtonOff(String text, Function onPressed) : super(text, onPressed);
-}
-
-class RoundedButtonLight extends PrimaryButton
-    with LeftRounded, RightRounded, Light {
-  RoundedButtonLight(String text, Function onPressed) : super(text, onPressed);
-}
-
 // OTHER BUTTONS
 
 class ShareButton extends StatelessWidget {
@@ -150,7 +140,7 @@ class ShareButton extends StatelessWidget {
     var icon = Icon(Icons.share, color: color, size: iconSize);
 
     return InkWell(
-      splashColor: Palette.lightGrey,
+      splashColor: Palette.lighterGrey,
       onTap: () async {await DynamicLinks.shareMatchFunction(matchId);},
       child: Container(
         width: tappableSize,

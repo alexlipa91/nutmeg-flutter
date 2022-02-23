@@ -103,7 +103,7 @@ class MatchAppBar extends NutmegAppBar {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 InkWell(
-                    splashColor: Palette.lightGrey,
+                    splashColor: Palette.lighterGrey,
                     child: Container(
                       height: tapSize,
                       width: tapSize,

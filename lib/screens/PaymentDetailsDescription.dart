@@ -95,7 +95,7 @@ class PaymentDetailsDescription extends StatelessWidget {
                 children: [
                   CircleAvatar(
                     radius: 100,
-                    backgroundColor: Palette.lightGrey,
+                    backgroundColor: Palette.lighterGrey,
                     backgroundImage: FadeInImage.memoryNetwork(
                       placeholder: kTransparentImage,
                       image: context.read<LoadOnceState>().getRandomGif(),

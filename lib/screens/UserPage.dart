@@ -243,7 +243,7 @@ class UserPage extends StatelessWidget {
                                     Container(
                                       width: 100,
                                       child: GenericButtonWithLoader(
-                                          "UPDATE",
+                                          "SET",
                                           (BuildContext context) async {
                                             userDetails.creditsInCents =
                                                 creditCount;

@@ -35,18 +35,22 @@ class GenericButtonWithLoader extends StatelessWidget {
               context.watch<GenericButtonWithLoaderState>().isLoading;
 
           return ElevatedButton(
-            child: _isLoading
-                ? SizedBox(
-                    height: buttonType.textStyle.fontSize,
-                    width: buttonType.textStyle.fontSize,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: buttonType.loaderColor,
-                    ),
-                  )
-                : Text(text, style: buttonType.textStyle),
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+              child: _isLoading
+                  ? SizedBox(
+                      height: buttonType.textStyle.fontSize,
+                      width: buttonType.textStyle.fontSize,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: buttonType.loaderColor,
+                      ),
+                    )
+                  : Text(text, style: buttonType.textStyle),
+            ),
             onPressed: _isLoading ? null : () => onPressed(context),
             style: ButtonStyle(
+              elevation: MaterialStateProperty.all(0),
               backgroundColor: MaterialStateProperty.all<Color>(buttonType.backgroundColor),
               shape: MaterialStateProperty.all<RoundedRectangleBorder>(
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(50.0))),
@@ -75,8 +79,22 @@ class Primary extends ButtonType {
 }
 
 class Secondary extends ButtonType {
-  Color backgroundColor = Palette.white;
+  Color backgroundColor = Colors.transparent;
   TextStyle textStyle = TextPalette.linkStyle;
   Color borderColor = Palette.primary;
   Color loaderColor = Palette.primary;
+}
+
+class Disabled extends ButtonType {
+  Color backgroundColor = Colors.transparent;
+  TextStyle textStyle = TextPalette.getLinkStyle(Palette.lightGrey);
+  Color borderColor = Palette.lightGrey;
+  Color loaderColor = Palette.lightGrey;
+}
+
+class Destructive extends ButtonType {
+  Color backgroundColor = Palette.destructive;
+  TextStyle textStyle = TextPalette.getLinkStyle(Palette.white);
+  Color borderColor = Palette.destructive;
+  Color loaderColor = Palette.white;
 }

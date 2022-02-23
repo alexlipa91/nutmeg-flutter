@@ -148,7 +148,7 @@ class SignInButton extends StatelessWidget {
             child: OutlinedButton(
               style: OutlinedButton.styleFrom(
                   backgroundColor: backgroundColor,
-                  side: BorderSide(width: 1.0, color: Palette.lightGrey),
+                  side: BorderSide(width: 1.0, color: Palette.lighterGrey),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(40))),
               onPressed: () async {
