@@ -67,3 +67,16 @@ DateTime getBeginningOfTheWeek(DateTime dateTime) {
   var currentDay = dateTime.weekday;
   return DateUtils.dateOnly(dateTime.subtract(Duration(days: currentDay - 1)));
 }
+
+List<T> interleave<T>(List<T> elements, T e) {
+  List<T> result = [];
+  elements.forEach((a) {
+    result.add(a);
+    result.add(e);
+  });
+
+  if (result.isNotEmpty)
+    result.removeLast();
+
+  return result;
+}

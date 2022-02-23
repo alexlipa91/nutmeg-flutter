@@ -7,6 +7,7 @@ import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
+import 'package:nutmeg/widgets/ModalPaymentDescriptionArea.dart';
 import 'package:provider/provider.dart';
 
 import 'Launch.dart';
@@ -21,43 +22,24 @@ class LeaveButton extends StatelessWidget {
   Widget build(BuildContext context) => GenericButtonWithLoader(
         "LEAVE MATCH",
         (BuildContext context) async {
-          var userState = context.read<UserState>();
-          var hoursToGame = match.dateTime.difference(DateTime.now()).inHours;
-
-          var createdAt = match.going[userState.getUserDetails().documentId];
-
           await GenericInfoModal.withBottom(
               title: "Leaving this match?",
-              body: "You joined this match: " +
-                  getFormattedDate(createdAt) +
-                  ".\n" +
-                  ((hoursToGame < 24)
-                      ? "You will not receive a refund since the game is in less than 24 hours."
-                      : "We will refund you in credits that you can use in your next games."),
-              bottomWidget: Column(children: [
-                Divider(),
-                SizedBox(height: 12),
-                Row(
+              body: "We will refund you in credits that you can use in your next matches.",
+              bottomWidget: [
+              ModalPaymentDescriptionArea(
+                rows: [],
+                finalRow: Row(
                   children: [
                     Text("Credits refund", style: TextPalette.h3),
                     Expanded(
                         child: Text(
-                      formatCurrency(match.pricePerPersonInCents) + " euro",
-                      style: TextPalette.h3,
-                      textAlign: TextAlign.end,
-                    ))
+                          formatCurrency(match.pricePerPersonInCents) + " euro",
+                          style: TextPalette.h3,
+                          textAlign: TextAlign.end,
+                        ))
                   ],
                 ),
-                SizedBox(height: 12),
-                Divider(),
-                SizedBox(height: 12),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Expanded(child: ConfirmLeaveMatchButton(match: match)),
-                  ],
-                )
-              ])).show(context);
+              )]).show(context);
         },
         Secondary(),
       );
@@ -85,7 +67,7 @@ class ConfirmLeaveMatchButton extends StatelessWidget {
                   " credits were added to your account",
               body:
                   "You can find your credits in your account page. Next time you join a game they will be automatically used.",
-              bottomWidget: Padding(
+              bottomWidget: [Padding(
                 padding: EdgeInsets.symmetric(vertical: 15),
                 child: InkWell(
                     onTap: () async {
@@ -95,7 +77,7 @@ class ConfirmLeaveMatchButton extends StatelessWidget {
                     },
                     child:
                         Text("GO TO MY ACCOUNT", style: TextPalette.linkStyle)),
-              )).show(context);
+              )]).show(context);
         },
         Primary(),
       );

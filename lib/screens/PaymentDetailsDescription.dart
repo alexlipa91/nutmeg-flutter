@@ -1,83 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
-import 'package:nutmeg/model/Model.dart';
-import 'package:nutmeg/screens/PayWithCreditsModal.dart';
-import 'package:nutmeg/screens/PayWithMoneyModal.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
-import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/Buttons.dart';
 import 'package:provider/provider.dart';
 import 'package:transparent_image/transparent_image.dart';
 
 
-class PaymentDetailsDescription extends StatelessWidget {
-  final Match match;
-  final PaymentRecap paymentRecap;
-
-  const PaymentDetailsDescription({Key key, this.match, this.paymentRecap})
-      : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Row(children: [
-          CircleAvatar(
-              backgroundImage: NetworkImage(
-                  context.watch<UserState>().getUserDetails().getPhotoUrl()),
-              radius: 15),
-          SizedBox(width: 10),
-          Text("1x player", style: TextPalette.h3),
-          Expanded(
-              child: Text(
-            formatCurrency(match.pricePerPersonInCents),
-            style: TextPalette.h3,
-            textAlign: TextAlign.end,
-          ))
-        ]),
-        if (paymentRecap.creditsInCentsUsed > 0)
-          Row(
-            children: [
-              // adding this here as a trick to align the rows
-              CircleAvatar(backgroundColor: Colors.transparent, radius: 15),
-              SizedBox(width: 10),
-              Text('Credits', style: TextPalette.bodyText),
-              Expanded(
-                  child: Text(
-                "- " + formatCurrency(paymentRecap.creditsInCentsUsed),
-                style: TextPalette.bodyText,
-                textAlign: TextAlign.end,
-              ))
-            ],
-          ),
-        if (paymentRecap.creditsInCentsUsed > 0) Divider(),
-        if (paymentRecap.creditsInCentsUsed > 0)
-          Padding(
-            padding: EdgeInsets.symmetric(vertical: 10),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text("Subtotal", style: TextPalette.h3),
-                Text(
-                  formatCurrency(paymentRecap.finalPriceToPayInCents()),
-                  style: TextPalette.h3,
-                )
-              ],
-            ),
-          ),
-        Divider(),
-        Row(
-          children: [
-            Expanded(
-                child: (paymentRecap.finalPriceToPayInCents() == 0)
-                    ? PayWithCreditsButton(
-                        match: match, paymentRecap: paymentRecap)
-                    : PayWithMoneyButton(match: match, paymentRecap: paymentRecap))
-          ],
-        )
-      ],
-    );
-  }
+class PaymentDetailsDescription {
 
   static Future<void> communicateSuccessToUser(
       BuildContext context, String matchId) async {

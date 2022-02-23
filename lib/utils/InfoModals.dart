@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:nutmeg/utils/Utils.dart';
 
 import 'UiUtils.dart';
 
@@ -8,13 +9,22 @@ class GenericInfoModal<T> {
 
   final String title;
   final String body;
-  final Widget bottomWidget;
+  final List<Widget> bottomWidget;
 
   const GenericInfoModal.withBottom({Key key, this.title, this.body, this.bottomWidget});
 
   const GenericInfoModal({Key key, this.title, this.body}) : bottomWidget = null;
 
   Future<T> show(BuildContext context) {
+    List<Widget> widgets = [
+      Text(title, style: TextPalette.h2),
+      Text(
+        body,
+        style: TextPalette.bodyText,
+      ),
+    ];
+    widgets.addAll(bottomWidget);
+
     return showModalBottomSheet<T>(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
@@ -29,17 +39,7 @@ class GenericInfoModal<T> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  Text(title, style: TextPalette.h2),
-                  SizedBox(height: 12),
-                  Text(
-                    body,
-                    style: TextPalette.bodyText,
-                  ),
-                  SizedBox(height: 12),
-                  if (bottomWidget != null)
-                    bottomWidget
-                ],
+                children: interleave(widgets, SizedBox(height: 12))
               ),
             ),
           ),
