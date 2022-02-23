@@ -79,45 +79,36 @@ class MainAppBar extends NutmegAppBar {
   }
 }
 
-class MatchAppBar extends NutmegAppBar {
+class MatchAppBar extends StatelessWidget {
   final String matchId;
 
-  MatchAppBar(this.matchId);
+  const MatchAppBar({Key key, this.matchId}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    var iconsSize = 25.0;
-    var tapSize = 40.0;
-
     return SliverAppBar(
-        systemOverlayStyle: SystemUiOverlayStyle.dark,
-        centerTitle: false,
-        backgroundColor: Colors.transparent,
-        automaticallyImplyLeading: false,
-        titleSpacing: 0,
-        elevation: 0,
-        title: Container(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 10),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                InkWell(
-                    splashColor: Palette.lighterGrey,
-                    child: Container(
-                      height: tapSize,
-                      width: tapSize,
-                      child: Icon(Icons.arrow_back,
-                          color: Colors.black, size: iconsSize),
-                    ),
-                    onTap: () => Navigator.of(context).pop()),
-                if (!DeviceInfo().name.contains("ipad"))
-                  ShareButton(matchId, Palette.black, iconsSize, tapSize)
-              ],
-            ),
-          ),
-        ));
+      systemOverlayStyle: SystemUiOverlayStyle.dark,
+      backgroundColor: Colors.transparent,
+      leading: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          InkWell(
+              splashColor: Palette.lighterGrey,
+              child: Container(
+                height: 40,
+                child: Icon(Icons.arrow_back,
+                    color: Colors.black, size: 25.0),
+              ),
+              onTap: () => Navigator.of(context).pop()),
+        ],
+      ),
+      actions: [
+        if (!DeviceInfo().name.contains("ipad"))
+          ShareButton(matchId, Palette.black, 25.0)
+      ]
+    );
   }
+
 }
 
 class UserPageAppBar extends NutmegAppBar {

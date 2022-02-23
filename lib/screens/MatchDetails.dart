@@ -17,6 +17,7 @@ import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/AppBar.dart';
 import 'package:nutmeg/widgets/Avatar.dart';
 import 'package:nutmeg/widgets/Containers.dart';
+import 'package:nutmeg/widgets/Section.dart';
 import 'package:provider/provider.dart';
 import 'package:readmore/readmore.dart';
 import 'package:shimmer/shimmer.dart';
@@ -56,63 +57,51 @@ class MatchDetails extends StatelessWidget {
     var title = sportCenter.name + " - " + sport.displayTitle;
 
     var widgets = [
-      Padding(
-          padding: EdgeInsets.only(right: 20, left: 20, bottom: 10),
-          child: Text(title, style: TextPalette.h1Default)),
-      Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20),
-          child: MatchInfo(match, sportCenter, sport)),
-      Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-          child: Builder(
-            builder: (context) {
-              int going = match.numPlayersGoing();
-              return Text(
-                  going.toString() + "/" + match.maxPlayers.toString() + " PLAYERS JOINED",
-                  style: TextPalette.h4);
-            },
-          )),
-      Padding(
-        padding: EdgeInsets.symmetric(horizontal: 20),
-        child: SingleChildScrollView(
-          clipBehavior: Clip.none,
-          scrollDirection: Axis.horizontal,
-          child: Row(
-              children: (match.going.isEmpty)
-                  ? [EmptyPlayerCard(match: match)]
-                  : match.getGoingUsersByTime().map((s) => PlayerCard(s)).toList()),
-        ),
+      Text(title, style: TextPalette.h1Default),
+      SizedBox(height: 16),
+      MatchInfo(match, sportCenter, sport),
+      Builder(
+        builder: (context) {
+          int going = match.numPlayersGoing();
+          return Section(
+              title: going.toString() + "/" + match.maxPlayers.toString() + " PLAYERS JOINED",
+              body: SingleChildScrollView(
+                clipBehavior: Clip.none,
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                    children: (match.going.isEmpty)
+                        ? [EmptyPlayerCard(match: match)]
+                        : match.getGoingUsersByTime().map((s) => PlayerCard(s)).toList()),
+              ),);
+        },
       ),
-      Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-          child: Text(
-            "DETAILS",
-            style: TextPalette.h4,
-          )),
-      RuleCard(
+      Section(title: "DETAILS", body: RuleCard(
           "Payment Policy",
           "If you leave the match more than 15 hours before the kick-off time the amount you paid will be returned to you in credits that you can use in other Nutmeg matches. "
-              "\n\nNo credits or refund will be provided if you drop out of a game less than 15 hours from kick-off."),
+              "\n\nNo credits or refund will be provided if you drop out of a game less than 15 hours from kick-off.")),
       // MapCard.big(sportCenter)
     ];
 
     return Scaffold(
       backgroundColor: Palette.light,
-        body: RefreshIndicator(
-            onRefresh: () => MatchesController.refresh(matchesState, matchId),
-            child: CustomScrollView(
-              slivers: [
-                MatchAppBar(matchId),
-                SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (BuildContext context, int index) {
-                      return widgets[index];
-                    },
-                    childCount: widgets.length,
-                  ),
-                )
-              ],
-            )),
+        body: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16),
+          child: RefreshIndicator(
+              onRefresh: () => MatchesController.refresh(matchesState, matchId),
+              child: CustomScrollView(
+                slivers: [
+                  MatchAppBar(matchId: matchId),
+                  SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (BuildContext context, int index) {
+                        return widgets[index];
+                      },
+                      childCount: widgets.length,
+                    ),
+                  )
+                ],
+              )),
+        ),
         bottomNavigationBar: (isPast) ? null : SafeArea(child: BottomBarMatch(match: match))
     );
   }
@@ -484,28 +473,25 @@ class RuleCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
-    return Padding(
-      padding: EdgeInsets.only(left: 20, right: 20, bottom: 15),
-      child: InfoContainer(
-          child:
-              Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        Text(title, style: TextPalette.h2),
-        SizedBox(height: 10),
-        ReadMoreText(
-          body,
-          style: TextPalette.bodyText,
-          trimLines: 4,
-          colorClickableText: Colors.blue,
-          delimiter: "\n\n",
-          trimMode: TrimMode.Line,
-          trimCollapsedText: 'SHOW MORE',
-          trimExpandedText: 'SHOW LESS',
-          moreStyle: TextPalette.linkStyle,
-          lessStyle: TextPalette.linkStyle,
-        ),
-        // Text("Rule" * 100, style: TextPalette.bodyText2Gray)
-      ])),
-    );
+    return InfoContainer(
+        child:
+            Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+      Text(title, style: TextPalette.h2),
+      SizedBox(height: 10),
+      ReadMoreText(
+        body,
+        style: TextPalette.bodyText,
+        trimLines: 4,
+        colorClickableText: Colors.blue,
+        delimiter: "\n\n",
+        trimMode: TrimMode.Line,
+        trimCollapsedText: 'SHOW MORE',
+        trimExpandedText: 'SHOW LESS',
+        moreStyle: TextPalette.linkStyle,
+        lessStyle: TextPalette.linkStyle,
+      ),
+      // Text("Rule" * 100, style: TextPalette.bodyText2Gray)
+    ]));
   }
 }
 

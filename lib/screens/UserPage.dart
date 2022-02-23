@@ -10,6 +10,7 @@ import 'package:nutmeg/widgets/AppBar.dart';
 import 'package:nutmeg/widgets/Avatar.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:nutmeg/widgets/Containers.dart';
+import 'package:nutmeg/widgets/Section.dart';
 import 'package:provider/provider.dart';
 import 'package:tuple/tuple.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -117,36 +118,33 @@ class UserPage extends StatelessWidget {
                             ],
                           ),
                         ),
-                        Padding(
-                            padding: EdgeInsets.only(top: 20),
-                            child: Text("USEFUL LINKS", style: TextPalette.h4)),
-                        Padding(
-                          padding: EdgeInsets.symmetric(vertical: 20),
-                          child: InfoContainer(
+                        Section(
+                          title: "USEFUL LINK",
+                          body: InfoContainer(
                               child: Column(children: [
-                            LinkInfo(
-                              text: "Follow us on Instagram",
-                              onTap: () async {
-                                var url =
-                                    'https://www.instagram.com/nutmegapp/';
+                                LinkInfo(
+                                  text: "Follow us on Instagram",
+                                  onTap: () async {
+                                    var url =
+                                        'https://www.instagram.com/nutmegapp/';
 
-                                if (await canLaunch(url)) {
-                                  await launch(
-                                    url,
-                                    universalLinksOnly: true,
-                                  );
-                                } else {
-                                  throw 'There was a problem to open the url: $url';
-                                }
-                              },
-                            ),
-                            // LinkInfo(text: "Terms and Conditions"),
-                            Padding(
-                              padding: EdgeInsets.only(top: 10),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                      child: GenericButtonWithLoader(
+                                    if (await canLaunch(url)) {
+                                      await launch(
+                                        url,
+                                        universalLinksOnly: true,
+                                      );
+                                    } else {
+                                      throw 'There was a problem to open the url: $url';
+                                    }
+                                  },
+                                ),
+                                // LinkInfo(text: "Terms and Conditions"),
+                                Padding(
+                                  padding: EdgeInsets.only(top: 10),
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: GenericButtonWithLoader(
                                           "LOGOUT",
 
                                               (BuildContext context) async {
@@ -157,7 +155,7 @@ class UserPage extends StatelessWidget {
                                             try {
                                               await Future.delayed(
                                                   Duration(milliseconds: 500),
-                                                  () => UserController.logout(
+                                                      () => UserController.logout(
                                                       context
                                                           .read<UserState>()));
                                               Navigator.of(context).pop();
@@ -168,98 +166,98 @@ class UserPage extends StatelessWidget {
                                               return;
                                             }
                                           },
-                                         Primary(),
-                                      ),
-                                  )
-                                ],
-                              ),
-                            ),
-                            if (userDetails.isAdmin)
-                              Padding(
-                                padding: EdgeInsets.only(top: 10),
-                                child: Row(
-                                  children: [
-                                    Expanded(
-                                        child: GenericButtonWithLoader(
-                                            "ADMIN AREA",
-                                            (BuildContext context) async {
-                                              await Navigator.push(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                      builder: (context) =>
-                                                          AdminAvailableMatches()));
-                                            },
-                                            Primary(),
-                                        ))
-                                  ],
+                                          Primary(),
+                                        ),
+                                      )
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            if (userDetails.isAdmin)
-                              Padding(
-                                padding: EdgeInsets.only(top: 10),
-                                child: Row(
-                                  children: [
-                                    Text("Test Mode"),
-                                    SizedBox(width: 10),
-                                    Switch(
-                                      value:
+                                if (userDetails.isAdmin)
+                                  Padding(
+                                    padding: EdgeInsets.only(top: 10),
+                                    child: Row(
+                                      children: [
+                                        Expanded(
+                                            child: GenericButtonWithLoader(
+                                              "ADMIN AREA",
+                                                  (BuildContext context) async {
+                                                await Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            AdminAvailableMatches()));
+                                              },
+                                              Primary(),
+                                            ))
+                                      ],
+                                    ),
+                                  ),
+                                if (userDetails.isAdmin)
+                                  Padding(
+                                    padding: EdgeInsets.only(top: 10),
+                                    child: Row(
+                                      children: [
+                                        Text("Test Mode"),
+                                        SizedBox(width: 10),
+                                        Switch(
+                                          value:
                                           context.watch<UserState>().isTestMode,
-                                      onChanged: (value) => userState
-                                          .setTestMode(!userState.isTestMode),
-                                      activeTrackColor: Colors.red,
-                                      activeColor: Colors.red,
+                                          onChanged: (value) => userState
+                                              .setTestMode(!userState.isTestMode),
+                                          activeTrackColor: Colors.red,
+                                          activeColor: Colors.red,
+                                        ),
+                                        Expanded(
+                                            child: Text(
+                                                "It allows to see in the UI test matches"))
+                                      ],
                                     ),
-                                    Expanded(
-                                        child: Text(
-                                            "It allows to see in the UI test matches"))
-                                  ],
-                                ),
-                              ),
-                            if (userDetails.isAdmin)
-                              Padding(
-                                padding: EdgeInsets.only(top: 10),
-                                child: Row(
-                                  children: [
-                                    Text("Update Credits (in cents)"),
-                                    SizedBox(width: 10),
-                                    Expanded(
-                                      child: TextFormField(
-                                          initialValue: userDetails
-                                              .creditsInCents
-                                              .toString(),
-                                          keyboardType: TextInputType.number,
-                                          inputFormatters: <TextInputFormatter>[
-                                            FilteringTextInputFormatter
-                                                .digitsOnly
-                                          ], // Only numbers can be
-                                          onChanged: (v) {
-                                            var newValue = int.tryParse(v);
-                                            if (newValue != null)
-                                              creditCount = newValue;
-                                          }
-                                          // entered
+                                  ),
+                                if (userDetails.isAdmin)
+                                  Padding(
+                                    padding: EdgeInsets.only(top: 10),
+                                    child: Row(
+                                      children: [
+                                        Text("Update Credits (in cents)"),
+                                        SizedBox(width: 10),
+                                        Expanded(
+                                          child: TextFormField(
+                                              initialValue: userDetails
+                                                  .creditsInCents
+                                                  .toString(),
+                                              keyboardType: TextInputType.number,
+                                              inputFormatters: <TextInputFormatter>[
+                                                FilteringTextInputFormatter
+                                                    .digitsOnly
+                                              ], // Only numbers can be
+                                              onChanged: (v) {
+                                                var newValue = int.tryParse(v);
+                                                if (newValue != null)
+                                                  creditCount = newValue;
+                                              }
+                                            // entered
                                           ),
+                                        ),
+                                        SizedBox(width: 10),
+                                        Container(
+                                          width: 100,
+                                          child: GenericButtonWithLoader(
+                                              "SET",
+                                                  (BuildContext context) async {
+                                                userDetails.creditsInCents =
+                                                    creditCount;
+                                                userState
+                                                    .setUserDetails(userDetails);
+                                                await UserController.editUser(userDetails);
+                                                await GenericInfoModal(title: "Credits updated",
+                                                    description: "Your new balance is: " + formatCurrency(creditCount)).show(context);
+                                              },
+                                              Primary()),
+                                        )
+                                      ],
                                     ),
-                                    SizedBox(width: 10),
-                                    Container(
-                                      width: 100,
-                                      child: GenericButtonWithLoader(
-                                          "SET",
-                                          (BuildContext context) async {
-                                            userDetails.creditsInCents =
-                                                creditCount;
-                                            userState
-                                                .setUserDetails(userDetails);
-                                            await UserController.editUser(userDetails);
-                                            await GenericInfoModal(title: "Credits updated",
-                                                description: "Your new balance is: " + formatCurrency(creditCount)).show(context);
-                                          },
-                                          Primary()),
-                                    )
-                                  ],
-                                ),
-                              ),
-                          ])),
+                                  ),
+                              ])),
                         ),
                         Align(
                             alignment: Alignment.centerRight,

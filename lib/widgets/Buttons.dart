@@ -128,11 +128,9 @@ class ShareButton extends StatelessWidget {
   final Color color;
   final bool withText;
   final double iconSize;
-  final double tappableSize;
 
-  ShareButton(this.matchId, this.color, [double size = 20, double tappableSize = 40])
+  ShareButton(this.matchId, this.color, [double size = 20])
       : withText = false,
-        tappableSize = tappableSize,
         iconSize = size;
 
   @override
@@ -143,8 +141,8 @@ class ShareButton extends StatelessWidget {
       splashColor: Palette.lighterGrey,
       onTap: () async {await DynamicLinks.shareMatchFunction(matchId);},
       child: Container(
-        width: tappableSize,
-        height: tappableSize,
+        // width: tappableSize,
+        // height: tappableSize,
         child: icon),
     );
   }
