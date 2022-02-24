@@ -463,7 +463,7 @@ class MatchThumbnail extends StatelessWidget {
               image: imageProvider,
               fit: BoxFit.fill,
             ),
-            borderRadius: BorderRadius.all(Radius.circular(15)),
+            borderRadius: BorderRadius.all(Radius.circular(10)),
           )),
           // placeholder: (context, url) => placeHolder,
           errorWidget: (context, url, error) => Icon(Icons.error),

@@ -52,7 +52,10 @@ class CurrentUserAvatarWithRedirect extends StatelessWidget {
       height: 40,
       width: 40,
       child: InkWell(
-          child: UserAvatar(radius, context.watch<UserState>().getUserDetails()),
+          child: Container(
+              height: 30,
+              width: 30,
+              child: UserAvatar(radius, context.watch<UserState>().getUserDetails())),
           onTap: () async {
             Navigator.push(
                 context, MaterialPageRoute(builder: (context) => new UserPage()));

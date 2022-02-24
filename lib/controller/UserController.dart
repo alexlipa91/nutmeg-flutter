@@ -54,7 +54,7 @@ class UserController {
 
     // Save the initial token to the database
     await CloudFunctionsUtils.callFunction("store_user_token",
-        {"user_id": userDetails.getUid(), "token": token});
+        {"id": userDetails.getUid(), "token": token});
 
     // Any time the token refreshes, store this in the database too.
     FirebaseMessaging.instance.onTokenRefresh.listen(_saveTokenToDatabase);
