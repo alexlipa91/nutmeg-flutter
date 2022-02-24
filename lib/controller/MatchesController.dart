@@ -49,7 +49,7 @@ class MatchesController {
   static Future<List<Match>> getMatches() async {
     var resp = await CloudFunctionsUtils.callFunction("get_all_matches_v2", {});
 
-    Map<String, dynamic> data = Map<String, dynamic>.from(resp);
+    Map<String, dynamic> data = (resp == null) ? Map() : Map<String, dynamic>.from(resp);
 
     return data.entries
         .map((e) => Match.fromJson(Map<String, dynamic>.from(e.value), e.key))

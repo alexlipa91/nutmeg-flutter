@@ -129,11 +129,9 @@ class UserDetails {
   String email;
   String stripeId;
   int creditsInCents;
-  Set<String> tokens;
 
   UserDetails(this.documentId, this.isAdmin, this.image, this.name, this.email)
-      : creditsInCents = 0,
-        tokens = Set.of([]);
+      : creditsInCents = 0;
 
   UserDetails.from(String documentId, UserDetails u)
       : this.documentId = documentId,
@@ -142,8 +140,7 @@ class UserDetails {
         this.name = u.name,
         this.email = u.email,
         this.stripeId = u.stripeId,
-        this.creditsInCents = u.creditsInCents,
-        this.tokens = u.tokens;
+        this.creditsInCents = u.creditsInCents;
 
   UserDetails.fromJson(Map<String, dynamic> json, String documentId)
       : isAdmin = (json["isAdmin"] == null) ? false : json["isAdmin"],
@@ -152,7 +149,6 @@ class UserDetails {
         email = json["email"],
         creditsInCents = json["credits"],
         stripeId = json["stripeId"] ?? null,
-        tokens = (json["tokens"] == null) ? [] : Set<String>.from(json["tokens"]),
         documentId = documentId;
 
   Map<String, dynamic> toJson() =>
@@ -162,7 +158,6 @@ class UserDetails {
         'name': name,
         'email': email,
         'credits': creditsInCents,
-        'tokens': tokens.toList()
       };
 
   String getUid() => documentId;
