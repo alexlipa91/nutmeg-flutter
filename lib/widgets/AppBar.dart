@@ -54,7 +54,7 @@ class MainAppBar extends NutmegAppBar {
           children: [
             Image.asset('assets/nutmeg_white.png', height: 24),
             if (isLoggedIn)
-              UserAvatarWithRedirect(radius: 18)
+              Builder(builder: (context) => CurrentUserAvatarWithRedirect(radius: 18))
             else
               InkWell(
                 onTap: () async {
@@ -146,7 +146,7 @@ class AdminAreaAppBar extends NutmegAppBar {
               InkWell(
                   child: Icon(Icons.arrow_back, color: Palette.white, size: 32),
                   onTap: () => Navigator.pop(context)),
-              UserAvatarWithRedirect(radius: 18)
+              CurrentUserAvatarWithRedirect(radius: 18)
             ],
           ),
         ));
@@ -168,7 +168,7 @@ class AdminAreaAppBarInverted extends NutmegAppBar {
                   child:
                       Icon(Icons.arrow_back, color: Palette.primary, size: 32),
                   onTap: () => Navigator.pop(context)),
-              UserAvatar(24, null)
+              UserAvatar(24, context.watch<UserState>().getUserDetails())
             ],
           ),
         ));

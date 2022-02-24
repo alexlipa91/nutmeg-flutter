@@ -346,16 +346,25 @@ class PlayerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print("building for " + userId);
     return FutureBuilder<UserDetails>(
         future: UserController.getUserDetails(userId),
         builder: (context, snapshot) {
+          var getDisplayName = (UserDetails ud) {
+            if (ud == null)
+              return "Player";
+            if (ud.name != null)
+              return ud.name;
+            if (ud.email != null)
+              return ud.email;
+            return "Player";
+          };
+
           return Padding(
             padding: EdgeInsets.only(right: 10),
             child: SizedBox(
               width: 100,
               child: InfoContainer(
-                  child: (snapshot.hasData)
+                  child: (snapshot.connectionState == ConnectionState.done)
                       ? Column(children: [
                           InkWell(
                               onTap: () {
@@ -375,9 +384,7 @@ class PlayerCard extends StatelessWidget {
                                                 children: [
                                                   SizedBox(height: 70),
                                                   Text(
-                                                      snapshot.data.name ??
-                                                          snapshot.data.email ??
-                                                          "Player",
+                                                      getDisplayName(snapshot.data),
                                                       style: TextPalette.h2),
                                                   SizedBox(height: 20),
                                                   Builder(builder: (context) {
@@ -410,7 +417,7 @@ class PlayerCard extends StatelessWidget {
                               child: UserAvatar(24, snapshot.data)),
                           SizedBox(height: 10),
                           Text(
-                              (snapshot.data.name ?? "Player").split(" ").first,
+                              (snapshot.data?.name ?? "Player").split(" ").first,
                               overflow: TextOverflow.ellipsis,
                               style: GoogleFonts.roboto(
                                   color: Palette.mediumgrey,

@@ -16,14 +16,13 @@ class UserAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var ud = userDetails ?? context.watch<UserState>().getUserDetails();
-
-    var photoUrl = (ud == null) ? null : ud.getPhotoUrl();
+    var photoUrl = userDetails?.getPhotoUrl();
 
     var backgroundColor = Palette.lighterGrey;
     var backgroundImage = (photoUrl == null) ? null : NetworkImage(photoUrl);
 
-    var displayName = ((ud == null) ? "P" : (ud.name ?? ud.email ?? "P")).toUpperCase();
+    var displayName = ((userDetails == null) ? "P" : (userDetails.name ??
+        userDetails.email ?? "P")).toUpperCase();
 
     var child = (photoUrl == null)
         ? Center(
@@ -42,10 +41,10 @@ class UserAvatar extends StatelessWidget {
   }
 }
 
-class UserAvatarWithRedirect extends StatelessWidget {
+class CurrentUserAvatarWithRedirect extends StatelessWidget {
   final double radius;
 
-  const UserAvatarWithRedirect({Key key, this.radius}) : super(key: key);
+  const CurrentUserAvatarWithRedirect({Key key, this.radius}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +52,7 @@ class UserAvatarWithRedirect extends StatelessWidget {
       height: 40,
       width: 40,
       child: InkWell(
-          child: UserAvatar(radius, null),
+          child: UserAvatar(radius, context.watch<UserState>().getUserDetails()),
           onTap: () async {
             await UserController.refreshCurrentUser(context.read<UserState>());
             Navigator.push(

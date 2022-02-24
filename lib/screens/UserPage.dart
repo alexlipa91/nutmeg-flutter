@@ -63,7 +63,7 @@ class UserPage extends StatelessWidget {
                           child: InfoContainer(
                               child: Row(
                             children: [
-                              UserAvatar(24, null),
+                              UserAvatar(24, context.watch<UserState>().getUserDetails()),
                               Padding(
                                 padding: EdgeInsets.symmetric(horizontal: 30),
                                 child: Column(
