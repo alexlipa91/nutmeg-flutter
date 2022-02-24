@@ -29,6 +29,15 @@ class BottomBarMatch extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
+          decoration: BoxDecoration(
+            color: Palette.white,
+            boxShadow: [
+              BoxShadow(
+                color: Palette.black.withOpacity(0.1), spreadRadius: 0,
+                blurRadius: 20, offset: Offset(0, 10),
+              )
+            ],
+          ),
           child: Padding(
             padding: EdgeInsets.all(16.0),
             child: Row(
@@ -59,12 +68,7 @@ class BottomBarMatch extends StatelessWidget {
                   ),
                 ),
                 Container(
-                  child: button,
-                  // Text("try"),
-                  // Column(
-                  //   crossAxisAlignment: CrossAxisAlignment.stretch,
-                  //   children: [button],
-                  // ),
+                  child: button
                 )
               ],
             ),

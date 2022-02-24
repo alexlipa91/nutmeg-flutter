@@ -20,20 +20,18 @@ class InfoContainer extends StatelessWidget {
   );
 
   final Widget child;
-
   final EdgeInsets padding;
+  final EdgeInsets margin;
 
-  InfoContainer({this.child}) :
-        padding = EdgeInsets.symmetric(horizontal: 16, vertical: 16);
-
-  InfoContainer.withoutPadding({this.child}) :
-        padding = EdgeInsets.all(0);
+  InfoContainer({this.child, this.padding = const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+    this.margin = const EdgeInsets.all(0)});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-        // margin: EdgeInsets.symmetric(horizontal: 25, vertical: 10),
-        decoration: boxDecoration,
+    decoration: boxDecoration,
+    margin: margin,
+    clipBehavior: Clip.none,
         child: Padding(
           padding: padding,
           child: child,

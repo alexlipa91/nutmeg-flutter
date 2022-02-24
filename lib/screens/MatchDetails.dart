@@ -56,11 +56,14 @@ class MatchDetails extends StatelessWidget {
 
     var title = sportCenter.name + " - " + sport.displayTitle;
 
+    pad(Widget w) => Padding(padding: EdgeInsets.symmetric(horizontal: 16), child: w);
+
+    // add padding individually since because of shadow clipping some components need margin
     var widgets = [
-      Text(title, style: TextPalette.h1Default),
+      pad(Text(title, style: TextPalette.h1Default)),
       SizedBox(height: 16),
       MatchInfo(match, sportCenter, sport),
-      Builder(
+      pad(Builder(
         builder: (context) {
           int going = match.numPlayersGoing();
           return Section(
@@ -71,37 +74,35 @@ class MatchDetails extends StatelessWidget {
                 child: Row(
                     children: (match.going.isEmpty)
                         ? [EmptyPlayerCard(match: match)]
-                        : match.getGoingUsersByTime().map((s) => PlayerCard(s)).toList()),
+                        : match.getGoingUsersByTime().map((s) => PlayerCard(s)).toList()
+                ),
               ),);
         },
-      ),
-      Section(title: "DETAILS", body: RuleCard(
+      )),
+      pad(Section(title: "DETAILS", body: RuleCard(
           "Payment Policy",
           "If you leave the match more than 15 hours before the kick-off time the amount you paid will be returned to you in credits that you can use in other Nutmeg matches. "
-              "\n\nNo credits or refund will be provided if you drop out of a game less than 15 hours from kick-off.")),
+              "\n\nNo credits or refund will be provided if you drop out of a game less than 15 hours from kick-off."))),
       // MapCard.big(sportCenter)
     ];
 
     return Scaffold(
       backgroundColor: Palette.light,
-        body: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16),
-          child: RefreshIndicator(
-              onRefresh: () => MatchesController.refresh(matchesState, matchId),
-              child: CustomScrollView(
-                slivers: [
-                  MatchAppBar(matchId: matchId),
-                  SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (BuildContext context, int index) {
-                        return widgets[index];
-                      },
-                      childCount: widgets.length,
-                    ),
-                  )
-                ],
-              )),
-        ),
+        body: RefreshIndicator(
+            onRefresh: () => MatchesController.refresh(matchesState, matchId),
+            child: CustomScrollView(
+              slivers: [
+                MatchAppBar(matchId: matchId),
+                SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (BuildContext context, int index) {
+                      return widgets[index];
+                    },
+                    childCount: widgets.length,
+                  ),
+                )
+              ],
+            )),
         bottomNavigationBar: (isPast) ? null : SafeArea(child: BottomBarMatch(match: match))
     );
   }
@@ -119,7 +120,9 @@ class MatchInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InfoContainer.withoutPadding(
+    return InfoContainer(
+      margin: EdgeInsets.symmetric(horizontal: 16),
+        padding: EdgeInsets.zero,
         child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

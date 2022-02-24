@@ -92,6 +92,7 @@ class MatchAppBar extends StatelessWidget {
       leading: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
+          SizedBox(width: 16,), // we cannot pad outside
           InkWell(
               splashColor: Palette.lighterGrey,
               child: Container(
@@ -104,7 +105,8 @@ class MatchAppBar extends StatelessWidget {
       ),
       actions: [
         if (!DeviceInfo().name.contains("ipad"))
-          ShareButton(matchId, Palette.black, 25.0)
+          ShareButton(matchId, Palette.black, 25.0),
+          SizedBox(width: 16,), // we cannot pad outside
       ]
     );
   }
