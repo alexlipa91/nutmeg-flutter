@@ -9,3 +9,6 @@ BUILD=$(echo $TAG | cut -d'+' -f2)
 
 # create release in github
 gh release create $TAG --notes "General improvements"
+
+# bump minor (we need to do this because of appstore)
+python bump_patch.py
