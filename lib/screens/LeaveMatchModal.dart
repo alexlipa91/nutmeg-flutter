@@ -79,6 +79,6 @@ class ConfirmLeaveMatchButton extends StatelessWidget {
                           padding: EdgeInsets.only(top: 8),
                           child: Text("GO TO MY ACCOUNT", style: TextPalette.linkStyle)))).show(context);
         },
-        Primary(),
+        Secondary(),
       );
 }
