@@ -37,7 +37,7 @@ class Palette {
   static var lighterGrey = Colors.grey.shade200; // used for background
   static var green = Colors.green.shade700;
 
-  static var white = Colors.white;
+  static const white = Colors.white;
 }
 
 class TextPalette {

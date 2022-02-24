@@ -323,6 +323,7 @@ class MatchInfo extends StatelessWidget {
         child: Padding(
           padding: EdgeInsets.only(top: topMargin, left: 16, right: 16),
           child: InfoContainer(
+              backgroundColor: (match.isTest) ? Colors.orangeAccent : Palette.white,
               child: IntrinsicHeight(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -364,12 +365,6 @@ class MatchInfo extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.end,
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        if (match.isTest)
-                          CircleAvatar(
-                              child: Text("T",
-                                  style: TextPalette.linkStyleInverted),
-                              radius: 12,
-                              backgroundColor: Colors.red),
                         Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
@@ -591,7 +586,9 @@ class MatchInfoPast extends StatelessWidget {
                 )),
               ],
             ),
-          )),
+          ),
+              backgroundColor: (match.isTest) ? Colors.orangeAccent : Palette.white,
+          ),
         ),
         onTap: () async {
           // fixme why it doesn't rebuild here?

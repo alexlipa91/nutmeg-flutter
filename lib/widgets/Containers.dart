@@ -11,25 +11,28 @@ class InfoContainer extends StatelessWidget {
     blurRadius: 20,
     offset: Offset(0, 10),
   );
-  static var boxDecoration = BoxDecoration(
-    color: Colors.white,
-    borderRadius: borderRadius,
-    boxShadow: [
-      boxShadow
-    ],
-  );
 
   final Widget child;
   final EdgeInsets padding;
   final EdgeInsets margin;
+  final backgroundColor;
 
-  InfoContainer({this.child, this.padding = const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-    this.margin = const EdgeInsets.all(0)});
+  const InfoContainer({this.child,
+    this.padding = const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+    this.margin = const EdgeInsets.all(0),
+    this.backgroundColor = Palette.white
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-    decoration: boxDecoration,
+    decoration: BoxDecoration(
+      color: backgroundColor,
+      borderRadius: borderRadius,
+      boxShadow: [
+        boxShadow
+      ],
+    ),
     margin: margin,
     clipBehavior: Clip.none,
         child: Padding(

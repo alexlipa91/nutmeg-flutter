@@ -54,13 +54,16 @@ class MatchDetails extends StatelessWidget {
     var sportCenter = loadOnceState.getSportCenter(match.sportCenterId);
     var sport = loadOnceState.getSport(match.sport);
 
-    var title = sportCenter.name + " - " + sport.displayTitle;
+    var title = (match.isTest) ? match.documentId : sportCenter.name + " - " + sport.displayTitle;
 
     pad(Widget w) => Padding(padding: EdgeInsets.symmetric(horizontal: 16), child: w);
 
     // add padding individually since because of shadow clipping some components need margin
     var widgets = [
-      pad(Text(title, style: TextPalette.h1Default)),
+      pad(Container(
+          color: (match.isTest) ? Colors.orangeAccent : Colors.transparent,
+          child: Text(title, style: TextPalette.h1Default))
+      ),
       SizedBox(height: 16),
       MatchInfo(match, sportCenter, sport),
       pad(Builder(
@@ -343,6 +346,7 @@ class PlayerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print("building for " + userId);
     return FutureBuilder<UserDetails>(
         future: UserController.getUserDetails(userId),
         builder: (context, snapshot) {
