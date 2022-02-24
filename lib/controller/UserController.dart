@@ -30,13 +30,6 @@ class UserController {
           return null;
         }
 
-        try {
-          await UserController.saveUserTokensToDb(existingUserDetails);
-        } catch (e, stack) {
-          print("Failed to save user token in DB " + e);
-          print(stack);
-        }
-
         return UserDetails.from(userId, existingUserDetails);
       } catch (e, stack) {
         print("Found firebase user but couldn't load details: " + e.toString());
