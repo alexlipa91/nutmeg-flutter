@@ -1,7 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import "package:collection/collection.dart";
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
@@ -9,9 +8,9 @@ import 'package:nutmeg/model/Model.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/AppBar.dart';
-import 'package:nutmeg/widgets/Avatar.dart';
 import 'package:nutmeg/widgets/Buttons.dart';
 import 'package:nutmeg/widgets/Containers.dart';
+import 'package:nutmeg/widgets/IconsList.dart';
 import 'package:nutmeg/widgets/Texts.dart';
 import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
@@ -317,13 +316,11 @@ class MatchInfo extends StatelessWidget {
     var sportCenter = loadOnceState.getSportCenter(match.sportCenterId);
     var sport = loadOnceState.getSport(match.sport);
 
-    var icons = getIcons(context, match);
-
     return InkWell(
         child: Padding(
           padding: EdgeInsets.only(top: topMargin, left: 16, right: 16),
           child: InfoContainer(
-              backgroundColor: (match.isTest) ? Colors.orangeAccent : Palette.white,
+              backgroundColor: (match.isTest) ? Palette.white : Palette.white,
               child: IntrinsicHeight(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -368,11 +365,7 @@ class MatchInfo extends StatelessWidget {
                         Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
-                              if (icons.isNotEmpty)
-                                Stack(
-                                    alignment: Alignment.centerRight,
-                                    clipBehavior: Clip.none,
-                                    children: icons)
+                                IconsList(match: match)
                             ])
                       ]),
                 )
@@ -391,56 +384,6 @@ class MatchInfo extends StatelessWidget {
           );
           await refreshController.requestRefresh();
         });
-  }
-
-  List<Widget> getIcons(BuildContext context, Match match) {
-    List<Widget> widgets = [];
-
-    var currentRightOffset = 0.0;
-
-    var isLoggedInAndGoing = context.watch<UserState>().isLoggedIn() &&
-        match.isUserGoing(context.watch<UserState>().getUserDetails());
-
-    if (isLoggedInAndGoing && match.numPlayersGoing() > 1) {
-      widgets.add(Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.all(Radius.circular(50.0)),
-          border: Border.all(
-            color: Colors.white,
-            width: 2.0,
-          ),
-        ),
-        child: CircleAvatar(
-            child: Center(
-                child: Text("+" + (match.numPlayersGoing() - 1).toString(),
-                    style: GoogleFonts.roboto(
-                        color: Palette.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500))),
-            radius: 14,
-            backgroundColor: Palette.primary),
-      ));
-      currentRightOffset += 25;
-    }
-
-    if (isLoggedInAndGoing) {
-      var w = Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.all(Radius.circular(50.0)),
-            border: Border.all(
-              color: Colors.white,
-              width: 2.0,
-            ),
-          ),
-          child: UserAvatar(14, context.read<UserState>().getUserDetails()));
-
-      if (currentRightOffset > 0) {
-        widgets.add(Positioned(right: currentRightOffset, child: w));
-      } else {
-        widgets.add(w);
-      }
-    }
-    return widgets;
   }
 }
 
@@ -587,7 +530,7 @@ class MatchInfoPast extends StatelessWidget {
               ],
             ),
           ),
-              backgroundColor: (match.isTest) ? Colors.orangeAccent : Palette.white,
+              backgroundColor: (match.isTest) ? Palette.white : Palette.white,
           ),
         ),
         onTap: () async {
