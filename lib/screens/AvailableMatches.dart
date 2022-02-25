@@ -1,6 +1,8 @@
+import 'package:badges/badges.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import "package:collection/collection.dart";
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
@@ -8,9 +10,9 @@ import 'package:nutmeg/model/Model.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/AppBar.dart';
+import 'package:nutmeg/widgets/Avatar.dart';
 import 'package:nutmeg/widgets/Buttons.dart';
 import 'package:nutmeg/widgets/Containers.dart';
-import 'package:nutmeg/widgets/IconsList.dart';
 import 'package:nutmeg/widgets/Texts.dart';
 import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
@@ -321,57 +323,43 @@ class MatchInfo extends StatelessWidget {
           padding: EdgeInsets.only(top: topMargin, left: 16, right: 16),
           child: InfoContainer(
               backgroundColor: (match.isTest) ? Palette.white : Palette.white,
-              child: IntrinsicHeight(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                MatchThumbnail(image: image),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 15),
-                  child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Text(sportCenter.name + " - " + sport.displayTitle,
-                                style: TextPalette.h2),
-                          ],
-                        ),
-                        SizedBox(height: 12,),
-                        Text(getFormattedDate(match.dateTime),
-                            style:
-                            TextPalette.getH3(Palette.mediumgrey
-                          )
-                        ),
-                        SizedBox(height: 8,),
-                        (match.isFull())
-                            ? Text("Full",
-                                style: TextPalette.bodyText,
-                                textAlign: TextAlign.right)
-                            : Text(
-                                (match.maxPlayers - match.numPlayersGoing())
-                                        .toString() +
-                                    " spots left",
-                                style: TextPalette.bodyTextPrimary,
-                                textAlign: TextAlign.right),
-                      ]),
-                ),
-                Expanded(
-                  child: Column(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
+              child: applyBadges(context, match, Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  MatchThumbnail(image: image),
+                  SizedBox(width: 15),
+                  Expanded(
+                    child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
                             children: [
-                                IconsList(match: match)
-                            ])
-                      ]),
-                )
-              ],
-            ),
-          )),
+                              Text(sportCenter.name + " - " + sport.displayTitle,
+                                  style: TextPalette.h2),
+                            ],
+                          ),
+                          SizedBox(height: 12,),
+                          Text(getFormattedDate(match.dateTime),
+                              style:
+                              TextPalette.getH3(Palette.mediumgrey
+                            )
+                          ),
+                          SizedBox(height: 8,),
+                          (match.isFull())
+                              ? Text("Full",
+                                  style: TextPalette.bodyText,
+                                  textAlign: TextAlign.right)
+                              : Text(
+                                  (match.maxPlayers - match.numPlayersGoing())
+                                          .toString() +
+                                      " spots left",
+                                  style: TextPalette.bodyTextPrimary,
+                                  textAlign: TextAlign.right),
+                        ]),
+                  ),
+                ],
+              ))),
         ),
         onTap: () async {
           await Navigator.pushNamed(
@@ -384,6 +372,66 @@ class MatchInfo extends StatelessWidget {
           );
           await refreshController.requestRefresh();
         });
+  }
+
+  Widget applyBadges(BuildContext context, Match match, Widget w) {
+    var userAvatar = Container(
+        width: 26,
+        height: 26,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.all(Radius.circular(50.0)),
+          border: Border.all(
+            color: Colors.white,
+            width: 2.0,
+          ),
+        ),
+        child: UserAvatar(14, context.read<UserState>().getUserDetails()));
+    var plusPlayers = Container(
+      width: 26,
+      height: 26,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.all(Radius.circular(50.0)),
+        border: Border.all(
+          color: Colors.white,
+          width: 2.0,
+        ),
+      ),
+      child: CircleAvatar(
+          child: Center(
+              child: Text("+" + (match.numPlayersGoing() - 1).toString(),
+                  style: GoogleFonts.roboto(
+                      color: Palette.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w500))),
+          radius: 14,
+          backgroundColor: Palette.primary),
+    );
+
+    var finalWidget = w;
+
+    var badgeIt = (child, content, position) => Badge(
+        badgeContent: content,
+        child: child,
+        badgeColor: Colors.transparent,
+        borderSide: BorderSide.none,
+        elevation: 0,
+        position: position);
+
+    var shouldShowUserBadge = context.watch<UserState>().isLoggedIn() &&
+        match.isUserGoing(context.watch<UserState>().getUserDetails());
+
+    var shouldShowBoth =
+        shouldShowUserBadge && match.numPlayersGoing() > 1;
+
+    // fixme not sure why we need to do -6 here
+    if (shouldShowBoth) {
+      finalWidget = badgeIt(finalWidget, userAvatar, BadgePosition.bottomEnd(bottom: -6, end: 18));
+      finalWidget = badgeIt(finalWidget, plusPlayers, BadgePosition.bottomEnd(bottom: -6, end: 0));
+    } else if (shouldShowUserBadge) {
+      finalWidget = badgeIt(finalWidget, userAvatar, BadgePosition.bottomEnd(bottom: -6, end: 0));
+    }
+
+    return finalWidget;
   }
 }
 
