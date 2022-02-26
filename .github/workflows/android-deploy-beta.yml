@@ -20,7 +20,7 @@ jobs:
       - name: Run Flutter tasks
         uses: subosito/flutter-action@v1
         with:
-          flutter-version: '2.8.0'
+          flutter-version: '2.10.2'
       - run: flutter clean
       - run: flutter pub get
       - run: flutter build appbundle -t lib/screens/Launch.dart --release
