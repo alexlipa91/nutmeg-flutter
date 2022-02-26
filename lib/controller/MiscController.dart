@@ -1,13 +1,24 @@
 import 'package:nutmeg/db/MiscFirestore.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:version/version.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
 
 class MiscController {
 
+  // get 3 gifs and preload them
   static Future<void> getGifs(LoadOnceState loadOnceState) async {
     var gifs = await MiscFirestore.getDocument("gif_joined_match");
-    loadOnceState.setJoinedGifs(List<String>.from(gifs["links"]));
+    var urls = List<String>.from(gifs["links"]);
+    urls.shuffle();
+
+    var urlsSublist = urls.sublist(0, 3);
+
+    var urlsFuture = urlsSublist.map((u) =>
+        DefaultCacheManager().downloadFile(u).then((u) {}));
+
+    Future.wait(urlsFuture);
+    loadOnceState.joinedGifs = urlsSublist;
   }
 
   static Future<Version> getMinimumVersion() async {

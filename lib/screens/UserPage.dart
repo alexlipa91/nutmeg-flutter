@@ -177,93 +177,96 @@ class UserPage extends StatelessWidget {
                                           ],
                                         ),
                                       ),
-                                      if (userDetails.isAdmin)
-                                        Padding(
-                                          padding: EdgeInsets.only(top: 10),
-                                          child: Row(
-                                            children: [
-                                              Expanded(
-                                                  child: GenericButtonWithLoader(
-                                                    "ADMIN AREA",
-                                                        (BuildContext context) async {
-                                                      await Navigator.push(
-                                                          context,
-                                                          MaterialPageRoute(
-                                                              builder: (context) =>
-                                                                  AdminAvailableMatches()));
-                                                    },
-                                                    Primary(),
-                                                  ))
-                                            ],
-                                          ),
-                                        ),
-                                      if (userDetails.isAdmin)
-                                        Padding(
-                                          padding: EdgeInsets.only(top: 10),
-                                          child: Row(
-                                            children: [
-                                              Text("Test Mode"),
-                                              SizedBox(width: 10),
-                                              Switch(
-                                                value:
-                                                context.watch<UserState>().isTestMode,
-                                                onChanged: (value) => userState
-                                                    .setTestMode(!userState.isTestMode),
-                                                activeTrackColor: Colors.red,
-                                                activeColor: Colors.red,
-                                              ),
-                                              Expanded(
-                                                  child: Text(
-                                                      "It allows to see in the UI test matches"))
-                                            ],
-                                          ),
-                                        ),
-                                      if (userDetails.isAdmin)
-                                        Padding(
-                                          padding: EdgeInsets.only(top: 10),
-                                          child: Row(
-                                            children: [
-                                              Text("Update Credits (in cents)"),
-                                              SizedBox(width: 10),
-                                              Expanded(
-                                                child: TextFormField(
-                                                    initialValue: userDetails
-                                                        .creditsInCents
-                                                        .toString(),
-                                                    keyboardType: TextInputType.number,
-                                                    inputFormatters: <TextInputFormatter>[
-                                                      FilteringTextInputFormatter
-                                                          .digitsOnly
-                                                    ], // Only numbers can be
-                                                    onChanged: (v) {
-                                                      var newValue = int.tryParse(v);
-                                                      if (newValue != null)
-                                                        creditCount = newValue;
-                                                    }
-                                                  // entered
-                                                ),
-                                              ),
-                                              SizedBox(width: 10),
-                                              Container(
-                                                width: 100,
-                                                child: GenericButtonWithLoader(
-                                                    "SET",
-                                                        (BuildContext context) async {
-                                                      userDetails.creditsInCents =
-                                                          creditCount;
-                                                      userState
-                                                          .setUserDetails(userDetails);
-                                                      await UserController.editUser(userDetails);
-                                                      await GenericInfoModal(title: "Credits updated",
-                                                          description: "Your new balance is: " + formatCurrency(creditCount)).show(context);
-                                                    },
-                                                    Primary()),
-                                              )
-                                            ],
-                                          ),
-                                        ),
                                     ])),
                               ),
+                              if (userDetails.isAdmin)
+                                Section(title: "ADMIN COMMANDS",
+                                  body: InfoContainer(
+                                      child: Column(children: [
+                                          Padding(
+                                            padding: EdgeInsets.only(top: 10),
+                                            child: Row(
+                                              children: [
+                                                Expanded(
+                                                    child: GenericButtonWithLoader(
+                                                      "ADMIN AREA",
+                                                          (BuildContext context) async {
+                                                        await Navigator.push(
+                                                            context,
+                                                            MaterialPageRoute(
+                                                                builder: (context) =>
+                                                                    AdminAvailableMatches()));
+                                                      },
+                                                      Primary(),
+                                                    ))
+                                              ],
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: EdgeInsets.only(top: 10),
+                                            child: Row(
+                                              children: [
+                                                Text("Test Mode"),
+                                                SizedBox(width: 10),
+                                                Switch(
+                                                  value:
+                                                  context.watch<UserState>().isTestMode,
+                                                  onChanged: (value) => userState
+                                                      .setTestMode(!userState.isTestMode),
+                                                  activeTrackColor: Colors.red,
+                                                  activeColor: Colors.red,
+                                                ),
+                                                Expanded(
+                                                    child: Text(
+                                                        "It allows to see in the UI test matches"))
+                                              ],
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: EdgeInsets.only(top: 10),
+                                            child: Row(
+                                              children: [
+                                                Text("Update Credits (in cents)"),
+                                                SizedBox(width: 10),
+                                                Expanded(
+                                                  child: TextFormField(
+                                                      initialValue: userDetails
+                                                          .creditsInCents
+                                                          .toString(),
+                                                      keyboardType: TextInputType.number,
+                                                      inputFormatters: <TextInputFormatter>[
+                                                        FilteringTextInputFormatter
+                                                            .digitsOnly
+                                                      ], // Only numbers can be
+                                                      onChanged: (v) {
+                                                        var newValue = int.tryParse(v);
+                                                        if (newValue != null)
+                                                          creditCount = newValue;
+                                                      }
+                                                    // entered
+                                                  ),
+                                                ),
+                                                SizedBox(width: 10),
+                                                Container(
+                                                  width: 100,
+                                                  child: GenericButtonWithLoader(
+                                                      "SET",
+                                                          (BuildContext context) async {
+                                                        userDetails.creditsInCents =
+                                                            creditCount;
+                                                        userState
+                                                            .setUserDetails(userDetails);
+                                                        await UserController.editUser(userDetails);
+                                                        await GenericInfoModal(title: "Credits updated",
+                                                            description: "Your new balance is: " + formatCurrency(creditCount)).show(context);
+                                                      },
+                                                      Primary()),
+                                                )
+                                              ],
+                                            ),
+                                          ),
+                                      ])),
+                                ),
                               Align(
                                   alignment: Alignment.centerRight,
                                   child: FutureBuilder<Tuple2<Version, String>>(

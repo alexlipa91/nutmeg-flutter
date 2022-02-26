@@ -1,16 +1,15 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/Buttons.dart';
 import 'package:provider/provider.dart';
-import 'package:transparent_image/transparent_image.dart';
 
 
 class PaymentDetailsDescription {
 
-  static Future<void> communicateSuccessToUser(
-      BuildContext context, String matchId) async {
-    var gif = context.read<LoadOnceState>().getRandomGif();
+  static Future<void> communicateSuccessToUser(BuildContext context,
+      String matchId) async {
     await showModalBottomSheet(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
@@ -26,10 +25,9 @@ class PaymentDetailsDescription {
                   CircleAvatar(
                     radius: 100,
                     backgroundColor: Palette.lighterGrey,
-                    backgroundImage: FadeInImage.memoryNetwork(
-                      placeholder: kTransparentImage,
-                      image: gif,
-                    ).image,
+                    backgroundImage: CachedNetworkImageProvider(
+                        context.read<LoadOnceState>().getRandomGif()
+                    ),
                   ),
                   Padding(
                       padding: EdgeInsets.only(top: 30),

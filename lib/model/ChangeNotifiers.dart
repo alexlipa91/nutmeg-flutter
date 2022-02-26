@@ -54,8 +54,6 @@ class LoadOnceState extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setJoinedGifs(List<String> urls) => joinedGifs = urls;
-
   // fixme break with exception here
   SportCenter getSportCenter(String id) => _sportCenters[id];
 
@@ -65,7 +63,10 @@ class LoadOnceState extends ChangeNotifier {
 
   List<SportCenter> getSportCenters() => _sportCenters.values.toList();
 
-  String getRandomGif() => (joinedGifs..shuffle()).first;
+  String getRandomGif() {
+    joinedGifs..shuffle();
+    return joinedGifs.first;
+  }
 }
 
 class UserState extends ChangeNotifier {

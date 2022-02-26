@@ -322,7 +322,7 @@ class MatchInfo extends StatelessWidget {
         child: Padding(
           padding: EdgeInsets.only(top: topMargin, left: 16, right: 16),
           child: InfoContainer(
-              backgroundColor: (match.isTest) ? Palette.white : Palette.white,
+              backgroundColor: (match.isTest) ? Colors.orangeAccent : Palette.white,
               child: applyBadges(context, match, Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
