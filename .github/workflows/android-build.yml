@@ -1,9 +1,8 @@
 name: Playstore Deployment
 
 on:
-  push:
-    tags:
-      - v*
+  push
+
 jobs:
   deploy_android:
     name: Deploy build to Playstore (internal test)
@@ -23,8 +22,3 @@ jobs:
       - run: flutter clean
       - run: flutter pub get
       - run: flutter build appbundle -t lib/screens/Launch.dart --release
-      - name: Deploy to Playstore production
-        uses: maierj/fastlane-action@v1.4.0
-        with:
-          lane: playstoreInternalTest
-          subdirectory: android
