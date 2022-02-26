@@ -48,7 +48,7 @@ class UserPage extends StatelessWidget {
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 20),
           child: FutureBuilder<UserDetails>(
-            future: UserController.getUserDetails(context.read<UserState>().getUserDetails().documentId),
+            future: (userDetails == null) ? null : UserController.getUserDetails(userDetails.documentId),
             builder: (context, snapshot) =>
             (snapshot.hasData) ?
                 Container(
