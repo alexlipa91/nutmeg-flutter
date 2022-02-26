@@ -1,3 +1,5 @@
+set -x
+
 TAG=$1
 BUILD=$(echo $TAG | cut -d'+' -f2)
 

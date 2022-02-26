@@ -59,9 +59,10 @@ platform :ios do
     delete_temp_keychain(keychain_name)
   end
 
-  lane :submit_for_review do
+  lane :submit_for_review do |options|
     deliver(
         build_number: options[:build_number],
+        app_version: options[:version],
         submit_for_review: true,
         automatic_release: true,
         force: true, # Skip HTMl report verification
