@@ -89,27 +89,25 @@ class MatchDetails extends StatelessWidget {
       // MapCard.big(sportCenter)
     ];
 
-    return SafeArea(
-      top: false,
-      child: Scaffold(
-        backgroundColor: Palette.light,
-          body: RefreshIndicator(
-              onRefresh: () => MatchesController.refresh(matchesState, matchId),
-              child: CustomScrollView(
-                slivers: [
-                  MatchAppBar(matchId: matchId),
-                  SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (BuildContext context, int index) {
-                        return widgets[index];
-                      },
-                      childCount: widgets.length,
-                    ),
-                  )
-                ],
-              )),
-          bottomNavigationBar: (isPast) ? null : BottomBarMatch(match: match)
-      ),
+    return Scaffold(
+      backgroundColor: Palette.light,
+        body: RefreshIndicator(
+            onRefresh: () => MatchesController.refresh(matchesState, matchId),
+            child: CustomScrollView(
+              slivers: [
+                MatchAppBar(matchId: matchId),
+                SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (BuildContext context, int index) {
+                      return widgets[index];
+                    },
+                    childCount: widgets.length,
+                  ),
+                )
+              ],
+            )),
+        bottomNavigationBar: (isPast) ? null :
+        BottomBarMatch(match: match, extraBottomPadding: MediaQuery.of(context).padding.bottom)
     );
   }
 }

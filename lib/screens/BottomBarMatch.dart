@@ -11,8 +11,9 @@ import 'package:provider/provider.dart';
 
 class BottomBarMatch extends StatelessWidget {
   final Match match;
+  final double extraBottomPadding;
 
-  const BottomBarMatch({Key key, this.match}) : super(key: key);
+  const BottomBarMatch({Key key, this.match, this.extraBottomPadding}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +40,8 @@ class BottomBarMatch extends StatelessWidget {
             ],
           ),
           child: Padding(
-            padding: EdgeInsets.all(16.0),
+            padding: EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0,
+                bottom: 16.0 + extraBottomPadding),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
