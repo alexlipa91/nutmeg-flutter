@@ -14,8 +14,9 @@ import 'package:provider/provider.dart';
 
 class BottomBarMatch extends StatelessWidget {
   final Match match;
+  final double extraBottomPadding;
 
-  const BottomBarMatch({Key key, this.match}) : super(key: key);
+  const BottomBarMatch({Key key, this.match, this.extraBottomPadding}) : super(key: key);
 
   String getText(MatchStatusForUser matchStatusForUser) {
     switch (matchStatusForUser) {
@@ -122,7 +123,7 @@ class BottomBarMatch extends StatelessWidget {
                 left: 16.0,
                 right: 16.0,
                 top: 16.0,
-                bottom: 16.0 + MediaQuery.of(context).padding.bottom),
+                bottom: 16.0 + extraBottomPadding),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [

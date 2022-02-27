@@ -98,7 +98,6 @@ class RatingPlayerBottomModalState extends State<RatingPlayerBottomModal> {
                     color: Colors.amber,
                   ),
                   onRatingUpdate: (rating) {
-                    print(rating);
                     setState(() {
                       score = rating;
                     });
@@ -119,7 +118,6 @@ class RatingPlayerBottomModalState extends State<RatingPlayerBottomModal> {
                         print(s);
                       }
 
-                      print("index is " + index.toString());
                       if (index == usersRatedDetails.length - 1) {
                         print("finished list");
                         await MatchesController.refresh(

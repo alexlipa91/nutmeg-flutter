@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_rating_bar/flutter_rating_bar.dart';
-import 'package:nutmeg/controller/CloudFunctionsUtils.dart';
-import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/model/Model.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
-import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:provider/provider.dart';
 
 import '../model/ChangeNotifiers.dart';

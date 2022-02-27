@@ -44,7 +44,6 @@ class MatchDetails extends StatefulWidget {
 }
 
 class MatchDetailsState extends State<MatchDetails> {
-
   Match match;
 
   @override
@@ -55,7 +54,11 @@ class MatchDetailsState extends State<MatchDetails> {
       var matchesState = context.read<MatchesState>();
 
       await FirebaseRemoteConfig.instance.fetch();
-      await MatchesController.refresh(matchesState, userState, match.documentId);
+      await MatchesController.refresh(
+          matchesState, userState, match.documentId);
+
+      await Future.wait(
+          match.going.keys.map((e) => UserController.getUserDetails(e)));
     });
   }
 
@@ -67,8 +70,6 @@ class MatchDetailsState extends State<MatchDetails> {
 
     match = matchesState.getMatch(args.matchId);
 
-    print("match is " + match.toString());
-
     if (match == null) {
       return Container();
     }
@@ -79,9 +80,12 @@ class MatchDetailsState extends State<MatchDetails> {
     var sportCenter = loadOnceState.getSportCenter(match.sportCenterId);
     var sport = loadOnceState.getSport(match.sport);
 
-    var title = (match.isTest) ? match.documentId : sportCenter.name + " - " + sport.displayTitle;
+    var title = (match.isTest)
+        ? match.documentId
+        : sportCenter.name + " - " + sport.displayTitle;
 
-    pad(Widget w) => Padding(padding: EdgeInsets.symmetric(horizontal: 16), child: w);
+    pad(Widget w) =>
+        Padding(padding: EdgeInsets.symmetric(horizontal: 16), child: w);
 
     // add padding individually since because of shadow clipping some components need margin
     var widgets = [
@@ -94,27 +98,36 @@ class MatchDetailsState extends State<MatchDetails> {
         builder: (context) {
           int going = match.numPlayersGoing();
           return Section(
-              title: going.toString() + "/" + match.maxPlayers.toString() + " PLAYERS JOINED",
-              body: SingleChildScrollView(
-                clipBehavior: Clip.none,
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                    children: (match.going.isEmpty)
-                        ? [EmptyPlayerCard(match: match)]
-                        : match.getGoingUsersByTime().map((s) => PlayerCard(s)).toList()
-                ),
-              ),);
+            title: going.toString() +
+                "/" +
+                match.maxPlayers.toString() +
+                " PLAYERS JOINED",
+            body: SingleChildScrollView(
+              clipBehavior: Clip.none,
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                  children: (match.going.isEmpty)
+                      ? [EmptyPlayerCard(match: match)]
+                      : match
+                          .getGoingUsersByTime()
+                          .map((s) => PlayerCard(s))
+                          .toList()),
+            ),
+          );
         },
       )),
-      pad(Section(title: "DETAILS", body: RuleCard(
-          "Payment Policy",
-          "If you leave the match more than 15 hours before the kick-off time the amount you paid will be returned to you in credits that you can use in other Nutmeg matches. "
-              "\n\nNo credits or refund will be provided if you drop out of a game less than 15 hours from kick-off."))),
+      pad(Section(
+          title: "DETAILS",
+          body: RuleCard(
+              "Payment Policy",
+              "If you leave the match more than 15 hours before the kick-off time the amount you paid will be returned to you in credits that you can use in other Nutmeg matches. "
+                  "\n\nNo credits or refund will be provided if you drop out of a game less than 15 hours from kick-off."))),
+      SizedBox(height: 200),
       // MapCard.big(sportCenter)
     ];
 
     return Scaffold(
-      backgroundColor: Palette.light,
+        backgroundColor: Palette.light,
         body: RefreshIndicator(
             onRefresh: () async {
               await MatchesController.refresh(matchesState, userState, matchId);
@@ -132,8 +145,10 @@ class MatchDetailsState extends State<MatchDetails> {
                 )
               ],
             )),
-      bottomSheet: BottomBarMatch(match: match)
-    );
+        bottomSheet: BottomBarMatch(
+          match: match,
+          extraBottomPadding: MediaQuery.of(context).padding.bottom,
+        ));
   }
 }
 
@@ -150,70 +165,71 @@ class MatchInfo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InfoContainer(
-      margin: EdgeInsets.symmetric(horizontal: 16),
+        margin: EdgeInsets.symmetric(horizontal: 16),
         padding: EdgeInsets.zero,
         child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(children: [Expanded(child: SportCenterImageCarousel(match))]),
-        InfoWidget(
-            title: getFormattedDateLong(match.dateTime),
-            subTitle:
-                getStartAndEndHour(match.dateTime, match.duration).join(" - ") +
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(children: [Expanded(child: SportCenterImageCarousel(match))]),
+            InfoWidget(
+                title: getFormattedDateLong(match.dateTime),
+                subTitle: getStartAndEndHour(match.dateTime, match.duration)
+                        .join(" - ") +
                     " - " +
                     match.duration.inMinutes.toString() +
                     " min",
-            icon: Icons.schedule),
-        Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: () async {
-              if (await MapLauncher.isMapAvailable(m.MapType.google)) {
-                await MapLauncher.showMarker(
-                  mapType: m.MapType.google,
-                  coords: Coords(sportCenter.lat, sportCenter.lng),
-                  title: "",
-                  extraParams: {
-                    "q": sportCenter.name + "," + sportCenter.address,
-                    "z": "16"
-                  },
-                );
-              } else if (await MapLauncher.isMapAvailable(m.MapType.apple)) {
-                await MapLauncher.showMarker(
-                  mapType: m.MapType.apple,
-                  coords: Coords(sportCenter.lat, sportCenter.lng),
-                  title: "",
-                  // fixme do something
-                );
-              } else {
-                // fixme do something
-              }
-            },
-            splashColor: Palette.lighterGrey,
-            child: InfoWidget.withRightWidget(
-                title: sportCenter.name +
-                    (match.sportCenterSubLocation != null &&
-                            match.sportCenterSubLocation.isNotEmpty
-                        ? " - " + match.sportCenterSubLocation
-                        : ""),
-                icon: Icons.place,
-                subTitle: sportCenter.getShortAddress(), 
-                rightWidget: ClipRRect(
-                    borderRadius: BorderRadius.circular(15.0),
-                    child: Image.asset("assets/map.png", height: 45))),
-          ),
-        ),
-        InfoWidget(
-            title: sport.displayTitle,
-            icon: Icons.sports_soccer,
-            // todo fix info sport
-            subTitle: sportCenter.tags.join(", ")),
-        InfoWidget(
-            title: formatCurrency(match.pricePerPersonInCents),
-            icon: Icons.sell,
-            subTitle: "Pay with Ideal"),
-      ],
-    ));
+                icon: Icons.schedule),
+            Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () async {
+                  if (await MapLauncher.isMapAvailable(m.MapType.google)) {
+                    await MapLauncher.showMarker(
+                      mapType: m.MapType.google,
+                      coords: Coords(sportCenter.lat, sportCenter.lng),
+                      title: "",
+                      extraParams: {
+                        "q": sportCenter.name + "," + sportCenter.address,
+                        "z": "16"
+                      },
+                    );
+                  } else if (await MapLauncher.isMapAvailable(
+                      m.MapType.apple)) {
+                    await MapLauncher.showMarker(
+                      mapType: m.MapType.apple,
+                      coords: Coords(sportCenter.lat, sportCenter.lng),
+                      title: "",
+                      // fixme do something
+                    );
+                  } else {
+                    // fixme do something
+                  }
+                },
+                splashColor: Palette.lighterGrey,
+                child: InfoWidget.withRightWidget(
+                    title: sportCenter.name +
+                        (match.sportCenterSubLocation != null &&
+                                match.sportCenterSubLocation.isNotEmpty
+                            ? " - " + match.sportCenterSubLocation
+                            : ""),
+                    icon: Icons.place,
+                    subTitle: sportCenter.getShortAddress(),
+                    rightWidget: ClipRRect(
+                        borderRadius: BorderRadius.circular(15.0),
+                        child: Image.asset("assets/map.png", height: 45))),
+              ),
+            ),
+            InfoWidget(
+                title: sport.displayTitle,
+                icon: Icons.sports_soccer,
+                // todo fix info sport
+                subTitle: sportCenter.tags.join(", ")),
+            InfoWidget(
+                title: formatCurrency(match.pricePerPersonInCents),
+                icon: Icons.sell,
+                subTitle: "Pay with Ideal"),
+          ],
+        ));
   }
 }
 
@@ -235,22 +251,23 @@ class SportCenterImageCarouselState extends State<SportCenterImageCarousel> {
 
   @override
   Widget build(BuildContext context) {
-    var placeHolder = Container(height: 358,
-    child: Shimmer.fromColors(
-      baseColor: Palette.lighterGrey,
-      highlightColor: Palette.lighterGrey,
-      child: Container(
-          decoration: BoxDecoration(
-              color: Palette.white,
-              borderRadius: BorderRadius.all(Radius.circular(10)))),
-    ));
+    var placeHolder = Container(
+        height: 358,
+        child: Shimmer.fromColors(
+          baseColor: Palette.lighterGrey,
+          highlightColor: Palette.lighterGrey,
+          child: Container(
+              decoration: BoxDecoration(
+                  color: Palette.white,
+                  borderRadius: BorderRadius.all(Radius.circular(10)))),
+        ));
 
     return FutureBuilder(
-        future: SportCentersController.getSportCenterPicturesUrls(match.sportCenterId),
+        future: SportCentersController.getSportCenterPicturesUrls(
+            match.sportCenterId),
         builder: (context, snapshot) {
           List<Widget> itemsToShow = (snapshot.hasData)
-              ? List<Widget>.from(snapshot.data.map((i) =>
-              CachedNetworkImage(
+              ? List<Widget>.from(snapshot.data.map((i) => CachedNetworkImage(
                     imageUrl: i,
                     fadeInDuration: Duration(milliseconds: 0),
                     imageBuilder: (context, imageProvider) => Container(
@@ -372,49 +389,30 @@ class PlayerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<UserDetails>(
-        future: UserController.getUserDetails(userId),
-        builder: (context, snapshot) {
-          return Padding(
-            padding: EdgeInsets.only(right: 10),
-            child: SizedBox(
-              width: 100,
-              child: InfoContainer(
-                  child: (snapshot.connectionState == ConnectionState.done)
-                      ? Column(children: [
-                          InkWell(
-                              onTap: () {
-                                showModalBottomSheet(
-                                    context: context,
-                                    builder: (context) =>
-                                        PlayerBottomModal(userDetails: snapshot.data));
-                              },
-                              child: UserAvatar(24, snapshot.data)),
-                          SizedBox(height: 10),
-                          Text(
-                              (snapshot.data?.name ?? "Player").split(" ").first,
-                              overflow: TextOverflow.ellipsis,
-                              style: GoogleFonts.roboto(
-                                  color: Palette.mediumgrey,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w400))
-                        ])
-                      : Shimmer.fromColors(
-                          baseColor: Colors.grey[300],
-                          highlightColor: Colors.grey[100],
-                          child: Column(children: [
-                            CircleAvatar(
-                                radius: 25, backgroundColor: Palette.white),
-                            SizedBox(height: 10),
-                            Container(
-                                height: 10,
-                                width: double.infinity,
-                                color: Colors.white)
-                          ]),
-                        )),
-            ),
-          );
-        });
+    var userData = UsersState.getUserDetails(userId);
+    return Padding(
+        padding: EdgeInsets.only(right: 10),
+        child: SizedBox(
+          width: 100,
+          child: InfoContainer(
+              child: Column(children: [
+            InkWell(
+                onTap: () {
+                  showModalBottomSheet(
+                      context: context,
+                      builder: (context) =>
+                          PlayerBottomModal(userDetails: userData));
+                },
+                child: UserAvatar(24, UsersState.getUserDetails(userId))),
+            SizedBox(height: 10),
+            Text((userData?.name ?? "Player").split(" ").first,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.roboto(
+                    color: Palette.mediumgrey,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w400))
+          ])),
+        ));
   }
 }
 

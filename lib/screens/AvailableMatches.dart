@@ -410,6 +410,7 @@ class MatchInfo extends StatelessWidget {
     var finalWidget = w;
 
     var badgeIt = (child, content, position) => Badge(
+        toAnimate: false,
         badgeContent: content,
         child: child,
         badgeColor: Colors.transparent,

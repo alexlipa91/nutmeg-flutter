@@ -167,80 +167,89 @@ class LaunchWidgetState extends State<LaunchWidget> {
       minimumFetchInterval: Duration.zero,
     ));
 
-    await firebaseRemoteConfig.fetchAndActivate();
+    try {
+      await firebaseRemoteConfig.fetchAndActivate();
+    } catch (e, s) {
+      print(e);
+      print(s);
+    }
 
     // fetch device model name
-    var d = DeviceInfo();
-    await d.init();
+      var d = DeviceInfo();
+      await d.init();
 
-    // check if update is necessary
-    var current = (await getVersion()).item1;
-    var minimumVersionParts = firebaseRemoteConfig.getString("minimum_app_version").split(".");
-    var minimumRequired = Version(int.parse(minimumVersionParts[0]),
-        int.parse(minimumVersionParts[1]),
-        int.parse(minimumVersionParts[2]));
-
-    if (current < minimumRequired)
-      throw OutdatedAppException();
-
-    if (kDebugMode) {
-      // Force disable Crashlytics collection while doing every day development.
-      // Temporarily toggle this to true if you want to test crash reporting in your app.
-      if (!kIsWeb) {
-        await FirebaseCrashlytics.instance
-            .setCrashlyticsCollectionEnabled(false);
+      // check if update is necessary
+      try {
+        var current = (await getVersion()).item1;
+        var minimumVersionParts = firebaseRemoteConfig.getString(
+            "minimum_app_version").split(".");
+        var minimumRequired = Version(int.parse(minimumVersionParts[0]),
+            int.parse(minimumVersionParts[1]),
+            int.parse(minimumVersionParts[2]));
+        if (current < minimumRequired)
+          throw OutdatedAppException();
+      } catch (s, e) {
+        print(e); print(s);
       }
-    } else {
-      // Handle Crashlytics enabled status when not in Debug,
-      // e.g. allow your users to opt-in to crash reporting.
-    }
 
-    // check if user is logged in
-    var userDetails = await UserController.getUserIfAvailable();
+        if (kDebugMode) {
+          // Force disable Crashlytics collection while doing every day development.
+          // Temporarily toggle this to true if you want to test crash reporting in your app.
+          if (!kIsWeb) {
+            await FirebaseCrashlytics.instance
+                .setCrashlyticsCollectionEnabled(false);
+          }
+        } else {
+          // Handle Crashlytics enabled status when not in Debug,
+          // e.g. allow your users to opt-in to crash reporting.
+        }
 
-    if (userDetails != null) {
-      context.read<UserState>().setUserDetails(userDetails);
-      // tell the app to save user tokens
-      await UserController.saveUserTokensToDb(userDetails);
-    }
+        // check if user is logged in
+        var userDetails = await UserController.getUserIfAvailable();
 
-    FirebaseMessaging.instance.requestPermission(
-      alert: true,
-      announcement: false,
-      badge: true,
-      carPlay: false,
-      criticalAlert: false,
-      provisional: false,
-      sound: true,
-    );
-    FirebaseMessaging.instance.subscribeToTopic("nutmeg-generic");
+        if (userDetails != null) {
+          context.read<UserState>().setUserDetails(userDetails);
+          // tell the app to save user tokens
+          await UserController.saveUserTokensToDb(userDetails);
+        }
 
-    // DATA LOAD
-    var futures = [
-      SportCentersController.refreshAll(context.read<LoadOnceState>()),
-      SportsController.refreshAll(context.read<LoadOnceState>()),
-      MiscController.getGifs(context.read<LoadOnceState>())
-    ];
+        FirebaseMessaging.instance.requestPermission(
+          alert: true,
+          announcement: false,
+          badge: true,
+          carPlay: false,
+          criticalAlert: false,
+          provisional: false,
+          sound: true,
+        );
+        FirebaseMessaging.instance.subscribeToTopic("nutmeg-generic");
 
-    await Future.wait(futures);
+        // DATA LOAD
+        var futures = [
+          SportCentersController.refreshAll(context.read<LoadOnceState>()),
+          SportsController.refreshAll(context.read<LoadOnceState>()),
+          MiscController.getGifs(context.read<LoadOnceState>())
+        ];
 
-    Uri deepLink;
+        await Future.wait(futures);
 
-    if (!kIsWeb) {
-      // check if coming from link
-      final PendingDynamicLinkData data =
+        Uri deepLink;
+
+        if (!kIsWeb) {
+          // check if coming from link
+          final PendingDynamicLinkData data =
           await FirebaseDynamicLinks.instance.getInitialLink();
 
-      deepLink = data?.link;
-    }
+          deepLink = data?.link;
+        }
 
-    if (deepLink != null) {
-      handleLink(deepLink);
-    } else {
-      // await
-      Navigator.pushReplacementNamed(context, AvailableMatches.routeName);
-    }
-  }
+        if (deepLink != null) {
+          handleLink(deepLink);
+        } else {
+          // await
+          Navigator.pushReplacementNamed(context, AvailableMatches.routeName);
+        }
+      }
 
   static Future<Tuple2<Version, String>> getVersion() async {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
