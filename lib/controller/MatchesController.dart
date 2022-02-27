@@ -64,7 +64,6 @@ class MatchesController {
     var resp = await CloudFunctionsUtils.callFunction("get_all_matches_v2", {});
 
     Map<String, dynamic> data = (resp == null) ? Map() : Map<String, dynamic>.from(resp);
-    print("fetched " + data.length.toString() + " matches");
 
     var matches = data.entries
         .map((e) => Match.fromJson(Map<String, dynamic>.from(e.value), e.key))
@@ -104,7 +103,6 @@ class MatchesController {
         if (isGoing) {
           stillToRateData = await UserController.getUsersToRateInMatch(matchId,
               userState.getUserDetails().documentId);
-          // print("refreshed users still to rate: " + usersStillToRate.length.toString());
           status =
           (stillToRateData.isEmpty) ? MatchStatusForUser.no_more_to_rate
               : MatchStatusForUser.to_rate;

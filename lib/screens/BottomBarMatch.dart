@@ -1,4 +1,6 @@
+import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/material.dart';
+import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
 import 'package:nutmeg/screens/JoinModal.dart';
@@ -34,26 +36,36 @@ class BottomBarMatch extends StatelessWidget {
     }
   }
 
-  String getSubText(MatchStatusForUser matchStatusForUser,
+  Widget getSubText(MatchStatusForUser matchStatusForUser,
       UserState userState) {
     switch (matchStatusForUser) {
       case MatchStatusForUser.join:
-        return formatCurrency(match.pricePerPersonInCents);
+        return Text(formatCurrency(match.pricePerPersonInCents),
+            style: TextPalette.bodyText);
       case MatchStatusForUser.leave:
-        return match.going.length.toString() + " players going";
+        return Text(match.going.length.toString() + " players going",
+            style: TextPalette.bodyText);
       case MatchStatusForUser.full:
-        return match.going.length.toString() + " players going";
+        return Text(match.going.length.toString() + " players going",
+            style: TextPalette.bodyText);
       case MatchStatusForUser.canceled:
-        return ""; break;
+        return Container();
       case MatchStatusForUser.to_rate:
-        return userState.getUsersStillToRate(match.documentId).length.toString()
-            + " players to rate";
+        return Text(userState.getUsersStillToRate(match.documentId).length.toString()
+            + " players to rate", style: TextPalette.bodyText);
       case MatchStatusForUser.no_more_to_rate:
-        return "Man of the match will be published soon";
+        return Text("Man of the match will be published soon",
+            style: TextPalette.bodyText);
       case MatchStatusForUser.rated:
-        return UsersState.getUserDetails(match.manOfTheMatch).name
-            + " with a score of "
-            + match.manOfTheMatchScore.toString() + "/5";
+        return FutureBuilder<UserDetails>(
+            future: UserController.getUserDetails(match.manOfTheMatch),
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                return Text(snapshot.data.name + " with a score of "
+                    + match.manOfTheMatchScore.toString() + "/5");
+              }
+              return Container();
+            });
     }
   }
 
@@ -80,10 +92,14 @@ class BottomBarMatch extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var status = context.watch<MatchesState>().getMatchStatus(match.documentId);
-    print("match status is " + status.toString());
-
     if (status == null) {
-      return Container();
+      return Container(height: 0,);
+    }
+    
+    if (
+    (status == MatchStatusForUser.rated || status == MatchStatusForUser.to_rate || status == MatchStatusForUser.no_more_to_rate) 
+      && !FirebaseRemoteConfig.instance.getBool("rating_feature_enabled")) {
+      return Container(height: 0,);
     }
 
     return Column(
@@ -120,8 +136,7 @@ class BottomBarMatch extends StatelessWidget {
                       SizedBox(
                         height: 4,
                       ),
-                      Text(getSubText(status, context.watch<UserState>()),
-                          style: TextPalette.bodyText),
+                      getSubText(status, context.watch<UserState>()),
                     ],
                   ),
                 ),

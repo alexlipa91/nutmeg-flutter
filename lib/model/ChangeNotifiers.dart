@@ -121,6 +121,9 @@ class UserState extends ChangeNotifier {
 
   void setUserDetails(UserDetails u) {
     _userDetails = u;
+    if (u.isAdmin) {
+      isTestMode = true;
+    }
     notifyListeners();
   }
 

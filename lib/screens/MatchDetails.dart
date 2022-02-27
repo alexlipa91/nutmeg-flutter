@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -53,6 +54,7 @@ class MatchDetailsState extends State<MatchDetails> {
       var userState = context.read<UserState>();
       var matchesState = context.read<MatchesState>();
 
+      await FirebaseRemoteConfig.instance.fetch();
       await MatchesController.refresh(matchesState, userState, match.documentId);
     });
   }
@@ -64,6 +66,8 @@ class MatchDetailsState extends State<MatchDetails> {
     var userState = context.watch<UserState>();
 
     match = matchesState.getMatch(args.matchId);
+
+    print("match is " + match.toString());
 
     if (match == null) {
       return Container();
@@ -128,7 +132,8 @@ class MatchDetailsState extends State<MatchDetails> {
                 )
               ],
             )),
-        bottomNavigationBar: BottomBarMatch(match: match));
+      bottomSheet: BottomBarMatch(match: match)
+    );
   }
 }
 

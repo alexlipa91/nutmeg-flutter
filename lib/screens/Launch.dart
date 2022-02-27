@@ -1,11 +1,11 @@
 // @dart=2.9
 import 'dart:async';
 
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -161,13 +161,24 @@ class LaunchWidgetState extends State<LaunchWidget> {
   Future<void> loadData(BuildContext context) async {
     await Firebase.initializeApp();
 
+    FirebaseRemoteConfig firebaseRemoteConfig = FirebaseRemoteConfig.instance;
+    firebaseRemoteConfig.setConfigSettings(RemoteConfigSettings(
+      fetchTimeout: Duration(seconds: 5),
+      minimumFetchInterval: Duration.zero,
+    ));
+
+    await firebaseRemoteConfig.fetchAndActivate();
+
     // fetch device model name
     var d = DeviceInfo();
     await d.init();
 
     // check if update is necessary
     var current = (await getVersion()).item1;
-    var minimumRequired = await MiscController.getMinimumVersion();
+    var minimumVersionParts = firebaseRemoteConfig.getString("minimum_app_version").split(".");
+    var minimumRequired = Version(int.parse(minimumVersionParts[0]),
+        int.parse(minimumVersionParts[1]),
+        int.parse(minimumVersionParts[2]));
 
     if (current < minimumRequired)
       throw OutdatedAppException();
