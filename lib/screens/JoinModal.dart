@@ -33,6 +33,7 @@ class JoinButton extends StatelessWidget {
         (BuildContext context) async {
           context.read<GenericButtonWithLoaderState>().change(true);
           await JoinModal.onJoinGameAction(context, match);
+          context.read<GenericButtonWithLoaderState>().change(false);
         },
         Primary(),
       );
@@ -61,6 +62,20 @@ class JoinModal {
           textAlign: TextAlign.end,
         ))
       ]),
+      Row(
+        children: [
+          // adding this here as a trick to align the rows
+          Container(height: 24, width: 24),
+          SizedBox(width: 10),
+          Text('Service Fee', style: TextPalette.bodyText),
+          Expanded(
+              child: Text(
+            "+ " + formatCurrency(0),
+            style: TextPalette.bodyText,
+            textAlign: TextAlign.end,
+          ))
+        ],
+      ),
       if (paymentRecap.creditsInCentsUsed > 0)
         Row(
           children: [

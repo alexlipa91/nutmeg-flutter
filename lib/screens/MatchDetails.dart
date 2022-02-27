@@ -101,7 +101,7 @@ class MatchDetailsState extends State<MatchDetails> {
             title: going.toString() +
                 "/" +
                 match.maxPlayers.toString() +
-                " PLAYERS JOINED",
+                " PLAYERS",
             body: SingleChildScrollView(
               clipBehavior: Clip.none,
               scrollDirection: Axis.horizontal,
