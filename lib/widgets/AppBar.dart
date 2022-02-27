@@ -89,25 +89,30 @@ class MatchAppBar extends StatelessWidget {
     return SliverAppBar(
       systemOverlayStyle: SystemUiOverlayStyle.dark,
       backgroundColor: Colors.transparent,
-      leading: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
+      centerTitle: false,
+      leadingWidth: 0,
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          SizedBox(width: 16,), // we cannot pad outside
+          // SizedBox(width: 16,), // we cannot pad outside
           InkWell(
               splashColor: Palette.lighterGrey,
               child: Container(
+                width: 40,
                 height: 40,
-                child: Icon(Icons.arrow_back,
-                    color: Colors.black, size: 25.0),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Icon(Icons.arrow_back,
+                      color: Colors.black, size: 25.0),
+                ),
               ),
-              onTap: () => Navigator.of(context).pop()),
+              onTap: () => Navigator.of(context).pop()
+          ),
+          if (!DeviceInfo().name.contains("ipad"))
+            Align(alignment: Alignment.centerRight,
+                child: ShareButton(matchId, Palette.black, 25.0)),
         ],
       ),
-      actions: [
-        if (!DeviceInfo().name.contains("ipad"))
-          ShareButton(matchId, Palette.black, 25.0),
-          SizedBox(width: 16,), // we cannot pad outside
-      ]
     );
   }
 

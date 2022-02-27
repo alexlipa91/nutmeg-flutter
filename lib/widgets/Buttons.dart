@@ -139,11 +139,11 @@ class ShareButton extends StatelessWidget {
 
     return InkWell(
       splashColor: Palette.lighterGrey,
-      onTap: () async {await DynamicLinks.shareMatchFunction(matchId);},
+      onTap: () async { await DynamicLinks.shareMatchFunction(matchId);},
       child: Container(
-        // width: tappableSize,
-        // height: tappableSize,
-        child: icon),
+          width: 40,
+          height: 40,
+          child: Align(alignment: Alignment.centerRight, child: icon)),
     );
   }
 }
