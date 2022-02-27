@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
@@ -17,6 +18,7 @@ import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/AppBar.dart';
 import 'package:nutmeg/widgets/Avatar.dart';
 import 'package:nutmeg/widgets/Containers.dart';
+import 'package:nutmeg/widgets/PlayerBottomModal.dart';
 import 'package:nutmeg/widgets/Section.dart';
 import 'package:provider/provider.dart';
 import 'package:readmore/readmore.dart';
@@ -31,23 +33,42 @@ class ScreenArguments {
   ScreenArguments(this.matchId, this.isPast);
 }
 
-class MatchDetails extends StatelessWidget {
+class MatchDetails extends StatefulWidget {
   static const routeName = "/match";
+
+  @override
+  State<StatefulWidget> createState() {
+    return MatchDetailsState();
+  }
+}
+
+class MatchDetailsState extends State<MatchDetails> {
+
+  Match match;
+
+  @override
+  void initState() {
+    super.initState();
+    SchedulerBinding.instance.addPostFrameCallback((_) async {
+      var userState = context.read<UserState>();
+      var matchesState = context.read<MatchesState>();
+
+      await MatchesController.refresh(matchesState, userState, match.documentId);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final args = ModalRoute.of(context).settings.arguments as ScreenArguments;
-
-    var matchId = args.matchId;
-    var isPast = args.isPast;
-
     var matchesState = context.watch<MatchesState>();
+    var userState = context.watch<UserState>();
 
-    var match = matchesState.getMatch(matchId);
+    match = matchesState.getMatch(args.matchId);
 
     if (match == null) {
       return Container();
     }
+    var matchId = args.matchId;
 
     var loadOnceState = context.read<LoadOnceState>();
 
@@ -62,8 +83,7 @@ class MatchDetails extends StatelessWidget {
     var widgets = [
       pad(Container(
           color: (match.isTest) ? Colors.orangeAccent : Colors.transparent,
-          child: Text(title, style: TextPalette.h1Default))
-      ),
+          child: Text(title, style: TextPalette.h1Default))),
       SizedBox(height: 16),
       MatchInfo(match, sportCenter, sport),
       pad(Builder(
@@ -92,7 +112,9 @@ class MatchDetails extends StatelessWidget {
     return Scaffold(
       backgroundColor: Palette.light,
         body: RefreshIndicator(
-            onRefresh: () => MatchesController.refresh(matchesState, matchId),
+            onRefresh: () async {
+              await MatchesController.refresh(matchesState, userState, matchId);
+            },
             child: CustomScrollView(
               slivers: [
                 MatchAppBar(matchId: matchId),
@@ -106,9 +128,7 @@ class MatchDetails extends StatelessWidget {
                 )
               ],
             )),
-        bottomNavigationBar: (isPast) ? null :
-        BottomBarMatch(match: match, extraBottomPadding: MediaQuery.of(context).padding.bottom)
-    );
+        bottomNavigationBar: BottomBarMatch(match: match));
   }
 }
 
@@ -350,16 +370,6 @@ class PlayerCard extends StatelessWidget {
     return FutureBuilder<UserDetails>(
         future: UserController.getUserDetails(userId),
         builder: (context, snapshot) {
-          var getDisplayName = (UserDetails ud) {
-            if (ud == null)
-              return "Player";
-            if (ud.name != null)
-              return ud.name;
-            if (ud.email != null)
-              return ud.email;
-            return "Player";
-          };
-
           return Padding(
             padding: EdgeInsets.only(right: 10),
             child: SizedBox(
@@ -371,49 +381,8 @@ class PlayerCard extends StatelessWidget {
                               onTap: () {
                                 showModalBottomSheet(
                                     context: context,
-                                    builder: (context) {
-                                      return Stack(
-                                          alignment:
-                                              AlignmentDirectional.bottomStart,
-                                          clipBehavior: Clip.none,
-                                          children: [
-                                            Container(
-                                              width: double.infinity,
-                                              height: 200,
-                                              color: Palette.white,
-                                              child: Column(
-                                                children: [
-                                                  SizedBox(height: 70),
-                                                  Text(
-                                                      getDisplayName(snapshot.data),
-                                                      style: TextPalette.h2),
-                                                  SizedBox(height: 20),
-                                                  Builder(builder: (context) {
-                                                    int nPlayed = context
-                                                        .watch<MatchesState>()
-                                                        .getNumPlayedByUser(
-                                                            userId);
-                                                    return Text(
-                                                        nPlayed.toString() +
-                                                            " " +
-                                                            ((nPlayed == 1)
-                                                                ? "match "
-                                                                : "matches ") +
-                                                            "played",
-                                                        style: TextPalette
-                                                            .bodyText);
-                                                  })
-                                                ],
-                                              ),
-                                            ),
-                                            Positioned(
-                                                top: -30,
-                                                left: 0,
-                                                right: 0,
-                                                child: UserAvatarWithBorder(
-                                                    snapshot.data)),
-                                          ]);
-                                    });
+                                    builder: (context) =>
+                                        PlayerBottomModal(userDetails: snapshot.data));
                               },
                               child: UserAvatar(24, snapshot.data)),
                           SizedBox(height: 10),

@@ -259,7 +259,9 @@ class MatchInfo extends StatelessWidget {
               MaterialPageRoute(
                   builder: (context) =>
                       AddOrEditMatch.update(match.documentId)));
-          await MatchesController.refresh(matchesState, match.documentId);
+          await MatchesController.refresh(matchesState,
+              context.read<UserState>(),
+              match.documentId);
         });
   }
 }

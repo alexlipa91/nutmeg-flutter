@@ -70,9 +70,10 @@ PODS:
   - firebase_core (1.13.1):
     - Firebase/CoreOnly (= 8.11.0)
     - Flutter
-  - firebase_crashlytics (1.0.0):
+  - firebase_crashlytics (2.5.3):
     - Firebase/Crashlytics (= 8.11.0)
     - firebase_core
+    - Flutter
   - firebase_dynamic_links (2.0.11):
     - Firebase/DynamicLinks (= 8.11.0)
     - firebase_core
@@ -369,7 +370,7 @@ SPEC CHECKSUMS:
   firebase_analytics: 7f755057493ac8fc386f987c9233a037fb0a8a81
   firebase_auth: 99c9cdc8cc2e59f6fd4960b6e183f5430d237838
   firebase_core: 08f6a85f62060111de5e98d6a214810d11365de9
-  firebase_crashlytics: 92af8c103cd1b214c574991a5b52a5b1c7ddff6f
+  firebase_crashlytics: 28149c943342a73fefe1afef224d345cfb35e1ee
   firebase_dynamic_links: 578c1df97d637c0a99530f3bfee2d18453dbf531
   firebase_messaging: 36238f3d0b933af8c919aef608408aae06ba22e8
   firebase_storage: 5b964cad5f351e9c35f8b0e0b878cdd095f30d09

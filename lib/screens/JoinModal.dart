@@ -14,6 +14,14 @@ import 'Login.dart';
 import 'PayWithCreditsModal.dart';
 import 'PayWithMoneyModal.dart';
 
+class JoinButtonDisabled extends StatelessWidget {
+
+  @override
+  Widget build(BuildContext context) => GenericButtonWithLoader(
+    "JOIN MATCH", null, Disabled(),
+  );
+}
+
 class JoinButton extends StatelessWidget {
   final Match match;
 

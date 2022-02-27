@@ -24,7 +24,7 @@ class PaymentController {
 
   static Future<PaymentRecap> generatePaymentRecap(
       MatchesState matchesState, String matchId, UserState userState) async {
-    var m = await MatchesController.refresh(matchesState, matchId);
+    var m = await MatchesController.refresh(matchesState, userState, matchId);
     var u = await UserController.refreshCurrentUser(userState);
 
     int creditsUsed;

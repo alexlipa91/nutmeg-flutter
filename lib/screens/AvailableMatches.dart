@@ -591,7 +591,9 @@ class MatchInfoPast extends StatelessWidget {
               true,
             ),
           );
-          await MatchesController.refresh(matchesState, match.documentId);
+          await MatchesController.refresh(matchesState,
+              context.read<UserState>(),
+              match.documentId);
         });
   }
 }

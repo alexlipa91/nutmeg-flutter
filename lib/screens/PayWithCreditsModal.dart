@@ -23,7 +23,6 @@ class PayWithCreditsButton extends StatelessWidget {
 
           await MatchesController.joinMatch(context.read<MatchesState>(),
               match.documentId, context.read<UserState>(), paymentRecap);
-          await MatchesController.refresh(context.read<MatchesState>(), match.documentId);
           context.read<GenericButtonWithLoaderState>().change(false);
 
           Navigator.pop(context, true);

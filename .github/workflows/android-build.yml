@@ -5,7 +5,7 @@ on:
 
 jobs:
   deploy_android:
-    name: Deploy build to Playstore (internal test)
+    name: Build Android
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code from ref

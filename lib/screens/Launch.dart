@@ -1,6 +1,7 @@
 // @dart=2.9
 import 'dart:async';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
@@ -112,7 +113,7 @@ class LaunchWidgetState extends State<LaunchWidget> {
       }
 
       if (outcome == "success") {
-        await MatchesController.refreshAll(context.read<MatchesState>());
+        await MatchesController.refresh(context.read<MatchesState>(), context.read<UserState>(), matchId);
         PaymentDetailsDescription.communicateSuccessToUser(context, matchId);
       } else {
         await GenericInfoModal(

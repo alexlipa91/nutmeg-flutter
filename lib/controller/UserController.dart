@@ -10,6 +10,7 @@ import 'package:nutmeg/model/Model.dart';
 import 'package:nutmeg/utils/Utils.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
+
 class UserController {
   static Future<UserDetails> refreshCurrentUser(UserState userState) async {
     var userDetails = await getUserDetails(userState.getUserDetails().getUid());
@@ -169,18 +170,43 @@ class UserController {
   }
 
   static Future<UserDetails> getUserDetails(String uid) async {
+    UserDetails cached = UsersState.getUserDetails(uid);
+    if (cached != null) {
+      return cached;
+    }
+
     var resp = await CloudFunctionsUtils.callFunction("get_user", {"id": uid});
 
     if (resp == null) {
       return null;
     }
 
-    return UserDetails.fromJson(resp, uid);
+    var ud = UserDetails.fromJson(resp, uid);
+    UsersState.setUserDetails(uid, ud);
+
+    return ud;
   }
 
   static Future<void> logout(UserState userState) async {
     await FirebaseAuth.instance.signOut();
     userState.setUserDetails(null);
+  }
+
+  static Future<List<UserDetails>> getUsersToRateInMatch(String matchId,
+      String userId) async{
+    var resp = await CloudFunctionsUtils.callFunction(
+        "get_users_to_rate",
+        {"match_id": matchId, "user_id": userId});
+
+    List<String> users = List<String>.from([]);
+    resp.values.first.forEach((r) { users.add(r); });
+
+    return (await Future.wait(users.map((uid) => getUserDetails(uid))))
+        .where((e) => e != null).toList();
+  }
+
+  static Future<List<UserDetails>> fetchUsersData(List<String> uids) async {
+    return await Future.wait(uids.map((uid) => getUserDetails(uid)));
   }
 }
 

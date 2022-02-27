@@ -280,7 +280,7 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                                   testMatch
                                 )
                               );
-                            await MatchesController.refresh(matchesState, newMatchId);
+                            await MatchesController.refresh(matchesState, context.read<UserState>(), newMatchId);
                             await GenericInfoModal(title: "Success",
                             description: "Added match with id:\n" + newMatchId).show(context);
                           }

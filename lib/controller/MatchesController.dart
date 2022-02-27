@@ -2,11 +2,23 @@ import 'package:nutmeg/controller/CloudFunctionsUtils.dart';
 import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
 
+import 'UserController.dart';
+
+
+class MatchStatusRecap {
+  final MatchStatusForUser matchStatusForUser;
+  final List<String> stillToRate;
+
+  MatchStatusRecap(this.matchStatusForUser, this.stillToRate);
+}
+
 class MatchesController {
   static Future<Match> refresh(
-      MatchesState matchesState, String matchId) async {
+      MatchesState matchesState, UserState userState, String matchId) async {
     var match = await getMatch(matchId);
     matchesState.setMatch(match);
+
+    await _refreshMatchStatus(matchId, matchesState, userState);
     return match;
   }
 
@@ -29,6 +41,8 @@ class MatchesController {
       'credits_used': paymentStatus.creditsInCentsUsed,
       'money_paid': paymentStatus.finalPriceToPayInCents()
     });
+    print("joined");
+    await refresh(matchesState, userState, matchId);
   }
 
   static leaveMatch(
@@ -37,7 +51,7 @@ class MatchesController {
       'user_id': userState.getUserDetails().documentId,
       'match_id': matchId
     });
-    await refresh(matchesState, matchId);
+    await refresh(matchesState, userState, matchId);
   }
 
   static Future<Match> getMatch(String matchId) async {
@@ -50,10 +64,12 @@ class MatchesController {
     var resp = await CloudFunctionsUtils.callFunction("get_all_matches_v2", {});
 
     Map<String, dynamic> data = (resp == null) ? Map() : Map<String, dynamic>.from(resp);
+    print("fetched " + data.length.toString() + " matches");
 
-    return data.entries
+    var matches = data.entries
         .map((e) => Match.fromJson(Map<String, dynamic>.from(e.value), e.key))
         .toList();
+    return matches;
   }
 
   static Future<String> addMatch(Match m) async {
@@ -65,5 +81,48 @@ class MatchesController {
     matchesState.setMatch(m);
     await CloudFunctionsUtils.callFunction(
         "edit_match", {"id": m.documentId, "data": m.toJson()});
+  }
+
+  static Future<void> _refreshMatchStatus(String matchId, MatchesState state,
+      UserState userState) async {
+    Match match = state.getMatch(matchId);
+
+    MatchStatusForUser status;
+    List<UserDetails> stillToRateData;
+
+    if (match.cancelledAt != null) {
+      status = MatchStatusForUser.canceled;
+    } else if (match.scoresComputedAt != null) {
+      status = MatchStatusForUser.rated;
+    } else {
+      var isPast = match.dateTime.isBefore(DateTime.now());
+      var isGoing =
+          userState.isLoggedIn() &&
+              match.isUserGoing(userState.getUserDetails());
+
+      if (isPast) {
+        if (isGoing) {
+          stillToRateData = await UserController.getUsersToRateInMatch(matchId,
+              userState.getUserDetails().documentId);
+          // print("refreshed users still to rate: " + usersStillToRate.length.toString());
+          status =
+          (stillToRateData.isEmpty) ? MatchStatusForUser.no_more_to_rate
+              : MatchStatusForUser.to_rate;
+        } else {
+          print("We shouldn't show this match to the user");
+          return null;
+        }
+      } else {
+        if (match.numPlayersGoing() == match.maxPlayers) {
+          status = MatchStatusForUser.full;
+        } else {
+          status =
+          (isGoing) ? MatchStatusForUser.leave : MatchStatusForUser.join;
+        }
+      }
+    }
+
+    state.setMatchStatus(matchId, status);
+    userState.setUsersStillToRate(matchId, stillToRateData);
   }
 }
