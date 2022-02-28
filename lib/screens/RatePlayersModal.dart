@@ -30,8 +30,8 @@ class RateButton extends StatelessWidget {
           // print(context.read<UserState>().getUsersStillToRate(match.documentId));
 
           List<UserDetails> users = (await UserController.getUsersToRateInMatch(match.documentId,
-              context.read<UserState>().getUserDetails().documentId,
-              // userState
+              context.read<UserState>().getLoggedUserDetails().documentId,
+              context.read<UserState>()
           )).where((element) => element != null).toList();
 
           print("num users " + users.length.toString());
@@ -110,7 +110,7 @@ class RatingPlayerBottomModalState extends State<RatingPlayerBottomModal> {
 
                       try {
                         await CloudFunctionsUtils.callFunction("add_rating",
-                            {"user_id": context.read<UserState>().getUserDetails().documentId,
+                            {"user_id": context.read<UserState>().getLoggedUserDetails().documentId,
                               "user_rated_id": usersRatedDetails[index].documentId,
                               "match_id": matchId, "score": score});
                       } catch (e, s) {

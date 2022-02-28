@@ -58,7 +58,7 @@ class MatchDetailsState extends State<MatchDetails> {
           matchesState, userState, match.documentId);
 
       await Future.wait(
-          match.going.keys.map((e) => UserController.getUserDetails(e)));
+          match.going.keys.map((e) => UserController.getUserDetails(e, userState)));
     });
   }
 
@@ -389,7 +389,7 @@ class PlayerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var userData = UsersState.getUserDetails(userId);
+    var userData = context.watch<UserState>().getUserDetail(userId);
     return Padding(
         padding: EdgeInsets.only(right: 10),
         child: SizedBox(
@@ -403,7 +403,7 @@ class PlayerCard extends StatelessWidget {
                       builder: (context) =>
                           PlayerBottomModal(userDetails: userData));
                 },
-                child: UserAvatar(24, UsersState.getUserDetails(userId))),
+                child: UserAvatar(24, userData)),
             SizedBox(height: 10),
             Text((userData?.name ?? "Player").split(" ").first,
                 overflow: TextOverflow.ellipsis,

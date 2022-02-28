@@ -24,7 +24,10 @@ class UserPage extends StatelessWidget {
   Widget build(BuildContext context) {
     // don't watch this or when logout things will break
     var userState = context.watch<UserState>();
-    var userDetails = userState.getUserDetails();
+    var userDetails = userState.getLoggedUserDetails();
+
+    if (!userState.isLoggedIn())
+      return Container();
 
     int creditCount = (userDetails == null) ? 0 : userDetails.creditsInCents;
 
@@ -38,7 +41,7 @@ class UserPage extends StatelessWidget {
             margin: EdgeInsets.symmetric(horizontal: 16),
             child: Row(
               children: [
-                UserAvatar(24, context.watch<UserState>().getUserDetails()),
+                UserAvatar(24, context.watch<UserState>().getLoggedUserDetails()),
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 30),
                   child: Column(
@@ -214,7 +217,7 @@ class UserPage extends StatelessWidget {
                       child: GenericButtonWithLoader("SET",
                           (BuildContext context) async {
                         userDetails.creditsInCents = creditCount;
-                        userState.setUserDetails(userDetails);
+                        userState.setCurrentUserDetails(userDetails);
                         await UserController.editUser(userDetails);
                         await GenericInfoModal(
                                 title: "Credits updated",
@@ -268,10 +271,11 @@ class UserPage extends StatelessWidget {
         child: FutureBuilder<UserDetails>(
             future: (userDetails == null)
                 ? null
-                : UserController.getUserDetails(userDetails.documentId),
+                : UserController.getUserDetails(userDetails.documentId,
+                context.read<UserState>()),
             builder: (context, snapshot) => (snapshot.hasData)
                 ? Container(
-                    child: (userState.getUserDetails() == null)
+                    child: (userState.getLoggedUserDetails() == null)
                         ? Container()
                         : ListView.builder(
                             itemCount: widgets.length,

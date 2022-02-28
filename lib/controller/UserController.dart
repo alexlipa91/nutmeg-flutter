@@ -13,19 +13,19 @@ import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 class UserController {
   static Future<UserDetails> refreshCurrentUser(UserState userState) async {
-    var userDetails = await getUserDetails(userState.getUserDetails().getUid());
-    userState.setUserDetails(userDetails);
+    var userDetails = await getUserDetails(userState.currentUserId, userState);
+    userState.setCurrentUserDetails(userDetails);
     return userDetails;
   }
 
-  static Future<UserDetails> getUserIfAvailable() async {
+  static Future<UserDetails> getUserIfAvailable(UserState userState) async {
     User u = FirebaseAuth.instance.currentUser;
 
     if (u != null) {
       try {
         var userId = u.uid;
 
-        var existingUserDetails = await getUserDetails(userId);
+        var existingUserDetails = await getUserDetails(userId, userState);
 
         if (existingUserDetails == null) {
           return null;
@@ -65,7 +65,7 @@ class UserController {
       UserState userState, UserCredential userCredential) async {
     var uid = userCredential.user.uid;
 
-    UserDetails userDetails = await getUserDetails(uid);
+    UserDetails userDetails = await getUserDetails(uid, userState);
 
     var afterLoginComm;
 
@@ -85,7 +85,7 @@ class UserController {
       await addUser(userDetails);
     }
 
-    userState.setUserDetails(userDetails);
+    userState.setCurrentUserDetails(userDetails);
     await UserController.saveUserTokensToDb(userDetails);
     return afterLoginComm;
   }
@@ -169,8 +169,8 @@ class UserController {
     return _login(userState, userCredential);
   }
 
-  static Future<UserDetails> getUserDetails(String uid) async {
-    UserDetails cached = UsersState.getUserDetails(uid);
+  static Future<UserDetails> getUserDetails(String uid, UserState userState) async {
+    UserDetails cached = userState.getUserDetail(uid);
     if (cached != null) {
       return cached;
     }
@@ -182,18 +182,18 @@ class UserController {
     }
 
     var ud = UserDetails.fromJson(resp, uid);
-    UsersState.setUserDetails(uid, ud);
+    userState.setUserDetail(ud);
 
     return ud;
   }
 
   static Future<void> logout(UserState userState) async {
     await FirebaseAuth.instance.signOut();
-    userState.setUserDetails(null);
+    userState.logout();
   }
 
-  static Future<List<UserDetails>> getUsersToRateInMatch(String matchId,
-      String userId) async{
+  static Future<List<UserDetails>> getUsersToRateInMatch(String matchId, String userId,
+      UserState userState) async{
     var resp = await CloudFunctionsUtils.callFunction(
         "get_users_to_rate",
         {"match_id": matchId, "user_id": userId});
@@ -201,12 +201,12 @@ class UserController {
     List<String> users = List<String>.from([]);
     resp.values.first.forEach((r) { users.add(r); });
 
-    return (await Future.wait(users.map((uid) => getUserDetails(uid))))
+    return (await Future.wait(users.map((uid) => getUserDetails(uid, userState))))
         .where((e) => e != null).toList();
   }
 
-  static Future<List<UserDetails>> fetchUsersData(List<String> uids) async {
-    return await Future.wait(uids.map((uid) => getUserDetails(uid)));
+  static Future<List<UserDetails>> fetchUsersData(List<String> uids, UserState userState) async {
+    return await Future.wait(uids.map((uid) => getUserDetails(uid, userState)));
   }
 }
 

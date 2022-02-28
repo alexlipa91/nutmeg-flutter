@@ -205,10 +205,10 @@ class LaunchWidgetState extends State<LaunchWidget> {
         }
 
         // check if user is logged in
-        var userDetails = await UserController.getUserIfAvailable();
+        var userDetails = await UserController.getUserIfAvailable(context.read<UserState>());
 
         if (userDetails != null) {
-          context.read<UserState>().setUserDetails(userDetails);
+          context.read<UserState>().setCurrentUserDetails(userDetails);
           // tell the app to save user tokens
           await UserController.saveUserTokensToDb(userDetails);
         }

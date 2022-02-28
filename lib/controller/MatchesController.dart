@@ -30,7 +30,7 @@ class MatchesController {
   static Future<void> joinMatch(MatchesState matchesState, String matchId,
       UserState userState, PaymentRecap paymentStatus) async {
     await CloudFunctionsUtils.callFunction("add_user_to_match", {
-      'user_id': userState.getUserDetails().documentId,
+      'user_id': userState.getLoggedUserDetails().documentId,
       'match_id': matchId,
       'credits_used': paymentStatus.creditsInCentsUsed,
       'money_paid': paymentStatus.finalPriceToPayInCents()
@@ -42,7 +42,7 @@ class MatchesController {
   static leaveMatch(
       MatchesState matchesState, String matchId, UserState userState) async {
     await CloudFunctionsUtils.callFunction("remove_user_from_match", {
-      'user_id': userState.getUserDetails().documentId,
+      'user_id': userState.getLoggedUserDetails().documentId,
       'match_id': matchId
     });
     await refresh(matchesState, userState, matchId);
@@ -91,12 +91,12 @@ class MatchesController {
       var isPast = match.dateTime.isBefore(DateTime.now());
       var isGoing =
           userState.isLoggedIn() &&
-              match.isUserGoing(userState.getUserDetails());
+              match.isUserGoing(userState.getLoggedUserDetails());
 
       if (isPast) {
         if (isGoing) {
           stillToRateData = await UserController.getUsersToRateInMatch(matchId,
-              userState.getUserDetails().documentId);
+              userState.getLoggedUserDetails().documentId, userState);
           status =
           (stillToRateData.isEmpty) ? MatchStatusForUser.no_more_to_rate
               : MatchStatusForUser.to_rate;

@@ -50,7 +50,7 @@ class JoinModal {
           child: CircleAvatar(
               backgroundColor: Colors.transparent,
               backgroundImage: NetworkImage(
-                  context.read<UserState>().getUserDetails().getPhotoUrl()),
+                  context.read<UserState>().getLoggedUserDetails().getPhotoUrl()),
               radius: 15),
         ),
         SizedBox(width: 10),

@@ -59,7 +59,7 @@ class BottomBarMatch extends StatelessWidget {
             style: TextPalette.bodyText);
       case MatchStatusForUser.rated:
         return FutureBuilder<UserDetails>(
-            future: UserController.getUserDetails(match.manOfTheMatch),
+            future: UserController.getUserDetails(match.manOfTheMatch, userState),
             builder: (context, snapshot) {
               if (snapshot.hasData) {
                 return Text(snapshot.data.name + " with a score of "
@@ -86,7 +86,10 @@ class BottomBarMatch extends StatelessWidget {
       case MatchStatusForUser.no_more_to_rate:
         return Container();
       case MatchStatusForUser.rated:
-        return UserAvatar(20.0, UsersState.getUserDetails(match.manOfTheMatch));
+        return FutureBuilder(
+            future: UserController.getUserDetails(match.manOfTheMatch, userState),
+            builder: (context, snapshot) => (snapshot.hasData) ?
+            UserAvatar(20.0, snapshot.data) : Container());
     }
   }
 

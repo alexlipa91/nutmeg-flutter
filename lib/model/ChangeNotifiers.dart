@@ -97,60 +97,52 @@ class LoadOnceState extends ChangeNotifier {
 }
 
 class UserState extends ChangeNotifier {
+  // holds state for all users' data (both logged in user and others)
 
-  UserDetails _userDetails;
+  String _currentUserId;
+  bool _isTestMode = false;
+  Map<String, UserDetails> _usersDetails = Map();
 
-  Map<String, List<UserDetails>> _usersStillToRate;
+  // fixme maybe move it somewhere else
+  Map<String, List<UserDetails>> _usersStillToRate = Map();
 
-  bool isTestMode = false;
+  String get currentUserId => _currentUserId;
 
-  UserDetails getUserDetails() => _userDetails;
+  UserDetails getLoggedUserDetails() => _usersDetails[_currentUserId];
 
   void setUsersStillToRate(String matchId, List<UserDetails> users) {
-    if (_usersStillToRate == null) {
-      _usersStillToRate = Map();
-    }
-
     _usersStillToRate[matchId] = users;
     notifyListeners();
   }
 
-  List<UserDetails> getUsersStillToRate(String match) {
-    return _usersStillToRate[match];
+  List<UserDetails> getUsersStillToRate(String match) => _usersStillToRate[match];
+
+  void setCurrentUserDetails(UserDetails u) {
+    _currentUserId = u.documentId;
+    if (u.isAdmin) {
+      _isTestMode = true;
+    }
+    setUserDetail(u);
   }
 
-  void setUserDetails(UserDetails u) {
-    _userDetails = u;
-    if (u.isAdmin) {
-      isTestMode = true;
-    }
+  void setUserDetail(UserDetails u) {
+    _usersDetails[u.documentId] = u;
     notifyListeners();
   }
+
+  UserDetails getUserDetail(String uid) => _usersDetails[uid];
+
+  bool get isTestMode => _isTestMode;
 
   void setTestMode(bool value) {
-    isTestMode = value;
+    _isTestMode = value;
     notifyListeners();
   }
 
-  bool isLoggedIn() => _userDetails != null;
-}
+  bool isLoggedIn() => _currentUserId != null;
 
-class UsersState {
-  static Map<String, UserDetails> _userDetails;
-
-  static void _init() {
-    if (_userDetails == null) {
-      _userDetails = Map();
-    }
-  }
-
-  static UserDetails getUserDetails(String userId) {
-    _init();
-    return _userDetails[userId];
-  }
-
-  static void setUserDetails(String userId, UserDetails userDetails) {
-    _init();
-    _userDetails[userId] = userDetails;
+  void logout() {
+    _currentUserId = null;
+    notifyListeners();
   }
 }

@@ -169,7 +169,7 @@ class AvailableMatchesListState extends State<AvailableMatchesList> {
     var matches = state
         .getMatches()
         .where((e) => (!e.isTest || userState.isTestMode))
-        .where((m) => m.isUserGoing(userState.getUserDetails()));
+        .where((m) => m.isUserGoing(userState.getLoggedUserDetails()));
 
     var now = DateTime.now();
 
@@ -385,7 +385,7 @@ class MatchInfo extends StatelessWidget {
             width: 2.0,
           ),
         ),
-        child: UserAvatar(14, context.read<UserState>().getUserDetails()));
+        child: UserAvatar(14, context.read<UserState>().getLoggedUserDetails()));
     var plusPlayers = Container(
       width: 26,
       height: 26,
@@ -419,7 +419,7 @@ class MatchInfo extends StatelessWidget {
         position: position);
 
     var shouldShowUserBadge = context.watch<UserState>().isLoggedIn() &&
-        match.isUserGoing(context.watch<UserState>().getUserDetails());
+        match.isUserGoing(context.watch<UserState>().getLoggedUserDetails());
 
     var shouldShowBoth =
         shouldShowUserBadge && match.numPlayersGoing() > 1;

@@ -22,7 +22,7 @@ class PayWithMoneyButton extends StatelessWidget {
           context.read<GenericButtonWithLoaderState>().change(true);
 
           var userState = context.read<UserState>();
-          var userDetails = userState.getUserDetails();
+          var userDetails = userState.getLoggedUserDetails();
 
           var sessionUrl;
           try {
