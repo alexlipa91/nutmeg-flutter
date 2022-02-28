@@ -5,11 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nutmeg/controller/UserController.dart';
-import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/Containers.dart';
 import 'package:provider/provider.dart';
+
+import '../state/UserState.dart';
 
 
 class Login extends StatelessWidget {

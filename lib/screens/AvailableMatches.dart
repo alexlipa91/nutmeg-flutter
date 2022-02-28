@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
-import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
@@ -20,6 +19,9 @@ import 'package:shimmer/shimmer.dart';
 import 'package:flutter/foundation.dart';
 
 
+import '../state/LoadOnceState.dart';
+import '../state/MatchesState.dart';
+import '../state/UserState.dart';
 import 'MatchDetails.dart';
 
 // main widget

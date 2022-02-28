@@ -1,7 +1,7 @@
 import 'package:nutmeg/db/MiscFirestore.dart';
-import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:version/version.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import '../state/LoadOnceState.dart';
 
 
 class MiscController {

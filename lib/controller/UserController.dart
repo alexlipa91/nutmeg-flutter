@@ -5,10 +5,11 @@ import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:nutmeg/controller/CloudFunctionsUtils.dart';
 import 'package:nutmeg/controller/PromotionController.dart';
-import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
 import 'package:nutmeg/utils/Utils.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+
+import '../state/UserState.dart';
 
 
 class UserController {

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/controller/UserController.dart';
-import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
@@ -10,6 +9,8 @@ import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:nutmeg/widgets/ModalPaymentDescriptionArea.dart';
 import 'package:provider/provider.dart';
 
+import '../state/MatchesState.dart';
+import '../state/UserState.dart';
 import 'Launch.dart';
 import 'UserPage.dart';
 

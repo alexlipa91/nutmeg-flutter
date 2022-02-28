@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:nutmeg/Exceptions.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
-import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
 import 'package:intl/intl.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
@@ -12,6 +11,10 @@ import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/AppBar.dart';
 import 'package:nutmeg/widgets/Buttons.dart';
 import 'package:provider/provider.dart';
+
+import '../../state/LoadOnceState.dart';
+import '../../state/MatchesState.dart';
+import '../../state/UserState.dart';
 
 
 // main widget

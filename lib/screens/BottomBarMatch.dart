@@ -1,7 +1,6 @@
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/material.dart';
 import 'package:nutmeg/controller/UserController.dart';
-import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
 import 'package:nutmeg/screens/JoinModal.dart';
 import 'package:nutmeg/screens/LeaveMatchModal.dart';
@@ -11,6 +10,9 @@ import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/Avatar.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:provider/provider.dart';
+
+import '../state/MatchesState.dart';
+import '../state/UserState.dart';
 
 class BottomBarMatch extends StatelessWidget {
   final Match match;

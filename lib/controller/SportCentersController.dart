@@ -1,6 +1,7 @@
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:nutmeg/db/SportCentersFirestore.dart';
-import 'package:nutmeg/model/ChangeNotifiers.dart';
+
+import '../state/LoadOnceState.dart';
 
 
 class SportCentersController {

@@ -11,7 +11,6 @@ import 'package:map_launcher/src/models.dart' as m;
 import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/controller/SportCentersController.dart';
 import 'package:nutmeg/controller/UserController.dart';
-import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
 import 'package:nutmeg/screens/JoinModal.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
@@ -25,6 +24,9 @@ import 'package:provider/provider.dart';
 import 'package:readmore/readmore.dart';
 import 'package:shimmer/shimmer.dart';
 
+import '../state/LoadOnceState.dart';
+import '../state/MatchesState.dart';
+import '../state/UserState.dart';
 import 'BottomBarMatch.dart';
 
 class ScreenArguments {

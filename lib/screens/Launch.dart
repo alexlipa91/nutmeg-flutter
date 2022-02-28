@@ -15,7 +15,6 @@ import 'package:nutmeg/controller/MiscController.dart';
 import 'package:nutmeg/controller/SportCentersController.dart';
 import 'package:nutmeg/controller/SportsController.dart';
 import 'package:nutmeg/controller/UserController.dart';
-import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/screens/AvailableMatches.dart';
 import 'package:nutmeg/screens/MatchDetails.dart';
 import 'package:nutmeg/screens/PaymentDetailsDescription.dart';
@@ -27,6 +26,9 @@ import 'package:tuple/tuple.dart';
 import 'package:version/version.dart';
 
 import '../Exceptions.dart';
+import '../state/LoadOnceState.dart';
+import '../state/MatchesState.dart';
+import '../state/UserState.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 

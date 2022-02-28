@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
-import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
 import 'package:nutmeg/screens/admin/AddOrEditMatch.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
@@ -13,6 +12,9 @@ import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
 import "package:collection/collection.dart";
 
+import '../../state/LoadOnceState.dart';
+import '../../state/MatchesState.dart';
+import '../../state/UserState.dart';
 import '../AvailableMatches.dart';
 
 // main widget

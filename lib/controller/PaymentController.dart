@@ -3,9 +3,10 @@ import 'dart:math';
 import 'package:nutmeg/controller/CloudFunctionsUtils.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/controller/UserController.dart';
-import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
 
+import '../state/MatchesState.dart';
+import '../state/UserState.dart';
 import 'UserController.dart';
 
 class PaymentController {

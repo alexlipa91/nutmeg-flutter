@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:nutmeg/controller/UserController.dart';
-import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:provider/provider.dart';
+
+import '../state/UserState.dart';
 
 
 class LogOutButton extends StatelessWidget {

@@ -1,5 +1,5 @@
 import 'package:nutmeg/db/SportsFirestore.dart';
-import 'package:nutmeg/model/ChangeNotifiers.dart';
+import '../state/LoadOnceState.dart';
 
 
 class SportsController {

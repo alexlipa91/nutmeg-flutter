@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
 import 'package:nutmeg/screens/UserPage.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:provider/provider.dart';
+
+import '../state/UserState.dart';
 
 
 class UserAvatar extends StatelessWidget {

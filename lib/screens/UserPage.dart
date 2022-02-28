@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:nutmeg/controller/UserController.dart';
-import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/model/Model.dart';
 import 'package:nutmeg/screens/Launch.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
@@ -17,7 +16,10 @@ import 'package:tuple/tuple.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:version/version.dart';
 
+import '../state/MatchesState.dart';
+import '../state/UserState.dart';
 import 'admin/Matches.dart';
+
 
 class UserPage extends StatelessWidget {
   @override

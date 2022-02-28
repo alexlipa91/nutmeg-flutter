@@ -1,9 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:nutmeg/model/ChangeNotifiers.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/Buttons.dart';
 import 'package:provider/provider.dart';
+
+import '../state/LoadOnceState.dart';
 
 
 class PaymentDetailsDescription {
