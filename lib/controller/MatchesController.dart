@@ -5,14 +5,8 @@ import 'package:nutmeg/model/Model.dart';
 import 'UserController.dart';
 
 
-class MatchStatusRecap {
-  final MatchStatusForUser matchStatusForUser;
-  final List<String> stillToRate;
-
-  MatchStatusRecap(this.matchStatusForUser, this.stillToRate);
-}
-
 class MatchesController {
+
   static Future<Match> refresh(
       MatchesState matchesState, UserState userState, String matchId) async {
     var match = await getMatch(matchId);
