@@ -18,6 +18,8 @@ import 'package:version/version.dart';
 import '../model/UserDetails.dart';
 import '../state/MatchesState.dart';
 import '../state/UserState.dart';
+import '../widgets/GenericAvailableMatches.dart';
+import 'AvailableMatches.dart';
 import 'admin/Matches.dart';
 
 

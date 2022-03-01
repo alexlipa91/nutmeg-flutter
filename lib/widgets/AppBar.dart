@@ -36,6 +36,11 @@ class NutmegAppBar extends StatelessWidget with PreferredSizeWidget {
 }
 
 class MainAppBar extends NutmegAppBar {
+
+  final color;
+
+  MainAppBar(this.color);
+
   @override
   Widget build(BuildContext context) {
     var isLoggedIn = context.watch<UserState>().isLoggedIn();
@@ -43,7 +48,7 @@ class MainAppBar extends NutmegAppBar {
     return AppBar(
       systemOverlayStyle: SystemUiOverlayStyle.light,
       centerTitle: false,
-      backgroundColor: Palette.primary,
+      backgroundColor: color,
       automaticallyImplyLeading: false,
       titleSpacing: 0,
       elevation: 0,
