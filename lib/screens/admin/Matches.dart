@@ -1,337 +1,113 @@
-import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:nutmeg/controller/MatchesController.dart';
-import 'package:nutmeg/screens/admin/AddOrEditMatch.dart';
-import 'package:nutmeg/utils/UiUtils.dart';
-import 'package:nutmeg/utils/Utils.dart';
-import 'package:nutmeg/widgets/AppBar.dart';
-import 'package:nutmeg/widgets/Buttons.dart';
-import 'package:nutmeg/widgets/Containers.dart';
-import 'package:provider/provider.dart';
-import 'package:shimmer/shimmer.dart';
 import "package:collection/collection.dart";
-import 'package:nutmeg/model/Match.dart';
+import 'package:flutter/material.dart';
+import 'package:nutmeg/widgets/Buttons.dart';
+import 'package:provider/provider.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 
-import '../../state/LoadOnceState.dart';
+import '../../state/AvailableMatchesState.dart';
 import '../../state/MatchesState.dart';
-import '../AvailableMatches.dart';
+import '../../utils/UiUtils.dart';
+import '../../widgets/GenericAvailableMatches.dart';
+import '../MatchDetails.dart';
 
 // main widget
 class AdminAvailableMatches extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AdminAreaAppBar(),
-      body: MultiProvider(
-        providers: [
-          ChangeNotifierProvider(create: (context) => SelectedTapNotifier()),
-        ],
-        child: Container(
-          color: Palette.light,
-          child: Column(
-            children: [RoundedTopBar(), Expanded(child: MatchesArea())],
-          ),
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          showDialog(
-              context: context,
-              builder: (context) => Column(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      RoundedButton("ADD MATCH", () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => AddOrEditMatch.add()));
-                      }),
-                      // RoundedButton("ADD SPORT CENTER", () {}),
-                    ],
-                  ));
-        },
-        child: Icon(Icons.add, color: Colors.white, size: 29),
-        backgroundColor: Palette.primary,
-        tooltip: 'Capture Picture',
-        elevation: 5,
-        splashColor: Colors.grey,
+  static const routeName = "/adminAvailableMatches";
+
+  final RefreshController refreshController = RefreshController();
+
+  List<Widget> getButtons(BuildContext context) {
+    var uiState = context.watch<AvailableMatchesAdminUiState>();
+
+    return [
+      uiState.getCurrentSelection() == MatchesAdminSelectionStatus.UPCOMING
+          ? Expanded(
+              child: LeftButtonOn("UPCOMING",
+                  () => uiState.changeTo(MatchesAdminSelectionStatus.UPCOMING)))
+          : Expanded(
+              child: LeftButtonOff(
+                  "UPCOMING",
+                  () => uiState.changeTo(MatchesAdminSelectionStatus.UPCOMING))),
+      uiState.getCurrentSelection() == MatchesAdminSelectionStatus.PAST
+          ? Expanded(
+              child: RightButtonOn("PAST",
+                  () => uiState.changeTo(MatchesAdminSelectionStatus.PAST)))
+          : Expanded(
+              child: RightButtonOff("PAST",
+                  () => uiState.changeTo(MatchesAdminSelectionStatus.PAST)))
+    ];
+  }
+
+  Future<void> onTap(BuildContext context, String matchId,
+      RefreshController refreshController) async {
+    await Navigator.pushNamed(
+      context,
+      MatchDetails.routeName,
+      arguments: ScreenArguments(
+        matchId,
+        false,
       ),
     );
+    await refreshController.requestRefresh();
   }
-}
 
-class RoundedTopBar extends StatelessWidget {
-  _getUpcomingFunction(BuildContext context) =>
-      () => context.read<SelectedTapNotifier>().change(Selection.UPCOMING);
+  List<Widget> getGamesWidgets(
+      BuildContext context, RefreshController refreshController) {
+    List<Widget> result = [];
+    result.add(SizedBox(height: 16));
 
-  _getPastFunction(BuildContext context) =>
-      () => context.read<SelectedTapNotifier>().change(Selection.PAST);
+    var status = context.watch<AvailableMatchesAdminUiState>().selected;
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-        decoration: BoxDecoration(
-            color: Colors.green,
-            borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(20),
-                bottomRight: Radius.circular(20))),
-        child: Padding(
-          padding: EdgeInsets.only(top: 10, left: 20, right: 20, bottom: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text("Find football matches in",
-                  style: TextPalette.bodyTextInverted),
-              Text("Amsterdam", style: TextPalette.h1Inverted),
-              SizedBox(height: 24),
-              Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                context.watch<SelectedTapNotifier>().getCurrentSelection() ==
-                        Selection.UPCOMING
-                    ? Expanded(
-                        child: LeftButtonOn(
-                            "UPCOMING", _getUpcomingFunction(context)))
-                    : Expanded(
-                        child: LeftButtonOff(
-                            "UPCOMING", _getUpcomingFunction(context))),
-                context.watch<SelectedTapNotifier>().getCurrentSelection() ==
-                        Selection.UPCOMING
-                    ? Expanded(
-                        child:
-                            RightButtonOff("PAST", _getPastFunction(context)))
-                    : Expanded(
-                        child:
-                            RightButtonOn("PAST", _getPastFunction(context))),
-              ])
-            ],
-          ),
-        ));
-  }
-}
-
-class MatchesArea extends StatefulWidget {
-  @override
-  State<StatefulWidget> createState() => MatchesAreaState();
-}
-
-class MatchesAreaState extends State<MatchesArea> {
-  bool isLoading = false;
-
-  @override
-  Widget build(BuildContext context) {
     var matchesState = context.watch<MatchesState>();
 
-    var matches = matchesState.getMatches();
-    var now = DateTime.now();
-
-    GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
-
-    var optionSelected = context.watch<SelectedTapNotifier>().selected;
-
-    return RefreshIndicator(
-      onRefresh: () async {
-        setState(() {
-          isLoading = true;
-        });
-        await MatchesController.refreshAll(context);
-        setState(() {
-          isLoading = false;
-        });
-      },
-      child: Builder(builder: (BuildContext buildContext) {
-        var widgets;
-        if (!isLoading) {
-          widgets = (optionSelected == Selection.UPCOMING)
-              ? getGamesWidgets(context,
-                  matches.where((m) => m.dateTime.isAfter(now)).toList())
-              : getGamesWidgets(context,
-                  matches.where((m) => m.dateTime.isBefore(now)).toList());
-        } else {
-          widgets = List<Widget>.filled(5, MatchInfoSkeleton());
-        }
-
-        return AnimatedList(
-            padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
-            key: _listKey,
-            initialItemCount: widgets.length,
-            itemBuilder: (context, index, animation) => widgets[index]);
-      }),
-    );
-  }
-
-  static List<Widget> getGamesWidgets(BuildContext context, List<Match> matches) {
-    List<Widget> result = [];
-
-    var loadOnceState = context.read<LoadOnceState>();
+    var matches = (status == MatchesAdminSelectionStatus.UPCOMING)
+        ? matchesState
+            .getMatches()
+            .where((e) => e.dateTime.isAfter(DateTime.now())).sortedBy((e) => e.dateTime)
+        : matchesState
+            .getMatches()
+            .where((e) => e.dateTime.isBefore(DateTime.now()));
 
     matches.forEachIndexed((index, match) {
-      var image = loadOnceState.getSportCenter(match.sportCenterId).thumbnailUrl;
       if (index == 0) {
-        result.add(MatchInfo.first(match, image));
+        result.add(
+            GenericMatchInfo.first(match.documentId, onTap, refreshController));
       } else {
-        result.add(MatchInfo(match, image));
+        result
+            .add(GenericMatchInfo(match.documentId, onTap, refreshController));
       }
     });
 
     return result;
   }
-}
 
-// widget of info for a single match
-class MatchInfo extends StatelessWidget {
-  final Match match;
-  final double topMargin;
-  final String image;
-
-  MatchInfo(this.match, this.image) : topMargin = 10;
-
-  MatchInfo.first(this.match, this.image) : topMargin = 0;
-
-  @override
-  Widget build(BuildContext context) {
-    var loadOnceState = context.read<LoadOnceState>();
-
-    var sportCenter = loadOnceState.getSportCenter(match.sportCenterId);
-    var sport = loadOnceState.getSport(match.sport);
-
-    return InkWell(
-        child: Padding(
-          padding: EdgeInsets.only(top: topMargin),
-          child: InfoContainer(
-              child: IntrinsicHeight(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                MatchThumbnail(image: image),
-                Expanded(
-                  child: Container(
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Padding(
-                        padding: EdgeInsets.only(left: 16),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Text(
-                                    sportCenter.neighbourhood +
-                                        " - " +
-                                        sport.displayTitle,
-                                    style: TextPalette.h2),
-                                Expanded(
-                                    child: Text(
-                                        (match.numPlayersGoing() ==
-                                                match.maxPlayers)
-                                            ? "Full"
-                                            : (match.maxPlayers -
-                                                        match.numPlayersGoing())
-                                                    .toString() +
-                                                " spots left",
-                                        style: GoogleFonts.roboto(
-                                            color: Palette.mediumgrey,
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w400),
-                                        textAlign: TextAlign.right))
-                              ],
-                            ),
-                            Text(getFormattedDate(match.dateTime),
-                                style: TextPalette.h3),
-                            Text(sportCenter.name,
-                                style: TextPalette.bodyTextOneLine),
-                            if (match.cancelledAt != null)
-                              Text("CANCELLED", style: TextPalette.linkStyle),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          )),
-        ),
-        onTap: () async {
-          await Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) =>
-                      AddOrEditMatch.update(match.documentId)));
-          await MatchesController.refresh(context,
-              match.documentId);
-        });
-  }
-}
-
-// skeleton for loading
-class MatchInfoSkeleton extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
+  static Widget getEmptyStateWidget(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(top: 30),
-      child: InfoContainer(
-          child: IntrinsicHeight(
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      padding: EdgeInsets.only(bottom: 20),
+      child: Container(
+        child: Column(
           children: [
-            Shimmer.fromColors(
-              baseColor: Colors.grey[300],
-              highlightColor: Colors.grey[100],
-              child: Container(
-                  width: 60,
-                  height: 78,
-                  decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.all(Radius.circular(10)))),
-            ),
-            Expanded(
-              child: Container(
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Padding(
-                    padding: EdgeInsets.only(left: 16),
-                    child: Shimmer.fromColors(
-                      baseColor: Colors.grey[300],
-                      highlightColor: Colors.grey[100],
-                      child: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: List<Widget>.filled(
-                            3,
-                            Row(
-                              children: [
-                                Expanded(
-                                    child: Container(
-                                  height: 10,
-                                  width: 100,
-                                  color: Colors.white,
-                                ))
-                              ],
-                            ),
-                          )),
-                    ),
-                  ),
-                ),
-              ),
-            ),
+            Image.asset("assets/empty_state/illustration_01.png", height: 400),
+            Text("No matches here",
+                style: TextPalette.h1Default, textAlign: TextAlign.center)
           ],
         ),
-      )),
+      ),
     );
   }
-}
 
-enum Selection { UPCOMING, PAST }
-
-// utility to manage the change between all/my games
-class SelectedTapNotifier extends ChangeNotifier {
-  Selection selected = Selection.UPCOMING;
-
-  void change(Selection newSelection) {
-    selected = newSelection;
-    notifyListeners();
+  @override
+  Widget build(BuildContext context) {
+    return MultiProvider(
+        providers: [
+          ChangeNotifierProvider(
+              create: (context) => AvailableMatchesAdminUiState()),
+        ],
+        child: GenericAvailableMatchesList(
+            RoundedTopBar(getButtons: getButtons, color: Colors.green),
+            getGamesWidgets,
+            getEmptyStateWidget,
+            refreshController,
+            Colors.green));
   }
-
-  Selection getCurrentSelection() => selected;
 }
