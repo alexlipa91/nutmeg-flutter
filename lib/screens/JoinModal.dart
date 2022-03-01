@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nutmeg/controller/PaymentController.dart';
 import 'package:nutmeg/controller/UserController.dart';
-import 'package:nutmeg/model/ChangeNotifiers.dart';
-import 'package:nutmeg/model/Model.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
@@ -10,6 +8,9 @@ import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:nutmeg/widgets/ModalPaymentDescriptionArea.dart';
 import 'package:provider/provider.dart';
 
+import '../model/PaymentRecap.dart';
+import '../state/MatchesState.dart';
+import '../state/UserState.dart';
 import 'Login.dart';
 import 'PayWithCreditsModal.dart';
 import 'PayWithMoneyModal.dart';
@@ -23,16 +24,16 @@ class JoinButtonDisabled extends StatelessWidget {
 }
 
 class JoinButton extends StatelessWidget {
-  final Match match;
+  final String matchId;
 
-  const JoinButton({Key key, this.match}) : super(key: key);
+  const JoinButton({Key key, this.matchId}) : super(key: key);
 
   @override
   Widget build(BuildContext context) => GenericButtonWithLoader(
         "JOIN MATCH",
         (BuildContext context) async {
           context.read<GenericButtonWithLoaderState>().change(true);
-          await JoinModal.onJoinGameAction(context, match);
+          await JoinModal.onJoinGameAction(context, matchId);
           context.read<GenericButtonWithLoaderState>().change(false);
         },
         Primary(),
@@ -40,6 +41,7 @@ class JoinButton extends StatelessWidget {
 }
 
 class JoinModal {
+
   static Widget getModalDescriptionArea(
       BuildContext context, PaymentRecap paymentRecap) {
     var widgets = [
@@ -108,9 +110,9 @@ class JoinModal {
         rows: List<Widget>.from(widgets), finalRow: finalRow);
   }
 
-  static var onJoinGameAction = (BuildContext context, Match match) async {
+  static var onJoinGameAction = (BuildContext context, String matchId) async {
     var userState = context.read<UserState>();
-    var matchesState = context.read<MatchesState>();
+    var match = context.read<MatchesState>().getMatch(matchId);
 
     if (!userState.isLoggedIn()) {
       AfterLoginCommunication communication = await Navigator.push(
@@ -123,7 +125,7 @@ class JoinModal {
 
     if (userState.isLoggedIn()) {
       var paymentRecap = await PaymentController.generatePaymentRecap(
-          matchesState, match.documentId, userState);
+          context, match.documentId);
 
       await GenericInfoModal(
           title: "Join this match",
@@ -134,9 +136,9 @@ class JoinModal {
             Expanded(
                 child: (paymentRecap.finalPriceToPayInCents() == 0)
                     ? PayWithCreditsButton(
-                        match: match, paymentRecap: paymentRecap)
+                        matchId: matchId, paymentRecap: paymentRecap)
                     : PayWithMoneyButton(
-                        match: match, paymentRecap: paymentRecap))
+                        matchId: matchId, paymentRecap: paymentRecap))
           ])).show(context);
     }
   };

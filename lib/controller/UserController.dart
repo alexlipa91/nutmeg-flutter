@@ -1,37 +1,43 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:nutmeg/controller/CloudFunctionsUtils.dart';
 import 'package:nutmeg/controller/PromotionController.dart';
-import 'package:nutmeg/model/ChangeNotifiers.dart';
-import 'package:nutmeg/model/Model.dart';
 import 'package:nutmeg/utils/Utils.dart';
+import 'package:provider/provider.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+
+import '../api/CloudFunctionsUtils.dart';
+import '../model/UserDetails.dart';
+import '../state/UserState.dart';
 
 
 class UserController {
-  static Future<UserDetails> refreshCurrentUser(UserState userState) async {
-    var userDetails = await getUserDetails(userState.currentUserId, userState);
+
+  static var apiClient = CloudFunctionsClient();
+
+  static Future<UserDetails> refreshCurrentUser(BuildContext context) async {
+    var userState = context.read<UserState>();
+
+    var userDetails = await getUserDetails(context, userState.currentUserId);
     userState.setCurrentUserDetails(userDetails);
     return userDetails;
   }
 
-  static Future<UserDetails> getUserIfAvailable(UserState userState) async {
+  static Future<UserDetails> getUserIfAvailable(BuildContext context) async {
     User u = FirebaseAuth.instance.currentUser;
 
     if (u != null) {
       try {
-        var userId = u.uid;
-
-        var existingUserDetails = await getUserDetails(userId, userState);
+        var existingUserDetails = await getUserDetails(context, u.uid);
 
         if (existingUserDetails == null) {
           return null;
         }
 
-        return UserDetails.from(userId, existingUserDetails);
+        return UserDetails.from(u.uid, existingUserDetails);
       } catch (e, stack) {
         print("Found firebase user but couldn't load details: " + e.toString());
         print(stack);
@@ -41,11 +47,11 @@ class UserController {
   }
 
   static Future<void> editUser(UserDetails u) async =>
-      await CloudFunctionsUtils.callFunction(
+      await apiClient.callFunction(
           "edit_user", {"id": u.documentId, "data": u.toJson()});
 
   static Future<void> addUser(UserDetails u) async =>
-      await CloudFunctionsUtils.callFunction("add_user", {
+      await apiClient.callFunction("add_user", {
         "id": u.documentId,
         "data": u.toJson()});
 
@@ -54,18 +60,20 @@ class UserController {
     String token = await FirebaseMessaging.instance.getToken();
 
     // Save the initial token to the database
-    await CloudFunctionsUtils.callFunction("store_user_token",
+    await apiClient.callFunction("store_user_token",
         {"id": userDetails.getUid(), "token": token});
 
     // Any time the token refreshes, store this in the database too.
     FirebaseMessaging.instance.onTokenRefresh.listen(_saveTokenToDatabase);
   }
 
-  static Future<AfterLoginCommunication> _login(
-      UserState userState, UserCredential userCredential) async {
+  static Future<AfterLoginCommunication> _login(BuildContext context,
+      UserCredential userCredential) async {
+    var userState = context.read<UserState>();
+
     var uid = userCredential.user.uid;
 
-    UserDetails userDetails = await getUserDetails(uid, userState);
+    UserDetails userDetails = await getUserDetails(context, uid);
 
     var afterLoginComm;
 
@@ -91,20 +99,17 @@ class UserController {
   }
 
   static Future<void> _saveTokenToDatabase(String token) async {
-    // Assume user is logged in for this example
     String userId = FirebaseAuth.instance.currentUser.uid;
     if (userId == null) {
       return;
     }
 
-    print("saving token " + token + " for user " + userId);
     await FirebaseFirestore.instance.collection('users').doc(userId).update({
       'tokens': FieldValue.arrayUnion([token]),
     });
   }
 
-  static Future<AfterLoginCommunication> continueWithGoogle(
-      UserState userState) async {
+  static Future<AfterLoginCommunication> continueWithGoogle(BuildContext context) async {
     FirebaseAuth auth = FirebaseAuth.instance;
 
     final GoogleSignIn googleSignIn = GoogleSignIn();
@@ -119,11 +124,10 @@ class UserController {
       idToken: googleSignInAuthentication.idToken,
     );
 
-    return await _login(userState, await auth.signInWithCredential(credential));
+    return await _login(context, await auth.signInWithCredential(credential));
   }
 
-  static Future<AfterLoginCommunication> continueWithFacebook(
-      UserState userState) async {
+  static Future<AfterLoginCommunication> continueWithFacebook(BuildContext context) async {
     // Trigger the sign-in flow
     final LoginResult loginResult = await FacebookAuth.instance.login();
 
@@ -134,11 +138,11 @@ class UserController {
     // Once signed in, return the UserCredential
     var userCred = await FirebaseAuth.instance
         .signInWithCredential(facebookAuthCredential);
-    return await _login(userState, userCred);
+    return await _login(context, userCred);
   }
 
   static Future<AfterLoginCommunication> continueWithApple(
-      UserState userState) async {
+      BuildContext context) async {
     // To prevent replay attacks with the credential returned from Apple, we
     // include a nonce in the credential request. When signing in in with
     // Firebase, the nonce in the id token returned by Apple, is expected to
@@ -166,16 +170,18 @@ class UserController {
     final userCredential =
         await FirebaseAuth.instance.signInWithCredential(oauthCredential);
 
-    return _login(userState, userCredential);
+    return _login(context, userCredential);
   }
 
-  static Future<UserDetails> getUserDetails(String uid, UserState userState) async {
+  static Future<UserDetails> getUserDetails(BuildContext context, String uid) async {
+    var userState = context.read<UserState>();
+
     UserDetails cached = userState.getUserDetail(uid);
     if (cached != null) {
       return cached;
     }
 
-    var resp = await CloudFunctionsUtils.callFunction("get_user", {"id": uid});
+    var resp = await apiClient.callFunction("get_user", {"id": uid});
 
     if (resp == null) {
       return null;
@@ -192,21 +198,20 @@ class UserController {
     userState.logout();
   }
 
-  static Future<List<UserDetails>> getUsersToRateInMatch(String matchId, String userId,
-      UserState userState) async{
-    var resp = await CloudFunctionsUtils.callFunction(
+  // how many users 'the current logged-in user' needs to still rate in match 'matchId'
+  static Future<List<UserDetails>> getUsersToRateInMatchForLoggedUser(
+      BuildContext context, String matchId) async{
+    var userId = context.read<UserState>().currentUserId;
+
+    var resp = await apiClient.callFunction(
         "get_users_to_rate",
         {"match_id": matchId, "user_id": userId});
 
     List<String> users = List<String>.from([]);
     resp.values.first.forEach((r) { users.add(r); });
 
-    return (await Future.wait(users.map((uid) => getUserDetails(uid, userState))))
+    return (await Future.wait(users.map((uid) => getUserDetails(context, uid))))
         .where((e) => e != null).toList();
-  }
-
-  static Future<List<UserDetails>> fetchUsersData(List<String> uids, UserState userState) async {
-    return await Future.wait(uids.map((uid) => getUserDetails(uid, userState)));
   }
 }
 

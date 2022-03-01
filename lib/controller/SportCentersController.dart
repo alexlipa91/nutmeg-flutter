@@ -1,11 +1,17 @@
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:nutmeg/db/SportCentersFirestore.dart';
-import 'package:nutmeg/model/ChangeNotifiers.dart';
+import 'package:provider/provider.dart';
+
+import '../model/SportCenter.dart';
+import '../state/LoadOnceState.dart';
 
 
 class SportCentersController {
 
-  static Future<void> refreshAll(LoadOnceState sportCentersState) async {
+  static Future<List<SportCenter>> refreshAll(BuildContext context) async {
+    var sportCentersState = context.read<LoadOnceState>();
+
     var sportCenters = await SportCentersFirestore.getSportCenters();
 
     var futures = sportCenters.map((s) async {
@@ -15,11 +21,13 @@ class SportCentersController {
     await Future.wait(futures);
 
     sportCentersState.setSportCenters(sportCenters);
+    return sportCenters;
   }
 
-  // it loads all pictures from the sportcenter in folder sportcenters/<sportcenter_id>/large
-  // if no <sportcenter_id> subfolder it uses "default"
   static Future<List<String>> getSportCenterPicturesUrls(String sportCenterId) async {
+    // it loads all pictures from the sportcenter in folder sportcenters/<sportcenter_id>/large
+    // if no <sportcenter_id> subfolder it uses "default"
+
     var mainFolderRef = await FirebaseStorage.instance.ref("sportcenters").listAll();
     var listOfFolders = mainFolderRef.prefixes;
 
@@ -37,9 +45,10 @@ class SportCentersController {
     return urls;
   }
 
-  // it loads the thumbnail picture from the sportcenter at sportcenters/<sportcenter_id>/thumbnail.png
-  // if no <sportcenter_id> subfolder it uses "default"
   static Future<String> getSportCenterThumbnailUrl(String sportCenterId) async {
+    // it loads the thumbnail picture from the sportcenter at sportcenters/<sportcenter_id>/thumbnail.png
+    // if no <sportcenter_id> subfolder it uses "default"
+
     var listOfFiles =
     await FirebaseStorage.instance.ref("sportcenters/").listAll();
 

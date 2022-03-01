@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:nutmeg/model/Model.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:provider/provider.dart';
 
-import '../model/ChangeNotifiers.dart';
+import '../model/UserDetails.dart';
+import '../state/MatchesState.dart';
 import 'Avatar.dart';
 
+
 class PlayerBottomModal extends StatelessWidget {
+
   static String getDisplayName(UserDetails ud) {
     if (ud == null) return "Player";
     if (ud.name != null) return ud.name;

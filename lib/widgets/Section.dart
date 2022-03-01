@@ -1,13 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:nutmeg/model/ChangeNotifiers.dart';
-import 'package:nutmeg/screens/Login.dart';
-import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
-import 'package:nutmeg/widgets/Buttons.dart';
-import 'package:provider/provider.dart';
-
-import 'Avatar.dart';
 
 
 class Section extends StatelessWidget {

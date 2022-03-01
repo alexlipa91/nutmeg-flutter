@@ -1,84 +1,89 @@
-import 'package:nutmeg/controller/CloudFunctionsUtils.dart';
-import 'package:nutmeg/model/ChangeNotifiers.dart';
-import 'package:nutmeg/model/Model.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:nutmeg/api/CloudFunctionsUtils.dart';
+import 'package:nutmeg/model/Match.dart';
+import 'package:provider/provider.dart';
 
+import '../model/PaymentRecap.dart';
+import '../model/UserDetails.dart';
+import '../state/MatchesState.dart';
+import '../state/UserState.dart';
 import 'UserController.dart';
 
 
 class MatchesController {
 
-  static Future<Match> refresh(
-      MatchesState matchesState, UserState userState, String matchId) async {
-    var match = await getMatch(matchId);
+  static var apiClient = CloudFunctionsClient();
+
+  static Future<Match> refresh(BuildContext context, String matchId) async {
+    var matchesState = context.read<MatchesState>();
+
+    var resp = await apiClient.callFunction("get_match_v2", {'id': matchId});
+    var match = Match.fromJson(resp, matchId);
+
     matchesState.setMatch(match);
 
-    await _refreshMatchStatus(matchId, matchesState, userState);
+    await _refreshMatchStatus(context, matchId);
     return match;
   }
 
-  static Future<void> init(MatchesState matchesState) async {
-    if (matchesState.getMatches() == null) {
-      await refreshAll(matchesState);
-    }
-  }
+  static Future<List<Match>> refreshAll(BuildContext context) async {
+    var matchesState = context.read<MatchesState>();
 
-  static Future<void> refreshAll(MatchesState matchesState) async {
-    var matches = await getMatches();
+    var resp = await apiClient.callFunction("get_all_matches_v2", {});
+    Map<String, dynamic> data = (resp == null) ? Map()
+        : Map<String, dynamic>.from(resp);
+
+    var matches = data.entries
+        .map((e) => Match.fromJson(Map<String, dynamic>.from(e.value), e.key))
+        .toList();
+
     matchesState.setMatches(matches);
+    return matches;
   }
 
-  static Future<void> joinMatch(MatchesState matchesState, String matchId,
-      UserState userState, PaymentRecap paymentStatus) async {
-    await CloudFunctionsUtils.callFunction("add_user_to_match", {
+  // current logged in user joins a match
+  static Future<Match> joinMatch(BuildContext context,
+      String matchId, PaymentRecap paymentStatus) async {
+    var userState = context.read<UserState>();
+
+    await apiClient.callFunction("add_user_to_match", {
       'user_id': userState.getLoggedUserDetails().documentId,
       'match_id': matchId,
       'credits_used': paymentStatus.creditsInCentsUsed,
       'money_paid': paymentStatus.finalPriceToPayInCents()
     });
     print("joined");
-    await refresh(matchesState, userState, matchId);
+    return await refresh(context, matchId);
   }
 
-  static leaveMatch(
-      MatchesState matchesState, String matchId, UserState userState) async {
-    await CloudFunctionsUtils.callFunction("remove_user_from_match", {
+  // current logged in user leaves a match
+  static Future<Match> leaveMatch(BuildContext context, String matchId) async {
+    var userState = context.read<UserState>();
+
+    await apiClient.callFunction("remove_user_from_match", {
       'user_id': userState.getLoggedUserDetails().documentId,
       'match_id': matchId
     });
-    await refresh(matchesState, userState, matchId);
-  }
-
-  static Future<Match> getMatch(String matchId) async {
-    var resp = await CloudFunctionsUtils.callFunction("get_match_v2", {'id': matchId});
-    var match = Match.fromJson(resp, matchId);
-    return match;
-  }
-
-  static Future<List<Match>> getMatches() async {
-    var resp = await CloudFunctionsUtils.callFunction("get_all_matches_v2", {});
-
-    Map<String, dynamic> data = (resp == null) ? Map() : Map<String, dynamic>.from(resp);
-
-    var matches = data.entries
-        .map((e) => Match.fromJson(Map<String, dynamic>.from(e.value), e.key))
-        .toList();
-    return matches;
+    return await refresh(context, matchId);
   }
 
   static Future<String> addMatch(Match m) async {
-    var resp = await CloudFunctionsUtils.callFunction("add_match", m.toJson());
+    var resp = await apiClient.callFunction("add_match", m.toJson());
     return resp["id"];
   }
 
-  static Future<void> editMatch(MatchesState matchesState, Match m) async {
-    matchesState.setMatch(m);
-    await CloudFunctionsUtils.callFunction(
+  static Future<void> editMatch(Match m) async {
+    await apiClient.callFunction(
         "edit_match", {"id": m.documentId, "data": m.toJson()});
   }
 
-  static Future<void> _refreshMatchStatus(String matchId, MatchesState state,
-      UserState userState) async {
-    Match match = state.getMatch(matchId);
+  // compute status of a match
+  static Future<MatchStatusForUser> _refreshMatchStatus(BuildContext context,
+      String matchId) async {
+    var userState = context.read<UserState>();
+    var matchesState = context.read<MatchesState>();
+
+    Match match = matchesState.getMatch(matchId);
 
     MatchStatusForUser status;
     List<UserDetails> stillToRateData;
@@ -95,8 +100,8 @@ class MatchesController {
 
       if (isPast) {
         if (isGoing) {
-          stillToRateData = await UserController.getUsersToRateInMatch(matchId,
-              userState.getLoggedUserDetails().documentId, userState);
+          stillToRateData = await UserController.getUsersToRateInMatchForLoggedUser(context,
+              matchId);
           status =
           (stillToRateData.isEmpty) ? MatchStatusForUser.no_more_to_rate
               : MatchStatusForUser.to_rate;
@@ -114,7 +119,22 @@ class MatchesController {
       }
     }
 
-    state.setMatchStatus(matchId, status);
+    matchesState.setMatchStatus(matchId, status);
     userState.setUsersStillToRate(matchId, stillToRateData);
+
+    return status;
+  }
+
+  // logged-in user voted 'score' for user 'userId' in match 'matchId'
+  static void addRating(BuildContext context, String userId, String matchId, double score) async {
+    try {
+      await apiClient.callFunction("add_rating",
+          {"user_id": context.read<UserState>().getLoggedUserDetails().documentId,
+            "user_rated_id": userId,
+            "match_id": matchId, "score": score});
+    } catch (e, s) {
+      print("Failed to add rating: " + e.toString());
+      print(s);
+    }
   }
 }

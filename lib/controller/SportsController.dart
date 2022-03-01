@@ -1,11 +1,13 @@
 import 'package:nutmeg/db/SportsFirestore.dart';
-import 'package:nutmeg/model/ChangeNotifiers.dart';
+import '../model/Sport.dart';
+import '../state/LoadOnceState.dart';
 
 
 class SportsController {
 
-  static Future<void> refreshAll(LoadOnceState loadOnceState) async {
+  static Future<List<Sport>> refreshAll(LoadOnceState loadOnceState) async {
     var sports = await SportsDb.getSports();
     loadOnceState.setSports(sports);
+    return sports;
   }
 }

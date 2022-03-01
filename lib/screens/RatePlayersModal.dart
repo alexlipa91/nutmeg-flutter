@@ -2,21 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/controller/UserController.dart';
-import 'package:nutmeg/model/ChangeNotifiers.dart';
-import 'package:nutmeg/model/Model.dart';
+import 'package:nutmeg/state/MatchesState.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:provider/provider.dart';
 
-import '../controller/CloudFunctionsUtils.dart';
+import '../model/UserDetails.dart';
 import '../widgets/Avatar.dart';
 import '../widgets/PlayerBottomModal.dart';
 
 
 class RateButton extends StatelessWidget {
-  final Match match;
+  final String matchId;
 
-  const RateButton({Key key, this.match}) : super(key: key);
+  const RateButton({Key key, this.matchId}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -29,10 +28,11 @@ class RateButton extends StatelessWidget {
           //     print(match.documentId);
           // print(context.read<UserState>().getUsersStillToRate(match.documentId));
 
-          List<UserDetails> users = (await UserController.getUsersToRateInMatch(match.documentId,
-              context.read<UserState>().getLoggedUserDetails().documentId,
-              context.read<UserState>()
-          )).where((element) => element != null).toList();
+          var match = context.read<MatchesState>().getMatch(matchId);
+
+          List<UserDetails> users = (await UserController.getUsersToRateInMatchForLoggedUser(
+              context, match.documentId))
+              .where((element) => element != null).toList();
 
           print("num users " + users.length.toString());
 
@@ -108,26 +108,18 @@ class RatingPlayerBottomModalState extends State<RatingPlayerBottomModal> {
                         (BuildContext context) async {
                       context.read<GenericButtonWithLoaderState>().change(true);
 
-                      try {
-                        await CloudFunctionsUtils.callFunction("add_rating",
-                            {"user_id": context.read<UserState>().getLoggedUserDetails().documentId,
-                              "user_rated_id": usersRatedDetails[index].documentId,
-                              "match_id": matchId, "score": score});
-                      } catch (e, s) {
-                        print("Failed to add rating: " + e.toString());
-                        print(s);
-                      }
+                      MatchesController.addRating(context,
+                          usersRatedDetails[index].documentId, matchId, score);
 
                       if (index == usersRatedDetails.length - 1) {
                         print("finished list");
-                        await MatchesController.refresh(
-                            context.read<MatchesState>(),
-                            context.read<UserState>(), matchId);
+                        await MatchesController.refresh(context, matchId);
 
                         Navigator.pop(context);
                         print("done");
                         return;
                       }
+
                       setState(() {
                         index = index + 1;
                       });
