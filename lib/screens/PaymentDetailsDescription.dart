@@ -43,6 +43,8 @@ class PaymentDetailsDescription {
                         child: ShareButtonWithText(matchId, Palette.primary))
                 ],
               ),
-            )));
+            )
+        )
+    );
   }
 }

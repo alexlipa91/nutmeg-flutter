@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:nutmeg/controller/LaunchController.dart';
 import 'package:nutmeg/controller/UserController.dart';
-import 'package:nutmeg/model/Model.dart';
-import 'package:nutmeg/screens/Launch.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
@@ -16,12 +15,14 @@ import 'package:tuple/tuple.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:version/version.dart';
 
+import '../model/UserDetails.dart';
 import '../state/MatchesState.dart';
 import '../state/UserState.dart';
 import 'admin/Matches.dart';
 
 
 class UserPage extends StatelessWidget {
+
   @override
   Widget build(BuildContext context) {
     // don't watch this or when logout things will break
@@ -239,7 +240,7 @@ class UserPage extends StatelessWidget {
         child: Container(
           height: 100,
           child: FutureBuilder<Tuple2<Version, String>>(
-              future: LaunchWidgetState.getVersion(),
+              future: LaunchController.getVersion(),
               builder: (context, snapshot) => Text(
                     "v" +
                         ((snapshot.hasData)
@@ -273,8 +274,7 @@ class UserPage extends StatelessWidget {
         child: FutureBuilder<UserDetails>(
             future: (userDetails == null)
                 ? null
-                : UserController.getUserDetails(userDetails.documentId,
-                context.read<UserState>()),
+                : UserController.getUserDetails(context, userDetails.documentId),
             builder: (context, snapshot) => (snapshot.hasData)
                 ? Container(
                     child: (userState.getLoggedUserDetails() == null)

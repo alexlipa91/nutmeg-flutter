@@ -11,7 +11,7 @@ import 'package:map_launcher/src/models.dart' as m;
 import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/controller/SportCentersController.dart';
 import 'package:nutmeg/controller/UserController.dart';
-import 'package:nutmeg/model/Model.dart';
+import 'package:nutmeg/model/Match.dart';
 import 'package:nutmeg/screens/JoinModal.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
@@ -24,6 +24,8 @@ import 'package:provider/provider.dart';
 import 'package:readmore/readmore.dart';
 import 'package:shimmer/shimmer.dart';
 
+import '../model/Sport.dart';
+import '../model/SportCenter.dart';
 import '../state/LoadOnceState.dart';
 import '../state/MatchesState.dart';
 import '../state/UserState.dart';
@@ -52,15 +54,11 @@ class MatchDetailsState extends State<MatchDetails> {
   void initState() {
     super.initState();
     SchedulerBinding.instance.addPostFrameCallback((_) async {
-      var userState = context.read<UserState>();
-      var matchesState = context.read<MatchesState>();
-
       await FirebaseRemoteConfig.instance.fetch();
-      await MatchesController.refresh(
-          matchesState, userState, match.documentId);
+      await MatchesController.refresh(context, match.documentId);
 
-      await Future.wait(
-          match.going.keys.map((e) => UserController.getUserDetails(e, userState)));
+      await Future.wait(match.going.keys
+          .map((e) => UserController.getUserDetails(context, e)));
     });
   }
 
@@ -68,7 +66,6 @@ class MatchDetailsState extends State<MatchDetails> {
   Widget build(BuildContext context) {
     final args = ModalRoute.of(context).settings.arguments as ScreenArguments;
     var matchesState = context.watch<MatchesState>();
-    var userState = context.watch<UserState>();
 
     match = matchesState.getMatch(args.matchId);
 
@@ -109,7 +106,7 @@ class MatchDetailsState extends State<MatchDetails> {
               scrollDirection: Axis.horizontal,
               child: Row(
                   children: (match.going.isEmpty)
-                      ? [EmptyPlayerCard(match: match)]
+                      ? [EmptyPlayerCard(matchId: matchId)]
                       : match
                           .getGoingUsersByTime()
                           .map((s) => PlayerCard(s))
@@ -132,7 +129,7 @@ class MatchDetailsState extends State<MatchDetails> {
         backgroundColor: Palette.light,
         body: RefreshIndicator(
             onRefresh: () async {
-              await MatchesController.refresh(matchesState, userState, matchId);
+              await MatchesController.refresh(context, matchId);
             },
             child: CustomScrollView(
               slivers: [
@@ -148,7 +145,7 @@ class MatchDetailsState extends State<MatchDetails> {
               ],
             )),
         bottomSheet: BottomBarMatch(
-          match: match,
+          matchId: matchId,
           extraBottomPadding: MediaQuery.of(context).padding.bottom,
         ));
   }
@@ -392,36 +389,48 @@ class PlayerCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var userData = context.watch<UserState>().getUserDetail(userId);
+
+    var placeHolder = Shimmer.fromColors(
+        baseColor: Colors.grey[300],
+        highlightColor: Colors.grey[100],
+        child: Column(children: [
+          CircleAvatar(radius: 25, backgroundColor: Palette.white),
+          SizedBox(height: 10),
+          Container(height: 10, width: 100, color: Colors.white)
+        ]));
+
     return Padding(
         padding: EdgeInsets.only(right: 10),
         child: SizedBox(
           width: 100,
           child: InfoContainer(
-              child: Column(children: [
-            InkWell(
-                onTap: () {
-                  showModalBottomSheet(
-                      context: context,
-                      builder: (context) =>
-                          PlayerBottomModal(userDetails: userData));
-                },
-                child: UserAvatar(24, userData)),
-            SizedBox(height: 10),
-            Text((userData?.name ?? "Player").split(" ").first,
-                overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.roboto(
-                    color: Palette.mediumgrey,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w400))
-          ])),
+              child: (userData == null)
+                  ? placeHolder
+                  : Column(children: [
+                      InkWell(
+                          onTap: () {
+                            showModalBottomSheet(
+                                context: context,
+                                builder: (context) =>
+                                    PlayerBottomModal(userDetails: userData));
+                          },
+                          child: UserAvatar(24, userData)),
+                      SizedBox(height: 10),
+                      Text((userData?.name ?? "Player").split(" ").first,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.roboto(
+                              color: Palette.mediumgrey,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w400))
+                    ])),
         ));
   }
 }
 
 class EmptyPlayerCard extends StatelessWidget {
-  final Match match;
+  final String matchId;
 
-  const EmptyPlayerCard({Key key, this.match}) : super(key: key);
+  const EmptyPlayerCard({Key key, this.matchId}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -432,7 +441,7 @@ class EmptyPlayerCard extends StatelessWidget {
           child: InfoContainer(
               child: Column(children: [
             InkWell(
-              onTap: () => JoinModal.onJoinGameAction(context, match),
+              onTap: () => JoinModal.onJoinGameAction(context, matchId),
               child: CircleAvatar(
                   radius: 25,
                   child: Icon(Icons.add, color: Palette.mediumgrey, size: 24),
@@ -448,8 +457,6 @@ class EmptyPlayerCard extends StatelessWidget {
           ])),
         ));
   }
-
-  Widget buildCard(String text) {}
 }
 
 // single rule card

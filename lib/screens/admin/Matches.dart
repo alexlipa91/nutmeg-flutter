@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
-import 'package:nutmeg/model/Model.dart';
 import 'package:nutmeg/screens/admin/AddOrEditMatch.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
@@ -11,10 +10,10 @@ import 'package:nutmeg/widgets/Containers.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
 import "package:collection/collection.dart";
+import 'package:nutmeg/model/Match.dart';
 
 import '../../state/LoadOnceState.dart';
 import '../../state/MatchesState.dart';
-import '../../state/UserState.dart';
 import '../AvailableMatches.dart';
 
 // main widget
@@ -134,7 +133,7 @@ class MatchesAreaState extends State<MatchesArea> {
         setState(() {
           isLoading = true;
         });
-        await MatchesController.refreshAll(matchesState);
+        await MatchesController.refreshAll(context);
         setState(() {
           isLoading = false;
         });
@@ -194,8 +193,6 @@ class MatchInfo extends StatelessWidget {
 
     var sportCenter = loadOnceState.getSportCenter(match.sportCenterId);
     var sport = loadOnceState.getSport(match.sport);
-
-    var matchesState = context.read<MatchesState>();
 
     return InkWell(
         child: Padding(
@@ -261,8 +258,7 @@ class MatchInfo extends StatelessWidget {
               MaterialPageRoute(
                   builder: (context) =>
                       AddOrEditMatch.update(match.documentId)));
-          await MatchesController.refresh(matchesState,
-              context.read<UserState>(),
+          await MatchesController.refresh(context,
               match.documentId);
         });
   }

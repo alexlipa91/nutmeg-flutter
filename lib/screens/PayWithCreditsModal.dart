@@ -1,20 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
-import 'package:nutmeg/model/Model.dart';
 import 'package:nutmeg/screens/PaymentDetailsDescription.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:provider/provider.dart';
 
-import '../state/MatchesState.dart';
-import '../state/UserState.dart';
+import '../model/PaymentRecap.dart';
 
 
 class PayWithCreditsButton extends StatelessWidget {
 
-  final Match match;
+  final String matchId;
   final PaymentRecap paymentRecap;
 
-  const PayWithCreditsButton({Key key, this.match, this.paymentRecap}) : super(key: key);
+  const PayWithCreditsButton({Key key, this.matchId, this.paymentRecap}) : super(key: key);
 
   @override
   Widget build(BuildContext context) =>
@@ -23,12 +21,11 @@ class PayWithCreditsButton extends StatelessWidget {
         (BuildContext context) async {
           context.read<GenericButtonWithLoaderState>().change(true);
 
-          await MatchesController.joinMatch(context.read<MatchesState>(),
-              match.documentId, context.read<UserState>(), paymentRecap);
+          await MatchesController.joinMatch(context, matchId, paymentRecap);
           context.read<GenericButtonWithLoaderState>().change(false);
 
           Navigator.pop(context, true);
-          await PaymentDetailsDescription.communicateSuccessToUser(context, match.documentId);
+          await PaymentDetailsDescription.communicateSuccessToUser(context, matchId);
         },
         Primary(),
       );

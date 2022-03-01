@@ -10,10 +10,11 @@ import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/Containers.dart';
 import 'package:provider/provider.dart';
 
-import '../state/UserState.dart';
+import '../state/LoginStatusChangeNotifier.dart';
 
 
 class Login extends StatelessWidget {
+
   @override
   Widget build(BuildContext context) {
     var images = Row(children: [
@@ -120,19 +121,19 @@ class SignInButton extends StatelessWidget {
 
     switch (provider) {
       case Provider.facebook :
-        loginFuture = () => UserController.continueWithFacebook(context.read<UserState>());
+        loginFuture = () => UserController.continueWithFacebook(context);
         backgroundColor = UiUtils.fromHex("#4267B2");
         textStyle = GoogleFonts.roboto(color: Palette.white, fontSize: 14, fontWeight: FontWeight.w700);
         logoPath = "assets/login/fb_logo.png";
         break;
       case Provider.google :
-        loginFuture = () => UserController.continueWithGoogle(context.read<UserState>());
+        loginFuture = () => UserController.continueWithGoogle(context);
         backgroundColor = Colors.transparent;
         textStyle = GoogleFonts.roboto(color: Palette.darkgrey, fontSize: 14, fontWeight: FontWeight.w700);
         logoPath = "assets/login/google_logo.png";
         break;
       case Provider.apple :
-        loginFuture = () => UserController.continueWithApple(context.read<UserState>());
+        loginFuture = () => UserController.continueWithApple(context);
         backgroundColor = Colors.black;
         textStyle = GoogleFonts.roboto(color: Palette.white, fontSize: 14, fontWeight: FontWeight.w700);
         logoPath = "assets/login/apple_logo.png";
@@ -196,13 +197,3 @@ class SignInButton extends StatelessWidget {
   }
 }
 
-class LoginStatusChangeNotifier extends ChangeNotifier {
-  bool _isSigningIn = false;
-
-  bool get isSigningIn => _isSigningIn;
-
-  void setIsSigningIn(bool value) {
-    _isSigningIn = value;
-    notifyListeners();
-  }
-}

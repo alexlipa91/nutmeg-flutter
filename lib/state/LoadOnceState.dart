@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
-import '../model/Model.dart';
 import "package:collection/collection.dart";
+
+import '../model/Sport.dart';
+import '../model/SportCenter.dart';
 
 
 class LoadOnceState extends ChangeNotifier {

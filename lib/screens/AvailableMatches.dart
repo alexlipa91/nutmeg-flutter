@@ -1,11 +1,12 @@
 import 'package:badges/badges.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import "package:collection/collection.dart";
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
-import 'package:nutmeg/model/Model.dart';
+import 'package:nutmeg/model/Match.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/AppBar.dart';
@@ -16,9 +17,8 @@ import 'package:nutmeg/widgets/Texts.dart';
 import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:flutter/foundation.dart';
 
-
+import '../state/AvailableMatchesState.dart';
 import '../state/LoadOnceState.dart';
 import '../state/MatchesState.dart';
 import '../state/UserState.dart';
@@ -37,39 +37,40 @@ class AvailableMatches extends StatelessWidget {
 }
 
 class AvailableMatchesList extends StatefulWidget {
-
   @override
   State<StatefulWidget> createState() => AvailableMatchesListState();
 }
 
-
 class AvailableMatchesListState extends State<AvailableMatchesList> {
-
   var future;
 
   @override
   void initState() {
     super.initState();
-    future = MatchesController.init(context.read<MatchesState>());
+    future = MatchesController.refreshAll(context);
   }
 
-  Future<void> refreshPageState(
-      MatchesState matchesState) async {
-    await MatchesController.refreshAll(matchesState);
+  Future<void> refreshPageState(BuildContext context) async {
+    await MatchesController.refreshAll(context);
     _refreshController.refreshCompleted();
   }
 
-  static Widget getEmptyStateWidget(AvailableMatchesUiState uiState) =>
-      Padding(
+  static Widget getEmptyStateWidget(AvailableMatchesUiState uiState) => Padding(
         padding: EdgeInsets.only(bottom: 20),
         child: Container(
-          child: Column(children: [
-            Image.asset("assets/empty_state/illustration_"
-                + ((uiState.selected == Status.ALL) ? "01" : "02")
-                + ".png", height: 400),
-            Text("No matches here",
-                style: TextPalette.h1Default, textAlign: TextAlign.center)
-          ],),
+          child: Column(
+            children: [
+              Image.asset(
+                  "assets/empty_state/illustration_" +
+                      ((uiState.getCurrentSelection() == MatchesSelectionStatus.ALL)
+                          ? "01"
+                          : "02") +
+                      ".png",
+                  height: 400),
+              Text("No matches here",
+                  style: TextPalette.h1Default, textAlign: TextAlign.center)
+            ],
+          ),
         ),
       );
 
@@ -77,19 +78,21 @@ class AvailableMatchesListState extends State<AvailableMatchesList> {
 
   @override
   Widget build(BuildContext context) {
-    var matchesState = context.watch<MatchesState>();
+
     var uiState = context.watch<AvailableMatchesUiState>();
+
+    var matchesState = context.watch<MatchesState>();
     var userState = context.watch<UserState>();
     var loadOnceState = context.read<LoadOnceState>();
 
-    WidgetsBinding.instance.addObserver(LifecycleEventHandler(
-        resumeCallBack: () async {
-          if (mounted) {
-            _refreshController.requestRefresh();
-          }
-        }));
+    WidgetsBinding.instance
+        .addObserver(LifecycleEventHandler(resumeCallBack: () async {
+      if (mounted) {
+        _refreshController.requestRefresh();
+      }
+    }));
 
-    var optionSelected = uiState.selected;
+    var optionSelected = uiState.getCurrentSelection();
     var isLoggedIn = userState.isLoggedIn();
 
     var topWidgets = List<Widget>.of([
@@ -98,12 +101,12 @@ class AvailableMatchesListState extends State<AvailableMatchesList> {
         child: MainAppBar(),
         heightFactor: 0.99,
       ),
-      RoundedTopBar(uiState: uiState),
+      RoundedTopBar(),
     ]);
 
     List<Widget> matchWidgets;
     if (matchesState.getMatches() != null) {
-      if (optionSelected == Status.ALL) {
+      if (optionSelected == MatchesSelectionStatus.ALL) {
         matchWidgets = allGamesWidgets(matchesState, uiState, userState,
             loadOnceState, _refreshController);
       } else {
@@ -125,39 +128,35 @@ class AvailableMatchesListState extends State<AvailableMatchesList> {
         child: Scaffold(
           backgroundColor: Palette.light,
           // appBar: MainAppBar(),
-          body: MultiProvider(
-            providers: [
-              ChangeNotifierProvider(
-                  create: (context) => AvailableMatchesUiState()),
-            ],
-            child: FutureBuilder(
-              builder: (context, snapshot) => SmartRefresher(
-                enablePullDown: true,
-                enablePullUp: false,
-                header: MaterialClassicHeader(),
-                controller: _refreshController,
-                onRefresh: () async {
-                  await refreshPageState(matchesState);
-                },
-                child: (matchWidgets != null && matchWidgets.isEmpty)
-                    ? Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
+          body: FutureBuilder(
+            builder: (context, snapshot) => SmartRefresher(
+              enablePullDown: true,
+              enablePullUp: false,
+              header: MaterialClassicHeader(),
+              controller: _refreshController,
+              onRefresh: () async {
+                await refreshPageState(context);
+              },
+              child: (matchWidgets != null && matchWidgets.isEmpty)
+                  ? Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
                           Column(children: topWidgets),
-                          getEmptyStateWidget(uiState)])
-                    : ListView.builder(
-                        itemBuilder: (c, i) {
-                          var coreWidgets =
-                              (matchWidgets == null) ? waitingWidgets : matchWidgets;
-                          var list = topWidgets + coreWidgets;
-                          return list[i];
-                        },
-                        itemCount: topWidgets.length +
-                            ((matchWidgets == null)
-                                ? waitingWidgets.length
-                                : matchWidgets.length),
-                      ),
-              ),
+                          getEmptyStateWidget(uiState)
+                        ])
+                  : ListView.builder(
+                      itemBuilder: (c, i) {
+                        var coreWidgets = (matchWidgets == null)
+                            ? waitingWidgets
+                            : matchWidgets;
+                        var list = topWidgets + coreWidgets;
+                        return list[i];
+                      },
+                      itemCount: topWidgets.length +
+                          ((matchWidgets == null)
+                              ? waitingWidgets.length
+                              : matchWidgets.length),
+                    ),
             ),
           ),
         ),
@@ -165,8 +164,11 @@ class AvailableMatchesListState extends State<AvailableMatchesList> {
     );
   }
 
-  List<Widget> myGamesWidgets(MatchesState state, UserState userState,
-      AvailableMatchesUiState uiState, LoadOnceState loadOnceState,
+  List<Widget> myGamesWidgets(
+      MatchesState state,
+      UserState userState,
+      AvailableMatchesUiState uiState,
+      LoadOnceState loadOnceState,
       RefreshController refreshController) {
     var matches = state
         .getMatches()
@@ -184,15 +186,9 @@ class AvailableMatchesListState extends State<AvailableMatchesList> {
       widgets.add(TextSeparatorWidget("UPCOMING MATCHES"));
       future.sortedBy((e) => e.dateTime).forEachIndexed((index, m) {
         if (index == 0) {
-          widgets.add(
-              MatchInfo.first(m.documentId,
-                  loadOnceState.getSportCenter(m.sportCenterId).thumbnailUrl,
-                  refreshController)
-          );
+          widgets.add(MatchInfo.first(m.documentId, refreshController));
         } else {
-          widgets.add(MatchInfo(m.documentId,
-              loadOnceState.getSportCenter(m.sportCenterId).thumbnailUrl,
-              refreshController));
+          widgets.add(MatchInfo(m.documentId, refreshController));
         }
       });
     }
@@ -201,9 +197,9 @@ class AvailableMatchesListState extends State<AvailableMatchesList> {
       widgets.add(TextSeparatorWidget("PAST MATCHES"));
       past.sortedBy((e) => e.dateTime).reversed.forEachIndexed((index, m) {
         if (index == 0) {
-          widgets.add(MatchInfoPast.first(m));
+          widgets.add(MatchInfoPast.first(m.documentId));
         } else {
-          widgets.add(MatchInfoPast(m));
+          widgets.add(MatchInfoPast(m.documentId));
         }
       });
     }
@@ -211,9 +207,12 @@ class AvailableMatchesListState extends State<AvailableMatchesList> {
     return widgets;
   }
 
-  List<Widget> allGamesWidgets(MatchesState state,
-      AvailableMatchesUiState uiState, UserState userState,
-      LoadOnceState loadOnceState, RefreshController refreshController) {
+  List<Widget> allGamesWidgets(
+      MatchesState state,
+      AvailableMatchesUiState uiState,
+      UserState userState,
+      LoadOnceState loadOnceState,
+      RefreshController refreshController) {
     var matches = state
         .getMatchesInFuture()
         .where((e) => !e.wasCancelled())
@@ -237,13 +236,9 @@ class AvailableMatchesListState extends State<AvailableMatchesList> {
       result.add(WeekSeparatorWidget(w));
       grouped[w].sortedBy((e) => e.dateTime).forEachIndexed((index, match) {
         if (index == 0) {
-          result.add(MatchInfo.first(
-              match.documentId, loadOnceState.getSportCenter(match.sportCenterId).thumbnailUrl,
-          refreshController));
+          result.add(MatchInfo.first(match.documentId, refreshController));
         } else {
-          result.add(
-              MatchInfo(match.documentId, loadOnceState.getSportCenter(match.sportCenterId).thumbnailUrl,
-              refreshController));
+          result.add(MatchInfo(match.documentId, refreshController));
         }
       });
     });
@@ -253,16 +248,11 @@ class AvailableMatchesListState extends State<AvailableMatchesList> {
 }
 
 class RoundedTopBar extends StatelessWidget {
-  final AvailableMatchesUiState uiState;
-
-  const RoundedTopBar({Key key, this.uiState}) : super(key: key);
-
-  _getAllFunction(BuildContext context) => () => uiState.changeTo(Status.ALL);
-
-  _getMyGamesFunction(BuildContext context) => () => uiState.changeTo(Status.MY_GAMES);
 
   @override
   Widget build(BuildContext context) {
+    var uiState = context.watch<AvailableMatchesUiState>();
+
     return Container(
         decoration: BoxDecoration(
             color: Palette.primary,
@@ -279,22 +269,27 @@ class RoundedTopBar extends StatelessWidget {
               Text("Amsterdam", style: TextPalette.h1Inverted),
               SizedBox(height: 24),
               Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                uiState.getCurrentSelection() == Status.ALL
+                uiState.getCurrentSelection() == MatchesSelectionStatus.ALL
                     ? Expanded(
-                        child: LeftButtonOn("ALL", _getAllFunction(context)))
+                        child: LeftButtonOn("ALL",
+                                () => uiState.changeTo(MatchesSelectionStatus.ALL)))
                     : Expanded(
-                        child: LeftButtonOff("ALL", _getAllFunction(context))),
-                uiState.getCurrentSelection() == Status.MY_GAMES
+                        child: LeftButtonOff("ALL",
+                                () => uiState.changeTo(MatchesSelectionStatus.ALL))),
+                uiState.getCurrentSelection() == MatchesSelectionStatus.MY_GAMES
                     ? Expanded(
                         child: RightButtonOn(
-                            "MY MATCHES", _getMyGamesFunction(context)))
+                            "MY MATCHES",
+                                () => uiState.changeTo(MatchesSelectionStatus.MY_GAMES)))
                     : Expanded(
                         child: RightButtonOff(
-                            "MY MATCHES", _getMyGamesFunction(context))),
+                            "MY MATCHES",
+                                () => uiState.changeTo(MatchesSelectionStatus.MY_GAMES))),
               ])
             ],
           ),
-        ));
+        )
+    );
   }
 }
 
@@ -303,12 +298,11 @@ class MatchInfo extends StatelessWidget {
 
   final String matchId;
   final double topMargin;
-  final String image;
   final RefreshController refreshController;
 
-  MatchInfo(this.matchId, this.image, this.refreshController) : topMargin = 10;
+  MatchInfo(this.matchId, this.refreshController) : topMargin = 10;
 
-  MatchInfo.first(this.matchId, this.image, this.refreshController) : topMargin = 0;
+  MatchInfo.first(this.matchId, this.refreshController) : topMargin = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -324,44 +318,53 @@ class MatchInfo extends StatelessWidget {
         child: Padding(
           padding: EdgeInsets.only(top: topMargin, left: 16, right: 16),
           child: InfoContainer(
-              backgroundColor: (match.isTest) ? Colors.orangeAccent : Palette.white,
-              child: applyBadges(context, match, Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  MatchThumbnail(image: image),
-                  SizedBox(width: 15),
-                  Expanded(
-                    child: Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
+              backgroundColor:
+                  (match.isTest) ? Colors.orangeAccent : Palette.white,
+              child: applyBadges(
+                  context,
+                  match,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      MatchThumbnail(image: sportCenter.thumbnailUrl),
+                      SizedBox(width: 15),
+                      Expanded(
+                        child: Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(sportCenter.name + " - " + sport.displayTitle,
-                                  style: TextPalette.h2),
-                            ],
-                          ),
-                          SizedBox(height: 12,),
-                          Text(getFormattedDate(match.dateTime),
-                              style:
-                              TextPalette.getH3(Palette.mediumgrey
-                            )
-                          ),
-                          SizedBox(height: 8,),
-                          (match.isFull())
-                              ? Text("Full",
-                                  style: TextPalette.bodyText,
-                                  textAlign: TextAlign.right)
-                              : Text(
-                                  (match.maxPlayers - match.numPlayersGoing())
-                                          .toString() +
-                                      " spots left",
-                                  style: TextPalette.bodyTextPrimary,
-                                  textAlign: TextAlign.right),
-                        ]),
-                  ),
-                ],
-              ))),
+                              Row(
+                                children: [
+                                  Text(
+                                      sportCenter.name +
+                                          " - " +
+                                          sport.displayTitle,
+                                      style: TextPalette.h2),
+                                ],
+                              ),
+                              SizedBox(
+                                height: 12,
+                              ),
+                              Text(getFormattedDate(match.dateTime),
+                                  style: TextPalette.getH3(Palette.mediumgrey)),
+                              SizedBox(
+                                height: 8,
+                              ),
+                              (match.isFull())
+                                  ? Text("Full",
+                                      style: TextPalette.bodyText,
+                                      textAlign: TextAlign.right)
+                                  : Text(
+                                      (match.maxPlayers -
+                                                  match.numPlayersGoing())
+                                              .toString() +
+                                          " spots left",
+                                      style: TextPalette.bodyTextPrimary,
+                                      textAlign: TextAlign.right),
+                            ]),
+                      ),
+                    ],
+                  ))),
         ),
         onTap: () async {
           await Navigator.pushNamed(
@@ -387,7 +390,8 @@ class MatchInfo extends StatelessWidget {
             width: 2.0,
           ),
         ),
-        child: UserAvatar(14, context.read<UserState>().getLoggedUserDetails()));
+        child:
+            UserAvatar(14, context.read<UserState>().getLoggedUserDetails()));
     var plusPlayers = Container(
       width: 26,
       height: 26,
@@ -423,18 +427,98 @@ class MatchInfo extends StatelessWidget {
     var shouldShowUserBadge = context.watch<UserState>().isLoggedIn() &&
         match.isUserGoing(context.watch<UserState>().getLoggedUserDetails());
 
-    var shouldShowBoth =
-        shouldShowUserBadge && match.numPlayersGoing() > 1;
+    var shouldShowBoth = shouldShowUserBadge && match.numPlayersGoing() > 1;
 
     // fixme not sure why we need to do -6 here
     if (shouldShowBoth) {
-      finalWidget = badgeIt(finalWidget, userAvatar, BadgePosition.bottomEnd(bottom: -6, end: 18));
-      finalWidget = badgeIt(finalWidget, plusPlayers, BadgePosition.bottomEnd(bottom: -6, end: 0));
+      finalWidget = badgeIt(finalWidget, userAvatar,
+          BadgePosition.bottomEnd(bottom: -6, end: 18));
+      finalWidget = badgeIt(finalWidget, plusPlayers,
+          BadgePosition.bottomEnd(bottom: -6, end: 0));
     } else if (shouldShowUserBadge) {
-      finalWidget = badgeIt(finalWidget, userAvatar, BadgePosition.bottomEnd(bottom: -6, end: 0));
+      finalWidget = badgeIt(
+          finalWidget, userAvatar, BadgePosition.bottomEnd(bottom: -6, end: 0));
     }
 
     return finalWidget;
+  }
+}
+
+// variation of match info for past
+class MatchInfoPast extends StatelessWidget {
+  static var dayFormat = DateFormat('dd MMM');
+
+  final String matchId;
+  final double topMargin;
+
+  MatchInfoPast(this.matchId) : topMargin = 10;
+
+  MatchInfoPast.first(this.matchId) : topMargin = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    var loadOnceState = context.read<LoadOnceState>();
+
+    var match = context.watch<MatchesState>().getMatch(matchId);
+
+    var sportCenter = loadOnceState.getSportCenter(match.sportCenterId);
+    var sport = loadOnceState.getSport(match.sport);
+
+    return InkWell(
+        child: Padding(
+          padding: EdgeInsets.only(top: topMargin, right: 16, left: 16),
+          child: InfoContainer(
+            child: IntrinsicHeight(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Container(
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 10),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                  sportCenter.name + " - " + sport.displayTitle,
+                                  style: TextPalette.h2),
+                              SizedBox(height: 10),
+                              Text(sportCenter.name,
+                                  style: TextPalette.bodyText),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Container(
+                      child: Column(
+                    children: [
+                      Text(dayFormat.format(match.dateTime),
+                          style: TextPalette.h4)
+                    ],
+                  )),
+                ],
+              ),
+            ),
+            backgroundColor: (match.isTest) ? Palette.white : Palette.white,
+          ),
+        ),
+        onTap: () async {
+          // fixme why it doesn't rebuild here?
+          await Navigator.pushNamed(
+            context,
+            MatchDetails.routeName,
+            arguments: ScreenArguments(
+              match.documentId,
+              true,
+            ),
+          );
+          await MatchesController.refresh(context, match.documentId);
+        });
   }
 }
 
@@ -523,84 +607,6 @@ class MatchInfoSkeleton extends StatelessWidget {
   }
 }
 
-// variation of match info for past
-class MatchInfoPast extends StatelessWidget {
-  static var dayFormat = DateFormat('dd MMM');
-
-  final Match match;
-  final double topMargin;
-
-  MatchInfoPast(this.match) : topMargin = 10;
-
-  MatchInfoPast.first(this.match) : topMargin = 0;
-
-  @override
-  Widget build(BuildContext context) {
-    var matchesState = context.watch<MatchesState>();
-
-    var loadOnceState = context.read<LoadOnceState>();
-
-    var sportCenter = loadOnceState.getSportCenter(match.sportCenterId);
-    var sport = loadOnceState.getSport(match.sport);
-
-    return InkWell(
-        child: Padding(
-          padding: EdgeInsets.only(top: topMargin, right: 16, left: 16),
-          child: InfoContainer(
-              child: IntrinsicHeight(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Container(
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 10),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(sportCenter.name + " - " + sport.displayTitle,
-                                style: TextPalette.h2),
-                            SizedBox(height: 10),
-                            Text(sportCenter.name, style: TextPalette.bodyText),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                Container(
-                    child: Column(
-                  children: [
-                    Text(dayFormat.format(match.dateTime),
-                        style: TextPalette.h4)
-                  ],
-                )),
-              ],
-            ),
-          ),
-              backgroundColor: (match.isTest) ? Palette.white : Palette.white,
-          ),
-        ),
-        onTap: () async {
-          // fixme why it doesn't rebuild here?
-          await Navigator.pushNamed(
-            context,
-            MatchDetails.routeName,
-            arguments: ScreenArguments(
-              match.documentId,
-              true,
-            ),
-          );
-          await MatchesController.refresh(matchesState,
-              context.read<UserState>(),
-              match.documentId);
-        });
-  }
-}
-
 class WeekSeparatorWidget extends StatelessWidget {
   final int weekDelta;
 
@@ -618,23 +624,6 @@ class WeekSeparatorWidget extends StatelessWidget {
     }
     return "IN MORE THAN TWO WEEKS";
   }
-}
-
-enum Status {
-  ALL,
-  MY_GAMES
-}
-
-class AvailableMatchesUiState extends ChangeNotifier {
-
-  Status selected = Status.ALL;
-
-  void changeTo(Status newSelection) {
-    selected = newSelection;
-    notifyListeners();
-  }
-
-  Status getCurrentSelection() => selected;
 }
 
 class LifecycleEventHandler extends WidgetsBindingObserver {

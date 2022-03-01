@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 
-import '../model/Model.dart';import "package:collection/collection.dart";
+import 'package:nutmeg/model/Match.dart';
+import "package:collection/collection.dart";
 
 
 enum MatchStatusForUser {

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:nutmeg/Exceptions.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
-import 'package:nutmeg/model/Model.dart';
+import 'package:nutmeg/model/Match.dart';
 import 'package:intl/intl.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
@@ -12,9 +12,10 @@ import 'package:nutmeg/widgets/AppBar.dart';
 import 'package:nutmeg/widgets/Buttons.dart';
 import 'package:provider/provider.dart';
 
+import '../../model/Sport.dart';
+import '../../model/SportCenter.dart';
 import '../../state/LoadOnceState.dart';
 import '../../state/MatchesState.dart';
-import '../../state/UserState.dart';
 
 
 // main widget
@@ -283,7 +284,7 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                                   testMatch
                                 )
                               );
-                            await MatchesController.refresh(matchesState, context.read<UserState>(), newMatchId);
+                            await MatchesController.refresh(context, newMatchId);
                             await GenericInfoModal(title: "Success",
                             description: "Added match with id:\n" + newMatchId).show(context);
                           }
@@ -311,7 +312,7 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                           return;
                         }
 
-                        await MatchesController.editMatch(matchesState, match);
+                        await MatchesController.editMatch(match);
                         await GenericInfoModal(title: "Success!",
                             description: "Match with id " + match.documentId + " successfully modified").show(context);
                         Navigator.pop(context);

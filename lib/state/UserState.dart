@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 
-import '../model/Model.dart';
+import '../model/UserDetails.dart';
 
 
 class UserState extends ChangeNotifier {

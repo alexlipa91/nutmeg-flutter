@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:nutmeg/model/Model.dart';
+
+import '../model/SportCenter.dart';
 
 
 class SportCentersFirestore {
