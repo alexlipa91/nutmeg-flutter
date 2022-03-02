@@ -5,6 +5,8 @@ import 'UiUtils.dart';
 
 
 class GenericInfoModal<T> {
+  static var modalRadius = BorderRadius.vertical(top: Radius.circular(20.0));
+
   final String title;
   final String description;
   final Widget content;
@@ -37,7 +39,7 @@ class GenericInfoModal<T> {
 
     return showModalBottomSheet<T>(
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
+        borderRadius: modalRadius,
       ),
       isScrollControlled: true,
       context: context,

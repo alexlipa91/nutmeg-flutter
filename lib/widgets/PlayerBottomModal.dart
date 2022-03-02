@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 
 import '../model/UserDetails.dart';
@@ -13,32 +14,26 @@ class PlayerBottomModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.red,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      child: Wrap(
-        children: [
-          Stack(
-              alignment: AlignmentDirectional.bottomStart,
-              clipBehavior: Clip.none,
-              children: [
-                Container(
-                    decoration: BoxDecoration(
-                      color: Palette.white,
-                      borderRadius:  BorderRadius.all(Radius.circular(10))
-                    ),
-                    width: double.infinity,
-                    child: content),
-                Positioned(
-                    top: -30,
-                    left: 0,
-                    right: 0,
-                    child: UserAvatarWithBorder(userDetails)),
-              ]),
-        ],
-      ),
+    return Wrap(
+      children: [
+        Stack(
+            alignment: AlignmentDirectional.bottomStart,
+            clipBehavior: Clip.none,
+            children: [
+              Container(
+                  decoration: BoxDecoration(
+                    color: Palette.white,
+                    borderRadius: GenericInfoModal.modalRadius
+                  ),
+                  width: double.infinity,
+                  child: content),
+              Positioned(
+                  top: -30,
+                  left: 0,
+                  right: 0,
+                  child: UserAvatarWithBorder(userDetails)),
+            ]),
+      ],
     );
   }
 }

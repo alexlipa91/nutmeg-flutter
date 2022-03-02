@@ -50,7 +50,7 @@ class UserDetails {
   String getUid() => documentId;
 
   double getScoreMatches() {
-    if (scoreMatches.isEmpty) {
+    if (scoreMatches == null || scoreMatches.isEmpty) {
       return -1;
     }
     return scoreMatches.values.toList()
