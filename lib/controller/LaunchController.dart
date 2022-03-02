@@ -6,6 +6,7 @@ import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
+import 'package:nutmeg/utils/Analytics.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:tuple/tuple.dart';
@@ -86,6 +87,7 @@ class LaunchController {
   }
 
   static Future<void> loadData(BuildContext context) async {
+    final stopwatch = Stopwatch()..start();
     await Firebase.initializeApp();
 
     FirebaseRemoteConfig firebaseRemoteConfig = FirebaseRemoteConfig.instance;
@@ -176,6 +178,13 @@ class LaunchController {
       // await
       Navigator.pushReplacementNamed(context, AvailableMatches.routeName);
     }
+    await Analytics.firebaseAnalytics.logEvent(
+      name: "launch_time",
+      parameters: <String, dynamic>{
+        'duration_ms': stopwatch.elapsed.inMilliseconds,
+      },
+    );
+    print("sent event");
   }
 
   static Future<Tuple2<Version, String>> getVersion() async {
