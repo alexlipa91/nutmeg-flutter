@@ -275,18 +275,6 @@ class UserPageState extends State<UserPage> {
     return Scaffold(
         backgroundColor: Palette.light,
         appBar: UserPageAppBar(),
-        bottomSheet: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-                padding: EdgeInsets.only(bottom: 20, top: 10),
-                child: Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Image.asset("assets/nutmeg_white.png",
-                      color: Palette.darkgrey, height: 24),
-                ))
-          ],
-        ),
         body: SafeArea(
             child: (userDetails != null)
                 ? SmartRefresher(
