@@ -184,7 +184,7 @@ class UserController {
     var resp = await apiClient.callFunction("get_user", {"id": uid});
 
     if (resp == null) {
-      return null;
+      return UserDetails.empty(uid);
     }
 
     var ud = UserDetails.fromJson(resp, uid);
@@ -211,7 +211,7 @@ class UserController {
     resp.values.first.forEach((r) { users.add(r); });
 
     return (await Future.wait(users.map((uid) => getUserDetails(context, uid))))
-        .where((e) => e != null).toList();
+        .toList();
   }
 }
 

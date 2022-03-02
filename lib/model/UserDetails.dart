@@ -8,6 +8,8 @@ class UserDetails {
   String stripeId;
   int creditsInCents;
 
+  UserDetails.empty(this.documentId);
+
   UserDetails(this.documentId, this.isAdmin, this.image, this.name, this.email)
       : creditsInCents = 0;
 

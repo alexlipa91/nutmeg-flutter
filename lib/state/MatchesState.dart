@@ -14,7 +14,6 @@ enum MatchStatusForUser {
   canceled          // canceled
 }
 
-
 class MatchesState extends ChangeNotifier {
   Map<String, Match> _matches;
   Map<String, MatchStatusForUser> _matchesStatus;

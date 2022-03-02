@@ -20,7 +20,7 @@ import '../state/MatchesState.dart';
 import '../state/UserState.dart';
 import '../widgets/GenericAvailableMatches.dart';
 import 'AvailableMatches.dart';
-import 'admin/Matches.dart';
+import 'admin/AvailableMatchesAdmin.dart';
 
 
 class UserPage extends StatelessWidget {

@@ -1,4 +1,3 @@
-import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/material.dart';
 import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/model/Match.dart';
@@ -58,7 +57,7 @@ class BottomBarMatch extends StatelessWidget {
         return Container();
       case MatchStatusForUser.to_rate:
         return Text(userState.getUsersStillToRate(match.documentId).length.toString()
-            + " players to rate", style: TextPalette.bodyText);
+            + " players left", style: TextPalette.bodyText);
       case MatchStatusForUser.no_more_to_rate:
         return Text("Man of the match will be published soon",
             style: TextPalette.bodyText);
@@ -105,16 +104,11 @@ class BottomBarMatch extends StatelessWidget {
     var match = matchesState.getMatch(matchId);
     var status = matchesState.getMatchStatus(matchId);
 
-    if (status == null) {
+    if (status == null || status == MatchStatusForUser.rated
+        || status == MatchStatusForUser.no_more_to_rate) {
       return Container(height: 0,);
     }
     
-    if (
-    (status == MatchStatusForUser.rated || status == MatchStatusForUser.to_rate || status == MatchStatusForUser.no_more_to_rate) 
-      && !FirebaseRemoteConfig.instance.getBool("rating_feature_enabled")) {
-      return Container(height: 0,);
-    }
-
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [

@@ -2,21 +2,20 @@ import 'package:cool_alert/cool_alert.dart';
 import 'package:date_time_picker/date_time_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import 'package:nutmeg/Exceptions.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/model/Match.dart';
-import 'package:intl/intl.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/AppBar.dart';
-import 'package:nutmeg/widgets/Buttons.dart';
+import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:provider/provider.dart';
 
 import '../../model/Sport.dart';
 import '../../model/SportCenter.dart';
 import '../../state/LoadOnceState.dart';
 import '../../state/MatchesState.dart';
-
 
 // main widget
 class AddOrEditMatch extends StatelessWidget {
@@ -43,32 +42,32 @@ class AddOrEditMatch extends StatelessWidget {
               if (match != null && match.cancelledAt == null)
                 Row(children: [
                   // Expanded(
-                    // child: ButtonWithLoader("CANCEL", () async {
-                    //   var shouldCancel = await CoolAlert.show(
-                    //     context: context,
-                    //     type: CoolAlertType.confirm,
-                    //     text: "This is going to cancel the match with id: \n" +
-                    //         match.documentId +
-                    //         "\nA push notification will be sent to all the going users and a refund should be issued (implmenet this)"
-                    //             "\nAre you sure?",
-                    //     onConfirmBtnTap: () => Navigator.pop(context, true),
-                    //     onCancelBtnTap: () => Navigator.pop(context, false),
-                    //   );
-                    //
-                    //   if (shouldCancel) {
-                    //     try {
-                    //       await MatchesController.cancelMatch(matchesState, matchId);
-                    //       HttpsCallable callable = FirebaseFunctions.instance
-                    //           .httpsCallable('sendCancellationNotification');
-                    //       await callable.call({"matchId": matchId});
-                    //     } catch (e, s) {
-                    //       print("exception occurred");
-                    //       print(e);
-                    //       print(s);
-                    //     }
-                    //     Navigator.pop(context);
-                    //   }
-                    // }),
+                  // child: ButtonWithLoader("CANCEL", () async {
+                  //   var shouldCancel = await CoolAlert.show(
+                  //     context: context,
+                  //     type: CoolAlertType.confirm,
+                  //     text: "This is going to cancel the match with id: \n" +
+                  //         match.documentId +
+                  //         "\nA push notification will be sent to all the going users and a refund should be issued (implmenet this)"
+                  //             "\nAre you sure?",
+                  //     onConfirmBtnTap: () => Navigator.pop(context, true),
+                  //     onCancelBtnTap: () => Navigator.pop(context, false),
+                  //   );
+                  //
+                  //   if (shouldCancel) {
+                  //     try {
+                  //       await MatchesController.cancelMatch(matchesState, matchId);
+                  //       HttpsCallable callable = FirebaseFunctions.instance
+                  //           .httpsCallable('sendCancellationNotification');
+                  //       await callable.call({"matchId": matchId});
+                  //     } catch (e, s) {
+                  //       print("exception occurred");
+                  //       print(e);
+                  //       print(s);
+                  //     }
+                  //     Navigator.pop(context);
+                  //   }
+                  // }),
                   // )
                 ])
             ],
@@ -106,7 +105,8 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
   void initState() {
     // set initial values
     sportCenterId = (match == null) ? null : match.sportCenterId;
-    sportCenterSubLocation = (match == null) ? null : match.sportCenterSubLocation;
+    sportCenterSubLocation =
+        (match == null) ? null : match.sportCenterSubLocation;
     sport = (match == null) ? null : match.sport;
     priceController = TextEditingController(
         text: (match == null)
@@ -157,12 +157,12 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
             Text("SportCenter", style: TextPalette.linkStyle),
             DropdownButton<SportCenter>(
               focusColor: Colors.white,
-              value: context
-                  .read<LoadOnceState>()
-                  .getSportCenter(sportCenterId),
+              value:
+                  context.read<LoadOnceState>().getSportCenter(sportCenterId),
               style: TextStyle(color: Colors.white),
               iconEnabledColor: Colors.black,
-              items: loadOnceState.getSportCenters()
+              items: loadOnceState
+                  .getSportCenters()
                   .map<DropdownMenuItem<SportCenter>>((SportCenter value) {
                 return DropdownMenuItem<SportCenter>(
                     value: value,
@@ -177,7 +177,8 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
               },
             ),
             SizedBox(height: 20.0),
-            Text("SportCenter location additional info (e.g. hall)", style: TextPalette.linkStyle),
+            Text("SportCenter location additional info (e.g. hall)",
+                style: TextPalette.linkStyle),
             TextFormField(
               initialValue: sportCenterSubLocation,
               onChanged: (v) => sportCenterSubLocation = v,
@@ -190,11 +191,13 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
               //elevation: 5,
               style: TextStyle(color: Colors.white),
               iconEnabledColor: Colors.black,
-              items: loadOnceState.getSports().map<DropdownMenuItem<Sport>>((Sport value) {
+              items: loadOnceState
+                  .getSports()
+                  .map<DropdownMenuItem<Sport>>((Sport value) {
                 return DropdownMenuItem<Sport>(
                     value: value,
-                    child: Text(value.displayTitle,
-                        style: TextPalette.linkStyle));
+                    child:
+                        Text(value.displayTitle, style: TextPalette.linkStyle));
               }).toList(),
               onChanged: (Sport value) {
                 setState(() {
@@ -259,8 +262,8 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
             Row(
               children: [
                 Expanded(
-                  child:
-                      RoundedButton((match == null) ? "ADD" : "EDIT", () async {
+                  child: GenericButtonWithLoader(
+                      (match == null) ? "ADD" : "EDIT", () async {
                     try {
                       if (match == null) {
                         var shouldAdd = await CoolAlert.show(
@@ -272,22 +275,27 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                           onCancelBtnTap: () => Navigator.pop(context, false),
                         );
                         if (shouldAdd) {
-                            var newMatchId = await MatchesController.addMatch(
-                                Match(
+                          var newMatchId = await MatchesController.addMatch(
+                              Match(
                                   dateTime,
                                   sportCenterId,
                                   sportCenterSubLocation,
                                   sport,
                                   maxPlayers,
-                                  (double.parse(priceController.value.text) * 100).toInt(),
-                                  Duration(minutes: int.parse(durationController.value.text)),
-                                  testMatch
-                                )
-                              );
-                            await MatchesController.refresh(context, newMatchId);
-                            await GenericInfoModal(title: "Success",
-                            description: "Added match with id:\n" + newMatchId).show(context);
-                          }
+                                  (double.parse(priceController.value.text) *
+                                          100)
+                                      .toInt(),
+                                  Duration(
+                                      minutes: int.parse(
+                                          durationController.value.text)),
+                                  testMatch));
+                          await MatchesController.refresh(context, newMatchId);
+                          await GenericInfoModal(
+                                  title: "Success",
+                                  description:
+                                      "Added match with id:\n" + newMatchId)
+                              .show(context);
+                        }
                       } else {
                         match.dateTime = dateTime;
                         match.sportCenterId = sportCenterId;
@@ -313,19 +321,31 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                         }
 
                         await MatchesController.editMatch(match);
-                        await GenericInfoModal(title: "Success!",
-                            description: "Match with id " + match.documentId + " successfully modified").show(context);
+                        await GenericInfoModal(
+                                title: "Success!",
+                                description: "Match with id " +
+                                    match.documentId +
+                                    " successfully modified")
+                            .show(context);
                         Navigator.pop(context);
                       }
                     } catch (e, stackTrace) {
                       ErrorHandlingUtils.handleError(e, stackTrace, context);
                     }
-                  }),
+                  }, Primary()),
                 )
+              ],
+            ),
+            Row(
+              children: [
+                Expanded(
+                    child: GenericButtonWithLoader("RESET RATINGS",
+                        (BuildContext context) async {
+                  print("todo");
+                }, Primary()))
               ],
             )
           ],
-        )
-      );
+        ));
   }
 }

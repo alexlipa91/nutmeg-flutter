@@ -23,7 +23,7 @@ class AvailableMatches extends StatelessWidget {
   final RefreshController refreshController = RefreshController();
 
   List<Widget> getButtons(BuildContext context) {
-    var uiState = context.read<AvailableMatchesUiState>();
+    var uiState = context.watch<AvailableMatchesUiState>();
 
     return [
       uiState.getCurrentSelection() == MatchesSelectionStatus.ALL
@@ -58,10 +58,10 @@ class AvailableMatches extends StatelessWidget {
 
   List<Widget> getGamesWidget(
       BuildContext context, RefreshController refreshController) {
-    var uiState = context.read<AvailableMatchesUiState>();
-    var state = context.read<MatchesState>();
-    var loadOnceState = context.read<LoadOnceState>();
-    var userState = context.read<UserState>();
+    var uiState = context.watch<AvailableMatchesUiState>();
+    var state = context.watch<MatchesState>();
+    var loadOnceState = context.watch<LoadOnceState>();
+    var userState = context.watch<UserState>();
 
     return (uiState.getCurrentSelection() == MatchesSelectionStatus.ALL)
         ? allGamesWidgets(
@@ -76,6 +76,10 @@ class AvailableMatches extends StatelessWidget {
       AvailableMatchesUiState uiState,
       LoadOnceState loadOnceState,
       RefreshController refreshController) {
+    if (!userState.isLoggedIn()) {
+      return [];
+    }
+
     var matches = state
         .getMatches()
         .where((e) => (!e.isTest || userState.isTestMode))
@@ -104,9 +108,11 @@ class AvailableMatches extends StatelessWidget {
       widgets.add(TextSeparatorWidget("PAST MATCHES"));
       past.sortedBy((e) => e.dateTime).reversed.forEachIndexed((index, m) {
         if (index == 0) {
-          widgets.add(GenericMatchInfoPast.first(m.documentId, onTap));
+          widgets.add(GenericMatchInfoPast.first(m.documentId, onTap,
+              refreshController));
         } else {
-          widgets.add(GenericMatchInfoPast(m.documentId, onTap));
+          widgets.add(GenericMatchInfoPast(m.documentId, onTap,
+              refreshController));
         }
       });
     }

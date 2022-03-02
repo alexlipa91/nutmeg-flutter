@@ -15,3 +15,24 @@ class TextSeparatorWidget extends StatelessWidget {
     );
   }
 }
+
+class TappableLinkText extends StatelessWidget {
+
+  final String text;
+  final Function onTap;
+
+  const TappableLinkText({Key key, this.text, this.onTap}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      child: Container(
+          width: 40,
+          height: 40,
+          child: Align(
+              alignment: Alignment.center,
+              child: Text(text, style: TextPalette.linkStyle))),
+      onTap: () => onTap(context),
+    );
+  }
+}

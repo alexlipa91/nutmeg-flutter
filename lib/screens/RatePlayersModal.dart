@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/state/MatchesState.dart';
+import 'package:nutmeg/state/RatingPlayersState.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:provider/provider.dart';
 
 import '../model/UserDetails.dart';
-import '../widgets/Avatar.dart';
+import '../rating_bar/RatingWidget.dart';
 import '../widgets/PlayerBottomModal.dart';
-
+import '../widgets/Texts.dart';
 
 class RateButton extends StatelessWidget {
   final String matchId;
@@ -20,121 +21,108 @@ class RateButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GenericButtonWithLoader("RATE PLAYERS",
-            (BuildContext context) async {
+        (BuildContext context) async {
+      context.read<GenericButtonWithLoaderState>().change(true);
+      var match = context.read<MatchesState>().getMatch(matchId);
 
-          // await UserController.refreshUsersToRateInMatch(match.documentId,
-          //     context.read<UserState>().getUserDetails().documentId,
-          //     context.read<UserState>());
-          //     print(match.documentId);
-          // print(context.read<UserState>().getUsersStillToRate(match.documentId));
+      List<UserDetails> users =
+          (await UserController.getUsersToRateInMatchForLoggedUser(
+                  context, match.documentId))
+              // .where((element) => element != null)
+              .toList();
 
-          var match = context.read<MatchesState>().getMatch(matchId);
-
-          List<UserDetails> users = (await UserController.getUsersToRateInMatchForLoggedUser(
-              context, match.documentId))
-              .where((element) => element != null).toList();
-
-          print("num users " + users.length.toString());
-
-          await showModalBottomSheet(
-              context: context,
-              builder: (BuildContext context) =>
-                  RatingPlayerBottomModal(
-                    userDetails: users,
-                    matchId: match.documentId,
-                  ));
-          context.read<GenericButtonWithLoaderState>().change(false);
-        },
-        Primary());
+      await showModalBottomSheet(
+          context: context,
+          builder: (BuildContext context) => MultiProvider(
+                providers: [
+                  ChangeNotifierProvider(
+                      create: (context) => RatingPlayersState(users)),
+                ],
+                child: RatePlayerBottomModal(matchId),
+              ));
+      await MatchesController.refresh(context, matchId);
+      context.read<GenericButtonWithLoaderState>().change(false);
+    }, Primary());
   }
 }
 
-class RatingPlayerBottomModal extends StatefulWidget {
-  final List<UserDetails> userDetails;
+class RatePlayerBottomModal extends StatelessWidget {
   final String matchId;
 
-  const RatingPlayerBottomModal({Key key, this.userDetails, this.matchId}) : super(key: key);
+  RatePlayerBottomModal(this.matchId);
 
-  @override
-  State<StatefulWidget> createState() =>
-      RatingPlayerBottomModalState(userDetails, matchId);
-}
-
-class RatingPlayerBottomModalState extends State<RatingPlayerBottomModal> {
-  final List<UserDetails> usersRatedDetails;
-  final String matchId;
-
-  int index = 0;
-  double score = 3;
-
-  RatingPlayerBottomModalState(this.usersRatedDetails, this.matchId);
+  String _getName(BuildContext context) {
+    var parts = PlayerBottomModal.getDisplayName(
+            context.watch<RatingPlayersState>().getCurrent())
+        .split(" ");
+    return parts.first;
+  }
 
   @override
   Widget build(BuildContext context) {
-    print("have " + usersRatedDetails.length.toString() + " to rate");
-    return Stack(
-        alignment: AlignmentDirectional.bottomStart,
-        clipBehavior: Clip.none,
-        children: [
-          Container(
-            width: double.infinity,
-            height: 200,
-            color: Palette.white,
-            child: Column(
-              children: [
-                SizedBox(height: 70),
-                Text(PlayerBottomModal.getDisplayName(usersRatedDetails[index]),
-                    style: TextPalette.h2),
-                SizedBox(height: 20),
-                RatingBar.builder(
-                  initialRating: 3,
-                  minRating: 1,
-                  direction: Axis.horizontal,
-                  allowHalfRating: false,
-                  itemCount: 5,
-                  itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
-                  itemBuilder: (context, _) => Icon(
-                    Icons.star,
-                    color: Colors.amber,
+    var state = context.watch<RatingPlayersState>();
+    var match = context.read<MatchesState>().getMatch(matchId);
+
+    var alreadyRated = match.numPlayersGoing() - state.toRate.length;
+
+    return PlayerBottomModal(
+        state.getCurrent(),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16),
+          child: Column(
+            children: [
+              SizedBox(height: 65),
+              Text("How was " + _getName(context) + "'s performance?",
+                  style: TextPalette.h2),
+              SizedBox(height: 2),
+              Text(_getName(context) + " won't see your score",
+                  style: TextPalette.bodyText),
+              SizedBox(height: 24),
+              RatingBar(),
+              SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // trick for alignemnt
+                  Text("ABCD",
+                      style: TextPalette.getLinkStyle(Palette.white)),
+                  Container(
+                    height: 40, // align to tappable area
+                    child: Align(
+                      alignment: Alignment.center,
+                      child: Text(
+                          (alreadyRated + state.current).toString() +
+                              "/" +
+                              (match.numPlayersGoing() - 1).toString() +
+                              " players",
+                          style: TextPalette.getBodyText(Palette.black)),
+                    ),
                   ),
-                  onRatingUpdate: (rating) {
-                    setState(() {
-                      score = rating;
-                    });
-                  },
-                ),
-                GenericButtonWithLoader(
-                    (index == usersRatedDetails.length - 1) ? "DONE" : "NEXT",
-                        (BuildContext context) async {
-                      context.read<GenericButtonWithLoaderState>().change(true);
-
-                      MatchesController.addRating(context,
-                          usersRatedDetails[index].documentId, matchId, score);
-
-                      if (index == usersRatedDetails.length - 1) {
-                        print("finished list");
-                        await MatchesController.refresh(context, matchId);
-
-                        Navigator.pop(context);
-                        print("done");
-                        return;
-                      }
-
-                      setState(() {
-                        index = index + 1;
-                      });
-
-                      context.read<GenericButtonWithLoaderState>().change(false);
-                    }, Primary())
-              ],
-            ),
+                  TappableLinkText(
+                      text: (state.currentScore > 0) ? "NEXT" : "SKIP",
+                      onTap: (BuildContext context) async {
+                        store(context);
+                      }),
+                ],
+              ),
+              SizedBox(height: 16),
+            ],
           ),
-          Positioned(
-              top: -30,
-              left: 0,
-              right: 0,
-              child: UserAvatarWithBorder(usersRatedDetails[index])),
-        ]);
+        ));
+  }
+
+  Future<void> store(BuildContext context) async {
+    var state = context.read<RatingPlayersState>();
+
+    if (state.getCurrent() != null) {
+      MatchesController.addRating(
+          context, state.getCurrent().documentId, matchId, state.getCurrentScore());
+    }
+
+    if (state.isLast()) {
+      Navigator.pop(context);
+    } else {
+      state.next();
+    }
   }
 }
-

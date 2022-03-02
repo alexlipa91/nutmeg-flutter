@@ -319,10 +319,11 @@ class GenericMatchInfoPast extends StatelessWidget {
   final String matchId;
   final double topMargin;
   final Function onTap;
+  final RefreshController refreshController;
 
-  GenericMatchInfoPast(this.matchId, this.onTap) : topMargin = 10;
+  GenericMatchInfoPast(this.matchId, this.onTap, this.refreshController) : topMargin = 10;
 
-  GenericMatchInfoPast.first(this.matchId, this.onTap) : topMargin = 0;
+  GenericMatchInfoPast.first(this.matchId, this.onTap, this.refreshController) : topMargin = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -337,6 +338,7 @@ class GenericMatchInfoPast extends StatelessWidget {
         child: Padding(
           padding: EdgeInsets.only(top: topMargin, right: 16, left: 16),
           child: InfoContainer(
+            backgroundColor: (match.isTest) ? Colors.orange : Palette.white,
             child: IntrinsicHeight(
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -373,10 +375,9 @@ class GenericMatchInfoPast extends StatelessWidget {
                 ],
               ),
             ),
-            backgroundColor: (match.isTest) ? Palette.white : Palette.white,
           ),
         ),
-        onTap: () => onTap()
+        onTap: () => onTap(context, match.documentId, refreshController)
       );
   }
 }

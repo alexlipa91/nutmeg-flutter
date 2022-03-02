@@ -1,6 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -50,15 +49,22 @@ class MatchDetails extends StatefulWidget {
 class MatchDetailsState extends State<MatchDetails> {
   Match match;
 
+  bool loading = false;
+
   @override
   void initState() {
     super.initState();
     SchedulerBinding.instance.addPostFrameCallback((_) async {
-      await FirebaseRemoteConfig.instance.fetch();
+      setState(() {
+        loading = true;
+      });
       await MatchesController.refresh(context, match.documentId);
 
       await Future.wait(match.going.keys
           .map((e) => UserController.getUserDetails(context, e)));
+      setState(() {
+        loading = false;
+      });
     });
   }
 
@@ -109,7 +115,7 @@ class MatchDetailsState extends State<MatchDetails> {
                       ? [EmptyPlayerCard(matchId: matchId)]
                       : match
                           .getGoingUsersByTime()
-                          .map((s) => PlayerCard(s))
+                          .map((s) => (loading) ? PlaceHolderPlayerCard() : PlayerCard(s))
                           .toList()),
             ),
           );
@@ -390,29 +396,18 @@ class PlayerCard extends StatelessWidget {
   Widget build(BuildContext context) {
     var userData = context.watch<UserState>().getUserDetail(userId);
 
-    var placeHolder = Shimmer.fromColors(
-        baseColor: Colors.grey[300],
-        highlightColor: Colors.grey[100],
-        child: Column(children: [
-          CircleAvatar(radius: 25, backgroundColor: Palette.white),
-          SizedBox(height: 10),
-          Container(height: 10, width: 100, color: Colors.white)
-        ]));
-
     return Padding(
         padding: EdgeInsets.only(right: 10),
         child: SizedBox(
           width: 100,
           child: InfoContainer(
-              child: (userData == null)
-                  ? placeHolder
-                  : Column(children: [
+              child: Column(children: [
                       InkWell(
                           onTap: () {
                             showModalBottomSheet(
                                 context: context,
                                 builder: (context) =>
-                                    PlayerBottomModal(userDetails: userData));
+                                    JoinedPlayerBottomModal(userData));
                           },
                           child: UserAvatar(24, userData)),
                       SizedBox(height: 10),
@@ -456,6 +451,21 @@ class EmptyPlayerCard extends StatelessWidget {
                     fontWeight: FontWeight.w400))
           ])),
         ));
+  }
+}
+
+class PlaceHolderPlayerCard extends StatelessWidget {
+
+  @override
+  Widget build(BuildContext context) {
+    return Shimmer.fromColors(
+        baseColor: Colors.grey[300],
+        highlightColor: Colors.grey[100],
+        child: Column(children: [
+          CircleAvatar(radius: 25, backgroundColor: Palette.white),
+          SizedBox(height: 10),
+          Container(height: 10, width: 100, color: Colors.white)
+        ]));
   }
 }
 

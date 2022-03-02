@@ -45,6 +45,7 @@ class TextPalette {
   static TextStyle h1Default = GoogleFonts.roboto(color: Palette.black, fontSize: 30, fontWeight: FontWeight.w900);
   static TextStyle h1Inverted = GoogleFonts.roboto(color: Palette.white, fontSize: 30, fontWeight: FontWeight.w900);
 
+  static TextStyle getH2(Color color) => GoogleFonts.roboto(color: color, fontSize: 18, fontWeight: FontWeight.w700);
   static TextStyle h2 = GoogleFonts.roboto(color: Palette.black, fontSize: 18, fontWeight: FontWeight.w700);
 
   static TextStyle getH3(Color color) => GoogleFonts.roboto(color: color, fontSize: 14, fontWeight: FontWeight.w500);
@@ -54,6 +55,7 @@ class TextPalette {
 
   static TextStyle h4 = GoogleFonts.roboto(color: Palette.black, fontSize: 12, fontWeight: FontWeight.w500);
 
+  static TextStyle getBodyText(Color color) => GoogleFonts.roboto(color: color, fontSize: 14, fontWeight: FontWeight.w400, height: 1.6);
   static TextStyle bodyText = GoogleFonts.roboto(color: Palette.mediumgrey, fontSize: 14, fontWeight: FontWeight.w400, height: 1.6);
   static TextStyle bodyTextPrimary = GoogleFonts.roboto(color: Palette.primary, fontSize: 14, fontWeight: FontWeight.w400, height: 1.6);
 

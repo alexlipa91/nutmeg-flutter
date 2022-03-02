@@ -1,5 +1,6 @@
 import "package:collection/collection.dart";
 import 'package:flutter/material.dart';
+import 'package:nutmeg/screens/admin/AddOrEditMatch.dart';
 import 'package:nutmeg/widgets/Buttons.dart';
 import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
@@ -8,7 +9,7 @@ import '../../state/AvailableMatchesState.dart';
 import '../../state/MatchesState.dart';
 import '../../utils/UiUtils.dart';
 import '../../widgets/GenericAvailableMatches.dart';
-import '../MatchDetails.dart';
+import 'AddOrEditMatch.dart';
 
 // main widget
 class AdminAvailableMatches extends StatelessWidget {
@@ -27,7 +28,8 @@ class AdminAvailableMatches extends StatelessWidget {
           : Expanded(
               child: LeftButtonOff(
                   "UPCOMING",
-                  () => uiState.changeTo(MatchesAdminSelectionStatus.UPCOMING))),
+                  () =>
+                      uiState.changeTo(MatchesAdminSelectionStatus.UPCOMING))),
       uiState.getCurrentSelection() == MatchesAdminSelectionStatus.PAST
           ? Expanded(
               child: RightButtonOn("PAST",
@@ -40,14 +42,10 @@ class AdminAvailableMatches extends StatelessWidget {
 
   Future<void> onTap(BuildContext context, String matchId,
       RefreshController refreshController) async {
-    await Navigator.pushNamed(
-      context,
-      MatchDetails.routeName,
-      arguments: ScreenArguments(
-        matchId,
-        false,
-      ),
-    );
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => AddOrEditMatch.update(matchId)));
     await refreshController.requestRefresh();
   }
 
@@ -63,7 +61,8 @@ class AdminAvailableMatches extends StatelessWidget {
     var matches = (status == MatchesAdminSelectionStatus.UPCOMING)
         ? matchesState
             .getMatches()
-            .where((e) => e.dateTime.isAfter(DateTime.now())).sortedBy((e) => e.dateTime)
+            .where((e) => e.dateTime.isAfter(DateTime.now()))
+            .sortedBy((e) => e.dateTime)
         : matchesState
             .getMatches()
             .where((e) => e.dateTime.isBefore(DateTime.now()));
@@ -103,11 +102,21 @@ class AdminAvailableMatches extends StatelessWidget {
           ChangeNotifierProvider(
               create: (context) => AvailableMatchesAdminUiState()),
         ],
-        child: GenericAvailableMatchesList(
-            RoundedTopBar(getButtons: getButtons, color: Colors.green),
-            getGamesWidgets,
-            getEmptyStateWidget,
-            refreshController,
-            Colors.green));
+        child: Scaffold(
+            body: GenericAvailableMatchesList(
+                RoundedTopBar(getButtons: getButtons, color: Colors.green),
+                getGamesWidgets,
+                getEmptyStateWidget,
+                refreshController,
+                Colors.green),
+            floatingActionButton: FloatingActionButton(
+                backgroundColor: Colors.green,
+                child: Icon(Icons.add, color: Colors.white),
+                onPressed: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => AddOrEditMatch.add()));
+                })));
   }
 }
