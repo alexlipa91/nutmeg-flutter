@@ -49,22 +49,14 @@ class MatchDetails extends StatefulWidget {
 class MatchDetailsState extends State<MatchDetails> {
   Match match;
 
-  bool loading = false;
-
   @override
   void initState() {
     super.initState();
     SchedulerBinding.instance.addPostFrameCallback((_) async {
-      setState(() {
-        loading = true;
-      });
       await MatchesController.refresh(context, match.documentId);
 
-      await Future.wait(match.going.keys
+      Future.wait(match.going.keys
           .map((e) => UserController.getUserDetails(context, e)));
-      setState(() {
-        loading = false;
-      });
     });
   }
 
@@ -115,7 +107,7 @@ class MatchDetailsState extends State<MatchDetails> {
                       ? [EmptyPlayerCard(matchId: matchId)]
                       : match
                           .getGoingUsersByTime()
-                          .map((s) => (loading) ? PlaceHolderPlayerCard() : PlayerCard(s))
+                          .map((s) => PlayerCard(s))
                           .toList()),
             ),
           );
@@ -331,7 +323,8 @@ class SportCenterImageCarouselState extends State<SportCenterImageCarousel> {
               ),
             ],
           );
-        });
+        }
+      );
   }
 }
 
@@ -395,13 +388,22 @@ class PlayerCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var userData = context.watch<UserState>().getUserDetail(userId);
+    var placeHolder = Shimmer.fromColors(
+        baseColor: Colors.grey[300],
+        highlightColor: Colors.grey[100],
+        child: Column(children: [
+          CircleAvatar(radius: 25, backgroundColor: Palette.white),
+          SizedBox(height: 10),
+          Container(height: 10, width: 100, color: Colors.white)
+        ]));
 
     return Padding(
         padding: EdgeInsets.only(right: 10),
         child: SizedBox(
           width: 100,
           child: InfoContainer(
-              child: Column(children: [
+              child: (userData == null)
+                  ? placeHolder : Column(children: [
                       InkWell(
                           onTap: () {
                             showModalBottomSheet(
@@ -451,21 +453,6 @@ class EmptyPlayerCard extends StatelessWidget {
                     fontWeight: FontWeight.w400))
           ])),
         ));
-  }
-}
-
-class PlaceHolderPlayerCard extends StatelessWidget {
-
-  @override
-  Widget build(BuildContext context) {
-    return Shimmer.fromColors(
-        baseColor: Colors.grey[300],
-        highlightColor: Colors.grey[100],
-        child: Column(children: [
-          CircleAvatar(radius: 25, backgroundColor: Palette.white),
-          SizedBox(height: 10),
-          Container(height: 10, width: 100, color: Colors.white)
-        ]));
   }
 }
 
