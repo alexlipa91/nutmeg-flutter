@@ -20,10 +20,10 @@ class ErrorHandlingUtils {
             .then((value) =>
                 SystemChannels.platform.invokeMethod('SystemNavigator.pop'));
       default:
-        // return GenericInfoModal(
-        //         title: "Something went wrong!",
-        //         body: "Please contact us for support.")
-        //     .show(context);
+        return GenericInfoModal(
+                title: "Something went wrong!",
+                description: "Please contact us for support.")
+            .show(context);
     }
   }
 }

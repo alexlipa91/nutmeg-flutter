@@ -52,7 +52,6 @@ class LaunchController {
         Navigator.of(context).pushNamed(MatchDetails.routeName,
           arguments: ScreenArguments(
               matchId,
-              false
           ),
         );
       }
@@ -79,7 +78,6 @@ class LaunchController {
         MatchDetails.routeName,
         arguments: ScreenArguments(
           match.documentId,
-          false,
         ),
       );
       return;

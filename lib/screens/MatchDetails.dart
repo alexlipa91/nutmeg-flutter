@@ -38,33 +38,37 @@ import 'BottomBarMatch.dart';
 
 class ScreenArguments {
   final String matchId;
-  final bool isPast;
 
-  ScreenArguments(this.matchId, this.isPast);
+  ScreenArguments(this.matchId);
 }
 
 class MatchDetails extends StatefulWidget {
   static const routeName = "/match";
 
+  final String matchId;
+
+  const MatchDetails({Key key, this.matchId}) : super(key: key);
+
   @override
-  State<StatefulWidget> createState() {
-    return MatchDetailsState();
-  }
+  State<StatefulWidget> createState() => MatchDetailsState(matchId);
 }
 
 class MatchDetailsState extends State<MatchDetails> {
-  Match match;
+  final String matchId;
+
   bool showBottomBar = false;
 
+  MatchDetailsState(this.matchId);
+
   Future<void> refreshState() async {
-    await MatchesController.refresh(context, match.documentId);
+    var match = await MatchesController.refresh(context, matchId);
 
     var status =
-    context.read<MatchesState>().getMatchStatus(match.documentId);
+    context.read<MatchesState>().getMatchStatus(matchId);
     if (status == MatchStatusForUser.to_rate) {
-      await RatePlayerBottomModal.rateAction(context, match.documentId);
+      await RatePlayerBottomModal.rateAction(context, matchId);
     } else if (status == MatchStatusForUser.rated) {
-      MatchesController.refreshMatchStats(context, match.documentId);
+      MatchesController.refreshMatchStats(context, matchId);
     }
     showBottomBar = true;
 
@@ -82,15 +86,12 @@ class MatchDetailsState extends State<MatchDetails> {
 
   @override
   Widget build(BuildContext context) {
-    final args = ModalRoute.of(context).settings.arguments as ScreenArguments;
     var matchesState = context.watch<MatchesState>();
-
-    match = matchesState.getMatch(args.matchId);
+    var match = matchesState.getMatch(matchId);
 
     if (match == null) {
       return Container();
     }
-    var matchId = args.matchId;
 
     var loadOnceState = context.read<LoadOnceState>();
 

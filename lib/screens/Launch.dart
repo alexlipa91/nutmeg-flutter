@@ -47,15 +47,23 @@ void main() {
             primaryColor: Palette.primary,
             accentColor: Palette.light
         ),
-        routes: {
-          AvailableMatches.routeName: (context) => AvailableMatches(),
-          MatchDetails.routeName: (context) =>
-              MultiProvider(
+        onGenerateRoute: (RouteSettings settings) {
+          print('build route for ${settings.name}');
+
+          var routes = <String, WidgetBuilder>{
+            MatchDetails.routeName: (ctx) {
+              final args = settings.arguments as ScreenArguments;
+              return MultiProvider(
                   providers: [
                     ChangeNotifierProvider(
                         create: (context) => MatchStatState()),
                   ],
-                  child: MatchDetails()),
+                  child: MatchDetails(matchId: args.matchId));
+            },
+            AvailableMatches.routeName: (ctx) => AvailableMatches()
+          };
+          WidgetBuilder builder = routes[settings.name];
+          return MaterialPageRoute(builder: (ctx) => builder(ctx));
         },
       ),
     ));

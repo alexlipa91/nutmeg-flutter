@@ -19,8 +19,8 @@ class MatchesState extends ChangeNotifier {
   static var pastStates = [MatchStatusForUser.rated,
       MatchStatusForUser.to_rate, MatchStatusForUser.no_more_to_rate];
 
-  Map<String, Match> _matches;
-  Map<String, MatchStatusForUser> _matchesStatus;
+  Map<String, Match> _matches = Map();
+  Map<String, MatchStatusForUser> _matchesStatus = Map();
 
   void setMatches(List<Match> newMatches) {
     _matches = newMatches.groupListsBy((e) => e.documentId)
@@ -29,10 +29,6 @@ class MatchesState extends ChangeNotifier {
   }
 
   void setMatchStatus(String matchId, MatchStatusForUser matchStatus) {
-    if (_matchesStatus == null) {
-      _matchesStatus = Map();
-    }
-
     _matchesStatus[matchId] = matchStatus;
     notifyListeners();
   }
@@ -57,9 +53,6 @@ class MatchesState extends ChangeNotifier {
   Match getMatch(String matchId) => (_matches == null) ? null : _matches[matchId];
 
   MatchStatusForUser getMatchStatus(String matchId) {
-    if (_matchesStatus == null) {
-      _matchesStatus = Map();
-    }
     return _matchesStatus[matchId];
   }
 

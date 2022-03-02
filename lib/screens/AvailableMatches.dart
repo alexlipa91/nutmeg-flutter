@@ -49,8 +49,7 @@ class AvailableMatches extends StatelessWidget {
       context,
       MatchDetails.routeName,
       arguments: ScreenArguments(
-        matchId,
-        false,
+        matchId
       ),
     );
     await refreshController.requestRefresh();

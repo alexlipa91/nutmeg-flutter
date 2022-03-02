@@ -184,8 +184,6 @@ class UserController {
 
     var resp = await apiClient.callFunction("get_user", {"id": uid});
 
-    print(resp["scoreMatches"]);
-
     var ud = (resp == null) ? UserDetails.empty(uid) : UserDetails.fromJson(resp, uid);
     userState.setUserDetail(ud);
 
