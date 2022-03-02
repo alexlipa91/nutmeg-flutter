@@ -29,25 +29,26 @@ class RateButton extends StatelessWidget {
 }
 
 class RatePlayerBottomModal extends StatelessWidget {
-
   static Future<void> rateAction(BuildContext context, String matchId) async {
     var match = context.read<MatchesState>().getMatch(matchId);
 
     List<UserDetails> users =
-    (await UserController.getUsersToRateInMatchForLoggedUser(
-        context, match.documentId))
-    // .where((element) => element != null)
-        .toList();
+        (await UserController.getUsersToRateInMatchForLoggedUser(
+                context, match.documentId))
+            .toList();
 
     await showModalBottomSheet(
-    context: context,
-    builder: (BuildContext context) => MultiProvider(
-    providers: [
-    ChangeNotifierProvider(
-    create: (context) => RatingPlayersState(users)),
-    ],
-    child: RatePlayerBottomModal(matchId),
-    ));
+        context: context,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
+        ),
+        builder: (BuildContext context) => MultiProvider(
+              providers: [
+                ChangeNotifierProvider(
+                    create: (context) => RatingPlayersState(users)),
+              ],
+              child: RatePlayerBottomModal(matchId),
+            ));
     await MatchesController.refresh(context, matchId);
   }
 
@@ -88,8 +89,7 @@ class RatePlayerBottomModal extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   // trick for alignemnt
-                  Text("ABCD",
-                      style: TextPalette.getLinkStyle(Palette.white)),
+                  Text("ABCD", style: TextPalette.getLinkStyle(Palette.white)),
                   Container(
                     height: 40, // align to tappable area
                     child: Align(
@@ -119,8 +119,8 @@ class RatePlayerBottomModal extends StatelessWidget {
     var state = context.read<RatingPlayersState>();
 
     if (state.getCurrent() != null) {
-      MatchesController.addRating(
-          context, state.getCurrent().documentId, matchId, state.getCurrentScore());
+      MatchesController.addRating(context, state.getCurrent().documentId,
+          matchId, state.getCurrentScore());
     }
 
     if (state.isLast()) {
