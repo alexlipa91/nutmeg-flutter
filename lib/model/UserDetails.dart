@@ -64,5 +64,12 @@ class UserDetails {
   void setStripeId(String stripeId) => stripeId = stripeId;
 
   String getPhotoUrl() => image;
+
+  static getDisplayName(UserDetails ud) {
+    if (ud == null) return "Player";
+    if (ud.name != null) return ud.name;
+    if (ud.email != null) return ud.email;
+    return "Player";
+  }
 }
 

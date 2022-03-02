@@ -5,12 +5,6 @@ import '../model/UserDetails.dart';
 import 'Avatar.dart';
 
 class PlayerBottomModal extends StatelessWidget {
-  static String getDisplayName(UserDetails ud) {
-    if (ud == null) return "Player";
-    if (ud.name != null) return ud.name;
-    if (ud.email != null) return ud.email;
-    return "Player";
-  }
 
   PlayerBottomModal(this.userDetails, this.content);
 
@@ -83,7 +77,7 @@ class JoinedPlayerBottomModal extends StatelessWidget {
         child: Column(
           children: [
             SizedBox(height: 70),
-            Text(PlayerBottomModal.getDisplayName(userDetails),
+            Text(UserDetails.getDisplayName(userDetails),
                 style: TextPalette.h2),
             SizedBox(height: 24),
             Row(

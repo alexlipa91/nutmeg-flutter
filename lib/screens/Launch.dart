@@ -14,6 +14,7 @@ import 'package:provider/provider.dart';
 
 import '../Exceptions.dart';
 import '../state/LoadOnceState.dart';
+import '../state/MatchStatsState.dart';
 import '../state/MatchesState.dart';
 import '../state/UserState.dart';
 
@@ -48,7 +49,13 @@ void main() {
         ),
         routes: {
           AvailableMatches.routeName: (context) => AvailableMatches(),
-          MatchDetails.routeName: (context) => MatchDetails(),
+          MatchDetails.routeName: (context) =>
+              MultiProvider(
+                  providers: [
+                    ChangeNotifierProvider(
+                        create: (context) => MatchStatState()),
+                  ],
+                  child: MatchDetails()),
         },
       ),
     ));

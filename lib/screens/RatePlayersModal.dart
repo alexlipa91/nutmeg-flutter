@@ -57,7 +57,7 @@ class RatePlayerBottomModal extends StatelessWidget {
   RatePlayerBottomModal(this.matchId);
 
   String _getName(BuildContext context) {
-    var parts = PlayerBottomModal.getDisplayName(
+    var parts = UserDetails.getDisplayName(
             context.watch<RatingPlayersState>().getCurrent())
         .split(" ");
     return parts.first;

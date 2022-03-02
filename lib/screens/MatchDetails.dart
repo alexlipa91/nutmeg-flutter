@@ -11,13 +11,16 @@ import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/controller/SportCentersController.dart';
 import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/model/Match.dart';
+import 'package:nutmeg/model/UserDetails.dart';
 import 'package:nutmeg/screens/JoinModal.dart';
 import 'package:nutmeg/screens/RatePlayersModal.dart';
+import 'package:nutmeg/state/MatchStatsState.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/AppBar.dart';
 import 'package:nutmeg/widgets/Avatar.dart';
 import 'package:nutmeg/widgets/Containers.dart';
+import 'package:nutmeg/widgets/GenericAvailableMatches.dart';
 import 'package:nutmeg/widgets/PlayerBottomModal.dart';
 import 'package:nutmeg/widgets/Section.dart';
 import 'package:provider/provider.dart';
@@ -57,9 +60,12 @@ class MatchDetailsState extends State<MatchDetails> {
     SchedulerBinding.instance.addPostFrameCallback((_) async {
       await MatchesController.refresh(context, match.documentId);
 
-      var status = context.read<MatchesState>().getMatchStatus(match.documentId);
+      var status =
+          context.read<MatchesState>().getMatchStatus(match.documentId);
       if (status == MatchStatusForUser.to_rate) {
         await RatePlayerBottomModal.rateAction(context, match.documentId);
+      } else if (status == MatchStatusForUser.rated) {
+        MatchesController.refreshMatchStats(context, match.documentId);
       }
       showBottomBar = true;
 
@@ -121,6 +127,9 @@ class MatchDetailsState extends State<MatchDetails> {
           );
         },
       )),
+      if (matchesState.getMatchStatus(match.documentId) ==
+          MatchStatusForUser.rated)
+        pad(Stats()),
       pad(Section(
           title: "DETAILS",
           body: RuleCard(
@@ -150,10 +159,12 @@ class MatchDetailsState extends State<MatchDetails> {
                 )
               ],
             )),
-        bottomNavigationBar: (!showBottomBar) ? null : BottomBarMatch(
-          matchId: matchId,
-          extraBottomPadding: MediaQuery.of(context).padding.bottom,
-        ));
+        bottomNavigationBar: (!showBottomBar)
+            ? null
+            : BottomBarMatch(
+                matchId: matchId,
+                extraBottomPadding: MediaQuery.of(context).padding.bottom,
+              ));
   }
 }
 
@@ -331,8 +342,7 @@ class SportCenterImageCarouselState extends State<SportCenterImageCarousel> {
               ),
             ],
           );
-        }
-      );
+        });
   }
 }
 
@@ -411,13 +421,15 @@ class PlayerCard extends StatelessWidget {
           width: 100,
           child: InfoContainer(
               child: (userData == null)
-                  ? placeHolder : Column(children: [
+                  ? placeHolder
+                  : Column(children: [
                       InkWell(
                           onTap: () {
                             showModalBottomSheet(
                                 context: context,
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
+                                  borderRadius: BorderRadius.vertical(
+                                      top: Radius.circular(20.0)),
                                 ),
                                 builder: (context) =>
                                     JoinedPlayerBottomModal(userData));
@@ -560,6 +572,80 @@ class MapCard extends StatelessWidget {
                     target: LatLng(sportCenter.lat, sportCenter.lng), zoom: 12),
               )),
         ),
+      ),
+    );
+  }
+}
+
+class Stats extends StatelessWidget {
+
+  @override
+  Widget build(BuildContext context) {
+    var ratings = context.watch<MatchStatState>().ratings;
+    var userState = context.watch<UserState>();
+
+    return Section(
+      title: "MATCH STATS",
+      body: InfoContainer(
+        child: (ratings.isEmpty)
+            ? MatchInfoSkeleton()
+            : Builder(
+                builder: (context) {
+                  var sorted = ratings.entries.toList()
+                    ..sort((a, b) => b.value.compareTo(a.value));
+
+                  int index = 1;
+
+                  return Container(
+                    child: Column(
+                      children: sorted.map((e) {
+                        var user = e.key;
+                        var score = e.value;
+
+                        var userDetails = userState.getUserDetail(user);
+
+                        var widgets = [
+                          Text(index.toString(), style: TextPalette.bodyText),
+                          SizedBox(width: 16),
+                          UserAvatar(10, userDetails),
+                          SizedBox(width: 16),
+                          Text(
+                              UserDetails.getDisplayName(userDetails)
+                                  .split(" ")
+                                  .first,
+                              style: TextPalette.bodyText),
+                          SizedBox(width: 4),
+                          if (index == 1)
+                            Icon(
+                            Icons.sports_soccer,
+                            color: Colors.amber,
+                          ),
+                          Spacer(),
+                          Container(
+                            height: 10,
+                            width: 100,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.all(Radius.circular(10)),
+                              child: LinearProgressIndicator(
+                                value: score / 5,
+                                color: Palette.primary,
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 16),
+                          Text(score.toStringAsFixed(1),
+                              style: TextPalette.bodyText),
+                        ];
+
+                        index++;
+                        return Padding(
+                            padding: (index > 2) ? EdgeInsets.only(top: 16) : EdgeInsets.zero,
+                            child: Row(children: widgets));
+                      }).toList(),
+                    ),
+                  );
+                },
+              ),
       ),
     );
   }

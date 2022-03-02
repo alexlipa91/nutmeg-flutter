@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 import 'package:nutmeg/model/Match.dart';
+import 'package:nutmeg/state/MatchStatsState.dart';
+import 'package:nutmeg/state/RatingPlayersState.dart';
 import 'package:provider/provider.dart';
 
 import '../model/PaymentRecap.dart';
@@ -142,5 +144,22 @@ class MatchesController {
     await apiClient.callFunction("reset_ratings_for_match", {
       "match_id": matchId
     });
+  }
+
+  static Future<Map<String, List<int>>> refreshMatchStats(BuildContext context, String matchId) async {
+    var ratingsState = context.read<MatchStatState>();
+
+    var resp = await apiClient.callFunction("get_ratings_by_match", {
+      "match_id": matchId
+    });
+
+    var r = Map<String, List<int>>();
+
+    resp.forEach((key, value) {
+      r[key] = List<int>.from(value);
+    });
+
+    ratingsState.setRatings(r);
+    return r;
   }
 }
