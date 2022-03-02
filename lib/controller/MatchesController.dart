@@ -137,4 +137,10 @@ class MatchesController {
       print(s);
     }
   }
+
+  static Future<void> resetRatings(String matchId) async {
+    await apiClient.callFunction("reset_ratings_for_match", {
+      "match_id": matchId
+    });
+  }
 }

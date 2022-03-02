@@ -19,7 +19,8 @@ class GenericInfoModal<T> {
     List<Widget> widgets = [
       Text(title, style: TextPalette.h2),
       SizedBox(height: verticalSpaceBetweenElements),
-      Text(description, style: TextPalette.bodyText),
+      if (description != null)
+        Text(description, style: TextPalette.bodyText),
     ];
 
     // change space depending if description is there

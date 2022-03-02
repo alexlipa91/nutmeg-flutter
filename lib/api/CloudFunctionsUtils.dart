@@ -14,11 +14,7 @@ class CloudFunctionsClient {
 
   Future<Map<String, dynamic>> callFunction(String name, Map<String, dynamic> data) async {
     HttpsCallable callable = _client.httpsCallable(name);
-    try {
-      var resp = await callable(data);
-      return resp.data;
-    } on FirebaseFunctionsException catch (e) {
-      print(e);
-    }
+    var resp = await callable(data);
+    return resp.data;
   }
 }

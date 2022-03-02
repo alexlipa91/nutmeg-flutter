@@ -341,7 +341,17 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                 Expanded(
                     child: GenericButtonWithLoader("RESET RATINGS",
                         (BuildContext context) async {
-                  print("todo");
+                  context.read<GenericButtonWithLoaderState>().change(true);
+                  try {
+                    await MatchesController.resetRatings(match.documentId);
+                    GenericInfoModal(
+                        title: "Successfully deleted all ratings for the match"
+                    ).show(context);
+                  } catch (e, stack) {
+                    print(e); print(stack);
+                    GenericInfoModal(title: "Something went wrong").show(context);
+                  }
+                  context.read<GenericButtonWithLoaderState>().change(false);
                 }, Primary()))
               ],
             )
