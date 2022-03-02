@@ -12,6 +12,7 @@ import 'package:nutmeg/controller/SportCentersController.dart';
 import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/model/Match.dart';
 import 'package:nutmeg/screens/JoinModal.dart';
+import 'package:nutmeg/screens/RatePlayersModal.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/AppBar.dart';
@@ -48,12 +49,21 @@ class MatchDetails extends StatefulWidget {
 
 class MatchDetailsState extends State<MatchDetails> {
   Match match;
+  bool showBottomBar = false;
 
   @override
   void initState() {
     super.initState();
     SchedulerBinding.instance.addPostFrameCallback((_) async {
       await MatchesController.refresh(context, match.documentId);
+
+      var status = context.read<MatchesState>().getMatchStatus(match.documentId);
+      if (status == MatchStatusForUser.to_rate) {
+        await RatePlayerBottomModal.rateAction(context, match.documentId);
+      }
+      // setState(() {
+        showBottomBar = true;
+      // });
 
       Future.wait(match.going.keys
           .map((e) => UserController.getUserDetails(context, e)));
@@ -142,7 +152,7 @@ class MatchDetailsState extends State<MatchDetails> {
                 )
               ],
             )),
-        bottomNavigationBar: BottomBarMatch(
+        bottomNavigationBar: (!showBottomBar) ? null : BottomBarMatch(
           matchId: matchId,
           extraBottomPadding: MediaQuery.of(context).padding.bottom,
         ));

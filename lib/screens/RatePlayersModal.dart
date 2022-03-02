@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/state/MatchesState.dart';
@@ -23,30 +22,35 @@ class RateButton extends StatelessWidget {
     return GenericButtonWithLoader("RATE PLAYERS",
         (BuildContext context) async {
       context.read<GenericButtonWithLoaderState>().change(true);
-      var match = context.read<MatchesState>().getMatch(matchId);
-
-      List<UserDetails> users =
-          (await UserController.getUsersToRateInMatchForLoggedUser(
-                  context, match.documentId))
-              // .where((element) => element != null)
-              .toList();
-
-      await showModalBottomSheet(
-          context: context,
-          builder: (BuildContext context) => MultiProvider(
-                providers: [
-                  ChangeNotifierProvider(
-                      create: (context) => RatingPlayersState(users)),
-                ],
-                child: RatePlayerBottomModal(matchId),
-              ));
-      await MatchesController.refresh(context, matchId);
+      await RatePlayerBottomModal.rateAction(context, matchId);
       context.read<GenericButtonWithLoaderState>().change(false);
     }, Primary());
   }
 }
 
 class RatePlayerBottomModal extends StatelessWidget {
+
+  static Future<void> rateAction(BuildContext context, String matchId) async {
+    var match = context.read<MatchesState>().getMatch(matchId);
+
+    List<UserDetails> users =
+    (await UserController.getUsersToRateInMatchForLoggedUser(
+        context, match.documentId))
+    // .where((element) => element != null)
+        .toList();
+
+    await showModalBottomSheet(
+    context: context,
+    builder: (BuildContext context) => MultiProvider(
+    providers: [
+    ChangeNotifierProvider(
+    create: (context) => RatingPlayersState(users)),
+    ],
+    child: RatePlayerBottomModal(matchId),
+    ));
+    await MatchesController.refresh(context, matchId);
+  }
+
   final String matchId;
 
   RatePlayerBottomModal(this.matchId);
