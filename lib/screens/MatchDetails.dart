@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
@@ -54,23 +56,27 @@ class MatchDetailsState extends State<MatchDetails> {
   Match match;
   bool showBottomBar = false;
 
+  Future<void> refreshState() async {
+    await MatchesController.refresh(context, match.documentId);
+
+    var status =
+    context.read<MatchesState>().getMatchStatus(match.documentId);
+    if (status == MatchStatusForUser.to_rate) {
+      await RatePlayerBottomModal.rateAction(context, match.documentId);
+    } else if (status == MatchStatusForUser.rated) {
+      MatchesController.refreshMatchStats(context, match.documentId);
+    }
+    showBottomBar = true;
+
+    Future.wait(match.going.keys
+        .map((e) => UserController.getUserDetails(context, e)));
+  }
+
   @override
   void initState() {
     super.initState();
     SchedulerBinding.instance.addPostFrameCallback((_) async {
-      await MatchesController.refresh(context, match.documentId);
-
-      var status =
-          context.read<MatchesState>().getMatchStatus(match.documentId);
-      if (status == MatchStatusForUser.to_rate) {
-        await RatePlayerBottomModal.rateAction(context, match.documentId);
-      } else if (status == MatchStatusForUser.rated) {
-        MatchesController.refreshMatchStats(context, match.documentId);
-      }
-      showBottomBar = true;
-
-      Future.wait(match.going.keys
-          .map((e) => UserController.getUserDetails(context, e)));
+      await refreshState();
     });
   }
 
@@ -95,6 +101,8 @@ class MatchDetailsState extends State<MatchDetails> {
         ? match.documentId
         : sportCenter.name + " - " + sport.displayTitle;
 
+    var matchStatus = matchesState.getMatchStatus(match.documentId);
+
     pad(Widget w) =>
         Padding(padding: EdgeInsets.symmetric(horizontal: 16), child: w);
 
@@ -105,37 +113,37 @@ class MatchDetailsState extends State<MatchDetails> {
           child: Text(title, style: TextPalette.h1Default))),
       SizedBox(height: 16),
       MatchInfo(match, sportCenter, sport),
-      pad(Builder(
-        builder: (context) {
-          int going = match.numPlayersGoing();
-          return Section(
-            title: going.toString() +
-                "/" +
-                match.maxPlayers.toString() +
-                " PLAYERS",
-            body: SingleChildScrollView(
-              clipBehavior: Clip.none,
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                  children: (match.going.isEmpty)
-                      ? [EmptyPlayerCard(matchId: matchId)]
-                      : match
-                          .getGoingUsersByTime()
-                          .map((s) => PlayerCard(s))
-                          .toList()),
-            ),
-          );
-        },
-      )),
-      if (matchesState.getMatchStatus(match.documentId) ==
-          MatchStatusForUser.rated)
-        pad(Stats()),
-      pad(Section(
-          title: "DETAILS",
-          body: RuleCard(
-              "Payment Policy",
-              "If you leave the match more than 15 hours before the kick-off time the amount you paid will be returned to you in credits that you can use in other Nutmeg matches. "
-                  "\n\nNo credits or refund will be provided if you drop out of a game less than 15 hours from kick-off."))),
+      if (matchStatus != MatchStatusForUser.rated)
+        pad(Builder(
+          builder: (context) {
+            int going = match.numPlayersGoing();
+            return Section(
+              title: going.toString() +
+                  "/" +
+                  match.maxPlayers.toString() +
+                  " PLAYERS",
+              body: SingleChildScrollView(
+                clipBehavior: Clip.none,
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                    children: (match.going.isEmpty)
+                        ? [EmptyPlayerCard(matchId: matchId)]
+                        : match
+                            .getGoingUsersByTime()
+                            .map((s) => PlayerCard(s))
+                            .toList()),
+              ),
+            );
+          },
+        )),
+      if (matchStatus == MatchStatusForUser.rated) pad(Stats()),
+      if (!MatchesState.pastStates.contains(matchStatus))
+        pad(Section(
+            title: "DETAILS",
+            body: RuleCard(
+                "Payment Policy",
+                "If you leave the match more than 15 hours before the kick-off time the amount you paid will be returned to you in credits that you can use in other Nutmeg matches. "
+                    "\n\nNo credits or refund will be provided if you drop out of a game less than 15 hours from kick-off."))),
       SizedBox(height: 16),
       // MapCard.big(sportCenter)
     ];
@@ -144,7 +152,7 @@ class MatchDetailsState extends State<MatchDetails> {
         backgroundColor: Palette.light,
         body: RefreshIndicator(
             onRefresh: () async {
-              await MatchesController.refresh(context, matchId);
+              await refreshState();
             },
             child: CustomScrollView(
               slivers: [
@@ -578,7 +586,6 @@ class MapCard extends StatelessWidget {
 }
 
 class Stats extends StatelessWidget {
-
   @override
   Widget build(BuildContext context) {
     var ratings = context.watch<MatchStatState>().ratings;
@@ -605,41 +612,55 @@ class Stats extends StatelessWidget {
                         var userDetails = userState.getUserDetail(user);
 
                         var widgets = [
-                          Text(index.toString(), style: TextPalette.bodyText),
+                          Container(
+                              width: 16,
+                              child: Text(index.toString(),
+                                  style: TextPalette.bodyText)),
                           SizedBox(width: 16),
                           UserAvatar(10, userDetails),
                           SizedBox(width: 16),
-                          Text(
-                              UserDetails.getDisplayName(userDetails)
-                                  .split(" ")
-                                  .first,
-                              style: TextPalette.bodyText),
-                          SizedBox(width: 4),
-                          if (index == 1)
-                            Icon(
-                            Icons.sports_soccer,
-                            color: Colors.amber,
+                          Expanded(
+                            child: Row(
+                              children: [
+                                Builder(builder: (context) {
+                                  var n =
+                                      UserDetails.getDisplayName(userDetails)
+                                          .split(" ")
+                                          .first;
+                                  return Text(n,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextPalette.bodyText);
+                                }),
+                                if (index == 1)
+                                  Icon(
+                                    Icons.sports_soccer,
+                                    color: Colors.amber,
+                                ),
+                              ],
+                            ),
                           ),
-                          Spacer(),
                           Container(
                             height: 10,
                             width: 100,
                             child: ClipRRect(
-                              borderRadius: BorderRadius.all(Radius.circular(10)),
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(10)),
                               child: LinearProgressIndicator(
-                                value: score / 5,
+                                value: max(score / 5, 1),
                                 color: Palette.primary,
                               ),
                             ),
                           ),
-                          SizedBox(width: 16),
+                          SizedBox(width: 8),
                           Text(score.toStringAsFixed(1),
                               style: TextPalette.bodyText),
                         ];
 
                         index++;
                         return Padding(
-                            padding: (index > 2) ? EdgeInsets.only(top: 16) : EdgeInsets.zero,
+                            padding: (index > 2)
+                                ? EdgeInsets.only(top: 16)
+                                : EdgeInsets.zero,
                             child: Row(children: widgets));
                       }).toList(),
                     ),

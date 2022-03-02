@@ -21,21 +21,23 @@ class UserAvatar extends StatelessWidget {
     var backgroundColor = Palette.lighterGrey;
     var backgroundImage = (photoUrl == null) ? null : NetworkImage(photoUrl);
 
-    var displayName = ((userDetails == null) ? "P" : (userDetails.name ??
-        userDetails.email ?? "P")).toUpperCase();
+    var displayName = UserDetails.getDisplayName(userDetails).toUpperCase();
+
+    var fontSize = radius;
 
     var child = (photoUrl == null)
-        ? Center(
-            child: Text(displayName[0],
-                style: GoogleFonts.roboto(
-                    color: Palette.mediumgrey,
-                    fontSize: 24,
-                    fontWeight: FontWeight.w500)))
+        ? Text(displayName[0],
+            textAlign: TextAlign.center,
+            style: GoogleFonts.roboto(
+                color: Palette.mediumgrey,
+                fontSize: fontSize,
+                fontWeight: FontWeight.w500
+            ))
         : null;
 
     return CircleAvatar(
-        child: child,
         backgroundImage: backgroundImage,
+        child: child,
         radius: radius,
         backgroundColor: backgroundColor);
   }

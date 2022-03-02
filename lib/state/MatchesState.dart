@@ -15,6 +15,10 @@ enum MatchStatusForUser {
 }
 
 class MatchesState extends ChangeNotifier {
+
+  static var pastStates = [MatchStatusForUser.rated,
+      MatchStatusForUser.to_rate, MatchStatusForUser.no_more_to_rate];
+
   Map<String, Match> _matches;
   Map<String, MatchStatusForUser> _matchesStatus;
 

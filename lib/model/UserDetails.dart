@@ -65,10 +65,10 @@ class UserDetails {
 
   String getPhotoUrl() => image;
 
-  static getDisplayName(UserDetails ud) {
+  static String getDisplayName(UserDetails ud) {
     if (ud == null) return "Player";
     if (ud.name != null) return ud.name;
-    if (ud.email != null) return ud.email;
+    if (ud.email != null && !ud.email.contains("privaterelay")) return ud.email;
     return "Player";
   }
 }

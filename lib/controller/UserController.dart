@@ -175,8 +175,6 @@ class UserController {
 
   static Future<UserDetails> getUserDetails(BuildContext context, String uid,
       [bool forceRefresh = false]) async {
-    print(uid);
-    print(forceRefresh.toString());
     var userState = context.read<UserState>();
 
     UserDetails cached = userState.getUserDetail(uid);
