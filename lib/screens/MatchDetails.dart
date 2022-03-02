@@ -61,9 +61,7 @@ class MatchDetailsState extends State<MatchDetails> {
       if (status == MatchStatusForUser.to_rate) {
         await RatePlayerBottomModal.rateAction(context, match.documentId);
       }
-      // setState(() {
-        showBottomBar = true;
-      // });
+      showBottomBar = true;
 
       Future.wait(match.going.keys
           .map((e) => UserController.getUserDetails(context, e)));

@@ -11,30 +11,46 @@ import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:nutmeg/widgets/Containers.dart';
 import 'package:nutmeg/widgets/Section.dart';
 import 'package:provider/provider.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:tuple/tuple.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:version/version.dart';
 
-import '../model/UserDetails.dart';
-import '../state/MatchesState.dart';
 import '../state/UserState.dart';
 import '../widgets/GenericAvailableMatches.dart';
-import 'AvailableMatches.dart';
 import 'admin/AvailableMatchesAdmin.dart';
 
+class UserPage extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() {
+    return UserPageState();
+  }
+}
 
-class UserPage extends StatelessWidget {
+class UserPageState extends State<UserPage> {
+  final RefreshController refreshController = RefreshController();
+
+  @override
+  void initState() {
+    super.initState();
+    refreshPageState();
+  }
+
+  Future<void> refreshPageState() async {
+    await UserController.refreshCurrentUser(context);
+  }
 
   @override
   Widget build(BuildContext context) {
-    // don't watch this or when logout things will break
     var userState = context.watch<UserState>();
     var userDetails = userState.getLoggedUserDetails();
 
-    if (!userState.isLoggedIn())
-      return Container();
+    if (!userState.isLoggedIn()) return Container();
 
     int creditCount = (userDetails == null) ? 0 : userDetails.creditsInCents;
+
+    var avgScore = (userDetails.getScoreMatches() == -1) ? "-"
+        : userDetails.getScoreMatches().toStringAsFixed(2);
 
     var widgets = [
       Padding(
@@ -46,7 +62,8 @@ class UserPage extends StatelessWidget {
             margin: EdgeInsets.symmetric(horizontal: 16),
             child: Row(
               children: [
-                UserAvatar(24, context.watch<UserState>().getLoggedUserDetails()),
+                UserAvatar(
+                    24, context.watch<UserState>().getLoggedUserDetails()),
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 30),
                   child: Column(
@@ -63,39 +80,37 @@ class UserPage extends StatelessWidget {
       ),
       Padding(
         padding: EdgeInsets.only(top: 20, left: 16, right: 16),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(
-              child: InfoContainer(
-                child: Column(
-                  children: [
-                    Text(formatCurrency(userDetails.creditsInCents),
-                        style: TextPalette.h2),
-                    SizedBox(height: 20),
-                    Text("Available Credits", style: TextPalette.h3)
-                  ],
-                ),
-              ),
-            ),
-            SizedBox(width: 20),
-            Expanded(
-              child: InfoContainer(
-                  child: Column(
-                children: [
-                  Text(
-                      context
-                          .watch<MatchesState>()
-                          .getNumPlayedByUser(userDetails.getUid())
-                          .toString(),
-                      style: TextPalette.h2),
-                  SizedBox(height: 20),
-                  Text("Matches Played", style: TextPalette.h3)
-                ],
-              )),
-            )
-          ],
-        ),
+        child:
+        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+          Expanded(
+            child: UserInfoBox(
+                content: formatCurrency(userDetails.creditsInCents),
+                description: "Available Credits"),
+          ),
+          SizedBox(width: 20),
+          Expanded(
+            child: UserInfoBox(
+                content: userDetails.joinedMatches.length.toString(),
+                description: "Matches Played"),
+          )
+        ]),
+      ),
+      Padding(
+        padding: EdgeInsets.only(top: 20, left: 16, right: 16),
+        child:
+        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+          Expanded(
+            child: UserInfoBox(
+                content: avgScore,
+                description: "Avg Score"),
+          ),
+          SizedBox(width: 20),
+          Expanded(
+            child: UserInfoBox(
+                content: userDetails.getNumManOfTheMatch().toString(),
+                description: "POTM"),
+          )
+        ]),
       ),
       Padding(
         padding: EdgeInsets.symmetric(horizontal: 16),
@@ -258,32 +273,34 @@ class UserPage extends StatelessWidget {
     ];
 
     return Scaffold(
-      backgroundColor: Palette.light,
-      appBar: UserPageAppBar(),
-      bottomSheet: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Padding(
-              padding: EdgeInsets.only(bottom: 20, top: 10),
-              child: Align(
-                alignment: Alignment.bottomCenter,
-                child: Image.asset("assets/nutmeg_white.png",
-                    color: Palette.darkgrey, height: 24),
-              ))
-        ],
-      ),
-      body: SafeArea(
-        child: FutureBuilder<UserDetails>(
-            future: (userDetails == null)
-                ? null
-                : UserController.getUserDetails(context, userDetails.documentId),
-            builder: (context, snapshot) => (snapshot.hasData)
-                ? Container(
-                    child: (userState.getLoggedUserDetails() == null)
-                        ? Container()
-                        : ListView.builder(
-                            itemCount: widgets.length,
-                            itemBuilder: (context, index) => widgets[index]),
+        backgroundColor: Palette.light,
+        appBar: UserPageAppBar(),
+        bottomSheet: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+                padding: EdgeInsets.only(bottom: 20, top: 10),
+                child: Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Image.asset("assets/nutmeg_white.png",
+                      color: Palette.darkgrey, height: 24),
+                ))
+          ],
+        ),
+        body: SafeArea(
+            child: (userDetails != null)
+                ? SmartRefresher(
+                    enablePullDown: true,
+                    enablePullUp: false,
+                    header: MaterialClassicHeader(),
+                    controller: refreshController,
+                    onRefresh: () async {
+                      await UserController.refreshCurrentUser(context);
+                      refreshController.refreshCompleted();
+                    },
+                    child: ListView.builder(
+                        itemCount: widgets.length,
+                        itemBuilder: (context, index) => widgets[index]),
                   )
                 : Column(
                     children: [
@@ -291,9 +308,7 @@ class UserPage extends StatelessWidget {
                       MatchInfoSkeleton(),
                       MatchInfoSkeleton()
                     ],
-                  )),
-      ),
-    );
+                  )));
   }
 }
 
@@ -319,5 +334,25 @@ class LinkInfo extends StatelessWidget {
         ]),
       ),
     );
+  }
+}
+
+class UserInfoBox extends StatelessWidget {
+  final String content;
+  final String description;
+
+  const UserInfoBox({Key key, this.content, this.description})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return InfoContainer(
+        child: Column(
+      children: [
+        Text(content, style: TextPalette.h2),
+        SizedBox(height: 20),
+        Text(description, style: TextPalette.h3)
+      ],
+    ));
   }
 }

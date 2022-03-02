@@ -8,6 +8,10 @@ class UserDetails {
   String stripeId;
   int creditsInCents;
 
+  List<String> joinedMatches;
+  Map<String, double> scoreMatches;
+  List<String> manOfTheMatch;
+
   UserDetails.empty(this.documentId);
 
   UserDetails(this.documentId, this.isAdmin, this.image, this.name, this.email)
@@ -29,6 +33,9 @@ class UserDetails {
         email = json["email"],
         creditsInCents = json["credits"],
         stripeId = json["stripeId"] ?? null,
+        joinedMatches = Map<String, dynamic>.from(json["joined_matches"] ?? {}).keys.toList(),
+        scoreMatches = Map<String, double>.from(json["scoreMatches"] ?? {}),
+        manOfTheMatch = List<String>.from(json["manOfTheMatch"] ?? []),
         documentId = documentId;
 
   Map<String, dynamic> toJson() =>
@@ -41,6 +48,16 @@ class UserDetails {
       };
 
   String getUid() => documentId;
+
+  double getScoreMatches() {
+    if (scoreMatches.isEmpty) {
+      return -1;
+    }
+    return scoreMatches.values.toList()
+        .where((e) => e > 0).reduce((a, b) => a + b) / scoreMatches.length;
+  }
+
+  int getNumManOfTheMatch() => manOfTheMatch.length;
 
   String getStripeId() => stripeId;
 

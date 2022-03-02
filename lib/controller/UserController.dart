@@ -21,7 +21,7 @@ class UserController {
   static Future<UserDetails> refreshCurrentUser(BuildContext context) async {
     var userState = context.read<UserState>();
 
-    var userDetails = await getUserDetails(context, userState.currentUserId);
+    var userDetails = await getUserDetails(context, userState.currentUserId, true);
     userState.setCurrentUserDetails(userDetails);
     return userDetails;
   }
@@ -173,15 +173,20 @@ class UserController {
     return _login(context, userCredential);
   }
 
-  static Future<UserDetails> getUserDetails(BuildContext context, String uid) async {
+  static Future<UserDetails> getUserDetails(BuildContext context, String uid,
+      [bool forceRefresh = false]) async {
+    print(uid);
+    print(forceRefresh.toString());
     var userState = context.read<UserState>();
 
     UserDetails cached = userState.getUserDetail(uid);
-    if (cached != null) {
+    if (cached != null && !forceRefresh) {
       return cached;
     }
 
     var resp = await apiClient.callFunction("get_user", {"id": uid});
+
+    print(resp["scoreMatches"]);
 
     var ud = (resp == null) ? UserDetails.empty(uid) : UserDetails.fromJson(resp, uid);
     userState.setUserDetail(ud);
