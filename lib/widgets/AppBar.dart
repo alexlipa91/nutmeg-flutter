@@ -59,7 +59,7 @@ class MainAppBar extends NutmegAppBar {
           children: [
             Image.asset('assets/nutmeg_white.png', height: 24),
             if (isLoggedIn)
-              Builder(builder: (context) => CurrentUserAvatarWithRedirect(radius: 18))
+              Builder(builder: (context) => CurrentUserAvatarWithRedirect(radius: 2))
             else
               InkWell(
                 onTap: () async {
