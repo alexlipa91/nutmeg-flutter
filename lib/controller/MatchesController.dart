@@ -126,7 +126,7 @@ class MatchesController {
   }
 
   // logged-in user voted 'score' for user 'userId' in match 'matchId'
-  static void addRating(BuildContext context, String userId, String matchId, double score) async {
+  static Future<void> addRating(BuildContext context, String userId, String matchId, double score) async {
     try {
       await apiClient.callFunction("add_rating",
           {"user_id": context.read<UserState>().getLoggedUserDetails().documentId,

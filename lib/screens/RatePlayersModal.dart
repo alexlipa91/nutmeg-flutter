@@ -47,7 +47,7 @@ class RatePlayerBottomModal extends StatelessWidget {
               ],
               child: RatePlayerBottomModal(matchId),
             ));
-    await MatchesController.refresh(context, matchId);
+    // don't refresh the status here because the last rating might have not yet propagated; instead leave RatePlayerBottomModal modify it if necessary
   }
 
   final String matchId;
@@ -116,12 +116,18 @@ class RatePlayerBottomModal extends StatelessWidget {
   Future<void> store(BuildContext context) async {
     var state = context.read<RatingPlayersState>();
 
-    if (state.getCurrent() != null) {
-      MatchesController.addRating(context, state.getCurrent().documentId,
-          matchId, state.getCurrentScore());
+    if (state.getCurrent() == null) {
+      return;
     }
 
+    MatchesController.addRating(context, state.getCurrent().documentId,
+        matchId, state.getCurrentScore());
+
     if (state.isLast()) {
+      if (state.numberOfRatedInSession + 1 == state.toRate.length) {
+        // here we know for sure that there are no more players to rate. We quickly set the state so the bottom bar changes fast
+        context.read<MatchesState>().setMatchStatus(matchId, MatchStatusForUser.no_more_to_rate);
+      }
       Navigator.pop(context);
     } else {
       state.next();

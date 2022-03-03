@@ -49,19 +49,20 @@ class GenericAvailableMatchesListState extends State<GenericAvailableMatchesList
   final RefreshController refreshController;
   final appBarColor;
 
-  var future;
-
   GenericAvailableMatchesListState(this.roundedTopBar, this.getGamesWidget,
       this.getEmptyStateWidget, this.refreshController, this.appBarColor);
 
   @override
   void initState() {
     super.initState();
-    future = MatchesController.refreshAll(context);
+    refreshPageState(context);
   }
 
   Future<void> refreshPageState(BuildContext context) async {
     await MatchesController.refreshAll(context);
+    Future.wait(
+        context.read<MatchesState>().getMatches()
+            .map((e) => MatchesController.refreshMatchStatus(context, e.documentId)));
     refreshController.refreshCompleted();
   }
 

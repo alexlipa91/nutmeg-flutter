@@ -63,7 +63,7 @@ class UserPageState extends State<UserPage> {
             child: Row(
               children: [
                 UserAvatar(
-                    24, context.watch<UserState>().getLoggedUserDetails()),
+                    30, context.watch<UserState>().getLoggedUserDetails()),
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 30),
                   child: Column(
@@ -85,7 +85,7 @@ class UserPageState extends State<UserPage> {
           Expanded(
             child: UserInfoBox(
                 content: formatCurrency(userDetails.creditsInCents),
-                description: "Available Credits"),
+                description: "Credits"),
           ),
           SizedBox(width: 20),
           Expanded(
@@ -108,7 +108,8 @@ class UserPageState extends State<UserPage> {
           Expanded(
             child: UserInfoBox(
                 content: userDetails.getNumManOfTheMatch().toString(),
-                description: "POTM"),
+                description: "POTM",
+            ),
           )
         ]),
       ),
@@ -328,19 +329,32 @@ class LinkInfo extends StatelessWidget {
 class UserInfoBox extends StatelessWidget {
   final String content;
   final String description;
+  // final Widget badge;
 
   const UserInfoBox({Key key, this.content, this.description})
+    // this.badge
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return InfoContainer(
-        child: Column(
+    Widget icContent = Column(
       children: [
-        Text(content, style: TextPalette.h2),
-        SizedBox(height: 20),
-        Text(description, style: TextPalette.h3)
+        Text(content, style: TextPalette.h1Default),
+        SizedBox(height: 4),
+        Text(description, style: TextPalette.bodyText)
       ],
-    ));
+    );
+
+    // if (badge != null)
+    //   icContent = Badge(
+    //       badgeColor: Colors.transparent,
+    //       toAnimate: false,
+    //       elevation: 0,
+    //       borderRadius: BorderRadius.all(Radius.circular(1.0)),
+    //       borderSide: BorderSide(width: 0.5, color: Palette.lighterGrey),
+    //       // borderRadius: BorderRadius.all(Radius.circular(1.0)),
+    //       badgeContent: Icon(Icons.question_mark, size: 8, color: Palette.mediumgrey),
+    //       child: icContent);
+    return InfoContainer(child: icContent);
   }
 }

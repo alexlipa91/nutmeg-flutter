@@ -53,19 +53,19 @@ class MatchDetails extends StatefulWidget {
 class MatchDetailsState extends State<MatchDetails> {
   final String matchId;
 
-  bool showBottomBar = false;
-
   MatchDetailsState(this.matchId);
 
   Future<void> refreshState() async {
-    // get details
+    // refresh details
     var match = await MatchesController.refresh(context, matchId);
 
     // get users details
-    Future.wait(match.going.keys.map((e) => UserController.getUserDetails(context, e)));
+    Future.wait(
+        match.going.keys.map((e) => UserController.getUserDetails(context, e)));
 
     // get status
-    var statusAndUsers = await MatchesController.refreshMatchStatus(context, matchId);
+    var statusAndUsers =
+        await MatchesController.refreshMatchStatus(context, matchId);
 
     var status = statusAndUsers.item1;
 
@@ -74,7 +74,6 @@ class MatchDetailsState extends State<MatchDetails> {
     } else if (status == MatchStatusForUser.rated) {
       MatchesController.refreshMatchStats(context, matchId);
     }
-    showBottomBar = true;
 
     UserController.getBatchUserDetails(context, match.going.keys.toList());
   }
@@ -106,6 +105,7 @@ class MatchDetailsState extends State<MatchDetails> {
         : sportCenter.name + " - " + sport.displayTitle;
 
     var matchStatus = matchesState.getMatchStatus(match.documentId);
+    print("status in build of matchdetails is " + matchStatus.toString());
 
     pad(Widget w) =>
         Padding(padding: EdgeInsets.symmetric(horizontal: 16), child: w);
@@ -117,6 +117,14 @@ class MatchDetailsState extends State<MatchDetails> {
           child: Text(title, style: TextPalette.h1Default))),
       SizedBox(height: 16),
       MatchInfo(match, sportCenter, sport),
+      if (matchStatus == MatchStatusForUser.no_more_to_rate)
+        pad(Section(
+          title: "Thanks for rating",
+          body: InfoContainer(
+              child: Row(children: [
+            Expanded(child: Text("Ratings will be published at datetime"))
+          ])),
+        )),
       if (matchStatus != MatchStatusForUser.rated)
         pad(Builder(
           builder: (context) {
@@ -171,12 +179,10 @@ class MatchDetailsState extends State<MatchDetails> {
                 )
               ],
             )),
-        bottomNavigationBar: (!showBottomBar)
-            ? null
-            : BottomBarMatch(
-                matchId: matchId,
-                extraBottomPadding: MediaQuery.of(context).padding.bottom,
-              ));
+        bottomNavigationBar: BottomBarMatch(
+          matchId: matchId,
+          extraBottomPadding: MediaQuery.of(context).padding.bottom,
+        ));
   }
 }
 
@@ -298,6 +304,7 @@ class SportCenterImageCarouselState extends State<SportCenterImageCarousel> {
               ? List<Widget>.from(snapshot.data.map((i) => CachedNetworkImage(
                     imageUrl: i,
                     fadeInDuration: Duration(milliseconds: 0),
+                    fadeOutDuration: Duration(milliseconds: 0),
                     imageBuilder: (context, imageProvider) => Container(
                         decoration: BoxDecoration(
                       image: DecorationImage(

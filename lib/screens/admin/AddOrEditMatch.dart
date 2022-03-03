@@ -123,8 +123,8 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
   @override
   Widget build(BuildContext context) {
     // utility
-    var matchesState = context.read<MatchesState>();
-    var loadOnceState = context.read<LoadOnceState>();
+    var matchesState = context.watch<MatchesState>();
+    var loadOnceState = context.watch<LoadOnceState>();
 
     var match = matchesState.getMatch(matchId);
     var status = matchesState.getMatchStatus(matchId);
@@ -363,6 +363,7 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                       print(e); print(stack);
                       GenericInfoModal(title: "Something went wrong").show(context);
                     }
+                    await MatchesController.refreshMatchStatus(context, matchId);
                     context.read<GenericButtonWithLoaderState>().change(false);
                   }, Primary()))
                 ],
@@ -383,6 +384,7 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                               print(e); print(stack);
                               GenericInfoModal(title: "Something went wrong").show(context);
                             }
+                            await MatchesController.refreshMatchStatus(context, matchId);
                             context.read<GenericButtonWithLoaderState>().change(false);
                           }, Primary()))
                 ],
