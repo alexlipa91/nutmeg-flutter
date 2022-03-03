@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
@@ -624,29 +626,32 @@ class Stats extends StatelessWidget {
 
                         var widgets = [
                           Container(
-                              width: 20,
+                              width: 18,
                               child: Text(index.toString(),
                                   style: TextPalette.bodyText)),
-                          SizedBox(width: 16),
+                          SizedBox(width: 8),
                           UserAvatar(10, userDetails),
-                          SizedBox(width: 16),
+                          SizedBox(width: 8),
                           Expanded(
                             child: Row(
                               children: [
                                 Builder(builder: (context) {
-                                  var n =
+                                  // fixme text overflow
+                                  var name =
                                       UserDetails.getDisplayName(userDetails)
                                           .split(" ")
                                           .first;
+                                  var n = name.substring(0, min(name.length, 11));
                                   return Text(n,
                                       overflow: TextOverflow.ellipsis,
                                       style: TextPalette.bodyText);
                                 }),
-                                SizedBox(width: 2),
+                                SizedBox(width: 1),
                                 if (index == 1)
                                   Icon(
                                     Icons.sports_soccer,
                                     color: Colors.amber,
+                                    size: 20,
                                 ),
                               ],
                             ),
@@ -660,11 +665,11 @@ class Stats extends StatelessWidget {
                               child: LinearProgressIndicator(
                                 value: score / 5,
                                 color: Palette.primary,
-                                backgroundColor: Palette.grey_lighter,
+                                backgroundColor: Palette.grey_light,
                               ),
                             ),
                           ),
-                          SizedBox(width: 8),
+                          SizedBox(width: 12),
                           Text(score.toStringAsFixed(1),
                               style: TextPalette.bodyText),
                         ];
