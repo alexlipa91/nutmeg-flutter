@@ -144,6 +144,12 @@ class MatchesController {
     });
   }
 
+  static Future<void> closeRatingRound(String matchId) async {
+    await apiClient.callFunction("close_rating_round", {
+      "match_id": matchId
+    });
+  }
+
   static Future<Map<String, List<int>>> refreshMatchStats(BuildContext context, String matchId) async {
     var ratingsState = context.read<MatchStatState>();
 
