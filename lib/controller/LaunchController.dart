@@ -2,11 +2,11 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:firebase_performance/firebase_performance.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
-import 'package:nutmeg/utils/Analytics.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:tuple/tuple.dart';
@@ -85,8 +85,10 @@ class LaunchController {
   }
 
   static Future<void> loadData(BuildContext context) async {
-    final stopwatch = Stopwatch()..start();
     await Firebase.initializeApp();
+
+    var trace = FirebasePerformance.instance.newTrace("launch-app");
+    final stopwatch = Stopwatch()..start();
 
     FirebaseRemoteConfig firebaseRemoteConfig = FirebaseRemoteConfig.instance;
     firebaseRemoteConfig.setConfigSettings(RemoteConfigSettings(
@@ -108,6 +110,7 @@ class LaunchController {
     // check if update is necessary
     try {
       var current = (await getVersion()).item1;
+      trace.putAttribute("app_version", current.toString());
       var minimumVersionParts = firebaseRemoteConfig.getString(
           "minimum_app_version").split(".");
       var minimumRequired = Version(int.parse(minimumVersionParts[0]),
@@ -139,6 +142,7 @@ class LaunchController {
       // tell the app to save user tokens
       await UserController.saveUserTokensToDb(userDetails);
     }
+    trace.putAttribute("user_id", userDetails?.documentId);
 
     FirebaseMessaging.instance.requestPermission(
       alert: true,
@@ -171,18 +175,16 @@ class LaunchController {
     }
 
     if (deepLink != null) {
+      trace.putAttribute("coming_from_deeplink", true.toString());
       handleLink(deepLink);
     } else {
+      trace.putAttribute("coming_from_deeplink", false.toString());
       // await
       Navigator.pushReplacementNamed(context, AvailableMatches.routeName);
     }
-    await Analytics.firebaseAnalytics.logEvent(
-      name: "launch_time",
-      parameters: <String, dynamic>{
-        'duration_ms': stopwatch.elapsed.inMilliseconds,
-      },
-    );
-    print("sent event");
+
+    trace.setMetric('duration_ms', stopwatch.elapsed.inMilliseconds);
+    trace.stop();
   }
 
   static Future<Tuple2<Version, String>> getVersion() async {
@@ -195,3 +197,4 @@ class LaunchController {
     );
   }
 }
+

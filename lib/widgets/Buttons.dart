@@ -141,8 +141,8 @@ class ShareButton extends StatelessWidget {
       splashColor: Palette.lighterGrey,
       onTap: () async { await DynamicLinks.shareMatchFunction(matchId);},
       child: Container(
-          width: 40,
-          height: 40,
+          width: 50,
+          height: 50,
           child: Align(alignment: Alignment.centerRight, child: icon)),
     );
   }

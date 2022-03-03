@@ -71,7 +71,7 @@ class MainAppBar extends NutmegAppBar {
                   }
                 },
                 child: Container(
-                  height: 40,
+                  height: 50,
                   child: Center(
                       child:
                           Text("LOGIN", style: TextPalette.linkStyleInverted)),
@@ -103,8 +103,8 @@ class MatchAppBar extends StatelessWidget {
           InkWell(
               splashColor: Palette.lighterGrey,
               child: Container(
-                width: 40,
-                height: 40,
+                width: 50,
+                height: 50,
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: Icon(Icons.arrow_back,
