@@ -614,7 +614,7 @@ class Stats extends StatelessWidget {
 
                         var widgets = [
                           Container(
-                              width: 16,
+                              width: 20,
                               child: Text(index.toString(),
                                   style: TextPalette.bodyText)),
                           SizedBox(width: 16),
@@ -632,6 +632,7 @@ class Stats extends StatelessWidget {
                                       overflow: TextOverflow.ellipsis,
                                       style: TextPalette.bodyText);
                                 }),
+                                SizedBox(width: 2),
                                 if (index == 1)
                                   Icon(
                                     Icons.sports_soccer,
@@ -647,8 +648,9 @@ class Stats extends StatelessWidget {
                               borderRadius:
                                   BorderRadius.all(Radius.circular(10)),
                               child: LinearProgressIndicator(
-                                value: max(score / 5, 1),
+                                value: score / 5,
                                 color: Palette.primary,
+                                backgroundColor: Palette.lighterGrey,
                               ),
                             ),
                           ),
