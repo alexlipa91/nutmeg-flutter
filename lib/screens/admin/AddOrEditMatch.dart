@@ -39,11 +39,13 @@ class AddOrEditMatchState extends State<AddOrEditMatch> {
   AddOrEditMatchState(this.matchId);
 
   Future<void> refreshState() async {
-    // get details
-    await MatchesController.refresh(context, matchId);
+    if (matchId != null) {
+      // get details
+      await MatchesController.refresh(context, matchId);
 
-    // get status
-    await MatchesController.refreshMatchStatus(context, matchId);
+      // get status
+      await MatchesController.refreshMatchStatus(context, matchId);
+    }
   }
 
   @override
@@ -141,9 +143,11 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
             primary: false,
             shrinkWrap: true,
             children: [
-              Text("Match id: " + matchId, style: TextPalette.h2),
+              if (matchId != null)
+                Text("Match id: " + matchId, style: TextPalette.h2),
               SizedBox(height: 20.0),
-              Text("Status is: " + status.toString().split(".").last, style: TextPalette.h2),
+              if (matchId != null)
+                Text("Status is: " + status.toString().split(".").last, style: TextPalette.h2),
               SizedBox(height: 20.0),
               Text("Date and Time", style: TextPalette.linkStyle),
               DateTimePicker(
@@ -343,7 +347,8 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                   )
                 ],
               ),
-              Row(
+              if (matchId != null)
+                Row(
                 children: [
                   Expanded(
                       child: GenericButtonWithLoader("RESET RATINGS",
@@ -362,7 +367,8 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                   }, Primary()))
                 ],
               ),
-              Row(
+              if (matchId != null)
+                Row(
                 children: [
                   Expanded(
                       child: GenericButtonWithLoader("CLOSE RATING ROUND",
