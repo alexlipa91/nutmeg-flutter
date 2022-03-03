@@ -18,28 +18,26 @@ class UiUtils {
 }
 
 class Palette {
-  //for CTAs, links, buttons
+  // black and white
+  static const white = Colors.white;
+  static var black = UiUtils.fromHex("#1E1E24");
+
+  // greys
+  static var grey_lightest = UiUtils.fromHex("#F7F7F7"); // previous “light”
+  static var grey_lighter = UiUtils.fromHex("#EEEEEEE"); // previous “lighterGrey”
+  static var grey_light = UiUtils.fromHex("#C2C2C2"); // previous “lightGrey”
+  static var grey_dark = UiUtils.fromHex("“#787878”"); // previous “mediumgrey”
+  static var grey_darker = UiUtils.fromHex("“#444444"); // previous “darkgrey”
+
+  // colors
   static var primary = UiUtils.fromHex("#394BBB");
-
-  //delete, remove, etc
   static var destructive = UiUtils.fromHex("#E34D4F");
-
-  //for background
-  static var light = UiUtils.fromHex("#F7F7F7");
+  static var green = Colors.green.shade700;
+  static var accent = UiUtils.fromHex("#FD9F41");
 
   //text
   static var mediumgrey = UiUtils.fromHex("#787878");
   static var darkgrey = UiUtils.fromHex("#444444");
-  static var black = UiUtils.fromHex("#1E1E24");
-
-  static var lightGrey = UiUtils.fromHex("#C2C2C2");
-
-  static var lighterGrey = Colors.grey.shade200; // used for background
-  static var green = Colors.green.shade700;
-
-  static var accent = UiUtils.fromHex("#FD9F41");
-
-  static const white = Colors.white;
 }
 
 class TextPalette {
@@ -58,10 +56,10 @@ class TextPalette {
   static TextStyle h4 = GoogleFonts.roboto(color: Palette.black, fontSize: 12, fontWeight: FontWeight.w500);
 
   static TextStyle getBodyText(Color color) => GoogleFonts.roboto(color: color, fontSize: 14, fontWeight: FontWeight.w400, height: 1.6);
-  static TextStyle bodyText = GoogleFonts.roboto(color: Palette.mediumgrey, fontSize: 14, fontWeight: FontWeight.w400, height: 1.6);
+  static TextStyle bodyText = GoogleFonts.roboto(color: Palette.grey_dark, fontSize: 14, fontWeight: FontWeight.w400, height: 1.6);
   static TextStyle bodyTextPrimary = GoogleFonts.roboto(color: Palette.primary, fontSize: 14, fontWeight: FontWeight.w400, height: 1.6);
 
-  static TextStyle bodyTextOneLine = GoogleFonts.roboto(color: Palette.mediumgrey, fontSize: 14, fontWeight: FontWeight.w400);
+  static TextStyle bodyTextOneLine = GoogleFonts.roboto(color: Palette.grey_dark, fontSize: 14, fontWeight: FontWeight.w400);
   static TextStyle bodyTextInverted = GoogleFonts.roboto(color: Palette.white, fontSize: 14, fontWeight: FontWeight.w400, height: 1.6);
 
   static TextStyle linkStyle = GoogleFonts.roboto(color: Palette.primary, fontSize: 14, fontWeight: FontWeight.w700);
@@ -69,7 +67,7 @@ class TextPalette {
 
   static TextStyle getLinkStyle(Color color) => GoogleFonts.roboto(color: color, fontSize: 14, fontWeight: FontWeight.w700);
 
-  static TextStyle buttonOff = GoogleFonts.roboto(color: Palette.lighterGrey, fontSize: 14, fontWeight: FontWeight.w700);
+  static TextStyle buttonOff = GoogleFonts.roboto(color: Palette.grey_lighter, fontSize: 14, fontWeight: FontWeight.w700);
 }
 
 class DeviceInfo {

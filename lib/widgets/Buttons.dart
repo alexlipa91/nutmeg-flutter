@@ -82,7 +82,7 @@ mixin Off on PrimaryButton {
 
   TextStyle getTextStyle() => TextPalette.buttonOff;
 
-  Color getBorderColor() => Palette.mediumgrey;
+  Color getBorderColor() => Palette.grey_dark;
 }
 
 mixin Alerted on PrimaryButton {
@@ -138,7 +138,7 @@ class ShareButton extends StatelessWidget {
     var icon = Icon(Icons.share, color: color, size: iconSize);
 
     return InkWell(
-      splashColor: Palette.lighterGrey,
+      splashColor: Palette.grey_lighter,
       onTap: () async { await DynamicLinks.shareMatchFunction(matchId);},
       child: Container(
           width: 50,

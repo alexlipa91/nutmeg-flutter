@@ -274,7 +274,7 @@ class UserPageState extends State<UserPage> {
     ];
 
     return Scaffold(
-        backgroundColor: Palette.light,
+        backgroundColor: Palette.grey_lightest,
         appBar: UserPageAppBar(),
         body: SafeArea(
             child: (userDetails != null)
@@ -351,9 +351,9 @@ class UserInfoBox extends StatelessWidget {
     //       toAnimate: false,
     //       elevation: 0,
     //       borderRadius: BorderRadius.all(Radius.circular(1.0)),
-    //       borderSide: BorderSide(width: 0.5, color: Palette.lighterGrey),
+    //       borderSide: BorderSide(width: 0.5, color: Palette.grey_lighter),
     //       // borderRadius: BorderRadius.all(Radius.circular(1.0)),
-    //       badgeContent: Icon(Icons.question_mark, size: 8, color: Palette.mediumgrey),
+    //       badgeContent: Icon(Icons.question_mark, size: 8, color: Palette.grey_dark),
     //       child: icContent);
     return InfoContainer(child: icContent);
   }

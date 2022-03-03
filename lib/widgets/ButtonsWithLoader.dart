@@ -87,9 +87,9 @@ class Secondary extends ButtonType {
 
 class Disabled extends ButtonType {
   Color backgroundColor = Colors.transparent;
-  TextStyle textStyle = TextPalette.getLinkStyle(Palette.lightGrey);
-  Color borderColor = Palette.lightGrey;
-  Color loaderColor = Palette.lightGrey;
+  TextStyle textStyle = TextPalette.getLinkStyle(Palette.grey_lighter);
+  Color borderColor = Palette.grey_lighter;
+  Color loaderColor = Palette.grey_lighter;
 }
 
 class Destructive extends ButtonType {

@@ -45,7 +45,7 @@ void main() {
             child: Center(child: new LaunchWidget())),
         theme: new ThemeData(
             primaryColor: Palette.primary,
-            accentColor: Palette.light
+            accentColor: Palette.grey_lightest
         ),
         onGenerateRoute: (RouteSettings settings) {
           print('build route for ${settings.name}');

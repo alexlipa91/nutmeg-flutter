@@ -59,7 +59,7 @@ class AddOrEditMatchState extends State<AddOrEditMatch> {
     return Scaffold(
       appBar: AdminAreaAppBarInverted(),
       body: Container(
-        color: Palette.light,
+        color: Palette.grey_lightest,
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 30, vertical: 20),
           child: Column(

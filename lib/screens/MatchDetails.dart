@@ -161,7 +161,7 @@ class MatchDetailsState extends State<MatchDetails> {
     ];
 
     return Scaffold(
-        backgroundColor: Palette.light,
+        backgroundColor: Palette.grey_lightest,
         body: RefreshIndicator(
             onRefresh: () async {
               await refreshState();
@@ -239,7 +239,7 @@ class MatchInfo extends StatelessWidget {
                     // fixme do something
                   }
                 },
-                splashColor: Palette.lighterGrey,
+                splashColor: Palette.grey_lighter,
                 child: InfoWidget.withRightWidget(
                     title: sportCenter.name +
                         (match.sportCenterSubLocation != null &&
@@ -288,8 +288,8 @@ class SportCenterImageCarouselState extends State<SportCenterImageCarousel> {
     var placeHolder = Container(
         height: 358,
         child: Shimmer.fromColors(
-          baseColor: Palette.lighterGrey,
-          highlightColor: Palette.lighterGrey,
+          baseColor: Palette.grey_lighter,
+          highlightColor: Palette.grey_lighter,
           child: Container(
               decoration: BoxDecoration(
                   color: Palette.white,
@@ -458,7 +458,7 @@ class PlayerCard extends StatelessWidget {
                       Text((userData?.name ?? "Player").split(" ").first,
                           overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.roboto(
-                              color: Palette.mediumgrey,
+                              color: Palette.grey_dark,
                               fontSize: 12,
                               fontWeight: FontWeight.w400))
                     ])),
@@ -483,14 +483,14 @@ class EmptyPlayerCard extends StatelessWidget {
               onTap: () => JoinModal.onJoinGameAction(context, matchId),
               child: CircleAvatar(
                   radius: 25,
-                  child: Icon(Icons.add, color: Palette.mediumgrey, size: 24),
-                  backgroundColor: Palette.lighterGrey),
+                  child: Icon(Icons.add, color: Palette.grey_dark, size: 24),
+                  backgroundColor: Palette.grey_lighter),
             ),
             SizedBox(height: 10),
             Text("Join",
                 overflow: TextOverflow.ellipsis,
                 style: GoogleFonts.roboto(
-                    color: Palette.mediumgrey,
+                    color: Palette.grey_dark,
                     fontSize: 12,
                     fontWeight: FontWeight.w400))
           ])),
@@ -660,7 +660,7 @@ class Stats extends StatelessWidget {
                               child: LinearProgressIndicator(
                                 value: score / 5,
                                 color: Palette.primary,
-                                backgroundColor: Palette.lighterGrey,
+                                backgroundColor: Palette.grey_lighter,
                               ),
                             ),
                           ),

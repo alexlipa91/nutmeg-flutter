@@ -18,7 +18,7 @@ class UserAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     var photoUrl = userDetails?.getPhotoUrl();
 
-    var backgroundColor = Palette.lighterGrey;
+    var backgroundColor = Palette.grey_lighter;
     var backgroundImage = (photoUrl == null) ? null : NetworkImage(photoUrl);
 
     var displayName = UserDetails.getDisplayName(userDetails).toUpperCase();
@@ -29,7 +29,7 @@ class UserAvatar extends StatelessWidget {
         ? Text(displayName[0],
             textAlign: TextAlign.center,
             style: GoogleFonts.roboto(
-                color: Palette.mediumgrey,
+                color: Palette.grey_dark,
                 fontSize: fontSize,
                 fontWeight: FontWeight.w600
             ))

@@ -98,7 +98,7 @@ class GenericAvailableMatchesListState extends State<GenericAvailableMatchesList
       child: SafeArea(
         bottom: false,
         child: Scaffold(
-          backgroundColor: Palette.light,
+          backgroundColor: Palette.grey_lightest,
           // appBar: MainAppBar(),
           body: FutureBuilder(
             builder: (context, snapshot) => SmartRefresher(
@@ -224,7 +224,7 @@ class GenericMatchInfo extends StatelessWidget {
                                 height: 12,
                               ),
                               Text(getFormattedDate(match.dateTime),
-                                  style: TextPalette.getH3(Palette.mediumgrey)),
+                                  style: TextPalette.getH3(Palette.grey_dark)),
                               SizedBox(
                                 height: 8,
                               ),

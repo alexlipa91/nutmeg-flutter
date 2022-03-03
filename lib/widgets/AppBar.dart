@@ -101,7 +101,7 @@ class MatchAppBar extends StatelessWidget {
         children: [
           // SizedBox(width: 16,), // we cannot pad outside
           InkWell(
-              splashColor: Palette.lighterGrey,
+              splashColor: Palette.grey_lighter,
               child: Container(
                 width: 50,
                 height: 50,
@@ -168,7 +168,7 @@ class AdminAreaAppBarInverted extends NutmegAppBar {
   Widget build(BuildContext context) {
     return NutmegAppBar(
         systemUiOverlayStyle: SystemUiOverlayStyle.dark,
-        backgroundColor: Palette.light,
+        backgroundColor: Palette.grey_lightest,
         mainRow: Padding(
           padding: EdgeInsets.symmetric(horizontal: 20),
           child: Row(
