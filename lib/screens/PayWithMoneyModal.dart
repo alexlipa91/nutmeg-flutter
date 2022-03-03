@@ -34,7 +34,7 @@ class PayWithMoneyButton extends StatelessWidget {
                 matchId,
                 paymentRecap.creditsInCentsUsed,
                 match.isTest);
-            context.read<GenericButtonWithLoaderState>().change(false);
+            // context.read<GenericButtonWithLoaderState>().change(false);
           } catch (e) {
             print(e);
             Navigator.pop(context, false);

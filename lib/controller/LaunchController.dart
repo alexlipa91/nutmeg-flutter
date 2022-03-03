@@ -37,27 +37,11 @@ class LaunchController {
     if (deepLink.path == "/payment") {
       var outcome = deepLink.queryParameters["outcome"];
       var matchId = deepLink.queryParameters["match_id"];
-
       var context = navigatorKey.currentContext;
 
-      var found = false;
-      Navigator.popUntil(context, (route) {
-        found = route.settings.name == MatchDetails.routeName;
-        return found;
-      });
-
-      if (!found) {
-        Navigator.of(context).pushNamed(AvailableMatches.routeName);
-
-        Navigator.of(context).pushNamed(MatchDetails.routeName,
-          arguments: ScreenArguments(
-              matchId,
-          ),
-        );
-      }
+      await _goToMatch(context, matchId);
 
       if (outcome == "success") {
-        await MatchesController.refresh(context, matchId);
         PaymentDetailsDescription.communicateSuccessToUser(context, matchId);
       } else {
         await GenericInfoModal(
@@ -67,21 +51,34 @@ class LaunchController {
       return;
     }
     if (deepLink.path == "/match") {
-      var context = navigatorKey.currentContext;
-      var match = await MatchesController.refresh(context,
-          deepLink.queryParameters["id"]);
-
-      Navigator.of(context).pushReplacementNamed(AvailableMatches.routeName);
-
-      Navigator.pushNamed(
-        context,
-        MatchDetails.routeName,
-        arguments: ScreenArguments(
-          match.documentId,
-        ),
-      );
+      await _goToMatch(navigatorKey.currentContext, deepLink.queryParameters["id"]);
       return;
     }
+  }
+
+  static Future<void> _goToMatch(BuildContext context, String matchId) async {
+    var match = await MatchesController.refresh(context, matchId);
+
+    Navigator.of(context).pushReplacementNamed(AvailableMatches.routeName);
+
+    Navigator.pushNamed(
+      context,
+      MatchDetails.routeName,
+      arguments: ScreenArguments(
+        match.documentId,
+      ),
+    );
+  }
+
+  static void setupNotifications() {
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      print('Got a message whilst in the foreground!');
+      print('Message data: ${message.data}');
+
+      if (message.notification != null) {
+        print('Message also contained a notification: ${message.notification}');
+      }
+    });
   }
 
   static Future<void> loadData(BuildContext context) async {
@@ -129,10 +126,9 @@ class LaunchController {
         await FirebaseCrashlytics.instance
             .setCrashlyticsCollectionEnabled(false);
       }
-    } else {
-      // Handle Crashlytics enabled status when not in Debug,
-      // e.g. allow your users to opt-in to crash reporting.
     }
+
+    setupNotifications();
 
     // check if user is logged in
     var userDetails = await UserController.getUserIfAvailable(context);

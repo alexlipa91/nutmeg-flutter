@@ -53,7 +53,9 @@ class MatchesController {
       'money_paid': paymentStatus.finalPriceToPayInCents()
     });
     print("joined");
-    return await refresh(context, matchId);
+    var m = await refresh(context, matchId);
+    await refreshMatchStatus(context, matchId);
+    return m;
   }
 
   // current logged in user leaves a match
@@ -64,7 +66,9 @@ class MatchesController {
       'user_id': userState.getLoggedUserDetails().documentId,
       'match_id': matchId
     });
-    return await refresh(context, matchId);
+    var m = await refresh(context, matchId);
+    await refreshMatchStatus(context, matchId);
+    return m;
   }
 
   static Future<String> addMatch(Match m) async {
