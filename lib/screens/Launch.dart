@@ -152,3 +152,11 @@ class LaunchWidgetState extends State<LaunchWidget> {
     );
   }
 }
+
+// Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+//   print("Handling a background message");
+//   print('Message data: ${message.data}');
+  // if (message.data.containsKey("match_id")) {
+  //   LaunchController.goToMatchScreen(navigatorKey.currentContext, message.data["match_id"]);
+  // }
+// }

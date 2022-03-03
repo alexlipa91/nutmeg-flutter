@@ -39,25 +39,27 @@ class LaunchController {
       var matchId = deepLink.queryParameters["match_id"];
       var context = navigatorKey.currentContext;
 
-      await _goToMatch(context, matchId);
+      await goToMatchScreen(context, matchId);
 
       if (outcome == "success") {
         PaymentDetailsDescription.communicateSuccessToUser(context, matchId);
       } else {
         await GenericInfoModal(
-            title: "Payment Failed!", description: "Please try again")
+                title: "Payment Failed!", description: "Please try again")
             .show(context);
       }
       return;
     }
     if (deepLink.path == "/match") {
-      await _goToMatch(navigatorKey.currentContext, deepLink.queryParameters["id"]);
+      await goToMatchScreen(
+          navigatorKey.currentContext, deepLink.queryParameters["id"]);
       return;
     }
   }
 
-  static Future<void> _goToMatch(BuildContext context, String matchId) async {
-    var match = await MatchesController.refresh(context, matchId);
+  static Future<void> goToMatchScreen(BuildContext context, String matchId) async {
+    // var match = await
+    MatchesController.refresh(context, matchId);
 
     Navigator.of(context).pushReplacementNamed(AvailableMatches.routeName);
 
@@ -65,12 +67,21 @@ class LaunchController {
       context,
       MatchDetails.routeName,
       arguments: ScreenArguments(
-        match.documentId,
+        matchId,
       ),
     );
   }
 
+  static void handleMessageFromNotification(RemoteMessage message) async {
+    print('message opened from notification');
+    goToMatchScreen(navigatorKey.currentContext, message.data["match_id"]);
+  }
+
   static void setupNotifications() {
+    // FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+
+    FirebaseMessaging.onMessageOpenedApp.listen(handleMessageFromNotification);
+
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       print('Got a message whilst in the foreground!');
       print('Message data: ${message.data}');
@@ -108,15 +119,14 @@ class LaunchController {
     try {
       var current = (await getVersion()).item1;
       trace.putAttribute("app_version", current.toString());
-      var minimumVersionParts = firebaseRemoteConfig.getString(
-          "minimum_app_version").split(".");
+      var minimumVersionParts =
+          firebaseRemoteConfig.getString("minimum_app_version").split(".");
       var minimumRequired = Version(int.parse(minimumVersionParts[0]),
-          int.parse(minimumVersionParts[1]),
-          int.parse(minimumVersionParts[2]));
-      if (current < minimumRequired)
-        throw OutdatedAppException();
+          int.parse(minimumVersionParts[1]), int.parse(minimumVersionParts[2]));
+      if (current < minimumRequired) throw OutdatedAppException();
     } catch (s, e) {
-      print(e); print(s);
+      print(e);
+      print(s);
     }
 
     if (kDebugMode) {
@@ -162,19 +172,24 @@ class LaunchController {
 
     Uri deepLink;
 
+    // check if coming from link
     if (!kIsWeb) {
-      // check if coming from link
       final PendingDynamicLinkData data =
-      await FirebaseDynamicLinks.instance.getInitialLink();
+          await FirebaseDynamicLinks.instance.getInitialLink();
 
       deepLink = data?.link;
     }
 
+    // check if coming from notification
+    RemoteMessage initialMessage = await FirebaseMessaging.instance.getInitialMessage();
+    print("initial message is " + initialMessage.toString());
+
     if (deepLink != null) {
       trace.putAttribute("coming_from_deeplink", true.toString());
       handleLink(deepLink);
+    } else if (initialMessage != null) {
+      handleMessageFromNotification(initialMessage);
     } else {
-      trace.putAttribute("coming_from_deeplink", false.toString());
       // await
       Navigator.pushReplacementNamed(context, AvailableMatches.routeName);
     }
@@ -189,8 +204,6 @@ class LaunchController {
     return Tuple2<Version, String>(
         Version(int.parse(versionParts[0]), int.parse(versionParts[1]),
             int.parse(versionParts[2])),
-        packageInfo.buildNumber
-    );
+        packageInfo.buildNumber);
   }
 }
-

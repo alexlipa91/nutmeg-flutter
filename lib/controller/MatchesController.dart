@@ -110,7 +110,6 @@ class MatchesController {
           (stillToRateData.isEmpty) ? MatchStatusForUser.no_more_to_rate
               : MatchStatusForUser.to_rate;
         } else {
-          print("We shouldn't show this match to the user");
           return null;
         }
       } else {
