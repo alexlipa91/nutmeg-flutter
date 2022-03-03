@@ -21,7 +21,7 @@ class UserController {
   static Future<UserDetails> refreshCurrentUser(BuildContext context) async {
     var userState = context.read<UserState>();
 
-    var userDetails = await getUserDetails(context, userState.currentUserId, true);
+    var userDetails = await getUserDetails(context, userState.currentUserId);
     userState.setCurrentUserDetails(userDetails);
     return userDetails;
   }
@@ -173,14 +173,13 @@ class UserController {
     return _login(context, userCredential);
   }
 
-  static Future<UserDetails> getUserDetails(BuildContext context, String uid,
-      [bool forceRefresh = false]) async {
-    var userState = context.read<UserState>();
+  static Future<List<UserDetails>> getBatchUserDetails(BuildContext context,
+      List<String> uids) async {
+    return await Future.wait(uids.map((e) => getUserDetails(context, e)));
+  }
 
-    UserDetails cached = userState.getUserDetail(uid);
-    if (cached != null && !forceRefresh) {
-      return cached;
-    }
+  static Future<UserDetails> getUserDetails(BuildContext context, String uid) async {
+    var userState = context.read<UserState>();
 
     var resp = await apiClient.callFunction("get_user", {"id": uid});
 
@@ -196,7 +195,7 @@ class UserController {
   }
 
   // how many users 'the current logged-in user' needs to still rate in match 'matchId'
-  static Future<List<UserDetails>> getUsersToRateInMatchForLoggedUser(
+  static Future<List<String>> getUsersToRateInMatchForLoggedUser(
       BuildContext context, String matchId) async{
     var userId = context.read<UserState>().currentUserId;
 
@@ -207,8 +206,7 @@ class UserController {
     List<String> users = List<String>.from([]);
     resp.values.first.forEach((r) { users.add(r); });
 
-    return (await Future.wait(users.map((uid) => getUserDetails(context, uid))))
-        .toList();
+    return users;
   }
 }
 

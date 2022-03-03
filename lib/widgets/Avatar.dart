@@ -31,7 +31,7 @@ class UserAvatar extends StatelessWidget {
             style: GoogleFonts.roboto(
                 color: Palette.mediumgrey,
                 fontSize: fontSize,
-                fontWeight: FontWeight.w500
+                fontWeight: FontWeight.w600
             ))
         : null;
 

@@ -11,7 +11,6 @@ import 'package:provider/provider.dart';
 
 import '../model/UserDetails.dart';
 import '../state/MatchesState.dart';
-import '../state/UserState.dart';
 
 
 class BottomBarMatch extends StatelessWidget {
@@ -41,7 +40,7 @@ class BottomBarMatch extends StatelessWidget {
 
   Widget getSubText(Match match, MatchStatusForUser matchStatusForUser,
       BuildContext context) {
-    var userState = context.watch<UserState>();
+    var matchesState = context.watch<MatchesState>();
 
     switch (matchStatusForUser) {
       case MatchStatusForUser.join:
@@ -56,7 +55,7 @@ class BottomBarMatch extends StatelessWidget {
       case MatchStatusForUser.canceled:
         return Container();
       case MatchStatusForUser.to_rate:
-        return Text(userState.getUsersStillToRate(match.documentId).length.toString()
+        return Text(matchesState.getUsersToRate(match.documentId).length.toString()
             + " players left", style: TextPalette.bodyText);
       case MatchStatusForUser.no_more_to_rate:
         return Text("Man of the match will be published soon",

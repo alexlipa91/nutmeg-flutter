@@ -30,12 +30,10 @@ class RateButton extends StatelessWidget {
 
 class RatePlayerBottomModal extends StatelessWidget {
   static Future<void> rateAction(BuildContext context, String matchId) async {
-    var match = context.read<MatchesState>().getMatch(matchId);
+    var toRate = context.read<MatchesState>().getUsersToRate(matchId);
 
-    List<UserDetails> users =
-        (await UserController.getUsersToRateInMatchForLoggedUser(
-                context, match.documentId))
-            .toList();
+    List<UserDetails> users = await
+    Future.wait(toRate.map((e) => UserController.getUserDetails(context, e)));
 
     await showModalBottomSheet(
         context: context,

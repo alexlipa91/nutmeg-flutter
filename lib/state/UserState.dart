@@ -10,19 +10,9 @@ class UserState extends ChangeNotifier {
   bool _isTestMode = false;
   Map<String, UserDetails> _usersDetails = Map();
 
-  // fixme maybe move it somewhere else
-  Map<String, List<UserDetails>> _usersStillToRate = Map();
-
   String get currentUserId => _currentUserId;
 
   UserDetails getLoggedUserDetails() => _usersDetails[_currentUserId];
-
-  void setUsersStillToRate(String matchId, List<UserDetails> users) {
-    _usersStillToRate[matchId] = users;
-    notifyListeners();
-  }
-
-  List<UserDetails> getUsersStillToRate(String match) => _usersStillToRate[match];
 
   void setCurrentUserDetails(UserDetails u) {
     _currentUserId = u.documentId;

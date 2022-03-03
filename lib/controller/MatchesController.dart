@@ -2,11 +2,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 import 'package:nutmeg/model/Match.dart';
 import 'package:nutmeg/state/MatchStatsState.dart';
-import 'package:nutmeg/state/RatingPlayersState.dart';
 import 'package:provider/provider.dart';
+import 'package:tuple/tuple.dart';
 
 import '../model/PaymentRecap.dart';
-import '../model/UserDetails.dart';
 import '../state/MatchesState.dart';
 import '../state/UserState.dart';
 import 'UserController.dart';
@@ -24,7 +23,6 @@ class MatchesController {
 
     matchesState.setMatch(match);
 
-    await _refreshMatchStatus(context, matchId);
     return match;
   }
 
@@ -80,15 +78,15 @@ class MatchesController {
   }
 
   // compute status of a match
-  static Future<MatchStatusForUser> _refreshMatchStatus(BuildContext context,
-      String matchId) async {
+  static Future<Tuple2<MatchStatusForUser, List<String>>> refreshMatchStatus(
+      BuildContext context, String matchId) async {
     var userState = context.read<UserState>();
     var matchesState = context.read<MatchesState>();
 
     Match match = matchesState.getMatch(matchId);
 
     MatchStatusForUser status;
-    List<UserDetails> stillToRateData;
+    List<String> stillToRateData;
 
     if (match.cancelledAt != null) {
       status = MatchStatusForUser.canceled;
@@ -122,9 +120,9 @@ class MatchesController {
     }
 
     matchesState.setMatchStatus(matchId, status);
-    userState.setUsersStillToRate(matchId, stillToRateData);
+    matchesState.setUsersToRate(matchId, stillToRateData);
 
-    return status;
+    return Tuple2(status, stillToRateData);
   }
 
   // logged-in user voted 'score' for user 'userId' in match 'matchId'

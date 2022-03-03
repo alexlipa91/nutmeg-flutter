@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
@@ -61,10 +59,17 @@ class MatchDetailsState extends State<MatchDetails> {
   MatchDetailsState(this.matchId);
 
   Future<void> refreshState() async {
+    // get details
     var match = await MatchesController.refresh(context, matchId);
 
-    var status =
-    context.read<MatchesState>().getMatchStatus(matchId);
+    // get users details
+    Future.wait(match.going.keys.map((e) => UserController.getUserDetails(context, e)));
+
+    // get status
+    var statusAndUsers = await MatchesController.refreshMatchStatus(context, matchId);
+
+    var status = statusAndUsers.item1;
+
     if (status == MatchStatusForUser.to_rate) {
       await RatePlayerBottomModal.rateAction(context, matchId);
     } else if (status == MatchStatusForUser.rated) {
@@ -72,8 +77,7 @@ class MatchDetailsState extends State<MatchDetails> {
     }
     showBottomBar = true;
 
-    Future.wait(match.going.keys
-        .map((e) => UserController.getUserDetails(context, e)));
+    UserController.getBatchUserDetails(context, match.going.keys.toList());
   }
 
   @override
@@ -596,7 +600,7 @@ class Stats extends StatelessWidget {
       title: "MATCH STATS",
       body: InfoContainer(
         child: (ratings.isEmpty)
-            ? MatchInfoSkeleton()
+            ? Container()
             : Builder(
                 builder: (context) {
                   var sorted = ratings.entries.toList()

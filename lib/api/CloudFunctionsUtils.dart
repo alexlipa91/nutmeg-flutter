@@ -14,6 +14,7 @@ class CloudFunctionsClient {
   CloudFunctionsClient._internal();
 
   Future<Map<String, dynamic>> callFunction(String name, Map<String, dynamic> data) async {
+    print("Calling " + name);
     var trace = FirebasePerformance.instance.newTrace("api-call");
     trace.putAttribute("function_name", name);
     final Stopwatch stopwatch = Stopwatch();
