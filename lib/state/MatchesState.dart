@@ -20,7 +20,7 @@ class MatchesState extends ChangeNotifier {
       MatchStatusForUser.to_rate, MatchStatusForUser.no_more_to_rate];
 
   // match details
-  Map<String, Match> _matches = Map();
+  Map<String, Match> _matches;
 
   // match status
   Map<String, MatchStatusForUser> _matchesStatus = Map();

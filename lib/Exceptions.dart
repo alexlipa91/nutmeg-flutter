@@ -6,7 +6,7 @@ import 'package:nutmeg/utils/InfoModals.dart';
 
 class ErrorHandlingUtils {
   static Future<void> handleError(
-      Exception e, StackTrace stackTrace, BuildContext context) {
+      dynamic e, StackTrace stackTrace, BuildContext context) {
     print("handling error: " + e.toString());
     print(stackTrace);
     FirebaseCrashlytics.instance.recordError(e, stackTrace);

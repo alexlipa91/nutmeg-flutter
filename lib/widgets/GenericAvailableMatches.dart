@@ -99,9 +99,7 @@ class GenericAvailableMatchesListState extends State<GenericAvailableMatchesList
         bottom: false,
         child: Scaffold(
           backgroundColor: Palette.grey_lightest,
-          // appBar: MainAppBar(),
-          body: FutureBuilder(
-            builder: (context, snapshot) => SmartRefresher(
+          body: SmartRefresher(
               enablePullDown: true,
               enablePullUp: false,
               header: MaterialClassicHeader(),
@@ -130,7 +128,6 @@ class GenericAvailableMatchesListState extends State<GenericAvailableMatchesList
                               : matchWidgets.length),
                     ),
             ),
-          ),
         ),
       ),
     );

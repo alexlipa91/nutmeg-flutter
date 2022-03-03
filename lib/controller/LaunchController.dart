@@ -147,8 +147,8 @@ class LaunchController {
       context.read<UserState>().setCurrentUserDetails(userDetails);
       // tell the app to save user tokens
       await UserController.saveUserTokensToDb(userDetails);
+      trace.putAttribute("user_id", userDetails?.documentId);
     }
-    trace.putAttribute("user_id", userDetails?.documentId);
 
     FirebaseMessaging.instance.requestPermission(
       alert: true,

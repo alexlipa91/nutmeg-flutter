@@ -27,7 +27,7 @@ class Palette {
   static var grey_lighter = UiUtils.fromHex("#EEEEEEE"); // previous “lighterGrey”
   static var grey_light = UiUtils.fromHex("#C2C2C2"); // previous “lightGrey”
   static var grey_dark = UiUtils.fromHex("#787878"); // previous “mediumgrey”
-  static var grey_darker = UiUtils.fromHex("“#444444"); // previous “darkgrey”
+  static var grey_darker = UiUtils.fromHex("#444444"); // previous “darkgrey”
 
   // colors
   static var primary = UiUtils.fromHex("#394BBB");

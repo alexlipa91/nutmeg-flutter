@@ -60,7 +60,8 @@ void main() {
                   ],
                   child: MatchDetails(matchId: args.matchId));
             },
-            AvailableMatches.routeName: (ctx) => AvailableMatches()
+            AvailableMatches.routeName: (ctx) => AvailableMatches(),
+            "/": (ctx) => LaunchWidget()
           };
           WidgetBuilder builder = routes[settings.name];
           return MaterialPageRoute(builder: (ctx) => builder(ctx));
