@@ -274,7 +274,7 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                 children: [
                   Expanded(
                     child: GenericButtonWithLoader(
-                        (match == null) ? "ADD" : "EDIT", () async {
+                        (match == null) ? "ADD" : "EDIT", (BuildContext context) async {
                       try {
                         if (match == null) {
                           var shouldAdd = await CoolAlert.show(
