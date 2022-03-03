@@ -71,8 +71,7 @@ class JoinModal {
           SizedBox(width: 10),
           Text('Service Fee', style: TextPalette.bodyText),
           Expanded(
-              child: Text(
-            "+ " + formatCurrency(0),
+              child: Text(formatCurrency(0),
             style: TextPalette.bodyText,
             textAlign: TextAlign.end,
           ))

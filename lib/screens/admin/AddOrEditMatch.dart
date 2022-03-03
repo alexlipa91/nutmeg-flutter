@@ -275,7 +275,8 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                   Expanded(
                     child: GenericButtonWithLoader(
                         (match == null) ? "ADD" : "EDIT", (BuildContext context) async {
-                      try {
+                      context.read<GenericButtonWithLoaderState>().change(true);
+                        try {
                         if (match == null) {
                           var shouldAdd = await CoolAlert.show(
                             context: context,
@@ -340,6 +341,7 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                               .show(context);
                           Navigator.pop(context);
                         }
+                        context.read<GenericButtonWithLoaderState>().change(false);
                       } catch (e, stackTrace) {
                         ErrorHandlingUtils.handleError(e, stackTrace, context);
                       }

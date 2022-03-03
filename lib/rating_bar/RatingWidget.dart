@@ -21,7 +21,7 @@ class RatingBar extends StatelessWidget {
         isReadOnly: false,
         color: Palette.accent,
         defaultIconData: Icons.star,
-        borderColor: Palette.grey_lighter,
+        borderColor: Palette.grey_light,
         spacing: 8.0
     );
   }
