@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:provider/provider.dart';
 
 import '../state/RatingPlayersState.dart';
@@ -16,12 +17,12 @@ class RatingBar extends StatelessWidget {
         allowHalfRating: false,
         starCount: 5,
         rating: context.watch<RatingPlayersState>().currentScore,
-        size: 40.0,
+        size: 52.0,
         isReadOnly: false,
-        color: Colors.amber,
+        color: Palette.accent,
         defaultIconData: Icons.star,
-        borderColor: Colors.grey,
-        spacing:0.0
+        borderColor: Palette.lightGrey,
+        spacing: 8.0
     );
   }
 

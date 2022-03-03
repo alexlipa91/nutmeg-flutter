@@ -37,6 +37,8 @@ class Palette {
   static var lighterGrey = Colors.grey.shade200; // used for background
   static var green = Colors.green.shade700;
 
+  static var accent = UiUtils.fromHex("#FD9F41");
+
   static const white = Colors.white;
 }
 
