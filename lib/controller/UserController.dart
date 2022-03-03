@@ -2,9 +2,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:nutmeg/controller/PromotionController.dart';
+import 'package:nutmeg/screens/EnterDetails.dart';
 import 'package:nutmeg/utils/Utils.dart';
 import 'package:provider/provider.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
@@ -46,29 +48,30 @@ class UserController {
     return null;
   }
 
-  static Future<void> editUser(UserDetails u) async =>
-      await apiClient.callFunction(
-          "edit_user", {"id": u.documentId, "data": u.toJson()});
+  static Future<void> editUser(UserDetails u) async => await apiClient
+      .callFunction("edit_user", {"id": u.documentId, "data": u.toJson()});
 
-  static Future<void> addUser(UserDetails u) async =>
-      await apiClient.callFunction("add_user", {
-        "id": u.documentId,
-        "data": u.toJson()});
+  static Future<void> addUser(UserDetails u) async => await apiClient
+      .callFunction("add_user", {"id": u.documentId, "data": u.toJson()});
 
   static Future<void> saveUserTokensToDb(UserDetails userDetails) async {
     // Get the token each time the application loads
     String token = await FirebaseMessaging.instance.getToken();
 
     // Save the initial token to the database
-    await apiClient.callFunction("store_user_token",
-        {"id": userDetails.getUid(), "token": token});
-
-    // Any time the token refreshes, store this in the database too.
+    try {
+      await apiClient.callFunction(
+          "store_user_token", {"id": userDetails.getUid(), "token": token});
+    } on Exception catch(e, s) {
+      print(e);
+      print(s);
+    }
+      // Any time the token refreshes, store this in the database too.
     FirebaseMessaging.instance.onTokenRefresh.listen(_saveTokenToDatabase);
   }
 
-  static Future<AfterLoginCommunication> _login(BuildContext context,
-      UserCredential userCredential) async {
+  static Future<AfterLoginCommunication> _login(
+      BuildContext context, UserCredential userCredential) async {
     var userState = context.read<UserState>();
 
     var uid = userCredential.user.uid;
@@ -80,7 +83,20 @@ class UserController {
     // check if first time
     if (userDetails == null) {
       userDetails = new UserDetails(uid, false, userCredential.user.photoURL,
-          userCredential.user.displayName, userCredential.user.email);
+          // userCredential.user.displayName,
+          null,
+          userCredential.user.email);
+
+      if (userDetails.name == null || userDetails.name == "") {
+        var name = await Navigator.push(
+            context, MaterialPageRoute(builder: (context) => EnterDetails()));
+        if (name == null || name == "") {
+          // Navigator.pop(context);
+          return null;
+        } else {
+          userDetails.name = name;
+        }
+      }
 
       // check if need to give credits todo generalize
       int credits = await PromotionController.giveFreeCreditsAtLogin();
@@ -109,7 +125,8 @@ class UserController {
     });
   }
 
-  static Future<AfterLoginCommunication> continueWithGoogle(BuildContext context) async {
+  static Future<AfterLoginCommunication> continueWithGoogle(
+      BuildContext context) async {
     FirebaseAuth auth = FirebaseAuth.instance;
 
     final GoogleSignIn googleSignIn = GoogleSignIn();
@@ -127,7 +144,8 @@ class UserController {
     return await _login(context, await auth.signInWithCredential(credential));
   }
 
-  static Future<AfterLoginCommunication> continueWithFacebook(BuildContext context) async {
+  static Future<AfterLoginCommunication> continueWithFacebook(
+      BuildContext context) async {
     // Trigger the sign-in flow
     final LoginResult loginResult = await FacebookAuth.instance.login();
 
@@ -173,18 +191,22 @@ class UserController {
     return _login(context, userCredential);
   }
 
-  static Future<List<UserDetails>> getBatchUserDetails(BuildContext context,
-      List<String> uids) async {
+  static Future<List<UserDetails>> getBatchUserDetails(
+      BuildContext context, List<String> uids) async {
     return await Future.wait(uids.map((e) => getUserDetails(context, e)));
   }
 
-  static Future<UserDetails> getUserDetails(BuildContext context, String uid) async {
+  static Future<UserDetails> getUserDetails(
+      BuildContext context, String uid) async {
     var userState = context.read<UserState>();
 
     var resp = await apiClient.callFunction("get_user", {"id": uid});
 
-    var ud = (resp == null) ? UserDetails.empty(uid) : UserDetails.fromJson(resp, uid);
-    userState.setUserDetail(ud);
+    var ud = (resp == null)
+        ? null
+        : UserDetails.fromJson(resp, uid);
+    if (ud != null)
+      userState.setUserDetail(ud);
 
     return ud;
   }
@@ -196,15 +218,16 @@ class UserController {
 
   // how many users 'the current logged-in user' needs to still rate in match 'matchId'
   static Future<List<String>> getUsersToRateInMatchForLoggedUser(
-      BuildContext context, String matchId) async{
+      BuildContext context, String matchId) async {
     var userId = context.read<UserState>().currentUserId;
 
     var resp = await apiClient.callFunction(
-        "get_users_to_rate",
-        {"match_id": matchId, "user_id": userId});
+        "get_users_to_rate", {"match_id": matchId, "user_id": userId});
 
     List<String> users = List<String>.from([]);
-    resp.values.first.forEach((r) { users.add(r); });
+    resp.values.first.forEach((r) {
+      users.add(r);
+    });
 
     return users;
   }

@@ -71,7 +71,7 @@ class UserPageState extends State<UserPage> {
                     children: [
                       Text(userDetails.name ?? "N/A", style: TextPalette.h2),
                       SizedBox(height: 10),
-                      Text(userDetails.email, style: TextPalette.bodyText)
+                      Text(userDetails.email ?? "N/A", style: TextPalette.bodyText)
                     ],
                   ),
                 )
@@ -84,13 +84,13 @@ class UserPageState extends State<UserPage> {
         Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
           Expanded(
             child: UserInfoBox(
-                content: formatCurrency(userDetails.creditsInCents),
+                content: formatCurrency(userDetails.creditsInCents ?? 0),
                 description: "Credits"),
           ),
           SizedBox(width: 20),
           Expanded(
             child: UserInfoBox(
-                content: userDetails.joinedMatches.length.toString(),
+                content: userDetails.getJoinedMatches().length.toString(),
                 description: "Matches Played"),
           )
         ]),
@@ -169,7 +169,7 @@ class UserPageState extends State<UserPage> {
           ])),
         ),
       ),
-      if (userDetails.isAdmin)
+      if (userDetails.getIsAdmin())
         Padding(
           padding: EdgeInsets.symmetric(horizontal: 16),
           child: Section(

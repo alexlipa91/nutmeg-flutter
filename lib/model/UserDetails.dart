@@ -57,13 +57,17 @@ class UserDetails {
         .where((e) => e > 0).reduce((a, b) => a + b) / scoreMatches.length;
   }
 
-  int getNumManOfTheMatch() => manOfTheMatch.length;
+  List<String> getJoinedMatches() => (joinedMatches == null) ? List<String>.empty() : joinedMatches;
+
+  int getNumManOfTheMatch() => (manOfTheMatch == null) ? 0 : manOfTheMatch.length;
 
   String getStripeId() => stripeId;
 
   void setStripeId(String stripeId) => stripeId = stripeId;
 
   String getPhotoUrl() => image;
+  
+  bool getIsAdmin() => (isAdmin == null) ? false : isAdmin;
 
   static String getDisplayName(UserDetails ud) {
     if (ud == null) return "Player";

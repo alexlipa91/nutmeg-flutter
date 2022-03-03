@@ -16,7 +16,7 @@ class UserState extends ChangeNotifier {
 
   void setCurrentUserDetails(UserDetails u) {
     _currentUserId = u.documentId;
-    if (u.isAdmin) {
+    if (u.getIsAdmin() != null && u.getIsAdmin()) {
       _isTestMode = true;
     }
     setUserDetail(u);

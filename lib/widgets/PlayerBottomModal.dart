@@ -78,7 +78,7 @@ class JoinedPlayerBottomModal extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                StatEntry(stat: userDetails.joinedMatches.length.toString(),
+                StatEntry(stat: userDetails.getJoinedMatches().length.toString(),
                   description: "Matches",),
                 Expanded(
                   child: StatEntry(stat: userDetails.getScoreMatches().toStringAsFixed(2),
