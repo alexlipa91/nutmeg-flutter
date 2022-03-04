@@ -35,6 +35,7 @@ import '../model/SportCenter.dart';
 import '../state/LoadOnceState.dart';
 import '../state/MatchesState.dart';
 import '../state/UserState.dart';
+import '../widgets/Skeletons.dart';
 import 'BottomBarMatch.dart';
 
 class ScreenArguments {
@@ -91,49 +92,46 @@ class MatchDetailsState extends State<MatchDetails> {
     var matchesState = context.watch<MatchesState>();
     var match = matchesState.getMatch(matchId);
 
-    if (match == null) {
-      return Container();
-    }
-
     var loadOnceState = context.read<LoadOnceState>();
 
-    var sportCenter = loadOnceState.getSportCenter(match.sportCenterId);
-    var sport = loadOnceState.getSport(match.sport);
+    var sportCenter;
+    var sport;
+    var title = "";
+    var isTest = false;
 
-    var title = (match.isTest)
-        ? match.documentId
-        : sportCenter.name + " - " + sport.displayTitle;
+    if (match != null) {
+      isTest = isTest;
+      sportCenter = loadOnceState.getSportCenter(match.sportCenterId);
+      sport = loadOnceState.getSport(match.sport);
+      title = (match.isTest) ? match.documentId : sportCenter.name + " - " + sport.displayTitle;
+    }
 
-    var matchStatus = matchesState.getMatchStatus(match.documentId);
-    print("status in build of matchdetails is " + matchStatus.toString());
+    var matchStatus = matchesState.getMatchStatus(matchId);
 
-    pad(Widget w) =>
-        Padding(padding: EdgeInsets.symmetric(horizontal: 16), child: w);
+    padLR(Widget w) =>
+        Padding(padding: EdgeInsets.only(left: 16, right: 16), child: w);
+
+    padLRB(Widget w) =>
+        Padding(padding: EdgeInsets.only(left: 16, right: 16, bottom: 16), child: w);
 
     // add padding individually since because of shadow clipping some components need margin
     var widgets = [
-      pad(Container(
-          color: (match.isTest) ? Colors.orangeAccent : Colors.transparent,
+      // title
+      if (match != null)
+        padLRB(Container(
+          color: (isTest) ? Colors.orangeAccent : Colors.transparent,
           child: Text(title, style: TextPalette.h1Default))),
-      SizedBox(height: 16),
-      MatchInfo(matchId),
-      if (matchStatus == MatchStatusForUser.no_more_to_rate)
-        pad(Section(
-          title: "Thanks for rating",
-          body: InfoContainer(
-              child: Row(children: [
-            Expanded(child: Text("Ratings will be published at datetime"))
-          ])),
-        )),
-      if (matchStatus != MatchStatusForUser.rated)
-        pad(Builder(
+      // info box
+      padLR(MatchInfo(matchId)),
+      // horizontal players list
+      if (match != null && matchStatus != MatchStatusForUser.rated)
+        padLRB(Builder(
           builder: (context) {
-            int going = match.numPlayersGoing();
+            var title = (match == null) ? "" : match.numPlayersGoing().toString() +
+                "/" + match.maxPlayers.toString() + " PLAYERS";
+
             return Section(
-              title: going.toString() +
-                  "/" +
-                  match.maxPlayers.toString() +
-                  " PLAYERS",
+              title: title,
               body: SingleChildScrollView(
                 clipBehavior: Clip.none,
                 scrollDirection: Axis.horizontal,
@@ -148,15 +146,17 @@ class MatchDetailsState extends State<MatchDetails> {
             );
           },
         )),
-      if (matchStatus == MatchStatusForUser.rated) pad(Stats()),
+      // stats
+      if (matchStatus == MatchStatusForUser.rated || matchStatus == MatchStatusForUser.no_more_to_rate)
+        padLRB(Stats(matchStatusForUser: matchStatus,)),
+      // payment policy
       if (!MatchesState.pastStates.contains(matchStatus))
-        pad(Section(
+        padLRB(Section(
             title: "DETAILS",
             body: RuleCard(
                 "Payment Policy",
                 "If you leave the match more than 15 hours before the kick-off time the amount you paid will be returned to you in credits that you can use in other Nutmeg matches. "
                     "\n\nNo credits or refund will be provided if you drop out of a game less than 15 hours from kick-off."))),
-      SizedBox(height: 16),
       // MapCard.big(sportCenter)
     ];
 
@@ -197,9 +197,9 @@ class MatchInfo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var match = context.watch<MatchesState>().getMatch(matchId);
-    if (match == null) {
-      return MatchInfoSkeleton();
-    }
+    if (match == null)
+      return SkeletonMatchDetails();
+
     var sportCenter = context.watch<LoadOnceState>().getSportCenter(match.sportCenterId);
     var sport = context.watch<LoadOnceState>().getSport(match.sport);
 
@@ -207,7 +207,6 @@ class MatchInfo extends StatelessWidget {
       return MatchInfoSkeleton();
     }
     return InfoContainer(
-        margin: EdgeInsets.symmetric(horizontal: 16),
         padding: EdgeInsets.zero,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -605,92 +604,110 @@ class MapCard extends StatelessWidget {
 }
 
 class Stats extends StatelessWidget {
+
+  final MatchStatusForUser matchStatusForUser;
+
+  const Stats({Key key, this.matchStatusForUser}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
-    var ratings = context.watch<MatchStatState>().ratings;
-    var userState = context.watch<UserState>();
+    var child;
+
+    if (matchStatusForUser == MatchStatusForUser.no_more_to_rate) {
+      child = Container(
+          width: double.infinity,
+          child: Column(children: [
+            Icon(Icons.punch_clock, size: 80, color: Palette.grey_light,),
+            SizedBox(height: 16,),
+            Text("Stats available soon", style: TextPalette.h2,),
+          ],));
+    } else {
+      var ratings = context.watch<MatchStatState>().ratings;
+      var userState = context.watch<UserState>();
+
+      var loadSkeleton = (ratings == null || ratings.isEmpty || userState == null);
+      child = (loadSkeleton) ? StatsSkeleton() : Builder(
+        builder: (context) {
+          var sorted = ratings.entries.toList()
+            ..sort((a, b) => b.value.compareTo(a.value));
+
+          int index = 1;
+
+          return Container(
+            child: Column(
+              children: sorted.map((e) {
+                var user = e.key;
+                var score = e.value;
+
+                var userDetails = userState.getUserDetail(user);
+
+                var widgets = [
+                  Container(
+                      width: 18,
+                      child: Text(index.toString(),
+                          style: TextPalette.bodyText)),
+                  SizedBox(width: 8),
+                  UserAvatar(10, userDetails),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Row(
+                      children: [
+                        Builder(builder: (context) {
+                          // fixme text overflow
+                          var name =
+                              UserDetails.getDisplayName(userDetails)
+                                  .split(" ")
+                                  .first;
+                          var n = name.substring(0, min(name.length, 11));
+                          return Text(n,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextPalette.bodyText);
+                        }),
+                        SizedBox(width: 1),
+                        if (index == 1)
+                          Icon(
+                            Icons.sports_soccer,
+                            color: Colors.amber,
+                            size: 20,
+                          ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    height: 10,
+                    width: 100,
+                    child: ClipRRect(
+                      borderRadius:
+                      BorderRadius.all(Radius.circular(10)),
+                      child: LinearProgressIndicator(
+                        value: score / 5,
+                        color: Palette.primary,
+                        backgroundColor: Palette.grey_light,
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 12),
+                  Text(score.toStringAsFixed(1),
+                      style: TextPalette.bodyText),
+                ];
+
+                index++;
+                return Padding(
+                    padding: (index > 2)
+                        ? EdgeInsets.only(top: 16)
+                        : EdgeInsets.zero,
+                    child: Row(children: widgets));
+              }).toList(),
+            ),
+          );
+        },
+      );
+    }
 
     return Section(
       title: "MATCH STATS",
       body: InfoContainer(
-        child: (ratings.isEmpty)
-            ? Container()
-            : Builder(
-                builder: (context) {
-                  var sorted = ratings.entries.toList()
-                    ..sort((a, b) => b.value.compareTo(a.value));
-
-                  int index = 1;
-
-                  return Container(
-                    child: Column(
-                      children: sorted.map((e) {
-                        var user = e.key;
-                        var score = e.value;
-
-                        var userDetails = userState.getUserDetail(user);
-
-                        var widgets = [
-                          Container(
-                              width: 18,
-                              child: Text(index.toString(),
-                                  style: TextPalette.bodyText)),
-                          SizedBox(width: 8),
-                          UserAvatar(10, userDetails),
-                          SizedBox(width: 8),
-                          Expanded(
-                            child: Row(
-                              children: [
-                                Builder(builder: (context) {
-                                  // fixme text overflow
-                                  var name =
-                                      UserDetails.getDisplayName(userDetails)
-                                          .split(" ")
-                                          .first;
-                                  var n = name.substring(0, min(name.length, 11));
-                                  return Text(n,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextPalette.bodyText);
-                                }),
-                                SizedBox(width: 1),
-                                if (index == 1)
-                                  Icon(
-                                    Icons.sports_soccer,
-                                    color: Colors.amber,
-                                    size: 20,
-                                ),
-                              ],
-                            ),
-                          ),
-                          Container(
-                            height: 10,
-                            width: 100,
-                            child: ClipRRect(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(10)),
-                              child: LinearProgressIndicator(
-                                value: score / 5,
-                                color: Palette.primary,
-                                backgroundColor: Palette.grey_light,
-                              ),
-                            ),
-                          ),
-                          SizedBox(width: 12),
-                          Text(score.toStringAsFixed(1),
-                              style: TextPalette.bodyText),
-                        ];
-
-                        index++;
-                        return Padding(
-                            padding: (index > 2)
-                                ? EdgeInsets.only(top: 16)
-                                : EdgeInsets.zero,
-                            child: Row(children: widgets));
-                      }).toList(),
-                    ),
-                  );
-                },
-              ),
+        child: child
       ),
     );
   }

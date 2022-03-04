@@ -15,7 +15,7 @@ class Section extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(height: 36,),
+          SizedBox(height: 32,),
           Text(title, style: TextPalette.h4, textAlign: TextAlign.start,),
           SizedBox(height: 10,),
           body
