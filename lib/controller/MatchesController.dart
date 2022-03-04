@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 import 'package:nutmeg/model/Match.dart';
 import 'package:nutmeg/state/MatchStatsState.dart';
+import 'package:nutmeg/utils/Utils.dart';
 import 'package:provider/provider.dart';
 import 'package:tuple/tuple.dart';
 
@@ -120,6 +121,14 @@ class MatchesController {
           (isGoing) ? MatchStatusForUser.leave : MatchStatusForUser.join;
         }
       }
+    }
+
+    print(status);
+    print(shouldDisableRatings);
+    if ((status == MatchStatusForUser.to_rate || status == MatchStatusForUser.no_more_to_rate
+        || status == MatchStatusForUser.rated) && shouldDisableRatings) {
+      print("DISABLING IT");
+      status = null;
     }
 
     matchesState.setMatchStatus(matchId, status);
