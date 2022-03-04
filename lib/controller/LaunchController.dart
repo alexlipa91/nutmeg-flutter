@@ -6,7 +6,9 @@ import 'package:firebase_performance/firebase_performance.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
+import 'package:nutmeg/state/MatchesState.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:tuple/tuple.dart';
@@ -58,9 +60,15 @@ class LaunchController {
   }
 
   static Future<void> goToMatchScreen(BuildContext context, String matchId) async {
+    await loadOnceData(context);
+    print("going to match screen");
     // var match = await
-    MatchesController.refresh(context, matchId);
+    var m = await MatchesController.refresh(context, matchId);
+    await MatchesController.refreshMatchStatus(context, m);
 
+    print("data got");
+    print(context.read<MatchesState>().getMatchStatus(m.documentId));
+    print(context.read<MatchesState>().getMatch(m.documentId));
     Navigator.of(context).pushReplacementNamed(AvailableMatches.routeName);
 
     Navigator.pushNamed(
@@ -70,6 +78,13 @@ class LaunchController {
         matchId,
       ),
     );
+
+    // Navigator.pushNamedAndRemoveUntil(
+    //     context,
+    //     MatchDetails.routeName,
+    //     ModalRoute.withName(AvailableMatches.routeName),
+    //     arguments: ScreenArguments(matchId,),
+    // ); // Replace this with your root screen's route name (usually '/')
   }
 
   static void handleMessageFromNotification(RemoteMessage message) async {
@@ -93,6 +108,7 @@ class LaunchController {
   }
 
   static Future<void> loadData(BuildContext context) async {
+    print("loading");
     await Firebase.initializeApp();
 
     var trace = FirebasePerformance.instance.newTrace("launch-app");
@@ -162,13 +178,7 @@ class LaunchController {
     FirebaseMessaging.instance.subscribeToTopic("nutmeg-generic");
 
     // DATA LOAD
-    var futures = [
-      SportCentersController.refreshAll(context),
-      SportsController.refreshAll(context.read<LoadOnceState>()),
-      MiscController.getGifs(context.read<LoadOnceState>())
-    ];
-
-    await Future.wait(futures);
+    loadOnceData(context);
 
     Uri deepLink;
 
@@ -205,5 +215,14 @@ class LaunchController {
         Version(int.parse(versionParts[0]), int.parse(versionParts[1]),
             int.parse(versionParts[2])),
         packageInfo.buildNumber);
+  }
+
+  static Future<void> loadOnceData(BuildContext context) async {
+    var futures = [
+      SportCentersController.refreshAll(context),
+      SportsController.refreshAll(context.read<LoadOnceState>()),
+      MiscController.getGifs(context.read<LoadOnceState>())
+    ];
+    await Future.wait(futures);
   }
 }

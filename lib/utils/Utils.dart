@@ -81,4 +81,4 @@ List<T> interleave<T>(List<T> elements, T e) {
   return result;
 }
 
-bool shouldDisableRatings = true;
+bool shouldDisableRatings = false;

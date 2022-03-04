@@ -62,7 +62,7 @@ class GenericAvailableMatchesListState extends State<GenericAvailableMatchesList
     await MatchesController.refreshAll(context);
     Future.wait(
         context.read<MatchesState>().getMatches()
-            .map((e) => MatchesController.refreshMatchStatus(context, e.documentId)));
+            .map((e) => MatchesController.refreshMatchStatus(context, e)));
     refreshController.refreshCompleted();
   }
 

@@ -67,7 +67,7 @@ class MatchDetailsState extends State<MatchDetails> {
 
     // get status
     var statusAndUsers =
-        await MatchesController.refreshMatchStatus(context, matchId);
+        await MatchesController.refreshMatchStatus(context, match);
 
     var status = statusAndUsers.item1;
 

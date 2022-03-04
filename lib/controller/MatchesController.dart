@@ -55,7 +55,7 @@ class MatchesController {
     });
     print("joined");
     var m = await refresh(context, matchId);
-    await refreshMatchStatus(context, matchId);
+    await refreshMatchStatus(context, m);
     return m;
   }
 
@@ -68,7 +68,7 @@ class MatchesController {
       'match_id': matchId
     });
     var m = await refresh(context, matchId);
-    await refreshMatchStatus(context, matchId);
+    await refreshMatchStatus(context, m);
     return m;
   }
 
@@ -84,11 +84,9 @@ class MatchesController {
 
   // compute status of a match
   static Future<Tuple2<MatchStatusForUser, List<String>>> refreshMatchStatus(
-      BuildContext context, String matchId) async {
+      BuildContext context, Match match) async {
     var userState = context.read<UserState>();
     var matchesState = context.read<MatchesState>();
-
-    Match match = matchesState.getMatch(matchId);
 
     MatchStatusForUser status;
     List<String> stillToRateData;
@@ -106,7 +104,7 @@ class MatchesController {
       if (isPast) {
         if (isGoing) {
           stillToRateData = await UserController.getUsersToRateInMatchForLoggedUser(context,
-              matchId);
+              match.documentId);
           status =
           (stillToRateData.isEmpty) ? MatchStatusForUser.no_more_to_rate
               : MatchStatusForUser.to_rate;
@@ -131,8 +129,8 @@ class MatchesController {
       status = null;
     }
 
-    matchesState.setMatchStatus(matchId, status);
-    matchesState.setUsersToRate(matchId, stillToRateData);
+    matchesState.setMatchStatus(match.documentId, status);
+    matchesState.setUsersToRate(match.documentId, stillToRateData);
 
     return Tuple2(status, stillToRateData);
   }

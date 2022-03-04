@@ -64,7 +64,8 @@ void main() {
             "/": (ctx) => LaunchWidget()
           };
           WidgetBuilder builder = routes[settings.name];
-          return MaterialPageRoute(builder: (ctx) => builder(ctx));
+          return NoAnimationPageRoute(
+              builder: (ctx) => builder(ctx));
         },
       ),
     ));
@@ -161,3 +162,16 @@ class LaunchWidgetState extends State<LaunchWidget> {
   //   LaunchController.goToMatchScreen(navigatorKey.currentContext, message.data["match_id"]);
   // }
 // }
+
+class NoAnimationPageRoute<T> extends MaterialPageRoute<T> {
+  NoAnimationPageRoute({ WidgetBuilder builder }) : super(builder: builder);
+
+  @override
+  Widget buildTransitions(
+      BuildContext context,
+      Animation<double> animation,
+      Animation<double> secondaryAnimation,
+      Widget child) {
+    return child;
+  }
+}

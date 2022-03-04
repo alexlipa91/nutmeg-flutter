@@ -6,8 +6,8 @@ import '../model/SportCenter.dart';
 
 
 class LoadOnceState extends ChangeNotifier {
-  Map<String, SportCenter> _sportCenters;
-  Map<String, Sport> _sports;
+  Map<String, SportCenter> _sportCenters = Map();
+  Map<String, Sport> _sports = Map();
   List<String> joinedGifs;
 
   void setSportCenters(List<SportCenter> newSportCenters) {

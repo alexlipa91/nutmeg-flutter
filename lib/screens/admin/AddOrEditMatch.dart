@@ -41,10 +41,10 @@ class AddOrEditMatchState extends State<AddOrEditMatch> {
   Future<void> refreshState() async {
     if (matchId != null) {
       // get details
-      await MatchesController.refresh(context, matchId);
+      var m = await MatchesController.refresh(context, matchId);
 
       // get status
-      await MatchesController.refreshMatchStatus(context, matchId);
+      await MatchesController.refreshMatchStatus(context, m);
     }
   }
 
@@ -365,7 +365,7 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                       print(e); print(stack);
                       GenericInfoModal(title: "Something went wrong").show(context);
                     }
-                    await MatchesController.refreshMatchStatus(context, matchId);
+                    await MatchesController.refreshMatchStatus(context, match);
                     context.read<GenericButtonWithLoaderState>().change(false);
                   }, Primary()))
                 ],
@@ -386,7 +386,7 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                               print(e); print(stack);
                               GenericInfoModal(title: "Something went wrong").show(context);
                             }
-                            await MatchesController.refreshMatchStatus(context, matchId);
+                            await MatchesController.refreshMatchStatus(context, match);
                             context.read<GenericButtonWithLoaderState>().change(false);
                           }, Primary()))
                 ],
