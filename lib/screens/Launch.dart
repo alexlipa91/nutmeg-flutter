@@ -6,6 +6,7 @@ import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:get/get.dart';
 import 'package:nutmeg/controller/LaunchController.dart';
 import 'package:nutmeg/screens/AvailableMatches.dart';
 import 'package:nutmeg/screens/EnterDetails.dart';
@@ -14,7 +15,6 @@ import 'package:nutmeg/screens/UserPage.dart';
 import 'package:nutmeg/screens/admin/AddOrEditMatch.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:provider/provider.dart';
-import 'package:get/get.dart';
 
 import '../Exceptions.dart';
 import '../state/LoadOnceState.dart';
@@ -48,20 +48,27 @@ void main() {
             decoration: new BoxDecoration(color: Colors.grey.shade400),
             child: Center(child: new LaunchWidget())),
         theme: new ThemeData(
-            primaryColor: Palette.primary,
-            accentColor: Palette.grey_lightest
-        ),
+            primaryColor: Palette.primary, accentColor: Palette.grey_lightest),
         getPages: [
-          GetPage(name: '/home', page: () => AvailableMatches()),
-          GetPage(name: '/match/:matchId', page: () => MultiProvider(
-                  providers: [
-                    ChangeNotifierProvider(create: (context) => MatchStatState()),
-                  ],
-                  child: MatchDetails())),
-          GetPage(name: '/login/enterDetails', page: () => EnterDetails()),
-          GetPage(name: '/user', page: () => UserPage()),
-          GetPage(name: '/editMatch/:matchId', page: () => AddOrEditMatch()),
-          GetPage(name: '/addMatch', page: () => AddOrEditMatch()),
+          GetPage(name: '/home', page: () => AvailableMatches(),
+            transition: Transition.native,
+            transitionDuration: Duration(milliseconds: 200)
+          ),
+          GetPage(
+              name: '/match/:matchId',
+              transition: Transition.noTransition,
+              page: () => MultiProvider(providers: [
+                    ChangeNotifierProvider(
+                        create: (context) => MatchStatState()),
+                  ], child: MatchDetails())),
+          GetPage(name: '/login/enterDetails', page: () => EnterDetails(),
+              transition: Transition.noTransition),
+          GetPage(name: '/user', page: () => UserPage(),
+              transition: Transition.noTransition),
+          GetPage(name: '/editMatch/:matchId', page: () => AddOrEditMatch(),
+              transition: Transition.noTransition),
+          GetPage(name: '/addMatch', page: () => AddOrEditMatch(),
+              transition: Transition.noTransition),
         ],
       ),
     ));

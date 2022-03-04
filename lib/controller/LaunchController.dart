@@ -54,8 +54,7 @@ class LaunchController {
     }
     if (deepLink.path == "/match") {
       var targetRoute = "/match/" + deepLink.queryParameters["id"];
-      if (Get.currentRoute != targetRoute)
-        Get.toNamed(targetRoute);
+      Get.toNamed(targetRoute).then((value) => Get.offNamed("/home"));
       return;
     }
   }
@@ -63,8 +62,7 @@ class LaunchController {
   static void handleMessageFromNotification(RemoteMessage message) async {
     print('message opened from notification');
     var targetRoute = "/match/" + message.data["match_id"];
-    if (Get.currentRoute != targetRoute)
-      Get.toNamed(targetRoute);
+    Get.toNamed(targetRoute).then((value) => Get.offNamed("/home"));
   }
 
   static void setupNotifications() {
