@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:provider/provider.dart';
@@ -22,7 +24,7 @@ class LogOutButton extends StatelessWidget {
           } catch (e, stackTrace) {
             print(e);
             print(stackTrace);
-            Navigator.pop(context, false);
+            Get.back(result: false);
             return;
           }
 

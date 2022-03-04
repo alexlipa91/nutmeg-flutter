@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:nutmeg/controller/PaymentController.dart';
 import 'package:nutmeg/state/MatchesState.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
@@ -37,7 +39,7 @@ class PayWithMoneyButton extends StatelessWidget {
             // context.read<GenericButtonWithLoaderState>().change(false);
           } catch (e) {
             print(e);
-            Navigator.pop(context, false);
+            Get.back(result: false);
           }
 
           await launch(sessionUrl, forceSafariVC: false);

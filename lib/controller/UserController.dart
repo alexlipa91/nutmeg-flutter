@@ -4,6 +4,8 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:nutmeg/controller/PromotionController.dart';
 import 'package:nutmeg/screens/EnterDetails.dart';
@@ -88,8 +90,7 @@ class UserController {
           userCredential.user.email);
 
       if (userDetails.name == null || userDetails.name == "") {
-        var name = await Navigator.push(
-            context, MaterialPageRoute(builder: (context) => EnterDetails()));
+        String name = await Get.toNamed("/login/enterDetails");
         if (name == null || name == "") {
           // Navigator.pop(context);
           return null;

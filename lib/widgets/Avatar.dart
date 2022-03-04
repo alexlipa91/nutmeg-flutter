@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nutmeg/screens/UserPage.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
@@ -52,8 +54,7 @@ class CurrentUserAvatarWithRedirect extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () async {
-        Navigator.push(
-            context, MaterialPageRoute(builder: (context) => new UserPage()));
+        Get.toNamed("/user");
       },
       child: Container(
         height: 40,

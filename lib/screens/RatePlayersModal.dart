@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/state/MatchesState.dart';
@@ -128,7 +130,7 @@ class RatePlayerBottomModal extends StatelessWidget {
         // here we know for sure that there are no more players to rate. We quickly set the state so the bottom bar changes fast
         context.read<MatchesState>().setMatchStatus(matchId, MatchStatusForUser.no_more_to_rate);
       }
-      Navigator.pop(context);
+      Get.back();
     } else {
       state.next();
     }

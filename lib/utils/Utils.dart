@@ -1,14 +1,18 @@
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:share_plus/share_plus.dart';
-
+import 'package:tuple/tuple.dart';
+import 'package:version/version.dart';
 
 var uiHourFormat = new DateFormat("HH:mm");
 
-String getFormattedDate(DateTime dateTime) => _getFormattedDate(dateTime, DateFormat("E, MMM dd"));
+String getFormattedDate(DateTime dateTime) =>
+    _getFormattedDate(dateTime, DateFormat("E, MMM dd"));
 
-String getFormattedDateLong(DateTime dateTime) => _getFormattedDate(dateTime, DateFormat("EEEE, MMM dd"));
+String getFormattedDateLong(DateTime dateTime) =>
+    _getFormattedDate(dateTime, DateFormat("EEEE, MMM dd"));
 
 String _getFormattedDate(DateTime dateTime, DateFormat dateFormat) {
   final now = DateTime.now();
@@ -19,11 +23,11 @@ String _getFormattedDate(DateTime dateTime, DateFormat dateFormat) {
   var dayString;
 
   final aDate = DateTime(dateTime.year, dateTime.month, dateTime.day);
-  if(aDate == today) {
+  if (aDate == today) {
     dayString = "Today";
-  } else if(aDate == yesterday) {
+  } else if (aDate == yesterday) {
     dayString = "Yesterday";
-  } else if(aDate == tomorrow) {
+  } else if (aDate == tomorrow) {
     dayString = "Tomorrow";
   } else {
     dayString = dateFormat.format(dateTime);
@@ -32,17 +36,18 @@ String _getFormattedDate(DateTime dateTime, DateFormat dateFormat) {
   return dayString + " at " + uiHourFormat.format(dateTime);
 }
 
-String formatCurrency(int cents) => NumberFormat.simpleCurrency(name: "EUR").format(cents / 100);
+String formatCurrency(int cents) =>
+    NumberFormat.simpleCurrency(name: "EUR").format(cents / 100);
 
 List<String> getStartAndEndHour(DateTime dateTime, Duration duration) => [
-  uiHourFormat.format(dateTime), uiHourFormat.format(dateTime.add(duration))
-];
+      uiHourFormat.format(dateTime),
+      uiHourFormat.format(dateTime.add(duration))
+    ];
 
 class DynamicLinks {
   static shareMatchFunction(String matchId) async {
     final DynamicLinkParameters parameters = DynamicLinkParameters(
       uriPrefix: 'https://nutmegapp.page.link',
-
       link: Uri.parse('https://nutmegapp.com/match?id=' + matchId),
       androidParameters: AndroidParameters(
         packageName: 'com.nutmeg.nutmeg',
@@ -57,7 +62,8 @@ class DynamicLinks {
     var url = await parameters.buildShortLink();
 
     // fixme this doesn't wait
-    await Share.share("Checkout this match on Nutmeg!\n" + url.shortUrl.toString());
+    await Share.share(
+        "Checkout this match on Nutmeg!\n" + url.shortUrl.toString());
   }
 }
 
@@ -75,10 +81,18 @@ List<T> interleave<T>(List<T> elements, T e) {
     result.add(e);
   });
 
-  if (result.isNotEmpty)
-    result.removeLast();
+  if (result.isNotEmpty) result.removeLast();
 
   return result;
+}
+
+Future<Tuple2<Version, String>> getVersion() async {
+  PackageInfo packageInfo = await PackageInfo.fromPlatform();
+  var versionParts = packageInfo.version.split(".");
+  return Tuple2<Version, String>(
+      Version(int.parse(versionParts[0]), int.parse(versionParts[1]),
+          int.parse(versionParts[2])),
+      packageInfo.buildNumber);
 }
 
 bool shouldDisableRatings = false;

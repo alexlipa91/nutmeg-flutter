@@ -1,6 +1,8 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:nutmeg/widgets/Containers.dart';
@@ -46,7 +48,7 @@ class EnterDetails extends StatelessWidget {
                   padding: EdgeInsets.only(right: 20),
                   child: InkWell(
                     child: Icon(Icons.close),
-                    onTap: () => Navigator.pop(context),
+                    onTap: () => Get.back(),
                   ))
             ],
           ),
@@ -92,7 +94,7 @@ class EnterNameArea extends StatelessWidget {
               ),
               SizedBox(height: 16),
               GenericButtonWithLoader("CREATE ACCOUNT", (BuildContext context) async {
-                Navigator.pop(context, _controller.value.text);
+                Get.back(result: _controller.value.text);
               }, Primary())
             ],
           ))

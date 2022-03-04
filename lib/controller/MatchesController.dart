@@ -121,8 +121,6 @@ class MatchesController {
       }
     }
 
-    print(status);
-    print(shouldDisableRatings);
     if ((status == MatchStatusForUser.to_rate || status == MatchStatusForUser.no_more_to_rate
         || status == MatchStatusForUser.rated) && shouldDisableRatings) {
       print("DISABLING IT");

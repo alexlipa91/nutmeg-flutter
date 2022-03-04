@@ -8,9 +8,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:nutmeg/controller/LaunchController.dart';
 import 'package:nutmeg/screens/AvailableMatches.dart';
+import 'package:nutmeg/screens/EnterDetails.dart';
 import 'package:nutmeg/screens/MatchDetails.dart';
+import 'package:nutmeg/screens/UserPage.dart';
+import 'package:nutmeg/screens/admin/AddOrEditMatch.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:provider/provider.dart';
+import 'package:get/get.dart';
 
 import '../Exceptions.dart';
 import '../state/LoadOnceState.dart';
@@ -37,7 +41,7 @@ void main() {
         ChangeNotifierProvider(create: (context) => MatchesState()),
         ChangeNotifierProvider(create: (context) => LoadOnceState()),
       ],
-      child: new MaterialApp(
+      child: new GetMaterialApp(
         navigatorKey: navigatorKey,
         debugShowCheckedModeBanner: false,
         home: new Container(
@@ -47,26 +51,18 @@ void main() {
             primaryColor: Palette.primary,
             accentColor: Palette.grey_lightest
         ),
-        onGenerateRoute: (RouteSettings settings) {
-          print('build route for ${settings.name}');
-
-          var routes = <String, WidgetBuilder>{
-            MatchDetails.routeName: (ctx) {
-              final args = settings.arguments as ScreenArguments;
-              return MultiProvider(
+        getPages: [
+          GetPage(name: '/home', page: () => AvailableMatches()),
+          GetPage(name: '/match/:matchId', page: () => MultiProvider(
                   providers: [
-                    ChangeNotifierProvider(
-                        create: (context) => MatchStatState()),
+                    ChangeNotifierProvider(create: (context) => MatchStatState()),
                   ],
-                  child: MatchDetails(matchId: args.matchId));
-            },
-            AvailableMatches.routeName: (ctx) => AvailableMatches(),
-            "/": (ctx) => LaunchWidget()
-          };
-          WidgetBuilder builder = routes[settings.name];
-          return NoAnimationPageRoute(
-              builder: (ctx) => builder(ctx));
-        },
+                  child: MatchDetails())),
+          GetPage(name: '/login/enterDetails', page: () => EnterDetails()),
+          GetPage(name: '/user', page: () => UserPage()),
+          GetPage(name: '/editMatch/:matchId', page: () => AddOrEditMatch()),
+          GetPage(name: '/addMatch', page: () => AddOrEditMatch()),
+        ],
       ),
     ));
   }, (Object error, StackTrace stackTrace) async {
@@ -162,16 +158,3 @@ class LaunchWidgetState extends State<LaunchWidget> {
   //   LaunchController.goToMatchScreen(navigatorKey.currentContext, message.data["match_id"]);
   // }
 // }
-
-class NoAnimationPageRoute<T> extends MaterialPageRoute<T> {
-  NoAnimationPageRoute({ WidgetBuilder builder }) : super(builder: builder);
-
-  @override
-  Widget buildTransitions(
-      BuildContext context,
-      Animation<double> animation,
-      Animation<double> secondaryAnimation,
-      Widget child) {
-    return child;
-  }
-}

@@ -2,6 +2,8 @@ import 'package:cool_alert/cool_alert.dart';
 import 'package:date_time_picker/date_time_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:intl/intl.dart';
 import 'package:nutmeg/Exceptions.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
@@ -20,15 +22,9 @@ import '../../state/MatchesState.dart';
 // main widget
 class AddOrEditMatch extends StatefulWidget {
 
-  final String matchId;
-
-  AddOrEditMatch.update(this.matchId);
-
-  AddOrEditMatch.add() : this.matchId = null;
-
   @override
   State<StatefulWidget> createState() {
-    return AddOrEditMatchState(matchId);
+    return AddOrEditMatchState(Get.parameters["matchId"]);
   }
 }
 
@@ -283,8 +279,8 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                             type: CoolAlertType.confirm,
                             text:
                                 "This is going to add a new match. Are you sure?",
-                            onConfirmBtnTap: () => Navigator.pop(context, true),
-                            onCancelBtnTap: () => Navigator.pop(context, false),
+                            onConfirmBtnTap: () => Get.back(result: true),
+                            onCancelBtnTap: () => Get.back(result: false),
                           );
                           if (shouldAdd) {
                             var newMatchId = await MatchesController.addMatch(
@@ -325,8 +321,8 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                                 "This is going to update the match with id: \n" +
                                     match.documentId +
                                     "\nAre you sure?",
-                            onConfirmBtnTap: () => Navigator.pop(context, true),
-                            onCancelBtnTap: () => Navigator.pop(context, false),
+                            onConfirmBtnTap: () => Get.back(result: true),
+                            onCancelBtnTap: () => Get.back(result: false),
                           );
                           if (!shouldUpdate) {
                             return;
@@ -339,7 +335,7 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                                       match.documentId +
                                       " successfully modified")
                               .show(context);
-                          Navigator.pop(context);
+                          Get.back();
                         }
                         context.read<GenericButtonWithLoaderState>().change(false);
                       } catch (e, stackTrace) {

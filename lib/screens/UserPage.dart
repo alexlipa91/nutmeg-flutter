@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:nutmeg/controller/LaunchController.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
@@ -158,7 +159,7 @@ class UserPageState extends State<UserPage> {
                         } catch (e, stackTrace) {
                           print(e);
                           print(stackTrace);
-                          Navigator.pop(context, false);
+                          Get.back(result: false);
                           return;
                         }
                       },
@@ -260,7 +261,7 @@ class UserPageState extends State<UserPage> {
         child: Container(
           height: 100,
           child: FutureBuilder<Tuple2<Version, String>>(
-              future: LaunchController.getVersion(),
+              future: getVersion(),
               builder: (context, snapshot) => Text(
                     "v" +
                         ((snapshot.hasData)

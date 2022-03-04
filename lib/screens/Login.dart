@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
@@ -49,7 +51,7 @@ class Login extends StatelessWidget {
                 padding: EdgeInsets.only(right: 20),
                 child: InkWell(
                   child: Icon(Icons.close),
-                  onTap: () => Navigator.pop(context),
+                  onTap: () => Get.back(),
                 )
             )
           ],
@@ -158,7 +160,7 @@ class SignInButton extends StatelessWidget {
 
                 try {
                   var communication = await loginFuture();
-                  Navigator.pop(context, communication);
+                  Get.back(result: communication);
                 } on Exception catch (e, stack) {
                   print(e);
                   print(stack);

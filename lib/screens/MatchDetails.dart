@@ -4,6 +4,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
@@ -44,12 +46,12 @@ class ScreenArguments {
 class MatchDetails extends StatefulWidget {
   static const routeName = "/match";
 
-  final String matchId;
-
-  const MatchDetails({Key key, this.matchId}) : super(key: key);
+  // final String matchId;
+  //
+  // const MatchDetails({Key key, this.matchId}) : super(key: key);
 
   @override
-  State<StatefulWidget> createState() => MatchDetailsState(matchId);
+  State<StatefulWidget> createState() => MatchDetailsState(Get.parameters["matchId"]);
 }
 
 class MatchDetailsState extends State<MatchDetails> {

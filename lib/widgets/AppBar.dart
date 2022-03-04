@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:nutmeg/screens/Login.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
@@ -136,7 +138,7 @@ class UserPageAppBar extends NutmegAppBar {
               child: Padding(
                   padding: EdgeInsets.symmetric(horizontal: 20.0),
                   child: Icon(Icons.arrow_back, color: Colors.black)),
-              onTap: () => Navigator.pop(context)),
+              onTap: () => Get.back()),
         ],
       ),
     );
@@ -155,7 +157,7 @@ class AdminAreaAppBar extends NutmegAppBar {
             children: [
               InkWell(
                   child: Icon(Icons.arrow_back, color: Palette.white, size: 32),
-                  onTap: () => Navigator.pop(context)),
+                  onTap: () => Get.back()),
               CurrentUserAvatarWithRedirect(radius: 18)
             ],
           ),
@@ -177,7 +179,7 @@ class AdminAreaAppBarInverted extends NutmegAppBar {
               InkWell(
                   child:
                       Icon(Icons.arrow_back, color: Palette.primary, size: 32),
-                  onTap: () => Navigator.pop(context)),
+                  onTap: () => Get.back()),
               UserAvatar(24, context.watch<UserState>().getLoggedUserDetails())
             ],
           ),

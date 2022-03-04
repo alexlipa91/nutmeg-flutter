@@ -1,5 +1,7 @@
 import "package:collection/collection.dart";
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:nutmeg/model/Match.dart';
 import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/Buttons.dart';
@@ -18,7 +20,6 @@ import 'MatchDetails.dart';
 
 // main widget
 class AvailableMatches extends StatelessWidget {
-  static const routeName = "/availableMatches";
 
   final RefreshController refreshController = RefreshController();
 
@@ -45,13 +46,7 @@ class AvailableMatches extends StatelessWidget {
 
   Future<void> onTap(BuildContext context, String matchId,
       RefreshController refreshController) async {
-    await Navigator.pushNamed(
-      context,
-      MatchDetails.routeName,
-      arguments: ScreenArguments(
-        matchId
-      ),
-    );
+    Get.toNamed("/match/" + matchId);
     await refreshController.requestRefresh();
   }
 
