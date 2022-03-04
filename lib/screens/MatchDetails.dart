@@ -24,13 +24,13 @@ import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/AppBar.dart';
 import 'package:nutmeg/widgets/Avatar.dart';
 import 'package:nutmeg/widgets/Containers.dart';
+import 'package:nutmeg/widgets/GenericAvailableMatches.dart';
 import 'package:nutmeg/widgets/PlayerBottomModal.dart';
 import 'package:nutmeg/widgets/Section.dart';
 import 'package:provider/provider.dart';
 import 'package:readmore/readmore.dart';
 import 'package:shimmer/shimmer.dart';
 
-import '../model/Sport.dart';
 import '../model/SportCenter.dart';
 import '../state/LoadOnceState.dart';
 import '../state/MatchesState.dart';
@@ -45,10 +45,6 @@ class ScreenArguments {
 
 class MatchDetails extends StatefulWidget {
   static const routeName = "/match";
-
-  // final String matchId;
-  //
-  // const MatchDetails({Key key, this.matchId}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => MatchDetailsState(Get.parameters["matchId"]);
@@ -120,7 +116,7 @@ class MatchDetailsState extends State<MatchDetails> {
           color: (match.isTest) ? Colors.orangeAccent : Colors.transparent,
           child: Text(title, style: TextPalette.h1Default))),
       SizedBox(height: 16),
-      MatchInfo(match, sportCenter, sport),
+      MatchInfo(matchId),
       if (matchStatus == MatchStatusForUser.no_more_to_rate)
         pad(Section(
           title: "Thanks for rating",
@@ -194,14 +190,22 @@ class MatchDetailsState extends State<MatchDetails> {
 class MatchInfo extends StatelessWidget {
   static var dateFormat = DateFormat('MMMM dd \'at\' HH:mm');
 
-  final Match match;
-  final SportCenter sportCenter;
-  final Sport sport;
+  final String matchId;
 
-  MatchInfo(this.match, this.sportCenter, this.sport);
+  MatchInfo(this.matchId);
 
   @override
   Widget build(BuildContext context) {
+    var match = context.watch<MatchesState>().getMatch(matchId);
+    if (match == null) {
+      return MatchInfoSkeleton();
+    }
+    var sportCenter = context.watch<LoadOnceState>().getSportCenter(match.sportCenterId);
+    var sport = context.watch<LoadOnceState>().getSport(match.sport);
+
+    if (sportCenter == null || sport == null) {
+      return MatchInfoSkeleton();
+    }
     return InfoContainer(
         margin: EdgeInsets.symmetric(horizontal: 16),
         padding: EdgeInsets.zero,

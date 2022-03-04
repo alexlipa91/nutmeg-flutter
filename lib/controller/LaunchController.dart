@@ -187,11 +187,13 @@ class LaunchController {
   }
 
   static Future<void> loadOnceData(BuildContext context) async {
+    print("loading static data");
     var futures = [
       SportCentersController.refreshAll(context),
       SportsController.refreshAll(context.read<LoadOnceState>()),
       MiscController.getGifs(context.read<LoadOnceState>())
     ];
     await Future.wait(futures);
+    print("loading static done");
   }
 }
