@@ -150,6 +150,14 @@ class MatchDetailsState extends State<MatchDetails> {
             );
           },
         )),
+      if (matchStatus == MatchStatusForUser.rated && match.manOfTheMatch == context.read<UserState>().currentUserId)
+        padLRB(Section(title: "PLAYER OF THE MATCH", body: InkWell(
+          onTap: () => Get.toNamed("/potm/" + matchId),
+          child: InfoContainer(
+            child: Text("Congratulations!\nYou were awarded player of the match!",
+                style: GoogleFonts.roboto(color: Palette.mediumgrey, fontSize: 20, fontWeight: FontWeight.w500)),
+          ),
+        ))),
       // stats
       if (matchStatus == MatchStatusForUser.rated ||
           matchStatus == MatchStatusForUser.no_more_to_rate)

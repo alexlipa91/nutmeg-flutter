@@ -16,7 +16,6 @@ import '../state/MatchesState.dart';
 import '../state/UserState.dart';
 import '../utils/UiUtils.dart';
 import '../widgets/GenericAvailableMatches.dart';
-import 'MatchDetails.dart';
 
 // main widget
 class AvailableMatches extends StatelessWidget {

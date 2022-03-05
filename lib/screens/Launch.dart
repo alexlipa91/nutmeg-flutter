@@ -11,6 +11,7 @@ import 'package:nutmeg/controller/LaunchController.dart';
 import 'package:nutmeg/screens/AvailableMatches.dart';
 import 'package:nutmeg/screens/EnterDetails.dart';
 import 'package:nutmeg/screens/MatchDetails.dart';
+import 'package:nutmeg/screens/PlayerOfTheMatch.dart';
 import 'package:nutmeg/screens/UserPage.dart';
 import 'package:nutmeg/screens/admin/AddOrEditMatch.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
@@ -71,6 +72,8 @@ void main() {
           GetPage(name: '/adminHome', page: () => AdminAvailableMatches(),
               transition: Transition.native),
           GetPage(name: '/addMatch', page: () => AddOrEditMatch(),
+              transition: Transition.native),
+          GetPage(name: '/potm/:matchId', page: () => PlayerOfTheMatch(),
               transition: Transition.native),
         ],
       ),

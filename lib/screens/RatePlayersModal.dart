@@ -126,7 +126,7 @@ class RatePlayerBottomModal extends StatelessWidget {
         matchId, state.getCurrentScore());
 
     if (state.isLast()) {
-      if (state.numberOfRatedInSession + 1 == state.toRate.length) {
+      if (state.current + 1 == state.toRate.length) {
         // here we know for sure that there are no more players to rate. We quickly set the state so the bottom bar changes fast
         context.read<MatchesState>().setMatchStatus(matchId, MatchStatusForUser.no_more_to_rate);
       }

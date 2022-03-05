@@ -11,8 +11,6 @@ class RatingPlayersState extends ChangeNotifier {
   int current = 0;
   double currentScore = -1;
 
-  int numberOfRatedInSession = 0;
-
   RatingPlayersState(this.toRate);
 
   UserDetails getCurrent() => toRate[current];
@@ -22,7 +20,6 @@ class RatingPlayersState extends ChangeNotifier {
   bool isLast() => current + 1 == toRate.length;
 
   void next() {
-    numberOfRatedInSession++;
     if (current + 1 < toRate.length) {
       current++;
     }
