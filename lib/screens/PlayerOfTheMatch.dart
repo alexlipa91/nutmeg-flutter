@@ -7,6 +7,7 @@ import 'package:nutmeg/state/MatchesState.dart';
 import 'package:nutmeg/state/UserState.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/Avatar.dart';
+import 'package:nutmeg/widgets/Buttons.dart';
 import 'package:provider/provider.dart';
 import 'package:share_files_and_screenshot_widgets/share_files_and_screenshot_widgets.dart';
 
@@ -40,22 +41,20 @@ class PlayerOfTheMatch extends StatelessWidget {
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
-          leading: InkWell(
-            splashColor: Palette.grey_lighter,
-            onTap: () async {
-              ShareFilesAndScreenshotWidgets().shareScreenshot(
-                  previewContainer,
-                  50,
-                  "PlayerOfTheMatch",
-                  "Nutmeg-PlayerOfTheMatch.png",
-                  "image/png",
-                  text: "");
-            },
-            child: Container(
-                width: 50,
-                height: 50,
-                child: Align(alignment: Alignment.centerRight, child:
-                Icon(Icons.share, color: Palette.white, size: 20))),
+          centerTitle: false,
+          leadingWidth: 0,
+          leading: Padding(
+            padding: EdgeInsets.only(left: 20),
+            child: ShareButton(() async {
+                print("share");
+                ShareFilesAndScreenshotWidgets().shareScreenshot(
+                    previewContainer,
+                    MediaQuery.of(context).size.width.toInt() * 2,
+                    "PlayerOfTheMatch",
+                    "Nutmeg-PlayerOfTheMatch.png",
+                    "image/png",
+                    text: "");
+              }, Palette.white),
           ),
           actions: [
             Padding(

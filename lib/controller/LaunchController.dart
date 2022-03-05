@@ -59,16 +59,29 @@ class LaunchController {
     }
   }
 
-  static void handleMessageFromNotification(RemoteMessage message) async {
+  static void handleMessageFromNotification(BuildContext context, RemoteMessage message) async {
     print('message opened from notification');
     var targetRoute = "/match/" + message.data["match_id"];
-    Get.toNamed(targetRoute).then((value) => Get.offNamed("/home"));
+
+    if (message.data.containsKey("event")) {
+      var event = message.data["event"];
+      if (event == "potm") {
+        if (context.read<UserState>().isLoggedIn()) {
+          await Get.toNamed("/potm/" + message.data["match_id"]);
+        }
+        await Get.toNamed(targetRoute);
+        await Get.offNamed("/home");
+      }
+    }
+
+    await Get.toNamed(targetRoute);
+    await Get.offNamed("/home");
   }
 
-  static void setupNotifications() {
+  static void setupNotifications(BuildContext context) {
     // FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
-    FirebaseMessaging.onMessageOpenedApp.listen(handleMessageFromNotification);
+    FirebaseMessaging.onMessageOpenedApp.listen((m) => handleMessageFromNotification(context, m));
 
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       print('Got a message whilst in the foreground!');
@@ -127,7 +140,7 @@ class LaunchController {
       }
     }
 
-    setupNotifications();
+    setupNotifications(context);
 
     // check if user is logged in
     var userDetails = await UserController.getUserIfAvailable(context);
@@ -174,7 +187,7 @@ class LaunchController {
     } else if (initialMessage != null) {
       print("navigating with initial message:" + initialMessage.toString());
       trace.putAttribute("coming_from_notification", true.toString());
-      handleMessageFromNotification(initialMessage);
+      handleMessageFromNotification(context, initialMessage);
     } else {
       print("navigating with normal startup");
       Get.offAndToNamed("/home");

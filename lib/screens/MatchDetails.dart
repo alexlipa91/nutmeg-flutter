@@ -30,6 +30,8 @@ import 'package:nutmeg/widgets/Section.dart';
 import 'package:provider/provider.dart';
 import 'package:readmore/readmore.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+
 
 import '../model/SportCenter.dart';
 import '../state/LoadOnceState.dart';
@@ -151,11 +153,26 @@ class MatchDetailsState extends State<MatchDetails> {
           },
         )),
       if (matchStatus == MatchStatusForUser.rated && match.manOfTheMatch == context.read<UserState>().currentUserId)
-        padLRB(Section(title: "PLAYER OF THE MATCH", body: InkWell(
+        padLRB(Section(title: "POTM", body: InkWell(
           onTap: () => Get.toNamed("/potm/" + matchId),
           child: InfoContainer(
-            child: Text("Congratulations!\nYou were awarded player of the match!",
-                style: GoogleFonts.roboto(color: Palette.mediumgrey, fontSize: 20, fontWeight: FontWeight.w500)),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("Congratulations!",
+                        style: GoogleFonts.roboto(color: Palette.black, fontSize: 20, fontWeight: FontWeight.w500)),
+                    SizedBox(height: 16,),
+                    Text("You are the Player of the Match",
+                        style: GoogleFonts.roboto(color: Palette.mediumgrey, fontSize: 16, fontWeight: FontWeight.w500)),
+                  ],
+                ),
+                Icon(MdiIcons.trophy, color: Palette.accent, size: 50,),
+              ],
+            ),
           ),
         ))),
       // stats
@@ -726,8 +743,11 @@ class Stats extends StatelessWidget {
                           ),
                         ),
                         SizedBox(width: 12),
-                        Text(score.toStringAsFixed(1),
-                            style: TextPalette.bodyText),
+                        Container(
+                          width: 22,
+                          child: Text((score == 0) ? "  -" : score.toStringAsFixed(1),
+                              style: TextPalette.bodyText),
+                        ),
                       ];
 
                       index++;
@@ -735,7 +755,16 @@ class Stats extends StatelessWidget {
                           padding: (index > 2)
                               ? EdgeInsets.only(top: 16)
                               : EdgeInsets.zero,
-                          child: Row(children: widgets));
+                          child: InkWell(
+                              onTap: () => showModalBottomSheet(
+                                  context: context,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.vertical(
+                                        top: Radius.circular(20.0)),
+                                  ),
+                                  builder: (context) =>
+                                      JoinedPlayerBottomModal(userDetails)),
+                              child: Row(children: widgets)));
                     }).toList(),
                   ),
                 );

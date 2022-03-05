@@ -124,12 +124,12 @@ class RoundedButton extends PrimaryButton with LeftRounded, RightRounded {
 // OTHER BUTTONS
 
 class ShareButton extends StatelessWidget {
-  final String matchId;
+  final Function onTap;
   final Color color;
   final bool withText;
   final double iconSize;
 
-  ShareButton(this.matchId, this.color, [double size = 20])
+  ShareButton(this.onTap, this.color, [double size = 20])
       : withText = false,
         iconSize = size;
 
@@ -139,7 +139,7 @@ class ShareButton extends StatelessWidget {
 
     return InkWell(
       splashColor: Palette.grey_lighter,
-      onTap: () async { await DynamicLinks.shareMatchFunction(matchId);},
+      onTap: () => onTap(),
       child: Container(
           width: 50,
           height: 50,

@@ -9,6 +9,7 @@ import 'package:nutmeg/widgets/Buttons.dart';
 import 'package:provider/provider.dart';
 
 import '../state/UserState.dart';
+import '../utils/Utils.dart';
 import 'Avatar.dart';
 
 
@@ -107,7 +108,9 @@ class MatchAppBar extends StatelessWidget {
           BackButton(),
           if (!DeviceInfo().name.contains("ipad"))
             Align(alignment: Alignment.centerRight,
-                child: ShareButton(matchId, Palette.black, 25.0)),
+                child: ShareButton(() async{
+                  await DynamicLinks.shareMatchFunction(matchId);
+                }, Palette.black, 25.0)),
         ],
       ),
     );
