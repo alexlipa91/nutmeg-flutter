@@ -94,7 +94,7 @@ class GenericAvailableMatchesListState extends State<GenericAvailableMatchesList
     var waitingWidgets = List<Widget>.filled(5, MatchInfoSkeleton());
 
     return Container(
-      color: Palette.primary,
+      color: appBarColor,
       child: SafeArea(
         bottom: false,
         child: Scaffold(

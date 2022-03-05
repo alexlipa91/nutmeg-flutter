@@ -2,7 +2,6 @@ import "package:collection/collection.dart";
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
-import 'package:nutmeg/screens/admin/AddOrEditMatch.dart';
 import 'package:nutmeg/widgets/Buttons.dart';
 import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
@@ -11,12 +10,9 @@ import '../../state/AvailableMatchesState.dart';
 import '../../state/MatchesState.dart';
 import '../../utils/UiUtils.dart';
 import '../../widgets/GenericAvailableMatches.dart';
-import 'AddOrEditMatch.dart';
 
 // main widget
 class AdminAvailableMatches extends StatelessWidget {
-  static const routeName = "/adminAvailableMatches";
-
   final RefreshController refreshController = RefreshController();
 
   List<Widget> getButtons(BuildContext context) {
@@ -44,7 +40,7 @@ class AdminAvailableMatches extends StatelessWidget {
 
   Future<void> onTap(BuildContext context, String matchId,
       RefreshController refreshController) async {
-    Get.toNamed("/editMatch/" + matchId);
+    await Get.toNamed("/editMatch/" + matchId);
     await refreshController.requestRefresh();
   }
 

@@ -10,7 +10,6 @@ import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/model/Match.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
-import 'package:nutmeg/widgets/AppBar.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:provider/provider.dart';
 
@@ -21,7 +20,6 @@ import '../../state/MatchesState.dart';
 
 // main widget
 class AddOrEditMatch extends StatefulWidget {
-
   @override
   State<StatefulWidget> createState() {
     return AddOrEditMatchState(Get.parameters["matchId"]);
@@ -29,7 +27,6 @@ class AddOrEditMatch extends StatefulWidget {
 }
 
 class AddOrEditMatchState extends State<AddOrEditMatch> {
-
   final String matchId;
 
   AddOrEditMatchState(this.matchId);
@@ -53,7 +50,32 @@ class AddOrEditMatchState extends State<AddOrEditMatch> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AdminAreaAppBarInverted(),
+      appBar: AppBar(
+        systemOverlayStyle: SystemUiOverlayStyle.dark,
+        backgroundColor: Colors.transparent,
+        centerTitle: false,
+        automaticallyImplyLeading: false,
+        leadingWidth: 0,
+        elevation: 0,
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            // SizedBox(width: 16,), // we cannot pad outside
+            InkWell(
+                splashColor: Palette.grey_lighter,
+                child: Container(
+                  width: 50,
+                  height: 50,
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child:
+                        Icon(Icons.arrow_back, color: Colors.black, size: 25.0),
+                  ),
+                ),
+                onTap: () => Navigator.of(context).pop())
+          ],
+        ),
+      ),
       body: Container(
         color: Palette.grey_lightest,
         child: Padding(
@@ -70,7 +92,6 @@ class AddOrEditMatchState extends State<AddOrEditMatch> {
 }
 
 class AddOrEditMatchForm extends StatefulWidget {
-
   final String matchId;
 
   const AddOrEditMatchForm({Key key, this.matchId}) : super(key: key);
@@ -80,7 +101,6 @@ class AddOrEditMatchForm extends StatefulWidget {
 }
 
 class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
-
   final String matchId;
 
   AddOrEditMatchFormState(this.matchId);
@@ -143,7 +163,8 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                 Text("Match id: " + matchId, style: TextPalette.h2),
               SizedBox(height: 20.0),
               if (matchId != null)
-                Text("Status is: " + status.toString().split(".").last, style: TextPalette.h2),
+                Text("Status is: " + status.toString().split(".").last,
+                    style: TextPalette.h2),
               SizedBox(height: 20.0),
               Text("Date and Time", style: TextPalette.linkStyle),
               DateTimePicker(
@@ -203,8 +224,8 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                     .map<DropdownMenuItem<Sport>>((Sport value) {
                   return DropdownMenuItem<Sport>(
                       value: value,
-                      child:
-                          Text(value.displayTitle, style: TextPalette.linkStyle));
+                      child: Text(value.displayTitle,
+                          style: TextPalette.linkStyle));
                 }).toList(),
                 onChanged: (Sport value) {
                   setState(() {
@@ -270,9 +291,10 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                 children: [
                   Expanded(
                     child: GenericButtonWithLoader(
-                        (match == null) ? "ADD" : "EDIT", (BuildContext context) async {
+                        (match == null) ? "ADD" : "EDIT",
+                        (BuildContext context) async {
                       context.read<GenericButtonWithLoaderState>().change(true);
-                        try {
+                      try {
                         if (match == null) {
                           var shouldAdd = await CoolAlert.show(
                             context: context,
@@ -297,7 +319,8 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                                         minutes: int.parse(
                                             durationController.value.text)),
                                     testMatch));
-                            await MatchesController.refresh(context, newMatchId);
+                            await MatchesController.refresh(
+                                context, newMatchId);
                             await GenericInfoModal(
                                     title: "Success",
                                     description:
@@ -337,56 +360,71 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                               .show(context);
                           Get.back();
                         }
-                        context.read<GenericButtonWithLoaderState>().change(false);
                       } catch (e, stackTrace) {
                         ErrorHandlingUtils.handleError(e, stackTrace, context);
                       }
+                      context
+                          .read<GenericButtonWithLoaderState>()
+                          .change(false);
                     }, Primary()),
                   )
                 ],
               ),
               if (matchId != null)
                 Row(
-                children: [
-                  Expanded(
-                      child: GenericButtonWithLoader("RESET RATINGS",
-                          (BuildContext context) async {
-                    context.read<GenericButtonWithLoaderState>().change(true);
-                    try {
-                      await MatchesController.resetRatings(match.documentId);
-                      GenericInfoModal(
-                          title: "Successfully deleted all ratings for the match"
-                      ).show(context);
-                    } catch (e, stack) {
-                      print(e); print(stack);
-                      GenericInfoModal(title: "Something went wrong").show(context);
-                    }
-                    await MatchesController.refreshMatchStatus(context, match);
-                    context.read<GenericButtonWithLoaderState>().change(false);
-                  }, Primary()))
-                ],
-              ),
+                  children: [
+                    Expanded(
+                        child: GenericButtonWithLoader("RESET RATINGS",
+                            (BuildContext context) async {
+                      context.read<GenericButtonWithLoaderState>().change(true);
+                      try {
+                        await MatchesController.resetRatings(match.documentId);
+                        GenericInfoModal(
+                                title:
+                                    "Successfully deleted all ratings for the match")
+                            .show(context);
+                      } catch (e, stack) {
+                        print(e);
+                        print(stack);
+                        GenericInfoModal(title: "Something went wrong")
+                            .show(context);
+                      }
+                      await MatchesController.refreshMatchStatus(
+                          context, match);
+                      context
+                          .read<GenericButtonWithLoaderState>()
+                          .change(false);
+                    }, Primary()))
+                  ],
+                ),
               if (matchId != null)
                 Row(
-                children: [
-                  Expanded(
-                      child: GenericButtonWithLoader("CLOSE RATING ROUND",
-                              (BuildContext context) async {
-                            context.read<GenericButtonWithLoaderState>().change(true);
-                            try {
-                              await MatchesController.closeRatingRound(match.documentId);
-                              GenericInfoModal(
-                                  title: "Successfully closed rating round for the match"
-                              ).show(context);
-                            } catch (e, stack) {
-                              print(e); print(stack);
-                              GenericInfoModal(title: "Something went wrong").show(context);
-                            }
-                            await MatchesController.refreshMatchStatus(context, match);
-                            context.read<GenericButtonWithLoaderState>().change(false);
-                          }, Primary()))
-                ],
-              )
+                  children: [
+                    Expanded(
+                        child: GenericButtonWithLoader("CLOSE RATING ROUND",
+                            (BuildContext context) async {
+                      context.read<GenericButtonWithLoaderState>().change(true);
+                      try {
+                        await MatchesController.closeRatingRound(
+                            match.documentId);
+                        GenericInfoModal(
+                                title:
+                                    "Successfully closed rating round for the match")
+                            .show(context);
+                      } catch (e, stack) {
+                        print(e);
+                        print(stack);
+                        GenericInfoModal(title: "Something went wrong")
+                            .show(context);
+                      }
+                      await MatchesController.refreshMatchStatus(
+                          context, match);
+                      context
+                          .read<GenericButtonWithLoaderState>()
+                          .change(false);
+                    }, Primary()))
+                  ],
+                )
             ],
           ),
         ));

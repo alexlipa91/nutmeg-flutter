@@ -18,8 +18,6 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:version/version.dart';
 
 import '../state/UserState.dart';
-import '../widgets/GenericAvailableMatches.dart';
-import 'admin/AvailableMatchesAdmin.dart';
 
 class UserPage extends StatefulWidget {
   @override
@@ -50,7 +48,8 @@ class UserPageState extends State<UserPage> {
 
     int creditCount = (userDetails == null) ? 0 : userDetails.creditsInCents;
 
-    var avgScore = (userDetails.getScoreMatches() == -1) ? "-"
+    var avgScore = (userDetails.getScoreMatches() == -1)
+        ? "-"
         : userDetails.getScoreMatches().toStringAsFixed(2);
 
     var widgets = [
@@ -72,7 +71,8 @@ class UserPageState extends State<UserPage> {
                     children: [
                       Text(userDetails.name ?? "N/A", style: TextPalette.h2),
                       SizedBox(height: 10),
-                      Text(userDetails.email ?? "N/A", style: TextPalette.bodyText)
+                      Text(userDetails.email ?? "N/A",
+                          style: TextPalette.bodyText)
                     ],
                   ),
                 )
@@ -82,7 +82,7 @@ class UserPageState extends State<UserPage> {
       Padding(
         padding: EdgeInsets.only(top: 20, left: 16, right: 16),
         child:
-        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
           Expanded(
             child: UserInfoBox(
                 content: formatCurrency(userDetails.creditsInCents ?? 0),
@@ -98,80 +98,78 @@ class UserPageState extends State<UserPage> {
       ),
       if (!shouldDisableRatings)
         Padding(
-        padding: EdgeInsets.only(top: 20, left: 16, right: 16),
-        child:
-        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-          Expanded(
-            child: UserInfoBox(
-                content: avgScore,
-                description: "Avg Score"),
-          ),
-          SizedBox(width: 20),
-          Expanded(
-            child: UserInfoBox(
+          padding: EdgeInsets.only(top: 20, left: 16, right: 16),
+          child:
+              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+            Expanded(
+              child: UserInfoBox(content: avgScore, description: "Avg Score"),
+            ),
+            SizedBox(width: 20),
+            Expanded(
+              child: UserInfoBox(
                 content: userDetails.getNumManOfTheMatch().toString(),
                 description: "POTM",
-            ),
-          )
-        ]),
-      ),
+              ),
+            )
+          ]),
+        ),
       if (!shouldDisableRatings)
         Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16),
-        child: Section(
-          title: "USEFUL LINK",
-          body: InfoContainer(
-              child: Column(children: [
-            LinkInfo(
-              text: "Follow us on Instagram",
-              onTap: () async {
-                var url = 'https://www.instagram.com/nutmegapp/';
+          padding: EdgeInsets.symmetric(horizontal: 16),
+          child: Section(
+            title: "USEFUL LINK",
+            body: InfoContainer(
+                child: Column(children: [
+              LinkInfo(
+                text: "Follow us on Instagram",
+                onTap: () async {
+                  var url = 'https://www.instagram.com/nutmegapp/';
 
-                if (await canLaunch(url)) {
-                  await launch(
-                    url,
-                    universalLinksOnly: true,
-                  );
-                } else {
-                  throw 'There was a problem to open the url: $url';
-                }
-              },
-            ),
-            // LinkInfo(text: "Terms and Conditions"),
-            Padding(
-              padding: EdgeInsets.only(top: 10),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: GenericButtonWithLoader(
-                      "LOGOUT",
-                      (BuildContext context) async {
-                        context
-                            .read<GenericButtonWithLoaderState>()
-                            .change(true);
-
-                        try {
-                          await Future.delayed(
-                              Duration(milliseconds: 500),
-                              () => UserController.logout(
-                                  context.read<UserState>()));
-                          Navigator.of(context).pop();
-                        } catch (e, stackTrace) {
-                          print(e);
-                          print(stackTrace);
-                          Get.back(result: false);
-                          return;
-                        }
-                      },
-                      Primary(),
-                    ),
-                  )
-                ],
+                  if (await canLaunch(url)) {
+                    await launch(
+                      url,
+                      universalLinksOnly: true,
+                    );
+                  } else {
+                    throw 'There was a problem to open the url: $url';
+                  }
+                },
               ),
-            ),
-          ])),
+              // LinkInfo(text: "Terms and Conditions"),
+              Padding(
+                padding: EdgeInsets.only(top: 10),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: GenericButtonWithLoader(
+                        "LOGOUT",
+                        (BuildContext context) async {
+                          context
+                              .read<GenericButtonWithLoaderState>()
+                              .change(true);
+
+                          try {
+                            await Future.delayed(
+                                Duration(milliseconds: 500),
+                                () => UserController.logout(
+                                    context.read<UserState>()));
+                            Navigator.of(context).pop();
+                          } catch (e, stackTrace) {
+                            print(e);
+                            print(stackTrace);
+                            Get.back(result: false);
+                            return;
+                          }
+                        },
+                        Primary(),
+                      ),
+                    )
+                  ],
+                ),
+              ),
+            ])),
+          ),
         ),
-      ),
       if (userDetails.getIsAdmin())
         Padding(
           padding: EdgeInsets.symmetric(horizontal: 16),
@@ -187,10 +185,7 @@ class UserPageState extends State<UserPage> {
                         child: GenericButtonWithLoader(
                       "ADMIN AREA",
                       (BuildContext context) async {
-                        await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => AdminAvailableMatches()));
+                        Get.toNamed("/adminHome");
                       },
                       Primary(),
                     ))
@@ -277,30 +272,30 @@ class UserPageState extends State<UserPage> {
     ];
 
     return Scaffold(
-        backgroundColor: Palette.grey_lightest,
-        appBar: UserPageAppBar(),
-        body: SafeArea(
-            child: (userDetails != null)
-                ? SmartRefresher(
-                    enablePullDown: true,
-                    enablePullUp: false,
-                    header: MaterialClassicHeader(),
-                    controller: refreshController,
-                    onRefresh: () async {
-                      await UserController.refreshCurrentUser(context);
-                      refreshController.refreshCompleted();
-                    },
-                    child: ListView.builder(
-                        itemCount: widgets.length,
-                        itemBuilder: (context, index) => widgets[index]),
-                  )
-                : Column(
-                    children: [
-                      MatchInfoSkeleton(),
-                      MatchInfoSkeleton(),
-                      MatchInfoSkeleton()
-                    ],
-                  )));
+      backgroundColor: Palette.grey_lightest,
+      body: SmartRefresher(
+          enablePullDown: true,
+          enablePullUp: false,
+          header: MaterialClassicHeader(),
+          controller: refreshController,
+          onRefresh: () async {
+            await UserController.refreshCurrentUser(context);
+            refreshController.refreshCompleted();
+          },
+          child: CustomScrollView(
+            slivers: [
+              UserPageAppBar(),
+              SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (BuildContext context, int index) {
+                    return widgets[index];
+                  },
+                  childCount: widgets.length,
+                ),
+              )
+            ],
+          )),
+    );
   }
 }
 
@@ -332,10 +327,11 @@ class LinkInfo extends StatelessWidget {
 class UserInfoBox extends StatelessWidget {
   final String content;
   final String description;
+
   // final Widget badge;
 
   const UserInfoBox({Key key, this.content, this.description})
-    // this.badge
+      // this.badge
       : super(key: key);
 
   @override

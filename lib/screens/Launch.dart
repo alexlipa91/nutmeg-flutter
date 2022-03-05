@@ -21,6 +21,7 @@ import '../state/LoadOnceState.dart';
 import '../state/MatchStatsState.dart';
 import '../state/MatchesState.dart';
 import '../state/UserState.dart';
+import 'admin/AvailableMatchesAdmin.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
@@ -66,6 +67,8 @@ void main() {
           GetPage(name: '/user', page: () => UserPage(),
               transition: Transition.noTransition),
           GetPage(name: '/editMatch/:matchId', page: () => AddOrEditMatch(),
+              transition: Transition.noTransition),
+          GetPage(name: '/adminHome', page: () => AdminAvailableMatches(),
               transition: Transition.noTransition),
           GetPage(name: '/addMatch', page: () => AddOrEditMatch(),
               transition: Transition.noTransition),

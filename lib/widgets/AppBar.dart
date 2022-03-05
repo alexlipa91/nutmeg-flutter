@@ -59,7 +59,9 @@ class MainAppBar extends NutmegAppBar {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Image.asset('assets/nutmeg_white.png', height: 24),
+            InkWell(
+                onTap: () => Get.toNamed("/home"),
+                child: Image.asset('assets/nutmeg_white.png', height: 24)),
             if (isLoggedIn)
               Builder(builder: (context) => CurrentUserAvatarWithRedirect(radius: 2))
             else
@@ -102,19 +104,7 @@ class MatchAppBar extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           // SizedBox(width: 16,), // we cannot pad outside
-          InkWell(
-              splashColor: Palette.grey_lighter,
-              child: Container(
-                width: 50,
-                height: 50,
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Icon(Icons.arrow_back,
-                      color: Colors.black, size: 25.0),
-                ),
-              ),
-              onTap: () => Navigator.of(context).pop()
-          ),
+          BackButton(),
           if (!DeviceInfo().name.contains("ipad"))
             Align(alignment: Alignment.centerRight,
                 child: ShareButton(matchId, Palette.black, 25.0)),
@@ -122,23 +112,41 @@ class MatchAppBar extends StatelessWidget {
       ),
     );
   }
+}
 
+class BackButton extends StatelessWidget {
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+        splashColor: Palette.grey_lighter,
+        child: Container(
+          width: 50,
+          height: 50,
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Icon(Icons.arrow_back,
+                color: Colors.black, size: 25.0),
+          ),
+        ),
+        onTap: () => Navigator.of(context).pop()
+    );
+  }
 }
 
 class UserPageAppBar extends NutmegAppBar {
   @override
   Widget build(BuildContext context) {
-    return NutmegAppBar(
-      systemUiOverlayStyle: SystemUiOverlayStyle.dark,
+    return SliverAppBar(
+      systemOverlayStyle: SystemUiOverlayStyle.dark,
       backgroundColor: Colors.transparent,
-      mainRow: Row(
+      centerTitle: false,
+      leadingWidth: 0,
+      title: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          InkWell(
-              child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20.0),
-                  child: Icon(Icons.arrow_back, color: Colors.black)),
-              onTap: () => Get.back()),
+          // SizedBox(width: 16,), // we cannot pad outside
+          BackButton(),
         ],
       ),
     );
