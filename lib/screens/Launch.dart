@@ -57,21 +57,21 @@ void main() {
           ),
           GetPage(
               name: '/match/:matchId',
-              transition: Transition.noTransition,
+              transition: Transition.native,
               page: () => MultiProvider(providers: [
                     ChangeNotifierProvider(
                         create: (context) => MatchStatState()),
                   ], child: MatchDetails())),
           GetPage(name: '/login/enterDetails', page: () => EnterDetails(),
-              transition: Transition.noTransition),
+              transition: Transition.native),
           GetPage(name: '/user', page: () => UserPage(),
-              transition: Transition.noTransition),
+              transition: Transition.native),
           GetPage(name: '/editMatch/:matchId', page: () => AddOrEditMatch(),
-              transition: Transition.noTransition),
+              transition: Transition.native),
           GetPage(name: '/adminHome', page: () => AdminAvailableMatches(),
-              transition: Transition.noTransition),
+              transition: Transition.native),
           GetPage(name: '/addMatch', page: () => AddOrEditMatch(),
-              transition: Transition.noTransition),
+              transition: Transition.native),
         ],
       ),
     ));
