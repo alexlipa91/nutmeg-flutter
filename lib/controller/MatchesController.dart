@@ -171,7 +171,9 @@ class MatchesController {
       r[key] = List<int>.from(value);
     });
 
-    ratingsState.setRatings(r);
+    ratingsState.setRatings(
+        context.read<MatchesState>().getMatch(matchId).going.keys.toList(),
+        r);
     return r;
   }
 }

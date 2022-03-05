@@ -7,12 +7,14 @@ class MatchStatState extends ChangeNotifier {
   final Map<String, double> ratings = Map();
   final Map<String, int> numberOfVotes = Map();
 
-  void setRatings(Map<String, List<int>> ratingsLists) {
-    ratingsLists.forEach((key, _) {
-      var votesList = (ratingsLists[key] ?? []).where((v) => v > 0);
-      numberOfVotes[key] = votesList.length;
+  void setRatings(List<String> usersGoing, Map<String, List<int>> ratingsLists) {
+    usersGoing.forEach((user) {
+      var votesList = (ratingsLists[user] ?? []).where((v) => v > 0);
+      numberOfVotes[user] = votesList.length;
       if (votesList.isNotEmpty) {
-        ratings[key] = votesList.reduce((a, b) => a + b) / votesList.length;
+        ratings[user] = votesList.reduce((a, b) => a + b) / votesList.length;
+      } else {
+        ratings[user] = 0;
       }
     });
     notifyListeners();
