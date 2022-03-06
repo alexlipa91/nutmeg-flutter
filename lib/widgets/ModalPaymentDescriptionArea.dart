@@ -3,7 +3,7 @@ import 'package:nutmeg/utils/UiUtils.dart';
 
 
 class ModalPaymentDescriptionArea extends StatelessWidget {
-  static var divider = Divider(color: Palette.grey_lighter, height: 0);
+  static var divider = Divider(color: Palette.grey_light, height: 0);
 
   final List<Widget> rows;
   final Widget finalRow;

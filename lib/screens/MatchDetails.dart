@@ -116,6 +116,9 @@ class MatchDetailsState extends State<MatchDetails> {
     padLRB(Widget w) => Padding(
         padding: EdgeInsets.only(left: 16, right: 16, bottom: 16), child: w);
 
+    padLR(Widget w) => Padding(
+        padding: EdgeInsets.only(left: 16, right: 16), child: w);
+
     // add padding individually since because of shadow clipping some components need margin
     var widgets = [
       // title
@@ -124,10 +127,10 @@ class MatchDetailsState extends State<MatchDetails> {
             color: (isTest) ? Colors.orangeAccent : Colors.transparent,
             child: Text(title, style: TextPalette.h1Default))),
       // info box
-      padLRB(MatchInfo(matchId)),
+      padLR(MatchInfo(matchId)),
       // horizontal players list
       if (match != null && matchStatus != MatchStatusForUser.rated)
-        padLRB(Builder(
+        padLR(Builder(
           builder: (context) {
             var title = (match == null)
                 ? ""
@@ -153,7 +156,7 @@ class MatchDetailsState extends State<MatchDetails> {
           },
         )),
       if (matchStatus == MatchStatusForUser.rated && match.manOfTheMatch == context.read<UserState>().currentUserId)
-        padLRB(Section(title: "POTM", body: InkWell(
+        padLR(Section(title: "POTM", body: InkWell(
           onTap: () => Get.toNamed("/potm/" + matchId),
           child: InfoContainer(
             child: Row(
@@ -167,7 +170,7 @@ class MatchDetailsState extends State<MatchDetails> {
                         style: GoogleFonts.roboto(color: Palette.black, fontSize: 20, fontWeight: FontWeight.w500)),
                     SizedBox(height: 16,),
                     Text("You are the Player of the Match",
-                        style: GoogleFonts.roboto(color: Palette.mediumgrey, fontSize: 16, fontWeight: FontWeight.w500)),
+                        style: GoogleFonts.roboto(color: Palette.grey_dark, fontSize: 16, fontWeight: FontWeight.w500)),
                   ],
                 ),
                 Icon(MdiIcons.trophy, color: Palette.accent, size: 50,),
@@ -178,18 +181,19 @@ class MatchDetailsState extends State<MatchDetails> {
       // stats
       if (matchStatus == MatchStatusForUser.rated ||
           matchStatus == MatchStatusForUser.no_more_to_rate)
-        padLRB(Stats(
+        padLR(Stats(
           matchStatusForUser: matchStatus,
           matchDatetime: match.dateTime,
         )),
       // payment policy
       if (!MatchesState.pastStates.contains(matchStatus))
-        padLRB(Section(
+        padLR(Section(
             title: "DETAILS",
             body: RuleCard(
                 "Payment Policy",
                 "If you leave the match more than 15 hours before the kick-off time the amount you paid will be returned to you in credits that you can use in other Nutmeg matches. "
                     "\n\nNo credits or refund will be provided if you drop out of a game less than 15 hours from kick-off."))),
+      SizedBox(height: 16,)
       // MapCard.big(sportCenter)
     ];
 
