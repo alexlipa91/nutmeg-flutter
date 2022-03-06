@@ -42,6 +42,8 @@ class LaunchController {
       var targetRoute = "/match/" + matchId;
       if (Get.currentRoute != targetRoute)
         Get.toNamed(targetRoute);
+      else
+        Get.back();
 
       if (outcome == "success") {
         PaymentDetailsDescription.communicateSuccessToUser(context, matchId);

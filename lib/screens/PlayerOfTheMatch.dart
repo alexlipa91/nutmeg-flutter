@@ -43,19 +43,19 @@ class PlayerOfTheMatch extends StatelessWidget {
           elevation: 0,
           centerTitle: false,
           leadingWidth: 0,
-          leading: Padding(
-            padding: EdgeInsets.only(left: 20),
-            child: ShareButton(() async {
-                print("share");
-                ShareFilesAndScreenshotWidgets().shareScreenshot(
-                    previewContainer,
-                    MediaQuery.of(context).size.width.toInt() * 2,
-                    "PlayerOfTheMatch",
-                    "Nutmeg-PlayerOfTheMatch.png",
-                    "image/png",
-                    text: "");
-              }, Palette.white),
-          ),
+          // leading: Padding(
+          //   padding: EdgeInsets.only(left: 20),
+          //   child: ShareButton(() async {
+          //       print("share");
+          //       ShareFilesAndScreenshotWidgets().shareScreenshot(
+          //           previewContainer,
+          //           MediaQuery.of(context).size.width.toInt() * 2,
+          //           "PlayerOfTheMatch",
+          //           "Nutmeg-PlayerOfTheMatch.png",
+          //           "image/png",
+          //           text: "");
+          //     }, Palette.white),
+          // ),
           actions: [
             Padding(
                 padding: EdgeInsets.only(right: 20),
