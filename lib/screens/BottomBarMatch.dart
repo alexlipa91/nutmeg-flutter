@@ -102,11 +102,6 @@ class BottomBarMatch extends StatelessWidget {
 
     var match = matchesState.getMatch(matchId);
     var status = matchesState.getMatchStatus(matchId);
-
-    if (status == null || status == MatchStatusForUser.rated
-        || status == MatchStatusForUser.no_more_to_rate) {
-      return Container(height: 0,);
-    }
     
     return Column(
       mainAxisSize: MainAxisSize.min,

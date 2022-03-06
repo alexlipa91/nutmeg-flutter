@@ -252,20 +252,22 @@ class UserPageState extends State<UserPage> {
           ),
         ),
       Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16),
-        child: Container(
-          child: FutureBuilder<Tuple2<Version, String>>(
-              future: getVersion(),
-              builder: (context, snapshot) => Text(
-                    "v" +
-                        ((snapshot.hasData)
-                            ? (snapshot.data.item1.toString() +
-                                " build " +
-                                snapshot.data.item2)
-                            : ""),
-                    style: TextPalette.bodyText,
-                    textAlign: TextAlign.right,
-                  )),
+        padding: EdgeInsets.only(left: 16, right: 16, top: 8),
+        child: Center(
+          child: Container(
+            child: FutureBuilder<Tuple2<Version, String>>(
+                future: getVersion(),
+                builder: (context, snapshot) => Text(
+                      "v" +
+                          ((snapshot.hasData)
+                              ? (snapshot.data.item1.toString() +
+                                  " build " +
+                                  snapshot.data.item2)
+                              : ""),
+                      style: TextPalette.bodyText,
+                      textAlign: TextAlign.right,
+                    )),
+          ),
         ),
       ),
       SizedBox(height: MediaQuery.of(context).padding.bottom,)

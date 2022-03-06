@@ -24,14 +24,11 @@ import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/AppBar.dart';
 import 'package:nutmeg/widgets/Avatar.dart';
 import 'package:nutmeg/widgets/Containers.dart';
-import 'package:nutmeg/widgets/GenericAvailableMatches.dart';
 import 'package:nutmeg/widgets/PlayerBottomModal.dart';
 import 'package:nutmeg/widgets/Section.dart';
 import 'package:provider/provider.dart';
 import 'package:readmore/readmore.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
-
 
 import '../model/SportCenter.dart';
 import '../state/LoadOnceState.dart';
@@ -119,7 +116,13 @@ class MatchDetailsState extends State<MatchDetails> {
     padLR(Widget w) => Padding(
         padding: EdgeInsets.only(left: 16, right: 16), child: w);
 
-    var bottomBar = BottomBarMatch(
+    print(matchStatus);
+
+    bool shouldNotUseBottomBar = matchStatus == null
+        || matchStatus == MatchStatusForUser.rated
+        || matchStatus == MatchStatusForUser.no_more_to_rate;
+
+    var bottomBar = (shouldNotUseBottomBar) ? null : BottomBarMatch(
       matchId: matchId,
       extraBottomPadding: MediaQuery.of(context).padding.bottom,
     );
@@ -638,24 +641,19 @@ class Stats extends StatelessWidget {
           width: double.infinity,
           child: Column(
             children: [
-              Icon(
-                Icons.timeline,
-                size: 80,
-                color: Palette.grey_light,
-              ),
-              SizedBox(
-                height: 16,
-              ),
+              CircleAvatar(
+                  radius: 36,
+                  backgroundColor: Palette.grey_lightest,
+                  child: Image.asset("assets/empty_state/stats.png", height: 24,)),
+              SizedBox(height: 16),
               Text(
                 "Stats available soon",
                 style: TextPalette.h2,
               ),
-              SizedBox(
-                height: 16,
-              ),
+              SizedBox(height: 8),
               Text(
-                "Statistics for this match will be available on " +
-                    getFormattedDate(matchDatetime.add(Duration(days: 1))),
+                "Statistics for this match will be available\n" +
+                    getFormattedDate(matchDatetime.add(Duration(days: 1))).toLowerCase(),
                 style: TextPalette.bodyText,
                 textAlign: TextAlign.center,
               ),
