@@ -688,9 +688,10 @@ class Stats extends StatelessWidget {
                             child: Text(index.toString(),
                                 style: TextPalette.bodyText)),
                         SizedBox(width: 8),
-                        UserAvatar(10, userDetails),
-                        SizedBox(width: 8),
-                        Expanded(
+                        UserAvatar(16, userDetails),
+                        // SizedBox(width: 8),
+                        Padding(
+                          padding: EdgeInsets.only(left: 16),
                           child: Row(
                             children: [
                               Builder(builder: (context) {
@@ -702,35 +703,38 @@ class Stats extends StatelessWidget {
                                 var n = name.substring(0, min(name.length, 11));
                                 return Text(n,
                                     overflow: TextOverflow.ellipsis,
-                                    style: TextPalette.bodyText);
+                                    style: TextPalette.getBodyText(Palette.black));
                               }),
-                              SizedBox(width: 1),
+                              SizedBox(width: 8),
                               if (index == 1)
-                                Icon(
-                                  Icons.sports_soccer,
-                                  color: Colors.amber,
-                                  size: 20,
-                                ),
+                                Image.asset("assets/potm_badge.png", width: 20,)
+
+                                // Icon(
+                                //   Icons.sports_soccer,
+                                //   color: Colors.amber,
+                                //   size: 20,
+                                // ),
                             ],
                           ),
                         ),
+                        Spacer(),
                         Container(
-                          height: 10,
-                          width: 100,
+                          height: 8,
+                          width: 72,
                           child: ClipRRect(
                             borderRadius: BorderRadius.all(Radius.circular(10)),
                             child: LinearProgressIndicator(
                               value: score / 5,
                               color: Palette.primary,
-                              backgroundColor: Palette.grey_light,
+                              backgroundColor: Palette.grey_lighter,
                             ),
                           ),
                         ),
-                        SizedBox(width: 12),
+                        SizedBox(width: 16),
                         Container(
                           width: 22,
                           child: Text((score == 0) ? "  -" : score.toStringAsFixed(1),
-                              style: TextPalette.bodyText),
+                              style: TextPalette.getBodyText(Palette.black)),
                         ),
                       ];
 
