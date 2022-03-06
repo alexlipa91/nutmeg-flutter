@@ -162,29 +162,29 @@ class MatchDetailsState extends State<MatchDetails> {
             );
           },
         )),
-      if (matchStatus == MatchStatusForUser.rated && match.manOfTheMatch == context.read<UserState>().currentUserId)
-        padLR(Section(title: "POTM", body: InkWell(
-          onTap: () => Get.toNamed("/potm/" + matchId),
-          child: InfoContainer(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text("Congratulations!",
-                        style: GoogleFonts.roboto(color: Palette.black, fontSize: 20, fontWeight: FontWeight.w500)),
-                    SizedBox(height: 16,),
-                    Text("You are the Player of the Match",
-                        style: GoogleFonts.roboto(color: Palette.grey_dark, fontSize: 16, fontWeight: FontWeight.w500)),
-                  ],
-                ),
-                Icon(MdiIcons.trophy, color: Palette.accent, size: 50,),
-              ],
-            ),
-          ),
-        ))),
+      // if (matchStatus == MatchStatusForUser.rated && match.manOfTheMatch == context.read<UserState>().currentUserId)
+      //   padLR(Section(title: "POTM", body: InkWell(
+      //     onTap: () => Get.toNamed("/potm/" + matchId),
+      //     child: InfoContainer(
+      //       child: Row(
+      //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      //         crossAxisAlignment: CrossAxisAlignment.center,
+      //         children: [
+      //           Column(
+      //             crossAxisAlignment: CrossAxisAlignment.start,
+      //             children: [
+      //               Text("Congratulations!",
+      //                   style: GoogleFonts.roboto(color: Palette.black, fontSize: 20, fontWeight: FontWeight.w500)),
+      //               SizedBox(height: 16,),
+      //               Text("You are the Player of the Match",
+      //                   style: GoogleFonts.roboto(color: Palette.grey_dark, fontSize: 16, fontWeight: FontWeight.w500)),
+      //             ],
+      //           ),
+      //           Icon(MdiIcons.trophy, color: Palette.accent, size: 50,),
+      //         ],
+      //       ),
+      //     ),
+      //   ))),
       // payment policy
       if (!MatchesState.pastStates.contains(matchStatus))
         padLR(Section(

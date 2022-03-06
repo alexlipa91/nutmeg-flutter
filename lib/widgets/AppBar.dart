@@ -100,6 +100,7 @@ class MatchAppBar extends StatelessWidget {
       systemOverlayStyle: SystemUiOverlayStyle.dark,
       backgroundColor: Colors.transparent,
       centerTitle: false,
+      automaticallyImplyLeading: false,
       leadingWidth: 0,
       title: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -144,6 +145,7 @@ class UserPageAppBar extends NutmegAppBar {
       systemOverlayStyle: SystemUiOverlayStyle.dark,
       backgroundColor: Colors.transparent,
       centerTitle: false,
+      automaticallyImplyLeading: false,
       leadingWidth: 0,
       title: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
