@@ -119,6 +119,11 @@ class MatchDetailsState extends State<MatchDetails> {
     padLR(Widget w) => Padding(
         padding: EdgeInsets.only(left: 16, right: 16), child: w);
 
+    var bottomBar = BottomBarMatch(
+      matchId: matchId,
+      extraBottomPadding: MediaQuery.of(context).padding.bottom,
+    );
+
     // add padding individually since because of shadow clipping some components need margin
     var widgets = [
       // title
@@ -146,46 +151,24 @@ class MatchDetailsState extends State<MatchDetails> {
                     match.maxPlayers.toString() +
                     " PLAYERS";
 
-            return Section(
-              title: title,
-              body: SingleChildScrollView(
-                clipBehavior: Clip.none,
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                    children: (match.going.isEmpty)
-                        ? [EmptyPlayerCard(matchId: matchId)]
-                        : match
-                            .getGoingUsersByTime()
-                            .map((s) => PlayerCard(s))
-                            .toList()),
+            return Container(
+              child: Section(
+                title: title,
+                body: SingleChildScrollView(
+                  clipBehavior: Clip.none,
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                      children: (match.going.isEmpty)
+                          ? [EmptyPlayerCard(matchId: matchId)]
+                          : match
+                              .getGoingUsersByTime()
+                              .map((s) => PlayerCard(s))
+                              .toList()),
+                ),
               ),
             );
           },
         )),
-      // if (matchStatus == MatchStatusForUser.rated && match.manOfTheMatch == context.read<UserState>().currentUserId)
-      //   padLR(Section(title: "POTM", body: InkWell(
-      //     onTap: () => Get.toNamed("/potm/" + matchId),
-      //     child: InfoContainer(
-      //       child: Row(
-      //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      //         crossAxisAlignment: CrossAxisAlignment.center,
-      //         children: [
-      //           Column(
-      //             crossAxisAlignment: CrossAxisAlignment.start,
-      //             children: [
-      //               Text("Congratulations!",
-      //                   style: GoogleFonts.roboto(color: Palette.black, fontSize: 20, fontWeight: FontWeight.w500)),
-      //               SizedBox(height: 16,),
-      //               Text("You are the Player of the Match",
-      //                   style: GoogleFonts.roboto(color: Palette.grey_dark, fontSize: 16, fontWeight: FontWeight.w500)),
-      //             ],
-      //           ),
-      //           Icon(MdiIcons.trophy, color: Palette.accent, size: 50,),
-      //         ],
-      //       ),
-      //     ),
-      //   ))),
-      // payment policy
       if (!MatchesState.pastStates.contains(matchStatus))
         padLR(Section(
             title: "DETAILS",
@@ -193,18 +176,17 @@ class MatchDetailsState extends State<MatchDetails> {
                 "Payment Policy",
                 "If you leave the match more than 15 hours before the kick-off time the amount you paid will be returned to you in credits that you can use in other Nutmeg matches. "
                     "\n\nNo credits or refund will be provided if you drop out of a game less than 15 hours from kick-off."))),
-      SizedBox(height: 16,)
+      (bottomBar == null) ? SizedBox(height: MediaQuery.of(context).padding.bottom,) : SizedBox(height: 16,)
       // MapCard.big(sportCenter)
     ];
 
     return Scaffold(
         backgroundColor: Palette.grey_lightest,
-        body: Padding(
-          padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
-          child: RefreshIndicator(
-              onRefresh: () async {
-                await refreshState();
-              },
+        body: RefreshIndicator(
+            onRefresh: () async {
+              await refreshState();
+            },
+            child: Container(
               child: CustomScrollView(
                 slivers: [
                   MatchAppBar(matchId: matchId),
@@ -217,12 +199,9 @@ class MatchDetailsState extends State<MatchDetails> {
                     ),
                   )
                 ],
-              )),
-        ),
-        bottomNavigationBar: BottomBarMatch(
-          matchId: matchId,
-          extraBottomPadding: MediaQuery.of(context).padding.bottom,
-        ));
+              ),
+            )),
+        bottomNavigationBar: bottomBar);
   }
 }
 
@@ -780,7 +759,6 @@ class Stats extends StatelessWidget {
     }
 
     return Container(
-      // color: Colors.red,
       child: Section(
         title: "MATCH STATS",
         body: InfoContainer(child: child),

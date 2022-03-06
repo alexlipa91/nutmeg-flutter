@@ -54,7 +54,7 @@ class UserPageState extends State<UserPage> {
 
     var widgets = [
       Padding(
-          padding: EdgeInsets.only(top: 20, left: 16, right: 16),
+          padding: EdgeInsets.only(left: 16, right: 16),
           child: Text("Account", style: TextPalette.h1Default)),
       Padding(
         padding: EdgeInsets.only(top: 20),
@@ -254,7 +254,6 @@ class UserPageState extends State<UserPage> {
       Padding(
         padding: EdgeInsets.symmetric(horizontal: 16),
         child: Container(
-          height: 100,
           child: FutureBuilder<Tuple2<Version, String>>(
               future: getVersion(),
               builder: (context, snapshot) => Text(
@@ -268,7 +267,8 @@ class UserPageState extends State<UserPage> {
                     textAlign: TextAlign.right,
                   )),
         ),
-      )
+      ),
+      SizedBox(height: MediaQuery.of(context).padding.bottom,)
     ];
 
     return Scaffold(

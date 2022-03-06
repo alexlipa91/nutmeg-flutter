@@ -128,7 +128,7 @@ class BottomBarMatch extends StatelessWidget {
                 left: 16.0,
                 right: 16.0,
                 top: 16.0,
-                bottom: 16.0 + extraBottomPadding),
+                bottom: extraBottomPadding),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
