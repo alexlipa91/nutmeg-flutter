@@ -71,21 +71,19 @@ class JoinedPlayerBottomModal extends StatelessWidget {
         padding: GenericInfoModal.padding,
         child: Column(
           children: [
-            SizedBox(height: 70),
+            SizedBox(height: 50),
             Text(UserDetails.getDisplayName(userDetails),
                 style: TextPalette.h2),
             SizedBox(height: 24),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 StatEntry(stat: userDetails.getJoinedMatches().length.toString(),
                   description: "Matches",),
-                Expanded(
-                  child: StatEntry(stat: (userDetails.getScoreMatches() == -1)
-                      ? "-"
-                      : userDetails.getScoreMatches().toStringAsFixed(2),
-                    description: "Avg. score",),
-                ),
+                StatEntry(stat: (userDetails.getScoreMatches() == -1)
+                    ? "-"
+                    : userDetails.getScoreMatches().toStringAsFixed(2),
+                  description: "Avg. score",),
                 StatEntry(stat: userDetails.getNumManOfTheMatch().toString(),
                   description: "POTM",),
               ],

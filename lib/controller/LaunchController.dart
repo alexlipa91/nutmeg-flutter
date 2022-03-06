@@ -63,7 +63,7 @@ class LaunchController {
   }
 
   static void handleMessageFromNotification(BuildContext context, RemoteMessage message) async {
-    print('message opened from notification');
+    print('message ' + message.messageId + ' opened from notification');
     var targetRoute = "/match/" + message.data["match_id"];
 
     if (message.data.containsKey("event")) {
