@@ -55,9 +55,7 @@ class LaunchController {
       return;
     }
     if (deepLink.path == "/match") {
-      var targetRoute = "/match/" + deepLink.queryParameters["id"];
-      await Get.toNamed(targetRoute);
-      await Get.offNamed("/home");
+      await goToMatchPage(deepLink.queryParameters["id"]);
       return;
     }
   }
@@ -75,10 +73,9 @@ class LaunchController {
         await Get.toNamed(targetRoute);
         await Get.offNamed("/home");
       }
+    } else {
+      await goToMatchPage(message.data["match_id"]);
     }
-
-    await Get.toNamed(targetRoute);
-    await Get.offNamed("/home");
   }
 
   static void setupNotifications(BuildContext context) {
@@ -110,6 +107,11 @@ class LaunchController {
         print(e.message);
       });
     }
+  }
+
+  static Future<void> goToMatchPage(String matchId) async {
+    Get.offAndToNamed("/home");
+    await Get.toNamed("/match/" + matchId);
   }
 
   static Future<void> loadData(BuildContext context) async {

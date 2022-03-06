@@ -11,20 +11,20 @@ class SkeletonMatchDetails extends StatelessWidget {
           style: SkeletonAvatarStyle(
             borderRadius: BorderRadius.circular(8),
             width: double.infinity,
-            minHeight: (MediaQuery.of(context).size.height / 4) - 1,
-            maxHeight: MediaQuery.of(context).size.height / 4,
+            minHeight: (MediaQuery.of(context).size.height / 5) - 1,
+            maxHeight: MediaQuery.of(context).size.height / 5,
           ),
         ),
         SizedBox(height: 12),
         SkeletonParagraph(
           style: SkeletonParagraphStyle(
               lines: 3,
-              spacing: 12,
+              spacing: 15,
               lineStyle: SkeletonLineStyle(
                 borderRadius: BorderRadius.circular(8),
                 minLength: MediaQuery.of(context).size.width - 1,
                 maxLength: MediaQuery.of(context).size.width,
-                height: 30,
+                height: 20,
               )),
         )
       ],

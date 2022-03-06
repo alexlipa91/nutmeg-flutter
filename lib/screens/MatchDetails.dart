@@ -113,19 +113,21 @@ class MatchDetailsState extends State<MatchDetails> {
     padLRB(Widget w) => Padding(
         padding: EdgeInsets.only(left: 16, right: 16, bottom: 16), child: w);
 
-    padLR(Widget w) => Padding(
-        padding: EdgeInsets.only(left: 16, right: 16), child: w);
+    padLR(Widget w) =>
+        Padding(padding: EdgeInsets.only(left: 16, right: 16), child: w);
 
     print(matchStatus);
 
-    bool shouldNotUseBottomBar = matchStatus == null
-        || matchStatus == MatchStatusForUser.rated
-        || matchStatus == MatchStatusForUser.no_more_to_rate;
+    bool shouldNotUseBottomBar = matchStatus == null ||
+        matchStatus == MatchStatusForUser.rated ||
+        matchStatus == MatchStatusForUser.no_more_to_rate;
 
-    var bottomBar = (shouldNotUseBottomBar) ? null : BottomBarMatch(
-      matchId: matchId,
-      extraBottomPadding: MediaQuery.of(context).padding.bottom,
-    );
+    var bottomBar = (shouldNotUseBottomBar)
+        ? null
+        : BottomBarMatch(
+            matchId: matchId,
+            extraBottomPadding: MediaQuery.of(context).padding.bottom,
+          );
 
     // add padding individually since because of shadow clipping some components need margin
     var widgets = [
@@ -179,7 +181,9 @@ class MatchDetailsState extends State<MatchDetails> {
                 "Payment Policy",
                 "If you leave the match more than 15 hours before the kick-off time the amount you paid will be returned to you in credits that you can use in other Nutmeg matches. "
                     "\n\nNo credits or refund will be provided if you drop out of a game less than 15 hours from kick-off."))),
-      (shouldNotUseBottomBar) ? SizedBox(height: 16 + MediaQuery.of(context).padding.bottom) : SizedBox(height: 16),
+      (shouldNotUseBottomBar)
+          ? SizedBox(height: 16 + MediaQuery.of(context).padding.bottom)
+          : SizedBox(height: 16),
       // MapCard.big(sportCenter)
     ];
 
@@ -218,19 +222,20 @@ class MatchInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var child;
+
     var match = context.watch<MatchesState>().getMatch(matchId);
-    if (match == null) return SkeletonMatchDetails();
+    if (match == null) {
+      child = SkeletonMatchDetails();
+    } else {
+      var sportCenter =
+          context.watch<LoadOnceState>().getSportCenter(match.sportCenterId);
+      var sport = context.watch<LoadOnceState>().getSport(match.sport);
 
-    var sportCenter =
-        context.watch<LoadOnceState>().getSportCenter(match.sportCenterId);
-    var sport = context.watch<LoadOnceState>().getSport(match.sport);
-
-    if (sportCenter == null || sport == null) {
-      return SkeletonMatchDetails();
-    }
-    return InfoContainer(
-        padding: EdgeInsets.zero,
-        child: Column(
+      if (sportCenter == null || sport == null) {
+        child = SkeletonMatchDetails();
+      } else {
+        child = Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(children: [Expanded(child: SportCenterImageCarousel(match))]),
@@ -292,7 +297,11 @@ class MatchInfo extends StatelessWidget {
                 icon: Icons.sell,
                 subTitle: "Pay with Ideal"),
           ],
-        ));
+        );
+      }
+    }
+
+    return InfoContainer(padding: EdgeInsets.zero, child: child);
   }
 }
 
@@ -644,7 +653,10 @@ class Stats extends StatelessWidget {
               CircleAvatar(
                   radius: 36,
                   backgroundColor: Palette.grey_lightest,
-                  child: Image.asset("assets/empty_state/stats.png", height: 24,)),
+                  child: Image.asset(
+                    "assets/empty_state/stats.png",
+                    height: 24,
+                  )),
               SizedBox(height: 16),
               Text(
                 "Stats available soon",
@@ -653,7 +665,8 @@ class Stats extends StatelessWidget {
               SizedBox(height: 8),
               Text(
                 "Statistics for this match will be available\n" +
-                    getFormattedDate(matchDatetime.add(Duration(days: 1))).toLowerCase(),
+                    getFormattedDate(matchDatetime.add(Duration(days: 1)))
+                        .toLowerCase(),
                 style: TextPalette.bodyText,
                 textAlign: TextAlign.center,
               ),
@@ -703,17 +716,21 @@ class Stats extends StatelessWidget {
                                 var n = name.substring(0, min(name.length, 11));
                                 return Text(n,
                                     overflow: TextOverflow.ellipsis,
-                                    style: TextPalette.getBodyText(Palette.black));
+                                    style:
+                                        TextPalette.getBodyText(Palette.black));
                               }),
                               SizedBox(width: 8),
                               if (index == 1)
-                                Image.asset("assets/potm_badge.png", width: 20,)
+                                Image.asset(
+                                  "assets/potm_badge.png",
+                                  width: 20,
+                                )
 
-                                // Icon(
-                                //   Icons.sports_soccer,
-                                //   color: Colors.amber,
-                                //   size: 20,
-                                // ),
+                              // Icon(
+                              //   Icons.sports_soccer,
+                              //   color: Colors.amber,
+                              //   size: 20,
+                              // ),
                             ],
                           ),
                         ),
@@ -733,7 +750,8 @@ class Stats extends StatelessWidget {
                         SizedBox(width: 16),
                         Container(
                           width: 22,
-                          child: Text((score == 0) ? "  -" : score.toStringAsFixed(1),
+                          child: Text(
+                              (score == 0) ? "  -" : score.toStringAsFixed(1),
                               style: TextPalette.getBodyText(Palette.black)),
                         ),
                       ];
