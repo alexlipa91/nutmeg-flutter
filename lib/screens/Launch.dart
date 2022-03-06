@@ -95,9 +95,6 @@ class LaunchWidgetState extends State<LaunchWidget> {
   @override
   void initState() {
     super.initState();
-    if (!kIsWeb) {
-      initDynamicLinks();
-    }
     LaunchController.loadData(context)
         .catchError((e, s) => ErrorHandlingUtils.handleError(e, s, context));
   }

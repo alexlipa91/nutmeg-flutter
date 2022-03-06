@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/Buttons.dart';
 import 'package:provider/provider.dart';
@@ -19,8 +20,7 @@ class PaymentDetailsDescription {
         context: context,
         builder: (context) => Container(
             child: Padding(
-              padding: EdgeInsets.only(top: 30, bottom: MediaQuery.of(context).padding.bottom,
-                  left: 20, right: 20),
+              padding: GenericInfoModal.padding,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [

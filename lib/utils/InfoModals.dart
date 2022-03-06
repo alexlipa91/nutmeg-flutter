@@ -6,6 +6,7 @@ import 'UiUtils.dart';
 
 class GenericInfoModal<T> {
   static var modalRadius = BorderRadius.vertical(top: Radius.circular(20.0));
+  static var padding = EdgeInsets.all(16);
 
   final String title;
   final String description;
@@ -46,8 +47,7 @@ class GenericInfoModal<T> {
       builder: (context) => Container(
         child: Padding(
             // make 32 if find visual cue
-            padding:
-                EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom, top: 24, left: 16, right: 16),
+            padding: padding,
             child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,

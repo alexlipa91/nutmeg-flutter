@@ -68,7 +68,7 @@ class JoinedPlayerBottomModal extends StatelessWidget {
     return PlayerBottomModal(
       userDetails,
       Padding(
-        padding: EdgeInsets.only(left: 24, right: 24, bottom: MediaQuery.of(context).padding.bottom),
+        padding: GenericInfoModal.padding,
         child: Column(
           children: [
             SizedBox(height: 70),

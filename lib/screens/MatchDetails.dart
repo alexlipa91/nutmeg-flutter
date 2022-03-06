@@ -179,7 +179,7 @@ class MatchDetailsState extends State<MatchDetails> {
                 "Payment Policy",
                 "If you leave the match more than 15 hours before the kick-off time the amount you paid will be returned to you in credits that you can use in other Nutmeg matches. "
                     "\n\nNo credits or refund will be provided if you drop out of a game less than 15 hours from kick-off."))),
-      (bottomBar == null) ? SizedBox(height: MediaQuery.of(context).padding.bottom,) : SizedBox(height: 16,)
+      (shouldNotUseBottomBar) ? SizedBox(height: 16 + MediaQuery.of(context).padding.bottom) : SizedBox(height: 16),
       // MapCard.big(sportCenter)
     ];
 

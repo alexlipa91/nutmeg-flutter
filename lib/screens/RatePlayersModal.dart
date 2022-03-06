@@ -5,6 +5,7 @@ import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/state/MatchesState.dart';
 import 'package:nutmeg/state/RatingPlayersState.dart';
+import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:provider/provider.dart';
@@ -73,8 +74,7 @@ class RatePlayerBottomModal extends StatelessWidget {
     return PlayerBottomModal(
         state.getCurrent(),
         Padding(
-          padding: EdgeInsets.only(left: 16, right: 16, bottom: MediaQuery.of(context).padding.bottom
-          ),
+          padding: GenericInfoModal.padding,
           child: Column(
             children: [
               SizedBox(height: 65),
@@ -112,7 +112,8 @@ class RatePlayerBottomModal extends StatelessWidget {
               ),
             ],
           ),
-        ));
+        )
+    );
   }
 
   Future<void> store(BuildContext context) async {

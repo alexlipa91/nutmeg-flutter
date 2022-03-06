@@ -82,9 +82,12 @@ class LaunchController {
   }
 
   static void setupNotifications(BuildContext context) {
-    // FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+    print("setting up notification handler");
 
-    FirebaseMessaging.onMessageOpenedApp.listen((m) => handleMessageFromNotification(context, m));
+    FirebaseMessaging.onMessageOpenedApp.listen((m) {
+      print("called onMsgOpenedApp callback");
+      handleMessageFromNotification(context, m);
+    });
 
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       print('Got a message whilst in the foreground!');
@@ -94,6 +97,19 @@ class LaunchController {
         print('Message also contained a notification: ${message.notification}');
       }
     });
+
+    if (!kIsWeb) {
+      FirebaseDynamicLinks.instance.onLink(
+          onSuccess: (PendingDynamicLinkData dynamicLink) async {
+            final Uri deepLink = dynamicLink?.link;
+
+            if (deepLink != null) {
+              LaunchController.handleLink(deepLink);
+            }
+          }, onError: (OnLinkErrorException e) async {
+        print(e.message);
+      });
+    }
   }
 
   static Future<void> loadData(BuildContext context) async {
@@ -143,8 +159,6 @@ class LaunchController {
       }
     }
 
-    setupNotifications(context);
-
     // check if user is logged in
     var userDetails = await UserController.getUserIfAvailable(context);
 
@@ -183,10 +197,6 @@ class LaunchController {
     // check if coming from notification
     RemoteMessage initialMessage = await FirebaseMessaging.instance.getInitialMessage();
 
-    var targetRoute = "/match/" + "gAYBoHYPUmX1GMfCajou";
-    await Get.toNamed(targetRoute);
-    await Get.offNamed("/home");
-
     if (deepLink != null) {
       print("navigating with deep link:" + deepLink.toString());
       trace.putAttribute("coming_from_deeplink", true.toString());
@@ -200,7 +210,10 @@ class LaunchController {
       Get.offAndToNamed("/home");
     }
 
+    setupNotifications(context);
+
     trace.setMetric('duration_ms', stopwatch.elapsed.inMilliseconds);
+
     trace.stop();
   }
 
