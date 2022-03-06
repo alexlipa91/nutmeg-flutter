@@ -19,7 +19,8 @@ class PaymentDetailsDescription {
         context: context,
         builder: (context) => Container(
             child: Padding(
-              padding: EdgeInsets.symmetric(vertical: 30, horizontal: 20),
+              padding: EdgeInsets.only(top: 30, bottom: MediaQuery.of(context).padding.bottom,
+                  left: 20, right: 20),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [

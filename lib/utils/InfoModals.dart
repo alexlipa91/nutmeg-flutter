@@ -43,17 +43,15 @@ class GenericInfoModal<T> {
       ),
       isScrollControlled: true,
       context: context,
-      builder: (context) => SafeArea(
-        child: Container(
-          child: Padding(
-              // make 32 if find visual cue
-              padding:
-                  EdgeInsets.only(bottom: 16, top: 24, left: 16, right: 16),
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: widgets)),
-        ),
+      builder: (context) => Container(
+        child: Padding(
+            // make 32 if find visual cue
+            padding:
+                EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom, top: 24, left: 16, right: 16),
+            child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: widgets)),
       ),
     );
   }

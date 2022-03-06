@@ -128,6 +128,13 @@ class MatchDetailsState extends State<MatchDetails> {
             child: Text(title, style: TextPalette.h1Default))),
       // info box
       padLR(MatchInfo(matchId)),
+      // stats
+      if (matchStatus == MatchStatusForUser.rated ||
+          matchStatus == MatchStatusForUser.no_more_to_rate)
+        padLR(Stats(
+          matchStatusForUser: matchStatus,
+          matchDatetime: match.dateTime,
+        )),
       // horizontal players list
       if (match != null && matchStatus != MatchStatusForUser.rated)
         padLR(Builder(
@@ -178,13 +185,6 @@ class MatchDetailsState extends State<MatchDetails> {
             ),
           ),
         ))),
-      // stats
-      if (matchStatus == MatchStatusForUser.rated ||
-          matchStatus == MatchStatusForUser.no_more_to_rate)
-        padLR(Stats(
-          matchStatusForUser: matchStatus,
-          matchDatetime: match.dateTime,
-        )),
       // payment policy
       if (!MatchesState.pastStates.contains(matchStatus))
         padLR(Section(
@@ -199,23 +199,26 @@ class MatchDetailsState extends State<MatchDetails> {
 
     return Scaffold(
         backgroundColor: Palette.grey_lightest,
-        body: RefreshIndicator(
-            onRefresh: () async {
-              await refreshState();
-            },
-            child: CustomScrollView(
-              slivers: [
-                MatchAppBar(matchId: matchId),
-                SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (BuildContext context, int index) {
-                      return widgets[index];
-                    },
-                    childCount: widgets.length,
-                  ),
-                )
-              ],
-            )),
+        body: Padding(
+          padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
+          child: RefreshIndicator(
+              onRefresh: () async {
+                await refreshState();
+              },
+              child: CustomScrollView(
+                slivers: [
+                  MatchAppBar(matchId: matchId),
+                  SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (BuildContext context, int index) {
+                        return widgets[index];
+                      },
+                      childCount: widgets.length,
+                    ),
+                  )
+                ],
+              )),
+        ),
         bottomNavigationBar: BottomBarMatch(
           matchId: matchId,
           extraBottomPadding: MediaQuery.of(context).padding.bottom,

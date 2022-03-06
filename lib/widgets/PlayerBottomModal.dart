@@ -68,7 +68,7 @@ class JoinedPlayerBottomModal extends StatelessWidget {
     return PlayerBottomModal(
       userDetails,
       Padding(
-        padding: EdgeInsets.symmetric(horizontal: 24),
+        padding: EdgeInsets.only(left: 24, right: 24, bottom: MediaQuery.of(context).padding.bottom),
         child: Column(
           children: [
             SizedBox(height: 70),
@@ -90,7 +90,7 @@ class JoinedPlayerBottomModal extends StatelessWidget {
                   description: "POTM",),
               ],
             ),
-            SizedBox(height: 36),
+            // SizedBox(height: 36),
           ],
         ),
       ),

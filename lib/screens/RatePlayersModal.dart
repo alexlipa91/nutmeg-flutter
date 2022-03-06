@@ -73,7 +73,7 @@ class RatePlayerBottomModal extends StatelessWidget {
     return PlayerBottomModal(
         state.getCurrent(),
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16),
+          padding: EdgeInsets.only(left: 16, right: 16, bottom: MediaQuery.of(context).padding.bottom),
           child: Column(
             children: [
               SizedBox(height: 65),
@@ -109,7 +109,6 @@ class RatePlayerBottomModal extends StatelessWidget {
                       }),
                 ],
               ),
-              SizedBox(height: 16),
             ],
           ),
         ));
