@@ -56,7 +56,8 @@ class LaunchController {
     }
     if (deepLink.path == "/match") {
       var targetRoute = "/match/" + deepLink.queryParameters["id"];
-      Get.toNamed(targetRoute).then((value) => Get.offNamed("/home"));
+      await Get.toNamed(targetRoute);
+      await Get.offNamed("/home");
       return;
     }
   }
@@ -103,7 +104,7 @@ class LaunchController {
     final stopwatch = Stopwatch()..start();
 
     FirebaseRemoteConfig firebaseRemoteConfig = FirebaseRemoteConfig.instance;
-    firebaseRemoteConfig.setConfigSettings(RemoteConfigSettings(
+    await firebaseRemoteConfig.setConfigSettings(RemoteConfigSettings(
       fetchTimeout: Duration(seconds: 5),
       minimumFetchInterval: Duration.zero,
     ));
@@ -181,6 +182,10 @@ class LaunchController {
 
     // check if coming from notification
     RemoteMessage initialMessage = await FirebaseMessaging.instance.getInitialMessage();
+
+    var targetRoute = "/match/" + "gAYBoHYPUmX1GMfCajou";
+    await Get.toNamed(targetRoute);
+    await Get.offNamed("/home");
 
     if (deepLink != null) {
       print("navigating with deep link:" + deepLink.toString());

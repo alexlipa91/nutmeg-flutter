@@ -241,7 +241,7 @@ class MatchInfo extends StatelessWidget {
     var sport = context.watch<LoadOnceState>().getSport(match.sport);
 
     if (sportCenter == null || sport == null) {
-      return MatchInfoSkeleton();
+      return SkeletonMatchDetails();
     }
     return InfoContainer(
         padding: EdgeInsets.zero,
