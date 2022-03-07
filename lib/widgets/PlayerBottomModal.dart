@@ -48,7 +48,6 @@ class StatEntry extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 70,
       child: Column(children: [
         Text(stat, style: TextPalette.h1Default),
         SizedBox(height: 4),
@@ -80,14 +79,20 @@ class JoinedPlayerBottomModal extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  StatEntry(stat: userDetails.getJoinedMatches().length.toString(),
-                    description: "Matches",),
-                  StatEntry(stat: (userDetails.getScoreMatches() == -1)
-                      ? "-"
-                      : userDetails.getScoreMatches().toStringAsFixed(2),
-                    description: "Avg. score",),
-                  StatEntry(stat: userDetails.getNumManOfTheMatch().toString(),
-                    description: "POTM",),
+                  Expanded(
+                    child: StatEntry(stat: userDetails.getJoinedMatches().length.toString(),
+                      description: "Matches",),
+                  ),
+                  Expanded(
+                    child: StatEntry(stat: (userDetails.getScoreMatches() == -1)
+                        ? "-"
+                        : userDetails.getScoreMatches().toStringAsFixed(2),
+                      description: "Avg. scores",),
+                  ),
+                  Expanded(
+                    child: StatEntry(stat: userDetails.getNumManOfTheMatch().toString(),
+                      description: "POTM",),
+                  ),
                 ],
               ),
               // SizedBox(height: 36),

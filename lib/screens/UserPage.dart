@@ -102,7 +102,7 @@ class UserPageState extends State<UserPage> {
           child:
               Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
             Expanded(
-              child: UserInfoBox(content: avgScore, description: "Avg Score"),
+              child: UserInfoBox(content: avgScore, description: "Avg. Score"),
             ),
             SizedBox(width: 20),
             Expanded(

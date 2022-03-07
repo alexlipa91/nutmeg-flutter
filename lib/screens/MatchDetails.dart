@@ -233,66 +233,73 @@ class MatchInfo extends StatelessWidget {
         child = SkeletonMatchDetails();
       } else {
         child = Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(children: [Expanded(child: SportCenterImageCarousel(match))]),
-            InfoWidget(
-                title: getFormattedDateLong(match.dateTime),
-                subTitle: getStartAndEndHour(match.dateTime, match.duration)
-                        .join(" - ") +
-                    " - " +
-                    match.duration.inMinutes.toString() +
-                    " min",
-                icon: Icons.schedule),
-            Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: () async {
-                  if (await MapLauncher.isMapAvailable(m.MapType.google)) {
-                    await MapLauncher.showMarker(
-                      mapType: m.MapType.google,
-                      coords: Coords(sportCenter.lat, sportCenter.lng),
-                      title: "",
-                      extraParams: {
-                        "q": sportCenter.name + "," + sportCenter.address,
-                        "z": "16"
+            Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Column(children: [
+                  InfoWidget(
+                      title: getFormattedDateLong(match.dateTime),
+                      subTitle: getStartAndEndHour(match.dateTime, match.duration)
+                          .join(" - ") +
+                          " - " +
+                          match.duration.inMinutes.toString() +
+                          " min",
+                      icon: Icons.schedule),
+                  SizedBox(height: 16),
+                  Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () async {
+                        if (await MapLauncher.isMapAvailable(m.MapType.google)) {
+                          await MapLauncher.showMarker(
+                            mapType: m.MapType.google,
+                            coords: Coords(sportCenter.lat, sportCenter.lng),
+                            title: "",
+                            extraParams: {
+                              "q": sportCenter.name + "," + sportCenter.address,
+                              "z": "16"
+                            },
+                          );
+                        } else if (await MapLauncher.isMapAvailable(
+                            m.MapType.apple)) {
+                          await MapLauncher.showMarker(
+                            mapType: m.MapType.apple,
+                            coords: Coords(sportCenter.lat, sportCenter.lng),
+                            title: "",
+                            // fixme do something
+                          );
+                        } else {
+                          // fixme do something
+                        }
                       },
-                    );
-                  } else if (await MapLauncher.isMapAvailable(
-                      m.MapType.apple)) {
-                    await MapLauncher.showMarker(
-                      mapType: m.MapType.apple,
-                      coords: Coords(sportCenter.lat, sportCenter.lng),
-                      title: "",
-                      // fixme do something
-                    );
-                  } else {
-                    // fixme do something
-                  }
-                },
-                splashColor: Palette.grey_lighter,
-                child: InfoWidget.withRightWidget(
-                    title: sportCenter.name +
-                        (match.sportCenterSubLocation != null &&
-                                match.sportCenterSubLocation.isNotEmpty
-                            ? " - " + match.sportCenterSubLocation
-                            : ""),
-                    icon: Icons.place,
-                    subTitle: sportCenter.getShortAddress(),
-                    rightWidget: ClipRRect(
-                        borderRadius: BorderRadius.circular(15.0),
-                        child: Image.asset("assets/map.png", height: 45))),
-              ),
-            ),
-            InfoWidget(
-                title: sport.displayTitle,
-                icon: Icons.sports_soccer,
-                // todo fix info sport
-                subTitle: sportCenter.tags.join(", ")),
-            InfoWidget(
-                title: formatCurrency(match.pricePerPersonInCents),
-                icon: Icons.sell,
-                subTitle: "Pay with Ideal"),
+                      splashColor: Palette.grey_lighter,
+                      child: InfoWidget.withRightWidget(
+                          title: sportCenter.name +
+                              (match.sportCenterSubLocation != null &&
+                                  match.sportCenterSubLocation.isNotEmpty
+                                  ? " - " + match.sportCenterSubLocation
+                                  : ""),
+                          icon: Icons.place,
+                          subTitle: sportCenter.getShortAddress(),
+                          rightWidget: ClipRRect(
+                              borderRadius: BorderRadius.circular(15.0),
+                              child: Image.asset("assets/map.png", height: 45))),
+                    ),
+                  ),
+                  SizedBox(height: 16),
+                  InfoWidget(
+                      title: sport.displayTitle,
+                      icon: Icons.sports_soccer,
+                      // todo fix info sport
+                      subTitle: sportCenter.tags.join(", ")),
+                  SizedBox(height: 16),
+                  InfoWidget(
+                      title: formatCurrency(match.pricePerPersonInCents),
+                      icon: Icons.sell,
+                      subTitle: "Pay with Ideal"),
+              ]),
+            )
           ],
         );
       }
@@ -417,13 +424,19 @@ class InfoWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-        margin: EdgeInsets.only(left: 15, top: 15, bottom: 10),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            new Icon(
-              icon,
-              size: 20,
-              color: UiUtils.fromHex("#999999"),
+            Container(
+              child: Column(
+                // mainAxisSize: MainAxisSize.max,
+                children: [
+                  Icon(
+                  icon,
+                  size: 20,
+                  color: UiUtils.fromHex("#999999")),
+                ],
+              ),
             ),
             SizedBox(
               width: 20,
@@ -433,7 +446,7 @@ class InfoWidget extends StatelessWidget {
               children: [
                 Text(title, style: TextPalette.h2),
                 SizedBox(
-                  height: 5,
+                  height: 4,
                 ),
                 if (subTitle != null)
                   Text(subTitle, style: TextPalette.bodyText)
@@ -441,11 +454,7 @@ class InfoWidget extends StatelessWidget {
             ),
             if (rightWidget != null)
               Expanded(
-                  child: Padding(
-                padding: EdgeInsets.only(right: 25),
-                child:
-                    Align(alignment: Alignment.centerRight, child: rightWidget),
-              ))
+                  child: Align(alignment: Alignment.centerRight, child: rightWidget))
           ],
         ));
   }
