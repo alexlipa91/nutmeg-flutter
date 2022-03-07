@@ -108,7 +108,7 @@ class UserPageState extends State<UserPage> {
             Expanded(
               child: UserInfoBox(
                 content: userDetails.getNumManOfTheMatch().toString(),
-                description: "POTM",
+                description: "Player of the Match",
               ),
             )
           ]),
