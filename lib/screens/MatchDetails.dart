@@ -116,8 +116,6 @@ class MatchDetailsState extends State<MatchDetails> {
     padLR(Widget w) =>
         Padding(padding: EdgeInsets.only(left: 16, right: 16), child: w);
 
-    print(matchStatus);
-
     bool shouldNotUseBottomBar = matchStatus == null ||
         matchStatus == MatchStatusForUser.rated ||
         matchStatus == MatchStatusForUser.no_more_to_rate;
@@ -181,10 +179,7 @@ class MatchDetailsState extends State<MatchDetails> {
                 "Payment Policy",
                 "If you leave the match more than 15 hours before the kick-off time the amount you paid will be returned to you in credits that you can use in other Nutmeg matches. "
                     "\n\nNo credits or refund will be provided if you drop out of a game less than 15 hours from kick-off."))),
-      (shouldNotUseBottomBar)
-          ? SizedBox(height: 16 + MediaQuery.of(context).padding.bottom)
-          : SizedBox(height: 16),
-      // MapCard.big(sportCenter)
+      SizedBox(height: 16)
     ];
 
     return Scaffold(
