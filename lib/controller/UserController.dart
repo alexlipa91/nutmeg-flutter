@@ -90,7 +90,7 @@ class UserController {
           userCredential.user.email);
 
       if (userDetails.name == null || userDetails.name == "") {
-        String name = await Get.toNamed("/login/enterDetails");
+        var name = await Get.toNamed("/login/enterDetails");
         if (name == null || name == "") {
           // Navigator.pop(context);
           return null;

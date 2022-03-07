@@ -11,25 +11,24 @@ import 'package:provider/provider.dart';
 import '../state/LoginStatusChangeNotifier.dart';
 
 class EnterDetails extends StatelessWidget {
+
   @override
   Widget build(BuildContext context) {
     Firebase.initializeApp();
     var images = Row(children: [
       Expanded(
-          child: SingleChildScrollView(
-            child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-              Align(
-                  alignment: Alignment.topLeft,
-                  child: SvgPicture.asset('assets/launch/blob_top_left.svg')),
-              SvgPicture.asset('assets/launch/blob_middle_middle.svg',
-                  width: MediaQuery.of(context).size.width),
-              Align(
-                  alignment: Alignment.bottomRight,
-                  child: SvgPicture.asset('assets/launch/blob_bottom_right.svg'))
-            ]),
-          ))
+          child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+            Align(
+                alignment: Alignment.topLeft,
+                child: SvgPicture.asset('assets/launch/blob_top_left.svg')),
+            SvgPicture.asset('assets/launch/blob_middle_middle.svg',
+                width: MediaQuery.of(context).size.width),
+            Align(
+                alignment: Alignment.bottomRight,
+                child: SvgPicture.asset('assets/launch/blob_bottom_right.svg'))
+          ]))
     ]);
 
     return MultiProvider(
@@ -43,14 +42,7 @@ class EnterDetails extends StatelessWidget {
             backgroundColor: Colors.transparent,
             elevation: 0,
             leading: Container(),
-            actions: [
-              Padding(
-                  padding: EdgeInsets.only(right: 20),
-                  child: InkWell(
-                    child: Icon(Icons.close),
-                    onTap: () => Get.back(),
-                  ))
-            ],
+            actions: [],
           ),
           body: Stack(children: [
             Container(
@@ -63,9 +55,17 @@ class EnterDetails extends StatelessWidget {
   }
 }
 
-class EnterNameArea extends StatelessWidget {
+class EnterNameArea extends StatefulWidget {
+
+  @override
+  State<StatefulWidget> createState() => EnterNameAreaState();
+}
+
+class EnterNameAreaState extends State<EnterNameArea> {
 
   final TextEditingController _controller = TextEditingController();
+
+  bool isValid = true;
 
   @override
   Widget build(BuildContext context) {
@@ -89,13 +89,31 @@ class EnterNameArea extends StatelessWidget {
                 decoration: InputDecoration(
                   border: OutlineInputBorder(),
                   hintText: 'Your name *',
+                  errorText: (isValid) ? null : "Name not valid",
                 ),
                 controller: _controller,
+                onChanged: (String v) {
+                  bool valid = v != null && v != "";
+                  setState(() {
+                    isValid = valid;
+                  });
+                },
               ),
               SizedBox(height: 16),
-              GenericButtonWithLoader("CREATE ACCOUNT", (BuildContext context) async {
-                Get.back(result: _controller.value.text);
-              }, Primary())
+              Row(
+                children: [Expanded(
+                  child: GenericButtonWithLoader("CREATE ACCOUNT", (BuildContext context) async {
+                    if (_controller.value.text == "") {
+                      setState(() {
+                        isValid = false;
+                      });
+                    }
+                    if (isValid) {
+                      Get.back(result: _controller.value.text);
+                    }
+                  }, Primary()),
+                )],
+              )
             ],
           ))
         ],

@@ -164,6 +164,19 @@ class LaunchController {
     // check if user is logged in
     var userDetails = await UserController.getUserIfAvailable(context);
 
+    // fixme force users without name
+    if (userDetails.name == null || userDetails.name == "") {
+      var name = await Get.toNamed("/login/enterDetails");
+      if (name == null || name == "") {
+        // Navigator.pop(context);
+        // SystemNavigator.pop();
+        return null;
+      } else {
+        userDetails.name = name;
+        UserController.editUser(userDetails);
+      }
+    }
+
     if (userDetails != null) {
       context.read<UserState>().setCurrentUserDetails(userDetails);
       // tell the app to save user tokens
