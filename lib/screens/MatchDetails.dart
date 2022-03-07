@@ -188,8 +188,10 @@ class MatchDetailsState extends State<MatchDetails> {
     ];
 
     return Scaffold(
-        backgroundColor: Palette.grey_lightest,
-        body: RefreshIndicator(
+      backgroundColor: Palette.grey_lightest,
+      body: SafeArea(
+        bottom: false,
+        child: RefreshIndicator(
             onRefresh: () async {
               await refreshState();
             },
@@ -207,7 +209,7 @@ class MatchDetailsState extends State<MatchDetails> {
                   )
                 ],
               ),
-            )),
+            ))),
         bottomNavigationBar: bottomBar);
   }
 }
