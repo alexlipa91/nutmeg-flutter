@@ -118,31 +118,33 @@ class BottomBarMatch extends StatelessWidget {
               )
             ],
           ),
-          child: Padding(
-            padding: EdgeInsets.only(
-                left: 16.0,
-                right: 16.0,
-                top: 16.0,
-                bottom: 16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Container(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(getText(match, status), style: TextPalette.h2),
-                      SizedBox(
-                        height: 4,
-                      ),
-                      getSubText(match, status, context),
-                    ],
+          child: SafeArea(
+            minimum: EdgeInsets.only(bottom: 16),
+            child: Padding(
+              padding: EdgeInsets.only(
+                  left: 16.0,
+                  right: 16.0,
+                  top: 16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(getText(match, status), style: TextPalette.h2),
+                        SizedBox(
+                          height: 4,
+                        ),
+                        getSubText(match, status, context),
+                      ],
+                    ),
                   ),
-                ),
-                Container(child: getButton(match, status, context))
-              ],
+                  Container(child: getButton(match, status, context))
+                ],
+              ),
             ),
           ),
         )
