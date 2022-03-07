@@ -67,29 +67,32 @@ class JoinedPlayerBottomModal extends StatelessWidget {
   Widget build(BuildContext context) {
     return PlayerBottomModal(
       userDetails,
-      Padding(
-        padding: GenericInfoModal.padding,
-        child: Column(
-          children: [
-            SizedBox(height: 50),
-            Text(UserDetails.getDisplayName(userDetails),
-                style: TextPalette.h2),
-            SizedBox(height: 24),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                StatEntry(stat: userDetails.getJoinedMatches().length.toString(),
-                  description: "Matches",),
-                StatEntry(stat: (userDetails.getScoreMatches() == -1)
-                    ? "-"
-                    : userDetails.getScoreMatches().toStringAsFixed(2),
-                  description: "Avg. score",),
-                StatEntry(stat: userDetails.getNumManOfTheMatch().toString(),
-                  description: "POTM",),
-              ],
-            ),
-            // SizedBox(height: 36),
-          ],
+      SafeArea(
+        minimum: EdgeInsets.only(bottom: 16),
+        child: Padding(
+          padding: GenericInfoModal.padding,
+          child: Column(
+            children: [
+              SizedBox(height: 50),
+              Text(UserDetails.getDisplayName(userDetails),
+                  style: TextPalette.h2),
+              SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  StatEntry(stat: userDetails.getJoinedMatches().length.toString(),
+                    description: "Matches",),
+                  StatEntry(stat: (userDetails.getScoreMatches() == -1)
+                      ? "-"
+                      : userDetails.getScoreMatches().toStringAsFixed(2),
+                    description: "Avg. score",),
+                  StatEntry(stat: userDetails.getNumManOfTheMatch().toString(),
+                    description: "POTM",),
+                ],
+              ),
+              // SizedBox(height: 36),
+            ],
+          ),
         ),
       ),
     );

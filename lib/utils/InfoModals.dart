@@ -6,7 +6,7 @@ import 'UiUtils.dart';
 
 class GenericInfoModal<T> {
   static var modalRadius = BorderRadius.vertical(top: Radius.circular(20.0));
-  static var padding = EdgeInsets.all(16);
+  static var padding = EdgeInsets.only(top: 16, left: 16, right: 16);
 
   final String title;
   final String description;
@@ -44,14 +44,17 @@ class GenericInfoModal<T> {
       ),
       isScrollControlled: true,
       context: context,
-      builder: (context) => Container(
-        child: Padding(
-            // make 32 if find visual cue
-            padding: padding,
-            child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: widgets)),
+      builder: (context) => SafeArea(
+        minimum: EdgeInsets.only(bottom: 16),
+        child: Container(
+          child: Padding(
+              // make 32 if find visual cue
+              padding: padding,
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: widgets)),
+        ),
       ),
     );
   }
