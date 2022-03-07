@@ -284,18 +284,21 @@ class UserPageState extends State<UserPage> {
             await UserController.refreshCurrentUser(context);
             refreshController.refreshCompleted();
           },
-          child: CustomScrollView(
-            slivers: [
-              UserPageAppBar(),
-              SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (BuildContext context, int index) {
-                    return widgets[index];
-                  },
-                  childCount: widgets.length,
-                ),
-              )
-            ],
+          child: SafeArea(
+            bottom: false,
+            child: CustomScrollView(
+              slivers: [
+                UserPageAppBar(),
+                SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (BuildContext context, int index) {
+                      return widgets[index];
+                    },
+                    childCount: widgets.length,
+                  ),
+                )
+              ],
+            ),
           )),
     );
   }

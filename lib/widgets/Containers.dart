@@ -29,9 +29,6 @@ class InfoContainer extends StatelessWidget {
     decoration: BoxDecoration(
       color: backgroundColor,
       borderRadius: borderRadius,
-      boxShadow: [
-        boxShadow
-      ],
     ),
     margin: margin,
     clipBehavior: Clip.none,

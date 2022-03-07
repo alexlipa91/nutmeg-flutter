@@ -111,10 +111,10 @@ class BottomBarMatch extends StatelessWidget {
             color: Palette.white,
             boxShadow: [
               BoxShadow(
-                color: Palette.black.withOpacity(0.1),
+                color: Palette.black.withOpacity(0.05),
                 spreadRadius: 0,
                 blurRadius: 20,
-                offset: Offset(0, 10),
+                offset: Offset(0, -10),
               )
             ],
           ),
