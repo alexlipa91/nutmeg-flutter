@@ -11,7 +11,9 @@ import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
+import 'package:nutmeg/model/UserDetails.dart';
 import 'package:provider/provider.dart';
+import 'package:tuple/tuple.dart';
 import 'package:version/version.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
@@ -146,10 +148,19 @@ class LaunchController {
     var d = DeviceInfo();
     await d.init();
 
+    List<Future<dynamic>> futures = [
+      getVersion(),
+      UserController.getUserIfAvailable(context),
+      loadOnceData(context)
+    ];
+    var futuresData = await Future.wait(futures);
+
+    Tuple2<Version, String> minimumVersion = futuresData[0];
+    UserDetails availableUserDetails = futuresData[1];
 
     // check if update is necessary
     try {
-      var current = (await getVersion()).item1;
+      var current = (minimumVersion).item1;
       trace.putAttribute("app_version", current.toString());
       var minimumVersionParts =
           firebaseRemoteConfig.getString("minimum_app_version").split(".");
@@ -171,7 +182,7 @@ class LaunchController {
     }
 
     // check if user is logged in
-    var userDetails = await UserController.getUserIfAvailable(context);
+    var userDetails = availableUserDetails;
 
     // fixme force users without name
     if (userDetails != null && (userDetails.name == null || userDetails.name == "")) {
@@ -204,9 +215,6 @@ class LaunchController {
       sound: true,
     );
     FirebaseMessaging.instance.subscribeToTopic("nutmeg-generic");
-
-    // load static data
-    await loadOnceData(context);
 
     // check if coming from link
     Uri deepLink;
