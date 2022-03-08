@@ -235,6 +235,9 @@ class UserPageState extends State<UserPage> {
                       width: 100,
                       child: GenericButtonWithLoader("SET",
                           (BuildContext context) async {
+                        context
+                            .read<GenericButtonWithLoaderState>()
+                            .change(true);
                         userDetails.creditsInCents = creditCount;
                         userState.setCurrentUserDetails(userDetails);
                         await UserController.editUser(userDetails);
@@ -243,6 +246,9 @@ class UserPageState extends State<UserPage> {
                                 description: "Your new balance is: " +
                                     formatCurrency(creditCount))
                             .show(context);
+                        context
+                            .read<GenericButtonWithLoaderState>()
+                            .change(false);
                       }, Primary()),
                     )
                   ],
@@ -270,7 +276,9 @@ class UserPageState extends State<UserPage> {
           ),
         ),
       ),
-      SizedBox(height: MediaQuery.of(context).padding.bottom,)
+      SizedBox(
+        height: MediaQuery.of(context).padding.bottom,
+      )
     ];
 
     return Scaffold(
