@@ -24,6 +24,7 @@ import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/AppBar.dart';
 import 'package:nutmeg/widgets/Avatar.dart';
 import 'package:nutmeg/widgets/Containers.dart';
+import 'package:nutmeg/widgets/ModalBottomSheet.dart';
 import 'package:nutmeg/widgets/PlayerBottomModal.dart';
 import 'package:nutmeg/widgets/Section.dart';
 import 'package:provider/provider.dart';
@@ -178,34 +179,34 @@ class MatchDetailsState extends State<MatchDetails> {
             body: RuleCard(
                 "Payment Policy",
                 "If you leave the match you will get a refund in credits that you can use for other Nutmeg matches.\n\n" +
-                "If the match is canceled by the organizer, you will get a refund on the payment method you used to pay.\n\n"
-                "If you don’t show up you won’t get a refund."))),
+                    "If the match is canceled by the organizer, you will get a refund on the payment method you used to pay.\n\n"
+                        "If you don’t show up you won’t get a refund."))),
       SizedBox(height: 16)
     ];
 
     return Scaffold(
-      backgroundColor: Palette.grey_lightest,
-      body: SafeArea(
-        bottom: false,
-        child: RefreshIndicator(
-            onRefresh: () async {
-              await refreshState();
-            },
-            child: Container(
-              child: CustomScrollView(
-                slivers: [
-                  MatchAppBar(matchId: matchId),
-                  SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (BuildContext context, int index) {
-                        return widgets[index];
-                      },
-                      childCount: widgets.length,
-                    ),
-                  )
-                ],
-              ),
-            ))),
+        backgroundColor: Palette.grey_lightest,
+        body: SafeArea(
+            bottom: false,
+            child: RefreshIndicator(
+                onRefresh: () async {
+                  await refreshState();
+                },
+                child: Container(
+                  child: CustomScrollView(
+                    slivers: [
+                      MatchAppBar(matchId: matchId),
+                      SliverList(
+                        delegate: SliverChildBuilderDelegate(
+                          (BuildContext context, int index) {
+                            return widgets[index];
+                          },
+                          childCount: widgets.length,
+                        ),
+                      )
+                    ],
+                  ),
+                ))),
         bottomNavigationBar: bottomBar);
   }
 }
@@ -239,66 +240,66 @@ class MatchInfo extends StatelessWidget {
             Padding(
               padding: EdgeInsets.all(16.0),
               child: Column(children: [
-                  InfoWidget(
-                      title: getFormattedDateLong(match.dateTime),
-                      subTitle: getStartAndEndHour(match.dateTime, match.duration)
-                          .join(" - ") +
-                          " - " +
-                          match.duration.inMinutes.toString() +
-                          " min",
-                      icon: Icons.schedule),
-                  SizedBox(height: 16),
-                  Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: () async {
-                        if (await MapLauncher.isMapAvailable(m.MapType.google)) {
-                          await MapLauncher.showMarker(
-                            mapType: m.MapType.google,
-                            coords: Coords(sportCenter.lat, sportCenter.lng),
-                            title: "",
-                            extraParams: {
-                              "q": sportCenter.name + "," + sportCenter.address,
-                              "z": "16"
-                            },
-                          );
-                        } else if (await MapLauncher.isMapAvailable(
-                            m.MapType.apple)) {
-                          await MapLauncher.showMarker(
-                            mapType: m.MapType.apple,
-                            coords: Coords(sportCenter.lat, sportCenter.lng),
-                            title: "",
-                            // fixme do something
-                          );
-                        } else {
+                InfoWidget(
+                    title: getFormattedDateLong(match.dateTime),
+                    subTitle: getStartAndEndHour(match.dateTime, match.duration)
+                            .join(" - ") +
+                        " - " +
+                        match.duration.inMinutes.toString() +
+                        " min",
+                    icon: Icons.schedule),
+                SizedBox(height: 16),
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () async {
+                      if (await MapLauncher.isMapAvailable(m.MapType.google)) {
+                        await MapLauncher.showMarker(
+                          mapType: m.MapType.google,
+                          coords: Coords(sportCenter.lat, sportCenter.lng),
+                          title: "",
+                          extraParams: {
+                            "q": sportCenter.name + "," + sportCenter.address,
+                            "z": "16"
+                          },
+                        );
+                      } else if (await MapLauncher.isMapAvailable(
+                          m.MapType.apple)) {
+                        await MapLauncher.showMarker(
+                          mapType: m.MapType.apple,
+                          coords: Coords(sportCenter.lat, sportCenter.lng),
+                          title: "",
                           // fixme do something
-                        }
-                      },
-                      splashColor: Palette.grey_lighter,
-                      child: InfoWidget.withRightWidget(
-                          title: sportCenter.name +
-                              (match.sportCenterSubLocation != null &&
-                                  match.sportCenterSubLocation.isNotEmpty
-                                  ? " - " + match.sportCenterSubLocation
-                                  : ""),
-                          icon: Icons.place,
-                          subTitle: sportCenter.getShortAddress(),
-                          rightWidget: ClipRRect(
-                              borderRadius: BorderRadius.circular(15.0),
-                              child: Image.asset("assets/map.png", height: 45))),
-                    ),
+                        );
+                      } else {
+                        // fixme do something
+                      }
+                    },
+                    splashColor: Palette.grey_lighter,
+                    child: InfoWidget.withRightWidget(
+                        title: sportCenter.name +
+                            (match.sportCenterSubLocation != null &&
+                                    match.sportCenterSubLocation.isNotEmpty
+                                ? " - " + match.sportCenterSubLocation
+                                : ""),
+                        icon: Icons.place,
+                        subTitle: sportCenter.getShortAddress(),
+                        rightWidget: ClipRRect(
+                            borderRadius: BorderRadius.circular(15.0),
+                            child: Image.asset("assets/map.png", height: 45))),
                   ),
-                  SizedBox(height: 16),
-                  InfoWidget(
-                      title: sport.displayTitle,
-                      icon: Icons.sports_soccer,
-                      // todo fix info sport
-                      subTitle: sportCenter.tags.join(", ")),
-                  SizedBox(height: 16),
-                  InfoWidget(
-                      title: formatCurrency(match.pricePerPersonInCents),
-                      icon: Icons.sell,
-                      subTitle: "Pay with Ideal"),
+                ),
+                SizedBox(height: 16),
+                InfoWidget(
+                    title: sport.displayTitle,
+                    icon: Icons.sports_soccer,
+                    // todo fix info sport
+                    subTitle: sportCenter.tags.join(", ")),
+                SizedBox(height: 16),
+                InfoWidget(
+                    title: formatCurrency(match.pricePerPersonInCents),
+                    icon: Icons.sell,
+                    subTitle: "Pay with Ideal"),
               ]),
             )
           ],
@@ -426,38 +427,35 @@ class InfoWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
         child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          child: Column(
+            // mainAxisSize: MainAxisSize.max,
+            children: [
+              Icon(icon, size: 20, color: UiUtils.fromHex("#999999")),
+            ],
+          ),
+        ),
+        SizedBox(
+          width: 20,
+        ),
+        Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              child: Column(
-                // mainAxisSize: MainAxisSize.max,
-                children: [
-                  Icon(
-                  icon,
-                  size: 20,
-                  color: UiUtils.fromHex("#999999")),
-                ],
-              ),
-            ),
+            Text(title, style: TextPalette.h2),
             SizedBox(
-              width: 20,
+              height: 4,
             ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: TextPalette.h2),
-                SizedBox(
-                  height: 4,
-                ),
-                if (subTitle != null)
-                  Text(subTitle, style: TextPalette.bodyText)
-              ],
-            ),
-            if (rightWidget != null)
-              Expanded(
-                  child: Align(alignment: Alignment.centerRight, child: rightWidget))
+            if (subTitle != null) Text(subTitle, style: TextPalette.bodyText)
           ],
-        ));
+        ),
+        if (rightWidget != null)
+          Expanded(
+              child:
+                  Align(alignment: Alignment.centerRight, child: rightWidget))
+      ],
+    ));
   }
 }
 
@@ -489,15 +487,8 @@ class PlayerCard extends StatelessWidget {
                   : Column(children: [
                       InkWell(
                           onTap: () {
-                            showModalBottomSheet(
-                                context: context,
-                                backgroundColor: Palette.white,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.vertical(
-                                      top: Radius.circular(20.0)),
-                                ),
-                                builder: (context) =>
-                                    JoinedPlayerBottomModal(userData));
+                            ModalBottomSheet.showNutmegModalBottomSheet(
+                                context, JoinedPlayerBottomModal(userData));
                           },
                           child: UserAvatar(24, userData)),
                       SizedBox(height: 10),
@@ -770,14 +761,9 @@ class Stats extends StatelessWidget {
                               ? EdgeInsets.only(top: 16)
                               : EdgeInsets.zero,
                           child: InkWell(
-                              onTap: () => showModalBottomSheet(
-                                  context: context,
-                                  backgroundColor: Palette.white,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.vertical(
-                                        top: Radius.circular(20.0)),
-                                  ),
-                                  builder: (context) =>
+                              onTap: () =>
+                                  ModalBottomSheet.showNutmegModalBottomSheet(
+                                      context,
                                       JoinedPlayerBottomModal(userDetails)),
                               child: Row(children: widgets)));
                     }).toList(),

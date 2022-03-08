@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:nutmeg/widgets/ModalBottomSheet.dart';
 
 import 'UiUtils.dart';
 
@@ -38,24 +39,17 @@ class GenericInfoModal<T> {
       widgets.add(action);
     }
 
-    return showModalBottomSheet<T>(
-      shape: RoundedRectangleBorder(
-        borderRadius: modalRadius,
+    return ModalBottomSheet.showNutmegModalBottomSheet(context, SafeArea(
+      minimum: EdgeInsets.only(bottom: 16),
+      child: Container(
+        child: Padding(
+          // make 32 if find visual cue
+            padding: padding,
+            child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: widgets)),
       ),
-      isScrollControlled: true,
-      context: context,
-      builder: (context) => SafeArea(
-        minimum: EdgeInsets.only(bottom: 16),
-        child: Container(
-          child: Padding(
-              // make 32 if find visual cue
-              padding: padding,
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: widgets)),
-        ),
-      ),
-    );
+    ));
   }
 }

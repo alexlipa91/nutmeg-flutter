@@ -5,9 +5,9 @@ import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/state/MatchesState.dart';
 import 'package:nutmeg/state/RatingPlayersState.dart';
-import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
+import 'package:nutmeg/widgets/ModalBottomSheet.dart';
 import 'package:provider/provider.dart';
 
 import '../model/UserDetails.dart';
@@ -38,19 +38,15 @@ class RatePlayerBottomModal extends StatelessWidget {
     List<UserDetails> users = await
     Future.wait(toRate.map((e) => UserController.getUserDetails(context, e)));
 
-    await showModalBottomSheet(
-        context: context,
-        backgroundColor: Palette.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
-        ),
-        builder: (BuildContext context) => MultiProvider(
-              providers: [
-                ChangeNotifierProvider(
-                    create: (context) => RatingPlayersState(users)),
-              ],
-              child: RatePlayerBottomModal(matchId),
-            ));
+    await ModalBottomSheet.showNutmegModalBottomSheet(context,
+        MultiProvider(
+          providers: [
+            ChangeNotifierProvider(
+                create: (context) => RatingPlayersState(users)),
+          ],
+          child: RatePlayerBottomModal(matchId),
+        )
+    );
     // don't refresh the status here because the last rating might have not yet propagated; instead leave RatePlayerBottomModal modify it if necessary
   }
 

@@ -17,6 +17,7 @@ class PlayerBottomModal extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
+      minimum: EdgeInsets.only(bottom: 16),
       child: Container(
         child: Container(
           decoration: new BoxDecoration(
