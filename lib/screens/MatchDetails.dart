@@ -490,6 +490,7 @@ class PlayerCard extends StatelessWidget {
                           onTap: () {
                             showModalBottomSheet(
                                 context: context,
+                                backgroundColor: Palette.white,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.vertical(
                                       top: Radius.circular(20.0)),
@@ -770,6 +771,7 @@ class Stats extends StatelessWidget {
                           child: InkWell(
                               onTap: () => showModalBottomSheet(
                                   context: context,
+                                  backgroundColor: Palette.white,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.vertical(
                                         top: Radius.circular(20.0)),

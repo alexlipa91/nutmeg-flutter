@@ -40,6 +40,7 @@ class RatePlayerBottomModal extends StatelessWidget {
 
     await showModalBottomSheet(
         context: context,
+        backgroundColor: Palette.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
         ),
@@ -73,46 +74,38 @@ class RatePlayerBottomModal extends StatelessWidget {
 
     return PlayerBottomModal(
         state.getCurrent(),
-        Padding(
-          padding: GenericInfoModal.padding,
-          child: Column(
-            children: [
-              SizedBox(height: 65),
-              Text("How was " + _getName(context) + "'s performance?",
-                  style: TextPalette.h2),
-              SizedBox(height: 2),
-              Text(_getName(context) + " won't see your score",
-                  style: TextPalette.bodyText),
-              SizedBox(height: 24),
-              RatingBar(),
-              SizedBox(height: 24),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  // trick for alignemnt
-                  Text("ABCD", style: TextPalette.getLinkStyle(Palette.white)),
-                  Container(
-                    height: 40, // align to tappable area
-                    child: Align(
-                      alignment: Alignment.center,
-                      child: Text(
-                          (alreadyRated + state.current).toString() +
-                              "/" +
-                              (match.numPlayersGoing() - 1).toString() +
-                              " players",
-                          style: TextPalette.getBodyText(Palette.black)),
-                    ),
+        Column(
+          children: [
+            RatingBar(),
+            SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // trick for alignemnt
+                Text("ABCD", style: TextPalette.getLinkStyle(Palette.white)),
+                Container(
+                  height: 40, // align to tappable area
+                  child: Align(
+                    alignment: Alignment.center,
+                    child: Text(
+                        (alreadyRated + state.current).toString() +
+                            "/" +
+                            (match.numPlayersGoing() - 1).toString() +
+                            " players",
+                        style: TextPalette.getBodyText(Palette.black)),
                   ),
-                  TappableLinkText(
-                      text: (state.currentScore > 0) ? "NEXT" : "SKIP",
-                      onTap: (BuildContext context) async {
-                        store(context);
-                      }),
-                ],
-              ),
-            ],
-          ),
-        )
+                ),
+                TappableLinkText(
+                    text: (state.currentScore > 0) ? "NEXT" : "SKIP",
+                    onTap: (BuildContext context) async {
+                      store(context);
+                    }),
+              ],
+            ),
+          ],
+        ),
+        "How was " + _getName(context) + "'s performance?",
+        _getName(context) + " won't see your score"
     );
   }
 
