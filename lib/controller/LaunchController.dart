@@ -68,10 +68,7 @@ class LaunchController {
       var event = message.data["event"];
       if (event == "potm") {
         if (context.read<UserState>().isLoggedIn()) {
-          await MatchesController.refresh(context, message.data["match_id"]);
-          Get.offAndToNamed("/home");
-          await Get.toNamed("/potm/" + message.data["match_id"]);
-          await Get.toNamed("/match/" + message.data["match_id"]);
+          goToPotmPage(context, message.data["match_id"]);
         } else {
           goToMatchPage(message.data["match_id"]);
         }
@@ -110,6 +107,13 @@ class LaunchController {
         print(e.message);
       });
     }
+  }
+
+  static Future<void> goToPotmPage(BuildContext context, String matchId) async {
+    await MatchesController.refresh(context, matchId);
+    Get.offAndToNamed("/home");
+    Get.toNamed("/matchNoTransition/" + matchId);
+    await Get.toNamed("/potm/" + matchId);
   }
 
   static Future<void> goToMatchPage(String matchId) async {
@@ -168,7 +172,7 @@ class LaunchController {
     var userDetails = await UserController.getUserIfAvailable(context);
 
     // fixme force users without name
-    if (userDetails.name == null || userDetails.name == "") {
+    if (userDetails != null && (userDetails.name == null || userDetails.name == "")) {
       var name = await Get.toNamed("/login/enterDetails");
       if (name == null || name == "") {
         // Navigator.pop(context);

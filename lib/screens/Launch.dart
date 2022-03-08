@@ -53,9 +53,16 @@ void main() {
             primaryColor: Palette.primary, accentColor: Palette.grey_lightest),
         getPages: [
           GetPage(name: '/home', page: () => AvailableMatches(),
-            transition: Transition.native,
-            transitionDuration: Duration(milliseconds: 200)
+            transition: Transition.native
           ),
+          GetPage(
+              name: '/matchNoTransition/:matchId',
+              transition: Transition.native,
+              transitionDuration: Duration(seconds: 0),
+              page: () => MultiProvider(providers: [
+                ChangeNotifierProvider(
+                    create: (context) => MatchStatState()),
+              ], child: MatchDetails())),
           GetPage(
               name: '/match/:matchId',
               transition: Transition.native,
@@ -74,7 +81,8 @@ void main() {
           GetPage(name: '/addMatch', page: () => AddOrEditMatch(),
               transition: Transition.native),
           GetPage(name: '/potm/:matchId', page: () => PlayerOfTheMatch(),
-              transition: Transition.native),
+              transition: Transition.native,
+              transitionDuration: Duration.zero),
         ],
       ),
     ));
