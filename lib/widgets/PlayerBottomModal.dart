@@ -108,7 +108,7 @@ class JoinedPlayerBottomModal extends StatelessWidget {
                 child: StatEntry(stat: (userDetails.getScoreMatches() == -1)
                     ? "-"
                     : userDetails.getScoreMatches().toStringAsFixed(2),
-                  description: "Avg. scores",),
+                  description: "Avg. score",),
               ),
               Expanded(
                 child: StatEntry(stat: userDetails.getNumManOfTheMatch().toString(),
