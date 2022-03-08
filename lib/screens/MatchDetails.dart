@@ -177,8 +177,9 @@ class MatchDetailsState extends State<MatchDetails> {
             title: "DETAILS",
             body: RuleCard(
                 "Payment Policy",
-                "If you leave the match more than 15 hours before the kick-off time the amount you paid will be returned to you in credits that you can use in other Nutmeg matches. "
-                    "\n\nNo credits or refund will be provided if you drop out of a game less than 15 hours from kick-off."))),
+                "If you leave the match you will get a refund in credits that you can use for other Nutmeg matches.\n\n" +
+                "If the match is canceled by the organizer, you will get a refund on the payment method you used to pay.\n\n"
+                "If you don’t show up you won’t get a refund."))),
       SizedBox(height: 16)
     ];
 
@@ -561,7 +562,7 @@ class RuleCard extends StatelessWidget {
       ReadMoreText(
         body,
         style: TextPalette.bodyText,
-        trimLines: 4,
+        trimLines: 3,
         colorClickableText: Colors.blue,
         delimiter: "\n\n",
         trimMode: TrimMode.Line,

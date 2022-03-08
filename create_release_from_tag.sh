@@ -21,7 +21,7 @@ echo $NOTES > ios/fastlane/metadata/en-GB/release_notes.txt
 (cd ios; fastlane submit_for_review build_number:$BUILD version:$VERSION --env .env.relase)
 
 # create release in github
-gh release create $TAG --notes $NOTES
+gh release create $TAG --notes "$NOTES"
 
 # bump minor (we need to do this because of appstore)
 python bump_patch.py
