@@ -129,7 +129,7 @@ class JoinModal {
       await GenericInfoModal(
           title: "Join this match",
           description:
-              "You can cancel up to 24h before the game time to get a full refund in credits to use on your next game.\nAfter that, you won't get a refund.",
+              "If you leave the match you will get a refund in credits.",
           content: getModalDescriptionArea(context, paymentRecap),
           action: Row(children: [
             Expanded(
