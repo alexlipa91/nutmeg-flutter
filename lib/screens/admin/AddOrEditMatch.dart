@@ -8,11 +8,13 @@ import 'package:intl/intl.dart';
 import 'package:nutmeg/Exceptions.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/model/Match.dart';
+import 'package:nutmeg/state/UserState.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:provider/provider.dart';
 
+import '../../controller/UserController.dart';
 import '../../model/Sport.dart';
 import '../../model/SportCenter.dart';
 import '../../state/LoadOnceState.dart';
@@ -35,6 +37,10 @@ class AddOrEditMatchState extends State<AddOrEditMatch> {
     if (matchId != null) {
       // get details
       var m = await MatchesController.refresh(context, matchId);
+
+      // get users details
+      Future.wait(
+          m.going.keys.map((e) => UserController.getUserDetails(context, e)));
 
       // get status
       await MatchesController.refreshMatchStatus(context, m);
@@ -424,7 +430,18 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                           .change(false);
                     }, Primary()))
                   ],
-                )
+                ),
+              SizedBox(height: 16),
+              Container(
+                child: Column(
+              children: [
+                Text("Users", style: TextPalette.h2,),
+                Column(children: match.going.keys.map((u) => Row(children: [
+                  Text(context.read<UserState>().getUserDetail(u).name, style: TextPalette.h3)
+                ])).toList())
+              ],
+              ),
+              )
             ],
           ),
         ));
