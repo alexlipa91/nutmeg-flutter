@@ -160,7 +160,7 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
             shrinkWrap: true,
             children: [
               if (matchId != null)
-                Text("Match id: " + matchId, style: TextPalette.h2),
+                SelectableText("Match id: " + matchId, style: TextPalette.h2),
               SizedBox(height: 20.0),
               if (matchId != null)
                 Text("Status is: " + status.toString().split(".").last,

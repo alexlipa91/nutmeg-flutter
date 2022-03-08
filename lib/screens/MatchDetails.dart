@@ -719,7 +719,7 @@ class Stats extends StatelessWidget {
                                         TextPalette.getBodyText(Palette.black));
                               }),
                               SizedBox(width: 8),
-                              if (index == 1)
+                              if (index == 1 && score > 0)
                                 Image.asset(
                                   "assets/potm_badge.png",
                                   width: 20,
