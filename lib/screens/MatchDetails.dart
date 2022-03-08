@@ -12,7 +12,6 @@ import 'package:intl/intl.dart';
 import 'package:map_launcher/map_launcher.dart';
 import 'package:map_launcher/src/models.dart' as m;
 import 'package:nutmeg/controller/MatchesController.dart';
-import 'package:nutmeg/controller/SportCentersController.dart';
 import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/model/Match.dart';
 import 'package:nutmeg/model/UserDetails.dart';
@@ -329,6 +328,9 @@ class SportCenterImageCarouselState extends State<SportCenterImageCarousel> {
 
   @override
   Widget build(BuildContext context) {
+    var sportCenter =
+        context.read<LoadOnceState>().getSportCenter(match.sportCenterId);
+
     var placeHolder = Container(
         height: 358,
         child: Shimmer.fromColors(
@@ -340,72 +342,67 @@ class SportCenterImageCarouselState extends State<SportCenterImageCarousel> {
                   borderRadius: BorderRadius.all(Radius.circular(10)))),
         ));
 
-    return FutureBuilder(
-        future: SportCentersController.getSportCenterPicturesUrls(
-            match.sportCenterId),
-        builder: (context, snapshot) {
-          List<Widget> itemsToShow = (snapshot.hasData)
-              ? List<Widget>.from(snapshot.data.map((i) => CachedNetworkImage(
-                    imageUrl: i,
-                    fadeInDuration: Duration(milliseconds: 0),
-                    fadeOutDuration: Duration(milliseconds: 0),
-                    imageBuilder: (context, imageProvider) => Container(
-                        decoration: BoxDecoration(
-                      image: DecorationImage(
-                        image: imageProvider,
-                        fit: BoxFit.fill,
-                      ),
-                    )),
-                    placeholder: (context, imageProvider) => placeHolder,
-                    errorWidget: (context, url, error) => Icon(Icons.error),
-                  )))
-              : List<Widget>.from([placeHolder]);
-
-          return Stack(
-            children: [
-              // fixme check animation when slide
-              ClipRRect(
-                borderRadius: BorderRadius.all(Radius.circular(15)),
-                child: CarouselSlider(
-                  carouselController: _controller,
-                  options: CarouselOptions(
-                      enableInfiniteScroll: false,
-                      viewportFraction: 1,
-                      onPageChanged: (index, reason) {
-                        setState(() {
-                          _current = index;
-                        });
-                      }),
-                  items: itemsToShow,
+    List<Widget> itemsToShow =
+        List<Widget>.from(sportCenter.imagesUrls.map((i) => CachedNetworkImage(
+              imageUrl: i,
+              fadeInDuration: Duration(milliseconds: 0),
+              fadeOutDuration: Duration(milliseconds: 0),
+              imageBuilder: (context, imageProvider) => Container(
+                  decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: imageProvider,
+                  fit: BoxFit.fill,
                 ),
-              ),
-              Positioned(
-                bottom: 10,
-                left: 1,
-                right: 1,
-                child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: itemsToShow.asMap().entries.map((entry) {
-                      return GestureDetector(
-                        onTap: () => _controller.animateToPage(entry.key),
-                        child: Container(
-                          width: 12.0,
-                          height: 12.0,
-                          margin: EdgeInsets.symmetric(
-                              vertical: 8.0, horizontal: 4.0),
-                          decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: (itemsToShow.length > 1)
-                                  ? Colors.white.withOpacity(
-                                      _current == entry.key ? 0.9 : 0.4)
-                                  : Colors.transparent),
-                        ),
-                      );
-                    }).toList()),
-              ),
-            ],
-          );
-        });
+              )),
+              placeholder: (context, imageProvider) => placeHolder,
+              errorWidget: (context, url, error) => Icon(Icons.error),
+            )));
+    // : List<Widget>.from([placeHolder]);
+
+    return Stack(
+      children: [
+        // fixme check animation when slide
+        ClipRRect(
+          borderRadius: BorderRadius.all(Radius.circular(15)),
+          child: CarouselSlider(
+            carouselController: _controller,
+            options: CarouselOptions(
+                enableInfiniteScroll: false,
+                viewportFraction: 1,
+                onPageChanged: (index, reason) {
+                  setState(() {
+                    _current = index;
+                  });
+                }),
+            items: itemsToShow,
+          ),
+        ),
+        Positioned(
+          bottom: 10,
+          left: 1,
+          right: 1,
+          child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: itemsToShow.asMap().entries.map((entry) {
+                return GestureDetector(
+                  onTap: () => _controller.animateToPage(entry.key),
+                  child: Container(
+                    width: 12.0,
+                    height: 12.0,
+                    margin:
+                        EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+                    decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: (itemsToShow.length > 1)
+                            ? Colors.white
+                                .withOpacity(_current == entry.key ? 0.9 : 0.4)
+                            : Colors.transparent),
+                  ),
+                );
+              }).toList()),
+        ),
+      ],
+    );
   }
 }
 

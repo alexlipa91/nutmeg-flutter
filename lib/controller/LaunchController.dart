@@ -13,6 +13,7 @@ import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:provider/provider.dart';
 import 'package:version/version.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
 import '../Exceptions.dart';
 import '../screens/Launch.dart';
@@ -145,6 +146,7 @@ class LaunchController {
     var d = DeviceInfo();
     await d.init();
 
+
     // check if update is necessary
     try {
       var current = (await getVersion()).item1;
@@ -247,6 +249,19 @@ class LaunchController {
       MiscController.getGifs(context.read<LoadOnceState>())
     ];
     await Future.wait(futures);
+    // cacheSportCenterImages(context);
     print("loading static done");
+  }
+
+  static Future<void> cacheSportCenterImages(BuildContext context) async {
+    var urls = context.read<LoadOnceState>()
+        .getSportCenters().map((e) => e.imagesUrls).expand((e) => e);
+    print("caching " + urls.length.toString() + " sporcenter images");
+
+    var urlsFuture = urls.map((u) =>
+        DefaultCacheManager().downloadFile(u).then((u) {}));
+
+    await Future.wait(urlsFuture);
+    print("cached " + urls.length.toString() + " sporcenter images");
   }
 }
