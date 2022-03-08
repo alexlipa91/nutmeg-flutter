@@ -98,3 +98,10 @@ class Destructive extends ButtonType {
   Color borderColor = Palette.destructive;
   Color loaderColor = Palette.white;
 }
+
+class PrimaryInverted extends ButtonType {
+  Color backgroundColor = Palette.white;
+  TextStyle textStyle = TextPalette.linkStyle;
+  Color borderColor = Palette.white;
+  Color loaderColor = Palette.white;
+}

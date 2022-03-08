@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
+import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:provider/provider.dart';
 import 'package:version/version.dart';
 
@@ -62,16 +63,18 @@ class LaunchController {
 
   static void handleMessageFromNotification(BuildContext context, RemoteMessage message) async {
     print('message ' + message.messageId + ' opened from notification');
-    var targetRoute = "/match/" + message.data["match_id"];
 
     if (message.data.containsKey("event")) {
       var event = message.data["event"];
       if (event == "potm") {
         if (context.read<UserState>().isLoggedIn()) {
+          await MatchesController.refresh(context, message.data["match_id"]);
+          Get.offAndToNamed("/home");
           await Get.toNamed("/potm/" + message.data["match_id"]);
+          await Get.toNamed("/match/" + message.data["match_id"]);
+        } else {
+          goToMatchPage(message.data["match_id"]);
         }
-        await Get.toNamed(targetRoute);
-        await Get.offNamed("/home");
       }
     } else {
       await goToMatchPage(message.data["match_id"]);

@@ -1,1 +1,1 @@
-Ratings feature improvements
+Fix rated stats and modals

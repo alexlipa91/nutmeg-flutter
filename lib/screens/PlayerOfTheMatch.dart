@@ -2,14 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:nutmeg/state/MatchesState.dart';
 import 'package:nutmeg/state/UserState.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/Avatar.dart';
-import 'package:nutmeg/widgets/Buttons.dart';
+import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:provider/provider.dart';
-import 'package:share_files_and_screenshot_widgets/share_files_and_screenshot_widgets.dart';
 
 
 class PlayerOfTheMatch extends StatelessWidget {
@@ -42,20 +39,8 @@ class PlayerOfTheMatch extends StatelessWidget {
           backgroundColor: Colors.transparent,
           elevation: 0,
           centerTitle: false,
+          automaticallyImplyLeading: false,
           leadingWidth: 0,
-          // leading: Padding(
-          //   padding: EdgeInsets.only(left: 20),
-          //   child: ShareButton(() async {
-          //       print("share");
-          //       ShareFilesAndScreenshotWidgets().shareScreenshot(
-          //           previewContainer,
-          //           MediaQuery.of(context).size.width.toInt() * 2,
-          //           "PlayerOfTheMatch",
-          //           "Nutmeg-PlayerOfTheMatch.png",
-          //           "image/png",
-          //           text: "");
-          //     }, Palette.white),
-          // ),
           actions: [
             Padding(
                 padding: EdgeInsets.only(right: 20),
@@ -86,29 +71,37 @@ class MainArea extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var score = context.read<MatchesState>().getMatch(matchId).manOfTheMatchScore;
-
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 20),
-      child: Center(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.asset('assets/potm.png'),
-            SizedBox(height: 30),
-            Text("PLAYER\nOF THE MATCH", textAlign: TextAlign.center,
-                style: GoogleFonts.roboto(color: Palette.white, fontSize: 30, fontWeight: FontWeight.w900)),
-            SizedBox(height: 30),
-            UserAvatar(50, context.read<UserState>().getLoggedUserDetails()),
-            SizedBox(height: 30),
-            Text("Congratulations " + context.read<UserState>().getLoggedUserDetails().name + "!",
-                style: GoogleFonts.roboto(color: Palette.white, fontSize: 24, fontWeight: FontWeight.w900)),
-            SizedBox(height: 10),
-            Text("You won player of the match", style: GoogleFonts.roboto(color: Palette.white, fontSize: 20, fontWeight: FontWeight.w500)),
-            SizedBox(height: 30),
-            Text(score.toStringAsFixed(1), style: GoogleFonts.roboto(color: Palette.white, fontSize: 44, fontWeight: FontWeight.w900)),
-          ],
+      padding: EdgeInsets.all(16.0),
+      child: Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              UserAvatar(48, context.read<UserState>().getLoggedUserDetails()),
+              SizedBox(height: 24),
+              Text("Player of the Match",
+                  textAlign: TextAlign.center,
+                  style: TextPalette.h1Inverted),
+              SizedBox(height: 4),
+              Text("Congratulations " + context.read<UserState>().getLoggedUserDetails().name + "! You won the Player of the Match award",
+                  textAlign: TextAlign.center,
+                  style: TextPalette.getBodyText(Palette.white)),
+              SizedBox(height: 24),
+              Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                Image.asset('assets/potm_badge.png', height: 40,),
+                SizedBox(width: 8),
+                Text("+1", style: TextPalette.getH2(Palette.white))
+              ]),
+              SizedBox(height: 24),
+              GenericButtonWithLoader("SEE MATCH STATS", (BuildContext context) async {
+                Get.back();
+              }, PrimaryInverted())
+            ],
+          ),
         ),
       ),
     );
