@@ -64,6 +64,7 @@ class TextPalette {
   static TextStyle getLinkStyle(Color color) => GoogleFonts.roboto(color: color, fontSize: 14, fontWeight: FontWeight.w700);
 
   static TextStyle buttonOff = GoogleFonts.roboto(color: Palette.grey_lighter, fontSize: 14, fontWeight: FontWeight.w700);
+  static TextStyle getStats(Color color) => GoogleFonts.roboto(color: color, fontSize: 30, fontWeight: FontWeight.w400);
 }
 
 class DeviceInfo {

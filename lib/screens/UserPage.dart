@@ -351,7 +351,7 @@ class UserInfoBox extends StatelessWidget {
   Widget build(BuildContext context) {
     Widget icContent = Column(
       children: [
-        Text(content, style: TextPalette.h1Default),
+        Text(content, style: TextPalette.getStats(Palette.black)),
         SizedBox(height: 4),
         Text(description, style: TextPalette.bodyText)
       ],

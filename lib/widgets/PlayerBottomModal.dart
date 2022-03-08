@@ -78,7 +78,7 @@ class StatEntry extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       child: Column(children: [
-        Text(stat, style: TextPalette.h1Default),
+        Text(stat, style: TextPalette.getStats(Palette.black)),
         SizedBox(height: 4),
         Text(description, style: TextPalette.bodyText)
       ],),
