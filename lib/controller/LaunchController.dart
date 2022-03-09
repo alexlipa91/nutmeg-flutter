@@ -128,7 +128,8 @@ class LaunchController {
     print("start loading data function");
     await Firebase.initializeApp();
 
-    var trace = FirebasePerformance.instance.newTrace("launch-app");
+    var trace = FirebasePerformance.instance.newTrace("launch_app");
+    await trace.start();
     final stopwatch = Stopwatch()..start();
 
     FirebaseRemoteConfig firebaseRemoteConfig = FirebaseRemoteConfig.instance;
@@ -243,10 +244,7 @@ class LaunchController {
     }
 
     setupNotifications(context);
-
-    trace.setMetric('duration_ms', stopwatch.elapsed.inMilliseconds);
-
-    trace.stop();
+    await trace.stop();
   }
 
   static Future<void> loadOnceData(BuildContext context) async {
