@@ -158,6 +158,12 @@ class MatchesController {
     });
   }
 
+  static Future<void> cancelMatch(String matchId) async {
+    await apiClient.callFunction("cancel_match", {
+      "match_id": matchId
+    });
+  }
+
   static Future<Map<String, List<int>>> refreshMatchStats(BuildContext context, String matchId) async {
     var ratingsState = context.read<MatchStatState>();
 

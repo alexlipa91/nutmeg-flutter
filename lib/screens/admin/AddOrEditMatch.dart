@@ -125,6 +125,12 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
     var matchesState = context.read<MatchesState>();
     var match = (matchId == null) ? null : matchesState.getMatch(matchId);
 
+    match.going.keys.forEach((u) {
+      if (context.read<UserState>().getUserDetail(u) == null) {
+        UserController.getUserDetails(context, u);
+      }
+    });
+
     // set initial values
     sportCenterId = (match == null) ? null : match.sportCenterId;
     sportCenterSubLocation =
@@ -429,6 +435,47 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                           .read<GenericButtonWithLoaderState>()
                           .change(false);
                     }, Primary()))
+                  ],
+                ),
+              if (matchId != null)
+                Row(
+                  children: [
+                    Expanded(
+                        child: GenericButtonWithLoader("CANCEL MATCH",
+                                (BuildContext context) async {
+                              context.read<GenericButtonWithLoaderState>().change(true);
+                              var shouldCancel = await CoolAlert.show(
+                                context: context,
+                                type: CoolAlertType.confirm,
+                                text:
+                                "This is going to cancel the match with id: \n" +
+                                    match.documentId +
+                                    "\nAre you sure?",
+                                onConfirmBtnTap: () => Get.back(result: true),
+                                onCancelBtnTap: () => Get.back(result: false),
+                              );
+
+                              if (shouldCancel) {
+                                try {
+                                  await MatchesController.cancelMatch(
+                                      match.documentId);
+                                  GenericInfoModal(
+                                      title:
+                                      "Successfully closed rating round for the match")
+                                      .show(context);
+                                } catch (e, stack) {
+                                  print(e);
+                                  print(stack);
+                                  GenericInfoModal(title: "Something went wrong")
+                                      .show(context);
+                                }
+                                await MatchesController.refreshMatchStatus(
+                                    context, match);
+                              }
+                              context
+                                  .read<GenericButtonWithLoaderState>()
+                                  .change(false);
+                            }, Destructive()))
                   ],
                 ),
               SizedBox(height: 16),
