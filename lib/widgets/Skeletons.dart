@@ -1,10 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/Containers.dart';
 import 'package:skeletons/skeletons.dart';
 
 class SkeletonAvailableMatches extends StatelessWidget {
-
   @override
   Widget build(BuildContext context) {
     return InfoContainer(
@@ -25,22 +25,26 @@ class SkeletonAvailableMatches extends StatelessWidget {
                   SkeletonLine(
                     style: SkeletonLineStyle(
                         borderRadius: BorderRadius.circular(8),
-                        width: 200, height: 12
-                    ),
+                        width: 200,
+                        height: 12),
                   ),
-                  SizedBox(height: 12,),
+                  SizedBox(
+                    height: 12,
+                  ),
                   SkeletonLine(
                     style: SkeletonLineStyle(
                         borderRadius: BorderRadius.circular(8),
-                        width: 120, height: 12
-                    ),
+                        width: 120,
+                        height: 12),
                   ),
-                  SizedBox(height: 12,),
+                  SizedBox(
+                    height: 12,
+                  ),
                   SkeletonLine(
                     style: SkeletonLineStyle(
                         borderRadius: BorderRadius.circular(8),
-                        width: 80, height: 12
-                    ),
+                        width: 80,
+                        height: 12),
                   )
                 ],
               ),
@@ -94,43 +98,37 @@ class SkeletonMatchDetails extends StatelessWidget {
 }
 
 class StatsSkeleton extends StatelessWidget {
-
   @override
   Widget build(BuildContext context) {
     var r = Row(
       children: [
         SkeletonAvatar(
           style: SkeletonAvatarStyle(
-              shape: BoxShape.circle, width: 30, height: 30),
+              shape: BoxShape.circle, width: 32, height: 32),
         ),
         SizedBox(width: 8),
-        SkeletonParagraph(
-          style: SkeletonParagraphStyle(
-              lines: 1,
-              spacing: 6,
-              lineStyle: SkeletonLineStyle(
-                height: 20,
-                borderRadius: BorderRadius.circular(8),
-                minLength: (MediaQuery.of(context).size.width / 3) - 1,
-                maxLength: MediaQuery.of(context).size.width / 3,
-              )),
-        ),
+        SkeletonLine(
+            style: SkeletonLineStyle(
+          height: 12,
+          width: 120,
+          borderRadius: BorderRadius.circular(8),
+        )),
         Spacer(),
-        SkeletonParagraph(
-          style: SkeletonParagraphStyle(
-              lines: 1,
-              spacing: 6,
-              lineStyle: SkeletonLineStyle(
-                height: 20,
-                borderRadius: BorderRadius.circular(8),
-                minLength: (MediaQuery.of(context).size.width / 7) - 1,
-                maxLength: MediaQuery.of(context).size.width / 7,
-              )),
-        )
+        SkeletonLine(
+            style: SkeletonLineStyle(
+          height: 12,
+          width: 40,
+          borderRadius: BorderRadius.circular(8),
+        )),
       ],
     );
 
     return SkeletonItem(
-        child: Column(children: List<Row>.filled(5, r)));
+        child: Column(
+            children: interleave(
+                List<Row>.filled(5, r),
+                SizedBox(
+                  height: 8,
+                ))));
   }
 }

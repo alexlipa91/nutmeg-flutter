@@ -28,7 +28,7 @@ import 'package:nutmeg/widgets/PlayerBottomModal.dart';
 import 'package:nutmeg/widgets/Section.dart';
 import 'package:provider/provider.dart';
 import 'package:readmore/readmore.dart';
-import 'package:shimmer/shimmer.dart';
+import 'package:skeletons/skeletons.dart';
 
 import '../model/SportCenter.dart';
 import '../state/LoadOnceState.dart';
@@ -91,23 +91,6 @@ class MatchDetailsState extends State<MatchDetails> {
   Widget build(BuildContext context) {
     var matchesState = context.watch<MatchesState>();
     var match = matchesState.getMatch(matchId);
-
-    var loadOnceState = context.read<LoadOnceState>();
-
-    var sportCenter;
-    var sport;
-    var title = "";
-    var isTest = false;
-
-    if (match != null) {
-      isTest = isTest;
-      sportCenter = loadOnceState.getSportCenter(match.sportCenterId);
-      sport = loadOnceState.getSport(match.sport);
-      title = (match.isTest)
-          ? match.documentId
-          : sportCenter.name + " - " + sport.displayTitle;
-    }
-
     var matchStatus = matchesState.getMatchStatus(matchId);
 
     padLRB(Widget w) => Padding(
@@ -130,10 +113,7 @@ class MatchDetailsState extends State<MatchDetails> {
     // add padding individually since because of shadow clipping some components need margin
     var widgets = [
       // title
-      if (match != null)
-        padLRB(Container(
-            color: (isTest) ? Colors.orangeAccent : Colors.transparent,
-            child: Text(title, style: TextPalette.h1Default))),
+      if (match != null) padLRB(Title(matchId)),
       // info box
       padLR(MatchInfo(matchId)),
       // stats
@@ -207,6 +187,41 @@ class MatchDetailsState extends State<MatchDetails> {
                   ),
                 ))),
         bottomNavigationBar: bottomBar);
+  }
+}
+
+class Title extends StatelessWidget {
+  final String matchId;
+
+  Title(this.matchId);
+
+  @override
+  Widget build(BuildContext context) {
+    var loadOnceState = context.read<LoadOnceState>();
+
+    var match = context.read<MatchesState>().getMatch(matchId);
+
+    var skeleton = SkeletonLine(
+      style: SkeletonLineStyle(
+          borderRadius: BorderRadius.circular(8),
+          width: double.infinity,
+          height: 22),
+    );
+
+    if (match == null) {
+      return skeleton;
+    }
+    var sportCenter = loadOnceState.getSportCenter(match.sportCenterId);
+    var sport = loadOnceState.getSport(match.sport);
+    if (sport == null || sportCenter == null) {
+      return skeleton;
+    }
+
+    var title = (match.isTest)
+        ? match.documentId
+        : sportCenter.name + " - " + sport.displayTitle;
+
+    return Text(title, style: TextPalette.h1Default);
   }
 }
 
@@ -331,16 +346,11 @@ class SportCenterImageCarouselState extends State<SportCenterImageCarousel> {
     var sportCenter =
         context.read<LoadOnceState>().getSportCenter(match.sportCenterId);
 
-    var placeHolder = Container(
-        height: 358,
-        child: Shimmer.fromColors(
-          baseColor: Palette.grey_lighter,
-          highlightColor: Palette.grey_lighter,
-          child: Container(
-              decoration: BoxDecoration(
-                  color: Palette.white,
-                  borderRadius: BorderRadius.all(Radius.circular(10)))),
-        ));
+    var placeHolder = SkeletonAvatar(
+      style: SkeletonAvatarStyle(
+        width: double.infinity,
+      ),
+    );
 
     List<Widget> itemsToShow =
         List<Widget>.from(sportCenter.imagesUrls.map((i) => CachedNetworkImage(
@@ -357,7 +367,6 @@ class SportCenterImageCarouselState extends State<SportCenterImageCarousel> {
               placeholder: (context, imageProvider) => placeHolder,
               errorWidget: (context, url, error) => Icon(Icons.error),
             )));
-    // : List<Widget>.from([placeHolder]);
 
     return Stack(
       children: [
@@ -440,11 +449,23 @@ class InfoWidget extends StatelessWidget {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: TextPalette.h2),
+            (title == null)
+                ? SkeletonLine(
+                    style: SkeletonLineStyle(
+                        width: 200,
+                        height: 12,
+                        borderRadius: BorderRadius.circular(8)))
+                : Text(title, style: TextPalette.h2),
             SizedBox(
               height: 4,
             ),
-            if (subTitle != null) Text(subTitle, style: TextPalette.bodyText)
+            (subTitle == null)
+                ? SkeletonLine(
+                    style: SkeletonLineStyle(
+                        width: 200,
+                        height: 12,
+                        borderRadius: BorderRadius.circular(8)))
+                : Text(subTitle, style: TextPalette.bodyText)
           ],
         ),
         if (rightWidget != null)
@@ -465,37 +486,37 @@ class PlayerCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var userData = context.watch<UserState>().getUserDetail(userId);
-    var placeHolder = Shimmer.fromColors(
-        baseColor: Colors.grey[300],
-        highlightColor: Colors.grey[100],
-        child: Column(children: [
-          CircleAvatar(radius: 25, backgroundColor: Palette.white),
-          SizedBox(height: 10),
-          Container(height: 10, width: 100, color: Colors.white)
-        ]));
 
     return Padding(
         padding: EdgeInsets.only(right: 10),
         child: SizedBox(
           width: 100,
           child: InfoContainer(
-              child: (userData == null)
-                  ? placeHolder
-                  : Column(children: [
-                      InkWell(
-                          onTap: () {
-                            ModalBottomSheet.showNutmegModalBottomSheet(
-                                context, JoinedPlayerBottomModal(userData));
-                          },
-                          child: UserAvatar(24, userData)),
-                      SizedBox(height: 10),
-                      Text((userData?.name ?? "Player").split(" ").first,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.roboto(
-                              color: Palette.grey_dark,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w400))
-                    ])),
+              child: Column(children: [
+            (userData == null)
+                ? SkeletonAvatar(
+                    style:
+                        SkeletonAvatarStyle(height: 48, shape: BoxShape.circle),
+                  )
+                : InkWell(
+                    onTap: () {
+                      ModalBottomSheet.showNutmegModalBottomSheet(
+                          context, JoinedPlayerBottomModal(userData));
+                    },
+                    child: UserAvatar(24, userData)),
+            SizedBox(height: 10),
+            (userData == null)
+                ? SkeletonLine(
+                    style: SkeletonLineStyle(
+                        borderRadius: BorderRadius.circular(8.0), height: 12),
+                  )
+                : Text((userData?.name ?? "Player").split(" ").first,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.roboto(
+                        color: Palette.grey_dark,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w400))
+          ])),
         ));
   }
 }
@@ -721,12 +742,6 @@ class Stats extends StatelessWidget {
                                   "assets/potm_badge.png",
                                   width: 20,
                                 )
-
-                              // Icon(
-                              //   Icons.sports_soccer,
-                              //   color: Colors.amber,
-                              //   size: 20,
-                              // ),
                             ],
                           ),
                         ),
