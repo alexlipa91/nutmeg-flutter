@@ -13,6 +13,7 @@ import 'package:nutmeg/widgets/Containers.dart';
 import 'package:nutmeg/widgets/Section.dart';
 import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
+import 'package:skeletons/skeletons.dart';
 import 'package:tuple/tuple.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:version/version.dart';
@@ -48,10 +49,6 @@ class UserPageState extends State<UserPage> {
 
     int creditCount = (userDetails == null) ? 0 : userDetails.creditsInCents;
 
-    var avgScore = (userDetails.getScoreMatches() == -1)
-        ? "-"
-        : userDetails.getScoreMatches().toStringAsFixed(2);
-
     var widgets = [
       Padding(
           padding: EdgeInsets.only(left: 16, right: 16),
@@ -62,17 +59,34 @@ class UserPageState extends State<UserPage> {
             margin: EdgeInsets.symmetric(horizontal: 16),
             child: Row(
               children: [
-                UserAvatar(
-                    30, context.watch<UserState>().getLoggedUserDetails()),
+                (userDetails == null)
+                    ? SkeletonAvatar(
+                        style: SkeletonAvatarStyle(
+                            shape: BoxShape.circle, height: 69),
+                      )
+                    : UserAvatar(30, userDetails),
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 30),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(userDetails.name ?? "N/A", style: TextPalette.h2),
+                      (userDetails == null)
+                          ? SkeletonLine(
+                              style: SkeletonLineStyle(
+                                  height: 12,
+                                  width: 200,
+                                  borderRadius: BorderRadius.circular(8.0)))
+                          : Text(userDetails.name ?? "N/A",
+                              style: TextPalette.h2),
                       SizedBox(height: 10),
-                      Text(userDetails.email ?? "N/A",
-                          style: TextPalette.bodyText)
+                      (userDetails == null)
+                          ? SkeletonLine(
+                              style: SkeletonLineStyle(
+                                  height: 12,
+                                  width: 100,
+                                  borderRadius: BorderRadius.circular(8.0)))
+                          : Text(userDetails.email ?? "N/A",
+                              style: TextPalette.bodyText)
                     ],
                   ),
                 )
@@ -84,14 +98,17 @@ class UserPageState extends State<UserPage> {
         child:
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
           Expanded(
-            child: UserInfoBox(
-                content: formatCurrency(userDetails.creditsInCents ?? 0),
-                description: "Credits"),
-          ),
+              child: UserInfoBox(
+                  content: (userDetails == null)
+                      ? null
+                      : formatCurrency(userDetails.creditsInCents ?? 0),
+                  description: "Credits")),
           SizedBox(width: 20),
           Expanded(
             child: UserInfoBox(
-                content: userDetails.getJoinedMatches().length.toString(),
+                content: (userDetails == null)
+                    ? null
+                    : userDetails.getJoinedMatches().length.toString(),
                 description: "Matches Played"),
           )
         ]),
@@ -102,12 +119,20 @@ class UserPageState extends State<UserPage> {
           child:
               Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
             Expanded(
-              child: UserInfoBox(content: avgScore, description: "Avg. Score"),
+              child: UserInfoBox(
+                  content: (userDetails == null)
+                      ? null
+                      : (userDetails.getScoreMatches() == -1)
+                          ? "-"
+                          : userDetails.getScoreMatches().toStringAsFixed(2),
+                  description: "Avg. Score"),
             ),
             SizedBox(width: 20),
             Expanded(
               child: UserInfoBox(
-                content: userDetails.getNumManOfTheMatch().toString(),
+                content: (userDetails == null)
+                    ? null
+                    : userDetails.getNumManOfTheMatch().toString(),
                 description: "Player of the Match",
               ),
             )
@@ -170,7 +195,7 @@ class UserPageState extends State<UserPage> {
             ])),
           ),
         ),
-      if (userDetails.getIsAdmin())
+      if (userDetails != null && userDetails.getIsAdmin())
         Padding(
           padding: EdgeInsets.symmetric(horizontal: 16),
           child: Section(
@@ -350,8 +375,16 @@ class UserInfoBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Widget icContent = Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Text(content, style: TextPalette.getStats(Palette.black)),
+        (content == null)
+            ? SkeletonLine(
+                style: SkeletonLineStyle(
+                    alignment: AlignmentDirectional.center,
+                    width: 80,
+                    height: 12,
+                    borderRadius: BorderRadius.circular(8.0)))
+            : Text(content, style: TextPalette.getStats(Palette.black)),
         SizedBox(height: 4),
         Text(description, style: TextPalette.bodyText)
       ],
