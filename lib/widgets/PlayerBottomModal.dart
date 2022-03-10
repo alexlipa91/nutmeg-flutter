@@ -16,49 +16,46 @@ class PlayerBottomModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      minimum: EdgeInsets.only(bottom: 16),
+    return Container(
       child: Container(
-        child: Container(
-          decoration: new BoxDecoration(
-              color: Palette.white,
-              borderRadius: new BorderRadius.only(
-                  topLeft: const Radius.circular(20.0),
-                  topRight: const Radius.circular(20.0))),
-          child: Padding(
-            padding: GenericInfoModal.padding,
-            child: Container(
-              child: Wrap(
-                children: [
-                  Stack(
-                      alignment: AlignmentDirectional.bottomStart,
-                      clipBehavior: Clip.none,
-                      children: [
-                        Container(
-                            decoration: BoxDecoration(
-                              color: Palette.white,
-                              borderRadius: GenericInfoModal.modalRadius
-                            ),
-                            width: double.infinity,
-                            child: Column(children: [
-                              SizedBox(height: 44),
-                              Text(title, style: TextPalette.h2),
-                              if (subtitle != null)
-                                Padding(
-                                    padding: EdgeInsets.only(top: 4),
-                                    child: Text(subtitle, style: TextPalette.getBodyText(Palette.grey_dark))),
-                              SizedBox(height: 24),
-                              content
-                            ],)
-                        ),
-                        Positioned(
-                            top: -50,
-                            left: 0,
-                            right: 0,
-                            child: UserAvatarWithBorder(userDetails)),
-                      ]),
-                ],
-              ),
+        decoration: new BoxDecoration(
+            color: Palette.white,
+            borderRadius: new BorderRadius.only(
+                topLeft: const Radius.circular(20.0),
+                topRight: const Radius.circular(20.0))),
+        child: Padding(
+          padding: GenericInfoModal.padding,
+          child: Container(
+            child: Wrap(
+              children: [
+                Stack(
+                    alignment: AlignmentDirectional.bottomStart,
+                    clipBehavior: Clip.none,
+                    children: [
+                      Container(
+                          decoration: BoxDecoration(
+                            color: Palette.white,
+                            borderRadius: GenericInfoModal.modalRadius
+                          ),
+                          width: double.infinity,
+                          child: Column(children: [
+                            SizedBox(height: 44),
+                            Text(title, style: TextPalette.h2),
+                            if (subtitle != null)
+                              Padding(
+                                  padding: EdgeInsets.only(top: 4),
+                                  child: Text(subtitle, style: TextPalette.getBodyText(Palette.grey_dark))),
+                            SizedBox(height: 24),
+                            content
+                          ],)
+                      ),
+                      Positioned(
+                          top: -50,
+                          left: 0,
+                          right: 0,
+                          child: UserAvatarWithBorder(userDetails)),
+                    ]),
+              ],
             ),
           ),
         ),

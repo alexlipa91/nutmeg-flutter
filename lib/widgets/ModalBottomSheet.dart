@@ -11,7 +11,9 @@ class ModalBottomSheet {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
       ),
       context: context,
-      builder: (BuildContext context) => child
+      builder: (BuildContext context) => SafeArea(
+          minimum: EdgeInsets.only(bottom: 16),
+          child: child)
     );
   }
  }

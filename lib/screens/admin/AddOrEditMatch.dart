@@ -144,7 +144,7 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
     dateTime = (match == null) ? null : match.dateTime;
     durationController = TextEditingController(
         text: (match == null) ? "60" : match.duration.inMinutes.toString());
-    testMatch = false;
+    testMatch = match.isTest;
     super.initState();
   }
 

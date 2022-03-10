@@ -39,17 +39,14 @@ class GenericInfoModal<T> {
       widgets.add(action);
     }
 
-    return ModalBottomSheet.showNutmegModalBottomSheet(context, SafeArea(
-      minimum: EdgeInsets.only(bottom: 16),
-      child: Container(
-        child: Padding(
-          // make 32 if find visual cue
-            padding: padding,
-            child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: widgets)),
-      ),
+    return ModalBottomSheet.showNutmegModalBottomSheet(context, Container(
+      child: Padding(
+        // make 32 if find visual cue
+          padding: padding,
+          child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: widgets)),
     ));
   }
 }
