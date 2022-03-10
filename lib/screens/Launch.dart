@@ -16,6 +16,7 @@ import 'package:nutmeg/screens/UserPage.dart';
 import 'package:nutmeg/screens/admin/AddOrEditMatch.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:provider/provider.dart';
+import 'package:skeletons/skeletons.dart';
 
 import '../Exceptions.dart';
 import '../state/LoadOnceState.dart';
@@ -43,47 +44,61 @@ void main() {
         ChangeNotifierProvider(create: (context) => MatchesState()),
         ChangeNotifierProvider(create: (context) => LoadOnceState()),
       ],
-      child: new GetMaterialApp(
-        navigatorKey: navigatorKey,
-        debugShowCheckedModeBanner: false,
-        home: new Container(
-            decoration: new BoxDecoration(color: Colors.grey.shade400),
-            child: Center(child: new LaunchWidget())),
-        theme: new ThemeData(
-            primaryColor: Palette.primary, accentColor: Palette.grey_lightest),
-        getPages: [
-          GetPage(name: '/home', page: () => AvailableMatches(),
-            transition: Transition.native
-          ),
-          GetPage(
-              name: '/matchNoTransition/:matchId',
-              transition: Transition.native,
-              transitionDuration: Duration(seconds: 0),
-              page: () => MultiProvider(providers: [
-                ChangeNotifierProvider(
-                    create: (context) => MatchStatState()),
-              ], child: MatchDetails())),
-          GetPage(
-              name: '/match/:matchId',
-              transition: Transition.native,
-              page: () => MultiProvider(providers: [
-                    ChangeNotifierProvider(
-                        create: (context) => MatchStatState()),
-                  ], child: MatchDetails())),
-          GetPage(name: '/login/enterDetails', page: () => EnterDetails(),
-              transition: Transition.native),
-          GetPage(name: '/user', page: () => UserPage(),
-              transition: Transition.native),
-          GetPage(name: '/editMatch/:matchId', page: () => AddOrEditMatch(),
-              transition: Transition.native),
-          GetPage(name: '/adminHome', page: () => AdminAvailableMatches(),
-              transition: Transition.native),
-          GetPage(name: '/addMatch', page: () => AddOrEditMatch(),
-              transition: Transition.native),
-          GetPage(name: '/potm/:matchId', page: () => PlayerOfTheMatch(),
-              transition: Transition.native,
-              transitionDuration: Duration.zero),
-        ],
+      child: SkeletonTheme(
+        shimmerGradient: LinearGradient(
+          colors: [
+            UiUtils.fromHex("EAEAEA"),
+            UiUtils.fromHex("D5D5D5"),
+            UiUtils.fromHex("EAEAEA"),
+          ],
+          stops: [
+            0.1,
+            0.8,
+            0.9,
+          ],
+        ),
+        child: new GetMaterialApp(
+          navigatorKey: navigatorKey,
+          debugShowCheckedModeBanner: false,
+          home: new Container(
+              decoration: new BoxDecoration(color: Colors.grey.shade400),
+              child: Center(child: new LaunchWidget())),
+          theme: new ThemeData(
+              primaryColor: Palette.primary, accentColor: Palette.grey_lightest),
+          getPages: [
+            GetPage(name: '/home', page: () => AvailableMatches(),
+              transition: Transition.native
+            ),
+            GetPage(
+                name: '/matchNoTransition/:matchId',
+                transition: Transition.native,
+                transitionDuration: Duration(seconds: 0),
+                page: () => MultiProvider(providers: [
+                  ChangeNotifierProvider(
+                      create: (context) => MatchStatState()),
+                ], child: MatchDetails())),
+            GetPage(
+                name: '/match/:matchId',
+                transition: Transition.native,
+                page: () => MultiProvider(providers: [
+                      ChangeNotifierProvider(
+                          create: (context) => MatchStatState()),
+                    ], child: MatchDetails())),
+            GetPage(name: '/login/enterDetails', page: () => EnterDetails(),
+                transition: Transition.native),
+            GetPage(name: '/user', page: () => UserPage(),
+                transition: Transition.native),
+            GetPage(name: '/editMatch/:matchId', page: () => AddOrEditMatch(),
+                transition: Transition.native),
+            GetPage(name: '/adminHome', page: () => AdminAvailableMatches(),
+                transition: Transition.native),
+            GetPage(name: '/addMatch', page: () => AddOrEditMatch(),
+                transition: Transition.native),
+            GetPage(name: '/potm/:matchId', page: () => PlayerOfTheMatch(),
+                transition: Transition.native,
+                transitionDuration: Duration.zero),
+          ],
+        ),
       ),
     ));
   }, (Object error, StackTrace stackTrace) async {

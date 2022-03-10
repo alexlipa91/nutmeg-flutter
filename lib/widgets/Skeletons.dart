@@ -4,7 +4,30 @@ import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/Containers.dart';
 import 'package:skeletons/skeletons.dart';
 
+class Skeletons {
+  static var xlText = SkeletonLine(
+    style: SkeletonLineStyle(
+        borderRadius: BorderRadius.circular(20), width: 200, height: 12),
+  );
+
+  static var lText = SkeletonLine(
+    style: SkeletonLineStyle(
+        borderRadius: BorderRadius.circular(20), width: 120, height: 12),
+  );
+
+  static var mText = SkeletonLine(
+    style: SkeletonLineStyle(
+        borderRadius: BorderRadius.circular(20), width: 80, height: 12),
+  );
+
+  static var sText = SkeletonLine(
+    style: SkeletonLineStyle(
+        borderRadius: BorderRadius.circular(20), width: 40, height: 12),
+  );
+}
+
 class SkeletonAvailableMatches extends StatelessWidget {
+
   @override
   Widget build(BuildContext context) {
     return InfoContainer(
@@ -22,42 +45,17 @@ class SkeletonAvailableMatches extends StatelessWidget {
             Expanded(
               child: Column(
                 children: [
-                  SkeletonLine(
-                    style: SkeletonLineStyle(
-                        borderRadius: BorderRadius.circular(8),
-                        width: 200,
-                        height: 12),
-                  ),
+                  Skeletons.xlText,
                   SizedBox(
                     height: 12,
                   ),
-                  SkeletonLine(
-                    style: SkeletonLineStyle(
-                        borderRadius: BorderRadius.circular(8),
-                        width: 120,
-                        height: 12),
-                  ),
+                  Skeletons.lText,
                   SizedBox(
                     height: 12,
                   ),
-                  SkeletonLine(
-                    style: SkeletonLineStyle(
-                        borderRadius: BorderRadius.circular(8),
-                        width: 80,
-                        height: 12),
-                  )
+                  Skeletons.mText
                 ],
               ),
-
-              // child: SkeletonParagraph(
-              //   style: SkeletonParagraphStyle(
-              //       lines: 1,
-              //       spacing: 15,
-              //       lineStyle: SkeletonLineStyle(
-              //         borderRadius: BorderRadius.circular(8),
-              //         height: 12,
-              //       )),
-              // ),
             )
           ],
         ),

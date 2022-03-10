@@ -94,8 +94,10 @@ class GenericAvailableMatchesListState extends State<GenericAvailableMatchesList
     }
 
     var waitingWidgets = interleave(
-        List<Widget>.filled(5,
-            SkeletonAvailableMatches()), SizedBox(height: 10,), true);
+        List<Widget>.filled(3,
+            Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.0),
+                child: SkeletonAvailableMatches())), SizedBox(height: 10,), true);
 
     return Container(
       color: appBarColor,

@@ -203,9 +203,9 @@ class Title extends StatelessWidget {
 
     var skeleton = SkeletonLine(
       style: SkeletonLineStyle(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(20),
           width: double.infinity,
-          height: 22),
+          height: 24),
     );
 
     if (match == null) {
@@ -238,88 +238,95 @@ class MatchInfo extends StatelessWidget {
     var child;
 
     var match = context.watch<MatchesState>().getMatch(matchId);
-    if (match == null) {
-      child = SkeletonMatchDetails();
-    } else {
-      var sportCenter =
-          context.watch<LoadOnceState>().getSportCenter(match.sportCenterId);
-      var sport = context.watch<LoadOnceState>().getSport(match.sport);
 
-      if (sportCenter == null || sport == null) {
-        child = SkeletonMatchDetails();
-      } else {
-        child = Column(
-          children: [
-            Row(children: [Expanded(child: SportCenterImageCarousel(match))]),
-            Padding(
-              padding: EdgeInsets.all(16.0),
-              child: Column(children: [
-                InfoWidget(
-                    title: getFormattedDateLong(match.dateTime),
-                    subTitle: getStartAndEndHour(match.dateTime, match.duration)
+    var sportCenter = (match == null)
+        ? null
+        : context.watch<LoadOnceState>().getSportCenter(match.sportCenterId);
+    var sport = (match == null)
+        ? null
+        : context.watch<LoadOnceState>().getSport(match.sport);
+
+    child = Column(
+      children: [
+        Row(children: [Expanded(child: SportCenterImageCarousel(match))]),
+        Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Column(children: [
+            InfoWidget(
+                title: (match == null)
+                    ? null
+                    : getFormattedDateLong(match.dateTime),
+                subTitle: (match == null)
+                    ? null
+                    : getStartAndEndHour(match.dateTime, match.duration)
                             .join(" - ") +
                         " - " +
                         match.duration.inMinutes.toString() +
                         " min",
-                    icon: Icons.schedule),
-                SizedBox(height: 16),
-                Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: () async {
-                      if (await MapLauncher.isMapAvailable(m.MapType.google)) {
-                        await MapLauncher.showMarker(
-                          mapType: m.MapType.google,
-                          coords: Coords(sportCenter.lat, sportCenter.lng),
-                          title: "",
-                          extraParams: {
-                            "q": sportCenter.name + "," + sportCenter.address,
-                            "z": "16"
-                          },
-                        );
-                      } else if (await MapLauncher.isMapAvailable(
-                          m.MapType.apple)) {
-                        await MapLauncher.showMarker(
-                          mapType: m.MapType.apple,
-                          coords: Coords(sportCenter.lat, sportCenter.lng),
-                          title: "",
-                          // fixme do something
-                        );
-                      } else {
-                        // fixme do something
-                      }
-                    },
-                    splashColor: Palette.grey_lighter,
-                    child: InfoWidget.withRightWidget(
-                        title: sportCenter.name +
+                icon: Icons.schedule),
+            SizedBox(height: 16),
+            Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () async {
+                  if (await MapLauncher.isMapAvailable(m.MapType.google)) {
+                    await MapLauncher.showMarker(
+                      mapType: m.MapType.google,
+                      coords: Coords(sportCenter.lat, sportCenter.lng),
+                      title: "",
+                      extraParams: {
+                        "q": sportCenter.name + "," + sportCenter.address,
+                        "z": "16"
+                      },
+                    );
+                  } else if (await MapLauncher.isMapAvailable(
+                      m.MapType.apple)) {
+                    await MapLauncher.showMarker(
+                      mapType: m.MapType.apple,
+                      coords: Coords(sportCenter.lat, sportCenter.lng),
+                      title: "",
+                      // fixme do something
+                    );
+                  } else {
+                    // fixme do something
+                  }
+                },
+                splashColor: Palette.grey_lighter,
+                child: InfoWidget.withRightWidget(
+                    title: (sportCenter == null)
+                        ? null
+                        : sportCenter.name +
                             (match.sportCenterSubLocation != null &&
                                     match.sportCenterSubLocation.isNotEmpty
                                 ? " - " + match.sportCenterSubLocation
                                 : ""),
-                        icon: Icons.place,
-                        subTitle: sportCenter.getShortAddress(),
-                        rightWidget: ClipRRect(
-                            borderRadius: BorderRadius.circular(15.0),
-                            child: Image.asset("assets/map.png", height: 45))),
-                  ),
-                ),
-                SizedBox(height: 16),
-                InfoWidget(
-                    title: sport.displayTitle,
-                    icon: Icons.sports_soccer,
-                    // todo fix info sport
-                    subTitle: sportCenter.tags.join(", ")),
-                SizedBox(height: 16),
-                InfoWidget(
-                    title: formatCurrency(match.pricePerPersonInCents),
-                    icon: Icons.sell,
-                    subTitle: "Pay with Ideal"),
-              ]),
-            )
-          ],
-        );
-      }
-    }
+                    icon: Icons.place,
+                    subTitle: (sportCenter == null)
+                        ? null
+                        : sportCenter.getShortAddress(),
+                    rightWidget: ClipRRect(
+                        borderRadius: BorderRadius.circular(15.0),
+                        child: Image.asset("assets/map.png", height: 45))),
+              ),
+            ),
+            SizedBox(height: 16),
+            InfoWidget(
+                title: (sport == null) ? null : sport.displayTitle,
+                icon: Icons.sports_soccer,
+                // todo fix info sport
+                subTitle:
+                    (sportCenter == null) ? null : sportCenter.tags.join(", ")),
+            SizedBox(height: 16),
+            InfoWidget(
+                title: (match == null)
+                    ? null
+                    : formatCurrency(match.pricePerPersonInCents),
+                icon: Icons.sell,
+                subTitle: "Pay with Ideal"),
+          ]),
+        )
+      ],
+    );
 
     return InfoContainer(padding: EdgeInsets.zero, child: child);
   }
@@ -328,7 +335,7 @@ class MatchInfo extends StatelessWidget {
 class SportCenterImageCarousel extends StatefulWidget {
   final Match match;
 
-  const SportCenterImageCarousel(this.match);
+  SportCenterImageCarousel(this.match);
 
   @override
   State<StatefulWidget> createState() => SportCenterImageCarouselState(match);
@@ -343,14 +350,20 @@ class SportCenterImageCarouselState extends State<SportCenterImageCarousel> {
 
   @override
   Widget build(BuildContext context) {
-    var sportCenter =
-        context.read<LoadOnceState>().getSportCenter(match.sportCenterId);
-
+    print(match);
     var placeHolder = SkeletonAvatar(
       style: SkeletonAvatarStyle(
-        width: double.infinity,
-      ),
+          width: double.infinity,
+          height: 190,
+          borderRadius: BorderRadius.circular(10.0)),
     );
+
+    if (match == null) {
+      return placeHolder;
+    }
+
+    var sportCenter =
+        context.read<LoadOnceState>().getSportCenter(match.sportCenterId);
 
     List<Widget> itemsToShow =
         List<Widget>.from(sportCenter.imagesUrls.map((i) => CachedNetworkImage(
@@ -431,6 +444,8 @@ class InfoWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    bool shouldLoadSkeleton = title == null;
+
     return Container(
         child: Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -449,22 +464,14 @@ class InfoWidget extends StatelessWidget {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            (title == null)
-                ? SkeletonLine(
-                    style: SkeletonLineStyle(
-                        width: 200,
-                        height: 12,
-                        borderRadius: BorderRadius.circular(8)))
+            shouldLoadSkeleton
+                ? Skeletons.xlText
                 : Text(title, style: TextPalette.h2),
             SizedBox(
-              height: 4,
+              height: shouldLoadSkeleton ? 12 : 4,
             ),
-            (subTitle == null)
-                ? SkeletonLine(
-                    style: SkeletonLineStyle(
-                        width: 200,
-                        height: 12,
-                        borderRadius: BorderRadius.circular(8)))
+            shouldLoadSkeleton
+                ? Skeletons.lText
                 : Text(subTitle, style: TextPalette.bodyText)
           ],
         ),
