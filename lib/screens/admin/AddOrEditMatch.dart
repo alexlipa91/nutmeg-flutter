@@ -125,11 +125,12 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
     var matchesState = context.read<MatchesState>();
     var match = (matchId == null) ? null : matchesState.getMatch(matchId);
 
-    match.going.keys.forEach((u) {
-      if (context.read<UserState>().getUserDetail(u) == null) {
-        UserController.getUserDetails(context, u);
-      }
-    });
+    if (match != null) {
+      match.going.keys.forEach((u) {
+        if (context.read<UserState>().getUserDetail(u) == null) {
+          UserController.getUserDetails(context, u);
+        }});
+    }
 
     // set initial values
     sportCenterId = (match == null) ? null : match.sportCenterId;
@@ -144,7 +145,7 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
     dateTime = (match == null) ? null : match.dateTime;
     durationController = TextEditingController(
         text: (match == null) ? "60" : match.duration.inMinutes.toString());
-    testMatch = match.isTest;
+    testMatch = (match == null) ? false : match.isTest;
     super.initState();
   }
 
@@ -479,6 +480,7 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                   ],
                 ),
               SizedBox(height: 16),
+              if (matchId != null)
               Container(
                 child: Column(
               children: [
