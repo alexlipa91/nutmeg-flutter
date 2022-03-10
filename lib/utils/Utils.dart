@@ -74,8 +74,10 @@ DateTime getBeginningOfTheWeek(DateTime dateTime) {
   return DateUtils.dateOnly(dateTime.subtract(Duration(days: currentDay - 1)));
 }
 
-List<T> interleave<T>(List<T> elements, T e) {
+List<T> interleave<T>(List<T> elements, T e, [bool withTop=false]) {
   List<T> result = [];
+  if (withTop)
+    result.add(e);
   elements.forEach((a) {
     result.add(a);
     result.add(e);

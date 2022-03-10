@@ -15,11 +15,11 @@ import 'package:nutmeg/widgets/Containers.dart';
 import 'package:nutmeg/widgets/Texts.dart';
 import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
-import 'package:shimmer/shimmer.dart';
 
 import '../state/LoadOnceState.dart';
 import '../state/MatchesState.dart';
 import '../state/UserState.dart';
+import 'Skeletons.dart';
 
 
 class GenericAvailableMatchesList extends StatefulWidget {
@@ -89,9 +89,13 @@ class GenericAvailableMatchesListState extends State<GenericAvailableMatchesList
     List<Widget> matchWidgets;
     if (matchesState.getMatches() != null) {
       matchWidgets = getGamesWidget(context, refreshController);
+      matchWidgets = matchWidgets.map((e) => Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16.0), child: e)).toList();
     }
 
-    var waitingWidgets = List<Widget>.filled(5, MatchInfoSkeleton());
+    var waitingWidgets = interleave(
+        List<Widget>.filled(5,
+            SkeletonAvailableMatches()), SizedBox(height: 10,), true);
 
     return Container(
       color: appBarColor,
@@ -191,7 +195,7 @@ class GenericMatchInfo extends StatelessWidget {
 
     return InkWell(
         child: Padding(
-          padding: EdgeInsets.only(top: topMargin, left: 16, right: 16),
+          padding: EdgeInsets.only(top: topMargin),
           child: InfoContainer(
               backgroundColor:
                   (match.isTest) ? Colors.orangeAccent : Palette.white,
@@ -334,7 +338,7 @@ class GenericMatchInfoPast extends StatelessWidget {
 
     return InkWell(
         child: Padding(
-          padding: EdgeInsets.only(top: topMargin, right: 16, left: 16),
+          padding: EdgeInsets.only(top: topMargin),
           child: InfoContainer(
             backgroundColor: (match.isTest) ? Colors.orange : Palette.white,
             child: IntrinsicHeight(
@@ -404,64 +408,6 @@ class MatchThumbnail extends StatelessWidget {
           // placeholder: (context, url) => placeHolder,
           errorWidget: (context, url, error) => Icon(Icons.error),
         ));
-  }
-}
-
-// skeleton for loading
-class MatchInfoSkeleton extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(top: 30, left: 16, right: 16),
-      child: InfoContainer(
-          child: IntrinsicHeight(
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Shimmer.fromColors(
-              baseColor: Colors.grey[300],
-              highlightColor: Colors.grey[100],
-              child: Container(
-                  width: 60,
-                  height: 78,
-                  decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.all(Radius.circular(10)))),
-            ),
-            Expanded(
-              child: Container(
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Padding(
-                    padding: EdgeInsets.only(left: 16),
-                    child: Shimmer.fromColors(
-                      baseColor: Colors.grey[300],
-                      highlightColor: Colors.grey[100],
-                      child: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: List<Widget>.filled(
-                            3,
-                            Row(
-                              children: [
-                                Expanded(
-                                    child: Container(
-                                  height: 10,
-                                  width: 100,
-                                  color: Colors.white,
-                                ))
-                              ],
-                            ),
-                          )),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      )),
-    );
   }
 }
 

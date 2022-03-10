@@ -1,5 +1,66 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:nutmeg/widgets/Containers.dart';
 import 'package:skeletons/skeletons.dart';
+
+class SkeletonAvailableMatches extends StatelessWidget {
+
+  @override
+  Widget build(BuildContext context) {
+    return InfoContainer(
+      child: SkeletonItem(
+        child: Row(
+          children: [
+            SkeletonAvatar(
+              style: SkeletonAvatarStyle(
+                borderRadius: BorderRadius.circular(8),
+                width: 60,
+                height: 78,
+              ),
+            ),
+            SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                children: [
+                  SkeletonLine(
+                    style: SkeletonLineStyle(
+                        borderRadius: BorderRadius.circular(8),
+                        width: 200, height: 12
+                    ),
+                  ),
+                  SizedBox(height: 12,),
+                  SkeletonLine(
+                    style: SkeletonLineStyle(
+                        borderRadius: BorderRadius.circular(8),
+                        width: 120, height: 12
+                    ),
+                  ),
+                  SizedBox(height: 12,),
+                  SkeletonLine(
+                    style: SkeletonLineStyle(
+                        borderRadius: BorderRadius.circular(8),
+                        width: 80, height: 12
+                    ),
+                  )
+                ],
+              ),
+
+              // child: SkeletonParagraph(
+              //   style: SkeletonParagraphStyle(
+              //       lines: 1,
+              //       spacing: 15,
+              //       lineStyle: SkeletonLineStyle(
+              //         borderRadius: BorderRadius.circular(8),
+              //         height: 12,
+              //       )),
+              // ),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+}
 
 class SkeletonMatchDetails extends StatelessWidget {
   @override

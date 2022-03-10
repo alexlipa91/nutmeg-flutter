@@ -10,7 +10,7 @@ class TextSeparatorWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(top: 32, bottom: 16, left: 16, right: 16),
+      padding: EdgeInsets.only(top: 32, bottom: 16),
       child: Text(text, style: TextPalette.h4),
     );
   }
