@@ -22,6 +22,7 @@ class Skeletons {
 
   static var sText = SkeletonLine(
     style: SkeletonLineStyle(
+        alignment: AlignmentDirectional.center,
         borderRadius: BorderRadius.circular(20), width: 40, height: 12),
   );
 }

@@ -513,10 +513,7 @@ class PlayerCard extends StatelessWidget {
                     child: UserAvatar(24, userData)),
             SizedBox(height: 10),
             (userData == null)
-                ? SkeletonLine(
-                    style: SkeletonLineStyle(
-                        borderRadius: BorderRadius.circular(8.0), height: 12),
-                  )
+                ? Skeletons.sText
                 : Text((userData?.name ?? "Player").split(" ").first,
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.roboto(
