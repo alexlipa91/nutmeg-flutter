@@ -16,42 +16,28 @@ import 'package:nutmeg/widgets/Texts.dart';
 import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
+import '../state/AvailableMatchesState.dart';
 import '../state/LoadOnceState.dart';
 import '../state/MatchesState.dart';
 import '../state/UserState.dart';
 import 'Skeletons.dart';
 
-
 class GenericAvailableMatchesList extends StatefulWidget {
-  final RoundedTopBar roundedTopBar;
-  final Function getGamesWidget;
-  final Function getEmptyStateWidget;
-  final RefreshController refreshController;
   final appBarColor;
+  final List<String> tabNames;
+  final List<Widget> tabContent;
+  final Widget emptyStateWidget;
+  final RefreshController refreshController;
 
-  const GenericAvailableMatchesList(this.roundedTopBar, this.getGamesWidget,
-      this.getEmptyStateWidget, this.refreshController, this.appBarColor);
+  const GenericAvailableMatchesList(this.appBarColor, this.tabNames,
+      this.tabContent, this.emptyStateWidget, this.refreshController);
 
   @override
-  State<StatefulWidget> createState() => GenericAvailableMatchesListState(
-      roundedTopBar,
-      getGamesWidget,
-      getEmptyStateWidget,
-      refreshController,
-      appBarColor
-  );
+  State<StatefulWidget> createState() => GenericAvailableMatchesListState();
 }
 
-class GenericAvailableMatchesListState extends State<GenericAvailableMatchesList> {
-  final RoundedTopBar roundedTopBar;
-  final Function getGamesWidget;
-  final Function getEmptyStateWidget;
-  final RefreshController refreshController;
-  final appBarColor;
-
-  GenericAvailableMatchesListState(this.roundedTopBar, this.getGamesWidget,
-      this.getEmptyStateWidget, this.refreshController, this.appBarColor);
-
+class GenericAvailableMatchesListState
+    extends State<GenericAvailableMatchesList> {
   @override
   void initState() {
     super.initState();
@@ -60,106 +46,45 @@ class GenericAvailableMatchesListState extends State<GenericAvailableMatchesList
 
   Future<void> refreshPageState(BuildContext context) async {
     await MatchesController.refreshAll(context);
-    Future.wait(
-        context.read<MatchesState>().getMatches()
-            .map((e) => MatchesController.refreshMatchStatus(context, e)));
-    refreshController.refreshCompleted();
+    Future.wait(context
+        .read<MatchesState>()
+        .getMatches()
+        .map((e) => MatchesController.refreshMatchStatus(context, e)));
+    widget.refreshController.refreshCompleted();
+  }
+
+  Widget topContainer() {
+    var waitingWidgets = interleave(
+        List<Widget>.filled(3, SkeletonAvailableMatches()),
+        SizedBox(
+          height: 10,
+        ),
+        true);
+    return Column(children: waitingWidgets);
   }
 
   @override
   Widget build(BuildContext context) {
-    var matchesState = context.watch<MatchesState>();
+    var selected = context.watch<AvailableMatchesUiState>().current;
 
     WidgetsBinding.instance
         .addObserver(LifecycleEventHandler(resumeCallBack: () async {
       if (mounted) {
-        refreshController.requestRefresh();
+        widget.refreshController.requestRefresh();
       }
     }));
 
-    var topWidgets = List<Widget>.of([
-      // if app bar is in Scaffold will have the problem of the white pixel between Scaffold appBar and body
-      Align(
-        child: MainAppBar(appBarColor),
-        heightFactor: 0.99,
-      ),
-      roundedTopBar,
-    ]);
-
-    List<Widget> matchWidgets;
-    if (matchesState.getMatches() != null) {
-      matchWidgets = getGamesWidget(context, refreshController);
-      matchWidgets = matchWidgets.map((e) => Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.0), child: e)).toList();
-    }
-
-    var waitingWidgets = interleave(
-        List<Widget>.filled(3,
-            Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.0),
-                child: SkeletonAvailableMatches())), SizedBox(height: 10,), true);
-
-    return Container(
-      color: appBarColor,
-      child: SafeArea(
-        bottom: false,
-        child: Scaffold(
-          backgroundColor: Palette.grey_lightest,
-          body: SafeArea(
-            minimum: EdgeInsets.only(bottom: 16.0),
-            child: SmartRefresher(
-                enablePullDown: true,
-                enablePullUp: false,
-                header: MaterialClassicHeader(),
-                controller: refreshController,
-                onRefresh: () async {
-                  await refreshPageState(context);
-                },
-                child: (matchWidgets != null && matchWidgets.isEmpty)
-                    ? Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                            Column(children: topWidgets),
-                            getEmptyStateWidget(context)
-                          ])
-                    : ListView.builder(
-                        itemBuilder: (c, i) {
-                          var coreWidgets = (matchWidgets == null)
-                              ? waitingWidgets
-                              : matchWidgets;
-                          var list = topWidgets + coreWidgets;
-                          return list[i];
-                        },
-                        itemCount: topWidgets.length +
-                            ((matchWidgets == null)
-                                ? waitingWidgets.length
-                                : matchWidgets.length),
-                      ),
-              ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class RoundedTopBar extends StatelessWidget {
-
-  final Function getButtons;
-  final Color color;
-
-  const RoundedTopBar({Key key, this.getButtons, this.color}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
+    var top = Column(children: [
+      MainAppBar(widget.appBarColor),
+      Container(
         decoration: BoxDecoration(
-            color: color,
+            color: widget.appBarColor,
             borderRadius: BorderRadius.only(
                 bottomLeft: Radius.circular(20),
                 bottomRight: Radius.circular(20))),
+        width: double.infinity,
         child: Padding(
-          padding: EdgeInsets.only(top: 10, left: 20, right: 20, bottom: 20),
+          padding: EdgeInsets.only(left: 16.0, right: 16.0, bottom: 16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -167,12 +92,79 @@ class RoundedTopBar extends StatelessWidget {
                   style: TextPalette.bodyTextInverted),
               Text("Amsterdam", style: TextPalette.h1Inverted),
               SizedBox(height: 24),
-              Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: getButtons(context))
-            ],
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                    children: widget.tabNames.asMap().entries.map((e) {
+                  var index = e.key;
+                  var title = e.value;
+
+                  var textStyle = (index == selected)
+                      ? TextPalette.linkStyle
+                      : TextPalette.linkStyleInverted;
+                  var color =
+                      (index == selected) ? Palette.white : widget.appBarColor;
+
+                  return ElevatedButton(
+                    child: Padding(
+                      padding:
+                          EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                      child: Text(title, style: textStyle),
+                    ),
+                    onPressed: () =>
+                        context.read<AvailableMatchesUiState>().changeTo(index),
+                    style: ButtonStyle(
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      minimumSize: MaterialStateProperty.all(Size.zero),
+                      padding: MaterialStateProperty.all(EdgeInsets.zero),
+                      elevation: MaterialStateProperty.all(0),
+                      backgroundColor: MaterialStateProperty.all<Color>(color),
+                      shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                          RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(50.0))),
+                    ),
+                  );
+                }).toList()),
+              )
+            ].toList(),
           ),
-        ));
+        ),
+      )
+    ]);
+
+    return Container(
+      color: widget.appBarColor,
+      child: SafeArea(
+        bottom: false,
+        child: Scaffold(
+          backgroundColor: Palette.grey_lightest,
+          body: SafeArea(
+            minimum: EdgeInsets.only(bottom: 16.0),
+            child: SmartRefresher(
+              enablePullDown: true,
+              enablePullUp: false,
+              header: MaterialClassicHeader(),
+              controller: widget.refreshController,
+              onRefresh: () async {
+                await refreshPageState(context);
+              },
+              child: ListView.builder(
+                  itemBuilder: (c, i) {
+                    var core = (widget.tabContent[selected] == null)
+                        ? top
+                        : Padding(
+                            padding: EdgeInsets.all(16.0),
+                            child: widget.tabContent[selected]);
+
+                    var list = List<Widget>.from([top, core]);
+                    return list[i];
+                  },
+                  itemCount: 2),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 
@@ -184,9 +176,11 @@ class GenericMatchInfo extends StatelessWidget {
   final Function onTap;
   final RefreshController refreshController;
 
-  GenericMatchInfo(this.matchId, this.onTap, this.refreshController) : topMargin = 10;
+  GenericMatchInfo(this.matchId, this.onTap, this.refreshController)
+      : topMargin = 10;
 
-  GenericMatchInfo.first(this.matchId, this.onTap, this.refreshController) : topMargin = 0;
+  GenericMatchInfo.first(this.matchId, this.onTap, this.refreshController)
+      : topMargin = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -195,9 +189,10 @@ class GenericMatchInfo extends StatelessWidget {
 
     var loadOnceState = context.read<LoadOnceState>();
 
-    var sportCenter = (match == null) ? null : loadOnceState.getSportCenter(match.sportCenterId);
+    var sportCenter = (match == null)
+        ? null
+        : loadOnceState.getSportCenter(match.sportCenterId);
     var sport = (match == null) ? null : loadOnceState.getSport(match.sport);
-    var isTest = (match == null) ? false : match.isTest;
 
     return InkWell(
         child: Padding(
@@ -250,8 +245,7 @@ class GenericMatchInfo extends StatelessWidget {
                     ],
                   ))),
         ),
-        onTap: () => onTap(context, match.documentId, refreshController)
-    );
+        onTap: () => onTap(context, match.documentId, refreshController));
   }
 
   Widget applyBadges(BuildContext context, Match match, Widget w) {
@@ -338,7 +332,8 @@ class GenericMatchInfo extends StatelessWidget {
     var e = 0.0;
     badges.forEach((b) {
       // fixme not sure why we need to do -6 here
-      finalWidget = badgeIt(finalWidget, b, BadgePosition.bottomEnd(bottom: -6, end: e));
+      finalWidget =
+          badgeIt(finalWidget, b, BadgePosition.bottomEnd(bottom: -6, end: e));
       e += 18;
     });
 
@@ -355,9 +350,11 @@ class GenericMatchInfoPast extends StatelessWidget {
   final Function onTap;
   final RefreshController refreshController;
 
-  GenericMatchInfoPast(this.matchId, this.onTap, this.refreshController) : topMargin = 10;
+  GenericMatchInfoPast(this.matchId, this.onTap, this.refreshController)
+      : topMargin = 10;
 
-  GenericMatchInfoPast.first(this.matchId, this.onTap, this.refreshController) : topMargin = 0;
+  GenericMatchInfoPast.first(this.matchId, this.onTap, this.refreshController)
+      : topMargin = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -411,8 +408,7 @@ class GenericMatchInfoPast extends StatelessWidget {
             ),
           ),
         ),
-        onTap: () => onTap(context, match.documentId, refreshController)
-      );
+        onTap: () => onTap(context, match.documentId, refreshController));
   }
 }
 
@@ -439,8 +435,7 @@ class MatchThumbnail extends StatelessWidget {
           )),
           // placeholder: (context, url) => placeHolder,
           errorWidget: (context, url, error) => Icon(Icons.error),
-        )
-    );
+        ));
   }
 }
 

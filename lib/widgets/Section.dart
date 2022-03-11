@@ -6,8 +6,9 @@ class Section extends StatelessWidget {
 
   final String title;
   final Widget body;
+  final double topSpace;
 
-  const Section({Key key, this.title, this.body}) : super(key: key);
+  const Section({Key key, this.title, this.body, this.topSpace = 32}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +16,7 @@ class Section extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(height: 32,),
+          SizedBox(height: topSpace),
           Text(title, style: TextPalette.h4, textAlign: TextAlign.start,),
           SizedBox(height: 10,),
           body

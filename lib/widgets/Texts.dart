@@ -27,7 +27,7 @@ class TappableLinkText extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       child: Container(
-          width: 40,
+          // width: 40,
           height: 40,
           child: Align(
               alignment: Alignment.center,

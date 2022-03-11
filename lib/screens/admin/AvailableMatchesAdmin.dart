@@ -2,11 +2,11 @@ import "package:collection/collection.dart";
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
-import 'package:nutmeg/widgets/Buttons.dart';
+import 'package:nutmeg/model/Match.dart';
+import 'package:nutmeg/state/AvailableMatchesState.dart';
 import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
-import '../../state/AvailableMatchesState.dart';
 import '../../state/MatchesState.dart';
 import '../../utils/UiUtils.dart';
 import '../../widgets/GenericAvailableMatches.dart';
@@ -15,52 +15,29 @@ import '../../widgets/GenericAvailableMatches.dart';
 class AdminAvailableMatches extends StatelessWidget {
   final RefreshController refreshController = RefreshController();
 
-  List<Widget> getButtons(BuildContext context) {
-    var uiState = context.watch<AvailableMatchesAdminUiState>();
-
-    return [
-      uiState.getCurrentSelection() == MatchesAdminSelectionStatus.UPCOMING
-          ? Expanded(
-              child: LeftButtonOn("UPCOMING",
-                  () => uiState.changeTo(MatchesAdminSelectionStatus.UPCOMING)))
-          : Expanded(
-              child: LeftButtonOff(
-                  "UPCOMING",
-                  () =>
-                      uiState.changeTo(MatchesAdminSelectionStatus.UPCOMING))),
-      uiState.getCurrentSelection() == MatchesAdminSelectionStatus.PAST
-          ? Expanded(
-              child: RightButtonOn("PAST",
-                  () => uiState.changeTo(MatchesAdminSelectionStatus.PAST)))
-          : Expanded(
-              child: RightButtonOff("PAST",
-                  () => uiState.changeTo(MatchesAdminSelectionStatus.PAST)))
-    ];
-  }
-
   Future<void> onTap(BuildContext context, String matchId,
       RefreshController refreshController) async {
     await Get.toNamed("/editMatch/" + matchId);
     await refreshController.requestRefresh();
   }
 
-  List<Widget> getGamesWidgets(
-      BuildContext context, RefreshController refreshController) {
-    List<Widget> result = [];
-    result.add(SizedBox(height: 16));
-
-    var status = context.watch<AvailableMatchesAdminUiState>().selected;
-
+  //
+  Widget getUpcomingWidgets(BuildContext context, bool future) {
     var matchesState = context.watch<MatchesState>();
 
-    var matches = (status == MatchesAdminSelectionStatus.UPCOMING)
-        ? matchesState
-            .getMatches()
-            .where((e) => e.dateTime.isAfter(DateTime.now()))
-            .sortedBy((e) => e.dateTime)
-        : matchesState
-            .getMatches()
-            .where((e) => e.dateTime.isBefore(DateTime.now()));
+    if (matchesState.getMatches() == null) {
+      return null;
+    }
+
+    List<Match> matches = matchesState
+        .getMatches()
+        .where((e) => (future)
+            ? e.dateTime.isAfter(DateTime.now())
+            : e.dateTime.isBefore(DateTime.now()))
+        .sortedBy((e) => e.dateTime)
+        .toList();
+
+    List<Widget> result = List<Widget>.from([]);
 
     matches.forEachIndexed((index, match) {
       if (index == 0) {
@@ -72,10 +49,13 @@ class AdminAvailableMatches extends StatelessWidget {
       }
     });
 
-    return result;
+    if (result.isEmpty)
+      return getEmptyStateWidget(context);
+
+    return Column(children: result);
   }
 
-  static Widget getEmptyStateWidget(BuildContext context) {
+  Widget getEmptyStateWidget(BuildContext context) {
     return Padding(
       padding: EdgeInsets.only(bottom: 20),
       child: Container(
@@ -95,15 +75,18 @@ class AdminAvailableMatches extends StatelessWidget {
     return MultiProvider(
         providers: [
           ChangeNotifierProvider(
-              create: (context) => AvailableMatchesAdminUiState()),
+              create: (context) => AvailableMatchesUiState()),
         ],
         child: Scaffold(
             body: GenericAvailableMatchesList(
-                RoundedTopBar(getButtons: getButtons, color: Colors.green),
-                getGamesWidgets,
-                getEmptyStateWidget,
-                refreshController,
-                Colors.green),
+                Colors.green,
+                ["UPCOMING", "PAST"].toList(),
+                [
+                  getUpcomingWidgets(context, true),
+                  getUpcomingWidgets(context, false)
+                ].toList(),
+                getEmptyStateWidget(context),
+                refreshController),
             floatingActionButton: FloatingActionButton(
                 backgroundColor: Colors.green,
                 child: Icon(Icons.add, color: Colors.white),
