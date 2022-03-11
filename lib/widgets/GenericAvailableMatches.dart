@@ -203,8 +203,7 @@ class GenericMatchInfo extends StatelessWidget {
         child: Padding(
           padding: EdgeInsets.only(top: topMargin),
           child: InfoContainer(
-              backgroundColor:
-                  isTest ? Colors.orangeAccent : Palette.white,
+              backgroundColor: Palette.white,
               child: applyBadges(
                   context,
                   match,
@@ -288,6 +287,27 @@ class GenericMatchInfo extends StatelessWidget {
           radius: 14,
           backgroundColor: Palette.primary),
     );
+    var test = Container(
+      width: 26,
+      height: 26,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.all(Radius.circular(50.0)),
+        border: Border.all(
+          color: Colors.white,
+          width: 2.0,
+        ),
+      ),
+      child: CircleAvatar(
+          child: Center(
+              child: Text("T",
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.roboto(
+                      color: Palette.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w500))),
+          radius: 14,
+          backgroundColor: Palette.destructive),
+    );
 
     var finalWidget = w;
 
@@ -303,18 +323,24 @@ class GenericMatchInfo extends StatelessWidget {
     var shouldShowUserBadge = context.watch<UserState>().isLoggedIn() &&
         match.isUserGoing(context.watch<UserState>().getLoggedUserDetails());
 
-    var shouldShowBoth = shouldShowUserBadge && match.numPlayersGoing() > 1;
+    var badges = [];
 
-    // fixme not sure why we need to do -6 here
-    if (shouldShowBoth) {
-      finalWidget = badgeIt(finalWidget, userAvatar,
-          BadgePosition.bottomEnd(bottom: -6, end: 18));
-      finalWidget = badgeIt(finalWidget, plusPlayers,
-          BadgePosition.bottomEnd(bottom: -6, end: 0));
-    } else if (shouldShowUserBadge) {
-      finalWidget = badgeIt(
-          finalWidget, userAvatar, BadgePosition.bottomEnd(bottom: -6, end: 0));
+    if (shouldShowUserBadge) {
+      badges.add(userAvatar);
     }
+    if (shouldShowUserBadge && match.numPlayersGoing() > 1) {
+      badges.add(plusPlayers);
+    }
+    if (match.isTest) {
+      badges.add(test);
+    }
+
+    var e = 0.0;
+    badges.forEach((b) {
+      // fixme not sure why we need to do -6 here
+      finalWidget = badgeIt(finalWidget, b, BadgePosition.bottomEnd(bottom: -6, end: e));
+      e += 18;
+    });
 
     return finalWidget;
   }
@@ -346,7 +372,7 @@ class GenericMatchInfoPast extends StatelessWidget {
         child: Padding(
           padding: EdgeInsets.only(top: topMargin),
           child: InfoContainer(
-            backgroundColor: (match.isTest) ? Colors.orange : Palette.white,
+            backgroundColor: Palette.white,
             child: IntrinsicHeight(
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
