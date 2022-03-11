@@ -105,35 +105,38 @@ class GenericAvailableMatchesListState extends State<GenericAvailableMatchesList
         bottom: false,
         child: Scaffold(
           backgroundColor: Palette.grey_lightest,
-          body: SmartRefresher(
-              enablePullDown: true,
-              enablePullUp: false,
-              header: MaterialClassicHeader(),
-              controller: refreshController,
-              onRefresh: () async {
-                await refreshPageState(context);
-              },
-              child: (matchWidgets != null && matchWidgets.isEmpty)
-                  ? Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                          Column(children: topWidgets),
-                          getEmptyStateWidget(context)
-                        ])
-                  : ListView.builder(
-                      itemBuilder: (c, i) {
-                        var coreWidgets = (matchWidgets == null)
-                            ? waitingWidgets
-                            : matchWidgets;
-                        var list = topWidgets + coreWidgets;
-                        return list[i];
-                      },
-                      itemCount: topWidgets.length +
-                          ((matchWidgets == null)
-                              ? waitingWidgets.length
-                              : matchWidgets.length),
-                    ),
-            ),
+          body: SafeArea(
+            minimum: EdgeInsets.only(bottom: 16.0),
+            child: SmartRefresher(
+                enablePullDown: true,
+                enablePullUp: false,
+                header: MaterialClassicHeader(),
+                controller: refreshController,
+                onRefresh: () async {
+                  await refreshPageState(context);
+                },
+                child: (matchWidgets != null && matchWidgets.isEmpty)
+                    ? Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                            Column(children: topWidgets),
+                            getEmptyStateWidget(context)
+                          ])
+                    : ListView.builder(
+                        itemBuilder: (c, i) {
+                          var coreWidgets = (matchWidgets == null)
+                              ? waitingWidgets
+                              : matchWidgets;
+                          var list = topWidgets + coreWidgets;
+                          return list[i];
+                        },
+                        itemCount: topWidgets.length +
+                            ((matchWidgets == null)
+                                ? waitingWidgets.length
+                                : matchWidgets.length),
+                      ),
+              ),
+          ),
         ),
       ),
     );
@@ -192,15 +195,16 @@ class GenericMatchInfo extends StatelessWidget {
 
     var loadOnceState = context.read<LoadOnceState>();
 
-    var sportCenter = loadOnceState.getSportCenter(match.sportCenterId);
-    var sport = loadOnceState.getSport(match.sport);
+    var sportCenter = (match == null) ? null : loadOnceState.getSportCenter(match.sportCenterId);
+    var sport = (match == null) ? null : loadOnceState.getSport(match.sport);
+    var isTest = (match == null) ? false : match.isTest;
 
     return InkWell(
         child: Padding(
           padding: EdgeInsets.only(top: topMargin),
           child: InfoContainer(
               backgroundColor:
-                  (match.isTest) ? Colors.orangeAccent : Palette.white,
+                  isTest ? Colors.orangeAccent : Palette.white,
               child: applyBadges(
                   context,
                   match,
@@ -409,7 +413,8 @@ class MatchThumbnail extends StatelessWidget {
           )),
           // placeholder: (context, url) => placeHolder,
           errorWidget: (context, url, error) => Icon(Icons.error),
-        ));
+        )
+    );
   }
 }
 

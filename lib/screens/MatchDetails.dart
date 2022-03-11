@@ -113,7 +113,7 @@ class MatchDetailsState extends State<MatchDetails> {
     // add padding individually since because of shadow clipping some components need margin
     var widgets = [
       // title
-      if (match != null) padLRB(Title(matchId)),
+      padLRB(Title(matchId)),
       // info box
       padLR(MatchInfo(matchId)),
       // stats

@@ -40,6 +40,8 @@ class BottomBarMatch extends StatelessWidget {
 
   Widget getSubText(Match match, MatchStatusForUser matchStatusForUser,
       BuildContext context) {
+    if (match == null)
+      return Container();
     var matchesState = context.watch<MatchesState>();
 
     switch (matchStatusForUser) {
