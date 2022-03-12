@@ -160,7 +160,9 @@ class MatchDetailsState extends State<MatchDetails> {
                 "If you leave the match you will get a refund in credits that you can use for other Nutmeg matches.\n\n" +
                     "If the match is canceled by the organizer, you will get a refund on the payment method you used to pay.\n\n"
                         "If you don’t show up you won’t get a refund."))),
-      SizedBox(height: 16)
+      SizedBox(height: 16),
+      padLR(MapCardImage(sportCenterId: match.sportCenterId)),
+      SizedBox(height: 16),
     ];
 
     return Scaffold(
@@ -589,68 +591,54 @@ class RuleCard extends StatelessWidget {
   }
 }
 
-class MapCard extends StatelessWidget {
-  final SportCenter sportCenter;
+class MapCardImage extends StatelessWidget {
+  final String sportCenterId;
 
-  final margin;
-  final width;
-  final height;
-
-  MapCard.big(this.sportCenter)
-      : margin = EdgeInsets.only(right: 25, left: 25, bottom: 10),
-        height = 150.0,
-        width = null;
+  const MapCardImage({Key key, this.sportCenterId}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    // fixme for some reason if we use InfoContainer it doesn't work https://stackoverflow.com/questions/53972558/how-to-add-border-radius-to-google-maps-in-flutter
+    var sportCenter = context.read<LoadOnceState>().getSportCenter(sportCenterId);
+
+    var lat = sportCenter.lat;
+    var lng = sportCenter.lng;
+
+    var url = "https://maps.googleapis.com/maps/api/staticmap?center=" +
+        lat.toString() +
+        "," +
+        lng.toString() +
+        "&key=AIzaSyDlU4z5DbXqoafB-T-t2mJ8rGv3Y4rAcWY&zoom=16&size=600x300&markers=color:red%7C" +
+        lat.toString() +
+        "," +
+        lng.toString();
+
     return InkWell(
-      child: Container(
-        margin: margin,
-        child: ClipRRect(
+      onTap: () async {
+        if (await MapLauncher.isMapAvailable(m.MapType.google)) {
+          await MapLauncher.showMarker(
+            mapType: m.MapType.google,
+            coords: Coords(lat, lng),
+            title: "",
+            extraParams: {
+              "q": sportCenter.name + "," + sportCenter.address,
+              "z": "16"
+            },
+          );
+        } else if (await MapLauncher.isMapAvailable(
+            m.MapType.apple)) {
+          await MapLauncher.showMarker(
+            mapType: m.MapType.apple,
+            coords: Coords(sportCenter.lat, sportCenter.lng),
+            title: "",
+            // fixme do something
+          );
+        } else {
+          // fixme do something
+        }
+      },
+      child: ClipRRect(
           borderRadius: InfoContainer.borderRadius,
-          child: SizedBox(
-              height: height,
-              width: width,
-              child: GoogleMap(
-                onTap: (LatLng latLng) async {
-                  if (await MapLauncher.isMapAvailable(m.MapType.google)) {
-                    await MapLauncher.showMarker(
-                      mapType: m.MapType.google,
-                      coords: Coords(sportCenter.lat, sportCenter.lng),
-                      title: "",
-                      extraParams: {
-                        "q": sportCenter.name + "," + sportCenter.address,
-                        "z": "16"
-                      },
-                    );
-                  } else if (await MapLauncher.isMapAvailable(
-                      m.MapType.apple)) {
-                    await MapLauncher.showMarker(
-                      mapType: m.MapType.apple,
-                      coords: Coords(sportCenter.lat, sportCenter.lng),
-                      title: "",
-                      // fixme do something
-                    );
-                  } else {
-                    // fixme do something
-                  }
-                },
-                liteModeEnabled: true,
-                myLocationEnabled: false,
-                myLocationButtonEnabled: false,
-                zoomGesturesEnabled: false,
-                zoomControlsEnabled: false,
-                markers: {
-                  Marker(
-                      markerId: MarkerId(sportCenter.placeId),
-                      position: LatLng(sportCenter.lat, sportCenter.lng))
-                },
-                initialCameraPosition: CameraPosition(
-                    target: LatLng(sportCenter.lat, sportCenter.lng), zoom: 12),
-              )),
-        ),
-      ),
+          child: CachedNetworkImage(imageUrl: url)),
     );
   }
 }
