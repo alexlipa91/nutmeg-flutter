@@ -13,7 +13,7 @@ class ModalBottomSheet {
       context: context,
       builder: (BuildContext context) => SafeArea(
           minimum: EdgeInsets.only(bottom: 16),
-          child: child)
+          child: Wrap(children: [child]))
     );
   }
  }

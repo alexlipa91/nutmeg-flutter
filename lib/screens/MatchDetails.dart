@@ -7,7 +7,6 @@ import 'package:flutter/scheduler.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:map_launcher/map_launcher.dart';
 import 'package:map_launcher/src/models.dart' as m;
@@ -30,7 +29,6 @@ import 'package:provider/provider.dart';
 import 'package:readmore/readmore.dart';
 import 'package:skeletons/skeletons.dart';
 
-import '../model/SportCenter.dart';
 import '../state/LoadOnceState.dart';
 import '../state/MatchesState.dart';
 import '../state/UserState.dart';
@@ -161,7 +159,7 @@ class MatchDetailsState extends State<MatchDetails> {
                     "If the match is canceled by the organizer, you will get a refund on the payment method you used to pay.\n\n"
                         "If you don’t show up you won’t get a refund."))),
       SizedBox(height: 16),
-      padLR(MapCardImage(sportCenterId: match.sportCenterId)),
+      padLR(MapCardImage(matchId)),
       SizedBox(height: 16),
     ];
 
@@ -240,6 +238,7 @@ class MatchInfo extends StatelessWidget {
     var child;
 
     var match = context.watch<MatchesState>().getMatch(matchId);
+    print(match);
 
     var sportCenter = (match == null)
         ? null
@@ -340,19 +339,16 @@ class SportCenterImageCarousel extends StatefulWidget {
   SportCenterImageCarousel(this.match);
 
   @override
-  State<StatefulWidget> createState() => SportCenterImageCarouselState(match);
+  State<StatefulWidget> createState() => SportCenterImageCarouselState();
 }
 
 class SportCenterImageCarouselState extends State<SportCenterImageCarousel> {
   int _current = 0;
-  final Match match;
   final CarouselController _controller = CarouselController();
-
-  SportCenterImageCarouselState(this.match);
 
   @override
   Widget build(BuildContext context) {
-    print(match);
+    print(widget.match);
     var placeHolder = SkeletonAvatar(
       style: SkeletonAvatarStyle(
           width: double.infinity,
@@ -360,12 +356,12 @@ class SportCenterImageCarouselState extends State<SportCenterImageCarousel> {
           borderRadius: BorderRadius.circular(10.0)),
     );
 
-    if (match == null) {
+    if (widget.match == null) {
       return placeHolder;
     }
 
     var sportCenter =
-        context.read<LoadOnceState>().getSportCenter(match.sportCenterId);
+        context.read<LoadOnceState>().getSportCenter(widget.match.sportCenterId);
 
     List<Widget> itemsToShow =
         List<Widget>.from(sportCenter.imagesUrls.map((i) => CachedNetworkImage(
@@ -592,13 +588,25 @@ class RuleCard extends StatelessWidget {
 }
 
 class MapCardImage extends StatelessWidget {
-  final String sportCenterId;
+  final String matchId;
 
-  const MapCardImage({Key key, this.sportCenterId}) : super(key: key);
+  MapCardImage(this.matchId);
 
   @override
   Widget build(BuildContext context) {
-    var sportCenter = context.read<LoadOnceState>().getSportCenter(sportCenterId);
+    var match = context.read<MatchesState>().getMatch(matchId);
+
+    if (match == null) {
+      return SkeletonAvatar(
+        style: SkeletonAvatarStyle(
+            width: double.infinity,
+            height: 190,
+            borderRadius: BorderRadius.circular(10.0)),
+      );
+    }
+
+    var sportCenter = context.read<LoadOnceState>()
+        .getSportCenter(match.sportCenterId);
 
     var lat = sportCenter.lat;
     var lng = sportCenter.lng;

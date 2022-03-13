@@ -9,6 +9,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:nutmeg/controller/LaunchController.dart';
 import 'package:nutmeg/screens/AvailableMatches.dart';
+import 'package:nutmeg/screens/CreateMatch.dart';
 import 'package:nutmeg/screens/EnterDetails.dart';
 import 'package:nutmeg/screens/MatchDetails.dart';
 import 'package:nutmeg/screens/PlayerOfTheMatch.dart';
@@ -97,6 +98,8 @@ void main() {
             GetPage(name: '/potm/:matchId', page: () => PlayerOfTheMatch(),
                 transition: Transition.native,
                 transitionDuration: Duration.zero),
+            GetPage(name: '/createMatch', page: () => CreateMatch(),
+                transition: Transition.native),
           ],
         ),
       ),

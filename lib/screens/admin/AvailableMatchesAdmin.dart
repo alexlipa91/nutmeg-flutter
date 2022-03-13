@@ -86,7 +86,8 @@ class AdminAvailableMatches extends StatelessWidget {
                   getUpcomingWidgets(context, false)
                 ].toList(),
                 getEmptyStateWidget(context),
-                refreshController),
+                refreshController,
+                null),
             floatingActionButton: FloatingActionButton(
                 backgroundColor: Colors.green,
                 child: Icon(Icons.add, color: Colors.white),

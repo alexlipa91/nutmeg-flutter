@@ -105,6 +105,43 @@ class BottomBarMatch extends StatelessWidget {
     var match = matchesState.getMatch(matchId);
     var status = matchesState.getMatchStatus(matchId);
     
+    return GenericBottomBar(child: Padding(
+      padding: EdgeInsets.only(
+          left: 16.0,
+          right: 16.0,
+          top: 16.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Container(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(getText(match, status), style: TextPalette.h2),
+                SizedBox(
+                  height: 4,
+                ),
+                getSubText(match, status, context),
+              ],
+            ),
+          ),
+          Container(child: getButton(match, status, context))
+        ],
+      ),
+    ));
+  }
+}
+
+class GenericBottomBar extends StatelessWidget {
+
+  final Widget child;
+
+  const GenericBottomBar({Key key, this.child}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -122,32 +159,7 @@ class BottomBarMatch extends StatelessWidget {
           ),
           child: SafeArea(
             minimum: EdgeInsets.only(bottom: 16),
-            child: Padding(
-              padding: EdgeInsets.only(
-                  left: 16.0,
-                  right: 16.0,
-                  top: 16.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Container(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(getText(match, status), style: TextPalette.h2),
-                        SizedBox(
-                          height: 4,
-                        ),
-                        getSubText(match, status, context),
-                      ],
-                    ),
-                  ),
-                  Container(child: getButton(match, status, context))
-                ],
-              ),
-            ),
+            child: child,
           ),
         )
       ],

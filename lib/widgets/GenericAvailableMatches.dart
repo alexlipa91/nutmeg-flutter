@@ -28,9 +28,11 @@ class GenericAvailableMatchesList extends StatefulWidget {
   final List<Widget> tabContent;
   final Widget emptyStateWidget;
   final RefreshController refreshController;
+  final FloatingActionButton floatingActionButton;
 
   const GenericAvailableMatchesList(this.appBarColor, this.tabNames,
-      this.tabContent, this.emptyStateWidget, this.refreshController);
+      this.tabContent, this.emptyStateWidget,
+      this.refreshController, this.floatingActionButton);
 
   @override
   State<StatefulWidget> createState() => GenericAvailableMatchesListState();
@@ -53,7 +55,7 @@ class GenericAvailableMatchesListState
     widget.refreshController.refreshCompleted();
   }
 
-  Widget topContainer() {
+  Widget waitingWidget() {
     var waitingWidgets = interleave(
         List<Widget>.filled(3, SkeletonAvailableMatches()),
         SizedBox(
@@ -151,7 +153,7 @@ class GenericAvailableMatchesListState
               child: ListView.builder(
                   itemBuilder: (c, i) {
                     var core = (widget.tabContent[selected] == null)
-                        ? top
+                        ? waitingWidget()
                         : Padding(
                             padding: EdgeInsets.all(16.0),
                             child: widget.tabContent[selected]);
@@ -162,6 +164,7 @@ class GenericAvailableMatchesListState
                   itemCount: 2),
             ),
           ),
+          floatingActionButton: widget.floatingActionButton,
         ),
       ),
     );

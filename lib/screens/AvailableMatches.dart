@@ -35,7 +35,7 @@ class AvailableMatches extends StatelessWidget {
     }
 
     if (!userState.isLoggedIn()) {
-      return getEmptyStateWidget(context);
+      return getEmptyStateWidget(context, false);
     }
 
     var now = DateTime.now();
@@ -59,7 +59,7 @@ class AvailableMatches extends StatelessWidget {
       });
     }
 
-    if (widgets.isEmpty) return getEmptyStateWidget(context);
+    if (widgets.isEmpty) return getEmptyStateWidget(context, false);
 
     return Column(children: widgets);
   }
@@ -96,6 +96,8 @@ class AvailableMatches extends StatelessWidget {
         }
       });
     }
+
+    if (widgets.isEmpty) return getEmptyStateWidget(context, false);
 
     return Column(children: widgets);
   }
@@ -167,7 +169,7 @@ class AvailableMatches extends StatelessWidget {
     return getEmptyStateWidget(context);
   }
 
-  Widget getEmptyStateWidget(BuildContext context) {
+  Widget getEmptyStateWidget(BuildContext context, [bool withAction = true]) {
     return Padding(
       padding: EdgeInsets.zero,
       child: Container(
@@ -179,8 +181,11 @@ class AvailableMatches extends StatelessWidget {
             SizedBox(height: 4),
             Text("Browse matches or create your own match",
                 style: TextPalette.bodyText, textAlign: TextAlign.center),
-            SizedBox(height: 4),
-            TappableLinkText(text: "CREATE A NEW MATCH"),
+            if (withAction) SizedBox(height: 4),
+            if (withAction)
+              TappableLinkText(
+                  text: "CREATE A NEW MATCH",
+                  onTap: (BuildContext context) => Get.toNamed("/createMatch")),
           ],
         ),
       ),
@@ -198,16 +203,21 @@ class AvailableMatches extends StatelessWidget {
               create: (context) => AvailableMatchesUiState()),
         ],
         builder: (context, _) => GenericAvailableMatchesList(
-              Palette.primary,
-              ["UPCOMING", "GOING", "PAST", if (isAdmin) "MY MATCHES"].toList(),
-              [
-                upcomingWidgets(context, refreshController),
-                goingWidgets(context, refreshController),
-                pastWidgets(context, refreshController),
-                if (isAdmin) getMyMatchesWidgets(context, refreshController)
-              ].toList(),
-              getEmptyStateWidget(context),
-              refreshController,
-            ));
+            Palette.primary,
+            ["UPCOMING", "GOING", "PAST", if (isAdmin) "MY MATCHES"].toList(),
+            [
+              upcomingWidgets(context, refreshController),
+              goingWidgets(context, refreshController),
+              pastWidgets(context, refreshController),
+              if (isAdmin) getMyMatchesWidgets(context, refreshController)
+            ].toList(),
+            getEmptyStateWidget(context),
+            refreshController,
+            context.watch<AvailableMatchesUiState>().current == 3
+                ? FloatingActionButton(
+                    backgroundColor: Palette.primary,
+                    child: Icon(Icons.add, color: Palette.white),
+                    onPressed: () => Get.toNamed("/createMatch"))
+                : null));
   }
 }
