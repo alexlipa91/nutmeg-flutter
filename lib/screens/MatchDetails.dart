@@ -62,6 +62,9 @@ class MatchDetailsState extends State<MatchDetails> {
     Future.wait(
         match.going.keys.map((e) => UserController.getUserDetails(context, e)));
 
+    // get organizer details
+    UserController.getUserDetails(context, match.organizerId);
+
     // get status
     var statusAndUsers =
         await MatchesController.refreshMatchStatus(context, match);
@@ -160,6 +163,31 @@ class MatchDetailsState extends State<MatchDetails> {
                         "If you don’t show up you won’t get a refund."))),
       SizedBox(height: 16),
       padLR(MapCardImage(matchId)),
+      SizedBox(height: 16),
+      if (match.organizerId != null)
+        padLR(InfoContainer(
+            child: Row(children: [
+          UserAvatar(
+              20, context.watch<UserState>().getUserDetail(match.organizerId)),
+          SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("Organized by", style: TextPalette.bodyText),
+                SizedBox(height: 4),
+                Text(
+                    context
+                        .watch<UserState>()
+                        .getUserDetail(match.organizerId)
+                        .name
+                        .split(" ")
+                        .first,
+                    style: TextPalette.h2),
+              ],
+            ),
+          ),
+        ]))),
       SizedBox(height: 16),
     ];
 
@@ -360,8 +388,9 @@ class SportCenterImageCarouselState extends State<SportCenterImageCarousel> {
       return placeHolder;
     }
 
-    var sportCenter =
-        context.read<LoadOnceState>().getSportCenter(widget.match.sportCenterId);
+    var sportCenter = context
+        .read<LoadOnceState>()
+        .getSportCenter(widget.match.sportCenterId);
 
     List<Widget> itemsToShow =
         List<Widget>.from(sportCenter.imagesUrls.map((i) => CachedNetworkImage(
@@ -605,8 +634,8 @@ class MapCardImage extends StatelessWidget {
       );
     }
 
-    var sportCenter = context.read<LoadOnceState>()
-        .getSportCenter(match.sportCenterId);
+    var sportCenter =
+        context.read<LoadOnceState>().getSportCenter(match.sportCenterId);
 
     var lat = sportCenter.lat;
     var lng = sportCenter.lng;
@@ -632,8 +661,7 @@ class MapCardImage extends StatelessWidget {
               "z": "16"
             },
           );
-        } else if (await MapLauncher.isMapAvailable(
-            m.MapType.apple)) {
+        } else if (await MapLauncher.isMapAvailable(m.MapType.apple)) {
           await MapLauncher.showMarker(
             mapType: m.MapType.apple,
             coords: Coords(sportCenter.lat, sportCenter.lng),
