@@ -64,20 +64,24 @@ void main() {
           home: new Container(
               decoration: new BoxDecoration(color: Colors.grey.shade400),
               child: Center(child: new LaunchWidget())),
-          theme: new ThemeData(
-              primaryColor: Palette.primary, accentColor: Palette.grey_lightest),
-          getPages: [
-            GetPage(name: '/home', page: () => AvailableMatches(),
-              transition: Transition.native
+          theme: ThemeData(
+            colorScheme: ColorScheme.light().copyWith(
+              primary: Palette.primary,
             ),
+          ),
+          getPages: [
+            GetPage(
+                name: '/home',
+                page: () => AvailableMatches(),
+                transition: Transition.native),
             GetPage(
                 name: '/matchNoTransition/:matchId',
                 transition: Transition.native,
                 transitionDuration: Duration(seconds: 0),
                 page: () => MultiProvider(providers: [
-                  ChangeNotifierProvider(
-                      create: (context) => MatchStatState()),
-                ], child: MatchDetails())),
+                      ChangeNotifierProvider(
+                          create: (context) => MatchStatState()),
+                    ], child: MatchDetails())),
             GetPage(
                 name: '/match/:matchId',
                 transition: Transition.native,
@@ -85,26 +89,41 @@ void main() {
                       ChangeNotifierProvider(
                           create: (context) => MatchStatState()),
                     ], child: MatchDetails())),
-            GetPage(name: '/login/enterDetails', page: () => EnterDetails(),
+            GetPage(
+                name: '/login/enterDetails',
+                page: () => EnterDetails(),
                 transition: Transition.native),
-            GetPage(name: '/user', page: () => UserPage(),
+            GetPage(
+                name: '/user',
+                page: () => UserPage(),
                 transition: Transition.native),
-            GetPage(name: '/editMatch/:matchId', page: () => AddOrEditMatch(),
+            GetPage(
+                name: '/editMatch/:matchId',
+                page: () => AddOrEditMatch(),
                 transition: Transition.native),
-            GetPage(name: '/adminHome', page: () => AdminAvailableMatches(),
+            GetPage(
+                name: '/adminHome',
+                page: () => AdminAvailableMatches(),
                 transition: Transition.native),
-            GetPage(name: '/addMatch', page: () => AddOrEditMatch(),
+            GetPage(
+                name: '/addMatch',
+                page: () => AddOrEditMatch(),
                 transition: Transition.native),
-            GetPage(name: '/potm/:matchId', page: () => PlayerOfTheMatch(),
+            GetPage(
+                name: '/potm/:matchId',
+                page: () => PlayerOfTheMatch(),
                 transition: Transition.native,
                 transitionDuration: Duration.zero),
-            GetPage(name: '/createMatch', page: () => CreateMatch(),
+            GetPage(
+                name: '/createMatch',
+                page: () => CreateMatch(),
                 transition: Transition.native),
           ],
         ),
       ),
     ));
   }, (Object error, StackTrace stackTrace) async {
+    print(error);
     print("**** ZONED EXCEPTION ****");
     if (!kIsWeb) {
       FirebaseCrashlytics.instance.recordError(error, stackTrace);
@@ -181,16 +200,14 @@ class LaunchWidgetState extends State<LaunchWidget> {
             decoration: BoxDecoration(
               color: Palette.primary,
             ),
-            child: Stack(children: [images, mainWidgets])
-        )
-    );
+            child: Stack(children: [images, mainWidgets])));
   }
 }
 
 // Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 //   print("Handling a background message");
 //   print('Message data: ${message.data}');
-  // if (message.data.containsKey("match_id")) {
-  //   LaunchController.goToMatchScreen(navigatorKey.currentContext, message.data["match_id"]);
-  // }
+// if (message.data.containsKey("match_id")) {
+//   LaunchController.goToMatchScreen(navigatorKey.currentContext, message.data["match_id"]);
+// }
 // }

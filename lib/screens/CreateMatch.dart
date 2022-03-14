@@ -97,7 +97,8 @@ class CreateMatchState extends State<CreateMatch> {
                         lastDate: DateTime(2035),
                         context: context,
                     );
-                    dateEditingController.text = dateFormat.format(d);
+                    if (d != null)
+                      dateEditingController.text = dateFormat.format(d);
                   },
                 )),
               ],
