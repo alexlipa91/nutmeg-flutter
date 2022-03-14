@@ -296,18 +296,17 @@ class UserPageState extends State<UserPage> {
 
     return Scaffold(
       backgroundColor: Palette.grey_lightest,
-      body: SmartRefresher(
-          enablePullDown: true,
-          enablePullUp: false,
-          header: MaterialClassicHeader(),
-          controller: refreshController,
-          onRefresh: () async {
-            await UserController.refreshCurrentUser(context);
-            refreshController.refreshCompleted();
-          },
-          child: SafeArea(
-            minimum: EdgeInsets.only(bottom: 16),
-            bottom: false,
+      body: SafeArea(
+        minimum: EdgeInsets.only(bottom: 16),
+        child: SmartRefresher(
+            enablePullDown: true,
+            enablePullUp: false,
+            header: MaterialClassicHeader(),
+            controller: refreshController,
+            onRefresh: () async {
+              await UserController.refreshCurrentUser(context);
+              refreshController.refreshCompleted();
+            },
             child: CustomScrollView(
               slivers: [
                 UserPageAppBar(),
@@ -323,8 +322,9 @@ class UserPageState extends State<UserPage> {
                   ),
                 )
               ],
-            ),
-          )),
+            )
+        ),
+      ),
     );
   }
 }
