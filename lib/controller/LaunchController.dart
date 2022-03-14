@@ -7,6 +7,7 @@ import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
@@ -15,7 +16,6 @@ import 'package:nutmeg/model/UserDetails.dart';
 import 'package:provider/provider.dart';
 import 'package:tuple/tuple.dart';
 import 'package:version/version.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
 import '../Exceptions.dart';
 import '../screens/Launch.dart';
@@ -30,9 +30,7 @@ import 'SportCentersController.dart';
 import 'SportsController.dart';
 import 'UserController.dart';
 
-
 class LaunchController {
-
   static var apiClient = CloudFunctionsClient();
 
   static Future<void> handleLink(Uri deepLink) async {
@@ -64,7 +62,8 @@ class LaunchController {
     }
   }
 
-  static void handleMessageFromNotification(BuildContext context, RemoteMessage message) async {
+  static void handleMessageFromNotification(
+      BuildContext context, RemoteMessage message) async {
     print('message ' + message.messageId + ' opened from notification');
 
     if (message.data.containsKey("event")) {
@@ -101,12 +100,12 @@ class LaunchController {
     if (!kIsWeb) {
       FirebaseDynamicLinks.instance.onLink(
           onSuccess: (PendingDynamicLinkData dynamicLink) async {
-            final Uri deepLink = dynamicLink?.link;
+        final Uri deepLink = dynamicLink?.link;
 
-            if (deepLink != null) {
-              LaunchController.handleLink(deepLink);
-            }
-          }, onError: (OnLinkErrorException e) async {
+        if (deepLink != null) {
+          LaunchController.handleLink(deepLink);
+        }
+      }, onError: (OnLinkErrorException e) async {
         print(e.message);
       });
     }
@@ -130,10 +129,9 @@ class LaunchController {
 
     var trace = FirebasePerformance.instance.newTrace("launch_app");
     await trace.start();
-    final stopwatch = Stopwatch()..start();
 
     FirebaseRemoteConfig firebaseRemoteConfig = FirebaseRemoteConfig.instance;
-    await firebaseRemoteConfig.setConfigSettings(RemoteConfigSettings(
+    firebaseRemoteConfig.setConfigSettings(RemoteConfigSettings(
       fetchTimeout: Duration(seconds: 5),
       minimumFetchInterval: Duration.zero,
     ));
@@ -147,7 +145,7 @@ class LaunchController {
 
     // fetch device model name
     var d = DeviceInfo();
-    await d.init();
+    d.init();
 
     List<Future<dynamic>> futures = [
       getVersion(),
@@ -186,7 +184,8 @@ class LaunchController {
     var userDetails = availableUserDetails;
 
     // fixme force users without name
-    if (userDetails != null && (userDetails.name == null || userDetails.name == "")) {
+    if (userDetails != null &&
+        (userDetails.name == null || userDetails.name == "")) {
       var name = await Get.toNamed("/login/enterDetails");
       if (name == null || name == "") {
         // Navigator.pop(context);
@@ -201,7 +200,7 @@ class LaunchController {
     if (userDetails != null) {
       context.read<UserState>().setCurrentUserDetails(userDetails);
       // tell the app to save user tokens
-      await UserController.saveUserTokensToDb(userDetails);
+      UserController.saveUserTokensToDb(userDetails);
       trace.putAttribute("user_id", userDetails?.documentId);
     }
 
@@ -228,7 +227,8 @@ class LaunchController {
     }
 
     // check if coming from notification
-    RemoteMessage initialMessage = await FirebaseMessaging.instance.getInitialMessage();
+    RemoteMessage initialMessage =
+        await FirebaseMessaging.instance.getInitialMessage();
 
     if (deepLink != null) {
       print("navigating with deep link:" + deepLink.toString());
@@ -244,6 +244,7 @@ class LaunchController {
     }
 
     setupNotifications(context);
+
     await trace.stop();
   }
 
@@ -260,12 +261,15 @@ class LaunchController {
   }
 
   static Future<void> cacheSportCenterImages(BuildContext context) async {
-    var urls = context.read<LoadOnceState>()
-        .getSportCenters().map((e) => e.imagesUrls).expand((e) => e);
+    var urls = context
+        .read<LoadOnceState>()
+        .getSportCenters()
+        .map((e) => e.imagesUrls)
+        .expand((e) => e);
     print("caching " + urls.length.toString() + " sporcenter images");
 
-    var urlsFuture = urls.map((u) =>
-        DefaultCacheManager().downloadFile(u).then((u) {}));
+    var urlsFuture =
+        urls.map((u) => DefaultCacheManager().downloadFile(u).then((u) {}));
 
     await Future.wait(urlsFuture);
     print("cached " + urls.length.toString() + " sporcenter images");
