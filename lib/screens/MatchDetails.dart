@@ -59,8 +59,7 @@ class MatchDetailsState extends State<MatchDetails> {
     var match = await MatchesController.refresh(context, matchId);
 
     // get users details
-    Future.wait(
-        match.going.keys.map((e) => UserController.getUserDetails(context, e)));
+    UserController.getBatchUserDetails(context, match.getGoingUsersByTime());
 
     // get organizer details
     UserController.getUserDetails(context, match.organizerId);
@@ -76,8 +75,6 @@ class MatchDetailsState extends State<MatchDetails> {
     } else if (status == MatchStatusForUser.rated) {
       MatchesController.refreshMatchStats(context, matchId);
     }
-
-    UserController.getBatchUserDetails(context, match.going.keys.toList());
   }
 
   @override
@@ -114,8 +111,7 @@ class MatchDetailsState extends State<MatchDetails> {
       // info box
       MatchInfo(matchId),
       // stats
-      if (matchStatus == MatchStatusForUser.rated ||
-          matchStatus == MatchStatusForUser.no_more_to_rate)
+      if (false)
         Stats(
           matchStatusForUser: matchStatus,
           matchDatetime: match.dateTime,
