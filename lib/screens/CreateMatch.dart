@@ -26,9 +26,6 @@ class CreateMatch extends StatefulWidget {
 }
 
 class CreateMatchState extends State<CreateMatch> {
-  DateTime date;
-  TimeOfDay startTimeOfDay;
-  TimeOfDay endTimeOfDay;
   String sportCenterId;
   String sportId;
 
@@ -149,26 +146,25 @@ class CreateMatchState extends State<CreateMatch> {
                       labelStyle: TextPalette.bodyText,
                       contentPadding: EdgeInsets.symmetric(horizontal: 16.0),
                       filled: true,
-                      focusColor: (startTimeOfDay == null)
+                      focusColor: (startTimeEditingController.text.isEmpty)
                           ? Palette.grey_lightest
                           : Palette.grey_lighter,
                       fillColor: Palette.grey_lighter,
                       border: InputBorder.none,
-                      enabled: startTimeOfDay != null,
                       helperText: " "),
                   readOnly: true,
-                  enabled: startTimeOfDay != null,
+                  enabled: startTimeEditingController.text.isNotEmpty,
                   onTap: () async {
+                    var currentStart = toTimeOfTheDay(startTimeEditingController.text);
+
                     var d = await showCustomTimePicker(
                         context: context,
                         onFailValidation: (context) => print(""),
-                        initialTime: endTimeOfDay,
+                        initialTime: toTimeOfTheDay(endTimeEditingController.text),
                         selectableTimePredicate: (time) =>
-                            time == null || isAfter(time, startTimeOfDay));
-                    endTimeEditingController.text = d.format(context);
-                    // setState(() {
-                    //   endTimeOfDay = d;
-                    // });
+                            time == null || isAfter(time, currentStart));
+                    if (d != null)
+                      endTimeEditingController.text = d.format(context);
                   },
                 )),
               ],
