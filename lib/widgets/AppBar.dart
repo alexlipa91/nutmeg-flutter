@@ -5,12 +5,11 @@ import 'package:get/get_core/src/get_main.dart';
 import 'package:nutmeg/screens/Login.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
-import 'package:nutmeg/widgets/Buttons.dart';
 import 'package:provider/provider.dart';
 
 import '../state/UserState.dart';
-import '../utils/Utils.dart';
 import 'Avatar.dart';
+
 
 class NutmegAppBar extends StatelessWidget with PreferredSizeWidget {
   final Color backgroundColor;
@@ -87,96 +86,5 @@ class MainAppBar extends NutmegAppBar {
         ),
       ),
     );
-  }
-}
-
-class MatchAppBar extends StatelessWidget {
-  final String matchId;
-
-  const MatchAppBar({Key key, this.matchId}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return SliverAppBar(
-      systemOverlayStyle: SystemUiOverlayStyle.dark,
-      backgroundColor: Colors.transparent,
-      automaticallyImplyLeading: false,
-      centerTitle: false,
-      titleSpacing: 0,
-      title: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          BackButton(color: Palette.black),
-          if (!DeviceInfo().name.contains("ipad"))
-            Align(
-                alignment: Alignment.centerRight,
-                child: ShareButton(() async {
-                  await DynamicLinks.shareMatchFunction(matchId);
-                }, Palette.black, 25.0)),
-        ],
-      ),
-    );
-  }
-}
-
-class UserPageAppBar extends NutmegAppBar {
-
-  @override
-  Widget build(BuildContext context) {
-    return SliverAppBar(
-      systemOverlayStyle: SystemUiOverlayStyle.dark,
-      backgroundColor: Colors.transparent,
-      automaticallyImplyLeading: false,
-      centerTitle: false,
-      titleSpacing: 0,
-      title: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          BackButton(color: Palette.black),
-        ],
-      ),
-    );
-  }
-}
-
-class AdminAreaAppBar extends NutmegAppBar {
-  @override
-  Widget build(BuildContext context) {
-    return NutmegAppBar(
-        backgroundColor: Colors.green,
-        mainRow: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              InkWell(
-                  child: Icon(Icons.arrow_back, color: Palette.white, size: 32),
-                  onTap: () => Get.back()),
-              LoggedUserAvatarWithRedirectUserPage(radius: 18)
-            ],
-          ),
-        ));
-  }
-}
-
-class AdminAreaAppBarInverted extends NutmegAppBar {
-  @override
-  Widget build(BuildContext context) {
-    return NutmegAppBar(
-        systemUiOverlayStyle: SystemUiOverlayStyle.dark,
-        backgroundColor: Palette.grey_lightest,
-        mainRow: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              InkWell(
-                  child:
-                      Icon(Icons.arrow_back, color: Palette.primary, size: 32),
-                  onTap: () => Get.back()),
-              UserAvatar(24, context.watch<UserState>().getLoggedUserDetails())
-            ],
-          ),
-        ));
   }
 }

@@ -15,6 +15,7 @@ import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/Avatar.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:nutmeg/widgets/Containers.dart';
+import 'package:nutmeg/widgets/PageTemplate.dart';
 import 'package:nutmeg/widgets/Section.dart';
 import 'package:provider/provider.dart';
 import 'package:time_picker_widget/time_picker_widget.dart';
@@ -444,90 +445,79 @@ class CreateMatchState extends State<CreateMatch> {
         )
     ];
 
-    return Scaffold(
-        body: Container(
-            child: CustomScrollView(
-          slivers: [
-            appBar,
-            SliverPadding(
-              padding: EdgeInsets.all(16.0),
-              sliver: Form(
-                key: _formKey,
-                child: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (BuildContext context, int index) {
-                      return widgets[index];
-                    },
-                    childCount: widgets.length,
-                  ),
+    return PageTemplate(
+      refreshState: null,
+      widgets: widgets,
+      appBar: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          BackButton(color: Palette.black),
+        ],
+      ),
+      bottomNavigationBar: GenericBottomBar(
+          child: Padding(
+            padding: EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0),
+            child: Row(children: [
+              UserAvatar(20, context.watch<UserState>().getLoggedUserDetails()),
+              SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("Organized by", style: TextPalette.bodyText),
+                    SizedBox(height: 4),
+                    Text(
+                        context
+                            .watch<UserState>()
+                            .getLoggedUserDetails()
+                            .name
+                            .split(" ")
+                            .first,
+                        style: TextPalette.h2),
+                  ],
                 ),
               ),
-            )
-          ],
-        )),
-        bottomNavigationBar: GenericBottomBar(
-            child: Padding(
-          padding: EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0),
-          child: Row(children: [
-            UserAvatar(20, context.watch<UserState>().getLoggedUserDetails()),
-            SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text("Organized by", style: TextPalette.bodyText),
-                  SizedBox(height: 4),
-                  Text(
+              GenericButtonWithLoader("CREATE", (BuildContext context) async {
+                context.read<GenericButtonWithLoaderState>().change(true);
+
+                if (_formKey.currentState.validate()) {
+                  var stod = toTimeOfTheDay(startTimeEditingController.text);
+                  var etod = toTimeOfTheDay(endTimeEditingController.text);
+                  var day = DateTime.parse(dateEditingController.text);
+                  var dateTime = DateTime(
+                      day.year, day.month, day.day, stod.hour, stod.minute);
+                  var endTime = DateTime(
+                      day.year, day.month, day.day, etod.hour, etod.minute);
+
+                  var match = Match(
+                      dateTime,
+                      sportCenterId,
+                      null,
+                      sportId,
+                      numberOfPeopleRangeValues.end.toInt(),
+                      (double.parse(priceController.text) * 100).toInt(),
+                      endTime.difference(dateTime),
+                      isTest,
+                      numberOfPeopleRangeValues.start.toInt(),
                       context
-                          .watch<UserState>()
+                          .read<UserState>()
                           .getLoggedUserDetails()
-                          .name
-                          .split(" ")
-                          .first,
-                      style: TextPalette.h2),
-                ],
-              ),
-            ),
-            GenericButtonWithLoader("CREATE", (BuildContext context) async {
-              context.read<GenericButtonWithLoaderState>().change(true);
+                          .documentId);
 
-              if (_formKey.currentState.validate()) {
-                var stod = toTimeOfTheDay(startTimeEditingController.text);
-                var etod = toTimeOfTheDay(endTimeEditingController.text);
-                var day = DateTime.parse(dateEditingController.text);
-                var dateTime = DateTime(
-                    day.year, day.month, day.day, stod.hour, stod.minute);
-                var endTime = DateTime(
-                    day.year, day.month, day.day, etod.hour, etod.minute);
+                  var id = await MatchesController.addMatch(match);
+                  print("added match with id " + id);
+                  Get.offNamed("/match/" + id);
+                  // await MatchesController.refresh(context, id);
+                } else {
+                  print("validation error");
+                  setState(() {});
+                }
 
-                var match = Match(
-                    dateTime,
-                    sportCenterId,
-                    null,
-                    sportId,
-                    numberOfPeopleRangeValues.end.toInt(),
-                    (double.parse(priceController.text) * 100).toInt(),
-                    endTime.difference(dateTime),
-                    isTest,
-                    numberOfPeopleRangeValues.start.toInt(),
-                    context
-                        .read<UserState>()
-                        .getLoggedUserDetails()
-                        .documentId);
-
-                var id = await MatchesController.addMatch(match);
-                print("added match with id " + id);
-                Get.offNamed("/match/" + id);
-                // await MatchesController.refresh(context, id);
-              } else {
-                print("validation error");
-                setState(() {});
-              }
-
-              context.read<GenericButtonWithLoaderState>().change(false);
-            }, Primary())
-          ]),
-        )));
+                context.read<GenericButtonWithLoaderState>().change(false);
+              }, Primary())
+            ]),
+          )),
+    );
   }
 
   TimeOfDay toTimeOfTheDay(String v) =>

@@ -6,10 +6,10 @@ import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
-import 'package:nutmeg/widgets/AppBar.dart';
 import 'package:nutmeg/widgets/Avatar.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:nutmeg/widgets/Containers.dart';
+import 'package:nutmeg/widgets/PageTemplate.dart';
 import 'package:nutmeg/widgets/Section.dart';
 import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
@@ -294,36 +294,14 @@ class UserPageState extends State<UserPage> {
       )
     ];
 
-    return Scaffold(
-      backgroundColor: Palette.grey_lightest,
-      body: SafeArea(
-        minimum: EdgeInsets.only(bottom: 16),
-        child: SmartRefresher(
-            enablePullDown: true,
-            enablePullUp: false,
-            header: MaterialClassicHeader(),
-            controller: refreshController,
-            onRefresh: () async {
-              await UserController.refreshCurrentUser(context);
-              refreshController.refreshCompleted();
-            },
-            child: CustomScrollView(
-              slivers: [
-                UserPageAppBar(),
-                SliverPadding(
-                  padding: EdgeInsets.only(left: 16, right: 16),
-                  sliver: SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (BuildContext context, int index) {
-                        return widgets[index];
-                      },
-                      childCount: widgets.length,
-                    ),
-                  ),
-                )
-              ],
-            )
-        ),
+    return PageTemplate(
+      refreshState: () => UserController.refreshCurrentUser(context),
+      widgets: widgets,
+      appBar: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          BackButton(color: Palette.black),
+        ],
       ),
     );
   }

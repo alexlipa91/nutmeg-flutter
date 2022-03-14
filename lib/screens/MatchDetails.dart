@@ -19,9 +19,9 @@ import 'package:nutmeg/screens/RatePlayersModal.dart';
 import 'package:nutmeg/state/MatchStatsState.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
-import 'package:nutmeg/widgets/AppBar.dart';
 import 'package:nutmeg/widgets/Avatar.dart';
 import 'package:nutmeg/widgets/Containers.dart';
+import 'package:nutmeg/widgets/PageTemplate.dart';
 import 'package:nutmeg/widgets/Section.dart';
 import 'package:provider/provider.dart';
 import 'package:readmore/readmore.dart';
@@ -30,6 +30,7 @@ import 'package:skeletons/skeletons.dart';
 import '../state/LoadOnceState.dart';
 import '../state/MatchesState.dart';
 import '../state/UserState.dart';
+import '../widgets/Buttons.dart';
 import '../widgets/ModalBottomSheet.dart';
 import '../widgets/PlayerBottomModal.dart';
 import '../widgets/Skeletons.dart';
@@ -184,32 +185,23 @@ class MatchDetailsState extends State<MatchDetails> {
         ),
     ];
 
-    return Scaffold(
-        backgroundColor: Palette.grey_lightest,
-        body: SafeArea(
-            bottom: false,
-            minimum: EdgeInsets.only(bottom: 16.0),
-            child: RefreshIndicator(
-                onRefresh: () async {
-                  await refreshState();
-                },
-                child: CustomScrollView(
-                  slivers: [
-                    MatchAppBar(matchId: matchId),
-                    SliverPadding(
-                      padding: EdgeInsets.symmetric(horizontal: 16.0),
-                      sliver: SliverList(
-                        delegate: SliverChildBuilderDelegate(
-                          (BuildContext context, int index) {
-                            return widgets[index];
-                          },
-                          childCount: widgets.length,
-                        ),
-                      ),
-                    )
-                  ],
-                ))),
-        bottomNavigationBar: bottomBar);
+    return PageTemplate(
+      refreshState: () => refreshState(),
+      widgets: widgets,
+      appBar: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          BackButton(color: Palette.black),
+          if (!DeviceInfo().name.contains("ipad"))
+            Align(
+                alignment: Alignment.centerRight,
+                child: ShareButton(() async {
+                  await DynamicLinks.shareMatchFunction(matchId);
+                }, Palette.black, 25.0)),
+        ],
+      ),
+      bottomNavigationBar: bottomBar,
+    );
   }
 }
 
