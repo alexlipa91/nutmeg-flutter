@@ -111,7 +111,8 @@ class MatchDetailsState extends State<MatchDetails> {
       // info box
       MatchInfo(matchId),
       // stats
-      if (false)
+      if (matchStatus == MatchStatusForUser.rated ||
+          matchStatus == MatchStatusForUser.no_more_to_rate)
         Stats(
           matchStatusForUser: matchStatus,
           matchDatetime: match.dateTime,
