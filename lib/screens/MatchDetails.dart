@@ -254,7 +254,6 @@ class MatchInfo extends StatelessWidget {
     var child;
 
     var match = context.watch<MatchesState>().getMatch(matchId);
-    print(match);
 
     var sportCenter = (match == null)
         ? null

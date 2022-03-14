@@ -20,6 +20,12 @@ class PageTemplate extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // fixme we apply safe area around body and if there is bottom bar we need to remove the bottom and manually add a space
+    var minimumBottomPadding = (bottomNavigationBar != null) ? 0.0 : 16.0;
+    if (bottomNavigationBar != null) {
+      widgets.add(SizedBox(height: 16.0));
+    }
+
     var refreshContainer = (Widget w) => (refreshState == null)
         ? Container(child: w)
         : SmartRefresher(
@@ -36,7 +42,7 @@ class PageTemplate extends StatelessWidget {
     return Scaffold(
       backgroundColor: Palette.grey_lightest,
       body: SafeArea(
-        minimum: EdgeInsets.only(bottom: 16),
+        minimum: EdgeInsets.only(bottom: minimumBottomPadding),
         child: refreshContainer(CustomScrollView(
           slivers: [
             SliverAppBar(
