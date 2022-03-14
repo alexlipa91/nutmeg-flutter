@@ -64,7 +64,7 @@ class MainAppBar extends NutmegAppBar {
                 onTap: () => Get.toNamed("/home"),
                 child: Image.asset('assets/nutmeg_white.png', height: 24)),
             if (isLoggedIn)
-              Builder(builder: (context) => CurrentUserAvatarWithRedirect(radius: 2))
+              Builder(builder: (context) => LoggedUserAvatarWithRedirectUserPage(radius: 2))
             else
               InkWell(
                 onTap: () async {
@@ -96,17 +96,16 @@ class MatchAppBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SliverAppBar(
+    return  SliverAppBar(
       systemOverlayStyle: SystemUiOverlayStyle.dark,
       backgroundColor: Colors.transparent,
-      centerTitle: false,
       automaticallyImplyLeading: false,
-      leadingWidth: 0,
+      centerTitle: false,
+      titleSpacing: 0,
       title: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // SizedBox(width: 16,), // we cannot pad outside
-          BackButton(),
+          BackButton(color: Palette.black),
           if (!DeviceInfo().name.contains("ipad"))
             Align(alignment: Alignment.centerRight,
                 child: ShareButton(() async{
@@ -118,25 +117,25 @@ class MatchAppBar extends StatelessWidget {
   }
 }
 
-class BackButton extends StatelessWidget {
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-        splashColor: Palette.grey_lighter,
-        child: Container(
-          width: 50,
-          height: 50,
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: Icon(Icons.arrow_back,
-                color: Colors.black, size: 25.0),
-          ),
-        ),
-        onTap: () => Navigator.of(context).pop()
-    );
-  }
-}
+// class BackButton extends StatelessWidget {
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return InkWell(
+//         splashColor: Palette.grey_lighter,
+//         child: Container(
+//           width: 50,
+//           height: 50,
+//           child: Align(
+//             alignment: Alignment.centerLeft,
+//             child: Icon(Icons.arrow_back,
+//                 color: Colors.black, size: 25.0),
+//           ),
+//         ),
+//         onTap: () => Navigator.of(context).pop()
+//     );
+//   }
+// }
 
 class UserPageAppBar extends NutmegAppBar {
   @override
@@ -171,7 +170,7 @@ class AdminAreaAppBar extends NutmegAppBar {
               InkWell(
                   child: Icon(Icons.arrow_back, color: Palette.white, size: 32),
                   onTap: () => Get.back()),
-              CurrentUserAvatarWithRedirect(radius: 18)
+              LoggedUserAvatarWithRedirectUserPage(radius: 18)
             ],
           ),
         ));

@@ -22,8 +22,6 @@ import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/AppBar.dart';
 import 'package:nutmeg/widgets/Avatar.dart';
 import 'package:nutmeg/widgets/Containers.dart';
-import 'package:nutmeg/widgets/ModalBottomSheet.dart';
-import 'package:nutmeg/widgets/PlayerBottomModal.dart';
 import 'package:nutmeg/widgets/Section.dart';
 import 'package:provider/provider.dart';
 import 'package:readmore/readmore.dart';
@@ -32,6 +30,8 @@ import 'package:skeletons/skeletons.dart';
 import '../state/LoadOnceState.dart';
 import '../state/MatchesState.dart';
 import '../state/UserState.dart';
+import '../widgets/ModalBottomSheet.dart';
+import '../widgets/PlayerBottomModal.dart';
 import '../widgets/Skeletons.dart';
 import 'BottomBarMatch.dart';
 
@@ -94,11 +94,7 @@ class MatchDetailsState extends State<MatchDetails> {
     var match = matchesState.getMatch(matchId);
     var matchStatus = matchesState.getMatchStatus(matchId);
 
-    padLRB(Widget w) => Padding(
-        padding: EdgeInsets.only(left: 16, right: 16, bottom: 16), child: w);
-
-    padLR(Widget w) =>
-        Padding(padding: EdgeInsets.only(left: 16, right: 16), child: w);
+    padB(Widget w) => Padding(padding: EdgeInsets.only(bottom: 16), child: w);
 
     bool shouldNotUseBottomBar = matchStatus == null ||
         matchStatus == MatchStatusForUser.rated ||
@@ -114,19 +110,19 @@ class MatchDetailsState extends State<MatchDetails> {
     // add padding individually since because of shadow clipping some components need margin
     var widgets = [
       // title
-      padLRB(Title(matchId)),
+      padB(Title(matchId)),
       // info box
-      padLR(MatchInfo(matchId)),
+      MatchInfo(matchId),
       // stats
       if (matchStatus == MatchStatusForUser.rated ||
           matchStatus == MatchStatusForUser.no_more_to_rate)
-        padLR(Stats(
+        Stats(
           matchStatusForUser: matchStatus,
           matchDatetime: match.dateTime,
-        )),
+        ),
       // horizontal players list
-      if (match != null && matchStatus != MatchStatusForUser.rated)
-        padLR(Builder(
+      if (match != null)
+        Builder(
           builder: (context) {
             var title = (match == null)
                 ? ""
@@ -135,84 +131,86 @@ class MatchDetailsState extends State<MatchDetails> {
                     match.maxPlayers.toString() +
                     " PLAYERS";
 
-            return Container(
-              child: Section(
-                title: title,
-                body: SingleChildScrollView(
-                  clipBehavior: Clip.none,
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                      children: (match.going.isEmpty)
-                          ? [EmptyPlayerCard(matchId: matchId)]
-                          : match
-                              .getGoingUsersByTime()
-                              .map((s) => PlayerCard(s))
-                              .toList()),
-                ),
+            return Section(
+              title: title,
+              body: SingleChildScrollView(
+                clipBehavior: Clip.none,
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                    children: (match.going.isEmpty)
+                        ? [EmptyPlayerCard(matchId: matchId)]
+                        : match
+                            .getGoingUsersByTime()
+                            .map((s) => PlayerCard(s))
+                            .toList()),
               ),
             );
           },
-        )),
+        ),
       if (!MatchesState.pastStates.contains(matchStatus))
-        padLR(Section(
+        Section(
             title: "DETAILS",
             body: RuleCard(
                 "Payment Policy",
                 "If you leave the match you will get a refund in credits that you can use for other Nutmeg matches.\n\n" +
                     "If the match is canceled by the organizer, you will get a refund on the payment method you used to pay.\n\n"
-                        "If you don’t show up you won’t get a refund."))),
-      SizedBox(height: 16),
-      padLR(MapCardImage(matchId)),
-      SizedBox(height: 16),
-      if (match.organizerId != null)
-        padLR(InfoContainer(
-            child: Row(children: [
-          UserAvatar(
-              20, context.watch<UserState>().getUserDetail(match.organizerId)),
-          SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text("Organized by", style: TextPalette.bodyText),
-                SizedBox(height: 4),
-                Text(
-                    context
-                        .watch<UserState>()
-                        .getUserDetail(match.organizerId)
-                        .name
-                        .split(" ")
-                        .first,
-                    style: TextPalette.h2),
-              ],
+                        "If you don’t show up you won’t get a refund.")),
+      Section(title: "LOCATION", body: MapCardImage(matchId)),
+      if (match != null && match.organizerId != null)
+        Section(
+          title: "ORGANIZER",
+          body: InfoContainer(
+              child: Row(children: [
+            UserAvatarWithBottomModal(
+                userData: context
+                    .watch<UserState>()
+                    .getUserDetail(match.organizerId)),
+            SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("Organized by", style: TextPalette.bodyText),
+                  SizedBox(height: 4),
+                  Text(
+                      context
+                          .watch<UserState>()
+                          .getUserDetail(match.organizerId)
+                          .name
+                          .split(" ")
+                          .first,
+                      style: TextPalette.h2),
+                ],
+              ),
             ),
-          ),
-        ]))),
-      SizedBox(height: 16),
+          ])),
+        ),
     ];
 
     return Scaffold(
         backgroundColor: Palette.grey_lightest,
         body: SafeArea(
             bottom: false,
+            minimum: EdgeInsets.only(bottom: 16.0),
             child: RefreshIndicator(
                 onRefresh: () async {
                   await refreshState();
                 },
-                child: Container(
-                  child: CustomScrollView(
-                    slivers: [
-                      MatchAppBar(matchId: matchId),
-                      SliverList(
+                child: CustomScrollView(
+                  slivers: [
+                    MatchAppBar(matchId: matchId),
+                    SliverPadding(
+                      padding: EdgeInsets.symmetric(horizontal: 16.0),
+                      sliver: SliverList(
                         delegate: SliverChildBuilderDelegate(
                           (BuildContext context, int index) {
                             return widgets[index];
                           },
                           childCount: widgets.length,
                         ),
-                      )
-                    ],
-                  ),
+                      ),
+                    )
+                  ],
                 ))),
         bottomNavigationBar: bottomBar);
   }
@@ -249,7 +247,8 @@ class Title extends StatelessWidget {
         ? match.documentId
         : sportCenter.name + " - " + sport.displayTitle;
 
-    return Text(title, style: TextPalette.h1Default);
+    return Text(title,
+        style: TextPalette.h1Default, textAlign: TextAlign.start);
   }
 }
 
@@ -532,12 +531,7 @@ class PlayerCard extends StatelessWidget {
                     style:
                         SkeletonAvatarStyle(height: 48, shape: BoxShape.circle),
                   )
-                : InkWell(
-                    onTap: () {
-                      ModalBottomSheet.showNutmegModalBottomSheet(
-                          context, JoinedPlayerBottomModal(userData));
-                    },
-                    child: UserAvatar(24, userData)),
+                : UserAvatarWithBottomModal(userData: userData),
             SizedBox(height: 10),
             (userData == null)
                 ? Skeletons.sText

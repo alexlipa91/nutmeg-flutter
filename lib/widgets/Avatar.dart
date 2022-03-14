@@ -7,6 +7,8 @@ import 'package:provider/provider.dart';
 
 import '../model/UserDetails.dart';
 import '../state/UserState.dart';
+import 'ModalBottomSheet.dart';
+import 'PlayerBottomModal.dart';
 
 
 class UserAvatar extends StatelessWidget {
@@ -44,10 +46,10 @@ class UserAvatar extends StatelessWidget {
   }
 }
 
-class CurrentUserAvatarWithRedirect extends StatelessWidget {
+class LoggedUserAvatarWithRedirectUserPage extends StatelessWidget {
   final double radius;
 
-  const CurrentUserAvatarWithRedirect({Key key, this.radius}) : super(key: key);
+  const LoggedUserAvatarWithRedirectUserPage({Key key, this.radius}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -81,5 +83,22 @@ class UserAvatarWithBorder extends StatelessWidget {
         backgroundColor: Palette.white,
         radius: 38,
         child: UserAvatar(34, userDetails));
+  }
+}
+
+class UserAvatarWithBottomModal extends StatelessWidget {
+
+  final UserDetails userData;
+
+  const UserAvatarWithBottomModal({Key key, this.userData}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+        onTap: () {
+          ModalBottomSheet.showNutmegModalBottomSheet(
+              context, JoinedPlayerBottomModal(userData));
+        },
+        child: UserAvatar(24, userData));
   }
 }

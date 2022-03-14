@@ -56,7 +56,7 @@ class CreateMatchState extends State<CreateMatch> {
   bool isTest = false;
 
   final dateFormat = DateFormat("yyyy-MM-dd");
-  final regexPrice = new RegExp("\\d+(\\.\\d\\d)?");
+  final regexPrice = new RegExp("\\d+(\\.\\d{1,2})?");
 
   Future<void> refreshState() async {}
 
@@ -80,11 +80,14 @@ class CreateMatchState extends State<CreateMatch> {
       automaticallyImplyLeading: false,
       centerTitle: false,
       titleSpacing: 0,
-      title: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          BackButton(color: Palette.black),
-        ],
+      title: Container(
+        color: Colors.green,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            BackButton(color: Palette.black),
+          ],
+        ),
       ),
     );
 
@@ -103,20 +106,20 @@ class CreateMatchState extends State<CreateMatch> {
                   validator: (v) => (v.isEmpty) ? "Required" : null,
                   autovalidateMode: AutovalidateMode.onUserInteraction,
                   decoration: InputDecoration(
-                    labelText: "Date",
-                    labelStyle: TextPalette.bodyText,
-                    contentPadding: EdgeInsets.symmetric(horizontal: 16.0),
-                    filled: true,
-                    focusColor: Palette.grey_lighter,
-                    fillColor: Palette.grey_lighter,
-                    border: InputBorder.none,
-                  ),
+                      labelText: "Date",
+                      labelStyle: TextPalette.bodyText,
+                      contentPadding: EdgeInsets.symmetric(horizontal: 16.0),
+                      filled: true,
+                      focusColor: Palette.grey_lighter,
+                      fillColor: Palette.grey_lighter,
+                      border: InputBorder.none,
+                      helperText: " "),
                   onTap: () async {
                     var d = await showDatePicker(
-                      initialDate: DateTime.now().add(Duration(hours: 12)),
-                      firstDate: DateTime.now(),
-                      lastDate: DateTime(2035),
-                      context: context,
+                        initialDate: DateTime.now().add(Duration(hours: 12)),
+                        firstDate: DateTime.now(),
+                        lastDate: DateTime(2035),
+                        context: context,
                     );
                     dateEditingController.text = dateFormat.format(d);
                   },
@@ -135,14 +138,14 @@ class CreateMatchState extends State<CreateMatch> {
                   validator: (v) => (v.isEmpty) ? "Required" : null,
                   autovalidateMode: AutovalidateMode.onUserInteraction,
                   decoration: InputDecoration(
-                    labelText: "Start Time",
-                    labelStyle: TextPalette.bodyText,
-                    contentPadding: EdgeInsets.symmetric(horizontal: 16.0),
-                    filled: true,
-                    focusColor: Palette.grey_lighter,
-                    fillColor: Palette.grey_lighter,
-                    border: InputBorder.none,
-                  ),
+                      labelText: "Start Time",
+                      labelStyle: TextPalette.bodyText,
+                      contentPadding: EdgeInsets.symmetric(horizontal: 16.0),
+                      filled: true,
+                      focusColor: Palette.grey_lighter,
+                      fillColor: Palette.grey_lighter,
+                      border: InputBorder.none,
+                      helperText: " "),
                   onTap: () async {
                     var d = await showCustomTimePicker(
                       context: context,
@@ -165,17 +168,17 @@ class CreateMatchState extends State<CreateMatch> {
                   controller: endTimeEditingController,
                   validator: (v) => (v.isEmpty) ? "Required" : null,
                   decoration: InputDecoration(
-                    labelText: "End Time",
-                    labelStyle: TextPalette.bodyText,
-                    contentPadding: EdgeInsets.symmetric(horizontal: 16.0),
-                    filled: true,
-                    focusColor: (startTimeOfDay == null)
-                        ? Palette.grey_lightest
-                        : Palette.grey_lighter,
-                    fillColor: Palette.grey_lighter,
-                    border: InputBorder.none,
-                    enabled: startTimeOfDay != null,
-                  ),
+                      labelText: "End Time",
+                      labelStyle: TextPalette.bodyText,
+                      contentPadding: EdgeInsets.symmetric(horizontal: 16.0),
+                      filled: true,
+                      focusColor: (startTimeOfDay == null)
+                          ? Palette.grey_lightest
+                          : Palette.grey_lighter,
+                      fillColor: Palette.grey_lighter,
+                      border: InputBorder.none,
+                      enabled: startTimeOfDay != null,
+                      helperText: " "),
                   readOnly: true,
                   enabled: startTimeOfDay != null,
                   onTap: () async {
@@ -212,6 +215,7 @@ class CreateMatchState extends State<CreateMatch> {
                   autovalidateMode: AutovalidateMode.onUserInteraction,
                   controller: sportCenterEditingController,
                   decoration: InputDecoration(
+                    suffixIcon: Icon(Icons.arrow_drop_down),
                     labelText: "Location",
                     labelStyle: TextPalette.bodyText,
                     contentPadding: EdgeInsets.symmetric(horizontal: 16.0),
@@ -269,6 +273,7 @@ class CreateMatchState extends State<CreateMatch> {
                   controller: sportEditingController,
                   decoration: InputDecoration(
                     labelText: "Sport",
+                    suffixIcon: Icon(Icons.arrow_drop_down),
                     labelStyle: TextPalette.bodyText,
                     contentPadding: EdgeInsets.symmetric(horizontal: 16.0),
                     filled: true,
@@ -330,6 +335,9 @@ class CreateMatchState extends State<CreateMatch> {
                     if (double.parse(v) < 0.50)
                       return "Minimum amount is € 0.50";
                     return null;
+                  },
+                  onChanged: (v) {
+                    setState(() {});
                   },
                   controller: priceController,
                   keyboardType: TextInputType.number,
@@ -522,9 +530,7 @@ class CreateMatchState extends State<CreateMatch> {
               context.read<GenericButtonWithLoaderState>().change(false);
             }, Primary())
           ]),
-        )
-      )
-    );
+        )));
   }
 
   TimeOfDay toTimeOfTheDay(String v) =>

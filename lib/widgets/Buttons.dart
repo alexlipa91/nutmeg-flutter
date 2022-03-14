@@ -143,7 +143,7 @@ class ShareButton extends StatelessWidget {
       child: Container(
           width: 50,
           height: 50,
-          child: Align(alignment: Alignment.centerRight, child: icon)),
+          child: Align(alignment: Alignment.center, child: icon)),
     );
   }
 }
