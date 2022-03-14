@@ -80,14 +80,11 @@ class CreateMatchState extends State<CreateMatch> {
       automaticallyImplyLeading: false,
       centerTitle: false,
       titleSpacing: 0,
-      title: Container(
-        color: Colors.green,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            BackButton(color: Palette.black),
-          ],
-        ),
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          BackButton(color: Palette.black),
+        ],
       ),
     );
 
