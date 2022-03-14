@@ -248,8 +248,9 @@ class UserController {
         aspectRatioPresets: [CropAspectRatioPreset.square],
         androidUiSettings: AndroidUiSettings(
             toolbarColor: Palette.primary,
-            toolbarWidgetColor: Colors.white,
+            toolbarWidgetColor: Palette.grey_light,
             initAspectRatio: CropAspectRatioPreset.original,
+            activeControlsWidgetColor: Palette.primary,
             lockAspectRatio: false),
         iosUiSettings: IOSUiSettings(
           minimumAspectRatio: 1.0,
