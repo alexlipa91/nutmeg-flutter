@@ -96,6 +96,7 @@ class GenericAvailableMatchesListState
               Text("Amsterdam", style: TextPalette.h1Inverted),
               SizedBox(height: 24),
               SingleChildScrollView(
+                clipBehavior: Clip.none,
                 scrollDirection: Axis.horizontal,
                 child: Row(
                     children: widget.tabNames.asMap().entries.map((e) {
