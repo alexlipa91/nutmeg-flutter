@@ -193,7 +193,7 @@ class LaunchController {
         return null;
       } else {
         userDetails.name = name;
-        UserController.editUser(userDetails);
+        UserController.editUser(context, userDetails);
       }
     }
 

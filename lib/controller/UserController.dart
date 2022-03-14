@@ -1,14 +1,18 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:image_cropper/image_cropper.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:nutmeg/controller/PromotionController.dart';
-import 'package:nutmeg/screens/EnterDetails.dart';
 import 'package:nutmeg/utils/Utils.dart';
 import 'package:provider/provider.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
@@ -16,10 +20,9 @@ import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import '../api/CloudFunctionsUtils.dart';
 import '../model/UserDetails.dart';
 import '../state/UserState.dart';
-
+import '../utils/UiUtils.dart';
 
 class UserController {
-
   static var apiClient = CloudFunctionsClient();
 
   static Future<UserDetails> refreshCurrentUser(BuildContext context) async {
@@ -50,8 +53,11 @@ class UserController {
     return null;
   }
 
-  static Future<void> editUser(UserDetails u) async => await apiClient
-      .callFunction("edit_user", {"id": u.documentId, "data": u.toJson()});
+  static Future<void> editUser(BuildContext context, UserDetails u) async {
+    await apiClient
+        .callFunction("edit_user", {"id": u.documentId, "data": u.toJson()});
+    context.read<UserState>().setUserDetail(u);
+  }
 
   static Future<void> addUser(UserDetails u) async => await apiClient
       .callFunction("add_user", {"id": u.documentId, "data": u.toJson()});
@@ -64,11 +70,11 @@ class UserController {
     try {
       await apiClient.callFunction(
           "store_user_token", {"id": userDetails.getUid(), "token": token});
-    } on Exception catch(e, s) {
+    } on Exception catch (e, s) {
       print(e);
       print(s);
     }
-      // Any time the token refreshes, store this in the database too.
+    // Any time the token refreshes, store this in the database too.
     FirebaseMessaging.instance.onTokenRefresh.listen(_saveTokenToDatabase);
   }
 
@@ -84,7 +90,10 @@ class UserController {
 
     // check if first time
     if (userDetails == null) {
-      userDetails = new UserDetails(uid, false, userCredential.user.photoURL,
+      userDetails = new UserDetails(
+          uid,
+          false,
+          userCredential.user.photoURL,
           // userCredential.user.displayName,
           null,
           userCredential.user.email);
@@ -203,11 +212,8 @@ class UserController {
 
     var resp = await apiClient.callFunction("get_user", {"id": uid});
 
-    var ud = (resp == null)
-        ? null
-        : UserDetails.fromJson(resp, uid);
-    if (ud != null)
-      userState.setUserDetail(ud);
+    var ud = (resp == null) ? null : UserDetails.fromJson(resp, uid);
+    if (ud != null) userState.setUserDetail(ud);
 
     return ud;
   }
@@ -231,6 +237,33 @@ class UserController {
     });
 
     return users;
+  }
+
+  static Future<void> updloadPicture(
+      BuildContext context, UserDetails userDetails) async {
+    var original = await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (original == null) return;
+    File croppedFile = await ImageCropper().cropImage(
+        sourcePath: original.path,
+        aspectRatioPresets: [CropAspectRatioPreset.square],
+        androidUiSettings: AndroidUiSettings(
+            toolbarColor: Palette.primary,
+            toolbarWidgetColor: Colors.white,
+            initAspectRatio: CropAspectRatioPreset.original,
+            lockAspectRatio: false),
+        iosUiSettings: IOSUiSettings(
+          minimumAspectRatio: 1.0,
+        ));
+    if (croppedFile == null) return;
+    var uploaded = await FirebaseStorage.instance
+        .ref("users/" +
+            userDetails.documentId +
+            "_" +
+            DateTime.now().millisecondsSinceEpoch.toString())
+        .putFile(croppedFile);
+    print(await uploaded.ref.getDownloadURL());
+    userDetails.image = await uploaded.ref.getDownloadURL();
+    await UserController.editUser(context, userDetails);
   }
 }
 

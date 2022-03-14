@@ -1,7 +1,10 @@
+import 'package:badges/badges.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
+import 'package:image_cropper/image_cropper.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
@@ -29,6 +32,10 @@ class UserPage extends StatefulWidget {
 
 class UserPageState extends State<UserPage> {
   final RefreshController refreshController = RefreshController();
+  final ImagePicker picker = ImagePicker();
+  final ImageCropper cropper = ImageCropper();
+
+  bool loadingPicture = false;
 
   @override
   void initState() {
@@ -42,6 +49,7 @@ class UserPageState extends State<UserPage> {
 
   @override
   Widget build(BuildContext context) {
+    print("rebuilding");
     var userState = context.watch<UserState>();
     var userDetails = userState.getLoggedUserDetails();
 
@@ -56,12 +64,47 @@ class UserPageState extends State<UserPage> {
         child: InfoContainer(
             child: Row(
           children: [
-            (userDetails == null)
-                ? SkeletonAvatar(
-                    style:
-                        SkeletonAvatarStyle(shape: BoxShape.circle, height: 69),
-                  )
-                : UserAvatar(30, userDetails),
+            (loadingPicture)
+                ? CircleAvatar(
+                    backgroundColor: Palette.grey_lightest,
+                    radius: 30,
+                    child: Container(
+                      height: 20.0,
+                      width: 20.0,
+                      child: CircularProgressIndicator(
+                        color: Palette.grey_light,
+                        strokeWidth: 2.0,
+                      ),
+                    ))
+                : (userDetails == null)
+                    ? SkeletonAvatar(
+                        style: SkeletonAvatarStyle(
+                            shape: BoxShape.circle, height: 69),
+                      )
+                    : InkWell(
+                        onTap: () async {
+                          setState(() {
+                            loadingPicture = true;
+                          });
+                          try {
+                            await UserController.updloadPicture(
+                                context, userDetails);
+                          } catch (e, s) {
+                            print(e);
+                            print(s);
+                          }
+                          setState(() {
+                            loadingPicture = false;
+                          });
+                        },
+                        child: Badge(
+                            toAnimate: false,
+                            badgeContent: Icon(Icons.camera_alt, size: 18.0),
+                            badgeColor: Palette.grey_light,
+                            elevation: 0,
+                            position: BadgePosition.bottomEnd(
+                                bottom: -5.0, end: -5.0),
+                            child: UserAvatar(30, userDetails))),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 30),
               child: Column(
@@ -253,8 +296,7 @@ class UserPageState extends State<UserPage> {
                         (BuildContext context) async {
                       context.read<GenericButtonWithLoaderState>().change(true);
                       userDetails.creditsInCents = creditCount;
-                      userState.setCurrentUserDetails(userDetails);
-                      await UserController.editUser(userDetails);
+                      await UserController.editUser(context, userDetails);
                       await GenericInfoModal(
                               title: "Credits updated",
                               description: "Your new balance is: " +
