@@ -85,8 +85,7 @@ class CreateMatchState extends State<CreateMatch> {
                       filled: true,
                       focusColor: Palette.grey_lighter,
                       fillColor: Palette.grey_lighter,
-                      border: InputBorder.none,
-                      helperText: " "),
+                      border: InputBorder.none),
                   onTap: () async {
                     var d = await showDatePicker(
                         initialDate: DateTime.now().add(Duration(hours: 12)),
@@ -118,8 +117,7 @@ class CreateMatchState extends State<CreateMatch> {
                       filled: true,
                       focusColor: Palette.grey_lighter,
                       fillColor: Palette.grey_lighter,
-                      border: InputBorder.none,
-                      helperText: " "),
+                      border: InputBorder.none),
                   onTap: () async {
                     var d = await showCustomTimePicker(
                       context: context,
@@ -150,8 +148,7 @@ class CreateMatchState extends State<CreateMatch> {
                           ? Palette.grey_lightest
                           : Palette.grey_lighter,
                       fillColor: Palette.grey_lighter,
-                      border: InputBorder.none,
-                      helperText: " "),
+                      border: InputBorder.none),
                   readOnly: true,
                   enabled: startTimeEditingController.text.isNotEmpty,
                   onTap: () async {
@@ -168,9 +165,6 @@ class CreateMatchState extends State<CreateMatch> {
                   },
                 )),
               ],
-            ),
-            SizedBox(
-              height: 16.0,
             )
           ],
         ),
