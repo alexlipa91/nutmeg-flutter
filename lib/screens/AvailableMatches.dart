@@ -153,7 +153,7 @@ class AvailableMatches extends StatelessWidget {
       ));
     });
 
-    if (result.isEmpty) return getEmptyStateWidget(context);
+    if (result.isEmpty) return getEmptyStateWidget(context, false);
 
     return Column(children: result);
   }

@@ -20,6 +20,7 @@ import '../state/AvailableMatchesState.dart';
 import '../state/LoadOnceState.dart';
 import '../state/MatchesState.dart';
 import '../state/UserState.dart';
+import 'Badges.dart';
 import 'Skeletons.dart';
 
 class GenericAvailableMatchesList extends StatefulWidget {
@@ -284,38 +285,8 @@ class GenericMatchInfo extends StatelessWidget {
           radius: 14,
           backgroundColor: Palette.primary),
     );
-    var test = Container(
-      width: 26,
-      height: 26,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.all(Radius.circular(50.0)),
-        border: Border.all(
-          color: Colors.white,
-          width: 2.0,
-        ),
-      ),
-      child: CircleAvatar(
-          child: Center(
-              child: Text("T",
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.roboto(
-                      color: Palette.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w500))),
-          radius: 14,
-          backgroundColor: Palette.destructive),
-    );
 
     var finalWidget = w;
-
-    var badgeIt = (child, content, position) => Badge(
-        toAnimate: false,
-        badgeContent: content,
-        child: child,
-        badgeColor: Colors.transparent,
-        borderSide: BorderSide.none,
-        elevation: 0,
-        position: position);
 
     var shouldShowUserBadge = context.watch<UserState>().isLoggedIn() &&
         match.isUserGoing(context.watch<UserState>().getLoggedUserDetails());
@@ -329,7 +300,7 @@ class GenericMatchInfo extends StatelessWidget {
       badges.add(plusPlayers);
     }
     if (match.isTest) {
-      badges.add(test);
+      badges.add(TestBadge());
     }
 
     var e = 0.0;
@@ -368,48 +339,51 @@ class GenericMatchInfoPast extends StatelessWidget {
     var sportCenter = loadOnceState.getSportCenter(match.sportCenterId);
     var sport = loadOnceState.getSport(match.sport);
 
+    var child = InfoContainer(
+      backgroundColor: Palette.white,
+      child: IntrinsicHeight(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Container(
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 10),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                            sportCenter.name + " - " + sport.displayTitle,
+                            style: TextPalette.h2),
+                        SizedBox(height: 10),
+                        Text(sportCenter.name,
+                            style: TextPalette.bodyText),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Container(
+                child: Column(
+                  children: [
+                    Text(dayFormat.format(match.dateTime),
+                        style: TextPalette.h4)
+                  ],
+                )),
+          ],
+        ),
+      ),
+    );
+
     return InkWell(
         child: Padding(
           padding: EdgeInsets.only(top: topMargin),
-          child: InfoContainer(
-            backgroundColor: Palette.white,
-            child: IntrinsicHeight(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Container(
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 10),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                  sportCenter.name + " - " + sport.displayTitle,
-                                  style: TextPalette.h2),
-                              SizedBox(height: 10),
-                              Text(sportCenter.name,
-                                  style: TextPalette.bodyText),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Container(
-                      child: Column(
-                    children: [
-                      Text(dayFormat.format(match.dateTime),
-                          style: TextPalette.h4)
-                    ],
-                  )),
-                ],
-              ),
-            ),
-          ),
+          child: match.isTest ? badgeIt(child, TestBadge(),
+              BadgePosition.bottomEnd(bottom: 8, end: 8)) : child,
         ),
         onTap: () => onTap(context, match.documentId, refreshController));
   }
