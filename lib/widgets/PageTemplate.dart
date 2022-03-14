@@ -23,7 +23,7 @@ class PageTemplate extends StatelessWidget {
     // fixme we apply safe area around body and if there is bottom bar we need to remove the bottom and manually add a space
     var minimumBottomPadding = (bottomNavigationBar != null) ? 0.0 : 16.0;
     if (bottomNavigationBar != null) {
-      widgets.add(SizedBox(height: 16.0));
+      widgets.add(Container(child: SizedBox(height: 16.0)));
     }
 
     var refreshContainer = (Widget w) => (refreshState == null)
