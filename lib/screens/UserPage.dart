@@ -50,51 +50,47 @@ class UserPageState extends State<UserPage> {
     int creditCount = (userDetails == null) ? 0 : userDetails.creditsInCents;
 
     var widgets = [
-      Padding(
-          padding: EdgeInsets.only(left: 16, right: 16),
-          child: Text("Account", style: TextPalette.h1Default)),
+      Text("Account", style: TextPalette.h1Default),
       Padding(
         padding: EdgeInsets.only(top: 20),
         child: InfoContainer(
-            margin: EdgeInsets.symmetric(horizontal: 16),
             child: Row(
-              children: [
-                (userDetails == null)
-                    ? SkeletonAvatar(
-                        style: SkeletonAvatarStyle(
-                            shape: BoxShape.circle, height: 69),
-                      )
-                    : UserAvatar(30, userDetails),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 30),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      (userDetails == null)
-                          ? SkeletonLine(
-                              style: SkeletonLineStyle(
-                                  height: 12,
-                                  width: 200,
-                                  borderRadius: BorderRadius.circular(8.0)))
-                          : Text(userDetails.name ?? "N/A",
-                              style: TextPalette.h2),
-                      SizedBox(height: 10),
-                      (userDetails == null)
-                          ? SkeletonLine(
-                              style: SkeletonLineStyle(
-                                  height: 12,
-                                  width: 100,
-                                  borderRadius: BorderRadius.circular(8.0)))
-                          : Text(userDetails.email ?? "N/A",
-                              style: TextPalette.bodyText)
-                    ],
-                  ),
-                )
-              ],
-            )),
+          children: [
+            (userDetails == null)
+                ? SkeletonAvatar(
+                    style:
+                        SkeletonAvatarStyle(shape: BoxShape.circle, height: 69),
+                  )
+                : UserAvatar(30, userDetails),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 30),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  (userDetails == null)
+                      ? SkeletonLine(
+                          style: SkeletonLineStyle(
+                              height: 12,
+                              width: 200,
+                              borderRadius: BorderRadius.circular(8.0)))
+                      : Text(userDetails.name ?? "N/A", style: TextPalette.h2),
+                  SizedBox(height: 10),
+                  (userDetails == null)
+                      ? SkeletonLine(
+                          style: SkeletonLineStyle(
+                              height: 12,
+                              width: 100,
+                              borderRadius: BorderRadius.circular(8.0)))
+                      : Text(userDetails.email ?? "N/A",
+                          style: TextPalette.bodyText)
+                ],
+              ),
+            )
+          ],
+        )),
       ),
       Padding(
-        padding: EdgeInsets.only(top: 20, left: 16, right: 16),
+        padding: EdgeInsets.only(top: 20),
         child:
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
           Expanded(
@@ -115,7 +111,7 @@ class UserPageState extends State<UserPage> {
       ),
       if (!shouldDisableRatings)
         Padding(
-          padding: EdgeInsets.only(top: 20, left: 16, right: 16),
+          padding: EdgeInsets.only(top: 20),
           child:
               Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
             Expanded(
@@ -139,151 +135,143 @@ class UserPageState extends State<UserPage> {
           ]),
         ),
       if (!shouldDisableRatings)
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16),
-          child: Section(
-            title: "USEFUL LINK",
-            body: InfoContainer(
-                child: Column(children: [
-              LinkInfo(
-                text: "Follow us on Instagram",
-                onTap: () async {
-                  var url = 'https://www.instagram.com/nutmegapp/';
+        Section(
+          title: "USEFUL LINK",
+          body: InfoContainer(
+              child: Column(children: [
+            LinkInfo(
+              text: "Follow us on Instagram",
+              onTap: () async {
+                var url = 'https://www.instagram.com/nutmegapp/';
 
-                  if (await canLaunch(url)) {
-                    await launch(
-                      url,
-                      universalLinksOnly: true,
-                    );
-                  } else {
-                    throw 'There was a problem to open the url: $url';
-                  }
-                },
-              ),
-              // LinkInfo(text: "Terms and Conditions"),
-              Padding(
-                padding: EdgeInsets.only(top: 10),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: GenericButtonWithLoader(
-                        "LOGOUT",
-                        (BuildContext context) async {
-                          context
-                              .read<GenericButtonWithLoaderState>()
-                              .change(true);
-
-                          try {
-                            await Future.delayed(
-                                Duration(milliseconds: 500),
-                                () => UserController.logout(
-                                    context.read<UserState>()));
-                            Navigator.of(context).pop();
-                          } catch (e, stackTrace) {
-                            print(e);
-                            print(stackTrace);
-                            Get.back(result: false);
-                            return;
-                          }
-                        },
-                        Primary(),
-                      ),
-                    )
-                  ],
-                ),
-              ),
-            ])),
-          ),
-        ),
-      if (userDetails != null && userDetails.getIsAdmin())
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16),
-          child: Section(
-            title: "ADMIN COMMANDS",
-            body: InfoContainer(
-                child: Column(children: [
-              Padding(
-                padding: EdgeInsets.only(top: 10),
-                child: Row(
-                  children: [
-                    Expanded(
-                        child: GenericButtonWithLoader(
-                      "ADMIN AREA",
+                if (await canLaunch(url)) {
+                  await launch(
+                    url,
+                    universalLinksOnly: true,
+                  );
+                } else {
+                  throw 'There was a problem to open the url: $url';
+                }
+              },
+            ),
+            // LinkInfo(text: "Terms and Conditions"),
+            Padding(
+              padding: EdgeInsets.only(top: 10),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: GenericButtonWithLoader(
+                      "LOGOUT",
                       (BuildContext context) async {
-                        Get.toNamed("/adminHome");
-                      },
-                      Primary(),
-                    ))
-                  ],
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.only(top: 10),
-                child: Row(
-                  children: [
-                    Text("Test Mode"),
-                    SizedBox(width: 10),
-                    Switch(
-                      value: context.watch<UserState>().isTestMode,
-                      onChanged: (value) =>
-                          userState.setTestMode(!userState.isTestMode),
-                      activeTrackColor: Colors.red,
-                      activeColor: Colors.red,
-                    ),
-                    Expanded(
-                        child: Text("It allows to see in the UI test matches"))
-                  ],
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.only(top: 10),
-                child: Row(
-                  children: [
-                    Text("Update Credits (in cents)"),
-                    SizedBox(width: 10),
-                    Expanded(
-                      child: TextFormField(
-                          initialValue: userDetails.creditsInCents.toString(),
-                          keyboardType: TextInputType.number,
-                          inputFormatters: <TextInputFormatter>[
-                            FilteringTextInputFormatter.digitsOnly
-                          ], // Only numbers can be
-                          onChanged: (v) {
-                            var newValue = int.tryParse(v);
-                            if (newValue != null) creditCount = newValue;
-                          }
-                          // entered
-                          ),
-                    ),
-                    SizedBox(width: 10),
-                    Container(
-                      width: 100,
-                      child: GenericButtonWithLoader("SET",
-                          (BuildContext context) async {
                         context
                             .read<GenericButtonWithLoaderState>()
                             .change(true);
-                        userDetails.creditsInCents = creditCount;
-                        userState.setCurrentUserDetails(userDetails);
-                        await UserController.editUser(userDetails);
-                        await GenericInfoModal(
-                                title: "Credits updated",
-                                description: "Your new balance is: " +
-                                    formatCurrency(creditCount))
-                            .show(context);
-                        context
-                            .read<GenericButtonWithLoaderState>()
-                            .change(false);
-                      }, Primary()),
-                    )
-                  ],
-                ),
+
+                        try {
+                          await Future.delayed(
+                              Duration(milliseconds: 500),
+                              () => UserController.logout(
+                                  context.read<UserState>()));
+                          Navigator.of(context).pop();
+                        } catch (e, stackTrace) {
+                          print(e);
+                          print(stackTrace);
+                          Get.back(result: false);
+                          return;
+                        }
+                      },
+                      Primary(),
+                    ),
+                  )
+                ],
               ),
-            ])),
-          ),
+            ),
+          ])),
+        ),
+      if (userDetails != null && userDetails.getIsAdmin())
+        Section(
+          title: "ADMIN COMMANDS",
+          body: InfoContainer(
+              child: Column(children: [
+            Padding(
+              padding: EdgeInsets.only(top: 10),
+              child: Row(
+                children: [
+                  Expanded(
+                      child: GenericButtonWithLoader(
+                    "ADMIN AREA",
+                    (BuildContext context) async {
+                      Get.toNamed("/adminHome");
+                    },
+                    Primary(),
+                  ))
+                ],
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.only(top: 10),
+              child: Row(
+                children: [
+                  Text("Test Mode"),
+                  SizedBox(width: 10),
+                  Switch(
+                    value: context.watch<UserState>().isTestMode,
+                    onChanged: (value) =>
+                        userState.setTestMode(!userState.isTestMode),
+                    activeTrackColor: Colors.red,
+                    activeColor: Colors.red,
+                  ),
+                  Expanded(
+                      child: Text("It allows to see in the UI test matches"))
+                ],
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.only(top: 10),
+              child: Row(
+                children: [
+                  Text("Update Credits (in cents)"),
+                  SizedBox(width: 10),
+                  Expanded(
+                    child: TextFormField(
+                        initialValue: userDetails.creditsInCents.toString(),
+                        keyboardType: TextInputType.number,
+                        inputFormatters: <TextInputFormatter>[
+                          FilteringTextInputFormatter.digitsOnly
+                        ], // Only numbers can be
+                        onChanged: (v) {
+                          var newValue = int.tryParse(v);
+                          if (newValue != null) creditCount = newValue;
+                        }
+                        // entered
+                        ),
+                  ),
+                  SizedBox(width: 10),
+                  Container(
+                    width: 100,
+                    child: GenericButtonWithLoader("SET",
+                        (BuildContext context) async {
+                      context.read<GenericButtonWithLoaderState>().change(true);
+                      userDetails.creditsInCents = creditCount;
+                      userState.setCurrentUserDetails(userDetails);
+                      await UserController.editUser(userDetails);
+                      await GenericInfoModal(
+                              title: "Credits updated",
+                              description: "Your new balance is: " +
+                                  formatCurrency(creditCount))
+                          .show(context);
+                      context
+                          .read<GenericButtonWithLoaderState>()
+                          .change(false);
+                    }, Primary()),
+                  )
+                ],
+              ),
+            ),
+          ])),
         ),
       Padding(
-        padding: EdgeInsets.only(left: 16, right: 16, top: 8),
+        padding: EdgeInsets.only(top: 8),
         child: Center(
           child: Container(
             child: FutureBuilder<Tuple2<Version, String>>(
@@ -318,16 +306,20 @@ class UserPageState extends State<UserPage> {
             refreshController.refreshCompleted();
           },
           child: SafeArea(
+            minimum: EdgeInsets.only(bottom: 16),
             bottom: false,
             child: CustomScrollView(
               slivers: [
                 UserPageAppBar(),
-                SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (BuildContext context, int index) {
-                      return widgets[index];
-                    },
-                    childCount: widgets.length,
+                SliverPadding(
+                  padding: EdgeInsets.only(left: 16, right: 16),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (BuildContext context, int index) {
+                        return widgets[index];
+                      },
+                      childCount: widgets.length,
+                    ),
                   ),
                 )
               ],

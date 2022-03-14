@@ -12,7 +12,6 @@ import '../state/UserState.dart';
 import '../utils/Utils.dart';
 import 'Avatar.dart';
 
-
 class NutmegAppBar extends StatelessWidget with PreferredSizeWidget {
   final Color backgroundColor;
   final Widget mainRow;
@@ -39,7 +38,6 @@ class NutmegAppBar extends StatelessWidget with PreferredSizeWidget {
 }
 
 class MainAppBar extends NutmegAppBar {
-
   final color;
 
   MainAppBar(this.color);
@@ -64,14 +62,17 @@ class MainAppBar extends NutmegAppBar {
                 onTap: () => Get.toNamed("/home"),
                 child: Image.asset('assets/nutmeg_white.png', height: 24)),
             if (isLoggedIn)
-              Builder(builder: (context) => LoggedUserAvatarWithRedirectUserPage(radius: 2))
+              Builder(
+                  builder: (context) =>
+                      LoggedUserAvatarWithRedirectUserPage(radius: 2))
             else
               InkWell(
                 onTap: () async {
                   var communication = await Navigator.push(context,
                       MaterialPageRoute(builder: (context) => Login()));
                   if (communication != null) {
-                    GenericInfoModal(title: "Welcome", description: communication.text)
+                    GenericInfoModal(
+                            title: "Welcome", description: communication.text)
                         .show(context);
                   }
                 },
@@ -96,7 +97,7 @@ class MatchAppBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return  SliverAppBar(
+    return SliverAppBar(
       systemOverlayStyle: SystemUiOverlayStyle.dark,
       backgroundColor: Colors.transparent,
       automaticallyImplyLeading: false,
@@ -107,8 +108,9 @@ class MatchAppBar extends StatelessWidget {
         children: [
           BackButton(color: Palette.black),
           if (!DeviceInfo().name.contains("ipad"))
-            Align(alignment: Alignment.centerRight,
-                child: ShareButton(() async{
+            Align(
+                alignment: Alignment.centerRight,
+                child: ShareButton(() async {
                   await DynamicLinks.shareMatchFunction(matchId);
                 }, Palette.black, 25.0)),
         ],
@@ -117,40 +119,20 @@ class MatchAppBar extends StatelessWidget {
   }
 }
 
-// class BackButton extends StatelessWidget {
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return InkWell(
-//         splashColor: Palette.grey_lighter,
-//         child: Container(
-//           width: 50,
-//           height: 50,
-//           child: Align(
-//             alignment: Alignment.centerLeft,
-//             child: Icon(Icons.arrow_back,
-//                 color: Colors.black, size: 25.0),
-//           ),
-//         ),
-//         onTap: () => Navigator.of(context).pop()
-//     );
-//   }
-// }
-
 class UserPageAppBar extends NutmegAppBar {
+
   @override
   Widget build(BuildContext context) {
     return SliverAppBar(
       systemOverlayStyle: SystemUiOverlayStyle.dark,
       backgroundColor: Colors.transparent,
-      centerTitle: false,
       automaticallyImplyLeading: false,
-      leadingWidth: 0,
+      centerTitle: false,
+      titleSpacing: 0,
       title: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // SizedBox(width: 16,), // we cannot pad outside
-          BackButton(),
+          BackButton(color: Palette.black),
         ],
       ),
     );
