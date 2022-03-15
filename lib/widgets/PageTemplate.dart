@@ -35,7 +35,7 @@ class PageTemplate extends StatelessWidget {
             controller: refreshController,
             onRefresh: () async {
               await refreshState();
-              refreshController.refreshCompleted();
+              refreshController.refreshToIdle();
             },
             child: w);
 

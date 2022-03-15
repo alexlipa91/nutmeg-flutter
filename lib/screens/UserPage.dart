@@ -15,13 +15,11 @@ import 'package:nutmeg/widgets/Containers.dart';
 import 'package:nutmeg/widgets/PageTemplate.dart';
 import 'package:nutmeg/widgets/Section.dart';
 import 'package:provider/provider.dart';
-import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:skeletons/skeletons.dart';
 import 'package:tuple/tuple.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:version/version.dart';
 
-import '../state/AvailableMatchesState.dart';
 import '../state/UserState.dart';
 
 class UserPage extends StatefulWidget {
@@ -32,7 +30,6 @@ class UserPage extends StatefulWidget {
 }
 
 class UserPageState extends State<UserPage> {
-  final RefreshController refreshController = RefreshController();
   final ImagePicker picker = ImagePicker();
   final ImageCropper cropper = ImageCropper();
 

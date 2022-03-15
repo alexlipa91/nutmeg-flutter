@@ -363,7 +363,6 @@ class SportCenterImageCarouselState extends State<SportCenterImageCarousel> {
 
   @override
   Widget build(BuildContext context) {
-    print(widget.match);
     var placeHolder = SkeletonAvatar(
       style: SkeletonAvatarStyle(
           width: double.infinity,
