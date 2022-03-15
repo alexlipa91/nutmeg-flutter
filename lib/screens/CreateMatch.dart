@@ -311,7 +311,7 @@ class CreateMatchState extends State<CreateMatch> {
                     setState(() {});
                   },
                   controller: priceController,
-                  keyboardType: TextInputType.number,
+                  keyboardType: TextInputType.numberWithOptions(signed: true),
                   autovalidateMode: AutovalidateMode.onUserInteraction,
                   decoration: InputDecoration(
                     prefixText: "€ ",
