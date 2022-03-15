@@ -21,6 +21,7 @@ import 'package:tuple/tuple.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:version/version.dart';
 
+import '../state/AvailableMatchesState.dart';
 import '../state/UserState.dart';
 
 class UserPage extends StatefulWidget {
@@ -49,7 +50,6 @@ class UserPageState extends State<UserPage> {
 
   @override
   Widget build(BuildContext context) {
-    print("rebuilding");
     var userState = context.watch<UserState>();
     var userDetails = userState.getLoggedUserDetails();
 
@@ -215,13 +215,13 @@ class UserPageState extends State<UserPage> {
                               Duration(milliseconds: 500),
                               () => UserController.logout(
                                   context.read<UserState>()));
-                          Navigator.of(context).pop();
                         } catch (e, stackTrace) {
                           print(e);
                           print(stackTrace);
-                          Get.back(result: false);
-                          return;
                         }
+                        // when logging out, go back to first tab in main page
+                        context.read<AvailableMatchesUiState>().changeTo(0);
+                        Get.back(result: false);
                       },
                       Primary(),
                     ),
