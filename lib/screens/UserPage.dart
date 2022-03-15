@@ -99,7 +99,7 @@ class UserPageState extends State<UserPage> {
                         },
                         child: Badge(
                             toAnimate: false,
-                            badgeContent: Icon(Icons.camera_alt_outlined, size: 18.0, color: Palette.grey_dark),
+                            badgeContent: Icon(Icons.camera_alt_outlined, size: 18.0, color: Palette.black),
                             badgeColor: Palette.grey_lighter,
                             elevation: 0,
                             position: BadgePosition.bottomEnd(
