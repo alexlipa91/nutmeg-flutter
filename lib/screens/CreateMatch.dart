@@ -183,6 +183,8 @@ class CreateMatchState extends State<CreateMatch> {
                   controller: sportCenterEditingController,
                   decoration: InputDecoration(
                     suffixIcon: Icon(Icons.arrow_drop_down),
+                    // fixme why we need this?
+                    suffixIconConstraints: BoxConstraints.expand(width: 50.0, height: 30.0),
                     labelText: "Location",
                     labelStyle: TextPalette.bodyText,
                     contentPadding: EdgeInsets.symmetric(horizontal: 16.0),
@@ -240,6 +242,8 @@ class CreateMatchState extends State<CreateMatch> {
                   controller: sportEditingController,
                   decoration: InputDecoration(
                     labelText: "Sport",
+                    // fixme why we need this?
+                    suffixIconConstraints: BoxConstraints.expand(width: 50.0, height: 30.0),
                     suffixIcon: Icon(Icons.arrow_drop_down),
                     labelStyle: TextPalette.bodyText,
                     contentPadding: EdgeInsets.symmetric(horizontal: 16.0),
