@@ -88,10 +88,10 @@ class CreateMatchState extends State<CreateMatch> {
                       border: InputBorder.none),
                   onTap: () async {
                     var d = await showDatePicker(
-                        initialDate: DateTime.now().add(Duration(hours: 12)),
-                        firstDate: DateTime.now(),
-                        lastDate: DateTime(2035),
-                        context: context,
+                      initialDate: DateTime.now().add(Duration(hours: 12)),
+                      firstDate: DateTime.now(),
+                      lastDate: DateTime(2035),
+                      context: context,
                     );
                     if (d != null)
                       dateEditingController.text = dateFormat.format(d);
@@ -120,6 +120,13 @@ class CreateMatchState extends State<CreateMatch> {
                       border: InputBorder.none),
                   onTap: () async {
                     var d = await showCustomTimePicker(
+                      builder: (BuildContext context, Widget child) {
+                        return MediaQuery(
+                          data: MediaQuery.of(context)
+                              .copyWith(alwaysUse24HourFormat: false),
+                          child: child,
+                        );
+                      },
                       context: context,
                       // It is a must if you provide selectableTimePredicate
                       onFailValidation: (context) => print(""),
@@ -152,12 +159,14 @@ class CreateMatchState extends State<CreateMatch> {
                   readOnly: true,
                   enabled: startTimeEditingController.text.isNotEmpty,
                   onTap: () async {
-                    var currentStart = toTimeOfTheDay(startTimeEditingController.text);
+                    var currentStart =
+                        toTimeOfTheDay(startTimeEditingController.text);
 
                     var d = await showCustomTimePicker(
                         context: context,
                         onFailValidation: (context) => print(""),
-                        initialTime: toTimeOfTheDay(endTimeEditingController.text),
+                        initialTime:
+                            toTimeOfTheDay(endTimeEditingController.text),
                         selectableTimePredicate: (time) =>
                             time == null || isAfter(time, currentStart));
                     if (d != null)
@@ -184,7 +193,8 @@ class CreateMatchState extends State<CreateMatch> {
                   decoration: InputDecoration(
                     suffixIcon: Icon(Icons.arrow_drop_down),
                     // fixme why we need this?
-                    suffixIconConstraints: BoxConstraints.expand(width: 50.0, height: 30.0),
+                    suffixIconConstraints:
+                        BoxConstraints.expand(width: 50.0, height: 30.0),
                     labelText: "Location",
                     labelStyle: TextPalette.bodyText,
                     contentPadding: EdgeInsets.symmetric(horizontal: 16.0),
@@ -243,7 +253,8 @@ class CreateMatchState extends State<CreateMatch> {
                   decoration: InputDecoration(
                     labelText: "Sport",
                     // fixme why we need this?
-                    suffixIconConstraints: BoxConstraints.expand(width: 50.0, height: 30.0),
+                    suffixIconConstraints:
+                        BoxConstraints.expand(width: 50.0, height: 30.0),
                     suffixIcon: Icon(Icons.arrow_drop_down),
                     labelStyle: TextPalette.bodyText,
                     contentPadding: EdgeInsets.symmetric(horizontal: 16.0),
@@ -431,67 +442,67 @@ class CreateMatchState extends State<CreateMatch> {
         ),
         bottomNavigationBar: GenericBottomBar(
             child: Padding(
-              padding: EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0),
-              child: Row(children: [
-                UserAvatar(20, context.watch<UserState>().getLoggedUserDetails()),
-                SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text("Organized by", style: TextPalette.bodyText),
-                      SizedBox(height: 4),
-                      Text(
-                          context
-                              .watch<UserState>()
-                              .getLoggedUserDetails()
-                              .name
-                              .split(" ")
-                              .first,
-                          style: TextPalette.h2),
-                    ],
-                  ),
-                ),
-                GenericButtonWithLoader("CREATE", (BuildContext context) async {
-                  context.read<GenericButtonWithLoaderState>().change(true);
+          padding: EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0),
+          child: Row(children: [
+            UserAvatar(20, context.watch<UserState>().getLoggedUserDetails()),
+            SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("Organized by", style: TextPalette.bodyText),
+                  SizedBox(height: 4),
+                  Text(
+                      context
+                          .watch<UserState>()
+                          .getLoggedUserDetails()
+                          .name
+                          .split(" ")
+                          .first,
+                      style: TextPalette.h2),
+                ],
+              ),
+            ),
+            GenericButtonWithLoader("CREATE", (BuildContext context) async {
+              context.read<GenericButtonWithLoaderState>().change(true);
 
-                  if (_formKey.currentState.validate()) {
-                    var stod = toTimeOfTheDay(startTimeEditingController.text);
-                    var etod = toTimeOfTheDay(endTimeEditingController.text);
-                    var day = DateTime.parse(dateEditingController.text);
-                    var dateTime = DateTime(
-                        day.year, day.month, day.day, stod.hour, stod.minute);
-                    var endTime = DateTime(
-                        day.year, day.month, day.day, etod.hour, etod.minute);
+              if (_formKey.currentState.validate()) {
+                var stod = toTimeOfTheDay(startTimeEditingController.text);
+                var etod = toTimeOfTheDay(endTimeEditingController.text);
+                var day = DateTime.parse(dateEditingController.text);
+                var dateTime = DateTime(
+                    day.year, day.month, day.day, stod.hour, stod.minute);
+                var endTime = DateTime(
+                    day.year, day.month, day.day, etod.hour, etod.minute);
 
-                    var match = Match(
-                        dateTime,
-                        sportCenterId,
-                        null,
-                        sportId,
-                        numberOfPeopleRangeValues.end.toInt(),
-                        (double.parse(priceController.text) * 100).toInt(),
-                        endTime.difference(dateTime),
-                        isTest,
-                        numberOfPeopleRangeValues.start.toInt(),
-                        context
-                            .read<UserState>()
-                            .getLoggedUserDetails()
-                            .documentId);
+                var match = Match(
+                    dateTime,
+                    sportCenterId,
+                    null,
+                    sportId,
+                    numberOfPeopleRangeValues.end.toInt(),
+                    (double.parse(priceController.text) * 100).toInt(),
+                    endTime.difference(dateTime),
+                    isTest,
+                    numberOfPeopleRangeValues.start.toInt(),
+                    context
+                        .read<UserState>()
+                        .getLoggedUserDetails()
+                        .documentId);
 
-                    var id = await MatchesController.addMatch(match);
-                    print("added match with id " + id);
-                    Get.offNamed("/match/" + id);
-                    // await MatchesController.refresh(context, id);
-                  } else {
-                    print("validation error");
-                    setState(() {});
-                  }
+                var id = await MatchesController.addMatch(match);
+                print("added match with id " + id);
+                Get.offNamed("/match/" + id);
+                // await MatchesController.refresh(context, id);
+              } else {
+                print("validation error");
+                setState(() {});
+              }
 
-                  context.read<GenericButtonWithLoaderState>().change(false);
-                }, Primary())
-              ]),
-            )),
+              context.read<GenericButtonWithLoaderState>().change(false);
+            }, Primary())
+          ]),
+        )),
       ),
     );
   }
