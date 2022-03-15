@@ -220,7 +220,6 @@ class UserPageState extends State<UserPage> {
                           print(stackTrace);
                         }
                         // when logging out, go back to first tab in main page
-                        context.read<AvailableMatchesUiState>().changeTo(0);
                         Get.back(result: false);
                       },
                       Primary(),

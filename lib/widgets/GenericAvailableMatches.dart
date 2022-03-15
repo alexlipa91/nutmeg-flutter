@@ -69,6 +69,9 @@ class GenericAvailableMatchesListState
   @override
   Widget build(BuildContext context) {
     var selected = context.watch<AvailableMatchesUiState>().current;
+    if (selected >= widget.tabNames.length) {
+      selected = 0;
+    }
 
     WidgetsBinding.instance
         .addObserver(LifecycleEventHandler(resumeCallBack: () async {
