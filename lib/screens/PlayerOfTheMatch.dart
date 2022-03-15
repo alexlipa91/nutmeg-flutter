@@ -1,3 +1,6 @@
+import 'dart:math';
+
+import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
@@ -9,9 +12,22 @@ import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:provider/provider.dart';
 
 
-class PlayerOfTheMatch extends StatelessWidget {
+class PlayerOfTheMatch extends StatefulWidget {
+
+  @override
+  State<StatefulWidget> createState() => PlayerOfTheMatchState();
+}
+
+class PlayerOfTheMatchState extends State<PlayerOfTheMatch> {
 
   GlobalKey previewContainer = new GlobalKey();
+  final _confettiController = ConfettiController(duration: const Duration(seconds: 3));
+
+  @override
+  void initState() {
+    super.initState();
+    _confettiController.play();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +72,22 @@ class PlayerOfTheMatch extends StatelessWidget {
             constraints: BoxConstraints.expand(),
             decoration: new BoxDecoration(color: Palette.primary)),
           images,
-          MainArea(matchId: Get.parameters["matchId"])
+          Center(
+            child: ConfettiWidget(
+                confettiController: _confettiController,
+                blastDirectionality: BlastDirectionality.directional,
+                blastDirection: 0,
+                emissionFrequency: 0.3, // how often it should emit
+                numberOfParticles: 5, // number of particles to emit
+                gravity: 1, // gravity - or fall speed
+                shouldLoop: false,
+                colors: const [
+                  Colors.green,
+                  Colors.blue,
+                  Colors.red
+                ],
+                child: MainArea(matchId: Get.parameters["matchId"])),
+          )
         ])
       ),
     );
