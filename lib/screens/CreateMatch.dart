@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -322,8 +324,13 @@ class CreateMatchState extends State<CreateMatch> {
                     setState(() {});
                   },
                   controller: priceController,
-                  keyboardType: TextInputType.numberWithOptions(signed: true),
+                  keyboardType: Platform.isIOS ?
+                  TextInputType.numberWithOptions(signed: true, decimal: true)
+                      : TextInputType.number,
                   autovalidateMode: AutovalidateMode.onUserInteraction,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*$')),
+                  ],
                   decoration: InputDecoration(
                     prefixText: "€ ",
                     labelText: "Price per player",
