@@ -1,10 +1,12 @@
-name: Playstore Deployment
+name: Android Build
 
 on:
-  push
+  push:
+    tags-ignore:
+      - '**'
 
 jobs:
-  deploy_android:
+  build_android:
     name: Build Android
     runs-on: ubuntu-latest
     steps:

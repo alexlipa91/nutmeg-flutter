@@ -1,7 +1,9 @@
-name: Appstore Deployment
+name: iOS Build
 
 on:
-  push
+  push:
+    tags-ignore:
+      - '**'
 
 jobs:
   build_ios:
