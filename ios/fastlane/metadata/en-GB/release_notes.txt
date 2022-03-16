@@ -1,2 +1,1 @@
-Add organizer flow
-UI improvements
+Update potm page

@@ -25,3 +25,7 @@ gh release create $TAG --notes "$NOTES"
 
 # bump minor (we need to do this because of appstore)
 python bump_patch.py
+
+# commit new cycle bump
+git commit -am "Start new version cycle"
+git push
