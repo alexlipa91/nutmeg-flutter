@@ -230,10 +230,6 @@ class LaunchController {
     RemoteMessage initialMessage =
         await FirebaseMessaging.instance.getInitialMessage();
 
-    goToPotmPage(context, "cR2xxdPaYbWBmEHvuGgJ");
-    trace.stop();
-    return;
-
     if (deepLink != null) {
       print("navigating with deep link:" + deepLink.toString());
       trace.putAttribute("coming_from_deeplink", true.toString());
