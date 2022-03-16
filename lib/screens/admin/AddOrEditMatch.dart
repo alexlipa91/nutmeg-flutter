@@ -129,7 +129,8 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
       match.going.keys.forEach((u) {
         if (context.read<UserState>().getUserDetail(u) == null) {
           UserController.getUserDetails(context, u);
-        }});
+        }
+      });
     }
 
     // set initial values
@@ -147,6 +148,16 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
         text: (match == null) ? "60" : match.duration.inMinutes.toString());
     testMatch = (match == null) ? false : match.isTest;
     super.initState();
+  }
+
+  Future<void> loadState() async {
+    var match = (matchId == null)
+        ? null
+        : context.read<MatchesState>().getMatch(matchId);
+    if (match != null)
+      await Future.wait(match
+          .getGoingUsersByTime()
+          .map((e) => UserController.getUserDetails(context, e)));
   }
 
   @override
@@ -443,54 +454,65 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                   children: [
                     Expanded(
                         child: GenericButtonWithLoader("CANCEL MATCH",
-                                (BuildContext context) async {
-                              context.read<GenericButtonWithLoaderState>().change(true);
-                              var shouldCancel = await CoolAlert.show(
-                                context: context,
-                                type: CoolAlertType.confirm,
-                                text:
-                                "This is going to cancel the match with id: \n" +
-                                    match.documentId +
-                                    "\nAre you sure?",
-                                onConfirmBtnTap: () => Get.back(result: true),
-                                onCancelBtnTap: () => Get.back(result: false),
-                              );
+                            (BuildContext context) async {
+                      context.read<GenericButtonWithLoaderState>().change(true);
+                      var shouldCancel = await CoolAlert.show(
+                        context: context,
+                        type: CoolAlertType.confirm,
+                        text: "This is going to cancel the match with id: \n" +
+                            match.documentId +
+                            "\nAre you sure?",
+                        onConfirmBtnTap: () => Get.back(result: true),
+                        onCancelBtnTap: () => Get.back(result: false),
+                      );
 
-                              if (shouldCancel) {
-                                try {
-                                  await MatchesController.cancelMatch(
-                                      match.documentId);
-                                  GenericInfoModal(
-                                      title:
+                      if (shouldCancel) {
+                        try {
+                          await MatchesController.cancelMatch(match.documentId);
+                          GenericInfoModal(
+                                  title:
                                       "Successfully closed rating round for the match")
-                                      .show(context);
-                                } catch (e, stack) {
-                                  print(e);
-                                  print(stack);
-                                  GenericInfoModal(title: "Something went wrong")
-                                      .show(context);
-                                }
-                                await MatchesController.refreshMatchStatus(
-                                    context, match);
-                              }
-                              context
-                                  .read<GenericButtonWithLoaderState>()
-                                  .change(false);
-                            }, Destructive()))
+                              .show(context);
+                        } catch (e, stack) {
+                          print(e);
+                          print(stack);
+                          GenericInfoModal(title: "Something went wrong")
+                              .show(context);
+                        }
+                        await MatchesController.refreshMatchStatus(
+                            context, match);
+                      }
+                      context
+                          .read<GenericButtonWithLoaderState>()
+                          .change(false);
+                    }, Destructive()))
                   ],
                 ),
               SizedBox(height: 16),
               if (matchId != null)
-              Container(
-                child: Column(
-              children: [
-                Text("Users", style: TextPalette.h2,),
-                Column(children: match.going.keys.map((u) => Row(children: [
-                  Text(context.read<UserState>().getUserDetail(u).name, style: TextPalette.h3)
-                ])).toList())
-              ],
-              ),
-              )
+                Container(
+                  child: Column(
+                    children: [
+                      Text(
+                        "Users",
+                        style: TextPalette.h2,
+                      ),
+                      Column(
+                          children: match.going.keys
+                              .map((u) => Row(children: [
+                                    Builder(builder: (context) {
+                                      var ud = context
+                                          .read<UserState>()
+                                          .getUserDetail(u);
+                                      if (ud == null) return Container();
+                                      return Text(ud.name ?? "Player",
+                                          style: TextPalette.h3);
+                                    })
+                                  ]))
+                              .toList())
+                    ],
+                  ),
+                )
             ],
           ),
         ));
