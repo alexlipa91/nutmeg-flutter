@@ -69,7 +69,7 @@ PODS:
     - Firebase/Analytics (= 8.11.0)
     - firebase_core
     - Flutter
-  - firebase_auth (3.3.10):
+  - firebase_auth (3.3.11):
     - Firebase/Auth (= 8.11.0)
     - firebase_core
     - Flutter
@@ -84,7 +84,7 @@ PODS:
     - Firebase/DynamicLinks (= 8.11.0)
     - firebase_core
     - Flutter
-  - firebase_messaging (11.2.10):
+  - firebase_messaging (11.2.11):
     - Firebase/Messaging (= 8.11.0)
     - firebase_core
     - Flutter
@@ -427,11 +427,11 @@ SPEC CHECKSUMS:
   FBSDKLoginKit: d65eb587a9eaa89295338fb0bb3b358bde0b7ae4
   Firebase: 44dd9724c84df18b486639e874f31436eaa9a20c
   firebase_analytics: 7f755057493ac8fc386f987c9233a037fb0a8a81
-  firebase_auth: fa562bf84ce3e872cc4225374cb687edb32e8d26
+  firebase_auth: bdfbd5b10da1db6d5eb6ae7dbda5d81365b9cc9d
   firebase_core: 08f6a85f62060111de5e98d6a214810d11365de9
   firebase_crashlytics: 28149c943342a73fefe1afef224d345cfb35e1ee
   firebase_dynamic_links: 578c1df97d637c0a99530f3bfee2d18453dbf531
-  firebase_messaging: 4d312cb55c8a5f9d5c93661845aedc473fc72769
+  firebase_messaging: 4a993bb4aa1a83349988d853c637fbb0494dab15
   firebase_performance: 9bd6910cd8a724596c741dd6f77a2e297f6fd7b3
   firebase_remote_config: 588bafe2eff61076e53b018758ec1fa96893e3c3
   firebase_storage: 5b964cad5f351e9c35f8b0e0b878cdd095f30d09
