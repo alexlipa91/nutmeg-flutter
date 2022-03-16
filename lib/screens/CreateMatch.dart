@@ -165,6 +165,13 @@ class CreateMatchState extends State<CreateMatch> {
                         toTimeOfTheDay(startTimeEditingController.text);
 
                     var d = await showCustomTimePicker(
+                        builder: (BuildContext context, Widget child) {
+                          return MediaQuery(
+                            data: MediaQuery.of(context)
+                                .copyWith(alwaysUse24HourFormat: false),
+                            child: child,
+                          );
+                        },
                         context: context,
                         onFailValidation: (context) => print(""),
                         initialTime:
@@ -514,8 +521,10 @@ class CreateMatchState extends State<CreateMatch> {
     );
   }
 
-  TimeOfDay toTimeOfTheDay(String v) =>
-      TimeOfDay.fromDateTime(DateFormat.jm().parse(v));
+  TimeOfDay toTimeOfTheDay(String v) {
+    var vParts = v.split(":");
+    return TimeOfDay(hour: int.parse(vParts.first), minute: int.parse(vParts.last));
+  }
 
   bool isAfter(TimeOfDay a, TimeOfDay b) =>
       (a.hour * 60 + a.minute) > (b.hour * 60 + b.minute);
