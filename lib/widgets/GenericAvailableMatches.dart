@@ -31,9 +31,13 @@ class GenericAvailableMatchesList extends StatefulWidget {
   final RefreshController refreshController;
   final FloatingActionButton floatingActionButton;
 
-  const GenericAvailableMatchesList(this.appBarColor, this.tabNames,
-      this.tabContent, this.emptyStateWidget,
-      this.refreshController, this.floatingActionButton);
+  const GenericAvailableMatchesList(
+      this.appBarColor,
+      this.tabNames,
+      this.tabContent,
+      this.emptyStateWidget,
+      this.refreshController,
+      this.floatingActionButton);
 
   @override
   State<StatefulWidget> createState() => GenericAvailableMatchesListState();
@@ -297,11 +301,11 @@ class GenericMatchInfo extends StatelessWidget {
 
     var badges = [];
 
-    if (shouldShowUserBadge) {
-      badges.add(userAvatar);
-    }
     if (shouldShowUserBadge && match.numPlayersGoing() > 1) {
       badges.add(plusPlayers);
+    }
+    if (shouldShowUserBadge) {
+      badges.add(userAvatar);
     }
     if (match.isTest) {
       badges.add(TestBadge());
@@ -359,12 +363,10 @@ class GenericMatchInfoPast extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                            sportCenter.name + " - " + sport.displayTitle,
+                        Text(sportCenter.name + " - " + sport.displayTitle,
                             style: TextPalette.h2),
                         SizedBox(height: 10),
-                        Text(sportCenter.name,
-                            style: TextPalette.bodyText),
+                        Text(sportCenter.name, style: TextPalette.bodyText),
                       ],
                     ),
                   ),
@@ -373,11 +375,10 @@ class GenericMatchInfoPast extends StatelessWidget {
             ),
             Container(
                 child: Column(
-                  children: [
-                    Text(dayFormat.format(match.dateTime),
-                        style: TextPalette.h4)
-                  ],
-                )),
+              children: [
+                Text(dayFormat.format(match.dateTime), style: TextPalette.h4)
+              ],
+            )),
           ],
         ),
       ),
@@ -386,8 +387,10 @@ class GenericMatchInfoPast extends StatelessWidget {
     return InkWell(
         child: Padding(
           padding: EdgeInsets.only(top: topMargin),
-          child: match.isTest ? badgeIt(child, TestBadge(),
-              BadgePosition.bottomEnd(bottom: 8, end: 8)) : child,
+          child: match.isTest
+              ? badgeIt(child, TestBadge(),
+                  BadgePosition.bottomEnd(bottom: 8, end: 8))
+              : child,
         ),
         onTap: () => onTap(context, match.documentId, refreshController));
   }
