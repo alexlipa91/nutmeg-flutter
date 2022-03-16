@@ -114,7 +114,7 @@ class LaunchController {
   static Future<void> goToPotmPage(BuildContext context, String matchId) async {
     await MatchesController.refresh(context, matchId);
     Get.offAndToNamed("/home");
-    Get.toNamed("/matchNoTransition/" + matchId);
+    Get.toNamed("/match/" + matchId);
     await Get.toNamed("/potm/" + matchId);
   }
 
@@ -229,6 +229,10 @@ class LaunchController {
     // check if coming from notification
     RemoteMessage initialMessage =
         await FirebaseMessaging.instance.getInitialMessage();
+
+    goToPotmPage(context, "cR2xxdPaYbWBmEHvuGgJ");
+    trace.stop();
+    return;
 
     if (deepLink != null) {
       print("navigating with deep link:" + deepLink.toString());

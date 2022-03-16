@@ -46,7 +46,7 @@ class PageTemplate extends StatelessWidget {
         child: refreshContainer(CustomScrollView(
           slivers: [
             SliverAppBar(
-              systemOverlayStyle: SystemUiOverlayStyle.dark,
+              systemOverlayStyle: SystemUiOverlayStyle.light,
               backgroundColor: Colors.transparent,
               automaticallyImplyLeading: false,
               centerTitle: false,
