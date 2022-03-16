@@ -1,1 +1,1 @@
-Update potm page
+Minor bug fix
