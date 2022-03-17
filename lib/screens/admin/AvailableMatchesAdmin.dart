@@ -25,7 +25,7 @@ class AdminAvailableMatches extends StatelessWidget {
   }
 
   //
-  Widget getUpcomingWidgets(BuildContext context, bool future) {
+  Widget getMatchWidgets(BuildContext context, bool future) {
     var matchesState = context.watch<MatchesState>();
 
     if (matchesState.getMatches() == null) {
@@ -39,6 +39,9 @@ class AdminAvailableMatches extends StatelessWidget {
             : e.dateTime.isBefore(DateTime.now()))
         .sortedBy((e) => e.dateTime)
         .toList();
+
+    if (!future)
+      matches = matches.reversed.toList();
 
     List<Widget> result = List<Widget>.from([]);
 
@@ -110,8 +113,8 @@ class AdminAvailableMatches extends StatelessWidget {
             Colors.green,
             ["UPCOMING MATCHES", "PAST MATCHES", "OTHER"].toList(),
             [
-              getUpcomingWidgets(context, true),
-              getUpcomingWidgets(context, false),
+              getMatchWidgets(context, true),
+              getMatchWidgets(context, false),
               getExtraWidgets(context)
             ].toList(),
             getEmptyStateWidget(context),
