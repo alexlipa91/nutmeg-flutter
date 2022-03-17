@@ -85,8 +85,10 @@ class AdminAvailableMatches extends StatelessWidget {
               }, Primary()),
               GenericButtonWithLoader("After Login details", (ctx) async {
                 var n = await Get.toNamed("/login/enterDetails");
-                GenericInfoModal(title: "Flow ended",
-                    description: "Page returned the following data: " + n.toString())
+                GenericInfoModal(
+                        title: "Flow ended",
+                        description:
+                            "Page returned the following data: " + n.toString())
                     .show(context);
               }, Primary())
             ],
@@ -100,27 +102,33 @@ class AdminAvailableMatches extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-        providers: [
-          ChangeNotifierProvider(
-              create: (context) => AvailableMatchesUiState()),
-        ],
-        child: Scaffold(
-            body: GenericAvailableMatchesList(
-                Colors.green,
-                ["UPCOMING", "PAST", "EXTRA"].toList(),
-                [
-                  getUpcomingWidgets(context, true),
-                  getUpcomingWidgets(context, false),
-                  getExtraWidgets(context)
-                ].toList(),
-                getEmptyStateWidget(context),
-                refreshController,
-                null),
-            floatingActionButton: FloatingActionButton(
-                backgroundColor: Colors.green,
-                child: Icon(Icons.add, color: Colors.white),
-                onPressed: () {
-                  Get.toNamed("/addMatch");
-                })));
+      providers: [
+        ChangeNotifierProvider(create: (context) => AvailableMatchesUiState()),
+      ],
+      child: Scaffold(
+          body: GenericAvailableMatchesList(
+            Colors.green,
+            ["UPCOMING MATCHES", "PAST MATCHES", "OTHER"].toList(),
+            [
+              getUpcomingWidgets(context, true),
+              getUpcomingWidgets(context, false),
+              getExtraWidgets(context)
+            ].toList(),
+            getEmptyStateWidget(context),
+            refreshController,
+            null,
+            Column(
+              children: [
+                Text("Admin Tools", style: TextPalette.h1Inverted),
+              ],
+            ),
+          ),
+          floatingActionButton: FloatingActionButton(
+              backgroundColor: Colors.green,
+              child: Icon(Icons.add, color: Colors.white),
+              onPressed: () {
+                Get.toNamed("/addMatch");
+              })),
+    );
   }
 }

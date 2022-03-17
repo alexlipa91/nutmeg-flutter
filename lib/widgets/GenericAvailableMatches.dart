@@ -30,6 +30,7 @@ class GenericAvailableMatchesList extends StatefulWidget {
   final Widget emptyStateWidget;
   final RefreshController refreshController;
   final FloatingActionButton floatingActionButton;
+  final Widget titleWidget;
 
   const GenericAvailableMatchesList(
       this.appBarColor,
@@ -37,7 +38,8 @@ class GenericAvailableMatchesList extends StatefulWidget {
       this.tabContent,
       this.emptyStateWidget,
       this.refreshController,
-      this.floatingActionButton);
+      this.floatingActionButton,
+      this.titleWidget);
 
   @override
   State<StatefulWidget> createState() => GenericAvailableMatchesListState();
@@ -98,9 +100,7 @@ class GenericAvailableMatchesListState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Find football matches in",
-                  style: TextPalette.bodyTextInverted),
-              Text("Amsterdam", style: TextPalette.h1Inverted),
+              widget.titleWidget,
               SizedBox(height: 24),
               SingleChildScrollView(
                 clipBehavior: Clip.none,

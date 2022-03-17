@@ -174,7 +174,8 @@ class AvailableMatches extends StatelessWidget {
     var matches = state
         .getMatches()
         .where((e) => (!e.isTest || userState.isTestMode))
-        .where((m) => m.organizerId == userState.getLoggedUserDetails().documentId);
+        .where((m) =>
+            m.organizerId == userState.getLoggedUserDetails().documentId);
 
     List<Widget> widgets = [];
 
@@ -228,21 +229,29 @@ class AvailableMatches extends StatelessWidget {
               create: (context) => AvailableMatchesUiState()),
         ],
         builder: (context, _) => GenericAvailableMatchesList(
-            Palette.primary,
-            ["UPCOMING", "GOING", "PAST", if (isAdmin) "MY MATCHES"].toList(),
-            [
-              upcomingWidgets(context, refreshController),
-              goingWidgets(context, refreshController),
-              pastWidgets(context, refreshController),
-              if (isAdmin) getMyMatchesWidgets(context, refreshController)
-            ].toList(),
-            getEmptyStateWidget(context),
-            refreshController,
-            context.watch<AvailableMatchesUiState>().current == 3
-                ? FloatingActionButton(
-                    backgroundColor: Palette.primary,
-                    child: Icon(Icons.add, color: Palette.white),
-                    onPressed: () => Get.toNamed("/createMatch"))
-                : null));
+              Palette.primary,
+              ["UPCOMING", "GOING", "PAST", if (isAdmin) "MY MATCHES"].toList(),
+              [
+                upcomingWidgets(context, refreshController),
+                goingWidgets(context, refreshController),
+                pastWidgets(context, refreshController),
+                if (isAdmin) getMyMatchesWidgets(context, refreshController)
+              ].toList(),
+              getEmptyStateWidget(context),
+              refreshController,
+              context.watch<AvailableMatchesUiState>().current == 3
+                  ? FloatingActionButton(
+                      backgroundColor: Palette.primary,
+                      child: Icon(Icons.add, color: Palette.white),
+                      onPressed: () => Get.toNamed("/createMatch"))
+                  : null,
+              Column(
+                children: [
+                  Text("Find football matches in",
+                      style: TextPalette.bodyTextInverted),
+                  Text("Amsterdam", style: TextPalette.h1Inverted),
+                ],
+              ),
+            ));
   }
 }
