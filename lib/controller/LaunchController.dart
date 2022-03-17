@@ -64,7 +64,8 @@ class LaunchController {
 
   static void handleMessageFromNotification(
       BuildContext context, RemoteMessage message) async {
-    print('message ' + message.messageId + ' opened from notification');
+    print('message ' + message.messageId + ' opened from notification with data '
+        + message.data.toString());
 
     if (message.data.containsKey("event")) {
       var event = message.data["event"];
