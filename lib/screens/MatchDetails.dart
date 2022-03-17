@@ -148,38 +148,43 @@ class MatchDetailsState extends State<MatchDetails> {
       if (!MatchesState.pastStates.contains(matchStatus))
         Section(
             title: "DETAILS",
-            body: RuleCard(
-                "Payment Policy",
-                "If you leave the match you will get a refund in credits that you can use for other Nutmeg matches.\n\n" +
-                    "If the match is canceled by the organizer, you will get a refund on the payment method you used to pay.\n\n"
-                        "If you don’t show up you won’t get a refund.")),
-      Section(title: "LOCATION", body: MapCardImage(matchId)),
-      if (match != null && match.organizerId != null)
-        Section(
-          title: "ORGANIZER",
-          body: Builder(builder: (context) {
-            var ud =
-                context.watch<UserState>().getUserDetail(match.organizerId);
+            body: Column(
+              children: [
+                RuleCard(
+                    "Payment Policy",
+                    "If you leave the match you will get a refund in credits that you can use for other Nutmeg matches.\n\n" +
+                        "If the match is canceled by the organizer, you will get a refund on the payment method you used to pay.\n\n"
+                            "If you don’t show up you won’t get a refund."),
+                SizedBox(height: 16.0),
+                MapCardImage(matchId),
+                SizedBox(height: 16.0),
+                if (match != null && match.organizerId != null)
+                  Builder(builder: (context) {
+                    var ud = context
+                        .watch<UserState>()
+                        .getUserDetail(match.organizerId);
 
-            return InfoContainer(
-                child: Row(children: [
-              UserAvatarWithBottomModal(userData: ud),
-              SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text("Organized by", style: TextPalette.bodyText),
-                    SizedBox(height: 4),
-                    (ud == null)
-                        ? Skeletons.lText
-                        : Text(ud.name.split(" ").first, style: TextPalette.h2),
-                  ],
-                ),
-              ),
-            ]));
-          }),
-        ),
+                    return InfoContainer(
+                        child: Row(children: [
+                      UserAvatarWithBottomModal(userData: ud),
+                      SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text("Organized by", style: TextPalette.bodyText),
+                            SizedBox(height: 4),
+                            (ud == null)
+                                ? Skeletons.lText
+                                : Text(ud.name.split(" ").first,
+                                    style: TextPalette.h2),
+                          ],
+                        ),
+                      ),
+                    ]));
+                  }),
+              ],
+            )),
     ];
 
     return PageTemplate(
