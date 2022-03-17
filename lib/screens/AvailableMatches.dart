@@ -161,12 +161,37 @@ class AvailableMatches extends StatelessWidget {
   Widget getMyMatchesWidgets(
       BuildContext context, RefreshController refreshController) {
     var state = context.read<MatchesState>();
+    var userState = context.read<UserState>();
 
     if (state.getMatches() == null) {
       return null;
     }
 
-    return getEmptyStateWidget(context);
+    if (!userState.isLoggedIn()) {
+      return getEmptyStateWidget(context);
+    }
+
+    var matches = state
+        .getMatches()
+        .where((e) => (!e.isTest || userState.isTestMode))
+        .where((m) => m.organizerId == userState.getLoggedUserDetails().documentId);
+
+    List<Widget> widgets = [];
+
+    if (matches.isNotEmpty) {
+      matches.sortedBy((e) => e.dateTime).reversed.forEachIndexed((index, m) {
+        if (index == 0) {
+          widgets.add(
+              GenericMatchInfo.first(m.documentId, onTap, refreshController));
+        } else {
+          widgets.add(GenericMatchInfo(m.documentId, onTap, refreshController));
+        }
+      });
+    }
+
+    if (widgets.isEmpty) return getEmptyStateWidget(context);
+
+    return Column(children: widgets);
   }
 
   Widget getEmptyStateWidget(BuildContext context, [bool withAction = true]) {
