@@ -47,6 +47,7 @@ class GenericAvailableMatchesListState
     extends State<GenericAvailableMatchesList> {
   @override
   void initState() {
+    print("initing state of available matches");
     super.initState();
     refreshPageState(context);
   }

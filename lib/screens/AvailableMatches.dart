@@ -21,7 +21,12 @@ class AvailableMatches extends StatelessWidget {
 
   Future<void> onTap(BuildContext context, String matchId,
       RefreshController refreshController) async {
-    Get.toNamed("/match/" + matchId);
+
+    Get.find().pushPage(
+      name: '/match',
+      arguments: matchId,
+    );
+    // Get.toNamed("/match/" + matchId);
     await refreshController.requestRefresh();
   }
 

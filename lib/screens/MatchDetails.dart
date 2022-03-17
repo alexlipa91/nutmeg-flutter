@@ -36,26 +36,22 @@ import '../widgets/PlayerBottomModal.dart';
 import '../widgets/Skeletons.dart';
 import 'BottomBarMatch.dart';
 
-class ScreenArguments {
-  final String matchId;
-
-  ScreenArguments(this.matchId);
-}
-
 class MatchDetails extends StatefulWidget {
   static const routeName = "/match";
 
+  final String matchId;
+
+  const MatchDetails({Key key, this.matchId}) : super(key: key);
+
   @override
-  State<StatefulWidget> createState() =>
-      MatchDetailsState(Get.parameters["matchId"]);
+  State<StatefulWidget> createState() => MatchDetailsState();
 }
 
 class MatchDetailsState extends State<MatchDetails> {
-  final String matchId;
-
-  MatchDetailsState(this.matchId);
 
   Future<void> refreshState() async {
+    var matchId = widget.matchId;
+
     // refresh details
     var match = await MatchesController.refresh(context, matchId);
 
@@ -80,6 +76,7 @@ class MatchDetailsState extends State<MatchDetails> {
 
   @override
   void initState() {
+    print("initing state of match details");
     super.initState();
     SchedulerBinding.instance.addPostFrameCallback((_) async {
       await refreshState();
@@ -88,6 +85,8 @@ class MatchDetailsState extends State<MatchDetails> {
 
   @override
   Widget build(BuildContext context) {
+    var matchId = widget.matchId;
+
     var matchesState = context.watch<MatchesState>();
     var match = matchesState.getMatch(matchId);
     var matchStatus = matchesState.getMatchStatus(matchId);

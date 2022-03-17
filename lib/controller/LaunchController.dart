@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
+import 'package:go_router/go_router.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/model/UserDetails.dart';
@@ -20,6 +21,7 @@ import 'package:version/version.dart';
 import '../Exceptions.dart';
 import '../screens/Launch.dart';
 import '../screens/PaymentDetailsDescription.dart';
+import '../screens/RouterDelegate.dart';
 import '../state/LoadOnceState.dart';
 import '../state/UserState.dart';
 import '../utils/InfoModals.dart';
@@ -127,8 +129,8 @@ class LaunchController {
     print("start loading data function");
     await Firebase.initializeApp();
 
-    var trace = FirebasePerformance.instance.newTrace("launch_app");
-    await trace.start();
+    // var trace = FirebasePerformance.instance.newTrace("launch_app");
+    // await trace.start();
 
     FirebaseRemoteConfig firebaseRemoteConfig = FirebaseRemoteConfig.instance;
     firebaseRemoteConfig.setConfigSettings(RemoteConfigSettings(
@@ -160,7 +162,7 @@ class LaunchController {
     // check if update is necessary
     try {
       var current = (minimumVersion).item1;
-      trace.putAttribute("app_version", current.toString());
+      // trace.putAttribute("app_version", current.toString());
       var minimumVersionParts =
           firebaseRemoteConfig.getString("minimum_app_version").split(".");
       var minimumRequired = Version(int.parse(minimumVersionParts[0]),
@@ -201,7 +203,7 @@ class LaunchController {
       context.read<UserState>().setCurrentUserDetails(userDetails);
       // tell the app to save user tokens
       UserController.saveUserTokensToDb(userDetails);
-      trace.putAttribute("user_id", userDetails?.documentId);
+      // trace.putAttribute("user_id", userDetails?.documentId);
     }
 
     // request permissions
@@ -232,20 +234,24 @@ class LaunchController {
 
     if (deepLink != null) {
       print("navigating with deep link:" + deepLink.toString());
-      trace.putAttribute("coming_from_deeplink", true.toString());
+      // trace.putAttribute("coming_from_deeplink", true.toString());
       handleLink(deepLink);
     } else if (initialMessage != null) {
       print("navigating with initial message:" + initialMessage.toString());
-      trace.putAttribute("coming_from_notification", true.toString());
+      // trace.putAttribute("coming_from_notification", true.toString());
       handleMessageFromNotification(context, initialMessage);
     } else {
       print("navigating with normal startup");
-      Get.offAndToNamed("/home");
+      context.go('/home/match');
+      // Get.find<MyRouterDelegate>().pushPage(
+      //   name: '/'
+      // );
+      // Get.offAndToNamed("/home");
     }
 
     setupNotifications(context);
 
-    await trace.stop();
+    // await trace.stop();
   }
 
   static Future<void> loadOnceData(BuildContext context) async {
