@@ -158,7 +158,7 @@ class UserPageState extends State<UserPage> {
                       ? null
                       : (userDetails.getScoreMatches() == -1)
                           ? "-"
-                          : userDetails.getScoreMatches().toStringAsFixed(2),
+                          : userDetails.getScoreMatches().toStringAsFixed(1),
                   description: "Avg. Score"),
             ),
             SizedBox(width: 20),
