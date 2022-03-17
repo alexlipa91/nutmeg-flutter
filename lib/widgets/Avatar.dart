@@ -4,12 +4,12 @@ import 'package:get/get_core/src/get_main.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:provider/provider.dart';
+import 'package:skeletons/skeletons.dart';
 
 import '../model/UserDetails.dart';
 import '../state/UserState.dart';
 import 'ModalBottomSheet.dart';
 import 'PlayerBottomModal.dart';
-
 
 class UserAvatar extends StatelessWidget {
   final double radius;
@@ -19,6 +19,11 @@ class UserAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (userDetails == null)
+      return SkeletonAvatar(
+        style: SkeletonAvatarStyle(shape: BoxShape.circle, height: radius * 2),
+      );
+
     var photoUrl = userDetails?.getPhotoUrl();
 
     var backgroundColor = Palette.grey_lighter;
@@ -34,8 +39,7 @@ class UserAvatar extends StatelessWidget {
             style: GoogleFonts.roboto(
                 color: Palette.grey_dark,
                 fontSize: fontSize,
-                fontWeight: FontWeight.w600
-            ))
+                fontWeight: FontWeight.w600))
         : null;
 
     return CircleAvatar(
@@ -49,7 +53,8 @@ class UserAvatar extends StatelessWidget {
 class LoggedUserAvatarWithRedirectUserPage extends StatelessWidget {
   final double radius;
 
-  const LoggedUserAvatarWithRedirectUserPage({Key key, this.radius}) : super(key: key);
+  const LoggedUserAvatarWithRedirectUserPage({Key key, this.radius})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -65,7 +70,9 @@ class LoggedUserAvatarWithRedirectUserPage extends StatelessWidget {
               height: 30,
               width: 30,
               // height and width nullify radius
-              child: Center(child: UserAvatar(200, context.watch<UserState>().getLoggedUserDetails()))),
+              child: Center(
+                  child: UserAvatar(
+                      200, context.watch<UserState>().getLoggedUserDetails()))),
         ),
       ),
     );
@@ -87,7 +94,6 @@ class UserAvatarWithBorder extends StatelessWidget {
 }
 
 class UserAvatarWithBottomModal extends StatelessWidget {
-
   final UserDetails userData;
 
   const UserAvatarWithBottomModal({Key key, this.userData}) : super(key: key);
@@ -95,10 +101,12 @@ class UserAvatarWithBottomModal extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-        onTap: () {
-          ModalBottomSheet.showNutmegModalBottomSheet(
-              context, JoinedPlayerBottomModal(userData));
-        },
+        onTap: (userData == null)
+            ? null
+            : () {
+                ModalBottomSheet.showNutmegModalBottomSheet(
+                    context, JoinedPlayerBottomModal(userData));
+              },
         child: UserAvatar(24, userData));
   }
 }

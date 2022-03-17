@@ -157,31 +157,28 @@ class MatchDetailsState extends State<MatchDetails> {
       if (match != null && match.organizerId != null)
         Section(
           title: "ORGANIZER",
-          body: InfoContainer(
-              child: Row(children: [
-            UserAvatarWithBottomModal(
-                userData: context
-                    .watch<UserState>()
-                    .getUserDetail(match.organizerId)),
-            SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text("Organized by", style: TextPalette.bodyText),
-                  SizedBox(height: 4),
-                  Text(
-                      context
-                          .watch<UserState>()
-                          .getUserDetail(match.organizerId)
-                          .name
-                          .split(" ")
-                          .first,
-                      style: TextPalette.h2),
-                ],
+          body: Builder(builder: (context) {
+            var ud =
+                context.watch<UserState>().getUserDetail(match.organizerId);
+
+            return InfoContainer(
+                child: Row(children: [
+              UserAvatarWithBottomModal(userData: ud),
+              SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("Organized by", style: TextPalette.bodyText),
+                    SizedBox(height: 4),
+                    (ud == null)
+                        ? Skeletons.lText
+                        : Text(ud.name.split(" ").first, style: TextPalette.h2),
+                  ],
+                ),
               ),
-            ),
-          ])),
+            ]));
+          }),
         ),
     ];
 
@@ -513,12 +510,7 @@ class PlayerCard extends StatelessWidget {
           width: 100,
           child: InfoContainer(
               child: Column(children: [
-            (userData == null)
-                ? SkeletonAvatar(
-                    style:
-                        SkeletonAvatarStyle(height: 48, shape: BoxShape.circle),
-                  )
-                : UserAvatarWithBottomModal(userData: userData),
+            UserAvatarWithBottomModal(userData: userData),
             SizedBox(height: 10),
             (userData == null)
                 ? Skeletons.sText

@@ -50,7 +50,7 @@ class UserPageState extends State<UserPage> {
     var userState = context.watch<UserState>();
     var userDetails = userState.getLoggedUserDetails();
 
-    if (!userState.isLoggedIn()) return Container();
+    if (userDetails != null && !userState.isLoggedIn()) return Container();
 
     int creditCount = (userDetails == null) ? 0 : userDetails.creditsInCents;
 
@@ -73,35 +73,33 @@ class UserPageState extends State<UserPage> {
                         strokeWidth: 2.0,
                       ),
                     ))
-                : (userDetails == null)
-                    ? SkeletonAvatar(
-                        style: SkeletonAvatarStyle(
-                            shape: BoxShape.circle, height: 69),
-                      )
-                    : InkWell(
-                        onTap: () async {
-                          setState(() {
-                            loadingPicture = true;
-                          });
-                          try {
-                            await UserController.updloadPicture(
-                                context, userDetails);
-                          } catch (e, s) {
-                            print(e);
-                            print(s);
-                          }
-                          setState(() {
-                            loadingPicture = false;
-                          });
-                        },
-                        child: Badge(
-                            toAnimate: false,
-                            badgeContent: Icon(Icons.camera_alt_outlined, size: 16.0, color: Palette.white),
-                            badgeColor: Palette.primary,
-                            elevation: 0,
-                            position: BadgePosition.bottomEnd(
-                                bottom: -5.0, end: -5.0),
-                            child: UserAvatar(30, userDetails))),
+                : InkWell(
+                    onTap: (userDetails == null)
+                        ? null
+                        : () async {
+                            setState(() {
+                              loadingPicture = true;
+                            });
+                            try {
+                              await UserController.updloadPicture(
+                                  context, userDetails);
+                            } catch (e, s) {
+                              print(e);
+                              print(s);
+                            }
+                            setState(() {
+                              loadingPicture = false;
+                            });
+                          },
+                    child: Badge(
+                        toAnimate: false,
+                        badgeContent: Icon(Icons.camera_alt_outlined,
+                            size: 16.0, color: Palette.white),
+                        badgeColor: Palette.primary,
+                        elevation: 0,
+                        position:
+                            BadgePosition.bottomEnd(bottom: -5.0, end: -5.0),
+                        child: UserAvatar(30, userDetails))),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 30),
               child: Column(
