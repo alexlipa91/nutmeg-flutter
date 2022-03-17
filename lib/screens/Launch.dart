@@ -110,7 +110,7 @@ void main() {
                 page: () => AddOrEditMatch(),
                 transition: Transition.native),
             GetPage(
-                name: '/potm/:matchId',
+                name: '/potm',
                 page: () => PlayerOfTheMatch(),
                 transition: Transition.native,
                 transitionDuration: Duration.zero),

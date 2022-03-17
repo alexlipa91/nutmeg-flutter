@@ -116,7 +116,7 @@ class LaunchController {
     await MatchesController.refresh(context, matchId);
     Get.offAndToNamed("/home");
     Get.toNamed("/match/" + matchId);
-    await Get.toNamed("/potm/" + matchId);
+    await Get.toNamed("/potm");
   }
 
   static Future<void> goToMatchPage(String matchId) async {

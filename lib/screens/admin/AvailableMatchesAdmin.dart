@@ -4,12 +4,15 @@ import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:nutmeg/model/Match.dart';
 import 'package:nutmeg/state/AvailableMatchesState.dart';
+import 'package:nutmeg/utils/InfoModals.dart';
+import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 import '../../state/MatchesState.dart';
 import '../../utils/UiUtils.dart';
 import '../../widgets/GenericAvailableMatches.dart';
+import '../../widgets/Section.dart';
 
 // main widget
 class AdminAvailableMatches extends StatelessWidget {
@@ -49,8 +52,7 @@ class AdminAvailableMatches extends StatelessWidget {
       }
     });
 
-    if (result.isEmpty)
-      return getEmptyStateWidget(context);
+    if (result.isEmpty) return getEmptyStateWidget(context);
 
     return Column(children: result);
   }
@@ -70,6 +72,31 @@ class AdminAvailableMatches extends StatelessWidget {
     );
   }
 
+  Widget getExtraWidgets(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Section(
+          title: "DEMO PAGES",
+          body: Column(
+            children: [
+              GenericButtonWithLoader("Player of the Match", (ctx) {
+                Get.toNamed("/potm");
+              }, Primary()),
+              GenericButtonWithLoader("After Login details", (ctx) async {
+                var n = await Get.toNamed("/login/enterDetails");
+                GenericInfoModal(title: "Flow ended",
+                    description: "Page returned the following data: " + n.toString())
+                    .show(context);
+              }, Primary())
+            ],
+          ),
+          topSpace: 16,
+        )
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
@@ -80,10 +107,11 @@ class AdminAvailableMatches extends StatelessWidget {
         child: Scaffold(
             body: GenericAvailableMatchesList(
                 Colors.green,
-                ["UPCOMING", "PAST"].toList(),
+                ["UPCOMING", "PAST", "EXTRA"].toList(),
                 [
                   getUpcomingWidgets(context, true),
-                  getUpcomingWidgets(context, false)
+                  getUpcomingWidgets(context, false),
+                  getExtraWidgets(context)
                 ].toList(),
                 getEmptyStateWidget(context),
                 refreshController,
