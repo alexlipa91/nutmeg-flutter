@@ -15,9 +15,8 @@ import '../state/MatchesState.dart';
 
 class BottomBarMatch extends StatelessWidget {
   final String matchId;
-  final double extraBottomPadding;
 
-  const BottomBarMatch({Key key, this.matchId, this.extraBottomPadding}) : super(key: key);
+  const BottomBarMatch({Key key, this.matchId}) : super(key: key);
 
   String getText(Match match, MatchStatusForUser matchStatusForUser) {
     switch (matchStatusForUser) {

@@ -102,7 +102,6 @@ class MatchDetailsState extends State<MatchDetails> {
         ? null
         : BottomBarMatch(
             matchId: matchId,
-            extraBottomPadding: MediaQuery.of(context).padding.bottom,
           );
 
     // add padding individually since because of shadow clipping some components need margin

@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
@@ -20,11 +22,8 @@ class PageTemplate extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // fixme we apply safe area around body and if there is bottom bar we need to remove the bottom and manually add a space
-    var minimumBottomPadding = (bottomNavigationBar != null) ? 0.0 : 16.0;
-    if (bottomNavigationBar != null) {
-      widgets.add(Container(child: SizedBox(height: 16.0)));
-    }
+    var osRequiredPadding = MediaQuery.of(context).padding.bottom;
+    var bottomPadding = (bottomNavigationBar != null) ? 16.0 : max(osRequiredPadding, 16.0);
 
     var refreshContainer = (Widget w) => (refreshState == null)
         ? Container(child: w)
@@ -41,32 +40,29 @@ class PageTemplate extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Palette.grey_lightest,
-      body: SafeArea(
-        minimum: EdgeInsets.only(bottom: minimumBottomPadding),
-        child: refreshContainer(CustomScrollView(
-          slivers: [
-            SliverAppBar(
-              systemOverlayStyle: SystemUiOverlayStyle.light,
-              backgroundColor: Colors.transparent,
-              automaticallyImplyLeading: false,
-              centerTitle: false,
-              titleSpacing: 0,
-              title: appBar,
-            ),
-            SliverPadding(
-              padding: EdgeInsets.only(left: 16, right: 16),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (BuildContext context, int index) {
-                    return widgets[index];
-                  },
-                  childCount: widgets.length,
-                ),
+      body: refreshContainer(CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            systemOverlayStyle: SystemUiOverlayStyle.dark,
+            backgroundColor: Colors.transparent,
+            automaticallyImplyLeading: false,
+            centerTitle: false,
+            titleSpacing: 0,
+            title: appBar,
+          ),
+          SliverPadding(
+            padding: EdgeInsets.only(left: 16, right: 16, bottom: bottomPadding),
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (BuildContext context, int index) {
+                  return widgets[index];
+                },
+                childCount: widgets.length,
               ),
-            )
-          ],
-        )),
-      ),
+            ),
+          )
+        ],
+      )),
       bottomNavigationBar: bottomNavigationBar,
     );
   }
