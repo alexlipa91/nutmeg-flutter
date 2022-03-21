@@ -522,7 +522,7 @@ class CreateMatchState extends State<CreateMatch> {
   }
 
   TimeOfDay toTimeOfTheDay(String v) {
-    var vParts = v.split(":");
+    var vParts = v.split(" ")[0].split(":");
     return TimeOfDay(hour: int.parse(vParts.first), minute: int.parse(vParts.last));
   }
 

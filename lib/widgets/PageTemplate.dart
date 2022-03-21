@@ -40,28 +40,31 @@ class PageTemplate extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Palette.grey_lightest,
-      body: refreshContainer(CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            systemOverlayStyle: SystemUiOverlayStyle.dark,
-            backgroundColor: Colors.transparent,
-            automaticallyImplyLeading: false,
-            centerTitle: false,
-            titleSpacing: 0,
-            title: appBar,
-          ),
-          SliverPadding(
-            padding: EdgeInsets.only(left: 16, right: 16, bottom: bottomPadding),
-            sliver: SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (BuildContext context, int index) {
-                  return widgets[index];
-                },
-                childCount: widgets.length,
-              ),
+      body: refreshContainer(SafeArea(
+        bottom: false,
+        child: CustomScrollView(
+          slivers: [
+            SliverAppBar(
+              systemOverlayStyle: SystemUiOverlayStyle.dark,
+              backgroundColor: Colors.transparent,
+              automaticallyImplyLeading: false,
+              centerTitle: false,
+              titleSpacing: 0,
+              title: appBar,
             ),
-          )
-        ],
+            SliverPadding(
+              padding: EdgeInsets.only(left: 16, right: 16, bottom: bottomPadding),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (BuildContext context, int index) {
+                    return widgets[index];
+                  },
+                  childCount: widgets.length,
+                ),
+              ),
+            )
+          ],
+        ),
       )),
       bottomNavigationBar: bottomNavigationBar,
     );

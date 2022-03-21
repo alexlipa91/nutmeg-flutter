@@ -1,1 +1,1 @@
-Fix flow coming from notification
+Fix paddings
