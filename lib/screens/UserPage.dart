@@ -324,9 +324,6 @@ class UserPageState extends State<UserPage> {
                     )),
           ),
         ),
-      ),
-      SizedBox(
-        height: MediaQuery.of(context).padding.bottom,
       )
     ];
 
