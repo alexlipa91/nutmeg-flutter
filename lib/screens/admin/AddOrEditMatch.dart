@@ -230,6 +230,17 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                   }, Destructive()))
                 ],
               ),
+              if (status == MatchStatusForUser.rated)
+                Row(
+                  children: [
+                    Expanded(
+                        child:
+                            GenericButtonWithLoader("PlAYER OF THE MATCH SCREEN",
+                                (BuildContext context) async {
+                      Get.toNamed("/potm/" + match.manOfTheMatch);
+                    }, Primary()))
+                  ],
+                ),
               SizedBox(height: 16),
               Container(
                 child: Column(
@@ -272,15 +283,27 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                                     if (ud == null) return Container();
                                     var skips = e.value.where((v) => v == -1);
                                     var votes = e.value.where((v) => v != -1);
+                                    double avg = (votes.length > 0)
+                                        ? (votes.reduce((a, b) => (a + b)) /
+                                            votes.length)
+                                        : -1;
 
                                     return Row(
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceBetween,
                                       children: [
                                         Text(ud.name ?? "Player",
-                                            style: TextPalette.h3),
+                                            style: TextPalette.getH3(
+                                                (ud.documentId ==
+                                                        matchesState
+                                                            .getMatch(matchId)
+                                                            .manOfTheMatch)
+                                                    ? Palette.accent
+                                                    : Palette.black)),
                                         Text(
-                                            votes.length.toString() +
+                                            avg.toStringAsFixed(1) +
+                                                "\t\t" +
+                                                votes.length.toString() +
                                                 " votes\t\t" +
                                                 skips.length.toString() +
                                                 " skip",

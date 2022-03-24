@@ -106,7 +106,7 @@ void main() {
                 page: () => AdminAvailableMatches(),
                 transition: Transition.native),
             GetPage(
-                name: '/potm',
+                name: '/potm/:userId',
                 page: () => PlayerOfTheMatch(),
                 transition: Transition.native,
                 transitionDuration: Duration.zero),

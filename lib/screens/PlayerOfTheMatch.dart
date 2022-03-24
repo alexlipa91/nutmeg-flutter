@@ -16,6 +16,8 @@ class PlayerOfTheMatch extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var uid = Get.parameters["userId"];
+
     var images = Row(children: [
       Expanded(
           child: Column(
@@ -56,13 +58,17 @@ class PlayerOfTheMatch extends StatelessWidget {
                 constraints: BoxConstraints.expand(),
                 decoration: new BoxDecoration(color: Palette.primary)),
             images,
-            MainArea()
+            MainArea(userId: uid)
           ]),
         ));
   }
 }
 
 class MainArea extends StatefulWidget {
+  final String userId;
+
+  const MainArea({Key key, this.userId}) : super(key: key);
+
   @override
   State<StatefulWidget> createState() => MainAreaState();
 }
@@ -79,6 +85,11 @@ class MainAreaState extends State<MainArea> {
 
   @override
   Widget build(BuildContext context) {
+    var userState = context.read<UserState>();
+    var userDetails = (widget.userId == null)
+        ? userState.getLoggedUserDetails()
+        : userState.getUserDetail(widget.userId);
+
     return Padding(
       padding: EdgeInsets.all(16.0),
       child: Padding(
@@ -104,8 +115,7 @@ class MainAreaState extends State<MainArea> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      UserAvatar(
-                          48, context.read<UserState>().getLoggedUserDetails()),
+                      UserAvatar(48, userDetails),
                       SizedBox(height: 24),
                       Text("Player of the Match",
                           textAlign: TextAlign.center,
@@ -113,10 +123,7 @@ class MainAreaState extends State<MainArea> {
                       SizedBox(height: 4),
                       Text(
                           "Congratulations " +
-                              context
-                                  .read<UserState>()
-                                  .getLoggedUserDetails()
-                                  .name +
+                              userDetails.name +
                               "! You won the Player of the Match award",
                           textAlign: TextAlign.center,
                           style: TextPalette.getBodyText(Palette.white)),
