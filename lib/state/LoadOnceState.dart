@@ -10,9 +10,8 @@ class LoadOnceState extends ChangeNotifier {
   Map<String, Sport> _sports = Map();
   List<String> joinedGifs;
 
-  void setSportCenters(List<SportCenter> newSportCenters) {
-    _sportCenters = newSportCenters.groupListsBy((e) => e.placeId)
-        .map((key, value) => MapEntry(key, value.first));
+  void setSportCenter(String sportCenterId, SportCenter sportCenter) {
+    _sportCenters[sportCenterId] = sportCenter;
     notifyListeners();
   }
 

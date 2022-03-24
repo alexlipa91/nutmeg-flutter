@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
+import 'package:nutmeg/controller/SportCentersController.dart';
 import 'package:nutmeg/model/Match.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
@@ -54,7 +55,8 @@ class GenericAvailableMatchesListState
   }
 
   Future<void> refreshPageState(BuildContext context) async {
-    await MatchesController.refreshAll(context);
+    var matches = await MatchesController.refreshAll(context);
+    Future.wait(matches.map((e) => SportCentersController.refresh(context, e.sportCenterId)));
     Future.wait(context
         .read<MatchesState>()
         .getMatches()
@@ -217,7 +219,7 @@ class GenericMatchInfo extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      MatchThumbnail(image: sportCenter.thumbnailUrl),
+                      MatchThumbnail(image: sportCenter?.getThumbnailUrl()),
                       SizedBox(width: 15),
                       Expanded(
                         child: Column(

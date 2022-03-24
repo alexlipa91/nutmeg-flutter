@@ -26,7 +26,6 @@ import '../utils/InfoModals.dart';
 import '../utils/UiUtils.dart';
 import '../utils/Utils.dart';
 import 'MiscController.dart';
-import 'SportCentersController.dart';
 import 'SportsController.dart';
 import 'UserController.dart';
 
@@ -129,7 +128,7 @@ class LaunchController {
     await Firebase.initializeApp();
 
     var trace = FirebasePerformance.instance.newTrace("launch_app");
-    await trace.start();
+    trace.start();
 
     FirebaseRemoteConfig firebaseRemoteConfig = FirebaseRemoteConfig.instance;
     firebaseRemoteConfig.setConfigSettings(RemoteConfigSettings(
@@ -138,7 +137,7 @@ class LaunchController {
     ));
 
     try {
-      await firebaseRemoteConfig.fetchAndActivate();
+      firebaseRemoteConfig.fetchAndActivate();
     } catch (e, s) {
       print(e);
       print(s);
@@ -246,33 +245,16 @@ class LaunchController {
 
     setupNotifications(context);
 
-    await trace.stop();
+    trace.stop();
   }
 
   static Future<void> loadOnceData(BuildContext context) async {
     print("loading static data");
     var futures = [
-      SportCentersController.refreshAll(context),
       SportsController.refreshAll(context.read<LoadOnceState>()),
       MiscController.getGifs(context.read<LoadOnceState>())
     ];
     await Future.wait(futures);
-    // cacheSportCenterImages(context);
     print("loading static done");
-  }
-
-  static Future<void> cacheSportCenterImages(BuildContext context) async {
-    var urls = context
-        .read<LoadOnceState>()
-        .getSportCenters()
-        .map((e) => e.imagesUrls)
-        .expand((e) => e);
-    print("caching " + urls.length.toString() + " sporcenter images");
-
-    var urlsFuture =
-        urls.map((u) => DefaultCacheManager().downloadFile(u).then((u) {}));
-
-    await Future.wait(urlsFuture);
-    print("cached " + urls.length.toString() + " sporcenter images");
   }
 }

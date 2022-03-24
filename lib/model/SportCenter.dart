@@ -1,8 +1,3 @@
-import 'package:tuple/tuple.dart';
-
-import 'UserDetails.dart';
-
-
 class SportCenter {
   String placeId;
 
@@ -13,8 +8,8 @@ class SportCenter {
   String address;
   List<String> tags;
 
-  String thumbnailUrl;
-  List<String> imagesUrls;
+  String _thumbnailUrl;
+  List<String> _imagesUrls;
 
   SportCenter.fromJson(Map<String, dynamic> json, String documentId)
       : placeId = documentId,
@@ -23,7 +18,9 @@ class SportCenter {
         address = json['address'],
         lat = json['lat'],
         lng = json['lng'],
-        tags = List<String>.from(json['tags']);
+        tags = List<String>.from(json['tags']),
+        _thumbnailUrl = json['thumbnailUrl'],
+        _imagesUrls = List<String>.from(json["largeImageUrls"] ?? []);
 
   String getName() => name;
 
@@ -32,6 +29,11 @@ class SportCenter {
 
   @override
   int get hashCode => super.hashCode;
+
+  String getThumbnailUrl() => _thumbnailUrl == null
+      ? "https://storage.googleapis.com/nutmeg-9099c.appspot.com/sportcenters/default/thumbnail.png" : _thumbnailUrl;
+
+  List<String> getImagesUrls() => _imagesUrls.isEmpty ? ["https://storage.googleapis.com/nutmeg-9099c.appspot.com/sportcenters/default/large/1.png"] : _imagesUrls;
 
   String getShortAddress() =>
       address

@@ -380,7 +380,7 @@ class SportCenterImageCarouselState extends State<SportCenterImageCarousel> {
         .getSportCenter(widget.match.sportCenterId);
 
     List<Widget> itemsToShow =
-        List<Widget>.from(sportCenter.imagesUrls.map((i) => CachedNetworkImage(
+        List<Widget>.from(sportCenter.getImagesUrls().map((i) => CachedNetworkImage(
               imageUrl: i,
               fadeInDuration: Duration(milliseconds: 0),
               fadeOutDuration: Duration(milliseconds: 0),

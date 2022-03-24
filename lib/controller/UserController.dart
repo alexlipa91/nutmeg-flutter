@@ -36,21 +36,24 @@ class UserController {
   static Future<UserDetails> getUserIfAvailable(BuildContext context) async {
     User u = FirebaseAuth.instance.currentUser;
 
+    UserDetails ud;
+
     if (u != null) {
       try {
         var existingUserDetails = await getUserDetails(context, u.uid);
 
         if (existingUserDetails == null) {
-          return null;
+          ud = null;
+        } else {
+          ud = UserDetails.from(u.uid, existingUserDetails);
         }
-
-        return UserDetails.from(u.uid, existingUserDetails);
       } catch (e, stack) {
         print("Found firebase user but couldn't load details: " + e.toString());
         print(stack);
       }
     }
-    return null;
+
+    return ud;
   }
 
   static Future<void> editUser(BuildContext context, UserDetails u) async {

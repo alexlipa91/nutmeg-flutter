@@ -2,6 +2,7 @@ import "package:collection/collection.dart";
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
+import 'package:nutmeg/state/LoadOnceState.dart';
 import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/GenericAvailableMatches.dart';
 import 'package:nutmeg/widgets/Section.dart';
@@ -29,10 +30,13 @@ class AvailableMatches extends StatelessWidget {
       BuildContext context, RefreshController refreshController) {
     var state = context.watch<MatchesState>();
     var userState = context.watch<UserState>();
+    var loadOnceState = context.watch<LoadOnceState>();
 
     if (state.getMatches() == null) {
       return null;
     }
+    if (state.getMatches().where((m) => loadOnceState.getSportCenter(m.sportCenterId) == null).isNotEmpty)
+      return null;
 
     if (!userState.isLoggedIn()) {
       return getEmptyStateWidget(context, false);
@@ -68,10 +72,13 @@ class AvailableMatches extends StatelessWidget {
       BuildContext context, RefreshController refreshController) {
     var state = context.watch<MatchesState>();
     var userState = context.watch<UserState>();
+    var loadOnceState = context.watch<LoadOnceState>();
 
     if (state.getMatches() == null) {
       return null;
     }
+    if (state.getMatches().where((m) => loadOnceState.getSportCenter(m.sportCenterId) == null).isNotEmpty)
+      return null;
 
     if (!userState.isLoggedIn()) {
       return getEmptyStateWidget(context);
@@ -106,10 +113,13 @@ class AvailableMatches extends StatelessWidget {
       BuildContext context, RefreshController refreshController) {
     var state = context.watch<MatchesState>();
     var userState = context.watch<UserState>();
+    var loadOnceState = context.watch<LoadOnceState>();
 
     if (state.getMatches() == null) {
       return null;
     }
+    if (state.getMatches().where((m) => loadOnceState.getSportCenter(m.sportCenterId) == null).isNotEmpty)
+      return null;
 
     var matches = state
         .getMatchesInFuture()
