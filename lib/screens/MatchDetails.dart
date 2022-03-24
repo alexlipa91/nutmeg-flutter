@@ -120,31 +120,7 @@ class MatchDetailsState extends State<MatchDetails> {
         ),
       // horizontal players list
       if (match != null)
-        Builder(
-          builder: (context) {
-            var title = (match == null)
-                ? ""
-                : match.numPlayersGoing().toString() +
-                    "/" +
-                    match.maxPlayers.toString() +
-                    " PLAYERS";
-
-            return Section(
-              title: title,
-              body: SingleChildScrollView(
-                clipBehavior: Clip.none,
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                    children: (match.going.isEmpty)
-                        ? [EmptyPlayerCard(matchId: matchId)]
-                        : match
-                            .getGoingUsersByTime()
-                            .map((s) => PlayerCard(s))
-                            .toList()),
-              ),
-            );
-          },
-        ),
+        PlayerList(match: match),
       if (!MatchesState.pastStates.contains(matchStatus))
         Section(
             title: "DETAILS",
@@ -203,6 +179,37 @@ class MatchDetailsState extends State<MatchDetails> {
         ],
       ),
       bottomNavigationBar: bottomBar,
+    );
+  }
+}
+
+class PlayerList extends StatelessWidget {
+  final Match match;
+
+  const PlayerList({Key key, this.match}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    var title = (match == null)
+        ? ""
+        : match.numPlayersGoing().toString() +
+            "/" +
+            match.maxPlayers.toString() +
+            " PLAYERS";
+
+    return Section(
+      title: title,
+      body: SingleChildScrollView(
+        clipBehavior: Clip.none,
+        scrollDirection: Axis.horizontal,
+        child: Row(
+            children: (match.going.isEmpty)
+                ? [EmptyPlayerCard(matchId: match.documentId)]
+                : match
+                    .getGoingUsersByTime()
+                    .map((s) => PlayerCard(s))
+                    .toList()),
+      ),
     );
   }
 }
@@ -661,9 +668,14 @@ class Stats extends StatelessWidget {
   final String matchId;
   final MatchStatusForUser matchStatusForUser;
   final DateTime matchDatetime;
+  final bool extended;
 
   const Stats(
-      {Key key, this.matchId, this.matchStatusForUser, this.matchDatetime})
+      {Key key,
+      this.matchId,
+      this.matchStatusForUser,
+      this.matchDatetime,
+      this.extended = false})
       : super(key: key);
 
   @override
@@ -698,7 +710,8 @@ class Stats extends StatelessWidget {
             ],
           ));
     } else {
-      var ratings = context.watch<MatchStatState>().ratings;
+      var statState = context.watch<MatchStatState>();
+      var ratings = statState.ratings;
       var userState = context.watch<UserState>();
 
       var loadSkeleton =
@@ -709,14 +722,14 @@ class Stats extends StatelessWidget {
               builder: (context) {
                 var sortedTmp = ratings.entries.toList()
                   ..sort((a, b) => b.value.compareTo(a.value));
-                var potms = context
-                    .watch<MatchesState>()
-                    .getMatch(matchId)
-                    .getPotms();
+                var potms =
+                    context.watch<MatchesState>().getMatch(matchId).getPotms();
                 var sorted = List<MapEntry<String, double>>.from([]);
 
                 // first add potms
-                potms.forEach((p) { sorted.add(MapEntry(p, ratings[p]));});
+                potms.forEach((p) {
+                  sorted.add(MapEntry(p, ratings[p]));
+                });
                 // then the rest
                 sortedTmp.forEach((p) {
                   if (!potms.contains(p.key))
@@ -769,18 +782,42 @@ class Stats extends StatelessWidget {
                           ),
                         ),
                         Spacer(),
-                        Container(
-                          height: 8,
-                          width: 72,
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.all(Radius.circular(10)),
-                            child: LinearProgressIndicator(
-                              value: score / 5,
-                              color: Palette.primary,
-                              backgroundColor: Palette.grey_lighter,
+                        if (!extended)
+                          Container(
+                            height: 8,
+                            width: 72,
+                            child: ClipRRect(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(10)),
+                              child: LinearProgressIndicator(
+                                value: score / 5,
+                                color: Palette.primary,
+                                backgroundColor: Palette.grey_lighter,
+                              ),
                             ),
                           ),
-                        ),
+                        if (extended)
+                          Row(
+                            children: [
+                              Text(
+                                  "S: " +
+                                      statState
+                                          .numberOfSkips[userDetails.documentId]
+                                          .toString(),
+                                  style: TextPalette.getBodyText(
+                                      Palette.grey_dark)),
+                              SizedBox(
+                                width: 16,
+                              ),
+                              Text(
+                                  "V: " +
+                                      statState
+                                          .numberOfVotes[userDetails.documentId]
+                                          .toString(),
+                                  style: TextPalette.getBodyText(
+                                      Palette.grey_dark))
+                            ],
+                          ),
                         SizedBox(width: 16),
                         Container(
                           width: 22,

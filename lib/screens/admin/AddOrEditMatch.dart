@@ -12,7 +12,9 @@ import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:provider/provider.dart';
 
 import '../../controller/UserController.dart';
+import '../../state/MatchStatsState.dart';
 import '../../state/MatchesState.dart';
+import '../MatchDetails.dart';
 
 // main widget
 class AdminMatchDetails extends StatefulWidget {
@@ -48,44 +50,45 @@ class AdminMatchDetailsState extends State<AdminMatchDetails> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        systemOverlayStyle: SystemUiOverlayStyle.dark,
-        backgroundColor: Colors.transparent,
-        centerTitle: false,
-        automaticallyImplyLeading: false,
-        leadingWidth: 0,
-        elevation: 0,
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            // SizedBox(width: 16,), // we cannot pad outside
-            InkWell(
-                splashColor: Palette.grey_lighter,
-                child: Container(
-                  width: 50,
-                  height: 50,
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child:
-                        Icon(Icons.arrow_back, color: Colors.black, size: 25.0),
-                  ),
-                ),
-                onTap: () => Navigator.of(context).pop())
-          ],
-        ),
-      ),
-      body: Container(
-        color: Palette.grey_lightest,
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 30, vertical: 20),
-          child: Column(
+        appBar: AppBar(
+          systemOverlayStyle: SystemUiOverlayStyle.dark,
+          backgroundColor: Colors.transparent,
+          centerTitle: false,
+          automaticallyImplyLeading: false,
+          leadingWidth: 0,
+          elevation: 0,
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Expanded(child: AddOrEditMatchForm(matchId: matchId)),
+              // SizedBox(width: 16,), // we cannot pad outside
+              InkWell(
+                  splashColor: Palette.grey_lighter,
+                  child: Container(
+                    width: 50,
+                    height: 50,
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Icon(Icons.arrow_back,
+                          color: Colors.black, size: 25.0),
+                    ),
+                  ),
+                  onTap: () => Navigator.of(context).pop())
             ],
           ),
         ),
-      ),
-    );
+        body: Container(
+          color: Palette.grey_lightest,
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 30, vertical: 20),
+            child: Column(children: [
+              Expanded(
+                child: MultiProvider(providers: [
+                  ChangeNotifierProvider(create: (context) => MatchStatState()),
+                ], child: AddOrEditMatchForm(matchId: matchId)),
+              )
+            ]),
+          ),
+        ));
   }
 }
 
@@ -123,6 +126,8 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
       setState(() {
         ratings = r;
       });
+
+      MatchesController.refreshMatchStats(context, matchId);
     }
   }
 
@@ -238,91 +243,23 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                               Expanded(
                                   child: GenericButtonWithLoader(
                                       "POTM SCREEN: " +
-                                          context
-                                              .read<UserState>()
-                                              .getUserDetail(e)
-                                              .name
-                                              .toUpperCase(),
+                                              context
+                                                  .read<UserState>()
+                                                  .getUserDetail(e)
+                                                  .name ??
+                                          "PLAYER".toUpperCase(),
                                       (BuildContext context) async {
                                 Get.toNamed("/potm/" + e);
                               }, Primary()))
                             ]))
                         .toList()),
-              SizedBox(height: 16),
-              Container(
-                child: Column(
-                  children: [
-                    Text(
-                      "Players",
-                      style: TextPalette.h2,
-                    ),
-                    Column(
-                        children: match.going.keys
-                            .map((u) => Row(children: [
-                                  Builder(builder: (context) {
-                                    var ud = context
-                                        .read<UserState>()
-                                        .getUserDetail(u);
-                                    if (ud == null) return Container();
-                                    return Text(ud.name ?? "Player",
-                                        style: TextPalette.h3);
-                                  })
-                                ]))
-                            .toList())
-                  ],
-                ),
-              ),
-              SizedBox(height: 16),
-              if (ratings != null && ratings.isNotEmpty)
-                Container(
-                  child: Column(
-                    children: [
-                      Text(
-                        "Ratings Received",
-                        style: TextPalette.h2,
-                      ),
-                      Column(
-                          children: ratings.entries
-                              .map((e) => Builder(builder: (context) {
-                                    var ud = context
-                                        .read<UserState>()
-                                        .getUserDetail(e.key);
-                                    if (ud == null) return Container();
-                                    var skips = e.value.where((v) => v == -1);
-                                    var votes = e.value.where((v) => v != -1);
-                                    double avg = (votes.length > 0)
-                                        ? (votes.reduce((a, b) => (a + b)) /
-                                            votes.length)
-                                        : -1;
-
-                                    return Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text(ud.name ?? "Player",
-                                            style: TextPalette.getH3(
-                                                (matchesState
-                                                        .getMatch(matchId)
-                                                        .getPotms()
-                                                        .contains(
-                                                            ud.documentId))
-                                                    ? Palette.accent
-                                                    : Palette.black)),
-                                        Text(
-                                            avg.toStringAsFixed(1) +
-                                                "\t\t" +
-                                                votes.length.toString() +
-                                                " votes\t\t" +
-                                                skips.length.toString() +
-                                                " skip",
-                                            style: TextPalette.h3),
-                                      ],
-                                    );
-                                  }))
-                              .toList())
-                    ],
-                  ),
-                )
+              PlayerList(match: match),
+              Stats(
+                matchId: matchId,
+                matchStatusForUser: matchesState.getMatchStatus(matchId),
+                matchDatetime: match.dateTime,
+                extended: true,
+              )
             ],
           ),
         ));
