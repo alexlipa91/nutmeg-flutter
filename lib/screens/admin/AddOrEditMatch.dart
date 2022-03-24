@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
-import 'package:intl/intl.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/state/UserState.dart';
@@ -13,7 +12,6 @@ import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:provider/provider.dart';
 
 import '../../controller/UserController.dart';
-import '../../state/LoadOnceState.dart';
 import '../../state/MatchesState.dart';
 
 // main widget
@@ -107,46 +105,11 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
 
   AddOrEditMatchFormState(this.matchId);
 
-  String sportCenterId;
-  String sportCenterSubLocation;
-  String sport;
-  TextEditingController priceController;
-  int maxPlayers;
-  DateTime dateTime;
-  TextEditingController durationController;
-  bool testMatch;
-
   Map<String, dynamic> ratings;
 
   @override
   void initState() {
-    var matchesState = context.read<MatchesState>();
-    var match = (matchId == null) ? null : matchesState.getMatch(matchId);
-
-    if (match != null) {
-      match.going.keys.forEach((u) {
-        if (context.read<UserState>().getUserDetail(u) == null) {
-          UserController.getUserDetails(context, u);
-        }
-      });
-    }
-
-    // set initial values
-    sportCenterId = (match == null) ? null : match.sportCenterId;
-    sportCenterSubLocation =
-        (match == null) ? null : match.sportCenterSubLocation;
-    sport = (match == null) ? null : match.sport;
-    priceController = TextEditingController(
-        text: (match == null)
-            ? null
-            : NumberFormat.decimalPattern().format(match.getPrice()));
-    maxPlayers = (match == null) ? 10 : match.maxPlayers;
-    dateTime = (match == null) ? null : match.dateTime;
-    durationController = TextEditingController(
-        text: (match == null) ? "60" : match.duration.inMinutes.toString());
-    testMatch = (match == null) ? false : match.isTest;
     super.initState();
-
     loadState();
   }
 
@@ -159,25 +122,25 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
           .getGoingUsersByTime()
           .map((e) => UserController.getUserDetails(context, e)));
 
-    if (matchId != null && match.dateTime.isBefore(DateTime.now()))
-      ratings = await CloudFunctionsClient()
+    if (matchId != null && match.dateTime.isBefore(DateTime.now())) {
+      var r = await CloudFunctionsClient()
           .callFunction("get_ratings_by_match", {"match_id": matchId});
+      setState(() {
+        ratings = r;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     // utility
     var matchesState = context.watch<MatchesState>();
-    var loadOnceState = context.watch<LoadOnceState>();
 
     var match = matchesState.getMatch(matchId);
     var status = matchesState.getMatchStatus(matchId);
 
     Set<int> maxPlayersDropdownItemsSet = Set();
     maxPlayersDropdownItemsSet.addAll([8, 10, 12, 14]);
-    if (maxPlayers != null) {
-      maxPlayersDropdownItemsSet.add(maxPlayers);
-    }
 
     return Scaffold(
         backgroundColor: Colors.transparent,
