@@ -231,18 +231,23 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                 ],
               ),
               if (status == MatchStatusForUser.rated)
-                Row(
-                  children: [
-                    Expanded(
-                        child: GenericButtonWithLoader(
-                            "PlAYER OF THE MATCH SCREEN",
-                            (BuildContext context) async {
-                      match.getPotms().forEach((p) {
-                        Get.toNamed("/potm/" + p);
-                      });
-                    }, Primary()))
-                  ],
-                ),
+                Column(
+                    children: match
+                        .getPotms()
+                        .map((e) => Row(children: [
+                              Expanded(
+                                  child: GenericButtonWithLoader(
+                                      "POTM SCREEN: " +
+                                          context
+                                              .read<UserState>()
+                                              .getUserDetail(e)
+                                              .name
+                                              .toUpperCase(),
+                                      (BuildContext context) async {
+                                Get.toNamed("/potm/" + e);
+                              }, Primary()))
+                            ]))
+                        .toList()),
               SizedBox(height: 16),
               Container(
                 child: Column(
