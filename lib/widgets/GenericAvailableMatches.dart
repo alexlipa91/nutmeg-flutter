@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:badges/badges.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
@@ -56,7 +58,8 @@ class GenericAvailableMatchesListState
 
   Future<void> refreshPageState(BuildContext context) async {
     var matches = await MatchesController.refreshAll(context);
-    Future.wait(matches.map((e) => SportCentersController.refresh(context, e.sportCenterId)));
+    Future.wait(matches
+        .map((e) => SportCentersController.refresh(context, e.sportCenterId)));
     Future.wait(context
         .read<MatchesState>()
         .getMatches()
@@ -151,29 +154,33 @@ class GenericAvailableMatchesListState
         bottom: false,
         child: Scaffold(
           backgroundColor: Palette.grey_lightest,
-          body: SafeArea(
-            minimum: EdgeInsets.only(bottom: 16.0),
-            child: SmartRefresher(
-              enablePullDown: true,
-              enablePullUp: false,
-              header: MaterialClassicHeader(),
-              controller: widget.refreshController,
-              onRefresh: () async {
-                await refreshPageState(context);
-              },
-              child: ListView.builder(
-                  itemBuilder: (c, i) {
-                    var core = (widget.tabContent[selected] == null)
-                        ? waitingWidget()
-                        : Padding(
-                            padding: EdgeInsets.all(16.0),
-                            child: widget.tabContent[selected]);
+          body: SmartRefresher(
+            enablePullDown: true,
+            enablePullUp: false,
+            header: MaterialClassicHeader(),
+            controller: widget.refreshController,
+            onRefresh: () async {
+              await refreshPageState(context);
+            },
+            child: ListView.builder(
+                itemBuilder: (c, i) {
+                  var core = (widget.tabContent[selected] == null)
+                      ? waitingWidget()
+                      : Padding(
+                          padding: EdgeInsets.only(
+                              left: 16.0, right: 16.0, top: 16.0),
+                          child: widget.tabContent[selected]);
 
-                    var list = List<Widget>.from([top, core]);
-                    return list[i];
-                  },
-                  itemCount: 2),
-            ),
+                  var list = List<Widget>.from([
+                    top,
+                    core,
+                    SizedBox(
+                        height:
+                            max(16.0, MediaQuery.of(context).padding.bottom))
+                  ]);
+                  return list[i];
+                },
+                itemCount: 3),
           ),
           floatingActionButton: widget.floatingActionButton,
         ),
