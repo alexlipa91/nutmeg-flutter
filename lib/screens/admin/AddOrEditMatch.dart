@@ -234,10 +234,12 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                 Row(
                   children: [
                     Expanded(
-                        child:
-                            GenericButtonWithLoader("PlAYER OF THE MATCH SCREEN",
-                                (BuildContext context) async {
-                      Get.toNamed("/potm/" + match.manOfTheMatch);
+                        child: GenericButtonWithLoader(
+                            "PlAYER OF THE MATCH SCREEN",
+                            (BuildContext context) async {
+                      match.getPotms().forEach((p) {
+                        Get.toNamed("/potm/" + p);
+                      });
                     }, Primary()))
                   ],
                 ),
@@ -294,10 +296,11 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                                       children: [
                                         Text(ud.name ?? "Player",
                                             style: TextPalette.getH3(
-                                                (ud.documentId ==
-                                                        matchesState
-                                                            .getMatch(matchId)
-                                                            .manOfTheMatch)
+                                                (matchesState
+                                                        .getMatch(matchId)
+                                                        .getPotms()
+                                                        .contains(
+                                                            ud.documentId))
                                                     ? Palette.accent
                                                     : Palette.black)),
                                         Text(

@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/model/Match.dart';
 import 'package:nutmeg/screens/JoinModal.dart';
 import 'package:nutmeg/screens/LeaveMatchModal.dart';
 import 'package:nutmeg/screens/RatePlayersModal.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
-import 'package:nutmeg/widgets/Avatar.dart';
 import 'package:provider/provider.dart';
 
-import '../model/UserDetails.dart';
 import '../state/MatchesState.dart';
 
 
@@ -58,19 +55,11 @@ class BottomBarMatch extends StatelessWidget {
       case MatchStatusForUser.to_rate:
         return Text(matchesState.getUsersToRate(match.documentId).length.toString()
             + " players left", style: TextPalette.bodyText);
+      // todo check if can be removed
       case MatchStatusForUser.no_more_to_rate:
-        return Text("Man of the match will be published soon",
-            style: TextPalette.bodyText);
+        return Container();
       case MatchStatusForUser.rated:
-        return FutureBuilder<UserDetails>(
-            future: UserController.getUserDetails(context, match.manOfTheMatch),
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                return Text(snapshot.data.name + " with a score of "
-                    + match.manOfTheMatchScore.toString() + "/5");
-              }
-              return Container();
-            });
+        return Container();
     }
   }
 
@@ -90,10 +79,7 @@ class BottomBarMatch extends StatelessWidget {
       case MatchStatusForUser.no_more_to_rate:
         return Container();
       case MatchStatusForUser.rated:
-        return FutureBuilder(
-            future: UserController.getUserDetails(context, match.manOfTheMatch),
-            builder: (context, snapshot) => (snapshot.hasData) ?
-            UserAvatar(20.0, snapshot.data) : Container());
+        return Container();
     }
   }
 

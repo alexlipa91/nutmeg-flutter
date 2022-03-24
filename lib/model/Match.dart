@@ -1,5 +1,3 @@
-import 'package:tuple/tuple.dart';
-
 import 'UserDetails.dart';
 
 
@@ -21,8 +19,7 @@ class Match {
 
   Map<String, DateTime> going;
 
-  String manOfTheMatch;
-  double manOfTheMatchScore;
+  Map<String, double> _manOfTheMatch;
 
   String organizerId;
 
@@ -50,16 +47,14 @@ class Match {
       isTest = jsonInput["isTest"] ?? false;
       going = _readGoing(jsonInput);
 
-      var t = _readManOfTheMatch(jsonInput);
-      if (t != null) {
-        manOfTheMatch = t.item1;
-        manOfTheMatchScore = t.item2;
-      }
+      _manOfTheMatch = _readManOfTheMatch(jsonInput);
 
       organizerId = jsonInput["organizerId"];
 
       this.documentId = documentId;
   }
+
+  Set<String> getPotms() => (_manOfTheMatch == null) ? Set<String>.from([]) : _manOfTheMatch.keys.toSet();
 
   static Map<String, DateTime> _readGoing(Map<String, dynamic> json) {
     var map = Map<String, dynamic>.from(json["going"] ?? {});
@@ -67,12 +62,12 @@ class Match {
     return x;
   }
 
-  static Tuple2<String, double> _readManOfTheMatch(Map<String, dynamic> json) {
+  static Map<String, double> _readManOfTheMatch(Map<String, dynamic> json) {
     var map = Map<String, dynamic>.from(json["manOfTheMatch"] ?? {});
     if (map.isEmpty) {
       return null;
     }
-    return map.entries.map((e) => Tuple2<String, double>(e.key, e.value)).first;
+    return map.map((key, value) => MapEntry(key, value));
   }
 
   Map<String, dynamic> toJson() =>

@@ -114,6 +114,7 @@ class MatchDetailsState extends State<MatchDetails> {
       if (matchStatus == MatchStatusForUser.rated ||
           matchStatus == MatchStatusForUser.no_more_to_rate)
         Stats(
+          matchId: matchId,
           matchStatusForUser: matchStatus,
           matchDatetime: match.dateTime,
         ),
@@ -379,8 +380,8 @@ class SportCenterImageCarouselState extends State<SportCenterImageCarousel> {
         .read<LoadOnceState>()
         .getSportCenter(widget.match.sportCenterId);
 
-    List<Widget> itemsToShow =
-        List<Widget>.from(sportCenter.getImagesUrls().map((i) => CachedNetworkImage(
+    List<Widget> itemsToShow = List<Widget>.from(
+        sportCenter.getImagesUrls().map((i) => CachedNetworkImage(
               imageUrl: i,
               fadeInDuration: Duration(milliseconds: 0),
               fadeOutDuration: Duration(milliseconds: 0),
@@ -657,10 +658,12 @@ class MapCardImage extends StatelessWidget {
 }
 
 class Stats extends StatelessWidget {
+  final String matchId;
   final MatchStatusForUser matchStatusForUser;
   final DateTime matchDatetime;
 
-  const Stats({Key key, this.matchStatusForUser, this.matchDatetime})
+  const Stats(
+      {Key key, this.matchId, this.matchStatusForUser, this.matchDatetime})
       : super(key: key);
 
   @override
@@ -704,8 +707,21 @@ class Stats extends StatelessWidget {
           ? StatsSkeleton()
           : Builder(
               builder: (context) {
-                var sorted = ratings.entries.toList()
+                var sortedTmp = ratings.entries.toList()
                   ..sort((a, b) => b.value.compareTo(a.value));
+                var potms = context
+                    .watch<MatchesState>()
+                    .getMatch(matchId)
+                    .getPotms();
+                var sorted = List<MapEntry<String, double>>.from([]);
+
+                // first add potms
+                potms.forEach((p) { sorted.add(MapEntry(p, ratings[p]));});
+                // then the rest
+                sortedTmp.forEach((p) {
+                  if (!potms.contains(p.key))
+                    sorted.add(MapEntry(p.key, p.value));
+                });
 
                 int index = 1;
 
@@ -742,7 +758,9 @@ class Stats extends StatelessWidget {
                                         TextPalette.getBodyText(Palette.black));
                               }),
                               SizedBox(width: 8),
-                              if (index == 1 && score > 0)
+                              if (userDetails != null &&
+                                  potms.contains(userDetails.documentId) &&
+                                  score > 0)
                                 Image.asset(
                                   "assets/potm_badge.png",
                                   width: 20,
