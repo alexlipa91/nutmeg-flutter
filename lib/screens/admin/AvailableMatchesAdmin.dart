@@ -125,13 +125,8 @@ class AdminAvailableMatches extends StatelessWidget {
                 Text("Admin Tools", style: TextPalette.h1Inverted),
               ],
             ),
-          ),
-          floatingActionButton: FloatingActionButton(
-              backgroundColor: Colors.green,
-              child: Icon(Icons.add, color: Colors.white),
-              onPressed: () {
-                Get.toNamed("/addMatch");
-              })),
+          )
+      ),
     );
   }
 }

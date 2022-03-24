@@ -99,15 +99,11 @@ void main() {
                 transition: Transition.native),
             GetPage(
                 name: '/editMatch/:matchId',
-                page: () => AddOrEditMatch(),
+                page: () => AdminMatchDetails(),
                 transition: Transition.native),
             GetPage(
                 name: '/adminHome',
                 page: () => AdminAvailableMatches(),
-                transition: Transition.native),
-            GetPage(
-                name: '/addMatch',
-                page: () => AddOrEditMatch(),
                 transition: Transition.native),
             GetPage(
                 name: '/potm',

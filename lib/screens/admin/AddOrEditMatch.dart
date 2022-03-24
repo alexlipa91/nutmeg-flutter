@@ -15,30 +15,28 @@ import '../../controller/UserController.dart';
 import '../../state/MatchesState.dart';
 
 // main widget
-class AddOrEditMatch extends StatefulWidget {
+class AdminMatchDetails extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
-    return AddOrEditMatchState(Get.parameters["matchId"]);
+    return AdminMatchDetailsState(Get.parameters["matchId"]);
   }
 }
 
-class AddOrEditMatchState extends State<AddOrEditMatch> {
+class AdminMatchDetailsState extends State<AdminMatchDetails> {
   final String matchId;
 
-  AddOrEditMatchState(this.matchId);
+  AdminMatchDetailsState(this.matchId);
 
   Future<void> refreshState() async {
-    if (matchId != null) {
-      // get details
-      var m = await MatchesController.refresh(context, matchId);
+    // get details
+    var m = await MatchesController.refresh(context, matchId);
 
-      // get users details
-      Future.wait(
-          m.going.keys.map((e) => UserController.getUserDetails(context, e)));
+    // get users details
+    Future.wait(
+        m.going.keys.map((e) => UserController.getUserDetails(context, e)));
 
-      // get status
-      await MatchesController.refreshMatchStatus(context, m);
-    }
+    // get sta±tus
+    await MatchesController.refreshMatchStatus(context, m);
   }
 
   @override
@@ -114,15 +112,12 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
   }
 
   Future<void> loadState() async {
-    var match = (matchId == null)
-        ? null
-        : context.read<MatchesState>().getMatch(matchId);
-    if (match != null)
-      await Future.wait(match
-          .getGoingUsersByTime()
-          .map((e) => UserController.getUserDetails(context, e)));
+    var match = context.read<MatchesState>().getMatch(matchId);
+    await Future.wait(match
+        .getGoingUsersByTime()
+        .map((e) => UserController.getUserDetails(context, e)));
 
-    if (matchId != null && match.dateTime.isBefore(DateTime.now())) {
+    if (match.dateTime.isBefore(DateTime.now())) {
       var r = await CloudFunctionsClient()
           .callFunction("get_ratings_by_match", {"match_id": matchId});
       setState(() {
@@ -139,9 +134,6 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
     var match = matchesState.getMatch(matchId);
     var status = matchesState.getMatchStatus(matchId);
 
-    Set<int> maxPlayersDropdownItemsSet = Set();
-    maxPlayersDropdownItemsSet.addAll([8, 10, 12, 14]);
-
     return Scaffold(
         backgroundColor: Colors.transparent,
         body: SingleChildScrollView(
@@ -150,50 +142,77 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
             primary: false,
             shrinkWrap: true,
             children: [
-              if (matchId != null)
-                SelectableText("Match id: " + matchId, style: TextPalette.h2),
+              SelectableText("Match id: " + matchId, style: TextPalette.h2),
               SizedBox(height: 16.0),
-              if (matchId != null)
-                Text("Status is: " + status.toString().split(".").last,
-                    style: TextPalette.h2),
+              Text("Status is: " + status.toString().split(".").last,
+                  style: TextPalette.h2),
               SizedBox(height: 16.0),
-              if (matchId != null)
-                Row(
-                  children: [
-                    Expanded(
-                        child: GenericButtonWithLoader("RESET RATINGS",
-                            (BuildContext context) async {
-                      context.read<GenericButtonWithLoaderState>().change(true);
+              Row(
+                children: [
+                  Expanded(
+                      child: GenericButtonWithLoader("RESET RATINGS",
+                          (BuildContext context) async {
+                    context.read<GenericButtonWithLoaderState>().change(true);
+                    try {
+                      await MatchesController.resetRatings(match.documentId);
+                      GenericInfoModal(
+                              title:
+                                  "Successfully deleted all ratings for the match")
+                          .show(context);
+                    } catch (e, stack) {
+                      print(e);
+                      print(stack);
+                      GenericInfoModal(title: "Something went wrong")
+                          .show(context);
+                    }
+                    await MatchesController.refreshMatchStatus(context, match);
+                    context.read<GenericButtonWithLoaderState>().change(false);
+                  }, Primary()))
+                ],
+              ),
+              Row(
+                children: [
+                  Expanded(
+                      child: GenericButtonWithLoader("CLOSE RATING ROUND",
+                          (BuildContext context) async {
+                    context.read<GenericButtonWithLoaderState>().change(true);
+                    try {
+                      await MatchesController.closeRatingRound(
+                          match.documentId);
+                      GenericInfoModal(
+                              title:
+                                  "Successfully closed rating round for the match")
+                          .show(context);
+                    } catch (e, stack) {
+                      print(e);
+                      print(stack);
+                      GenericInfoModal(title: "Something went wrong")
+                          .show(context);
+                    }
+                    await MatchesController.refreshMatchStatus(context, match);
+                    context.read<GenericButtonWithLoaderState>().change(false);
+                  }, Primary()))
+                ],
+              ),
+              Row(
+                children: [
+                  Expanded(
+                      child: GenericButtonWithLoader("CANCEL MATCH",
+                          (BuildContext context) async {
+                    context.read<GenericButtonWithLoaderState>().change(true);
+                    var shouldCancel = await CoolAlert.show(
+                      context: context,
+                      type: CoolAlertType.confirm,
+                      text: "This is going to cancel the match with id: \n" +
+                          match.documentId +
+                          "\nAre you sure?",
+                      onConfirmBtnTap: () => Get.back(result: true),
+                      onCancelBtnTap: () => Get.back(result: false),
+                    );
+
+                    if (shouldCancel) {
                       try {
-                        await MatchesController.resetRatings(match.documentId);
-                        GenericInfoModal(
-                                title:
-                                    "Successfully deleted all ratings for the match")
-                            .show(context);
-                      } catch (e, stack) {
-                        print(e);
-                        print(stack);
-                        GenericInfoModal(title: "Something went wrong")
-                            .show(context);
-                      }
-                      await MatchesController.refreshMatchStatus(
-                          context, match);
-                      context
-                          .read<GenericButtonWithLoaderState>()
-                          .change(false);
-                    }, Primary()))
-                  ],
-                ),
-              if (matchId != null)
-                Row(
-                  children: [
-                    Expanded(
-                        child: GenericButtonWithLoader("CLOSE RATING ROUND",
-                            (BuildContext context) async {
-                      context.read<GenericButtonWithLoaderState>().change(true);
-                      try {
-                        await MatchesController.closeRatingRound(
-                            match.documentId);
+                        await MatchesController.cancelMatch(match.documentId);
                         GenericInfoModal(
                                 title:
                                     "Successfully closed rating round for the match")
@@ -206,76 +225,35 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                       }
                       await MatchesController.refreshMatchStatus(
                           context, match);
-                      context
-                          .read<GenericButtonWithLoaderState>()
-                          .change(false);
-                    }, Primary()))
-                  ],
-                ),
-              if (matchId != null)
-                Row(
-                  children: [
-                    Expanded(
-                        child: GenericButtonWithLoader("CANCEL MATCH",
-                            (BuildContext context) async {
-                      context.read<GenericButtonWithLoaderState>().change(true);
-                      var shouldCancel = await CoolAlert.show(
-                        context: context,
-                        type: CoolAlertType.confirm,
-                        text: "This is going to cancel the match with id: \n" +
-                            match.documentId +
-                            "\nAre you sure?",
-                        onConfirmBtnTap: () => Get.back(result: true),
-                        onCancelBtnTap: () => Get.back(result: false),
-                      );
-
-                      if (shouldCancel) {
-                        try {
-                          await MatchesController.cancelMatch(match.documentId);
-                          GenericInfoModal(
-                                  title:
-                                      "Successfully closed rating round for the match")
-                              .show(context);
-                        } catch (e, stack) {
-                          print(e);
-                          print(stack);
-                          GenericInfoModal(title: "Something went wrong")
-                              .show(context);
-                        }
-                        await MatchesController.refreshMatchStatus(
-                            context, match);
-                      }
-                      context
-                          .read<GenericButtonWithLoaderState>()
-                          .change(false);
-                    }, Destructive()))
-                  ],
-                ),
+                    }
+                    context.read<GenericButtonWithLoaderState>().change(false);
+                  }, Destructive()))
+                ],
+              ),
               SizedBox(height: 16),
-              if (matchId != null)
-                Container(
-                  child: Column(
-                    children: [
-                      Text(
-                        "Players",
-                        style: TextPalette.h2,
-                      ),
-                      Column(
-                          children: match.going.keys
-                              .map((u) => Row(children: [
-                                    Builder(builder: (context) {
-                                      var ud = context
-                                          .read<UserState>()
-                                          .getUserDetail(u);
-                                      if (ud == null) return Container();
-                                      return Text(ud.name ?? "Player",
-                                          style: TextPalette.h3);
-                                    })
-                                  ]))
-                              .toList())
-                    ],
-                  ),
+              Container(
+                child: Column(
+                  children: [
+                    Text(
+                      "Players",
+                      style: TextPalette.h2,
+                    ),
+                    Column(
+                        children: match.going.keys
+                            .map((u) => Row(children: [
+                                  Builder(builder: (context) {
+                                    var ud = context
+                                        .read<UserState>()
+                                        .getUserDetail(u);
+                                    if (ud == null) return Container();
+                                    return Text(ud.name ?? "Player",
+                                        style: TextPalette.h3);
+                                  })
+                                ]))
+                            .toList())
+                  ],
                 ),
+              ),
               SizedBox(height: 16),
               if (ratings != null && ratings.isNotEmpty)
                 Container(
