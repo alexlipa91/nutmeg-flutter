@@ -71,7 +71,7 @@ class BottomBarMatch extends StatelessWidget {
       case MatchStatusForUser.leave:
         return LeaveButton(matchId: matchId);
       case MatchStatusForUser.full:
-        return JoinButtonDisabled();
+        return LeaveButton(matchId: matchId);
       case MatchStatusForUser.canceled:
         return JoinButtonDisabled();
       case MatchStatusForUser.to_rate:
