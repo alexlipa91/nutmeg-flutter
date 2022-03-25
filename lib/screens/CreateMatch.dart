@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:intl/intl.dart';
+import 'package:nutmeg/Exceptions.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/model/Match.dart';
 import 'package:nutmeg/screens/BottomBarMatch.dart';
@@ -19,6 +20,7 @@ import 'package:provider/provider.dart';
 import 'package:time_picker_widget/time_picker_widget.dart';
 
 import '../../state/LoadOnceState.dart';
+import '../model/Sport.dart';
 import '../widgets/ModalBottomSheet.dart';
 
 // main widget
@@ -29,7 +31,7 @@ class CreateMatch extends StatefulWidget {
 
 class CreateMatchState extends State<CreateMatch> {
   String sportCenterId;
-  String sportId;
+  Sport sport;
 
   final _formKey = GlobalKey<FormState>();
 
@@ -50,14 +52,16 @@ class CreateMatchState extends State<CreateMatch> {
   final dateFormat = DateFormat("yyyy-MM-dd");
   final regexPrice = new RegExp("\\d+(\\.\\d{1,2})?");
 
-  Future<void> refreshState() async {}
+  Future<void> refreshState() async {
+    await context.read<LoadOnceState>().fetchSportCenters();
+  }
 
   @override
   void initState() {
     super.initState();
 
     // set default sport
-    sportId = context.read<LoadOnceState>().getSports().first.documentId;
+    sport = context.read<LoadOnceState>().getSports().first;
     sportEditingController.text =
         context.read<LoadOnceState>().getSports().first.displayTitle;
 
@@ -199,6 +203,7 @@ class CreateMatchState extends State<CreateMatch> {
                   validator: (v) => (v.isEmpty) ? "Required" : null,
                   autovalidateMode: AutovalidateMode.onUserInteraction,
                   controller: sportCenterEditingController,
+                  enabled: context.watch<LoadOnceState>().getSportCenters() != null,
                   decoration: InputDecoration(
                     suffixIcon: Icon(Icons.arrow_drop_down),
                     // fixme why we need this?
@@ -300,7 +305,7 @@ class CreateMatchState extends State<CreateMatch> {
                     if (i != null) {
                       sportEditingController.text = sports[i].displayTitle;
                       setState(() {
-                        sportId = sports[i].documentId;
+                        sport = sports[i];
                       });
                     }
                   },
@@ -493,7 +498,7 @@ class CreateMatchState extends State<CreateMatch> {
                     dateTime,
                     sportCenterId,
                     null,
-                    sportId,
+                    sport.displayTitle,
                     numberOfPeopleRangeValues.end.toInt(),
                     (double.parse(priceController.text) * 100).toInt(),
                     endTime.difference(dateTime),
@@ -504,10 +509,16 @@ class CreateMatchState extends State<CreateMatch> {
                         .getLoggedUserDetails()
                         .documentId);
 
-                var id = await MatchesController.addMatch(match);
-                print("added match with id " + id);
-                Get.offNamed("/match/" + id);
-                // await MatchesController.refresh(context, id);
+                try {
+                  var id = await MatchesController.addMatch(match);
+                  print("added match with id " + id);
+                  Get.offNamed("/match/" + id);
+                  await MatchesController.refresh(context, id);
+                } on Exception catch(e, s) {
+                  print(e);
+                  print(s);
+                  ErrorHandlingUtils.handleError(e, s, context);
+                }
               } else {
                 print("validation error");
                 setState(() {});

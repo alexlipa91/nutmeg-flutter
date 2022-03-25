@@ -26,7 +26,6 @@ import '../utils/InfoModals.dart';
 import '../utils/UiUtils.dart';
 import '../utils/Utils.dart';
 import 'MiscController.dart';
-import 'SportsController.dart';
 import 'UserController.dart';
 
 class LaunchController {
@@ -251,7 +250,6 @@ class LaunchController {
   static Future<void> loadOnceData(BuildContext context) async {
     print("loading static data");
     var futures = [
-      SportsController.refreshAll(context.read<LoadOnceState>()),
       MiscController.getGifs(context.read<LoadOnceState>())
     ];
     await Future.wait(futures);

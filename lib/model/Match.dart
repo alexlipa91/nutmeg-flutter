@@ -33,7 +33,7 @@ class Match {
       dateTime = DateTime.parse(jsonInput['dateTime']).toLocal();
       sportCenterId = jsonInput['sportCenterId'];
       sportCenterSubLocation = jsonInput['sportCenterSubLocation'];
-      sport = jsonInput['sport'];
+      sport = jsonInput['sportInfo'];
       pricePerPersonInCents = jsonInput['pricePerPerson'];
       minPlayers = jsonInput['minPlayers'];
       maxPlayers = jsonInput['maxPlayers'];
@@ -75,7 +75,7 @@ class Match {
         'dateTime': dateTime.toUtc().toIso8601String(),
         'sportCenterId': sportCenterId,
         'sportCenterSubLocation': sportCenterSubLocation,
-        'sport': sport,
+        'sportInfo': sport,
         'pricePerPerson': pricePerPersonInCents,
         'maxPlayers': maxPlayers,
         'minPlayers': minPlayers,

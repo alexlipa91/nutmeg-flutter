@@ -213,7 +213,6 @@ class GenericMatchInfo extends StatelessWidget {
     var sportCenter = (match == null)
         ? null
         : loadOnceState.getSportCenter(match.sportCenterId);
-    var sport = (match == null) ? null : loadOnceState.getSport(match.sport);
 
     return InkWell(
         child: Padding(
@@ -238,7 +237,7 @@ class GenericMatchInfo extends StatelessWidget {
                                   Text(
                                       sportCenter.name +
                                           " - " +
-                                          sport.displayTitle,
+                                          match.sport,
                                       style: TextPalette.h2),
                                 ],
                               ),
@@ -354,7 +353,6 @@ class GenericMatchInfoPast extends StatelessWidget {
     var match = context.watch<MatchesState>().getMatch(matchId);
 
     var sportCenter = loadOnceState.getSportCenter(match.sportCenterId);
-    var sport = loadOnceState.getSport(match.sport);
 
     var child = InfoContainer(
       backgroundColor: Palette.white,
@@ -372,7 +370,7 @@ class GenericMatchInfoPast extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(sportCenter.name + " - " + sport.displayTitle,
+                        Text(sportCenter.name + " - " + match.sport,
                             style: TextPalette.h2),
                         SizedBox(height: 10),
                         Text(sportCenter.name, style: TextPalette.bodyText),

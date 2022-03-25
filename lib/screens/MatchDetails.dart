@@ -236,14 +236,14 @@ class Title extends StatelessWidget {
       return skeleton;
     }
     var sportCenter = loadOnceState.getSportCenter(match.sportCenterId);
-    var sport = loadOnceState.getSport(match.sport);
+    var sport = match.sport;
     if (sport == null || sportCenter == null) {
       return skeleton;
     }
 
     var title = (match.isTest)
         ? match.documentId
-        : sportCenter.name + " - " + sport.displayTitle;
+        : sportCenter.name + " - " + sport;
 
     return Text(title,
         style: TextPalette.h1Default, textAlign: TextAlign.start);
@@ -267,9 +267,6 @@ class MatchInfo extends StatelessWidget {
     var sportCenter = (match == null)
         ? null
         : context.watch<LoadOnceState>().getSportCenter(match.sportCenterId);
-    var sport = (match == null)
-        ? null
-        : context.watch<LoadOnceState>().getSport(match.sport);
 
     child = Column(
       children: [
@@ -336,7 +333,7 @@ class MatchInfo extends StatelessWidget {
             ),
             SizedBox(height: 16),
             InfoWidget(
-                title: (sport == null) ? null : sport.displayTitle,
+                title: match?.sport,
                 icon: Icons.sports_soccer,
                 // todo fix info sport
                 subTitle:
