@@ -166,14 +166,14 @@ class GenericAvailableMatchesListState
                 itemBuilder: (c, i) {
                   var core = (widget.tabContent[selected] == null)
                       ? waitingWidget()
-                      : Padding(
-                          padding: EdgeInsets.only(
-                              left: 16.0, right: 16.0, top: 16.0),
-                          child: widget.tabContent[selected]);
+                      : widget.tabContent[selected];
 
                   var list = List<Widget>.from([
                     top,
-                    core,
+                    Padding(
+                        padding:
+                            EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0),
+                        child: core),
                     SizedBox(
                         height:
                             max(16.0, MediaQuery.of(context).padding.bottom))
@@ -234,10 +234,7 @@ class GenericMatchInfo extends StatelessWidget {
                             children: [
                               Row(
                                 children: [
-                                  Text(
-                                      sportCenter.name +
-                                          " - " +
-                                          match.sport,
+                                  Text(sportCenter.name + " - " + match.sport,
                                       style: TextPalette.h2),
                                 ],
                               ),
@@ -249,17 +246,21 @@ class GenericMatchInfo extends StatelessWidget {
                               SizedBox(
                                 height: 8,
                               ),
-                              (match.isFull())
-                                  ? Text("Full",
-                                      style: TextPalette.bodyText,
-                                      textAlign: TextAlign.right)
-                                  : Text(
-                                      (match.maxPlayers -
-                                                  match.numPlayersGoing())
-                                              .toString() +
-                                          " spots left",
-                                      style: TextPalette.bodyTextPrimary,
-                                      textAlign: TextAlign.right),
+                              (match.cancelledAt != null)
+                                  ? Text("Cancelled",
+                                      style: TextPalette.getBodyText(
+                                          Palette.destructive))
+                                  : (match.isFull())
+                                      ? Text("Full",
+                                          style: TextPalette.bodyText,
+                                          textAlign: TextAlign.right)
+                                      : Text(
+                                          (match.maxPlayers -
+                                                      match.numPlayersGoing())
+                                                  .toString() +
+                                              " spots left",
+                                          style: TextPalette.bodyTextPrimary,
+                                          textAlign: TextAlign.right),
                             ]),
                       ),
                     ],
@@ -296,7 +297,7 @@ class GenericMatchInfo extends StatelessWidget {
               child: Text("+" + (match.numPlayersGoing() - 1).toString(),
                   style: GoogleFonts.roboto(
                       color: Palette.white,
-                      fontSize: 10,
+                      fontSize: 9,
                       fontWeight: FontWeight.w500))),
           radius: 14,
           backgroundColor: Palette.primary),
@@ -309,22 +310,22 @@ class GenericMatchInfo extends StatelessWidget {
 
     var badges = [];
 
-    if (shouldShowUserBadge && match.numPlayersGoing() > 1) {
-      badges.add(plusPlayers);
-    }
     if (shouldShowUserBadge) {
       badges.add(userAvatar);
+    }
+    if (shouldShowUserBadge && match.numPlayersGoing() > 1) {
+      badges.add(plusPlayers);
     }
     if (match.isTest) {
       badges.add(TestBadge());
     }
 
-    var e = 0.0;
+    var e = 18.0 * (badges.length - 1);
     badges.forEach((b) {
       // fixme not sure why we need to do -6 here
       finalWidget =
           badgeIt(finalWidget, b, BadgePosition.bottomEnd(bottom: -6, end: e));
-      e += 18;
+      e -= 18;
     });
 
     return finalWidget;
