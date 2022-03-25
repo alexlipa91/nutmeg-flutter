@@ -17,7 +17,7 @@ class CloudFunctionsClient {
     print("Calling " + name + " with data " + data.toString());
 
     var trace = FirebasePerformance.instance.newTrace("api-call");
-    await trace.start();
+    trace.start();
     trace.putAttribute("function_name", name);
     final Stopwatch stopwatch = Stopwatch();
 

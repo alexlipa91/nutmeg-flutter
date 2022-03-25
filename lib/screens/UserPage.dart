@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:nutmeg/Exceptions.dart';
 import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
@@ -290,12 +291,18 @@ class UserPageState extends State<UserPage> {
                         (BuildContext context) async {
                       context.read<GenericButtonWithLoaderState>().change(true);
                       userDetails.creditsInCents = creditCount;
-                      await UserController.editUser(context, userDetails);
-                      await GenericInfoModal(
+                      try {
+                        await UserController.editUser(context, userDetails);
+                        await GenericInfoModal(
                               title: "Credits updated",
                               description: "Your new balance is: " +
                                   formatCurrency(creditCount))
                           .show(context);
+                      } catch (e, s) {
+                        print(e);
+                        print(s);
+                        ErrorHandlingUtils.handleError(e, s, context);
+                      }
                       context
                           .read<GenericButtonWithLoaderState>()
                           .change(false);
