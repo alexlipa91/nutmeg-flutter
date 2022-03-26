@@ -52,8 +52,17 @@ class CreateMatchState extends State<CreateMatch> {
   final dateFormat = DateFormat("yyyy-MM-dd");
   final regexPrice = new RegExp("\\d+(\\.\\d{1,2})?");
 
+  FocusNode sportCenterfocusNode;
+  FocusNode datefocusNode;
+  FocusNode startTimefocusNode;
+
   Future<void> refreshState() async {
     await context.read<LoadOnceState>().fetchSportCenters();
+  }
+
+  void unfocusIfNoValue(FocusNode focusNode, TextEditingController controller) {
+    if (controller.text.isEmpty && focusNode.hasFocus)
+      focusNode.unfocus();
   }
 
   @override
@@ -64,6 +73,18 @@ class CreateMatchState extends State<CreateMatch> {
     sport = context.read<LoadOnceState>().getSports().first;
     sportEditingController.text =
         context.read<LoadOnceState>().getSports().first.displayTitle;
+
+    sportCenterfocusNode = FocusNode();
+    datefocusNode = FocusNode();
+    startTimefocusNode = FocusNode();
+
+    // avoid focus when no data
+    sportCenterfocusNode.addListener(() =>
+        unfocusIfNoValue(sportCenterfocusNode, sportCenterEditingController));
+    datefocusNode.addListener(() =>
+        unfocusIfNoValue(datefocusNode, dateEditingController));
+    startTimefocusNode.addListener(() =>
+        unfocusIfNoValue(startTimefocusNode, startTimeEditingController));
 
     refreshState();
   }
@@ -84,6 +105,7 @@ class CreateMatchState extends State<CreateMatch> {
                   controller: dateEditingController,
                   validator: (v) => (v.isEmpty) ? "Required" : null,
                   autovalidateMode: AutovalidateMode.onUserInteraction,
+                  focusNode: datefocusNode,
                   decoration: InputDecoration(
                       labelText: "Date",
                       labelStyle: TextPalette.bodyText,
@@ -116,6 +138,7 @@ class CreateMatchState extends State<CreateMatch> {
                   controller: startTimeEditingController,
                   validator: (v) => (v.isEmpty) ? "Required" : null,
                   autovalidateMode: AutovalidateMode.onUserInteraction,
+                  focusNode: startTimefocusNode,
                   decoration: InputDecoration(
                       labelText: "Start Time",
                       labelStyle: TextPalette.bodyText,
@@ -139,11 +162,13 @@ class CreateMatchState extends State<CreateMatch> {
                       initialTime: TimeOfDay(hour: 18, minute: 0),
                       selectableTimePredicate: (time) => time.minute % 5 == 0,
                     );
-                    startTimeEditingController.text = d.format(context);
-                    endTimeEditingController.text =
-                        TimeOfDay(hour: d.hour + 1, minute: d.minute)
-                            .format(context);
-                    setState(() {});
+                    if (d != null) {
+                      startTimeEditingController.text = d.format(context);
+                      endTimeEditingController.text =
+                          TimeOfDay(hour: d.hour + 1, minute: d.minute)
+                              .format(context);
+                      setState(() {});
+                    }
                   },
                 )),
                 SizedBox(width: 16),
@@ -204,6 +229,7 @@ class CreateMatchState extends State<CreateMatch> {
                   autovalidateMode: AutovalidateMode.onUserInteraction,
                   controller: sportCenterEditingController,
                   enabled: context.watch<LoadOnceState>().getSportCenters() != null,
+                  focusNode: sportCenterfocusNode,
                   decoration: InputDecoration(
                     suffixIcon: Icon(Icons.arrow_drop_down),
                     // fixme why we need this?
