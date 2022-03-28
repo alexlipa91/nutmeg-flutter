@@ -119,8 +119,7 @@ class MatchDetailsState extends State<MatchDetails> {
           matchDatetime: match.dateTime,
         ),
       // horizontal players list
-      if (match != null)
-        PlayerList(match: match),
+      if (match != null) PlayerList(match: match),
       if (!MatchesState.pastStates.contains(matchStatus))
         Section(
             title: "DETAILS",
@@ -142,7 +141,9 @@ class MatchDetailsState extends State<MatchDetails> {
 
                     return InfoContainer(
                         child: Row(children: [
-                      UserAvatarWithBottomModal(userData: ud),
+                      (ud.isAdmin)
+                          ? NutmegAvatar(24.0)
+                          : UserAvatarWithBottomModal(userData: ud),
                       SizedBox(width: 16),
                       Expanded(
                         child: Column(
@@ -152,7 +153,10 @@ class MatchDetailsState extends State<MatchDetails> {
                             SizedBox(height: 4),
                             (ud == null)
                                 ? Skeletons.lText
-                                : Text(ud.name.split(" ").first,
+                                : Text(
+                                    (ud.isAdmin)
+                                        ? "Nutmeg"
+                                        : ud.name.split(" ").first,
                                     style: TextPalette.h2),
                           ],
                         ),
@@ -241,9 +245,8 @@ class Title extends StatelessWidget {
       return skeleton;
     }
 
-    var title = (match.isTest)
-        ? match.documentId
-        : sportCenter.name + " - " + sport;
+    var title =
+        (match.isTest) ? match.documentId : sportCenter.name + " - " + sport;
 
     return Text(title,
         style: TextPalette.h1Default, textAlign: TextAlign.start);

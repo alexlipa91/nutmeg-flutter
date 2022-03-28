@@ -41,6 +41,8 @@ class CreateMatchState extends State<CreateMatch> {
       TextEditingController(text: "");
   final TextEditingController endTimeEditingController =
       TextEditingController(text: "");
+  final TextEditingController repeatWeeklyEditingController =
+      TextEditingController(text: "Don't repeat");
   final TextEditingController sportCenterEditingController =
       TextEditingController(text: "");
   final TextEditingController sportEditingController =
@@ -49,7 +51,7 @@ class CreateMatchState extends State<CreateMatch> {
   RangeValues numberOfPeopleRangeValues = RangeValues(8, 10);
   bool isTest = false;
 
-  final dateFormat = DateFormat("yyyy-MM-dd");
+  final dateFormat = DateFormat("dd-MM-yyyy");
   final regexPrice = new RegExp("\\d+(\\.\\d{1,2})?");
 
   FocusNode sportCenterfocusNode;
@@ -61,8 +63,7 @@ class CreateMatchState extends State<CreateMatch> {
   }
 
   void unfocusIfNoValue(FocusNode focusNode, TextEditingController controller) {
-    if (controller.text.isEmpty && focusNode.hasFocus)
-      focusNode.unfocus();
+    if (controller.text.isEmpty && focusNode.hasFocus) focusNode.unfocus();
   }
 
   @override
@@ -81,10 +82,10 @@ class CreateMatchState extends State<CreateMatch> {
     // avoid focus when no data
     sportCenterfocusNode.addListener(() =>
         unfocusIfNoValue(sportCenterfocusNode, sportCenterEditingController));
-    datefocusNode.addListener(() =>
-        unfocusIfNoValue(datefocusNode, dateEditingController));
-    startTimefocusNode.addListener(() =>
-        unfocusIfNoValue(startTimefocusNode, startTimeEditingController));
+    datefocusNode.addListener(
+        () => unfocusIfNoValue(datefocusNode, dateEditingController));
+    startTimefocusNode.addListener(
+        () => unfocusIfNoValue(startTimefocusNode, startTimeEditingController));
 
     refreshState();
   }
@@ -96,6 +97,7 @@ class CreateMatchState extends State<CreateMatch> {
       Section(
         title: "GENERAL",
         body: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
@@ -212,7 +214,82 @@ class CreateMatchState extends State<CreateMatch> {
                   },
                 )),
               ],
-            )
+            ),
+            SizedBox(
+              height: 16.0,
+            ),
+            Row(
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    readOnly: true,
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    controller: repeatWeeklyEditingController,
+                    decoration: InputDecoration(
+                      suffixIcon: Icon(Icons.arrow_drop_down),
+                      // fixme why we need this?
+                      suffixIconConstraints:
+                          BoxConstraints.expand(width: 50.0, height: 30.0),
+                      labelText: "Repeat Weekly",
+                      labelStyle: TextPalette.bodyText,
+                      contentPadding: EdgeInsets.symmetric(horizontal: 16.0),
+                      filled: true,
+                      focusColor: Palette.grey_lighter,
+                      fillColor: Palette.grey_lighter,
+                      border: InputBorder.none,
+                    ),
+                    onTap: () async {
+                      var choices = ["Don't repeat", "2", "3", "4", "5", "6"];
+
+                      var i = await ModalBottomSheet.showNutmegModalBottomSheet(
+                          context,
+                          Padding(
+                            padding:
+                                EdgeInsets.only(left: 16, right: 16, top: 16),
+                            child: ListView.builder(
+                                shrinkWrap: true,
+                                scrollDirection: Axis.vertical,
+                                itemCount: choices.length,
+                                itemBuilder: (context, i) => InkWell(
+                                      onTap: () => Navigator.of(context).pop(i),
+                                      child: Padding(
+                                        padding: EdgeInsets.only(
+                                            top: (i == 0) ? 0 : 16.0),
+                                        child: InfoContainer(
+                                            backgroundColor:
+                                                Palette.grey_lightest,
+                                            child: Text(choices[i].toString(),
+                                                style: TextPalette.bodyText)),
+                                      ),
+                                    )),
+                          ));
+                      if (i != null) {
+                        repeatWeeklyEditingController.text =
+                            choices[i].toString();
+                        setState(() {});
+                      }
+                    },
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(
+              height: 16.0,
+            ),
+            if (repeatWeeklyEditingController.text.isNotEmpty &&
+                repeatWeeklyEditingController.text != "Don't repeat" &&
+                dateEditingController.text.isNotEmpty)
+              Text(
+                "Last match on " +
+                    dateFormat.format(dateFormat
+                        .parse(dateEditingController.text)
+                        .add(Duration(
+                            days: 7 *
+                                int.parse(
+                                    repeatWeeklyEditingController.text)))),
+                style: TextPalette.bodyText,
+                textAlign: TextAlign.left,
+              )
           ],
         ),
       ),
@@ -228,7 +305,8 @@ class CreateMatchState extends State<CreateMatch> {
                   validator: (v) => (v.isEmpty) ? "Required" : null,
                   autovalidateMode: AutovalidateMode.onUserInteraction,
                   controller: sportCenterEditingController,
-                  enabled: context.watch<LoadOnceState>().getSportCenters() != null,
+                  enabled:
+                      context.watch<LoadOnceState>().getSportCenters() != null,
                   focusNode: sportCenterfocusNode,
                   decoration: InputDecoration(
                     suffixIcon: Icon(Icons.arrow_drop_down),
@@ -362,8 +440,9 @@ class CreateMatchState extends State<CreateMatch> {
                     setState(() {});
                   },
                   controller: priceController,
-                  keyboardType: Platform.isIOS ?
-                  TextInputType.numberWithOptions(signed: true, decimal: true)
+                  keyboardType: Platform.isIOS
+                      ? TextInputType.numberWithOptions(
+                          signed: true, decimal: true)
                       : TextInputType.number,
                   autovalidateMode: AutovalidateMode.onUserInteraction,
                   inputFormatters: [
@@ -514,33 +593,44 @@ class CreateMatchState extends State<CreateMatch> {
               if (_formKey.currentState.validate()) {
                 var stod = toTimeOfTheDay(startTimeEditingController.text);
                 var etod = toTimeOfTheDay(endTimeEditingController.text);
-                var day = DateTime.parse(dateEditingController.text);
+                var day = dateFormat.parse(dateEditingController.text);
                 var dateTime = DateTime(
                     day.year, day.month, day.day, stod.hour, stod.minute);
                 var endTime = DateTime(
-                    day.year, day.month, day.day, etod.hour, etod.minute);
+                        day.year, day.month, day.day, etod.hour, etod.minute)
+                    .toUtc();
+                var duration = endTime.difference(dateTime);
 
-                var match = Match(
-                    dateTime,
-                    sportCenterId,
-                    null,
-                    sport.displayTitle,
-                    numberOfPeopleRangeValues.end.toInt(),
-                    (double.parse(priceController.text) * 100).toInt(),
-                    endTime.difference(dateTime),
-                    isTest,
-                    numberOfPeopleRangeValues.start.toInt(),
-                    context
-                        .read<UserState>()
-                        .getLoggedUserDetails()
-                        .documentId);
-
+                var forWeeks = int.tryParse(repeatWeeklyEditingController.text);
+                if (forWeeks == null) forWeeks = 1;
                 try {
-                  var id = await MatchesController.addMatch(match);
-                  print("added match with id " + id);
-                  Get.offNamed("/match/" + id);
-                  await MatchesController.refresh(context, id);
-                } on Exception catch(e, s) {
+                  Iterable<Future<String>> idsFuture =
+                      Iterable<int>.generate(forWeeks).map((w) async {
+                    var match = Match(
+                        dateTime.add(Duration(days: 7 * w)),
+                        sportCenterId,
+                        null,
+                        sport.displayTitle,
+                        numberOfPeopleRangeValues.end.toInt(),
+                        (double.parse(priceController.text) * 100).toInt(),
+                        duration,
+                        isTest,
+                        numberOfPeopleRangeValues.start.toInt(),
+                        context
+                            .read<UserState>()
+                            .getLoggedUserDetails()
+                            .documentId);
+
+                    var id = await MatchesController.addMatch(match);
+                    await MatchesController.refresh(context, id);
+                    print("added match with id " + id);
+                    return id;
+                  });
+
+                  var ids = await Future.wait(idsFuture);
+
+                  Get.offNamed("/match/" + ids.first);
+                } on Exception catch (e, s) {
                   print(e);
                   print(s);
                   ErrorHandlingUtils.handleError(e, s, context);
@@ -559,8 +649,9 @@ class CreateMatchState extends State<CreateMatch> {
   }
 
   TimeOfDay toTimeOfTheDay(String v) {
-    var vParts = v.split(" ")[0].split(":");
-    return TimeOfDay(hour: int.parse(vParts.first), minute: int.parse(vParts.last));
+    print(v);
+    var dateTime = DateFormat.jm().parse(v);
+    return TimeOfDay(hour: dateTime.hour, minute: dateTime.minute);
   }
 
   bool isAfter(TimeOfDay a, TimeOfDay b) =>

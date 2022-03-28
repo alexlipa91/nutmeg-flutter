@@ -50,6 +50,22 @@ class UserAvatar extends StatelessWidget {
   }
 }
 
+class NutmegAvatar extends StatelessWidget {
+  final double radius;
+
+  const NutmegAvatar(this.radius);
+
+  @override
+  Widget build(BuildContext context) {
+    return CircleAvatar(
+        backgroundColor: Palette.primary,
+        child: Padding(
+            padding: EdgeInsets.all(5.0),
+            child: Image.asset('assets/nutmeg_white.png', fit: BoxFit.cover)),
+        radius: radius);
+  }
+}
+
 class LoggedUserAvatarWithRedirectUserPage extends StatelessWidget {
   final double radius;
 
