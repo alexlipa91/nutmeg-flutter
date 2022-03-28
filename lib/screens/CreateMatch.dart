@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -165,7 +163,7 @@ class CreateMatchState extends State<CreateMatch> {
                       selectableTimePredicate: (time) => time.minute % 5 == 0,
                     );
                     if (d != null) {
-                      startTimeEditingController.text = d.format(context);
+                      startTimeEditingController.text = getFormattedTime(d);
                       endTimeEditingController.text =
                           TimeOfDay(hour: d.hour + 1, minute: d.minute)
                               .format(context);
@@ -210,7 +208,7 @@ class CreateMatchState extends State<CreateMatch> {
                         selectableTimePredicate: (time) =>
                             time == null || isAfter(time, currentStart));
                     if (d != null)
-                      endTimeEditingController.text = d.format(context);
+                      endTimeEditingController.text = getFormattedTime(d);
                   },
                 )),
               ],
@@ -649,6 +647,10 @@ class CreateMatchState extends State<CreateMatch> {
   TimeOfDay toTimeOfTheDay(String v) {
     var dateTime = DateFormat.jm().parse(v);
     return TimeOfDay(hour: dateTime.hour, minute: dateTime.minute);
+  }
+
+  getFormattedTime(TimeOfDay time) {
+    return '${time.hourOfPeriod}:${time.minute.toString().padLeft(2, "0")} ${time.period.toString().split('.')[1].toUpperCase()}';
   }
 
   bool isAfter(TimeOfDay a, TimeOfDay b) =>
