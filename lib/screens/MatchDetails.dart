@@ -387,6 +387,10 @@ class SportCenterImageCarouselState extends State<SportCenterImageCarousel> {
         .read<LoadOnceState>()
         .getSportCenter(widget.match.sportCenterId);
 
+    if (sportCenter == null) {
+      return placeHolder;
+    }
+
     List<Widget> itemsToShow = List<Widget>.from(
         sportCenter.getImagesUrls().map((i) => CachedNetworkImage(
               imageUrl: i,
