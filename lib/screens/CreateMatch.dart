@@ -440,10 +440,8 @@ class CreateMatchState extends State<CreateMatch> {
                     setState(() {});
                   },
                   controller: priceController,
-                  keyboardType: Platform.isIOS
-                      ? TextInputType.numberWithOptions(
-                          signed: true, decimal: true)
-                      : TextInputType.number,
+                  keyboardType: TextInputType.numberWithOptions(
+                          signed: true, decimal: true),
                   autovalidateMode: AutovalidateMode.onUserInteraction,
                   inputFormatters: [
                     FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*$')),
@@ -649,7 +647,6 @@ class CreateMatchState extends State<CreateMatch> {
   }
 
   TimeOfDay toTimeOfTheDay(String v) {
-    print(v);
     var dateTime = DateFormat.jm().parse(v);
     return TimeOfDay(hour: dateTime.hour, minute: dateTime.minute);
   }

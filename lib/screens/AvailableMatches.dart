@@ -2,6 +2,7 @@ import "package:collection/collection.dart";
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
+import 'package:nutmeg/model/Match.dart';
 import 'package:nutmeg/state/LoadOnceState.dart';
 import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/GenericAvailableMatches.dart';
@@ -140,27 +141,34 @@ class AvailableMatches extends StatelessWidget {
 
     List<Widget> result = [];
 
+    var groupedByWeeksIntervals = Map<String, List<Match>> ();
+    groupedByWeeksIntervals["THIS WEEK"] = grouped[0];
+    groupedByWeeksIntervals["NEXT WEEK"] = grouped[0];
+    groupedByWeeksIntervals["IN MORE THAN TWO WEEKS"] = List<Match>.from([]);
     sortedWeeks.forEach((w) {
+      if (w > 1) {
+        groupedByWeeksIntervals["IN MORE THAN TWO WEEKS"].addAll(grouped[w]);
+      }
+    });
+
+    groupedByWeeksIntervals.entries.forEach((e) {
       var widgets =
-          grouped[w].sortedBy((e) => e.dateTime).mapIndexed((index, match) {
+          e.value.sortedBy((e) => e.dateTime).mapIndexed((index, match) {
         if (index == 0) {
           return GenericMatchInfo.first(
               match.documentId, onTap, refreshController);
         }
         return GenericMatchInfo(match.documentId, onTap, refreshController);
       });
-
-      result.add(Section(
-        topSpace: 16,
-        title: (w == 0)
-            ? "THIS WEEK"
-            : (w == 1)
-                ? "NEXT WEEK"
-                : "IN MORE THAN TWO WEEKS",
-        body: Column(
-          children: widgets.toList(),
-        ),
-      ));
+      if (widgets.isNotEmpty) {
+        result.add(Section(
+          topSpace: 16,
+          title: e.key,
+          body: Column(
+            children: widgets.toList(),
+          ),
+        ));
+      }
     });
 
     if (result.isEmpty) return getEmptyStateWidget(context, false);
