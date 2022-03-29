@@ -1,1 +1,1 @@
-UI improvements/nAdd weekly recurrent match
+Fix loading of match page
