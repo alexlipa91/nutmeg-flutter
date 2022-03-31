@@ -1,1 +1,1 @@
-Fix loading of match page
+Fix empty week group
