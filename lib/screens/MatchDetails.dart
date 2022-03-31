@@ -685,8 +685,10 @@ class Stats extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var child;
+    var showingPartial = matchStatusForUser == MatchStatusForUser.no_more_to_rate && extended;
 
-    if (matchStatusForUser == MatchStatusForUser.no_more_to_rate) {
+    // in extended mode, we show also partial results
+    if (matchStatusForUser == MatchStatusForUser.no_more_to_rate && !extended) {
       child = Container(
           width: double.infinity,
           child: Column(
@@ -851,7 +853,7 @@ class Stats extends StatelessWidget {
 
     return Container(
       child: Section(
-        title: "MATCH STATS",
+        title: "MATCH STATS " + (showingPartial ? " (partial)" : ""),
         body: InfoContainer(child: child),
       ),
     );

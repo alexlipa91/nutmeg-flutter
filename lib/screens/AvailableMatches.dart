@@ -36,8 +36,10 @@ class AvailableMatches extends StatelessWidget {
     if (state.getMatches() == null) {
       return null;
     }
-    if (state.getMatches().where((m) => loadOnceState.getSportCenter(m.sportCenterId) == null).isNotEmpty)
-      return null;
+    if (state
+        .getMatches()
+        .where((m) => loadOnceState.getSportCenter(m.sportCenterId) == null)
+        .isNotEmpty) return null;
 
     if (!userState.isLoggedIn()) {
       return getEmptyStateWidget(context, false);
@@ -78,8 +80,10 @@ class AvailableMatches extends StatelessWidget {
     if (state.getMatches() == null) {
       return null;
     }
-    if (state.getMatches().where((m) => loadOnceState.getSportCenter(m.sportCenterId) == null).isNotEmpty)
-      return null;
+    if (state
+        .getMatches()
+        .where((m) => loadOnceState.getSportCenter(m.sportCenterId) == null)
+        .isNotEmpty) return null;
 
     if (!userState.isLoggedIn()) {
       return getEmptyStateWidget(context);
@@ -119,8 +123,10 @@ class AvailableMatches extends StatelessWidget {
     if (state.getMatches() == null) {
       return null;
     }
-    if (state.getMatches().where((m) => loadOnceState.getSportCenter(m.sportCenterId) == null).isNotEmpty)
-      return null;
+    if (state
+        .getMatches()
+        .where((m) => loadOnceState.getSportCenter(m.sportCenterId) == null)
+        .isNotEmpty) return null;
 
     var matches = state
         .getMatchesInFuture()
@@ -139,11 +145,11 @@ class AvailableMatches extends StatelessWidget {
 
     List<int> sortedWeeks = grouped.keys.toList()..sort();
 
-    List<Widget> result = [];
-
-    var groupedByWeeksIntervals = Map<String, List<Match>> ();
-    groupedByWeeksIntervals["THIS WEEK"] = grouped[0];
-    groupedByWeeksIntervals["NEXT WEEK"] = grouped[0];
+    var groupedByWeeksIntervals = Map<String, List<Match>>();
+    if (grouped.containsKey(0))
+      groupedByWeeksIntervals["THIS WEEK"] = grouped[0];
+    if (grouped.containsKey(1))
+      groupedByWeeksIntervals["NEXT WEEK"] = grouped[1];
     groupedByWeeksIntervals["IN MORE THAN TWO WEEKS"] = List<Match>.from([]);
     sortedWeeks.forEach((w) {
       if (w > 1) {
@@ -151,16 +157,17 @@ class AvailableMatches extends StatelessWidget {
       }
     });
 
+    List<Widget> result = [];
     groupedByWeeksIntervals.entries.forEach((e) {
-      var widgets =
-          e.value.sortedBy((e) => e.dateTime).mapIndexed((index, match) {
-        if (index == 0) {
-          return GenericMatchInfo.first(
-              match.documentId, onTap, refreshController);
-        }
-        return GenericMatchInfo(match.documentId, onTap, refreshController);
-      });
-      if (widgets.isNotEmpty) {
+      if (e.value != null && e.value.isNotEmpty) {
+        var widgets =
+            e.value.sortedBy((e) => e.dateTime).mapIndexed((index, match) {
+          if (index == 0) {
+            return GenericMatchInfo.first(
+                match.documentId, onTap, refreshController);
+          }
+          return GenericMatchInfo(match.documentId, onTap, refreshController);
+        });
         result.add(Section(
           topSpace: 16,
           title: e.key,
