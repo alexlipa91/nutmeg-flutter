@@ -112,7 +112,8 @@ class MatchDetailsState extends State<MatchDetails> {
     var matchStatus = matchesState.getMatchStatus(matchId);
 
     var organizerView =
-        match.organizerId == userState.getLoggedUserDetails().documentId;
+        userState.isLoggedIn()
+            && match.organizerId == userState.getLoggedUserDetails().documentId;
 
     padB(Widget w) => Padding(padding: EdgeInsets.only(bottom: 16), child: w);
 
@@ -168,7 +169,7 @@ class MatchDetailsState extends State<MatchDetails> {
 
                     return InfoContainer(
                         child: Row(children: [
-                      (ud.isAdmin)
+                      (ud != null && ud.isAdmin)
                           ? NutmegAvatar(24.0)
                           : UserAvatarWithBottomModal(userData: ud),
                       SizedBox(width: 16),
