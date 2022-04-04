@@ -7,7 +7,6 @@ import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
@@ -31,7 +30,7 @@ import 'UserController.dart';
 class LaunchController {
   static var apiClient = CloudFunctionsClient();
 
-  static Future<void> handleLink(Uri deepLink) async {
+  static Future<void> handleLink(Uri deepLink, [bool start = false]) async {
     print("handling dynamic link " + deepLink.toString());
 
     if (deepLink.path == "/payment") {
@@ -58,6 +57,9 @@ class LaunchController {
       await goToMatchPage(deepLink.queryParameters["id"]);
       return;
     }
+    // if we don't know where to go and it's startup, let's go home
+    if (start)
+      Get.offAndToNamed("/home");
   }
 
   static void handleMessageFromNotification(
@@ -232,7 +234,7 @@ class LaunchController {
     if (deepLink != null) {
       print("navigating with deep link:" + deepLink.toString());
       trace.putAttribute("coming_from_deeplink", true.toString());
-      handleLink(deepLink);
+      handleLink(deepLink, true);
     } else if (initialMessage != null) {
       print("navigating with initial message:" + initialMessage.toString());
       trace.putAttribute("coming_from_notification", true.toString());

@@ -9,11 +9,12 @@ class UserDetails {
   int creditsInCents;
 
   List<String> joinedMatches;
+  List<String> organisedMatches;
   Map<String, double> scoreMatches;
   List<String> manOfTheMatch;
 
-  bool isConnectedAccountComplete;
-  bool isConnectedAccountTestComplete;
+  bool _isConnectedAccountComplete;
+  bool _isConnectedAccountTestComplete;
 
   UserDetails.empty(this.documentId);
 
@@ -39,8 +40,9 @@ class UserDetails {
         joinedMatches = Map<String, dynamic>.from(json["joined_matches"] ?? {}).keys.toList(),
         scoreMatches = Map<String, double>.from(json["scoreMatches"] ?? {}),
         manOfTheMatch = List<String>.from(json["manOfTheMatch"] ?? []),
-        isConnectedAccountComplete = json["isConnectedAccountComplete"] ?? null,
-        isConnectedAccountTestComplete = json["isConnectedAccountComplete"] ?? null,
+        _isConnectedAccountComplete = json["isConnectedAccountComplete"] ?? null,
+        _isConnectedAccountTestComplete = json["isConnectedAccountTestComplete"] ?? null,
+        organisedMatches = Map<String, dynamic>.from(json["organised_matches"] ?? {}).keys.toList(),
         documentId = documentId;
 
   Map<String, dynamic> toJson() =>
@@ -73,6 +75,18 @@ class UserDetails {
   String getPhotoUrl() => image;
   
   bool getIsAdmin() => (isAdmin == null) ? false : isAdmin;
+
+  bool isOrganiser() {
+    return this._isConnectedAccountComplete != null
+        || this._isConnectedAccountTestComplete != null;
+  }
+
+  bool connectedAccountNeedsCompletion(isTest) {
+    return
+      isTest ?
+      (_isConnectedAccountComplete != null && _isConnectedAccountComplete) :
+      (_isConnectedAccountTestComplete != null && _isConnectedAccountTestComplete);
+  }
 
   static String getDisplayName(UserDetails ud) {
     if (ud == null) return "Player";

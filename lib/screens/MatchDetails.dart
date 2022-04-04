@@ -16,6 +16,7 @@ import 'package:nutmeg/model/Match.dart';
 import 'package:nutmeg/model/UserDetails.dart';
 import 'package:nutmeg/screens/JoinModal.dart';
 import 'package:nutmeg/screens/RatePlayersModal.dart';
+import 'package:nutmeg/screens/UserPage.dart';
 import 'package:nutmeg/state/MatchStatsState.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
@@ -26,13 +27,11 @@ import 'package:nutmeg/widgets/Section.dart';
 import 'package:provider/provider.dart';
 import 'package:readmore/readmore.dart';
 import 'package:skeletons/skeletons.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../state/LoadOnceState.dart';
 import '../state/MatchesState.dart';
 import '../state/UserState.dart';
 import '../widgets/Buttons.dart' as buttons;
-import '../widgets/ButtonsWithLoader.dart';
 import '../widgets/GenericAvailableMatches.dart';
 import '../widgets/ModalBottomSheet.dart';
 import '../widgets/PlayerBottomModal.dart';
@@ -95,8 +94,9 @@ class MatchDetailsState extends State<MatchDetails> {
     SchedulerBinding.instance.addPostFrameCallback((_) async {
       refreshState();
     });
-    lifecycleObserver =
-        LifecycleEventHandler(resumeCallBack: () async { refreshState();});
+    lifecycleObserver = LifecycleEventHandler(resumeCallBack: () async {
+      refreshState();
+    });
     WidgetsBinding.instance.addObserver(lifecycleObserver);
   }
 
@@ -133,29 +133,10 @@ class MatchDetailsState extends State<MatchDetails> {
       // title
       padB(Title(matchId)),
       if (organizerView &&
-          userState.getOnboardingUrl() != null)
-        padB(InfoContainer(
-            child: Column(
-          children: [
-            Text(
-              "Complete your Stripe organizer account\nto receive payments for this match",
-              style: TextPalette.getBodyText(Palette.black),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: GenericButtonWithLoader("COMPLETE ACCOUNT",
-                      (context) async {
-                    await launch(userState.getOnboardingUrl(),
-                        forceSafariVC: false);
-                  }, Primary()),
-                )
-              ],
-            )
-          ],
-        ))),
+          userState
+              .getLoggedUserDetails()
+              .connectedAccountNeedsCompletion(match.isTest))
+        padB(CompleteOrganiserAccountWidget(isTest: match.isTest)),
       // info box
       MatchInfo(matchId),
       // stats

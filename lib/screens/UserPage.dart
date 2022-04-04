@@ -226,6 +226,43 @@ class UserPageState extends State<UserPage> {
             ),
           ])),
         ),
+      if (userDetails != null && userDetails.isOrganiser())
+        Section(
+          title: "ORGANISER",
+          body: Container(
+              child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                Expanded(
+                    child: UserInfoBox(
+                        content: (userDetails == null)
+                            ? null
+                            : userDetails.organisedMatches.length.toString(),
+                        description: "Matches Organised")),
+              ])),
+        ),
+      if (userDetails != null &&
+          userDetails.isOrganiser() &&
+          !userDetails.connectedAccountNeedsCompletion(false))
+        Padding(
+          padding: EdgeInsets.only(top: 20),
+          child: Row(
+            children: [
+              Expanded(child: CompleteOrganiserAccountWidget(isTest: false))
+            ],
+          ),
+        ),
+      if (userDetails != null &&
+          userDetails.isOrganiser() &&
+          !userDetails.connectedAccountNeedsCompletion(true))
+        Padding(
+          padding: EdgeInsets.only(top: 20),
+          child: Row(
+            children: [
+              Expanded(child: CompleteOrganiserAccountWidget(isTest: true))
+            ],
+          ),
+        ),
       if (userDetails != null && userDetails.getIsAdmin())
         Section(
           title: "ADMIN COMMANDS",
@@ -294,10 +331,10 @@ class UserPageState extends State<UserPage> {
                       try {
                         await UserController.editUser(context, userDetails);
                         await GenericInfoModal(
-                              title: "Credits updated",
-                              description: "Your new balance is: " +
-                                  formatCurrency(creditCount))
-                          .show(context);
+                                title: "Credits updated",
+                                description: "Your new balance is: " +
+                                    formatCurrency(creditCount))
+                            .show(context);
                       } catch (e, s) {
                         print(e);
                         print(s);
@@ -411,5 +448,42 @@ class UserInfoBox extends StatelessWidget {
     //       badgeContent: Icon(Icons.question_mark, size: 8, color: Palette.grey_dark),
     //       child: icContent);
     return InfoContainer(child: icContent);
+  }
+}
+
+class CompleteOrganiserAccountWidget extends StatelessWidget {
+  final bool isTest;
+
+  const CompleteOrganiserAccountWidget({Key key, this.isTest})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    var userState = context.watch<UserState>();
+
+    return InfoContainer(
+        child: Column(
+      children: [
+        Text(
+          "Complete your Stripe organizer account\nto receive payments",
+          style: TextPalette.getBodyText(Palette.black),
+          textAlign: TextAlign.center,
+        ),
+        SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: GenericButtonWithLoaderAndErrorHandling(
+                  "COMPLETE" + (isTest ? " TEST" : "") + " ACCOUNT",
+                  (context) async {
+                var url = await UserController.getOnboardUrl(
+                    userState.currentUserId, isTest);
+                await launch(url, forceSafariVC: false);
+              }, Primary()),
+            )
+          ],
+        )
+      ],
+    ));
   }
 }

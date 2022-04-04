@@ -270,19 +270,13 @@ class UserController {
     await UserController.editUser(context, userDetails);
   }
 
-  static Future<String> getOnboardUrl(
-      BuildContext context, String matchId, bool isTest) async {
-    var userState = context.read<UserState>();
-
+  static Future<String> getOnboardUrl(String userId, bool isTest) async {
     var response = await apiClient.callFunction("onboard_account", {
-      "user_id": userState.getLoggedUserDetails().documentId,
-      "match_id": matchId,
+      "user_id": userId,
       "is_test": isTest
     });
 
-    var url = response["url"] ?? null;
-    userState.setOnboardingUrl(url);
-    return url;
+    return response["url"] ?? null;
   }
 }
 
