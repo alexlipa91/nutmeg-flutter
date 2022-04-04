@@ -173,6 +173,47 @@ class UserPageState extends State<UserPage> {
             )
           ]),
         ),
+      if (userDetails != null && userDetails.isOrganiser())
+        Section(
+          title: "ORGANISER",
+          body: Container(
+              child: Column(
+            children: [
+              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                Expanded(
+                    child: UserInfoBox(
+                        content: (userDetails == null)
+                            ? null
+                            : userDetails.organisedMatches.length.toString(),
+                        description: "Matches Organised")),
+              ]),
+              if (userDetails != null &&
+                  userDetails.isOrganiser() &&
+                  userDetails.connectedAccountNeedsCompletion(false))
+                Padding(
+                  padding: EdgeInsets.only(top: 20),
+                  child: Row(
+                    children: [
+                      Expanded(
+                          child: CompleteOrganiserAccountWidget(isTest: false))
+                    ],
+                  ),
+                ),
+              if (userDetails != null &&
+                  userDetails.isOrganiser() &&
+                  userDetails.connectedAccountNeedsCompletion(true))
+                Padding(
+                  padding: EdgeInsets.only(top: 20),
+                  child: Row(
+                    children: [
+                      Expanded(
+                          child: CompleteOrganiserAccountWidget(isTest: true))
+                    ],
+                  ),
+                ),
+            ],
+          )),
+        ),
       if (!shouldDisableRatings)
         Section(
           title: "USEFUL LINK",
@@ -225,43 +266,6 @@ class UserPageState extends State<UserPage> {
               ),
             ),
           ])),
-        ),
-      if (userDetails != null && userDetails.isOrganiser())
-        Section(
-          title: "ORGANISER",
-          body: Container(
-              child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                Expanded(
-                    child: UserInfoBox(
-                        content: (userDetails == null)
-                            ? null
-                            : userDetails.organisedMatches.length.toString(),
-                        description: "Matches Organised")),
-              ])),
-        ),
-      if (userDetails != null &&
-          userDetails.isOrganiser() &&
-          !userDetails.connectedAccountNeedsCompletion(false))
-        Padding(
-          padding: EdgeInsets.only(top: 20),
-          child: Row(
-            children: [
-              Expanded(child: CompleteOrganiserAccountWidget(isTest: false))
-            ],
-          ),
-        ),
-      if (userDetails != null &&
-          userDetails.isOrganiser() &&
-          !userDetails.connectedAccountNeedsCompletion(true))
-        Padding(
-          padding: EdgeInsets.only(top: 20),
-          child: Row(
-            children: [
-              Expanded(child: CompleteOrganiserAccountWidget(isTest: true))
-            ],
-          ),
         ),
       if (userDetails != null && userDetails.getIsAdmin())
         Section(

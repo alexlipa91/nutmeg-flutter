@@ -50,7 +50,6 @@ class GenericAvailableMatchesList extends StatefulWidget {
 
 class GenericAvailableMatchesListState
     extends State<GenericAvailableMatchesList> {
-
   LifecycleEventHandler lifeCycleObserver;
 
   @override
@@ -73,8 +72,10 @@ class GenericAvailableMatchesListState
 
   Future<void> refreshPageState(BuildContext context) async {
     var matches = await MatchesController.refreshAll(context);
-    Future.wait(matches.map((e) => e.sportCenterId).toSet().map((s) =>
-        SportCentersController.refresh(context, s)));
+    Future.wait(matches
+        .map((e) => e.sportCenterId)
+        .toSet()
+        .map((s) => SportCentersController.refresh(context, s)));
     Future.wait(context
         .read<MatchesState>()
         .getMatches()
@@ -251,12 +252,17 @@ class GenericMatchInfo extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.start,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Row(
-                                children: [
-                                  Text(sportCenter.name + " - " + match.sport,
-                                      style: TextPalette.h2),
-                                ],
-                              ),
+                              (sportCenter == null)
+                                  ? Skeletons.mText
+                                  : Row(
+                                      children: [
+                                        Text(
+                                            sportCenter.name +
+                                                " - " +
+                                                match.sport,
+                                            style: TextPalette.h2),
+                                      ],
+                                    ),
                               SizedBox(
                                 height: 12,
                               ),

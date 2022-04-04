@@ -5,6 +5,7 @@ import 'package:get/get_core/src/get_main.dart';
 import 'package:intl/intl.dart';
 import 'package:nutmeg/Exceptions.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
+import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/model/Match.dart';
 import 'package:nutmeg/screens/BottomBarMatch.dart';
 import 'package:nutmeg/state/UserState.dart';
@@ -439,7 +440,7 @@ class CreateMatchState extends State<CreateMatch> {
                   },
                   controller: priceController,
                   keyboardType: TextInputType.numberWithOptions(
-                          signed: true, decimal: true),
+                      signed: true, decimal: true),
                   autovalidateMode: AutovalidateMode.onUserInteraction,
                   inputFormatters: [
                     FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*$')),
@@ -619,6 +620,7 @@ class CreateMatchState extends State<CreateMatch> {
 
                     var id = await MatchesController.addMatch(match);
                     await MatchesController.refresh(context, id);
+                    await UserController.refreshCurrentUser(context);
                     print("added match with id " + id);
                     return id;
                   });

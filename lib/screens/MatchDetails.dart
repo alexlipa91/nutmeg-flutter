@@ -72,8 +72,6 @@ class MatchDetailsState extends State<MatchDetails> {
 
     // get organizer details
     UserController.getUserDetails(context, match.organizerId);
-    // check if onboarded
-    context.read<UserState>().fetchOnboardingUrl(matchId, match.isTest);
 
     // get status
     var statusAndUsers =

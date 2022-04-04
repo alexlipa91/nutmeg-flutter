@@ -82,10 +82,11 @@ class UserDetails {
   }
 
   bool connectedAccountNeedsCompletion(isTest) {
-    return
+    var outcome =
       isTest ?
-      (_isConnectedAccountComplete != null && _isConnectedAccountComplete) :
-      (_isConnectedAccountTestComplete != null && _isConnectedAccountTestComplete);
+      (_isConnectedAccountTestComplete != null && !_isConnectedAccountTestComplete) :
+      (_isConnectedAccountComplete != null && !_isConnectedAccountComplete);
+    return outcome;
   }
 
   static String getDisplayName(UserDetails ud) {
