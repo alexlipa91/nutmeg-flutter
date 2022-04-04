@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 
 import '../model/UserDetails.dart';
 
@@ -9,6 +10,8 @@ class UserState extends ChangeNotifier {
   String _currentUserId;
   bool _isTestMode = false;
   Map<String, UserDetails> _usersDetails = Map();
+
+  String _onboardingUrl;
 
   String get currentUserId => _currentUserId;
 
@@ -42,4 +45,20 @@ class UserState extends ChangeNotifier {
     _currentUserId = null;
     notifyListeners();
   }
+
+  // url to onboard to stripe connect, for organisers
+  Future<void> fetchOnboardingUrl(String matchId, bool isTest) async {
+    var response = await CloudFunctionsClient().callFunction("onboard_account", {
+      "user_id": currentUserId,
+      "match_id": matchId,
+      "is_test": isTest
+    });
+
+    _onboardingUrl = response["url"] ?? null;
+    notifyListeners();
+  }
+
+  String getOnboardingUrl() => _onboardingUrl;
+
+  void setOnboardingUrl(String url) => _onboardingUrl = url;
 }

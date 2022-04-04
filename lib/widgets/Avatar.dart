@@ -75,6 +75,8 @@ class LoggedUserAvatarWithRedirectUserPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
+      splashColor: Colors.transparent,
+      highlightColor: Colors.transparent,
       onTap: () async {
         Get.toNamed("/user");
       },

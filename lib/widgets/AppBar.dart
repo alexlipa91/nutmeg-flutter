@@ -58,6 +58,8 @@ class MainAppBar extends NutmegAppBar {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             InkWell(
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
                 onTap: () => Get.toNamed("/home"),
                 child: Image.asset('assets/nutmeg_white.png', height: 24)),
             if (isLoggedIn)

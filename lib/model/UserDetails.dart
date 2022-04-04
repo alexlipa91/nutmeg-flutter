@@ -12,6 +12,9 @@ class UserDetails {
   Map<String, double> scoreMatches;
   List<String> manOfTheMatch;
 
+  bool isConnectedAccountComplete;
+  bool isConnectedAccountTestComplete;
+
   UserDetails.empty(this.documentId);
 
   UserDetails(this.documentId, this.isAdmin, this.image, this.name, this.email)
@@ -36,6 +39,8 @@ class UserDetails {
         joinedMatches = Map<String, dynamic>.from(json["joined_matches"] ?? {}).keys.toList(),
         scoreMatches = Map<String, double>.from(json["scoreMatches"] ?? {}),
         manOfTheMatch = List<String>.from(json["manOfTheMatch"] ?? []),
+        isConnectedAccountComplete = json["isConnectedAccountComplete"] ?? null,
+        isConnectedAccountTestComplete = json["isConnectedAccountComplete"] ?? null,
         documentId = documentId;
 
   Map<String, dynamic> toJson() =>

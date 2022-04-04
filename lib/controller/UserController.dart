@@ -269,6 +269,21 @@ class UserController {
     userDetails.image = await uploaded.ref.getDownloadURL();
     await UserController.editUser(context, userDetails);
   }
+
+  static Future<String> getOnboardUrl(
+      BuildContext context, String matchId, bool isTest) async {
+    var userState = context.read<UserState>();
+
+    var response = await apiClient.callFunction("onboard_account", {
+      "user_id": userState.getLoggedUserDetails().documentId,
+      "match_id": matchId,
+      "is_test": isTest
+    });
+
+    var url = response["url"] ?? null;
+    userState.setOnboardingUrl(url);
+    return url;
+  }
 }
 
 class AfterLoginCommunication {

@@ -26,11 +26,14 @@ import 'package:nutmeg/widgets/Section.dart';
 import 'package:provider/provider.dart';
 import 'package:readmore/readmore.dart';
 import 'package:skeletons/skeletons.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../state/LoadOnceState.dart';
 import '../state/MatchesState.dart';
 import '../state/UserState.dart';
-import '../widgets/Buttons.dart';
+import '../widgets/Buttons.dart' as buttons;
+import '../widgets/ButtonsWithLoader.dart';
+import '../widgets/GenericAvailableMatches.dart';
 import '../widgets/ModalBottomSheet.dart';
 import '../widgets/PlayerBottomModal.dart';
 import '../widgets/Skeletons.dart';
@@ -55,7 +58,13 @@ class MatchDetailsState extends State<MatchDetails> {
 
   MatchDetailsState(this.matchId);
 
+  LifecycleEventHandler lifecycleObserver;
+
   Future<void> refreshState() async {
+    if (!mounted) {
+      return;
+    }
+
     // refresh details
     var match = await MatchesController.refresh(context, matchId);
 
@@ -64,6 +73,8 @@ class MatchDetailsState extends State<MatchDetails> {
 
     // get organizer details
     UserController.getUserDetails(context, match.organizerId);
+    // check if onboarded
+    context.read<UserState>().fetchOnboardingUrl(matchId, match.isTest);
 
     // get status
     var statusAndUsers =
@@ -82,15 +93,28 @@ class MatchDetailsState extends State<MatchDetails> {
   void initState() {
     super.initState();
     SchedulerBinding.instance.addPostFrameCallback((_) async {
-      await refreshState();
+      refreshState();
     });
+    lifecycleObserver =
+        LifecycleEventHandler(resumeCallBack: () async { refreshState();});
+    WidgetsBinding.instance.addObserver(lifecycleObserver);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    WidgetsBinding.instance.removeObserver(lifecycleObserver);
   }
 
   @override
   Widget build(BuildContext context) {
+    var userState = context.watch<UserState>();
     var matchesState = context.watch<MatchesState>();
     var match = matchesState.getMatch(matchId);
     var matchStatus = matchesState.getMatchStatus(matchId);
+
+    var organizerView =
+        match.organizerId == userState.getLoggedUserDetails().documentId;
 
     padB(Widget w) => Padding(padding: EdgeInsets.only(bottom: 16), child: w);
 
@@ -108,6 +132,30 @@ class MatchDetailsState extends State<MatchDetails> {
     var widgets = [
       // title
       padB(Title(matchId)),
+      if (organizerView &&
+          userState.getOnboardingUrl() != null)
+        padB(InfoContainer(
+            child: Column(
+          children: [
+            Text(
+              "Complete your Stripe organizer account\nto receive payments for this match",
+              style: TextPalette.getBodyText(Palette.black),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: GenericButtonWithLoader("COMPLETE ACCOUNT",
+                      (context) async {
+                    await launch(userState.getOnboardingUrl(),
+                        forceSafariVC: false);
+                  }, Primary()),
+                )
+              ],
+            )
+          ],
+        ))),
       // info box
       MatchInfo(matchId),
       // stats
@@ -177,7 +225,7 @@ class MatchDetailsState extends State<MatchDetails> {
           if (!DeviceInfo().name.contains("ipad"))
             Align(
                 alignment: Alignment.centerRight,
-                child: ShareButton(() async {
+                child: buttons.ShareButton(() async {
                   await DynamicLinks.shareMatchFunction(matchId);
                 }, Palette.black, 25.0)),
         ],
@@ -685,7 +733,8 @@ class Stats extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var child;
-    var showingPartial = matchStatusForUser == MatchStatusForUser.no_more_to_rate && extended;
+    var showingPartial =
+        matchStatusForUser == MatchStatusForUser.no_more_to_rate && extended;
 
     // in extended mode, we show also partial results
     if (matchStatusForUser == MatchStatusForUser.no_more_to_rate && !extended) {

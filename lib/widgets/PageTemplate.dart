@@ -30,7 +30,7 @@ class PageTemplate extends StatelessWidget {
         : SmartRefresher(
             enablePullDown: true,
             enablePullUp: false,
-            header: MaterialClassicHeader(),
+            header: MaterialClassicHeader(color: Palette.primary),
             controller: refreshController,
             onRefresh: () async {
               await refreshState();
@@ -40,9 +40,9 @@ class PageTemplate extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Palette.grey_lightest,
-      body: refreshContainer(SafeArea(
+      body: SafeArea(
         bottom: false,
-        child: CustomScrollView(
+        child: refreshContainer(CustomScrollView(
           slivers: [
             SliverAppBar(
               systemOverlayStyle: SystemUiOverlayStyle.dark,
@@ -64,8 +64,8 @@ class PageTemplate extends StatelessWidget {
               ),
             )
           ],
-        ),
-      )),
+        )),
+      ),
       bottomNavigationBar: bottomNavigationBar,
     );
   }

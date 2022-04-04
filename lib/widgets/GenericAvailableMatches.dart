@@ -50,16 +50,31 @@ class GenericAvailableMatchesList extends StatefulWidget {
 
 class GenericAvailableMatchesListState
     extends State<GenericAvailableMatchesList> {
+
+  LifecycleEventHandler lifeCycleObserver;
+
   @override
   void initState() {
     super.initState();
     refreshPageState(context);
+    lifeCycleObserver = LifecycleEventHandler(resumeCallBack: () async {
+      if (mounted) {
+        widget.refreshController.requestRefresh();
+      }
+    });
+    WidgetsBinding.instance.addObserver(lifeCycleObserver);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    WidgetsBinding.instance.removeObserver(lifeCycleObserver);
   }
 
   Future<void> refreshPageState(BuildContext context) async {
     var matches = await MatchesController.refreshAll(context);
-    Future.wait(matches
-        .map((e) => SportCentersController.refresh(context, e.sportCenterId)));
+    Future.wait(matches.map((e) => e.sportCenterId).toSet().map((s) =>
+        SportCentersController.refresh(context, s)));
     Future.wait(context
         .read<MatchesState>()
         .getMatches()
@@ -84,17 +99,19 @@ class GenericAvailableMatchesListState
       selected = 0;
     }
 
-    WidgetsBinding.instance
-        .addObserver(LifecycleEventHandler(resumeCallBack: () async {
-      if (mounted) {
-        widget.refreshController.requestRefresh();
-      }
-    }));
-
     var top = Column(children: [
       MainAppBar(widget.appBarColor),
       Container(
         decoration: BoxDecoration(
+            // add this shadow so that the separator between appbar and top container is not visible
+            boxShadow: [
+              BoxShadow(
+                color: widget.appBarColor,
+                blurRadius: 0.0,
+                spreadRadius: 0.0,
+                offset: Offset(0, -5),
+              )
+            ],
             color: widget.appBarColor,
             borderRadius: BorderRadius.only(
                 bottomLeft: Radius.circular(20),
@@ -215,6 +232,8 @@ class GenericMatchInfo extends StatelessWidget {
         : loadOnceState.getSportCenter(match.sportCenterId);
 
     return InkWell(
+        splashColor: Colors.transparent,
+        highlightColor: Colors.transparent,
         child: Padding(
           padding: EdgeInsets.only(top: topMargin),
           child: InfoContainer(
