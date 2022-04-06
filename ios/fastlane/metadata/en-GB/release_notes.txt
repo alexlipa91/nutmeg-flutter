@@ -1,1 +1,1 @@
-Fix shadow in appbar for iOS/nMinor overall improvemnts
+Fix bug with non-logged-in users
