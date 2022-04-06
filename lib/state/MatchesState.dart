@@ -5,13 +5,14 @@ import "package:collection/collection.dart";
 
 
 enum MatchStatusForUser {
-  join,             // user can join the match
-  leave,            // user can leave the match
-  full,             // match is full
-  to_rate,          // match is in the past, within rating window and user still has players to rate
-  no_more_to_rate,  // match is in the past, within rating window and user has rated everyone
-  rated,            // match is in the past and after rating window (man of the match is available)
-  canceled          // canceled
+  canJoin,             // user can join the match
+  canLeave,            // user can leave the match
+  fullNotGoing,        // match is full and user is not going
+  fullGoing,           // match is full and user is going
+  to_rate,             // match is in the past, within rating window and user still has players to rate
+  no_more_to_rate,     // match is in the past, within rating window and user has rated everyone
+  rated,               // match is in the past and after rating window (man of the match is available)
+  canceled             // canceled
 }
 
 class MatchesState extends ChangeNotifier {

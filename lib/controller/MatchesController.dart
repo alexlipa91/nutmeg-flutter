@@ -113,10 +113,11 @@ class MatchesController {
         }
       } else {
         if (match.numPlayersGoing() == match.maxPlayers) {
-          status = MatchStatusForUser.full;
+          status = (isGoing) ? MatchStatusForUser.fullGoing
+              : MatchStatusForUser.fullNotGoing;
         } else {
           status =
-          (isGoing) ? MatchStatusForUser.leave : MatchStatusForUser.join;
+          (isGoing) ? MatchStatusForUser.canLeave : MatchStatusForUser.canJoin;
         }
       }
     }

@@ -49,7 +49,11 @@ class GenericButtonWithLoader extends StatelessWidget {
                     )
                   : Text(text, style: buttonType.textStyle),
             ),
-            onPressed: _isLoading ? null : () => onPressed(context),
+            onPressed: _isLoading
+                ? null
+                : (onPressed == null)
+                    ? null
+                    : () => onPressed(context),
             style: ButtonStyle(
               elevation: MaterialStateProperty.all(0),
               backgroundColor:

@@ -9,7 +9,6 @@ import 'package:provider/provider.dart';
 
 import '../state/MatchesState.dart';
 
-
 class BottomBarMatch extends StatelessWidget {
   final String matchId;
 
@@ -17,11 +16,13 @@ class BottomBarMatch extends StatelessWidget {
 
   String getText(Match match, MatchStatusForUser matchStatusForUser) {
     switch (matchStatusForUser) {
-      case MatchStatusForUser.join:
+      case MatchStatusForUser.canJoin:
         return match.getSpotsLeft().toString() + " spots left";
-      case MatchStatusForUser.leave:
+      case MatchStatusForUser.canLeave:
         return "You are in";
-      case MatchStatusForUser.full:
+      case MatchStatusForUser.fullNotGoing:
+        return "Match Full";
+      case MatchStatusForUser.fullGoing:
         return "Match Full";
       case MatchStatusForUser.canceled:
         return "Cancelled";
@@ -36,25 +37,29 @@ class BottomBarMatch extends StatelessWidget {
 
   Widget getSubText(Match match, MatchStatusForUser matchStatusForUser,
       BuildContext context) {
-    if (match == null)
-      return Container();
+    if (match == null) return Container();
     var matchesState = context.watch<MatchesState>();
 
     switch (matchStatusForUser) {
-      case MatchStatusForUser.join:
+      case MatchStatusForUser.canJoin:
         return Text(formatCurrency(match.pricePerPersonInCents),
             style: TextPalette.bodyText);
-      case MatchStatusForUser.leave:
+      case MatchStatusForUser.canLeave:
         return Text(match.going.length.toString() + " players going",
             style: TextPalette.bodyText);
-      case MatchStatusForUser.full:
+      case MatchStatusForUser.fullNotGoing:
+        return Text(match.going.length.toString() + " players going",
+            style: TextPalette.bodyText);
+      case MatchStatusForUser.fullGoing:
         return Text(match.going.length.toString() + " players going",
             style: TextPalette.bodyText);
       case MatchStatusForUser.canceled:
         return Container();
       case MatchStatusForUser.to_rate:
-        return Text(matchesState.getUsersToRate(match.documentId).length.toString()
-            + " players left", style: TextPalette.bodyText);
+        return Text(
+            matchesState.getUsersToRate(match.documentId).length.toString() +
+                " players left",
+            style: TextPalette.bodyText);
       // todo check if can be removed
       case MatchStatusForUser.no_more_to_rate:
         return Container();
@@ -66,12 +71,14 @@ class BottomBarMatch extends StatelessWidget {
   Widget getButton(Match match, MatchStatusForUser matchStatusForUser,
       BuildContext context) {
     switch (matchStatusForUser) {
-      case MatchStatusForUser.join:
+      case MatchStatusForUser.canJoin:
         return JoinButton(matchId: match.documentId);
-      case MatchStatusForUser.leave:
+      case MatchStatusForUser.canLeave:
         return LeaveButton(matchId: matchId);
-      case MatchStatusForUser.full:
+      case MatchStatusForUser.fullGoing:
         return LeaveButton(matchId: matchId);
+      case MatchStatusForUser.fullNotGoing:
+        return JoinButtonDisabled();
       case MatchStatusForUser.canceled:
         return JoinButtonDisabled();
       case MatchStatusForUser.to_rate:
@@ -89,12 +96,10 @@ class BottomBarMatch extends StatelessWidget {
 
     var match = matchesState.getMatch(matchId);
     var status = matchesState.getMatchStatus(matchId);
-    
-    return GenericBottomBar(child: Padding(
-      padding: EdgeInsets.only(
-          left: 16.0,
-          right: 16.0,
-          top: 16.0),
+
+    return GenericBottomBar(
+        child: Padding(
+      padding: EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -120,7 +125,6 @@ class BottomBarMatch extends StatelessWidget {
 }
 
 class GenericBottomBar extends StatelessWidget {
-
   final Widget child;
 
   const GenericBottomBar({Key key, this.child}) : super(key: key);
@@ -151,4 +155,3 @@ class GenericBottomBar extends StatelessWidget {
     );
   }
 }
-
