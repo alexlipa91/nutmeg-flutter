@@ -1,19 +1,17 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import 'package:nutmeg/model/UserDetails.dart';
-
 
 class RatingPlayersState extends ChangeNotifier {
 
-  final List<UserDetails> toRate;
+  final List<String> toRate;
 
   int current = 0;
   double currentScore = -1;
 
   RatingPlayersState(this.toRate);
 
-  UserDetails getCurrent() => toRate[current];
+  String getCurrent() => toRate[current];
 
   double getCurrentScore() => currentScore;
 

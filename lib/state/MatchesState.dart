@@ -1,33 +1,18 @@
 import 'package:flutter/cupertino.dart';
-
+import 'package:nutmeg/api/CloudFunctionsUtils.dart';
+import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/model/Match.dart';
 import "package:collection/collection.dart";
+import 'package:nutmeg/model/MatchRatings.dart';
+import 'package:nutmeg/model/UserDetails.dart';
 
-
-enum MatchStatusForUser {
-  canJoin,             // user can join the match
-  canLeave,            // user can leave the match
-  fullNotGoing,        // match is full and user is not going
-  fullGoing,           // match is full and user is going
-  to_rate,             // match is in the past, within rating window and user still has players to rate
-  no_more_to_rate,     // match is in the past, within rating window and user has rated everyone
-  rated,               // match is in the past and after rating window (man of the match is available)
-  canceled             // canceled
-}
 
 class MatchesState extends ChangeNotifier {
-
-  static var pastStates = [MatchStatusForUser.rated,
-      MatchStatusForUser.to_rate, MatchStatusForUser.no_more_to_rate];
 
   // match details
   Map<String, Match> _matches;
 
-  // match status
-  Map<String, MatchStatusForUser> _matchesStatus = Map();
-
-  // users to rate per match
-  Map<String, List<String>> _usersToRatePerMatch = Map();
+  Map<String, MatchRatings> _ratingsPerMatch = Map();
 
   void setMatches(List<Match> newMatches) {
     _matches = newMatches.groupListsBy((e) => e.documentId)
@@ -35,10 +20,7 @@ class MatchesState extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setMatchStatus(String matchId, MatchStatusForUser matchStatus) {
-    _matchesStatus[matchId] = matchStatus;
-    notifyListeners();
-  }
+  MatchRatings getRatings(String matchId) => _ratingsPerMatch[matchId];
 
   List<Match> getMatches() {
     if (_matches == null) {
@@ -51,17 +33,7 @@ class MatchesState extends ChangeNotifier {
       .where((m) => m.dateTime.isAfter(DateTime.now()))
       .toList();
 
-  int getNumPlayedByUser(String userId) => _matches.values
-      .where((m) => m.cancelledAt == null
-      && m.dateTime.isBefore(DateTime.now())
-      && m.going.containsKey(userId))
-      .length;
-
   Match getMatch(String matchId) => (_matches == null) ? null : _matches[matchId];
-
-  MatchStatusForUser getMatchStatus(String matchId) {
-    return _matchesStatus[matchId];
-  }
 
   void setMatch(Match m) {
     if (_matches == null) {
@@ -71,10 +43,63 @@ class MatchesState extends ChangeNotifier {
     notifyListeners();
   }
 
-  List<String> getUsersToRate(String matchId) => _usersToRatePerMatch[matchId];
+  Future<MatchRatings> fetchRatings(String matchId) async {
+    var r = await CloudFunctionsClient().callFunction("get_ratings_by_match_v2", {
+      "match_id": matchId
+    });
+    _ratingsPerMatch[matchId] = MatchRatings.fromJson(r, matchId);
+    return _ratingsPerMatch[matchId];
+  }
 
-  void setUsersToRate(String matchId, List<String> userIds) {
-    _usersToRatePerMatch[matchId] = userIds;
-    notifyListeners();
+  MatchStatusForUser getMatchStatusForUser(String matchId, UserDetails ud) {
+    var match = _matches[matchId];
+    if (match == null) {
+      return null;
+    }
+
+    MatchStatusForUser matchStatusForUser;
+
+    if (ud != null && match.isUserGoing(ud)) {
+      if (match.status == MatchStatus.open || match.status == MatchStatus.canceled) {
+        matchStatusForUser = MatchStatusForUser.canLeave;
+      } else if (match.status == MatchStatus.to_rate) {
+        var usersToVote = stillToVote(matchId, ud);
+
+        if (usersToVote == null) {
+          return null;
+        }
+
+        if (usersToVote.isEmpty) {
+          matchStatusForUser = MatchStatusForUser.no_more_to_rate;
+        } else {
+          matchStatusForUser = MatchStatusForUser.to_rate;
+        }
+      }
+    } else {
+      if (match.status == MatchStatus.canceled || match.status == MatchStatus.full) {
+        matchStatusForUser = MatchStatusForUser.cannotJoin;
+      } else {
+        matchStatusForUser = MatchStatusForUser.canJoin;
+      }
+    }
+
+    return matchStatusForUser;
+  }
+
+  List<String> stillToVote(String matchId, UserDetails ud) {
+    var match = _matches[matchId];
+    var matchRatings = _ratingsPerMatch[matchId];
+
+    if (match == null || matchRatings == null) {
+      return null;
+    }
+
+    var toVote = match.going.keys.toSet();
+    matchRatings.ratingsReceived.forEach((receiver, given) {
+      if (given.keys.contains(ud.documentId)) {
+        toVote.remove(receiver);
+      }
+    });
+    return toVote.toList();
   }
 }

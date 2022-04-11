@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -17,7 +16,6 @@ import 'package:nutmeg/model/UserDetails.dart';
 import 'package:nutmeg/screens/JoinModal.dart';
 import 'package:nutmeg/screens/RatePlayersModal.dart';
 import 'package:nutmeg/screens/UserPage.dart';
-import 'package:nutmeg/state/MatchStatsState.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/Avatar.dart';
@@ -64,8 +62,15 @@ class MatchDetailsState extends State<MatchDetails> {
       return;
     }
 
-    // refresh details
-    var match = await MatchesController.refresh(context, matchId);
+    List<Future<dynamic>> futures = [
+      context.read<MatchesState>().fetchRatings(matchId),
+      MatchesController.refresh(context, matchId)
+    ];
+    print("run futures");
+
+    var res = await Future.wait(futures);
+
+    Match match = res[1];
 
     // get users details
     UserController.getBatchUserDetails(context, match.getGoingUsersByTime());
@@ -73,25 +78,22 @@ class MatchDetailsState extends State<MatchDetails> {
     // get organizer details
     UserController.getUserDetails(context, match.organizerId);
 
-    // get status
-    var statusAndUsers =
-        await MatchesController.refreshMatchStatus(context, match);
-
-    var status = statusAndUsers.item1;
+    var status = context.read<MatchesState>().getMatchStatusForUser(
+        matchId, context.read<UserState>().getLoggedUserDetails());
 
     if (status == MatchStatusForUser.to_rate) {
-      await RatePlayerBottomModal.rateAction(context, matchId);
-    } else if (status == MatchStatusForUser.rated) {
-      MatchesController.refreshMatchStats(context, matchId);
+      bool noMoreToRate =
+          await RatePlayerBottomModal.rateAction(context, matchId);
+      if (noMoreToRate != null && noMoreToRate)
+        status = MatchStatusForUser.no_more_to_rate;
     }
+    setState(() {});
   }
 
   @override
   void initState() {
     super.initState();
-    SchedulerBinding.instance.addPostFrameCallback((_) async {
-      refreshState();
-    });
+    refreshState();
     lifecycleObserver = LifecycleEventHandler(resumeCallBack: () async {
       refreshState();
     });
@@ -109,17 +111,16 @@ class MatchDetailsState extends State<MatchDetails> {
     var userState = context.watch<UserState>();
     var matchesState = context.watch<MatchesState>();
     var match = matchesState.getMatch(matchId);
-    var matchStatus = matchesState.getMatchStatus(matchId);
 
-    var organizerView =
-        userState.isLoggedIn()
-            && match.organizerId == userState.getLoggedUserDetails().documentId;
+    var organizerView = userState.isLoggedIn() &&
+        match.organizerId == userState.getLoggedUserDetails().documentId;
 
     padB(Widget w) => Padding(padding: EdgeInsets.only(bottom: 16), child: w);
 
-    bool shouldNotUseBottomBar = matchStatus == null ||
-        matchStatus == MatchStatusForUser.rated ||
-        matchStatus == MatchStatusForUser.no_more_to_rate;
+    bool shouldNotUseBottomBar =
+        match.status == null
+            || match.status == MatchStatus.rated
+            || match.status == MatchStatus.canceled;
 
     var bottomBar = (shouldNotUseBottomBar)
         ? null
@@ -139,16 +140,10 @@ class MatchDetailsState extends State<MatchDetails> {
       // info box
       MatchInfo(matchId),
       // stats
-      if (matchStatus == MatchStatusForUser.rated ||
-          matchStatus == MatchStatusForUser.no_more_to_rate)
-        Stats(
-          matchId: matchId,
-          matchStatusForUser: matchStatus,
-          matchDatetime: match.dateTime,
-        ),
+      Stats(matchId: matchId, matchDatetime: match.dateTime),
       // horizontal players list
       if (match != null) PlayerList(match: match),
-      if (!MatchesState.pastStates.contains(matchStatus))
+      if (!match.dateTime.isAfter(DateTime.now()))
         Section(
             title: "DETAILS",
             body: Column(
@@ -698,23 +693,26 @@ class MapCardImage extends StatelessWidget {
 
 class Stats extends StatelessWidget {
   final String matchId;
-  final MatchStatusForUser matchStatusForUser;
   final DateTime matchDatetime;
   final bool extended;
 
   const Stats(
-      {Key key,
-      this.matchId,
-      this.matchStatusForUser,
-      this.matchDatetime,
-      this.extended = false})
+      {Key key, this.matchId, this.matchDatetime, this.extended = false})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    var matchStatusForUser = context.read<MatchesState>().getMatchStatusForUser(
+        matchId, context.read<UserState>().getLoggedUserDetails());
+
     var child;
     var showingPartial =
         matchStatusForUser == MatchStatusForUser.no_more_to_rate && extended;
+
+    if (context.read<MatchesState>().getMatch(matchId).status !=
+        MatchStatus.rated) {
+      return Container();
+    }
 
     // in extended mode, we show also partial results
     if (matchStatusForUser == MatchStatusForUser.no_more_to_rate && !extended) {
@@ -745,25 +743,26 @@ class Stats extends StatelessWidget {
             ],
           ));
     } else {
-      var statState = context.watch<MatchStatState>();
-      var ratings = statState.ratings;
+      var ratings = context.watch<MatchesState>().getRatings(matchId);
       var userState = context.watch<UserState>();
 
-      var loadSkeleton =
-          (ratings == null || ratings.isEmpty || userState == null);
+      var loadSkeleton = (ratings == null || userState == null);
       child = (loadSkeleton)
           ? StatsSkeleton()
           : Builder(
               builder: (context) {
-                var sortedTmp = ratings.entries.toList()
+                var match = context.watch<MatchesState>().getMatch(matchId);
+                var finalRatings =
+                    ratings.getFinalRatings(match.getGoingUsersByTime());
+
+                var sortedTmp = finalRatings.entries.toList()
                   ..sort((a, b) => b.value.compareTo(a.value));
-                var potms =
-                    context.watch<MatchesState>().getMatch(matchId).getPotms();
+                var potms = match.getPotms();
                 var sorted = List<MapEntry<String, double>>.from([]);
 
                 // first add potms
                 potms.forEach((p) {
-                  sorted.add(MapEntry(p, ratings[p]));
+                  sorted.add(MapEntry(p, finalRatings[p]));
                 });
                 // then the rest
                 sortedTmp.forEach((p) {
@@ -836,8 +835,9 @@ class Stats extends StatelessWidget {
                             children: [
                               Text(
                                   "S: " +
-                                      statState
-                                          .numberOfSkips[userDetails.documentId]
+                                      ratings
+                                          .getNumberOfSkips(
+                                              userDetails.documentId)
                                           .toString(),
                                   style: TextPalette.getBodyText(
                                       Palette.grey_dark)),
@@ -846,8 +846,9 @@ class Stats extends StatelessWidget {
                               ),
                               Text(
                                   "V: " +
-                                      statState
-                                          .numberOfVotes[userDetails.documentId]
+                                      ratings
+                                          .getNumberOfVotes(
+                                              userDetails.documentId)
                                           .toString(),
                                   style: TextPalette.getBodyText(
                                       Palette.grey_dark))

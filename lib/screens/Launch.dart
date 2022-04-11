@@ -21,7 +21,6 @@ import 'package:skeletons/skeletons.dart';
 
 import '../Exceptions.dart';
 import '../state/LoadOnceState.dart';
-import '../state/MatchStatsState.dart';
 import '../state/MatchesState.dart';
 import '../state/UserState.dart';
 import 'admin/AvailableMatchesAdmin.dart';
@@ -78,17 +77,11 @@ void main() {
                 name: '/matchNoTransition/:matchId',
                 transition: Transition.native,
                 transitionDuration: Duration(seconds: 0),
-                page: () => MultiProvider(providers: [
-                      ChangeNotifierProvider(
-                          create: (context) => MatchStatState()),
-                    ], child: MatchDetails())),
+                page: () => MatchDetails()),
             GetPage(
                 name: '/match/:matchId',
                 transition: Transition.native,
-                page: () => MultiProvider(providers: [
-                      ChangeNotifierProvider(
-                          create: (context) => MatchStatState()),
-                    ], child: MatchDetails())),
+                page: () => MatchDetails()),
             GetPage(
                 name: '/login/enterDetails',
                 page: () => EnterDetails(),

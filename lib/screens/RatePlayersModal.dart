@@ -5,12 +5,12 @@ import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/state/MatchesState.dart';
 import 'package:nutmeg/state/RatingPlayersState.dart';
+import 'package:nutmeg/state/UserState.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:nutmeg/widgets/ModalBottomSheet.dart';
 import 'package:provider/provider.dart';
 
-import '../model/UserDetails.dart';
 import '../rating_bar/RatingWidget.dart';
 import '../widgets/PlayerBottomModal.dart';
 import '../widgets/Texts.dart';
@@ -32,34 +32,28 @@ class RateButton extends StatelessWidget {
 }
 
 class RatePlayerBottomModal extends StatelessWidget {
-  static Future<void> rateAction(BuildContext context, String matchId) async {
-    var toRate = context.read<MatchesState>().getUsersToRate(matchId);
+  static Future<bool> rateAction(BuildContext context, String matchId) async {
+    var toRate = context
+        .read<MatchesState>()
+        .stillToVote(matchId, context.read<UserState>().getLoggedUserDetails());
 
-    List<UserDetails> users = await
-    Future.wait(toRate.map((e) => UserController.getUserDetails(context, e)));
+    toRate.map((e) => UserController.getUserDetails(context, e));
 
-    await ModalBottomSheet.showNutmegModalBottomSheet(context,
+    return await ModalBottomSheet.showNutmegModalBottomSheet(
+        context,
         MultiProvider(
           providers: [
             ChangeNotifierProvider(
-                create: (context) => RatingPlayersState(users)),
+                create: (context) => RatingPlayersState(toRate)),
           ],
           child: RatePlayerBottomModal(matchId),
-        )
-    );
+        ));
     // don't refresh the status here because the last rating might have not yet propagated; instead leave RatePlayerBottomModal modify it if necessary
   }
 
   final String matchId;
 
   RatePlayerBottomModal(this.matchId);
-
-  String _getName(BuildContext context) {
-    var parts = UserDetails.getDisplayName(
-            context.watch<RatingPlayersState>().getCurrent())
-        .split(" ");
-    return parts.first;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -68,8 +62,13 @@ class RatePlayerBottomModal extends StatelessWidget {
 
     var alreadyRated = match.numPlayersGoing() - state.toRate.length;
 
+    var current = context.watch<UserState>().getUserDetail(state.getCurrent());
+
+    var nameParts = (current == null) ? null : current.name.split(" ");
+    var name = (nameParts == null) ? null : nameParts.first;
+
     return PlayerBottomModal(
-        state.getCurrent(),
+        current,
         Column(
           children: [
             RatingBar(),
@@ -100,9 +99,8 @@ class RatePlayerBottomModal extends StatelessWidget {
             ),
           ],
         ),
-        "How was " + _getName(context) + "'s performance?",
-        _getName(context) + " won't see your score"
-    );
+        (name == null) ? null : "How was " + name + "'s performance?",
+        (name == null) ? null : name + " won't see your score");
   }
 
   Future<void> store(BuildContext context) async {
@@ -112,15 +110,16 @@ class RatePlayerBottomModal extends StatelessWidget {
       return;
     }
 
-    MatchesController.addRating(context, state.getCurrent().documentId,
-        matchId, state.getCurrentScore());
+    MatchesController.addRating(context, state.getCurrent(), matchId,
+        state.getCurrentScore());
 
     if (state.isLast()) {
       if (state.current + 1 == state.toRate.length) {
         // here we know for sure that there are no more players to rate. We quickly set the state so the bottom bar changes fast
-        context.read<MatchesState>().setMatchStatus(matchId, MatchStatusForUser.no_more_to_rate);
+        Get.back(result: true);
+      } else {
+        Get.back();
       }
-      Get.back();
     } else {
       state.next();
     }

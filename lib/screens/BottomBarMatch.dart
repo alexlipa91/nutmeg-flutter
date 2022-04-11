@@ -3,10 +3,12 @@ import 'package:nutmeg/model/Match.dart';
 import 'package:nutmeg/screens/JoinModal.dart';
 import 'package:nutmeg/screens/LeaveMatchModal.dart';
 import 'package:nutmeg/screens/RatePlayersModal.dart';
+import 'package:nutmeg/state/UserState.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
 import 'package:provider/provider.dart';
 
+import '../controller/MatchesController.dart';
 import '../state/MatchesState.dart';
 
 class BottomBarMatch extends StatelessWidget {
@@ -15,79 +17,77 @@ class BottomBarMatch extends StatelessWidget {
   const BottomBarMatch({Key key, this.matchId}) : super(key: key);
 
   String getText(Match match, MatchStatusForUser matchStatusForUser) {
-    switch (matchStatusForUser) {
-      case MatchStatusForUser.canJoin:
-        return match.getSpotsLeft().toString() + " spots left";
-      case MatchStatusForUser.canLeave:
-        return "You are in";
-      case MatchStatusForUser.fullNotGoing:
-        return "Match Full";
-      case MatchStatusForUser.fullGoing:
-        return "Match Full";
-      case MatchStatusForUser.canceled:
-        return "Cancelled";
-      case MatchStatusForUser.to_rate:
-        return "Rate Players";
-      case MatchStatusForUser.no_more_to_rate:
-        return "Thanks for rating";
-      case MatchStatusForUser.rated:
-        return "Man of the Match";
+    if (match.status == MatchStatus.canceled) {
+      return "Cancelled";
     }
+    if (match.status == MatchStatus.open) {
+      if (matchStatusForUser == MatchStatusForUser.canJoin) {
+        return match.getSpotsLeft().toString() + " spots left";
+      }
+      if (matchStatusForUser == MatchStatusForUser.canLeave) {
+        return "You are in";
+      }
+      throw Exception("Unexpected");
+    }
+    if (match.status == MatchStatus.to_rate) {
+      if (matchStatusForUser == MatchStatusForUser.to_rate) {
+        return "Rate Players";
+      }
+      throw Exception("Unexpected");
+    }
+    throw Exception("Unexpected");
   }
 
   Widget getSubText(Match match, MatchStatusForUser matchStatusForUser,
       BuildContext context) {
     if (match == null) return Container();
-    var matchesState = context.watch<MatchesState>();
 
-    switch (matchStatusForUser) {
-      case MatchStatusForUser.canJoin:
+    if (match.status == MatchStatus.canceled) {
+      return Container();
+    }
+    if (match.status == MatchStatus.open) {
+      if (matchStatusForUser == MatchStatusForUser.canJoin) {
         return Text(formatCurrency(match.pricePerPersonInCents),
             style: TextPalette.bodyText);
-      case MatchStatusForUser.canLeave:
+      }
+      if (matchStatusForUser == MatchStatusForUser.canLeave) {
         return Text(match.going.length.toString() + " players going",
             style: TextPalette.bodyText);
-      case MatchStatusForUser.fullNotGoing:
-        return Text(match.going.length.toString() + " players going",
-            style: TextPalette.bodyText);
-      case MatchStatusForUser.fullGoing:
-        return Text(match.going.length.toString() + " players going",
-            style: TextPalette.bodyText);
-      case MatchStatusForUser.canceled:
-        return Container();
-      case MatchStatusForUser.to_rate:
+      }
+      throw Exception("Unexpected");
+    }
+    if (match.status == MatchStatus.to_rate) {
+      if (matchStatusForUser == MatchStatusForUser.to_rate) {
         return Text(
-            matchesState.getUsersToRate(match.documentId).length.toString() +
+            context
+                    .watch<MatchesState>()
+                    .stillToVote(matchId,
+                        context.read<UserState>().getLoggedUserDetails())
+                    .length
+                    .toString() +
                 " players left",
             style: TextPalette.bodyText);
-      // todo check if can be removed
-      case MatchStatusForUser.no_more_to_rate:
-        return Container();
-      case MatchStatusForUser.rated:
-        return Container();
+      }
+      throw Exception("Unexpected");
     }
+    throw Exception("Unexpected");
   }
 
   Widget getButton(Match match, MatchStatusForUser matchStatusForUser,
       BuildContext context) {
-    switch (matchStatusForUser) {
-      case MatchStatusForUser.canJoin:
-        return JoinButton(matchId: match.documentId);
-      case MatchStatusForUser.canLeave:
-        return LeaveButton(matchId: matchId);
-      case MatchStatusForUser.fullGoing:
-        return LeaveButton(matchId: matchId);
-      case MatchStatusForUser.fullNotGoing:
-        return JoinButtonDisabled();
-      case MatchStatusForUser.canceled:
-        return JoinButtonDisabled();
-      case MatchStatusForUser.to_rate:
-        return RateButton(matchId: matchId);
-      case MatchStatusForUser.no_more_to_rate:
-        return Container();
-      case MatchStatusForUser.rated:
-        return Container();
+    if (matchStatusForUser == MatchStatusForUser.canJoin) {
+      return JoinButton(matchId: match.documentId);
     }
+    if (matchStatusForUser == MatchStatusForUser.canLeave) {
+      return LeaveButton(matchId: matchId);
+    }
+    if (matchStatusForUser == MatchStatusForUser.cannotJoin) {
+      return JoinButtonDisabled();
+    }
+    if (matchStatusForUser == MatchStatusForUser.to_rate) {
+      return RateButton(matchId: matchId);
+    }
+    throw Exception("Unexpected");
   }
 
   @override
@@ -95,7 +95,8 @@ class BottomBarMatch extends StatelessWidget {
     var matchesState = context.watch<MatchesState>();
 
     var match = matchesState.getMatch(matchId);
-    var status = matchesState.getMatchStatus(matchId);
+    var statusForUser = context.watch<MatchesState>().getMatchStatusForUser(
+        matchId, context.watch<UserState>().getLoggedUserDetails());
 
     return GenericBottomBar(
         child: Padding(
@@ -109,15 +110,15 @@ class BottomBarMatch extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(getText(match, status), style: TextPalette.h2),
+                Text(getText(match, statusForUser), style: TextPalette.h2),
                 SizedBox(
                   height: 4,
                 ),
-                getSubText(match, status, context),
+                getSubText(match, statusForUser, context),
               ],
             ),
           ),
-          Container(child: getButton(match, status, context))
+          Container(child: getButton(match, statusForUser, context))
         ],
       ),
     ));

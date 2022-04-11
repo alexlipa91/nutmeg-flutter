@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
-import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
+import 'package:nutmeg/model/MatchRatings.dart';
 import 'package:nutmeg/state/UserState.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
@@ -12,7 +12,7 @@ import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:provider/provider.dart';
 
 import '../../controller/UserController.dart';
-import '../../state/MatchStatsState.dart';
+import '../../model/Match.dart';
 import '../../state/MatchesState.dart';
 import '../MatchDetails.dart';
 
@@ -36,9 +36,6 @@ class AdminMatchDetailsState extends State<AdminMatchDetails> {
     // get users details
     Future.wait(
         m.going.keys.map((e) => UserController.getUserDetails(context, e)));
-
-    // get sta±tus
-    await MatchesController.refreshMatchStatus(context, m);
   }
 
   @override
@@ -82,9 +79,7 @@ class AdminMatchDetailsState extends State<AdminMatchDetails> {
             padding: EdgeInsets.symmetric(horizontal: 30, vertical: 20),
             child: Column(children: [
               Expanded(
-                child: MultiProvider(providers: [
-                  ChangeNotifierProvider(create: (context) => MatchStatState()),
-                ], child: AddOrEditMatchForm(matchId: matchId)),
+                child: AddOrEditMatchForm(matchId: matchId),
               )
             ]),
           ),
@@ -106,7 +101,7 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
 
   AddOrEditMatchFormState(this.matchId);
 
-  Map<String, dynamic> ratings;
+  MatchRatings ratings;
 
   @override
   void initState() {
@@ -121,13 +116,10 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
         .map((e) => UserController.getUserDetails(context, e)));
 
     if (match.dateTime.isBefore(DateTime.now())) {
-      var r = await CloudFunctionsClient()
-          .callFunction("get_ratings_by_match", {"match_id": matchId});
+      var r = await context.read<MatchesState>().fetchRatings(matchId);
       setState(() {
         ratings = r;
       });
-
-      MatchesController.refreshMatchStats(context, matchId);
     }
   }
 
@@ -137,7 +129,6 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
     var matchesState = context.watch<MatchesState>();
 
     var match = matchesState.getMatch(matchId);
-    var status = matchesState.getMatchStatus(matchId);
 
     return Scaffold(
         backgroundColor: Colors.transparent,
@@ -149,7 +140,7 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
             children: [
               SelectableText("Match id: " + matchId, style: TextPalette.h2),
               SizedBox(height: 16.0),
-              Text("Status is: " + status.toString().split(".").last,
+              Text("Status is: " + match.status.toString().split(".").last,
                   style: TextPalette.h2),
               SizedBox(height: 16.0),
               Row(
@@ -170,7 +161,6 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                       GenericInfoModal(title: "Something went wrong")
                           .show(context);
                     }
-                    await MatchesController.refreshMatchStatus(context, match);
                     context.read<GenericButtonWithLoaderState>().change(false);
                   }, Primary()))
                 ],
@@ -194,7 +184,6 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                       GenericInfoModal(title: "Something went wrong")
                           .show(context);
                     }
-                    await MatchesController.refreshMatchStatus(context, match);
                     context.read<GenericButtonWithLoaderState>().change(false);
                   }, Primary()))
                 ],
@@ -228,14 +217,12 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                         GenericInfoModal(title: "Something went wrong")
                             .show(context);
                       }
-                      await MatchesController.refreshMatchStatus(
-                          context, match);
                     }
                     context.read<GenericButtonWithLoaderState>().change(false);
                   }, Destructive()))
                 ],
               ),
-              if (status == MatchStatusForUser.rated)
+              if (match.status == MatchStatus.rated)
                 Column(
                     children: match
                         .getPotms()
@@ -256,7 +243,6 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
               PlayerList(match: match),
               Stats(
                 matchId: matchId,
-                matchStatusForUser: matchesState.getMatchStatus(matchId),
                 matchDatetime: match.dateTime,
                 extended: true,
               )

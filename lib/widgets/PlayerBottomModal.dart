@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
+import 'package:nutmeg/widgets/Skeletons.dart';
 
 import '../model/UserDetails.dart';
 import 'Avatar.dart';
@@ -40,7 +41,9 @@ class PlayerBottomModal extends StatelessWidget {
                           width: double.infinity,
                           child: Column(children: [
                             SizedBox(height: 44),
-                            Text(title, style: TextPalette.h2),
+                            (title != null) ?
+                            Text(title, style: TextPalette.h2) :
+                                Center(child: Skeletons.xlText),
                             if (subtitle != null)
                               Padding(
                                   padding: EdgeInsets.only(top: 4),

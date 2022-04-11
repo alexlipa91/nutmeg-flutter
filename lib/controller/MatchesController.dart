@@ -1,16 +1,21 @@
 import 'package:flutter/cupertino.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 import 'package:nutmeg/model/Match.dart';
-import 'package:nutmeg/state/MatchStatsState.dart';
-import 'package:nutmeg/utils/Utils.dart';
 import 'package:provider/provider.dart';
-import 'package:tuple/tuple.dart';
 
 import '../model/PaymentRecap.dart';
 import '../state/MatchesState.dart';
 import '../state/UserState.dart';
-import 'UserController.dart';
 
+
+enum MatchStatusForUser {
+  canJoin,             // user can join the match
+  cannotJoin,          // user cannot join the match (either is full or canceled)
+  canLeave,            // user is in and  can leave the match
+  cannotLeave,         // user is in and cannot leave the match (e.g. 1h before start time)
+  to_rate,             // match is in the past, within rating window and user still has players to rate
+  no_more_to_rate,     // match is in the past, within rating window and user has rated everyone
+}
 
 class MatchesController {
 
@@ -55,7 +60,6 @@ class MatchesController {
     });
     print("joined");
     var m = await refresh(context, matchId);
-    await refreshMatchStatus(context, m);
     return m;
   }
 
@@ -68,7 +72,6 @@ class MatchesController {
       'match_id': matchId
     });
     var m = await refresh(context, matchId);
-    await refreshMatchStatus(context, m);
     return m;
   }
 
@@ -80,58 +83,6 @@ class MatchesController {
   static Future<void> editMatch(Match m) async {
     await apiClient.callFunction(
         "edit_match", {"id": m.documentId, "data": m.toJson()});
-  }
-
-  // compute status of a match
-  static Future<Tuple2<MatchStatusForUser, List<String>>> refreshMatchStatus(
-      BuildContext context, Match match) async {
-    var userState = context.read<UserState>();
-    var matchesState = context.read<MatchesState>();
-
-    MatchStatusForUser status;
-    List<String> stillToRateData;
-
-    if (match.cancelledAt != null) {
-      status = MatchStatusForUser.canceled;
-    } else if (match.scoresComputedAt != null) {
-      status = MatchStatusForUser.rated;
-    } else {
-      var isPast = match.dateTime.isBefore(DateTime.now());
-      var isGoing =
-          userState.isLoggedIn() &&
-              match.isUserGoing(userState.getLoggedUserDetails());
-
-      if (isPast) {
-        if (isGoing) {
-          stillToRateData = await UserController.getUsersToRateInMatchForLoggedUser(context,
-              match.documentId);
-          status =
-          (stillToRateData.isEmpty) ? MatchStatusForUser.no_more_to_rate
-              : MatchStatusForUser.to_rate;
-        } else {
-          return null;
-        }
-      } else {
-        if (match.numPlayersGoing() == match.maxPlayers) {
-          status = (isGoing) ? MatchStatusForUser.fullGoing
-              : MatchStatusForUser.fullNotGoing;
-        } else {
-          status =
-          (isGoing) ? MatchStatusForUser.canLeave : MatchStatusForUser.canJoin;
-        }
-      }
-    }
-
-    if ((status == MatchStatusForUser.to_rate || status == MatchStatusForUser.no_more_to_rate
-        || status == MatchStatusForUser.rated) && shouldDisableRatings) {
-      print("DISABLING IT");
-      status = null;
-    }
-
-    matchesState.setMatchStatus(match.documentId, status);
-    matchesState.setUsersToRate(match.documentId, stillToRateData);
-
-    return Tuple2(status, stillToRateData);
   }
 
   // logged-in user voted 'score' for user 'userId' in match 'matchId'
@@ -163,24 +114,5 @@ class MatchesController {
     await apiClient.callFunction("cancel_match", {
       "match_id": matchId
     });
-  }
-
-  static Future<Map<String, List<int>>> refreshMatchStats(BuildContext context, String matchId) async {
-    var ratingsState = context.read<MatchStatState>();
-
-    var resp = await apiClient.callFunction("get_ratings_by_match", {
-      "match_id": matchId
-    });
-
-    var r = Map<String, List<int>>();
-
-    resp.forEach((key, value) {
-      r[key] = List<int>.from(value);
-    });
-
-    ratingsState.setRatings(
-        context.read<MatchesState>().getMatch(matchId).going.keys.toList(),
-        r);
-    return r;
   }
 }

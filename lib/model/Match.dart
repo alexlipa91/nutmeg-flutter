@@ -1,8 +1,17 @@
 import 'UserDetails.dart';
 
 
+enum MatchStatus {
+  open,                // match is on and can be joined
+  full,                // match is full and cannot be joined
+  to_rate,             // match is in the past and within rating window
+  rated,               // match is in the past and after rating window (man of the match is available)
+  canceled             // match is canceled
+}
+
 class Match {
   String documentId;
+  MatchStatus status;
 
   DateTime dateTime;
 
@@ -51,7 +60,28 @@ class Match {
 
       organizerId = jsonInput["organizerId"];
 
+      _setStatus();
       this.documentId = documentId;
+  }
+
+  void _setStatus() {
+    if (cancelledAt != null) {
+      status = MatchStatus.canceled;
+    } else if (scoresComputedAt != null) {
+      status = MatchStatus.rated;
+    } else {
+      var isPast = dateTime.isBefore(DateTime.now());
+
+      if (isPast) {
+        status = MatchStatus.to_rate;
+      } else {
+        if (going.length == maxPlayers) {
+          status = MatchStatus.full;
+        } else {
+          status = MatchStatus.open;
+        }
+      }
+    }
   }
 
   Set<String> getPotms() => (_manOfTheMatch == null) ? Set<String>.from([]) : _manOfTheMatch.keys.toSet();

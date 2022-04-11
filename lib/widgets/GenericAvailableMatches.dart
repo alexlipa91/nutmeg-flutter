@@ -76,10 +76,6 @@ class GenericAvailableMatchesListState
         .map((e) => e.sportCenterId)
         .toSet()
         .map((s) => SportCentersController.refresh(context, s)));
-    Future.wait(context
-        .read<MatchesState>()
-        .getMatches()
-        .map((e) => MatchesController.refreshMatchStatus(context, e)));
     widget.refreshController.refreshCompleted();
   }
 

@@ -49,7 +49,7 @@ class AvailableMatches extends StatelessWidget {
     var matches = state
         .getMatches()
         .where((e) => (!e.isTest || userState.isTestMode))
-        .where((m) => m.isUserGoing(userState.getLoggedUserDetails()))
+        .where((m) => userState.isLoggedIn() && m.isUserGoing(userState.getLoggedUserDetails()))
         .where((m) => m.dateTime.isBefore(now));
 
     List<Widget> widgets = [];
@@ -93,7 +93,7 @@ class AvailableMatches extends StatelessWidget {
     var matches = state
         .getMatches()
         .where((e) => (!e.isTest || userState.isTestMode))
-        .where((m) => m.isUserGoing(userState.getLoggedUserDetails()))
+        .where((m) => userState.isLoggedIn() && m.isUserGoing(userState.getLoggedUserDetails()))
         .where((m) => m.dateTime.isAfter(now));
 
     List<Widget> widgets = [];
