@@ -7,7 +7,6 @@ import '../model/UserDetails.dart';
 import 'Avatar.dart';
 
 class PlayerBottomModal extends StatelessWidget {
-
   PlayerBottomModal(this.userDetails, this.content, this.title, this.subtitle);
 
   final UserDetails userDetails;
@@ -35,23 +34,25 @@ class PlayerBottomModal extends StatelessWidget {
                     children: [
                       Container(
                           decoration: BoxDecoration(
-                            color: Palette.white,
-                            borderRadius: GenericInfoModal.modalRadius
-                          ),
+                              color: Palette.white,
+                              borderRadius: GenericInfoModal.modalRadius),
                           width: double.infinity,
-                          child: Column(children: [
-                            SizedBox(height: 44),
-                            (title != null) ?
-                            Text(title, style: TextPalette.h2) :
-                                Center(child: Skeletons.xlText),
-                            if (subtitle != null)
-                              Padding(
-                                  padding: EdgeInsets.only(top: 4),
-                                  child: Text(subtitle, style: TextPalette.getBodyText(Palette.grey_dark))),
-                            SizedBox(height: 24),
-                            content
-                          ],)
-                      ),
+                          child: Column(
+                            children: [
+                              SizedBox(height: 44),
+                              (title != null)
+                                  ? Text(title, style: TextPalette.h2)
+                                  : Skeletons.xlTextCenter,
+                              if (subtitle != null)
+                                Padding(
+                                    padding: EdgeInsets.only(top: 4),
+                                    child: Text(subtitle,
+                                        style: TextPalette.getBodyText(
+                                            Palette.grey_dark))),
+                              SizedBox(height: 24),
+                              content
+                            ],
+                          )),
                       Positioned(
                           top: -50,
                           left: 0,
@@ -68,7 +69,6 @@ class PlayerBottomModal extends StatelessWidget {
 }
 
 class StatEntry extends StatelessWidget {
-
   final String stat;
   final String description;
 
@@ -77,11 +77,13 @@ class StatEntry extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      child: Column(children: [
-        Text(stat, style: TextPalette.getStats(Palette.black)),
-        SizedBox(height: 4),
-        Text(description, style: TextPalette.bodyText)
-      ],),
+      child: Column(
+        children: [
+          Text(stat, style: TextPalette.getStats(Palette.black)),
+          SizedBox(height: 4),
+          Text(description, style: TextPalette.bodyText)
+        ],
+      ),
     );
   }
 }
@@ -94,32 +96,37 @@ class JoinedPlayerBottomModal extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PlayerBottomModal(
-      userDetails,
-      Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              Expanded(
-                child: StatEntry(stat: userDetails.getJoinedMatches().length.toString(),
-                  description: "Matches",),
-              ),
-              Expanded(
-                child: StatEntry(stat: (userDetails.getScoreMatches() == -1)
-                    ? "-"
-                    : userDetails.getScoreMatches().toStringAsFixed(1),
-                  description: "Avg. score",),
-              ),
-              Expanded(
-                child: StatEntry(stat: userDetails.getNumManOfTheMatch().toString(),
-                  description: "POTM",),
-              ),
-            ],
-          ),
-        ],
-      ),
-      UserDetails.getDisplayName(userDetails),
-      null
-    );
+        userDetails,
+        Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                Expanded(
+                  child: StatEntry(
+                    stat: userDetails.getJoinedMatches().length.toString(),
+                    description: "Matches",
+                  ),
+                ),
+                Expanded(
+                  child: StatEntry(
+                    stat: (userDetails.getScoreMatches() == -1)
+                        ? "-"
+                        : userDetails.getScoreMatches().toStringAsFixed(1),
+                    description: "Avg. score",
+                  ),
+                ),
+                Expanded(
+                  child: StatEntry(
+                    stat: userDetails.getNumManOfTheMatch().toString(),
+                    description: "POTM",
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        UserDetails.getDisplayName(userDetails),
+        null);
   }
 }

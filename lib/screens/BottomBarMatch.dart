@@ -98,6 +98,9 @@ class BottomBarMatch extends StatelessWidget {
     var statusForUser = context.watch<MatchesState>().getMatchStatusForUser(
         matchId, context.watch<UserState>().getLoggedUserDetails());
 
+    if (match == null || statusForUser == null)
+      return Container();
+
     return GenericBottomBar(
         child: Padding(
       padding: EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0),

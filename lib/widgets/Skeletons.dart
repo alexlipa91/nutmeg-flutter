@@ -10,6 +10,12 @@ class Skeletons {
         borderRadius: BorderRadius.circular(20), width: 200, height: 12),
   );
 
+  static var xlTextCenter = SkeletonLine(
+    style: SkeletonLineStyle(
+        alignment: AlignmentDirectional.center,
+        borderRadius: BorderRadius.circular(20), width: 200, height: 12),
+  );
+
   static var lText = SkeletonLine(
     style: SkeletonLineStyle(
         borderRadius: BorderRadius.circular(20), width: 120, height: 12),
