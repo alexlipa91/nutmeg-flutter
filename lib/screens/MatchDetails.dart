@@ -57,7 +57,7 @@ class MatchDetailsState extends State<MatchDetails> {
 
   LifecycleEventHandler lifecycleObserver;
 
-  Future<void> refreshState() async {
+  Future<void> refreshState([showModal=false]) async {
     if (!mounted) {
       return;
     }
@@ -66,7 +66,6 @@ class MatchDetailsState extends State<MatchDetails> {
       context.read<MatchesState>().fetchRatings(matchId),
       MatchesController.refresh(context, matchId)
     ];
-    print("run futures");
 
     var res = await Future.wait(futures);
 
@@ -78,22 +77,24 @@ class MatchDetailsState extends State<MatchDetails> {
     // get organizer details
     UserController.getUserDetails(context, match.organizerId);
 
-    var status = context.read<MatchesState>().getMatchStatusForUser(
-        matchId, context.read<UserState>().getLoggedUserDetails());
+    if (showModal) {
+      var status = context.read<MatchesState>().getMatchStatusForUser(
+          matchId, context.read<UserState>().getLoggedUserDetails());
 
-    if (status == MatchStatusForUser.to_rate) {
-      bool noMoreToRate =
-          await RatePlayerBottomModal.rateAction(context, matchId);
-      if (noMoreToRate != null && noMoreToRate)
-        status = MatchStatusForUser.no_more_to_rate;
+      if (status == MatchStatusForUser.to_rate) {
+        bool noMoreToRate =
+        await RatePlayerBottomModal.rateAction(context, matchId);
+        if (noMoreToRate != null && noMoreToRate)
+          status = MatchStatusForUser.no_more_to_rate;
+      }
+      setState(() {});
     }
-    setState(() {});
   }
 
   @override
   void initState() {
     super.initState();
-    refreshState();
+    refreshState(true);
     lifecycleObserver = LifecycleEventHandler(resumeCallBack: () async {
       refreshState();
     });
