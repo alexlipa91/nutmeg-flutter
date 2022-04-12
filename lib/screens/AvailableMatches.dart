@@ -158,7 +158,7 @@ class AvailableMatches extends StatelessWidget {
     });
 
     List<Widget> result = [];
-    groupedByWeeksIntervals.entries.forEach((e) {
+    groupedByWeeksIntervals.entries.forEachIndexed((index, e) {
       if (e.value != null && e.value.isNotEmpty) {
         var widgets =
             e.value.sortedBy((e) => e.dateTime).mapIndexed((index, match) {
@@ -168,13 +168,28 @@ class AvailableMatches extends StatelessWidget {
           }
           return GenericMatchInfo(match.documentId, onTap, refreshController);
         });
-        result.add(Section(
-          topSpace: 16,
-          title: e.key,
-          body: Column(
-            children: widgets.toList(),
-          ),
-        ));
+
+        var section;
+        if (index == 0) {
+          section = Section(
+            // we already have a top padding
+            topSpace: 16,
+            title: e.key,
+            body: Column(
+              children: widgets.toList(),
+            ),
+          );
+        } else {
+          section = Section(
+            title: e.key,
+            body: Column(
+              children: widgets.toList(),
+            ),
+          );
+        }
+        print(section);
+
+        result.add(section);
       }
     });
 
