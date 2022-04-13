@@ -166,8 +166,8 @@ class CreateMatchState extends State<CreateMatch> {
                     if (d != null) {
                       startTimeEditingController.text = getFormattedTime(d);
                       endTimeEditingController.text =
-                          TimeOfDay(hour: d.hour + 1, minute: d.minute)
-                              .format(context);
+                          getFormattedTime(TimeOfDay(hour: d.hour + 1,
+                              minute: d.minute));
                       setState(() {});
                     }
                   },
