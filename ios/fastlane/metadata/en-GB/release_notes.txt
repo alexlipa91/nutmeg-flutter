@@ -1,1 +1,1 @@
-Fix bug with non-logged-in users
+Fix modal show up for ratings
