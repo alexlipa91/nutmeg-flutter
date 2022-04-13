@@ -588,19 +588,20 @@ class CreateMatchState extends State<CreateMatch> {
               context.read<GenericButtonWithLoaderState>().change(true);
 
               if (_formKey.currentState.validate()) {
-                var stod = toTimeOfTheDay(startTimeEditingController.text);
-                var etod = toTimeOfTheDay(endTimeEditingController.text);
-                var day = dateFormat.parse(dateEditingController.text);
-                var dateTime = DateTime(
-                    day.year, day.month, day.day, stod.hour, stod.minute);
-                var endTime = DateTime(
-                        day.year, day.month, day.day, etod.hour, etod.minute)
-                    .toUtc();
-                var duration = endTime.difference(dateTime);
-
-                var forWeeks = int.tryParse(repeatWeeklyEditingController.text);
-                if (forWeeks == null) forWeeks = 1;
                 try {
+                  var stod = toTimeOfTheDay(startTimeEditingController.text);
+                  var etod = toTimeOfTheDay(endTimeEditingController.text);
+                  var day = dateFormat.parse(dateEditingController.text);
+                  var dateTime = DateTime(
+                      day.year, day.month, day.day, stod.hour, stod.minute);
+                  var endTime = DateTime(
+                      day.year, day.month, day.day, etod.hour, etod.minute)
+                      .toUtc();
+                  var duration = endTime.difference(dateTime);
+
+                  var forWeeks = int.tryParse(repeatWeeklyEditingController.text);
+                  if (forWeeks == null) forWeeks = 1;
+
                   Iterable<Future<String>> idsFuture =
                       Iterable<int>.generate(forWeeks).map((w) async {
                     var match = Match(
