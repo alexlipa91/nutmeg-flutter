@@ -31,7 +31,14 @@ class AdminMatchDetailsState extends State<AdminMatchDetails> {
 
   Future<void> refreshState() async {
     // get details
-    var m = await MatchesController.refresh(context, matchId);
+    var futures = [
+      MatchesController.refresh(context, matchId),
+      context.read<MatchesState>().fetchRatings(matchId)
+    ];
+
+    var result = await Future.wait(futures);
+
+    var m = result[0] as Match;
 
     // get users details
     Future.wait(

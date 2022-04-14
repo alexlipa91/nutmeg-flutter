@@ -35,9 +35,17 @@ class MatchRatings {
   }
 
   int getNumberOfSkips(String user) =>
-      (ratingsReceived[user].values ?? []).where((e) => e == -1).length;
+      (ratingsReceived[user] ?? {}).values.where((e) => e == -1).length;
 
   int getNumberOfVotes(String user) =>
-      (ratingsReceived[user].values ?? []).where((e) => e != -1).length;
+      (ratingsReceived[user] ?? {}).values.where((e) => e != -1).length;
+
+  int getNumberOfGivenVotes(String user) =>
+      ratingsReceived.values.where((rec) =>
+      rec.containsKey(user) && rec[user] > 0).length;
+
+  int getNumberOfGivenSkips(String user) =>
+      ratingsReceived.values.where((rec) =>
+      rec.containsKey(user) && rec[user] == -1).length;
 }
 

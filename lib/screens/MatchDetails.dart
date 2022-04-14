@@ -57,7 +57,7 @@ class MatchDetailsState extends State<MatchDetails> {
 
   LifecycleEventHandler lifecycleObserver;
 
-  Future<void> refreshState([showModal=false]) async {
+  Future<void> refreshState([showModal = false]) async {
     if (!mounted) {
       return;
     }
@@ -83,7 +83,7 @@ class MatchDetailsState extends State<MatchDetails> {
 
       if (status == MatchStatusForUser.to_rate) {
         bool noMoreToRate =
-        await RatePlayerBottomModal.rateAction(context, matchId);
+            await RatePlayerBottomModal.rateAction(context, matchId);
         if (noMoreToRate != null && noMoreToRate)
           status = MatchStatusForUser.no_more_to_rate;
       }
@@ -117,16 +117,16 @@ class MatchDetailsState extends State<MatchDetails> {
         matchId, context.watch<UserState>().getLoggedUserDetails());
 
     var organizerView = userState.isLoggedIn() &&
+        match != null &&
         match.organizerId == userState.getLoggedUserDetails().documentId;
 
     padB(Widget w) => Padding(padding: EdgeInsets.only(bottom: 16), child: w);
 
-    bool shouldNotUseBottomBar =
-        match.status == null
-            || match.status == MatchStatus.rated
-            || match.status == MatchStatus.playing
-            || match.status == MatchStatus.cancelled
-            || statusForUser == MatchStatusForUser.no_more_to_rate;
+    bool shouldNotUseBottomBar = match.status == null ||
+        match.status == MatchStatus.rated ||
+        match.status == MatchStatus.playing ||
+        match.status == MatchStatus.cancelled ||
+        statusForUser == MatchStatusForUser.no_more_to_rate;
 
     var bottomBar = (shouldNotUseBottomBar)
         ? null
@@ -715,11 +715,6 @@ class Stats extends StatelessWidget {
     var showingPartial =
         matchStatusForUser == MatchStatusForUser.no_more_to_rate && extended;
 
-    if (context.read<MatchesState>().getMatch(matchId).status !=
-        MatchStatus.rated) {
-      return Container();
-    }
-
     // in extended mode, we show also partial results
     if (matchStatusForUser == MatchStatusForUser.no_more_to_rate && !extended) {
       child = Container(
@@ -779,110 +774,146 @@ class Stats extends StatelessWidget {
                 int index = 1;
 
                 return Container(
-                  child: Column(
-                    children: sorted.map((e) {
-                      var user = e.key;
-                      var score = e.value;
-
-                      var userDetails = userState.getUserDetail(user);
-
-                      var widgets = [
-                        Container(
-                            width: 18,
-                            child: Text(index.toString(),
-                                style: TextPalette.bodyText)),
-                        SizedBox(width: 8),
-                        UserAvatar(16, userDetails),
-                        // SizedBox(width: 8),
-                        Padding(
-                          padding: EdgeInsets.only(left: 16),
+                    child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (extended)
+                      Padding(
+                          padding: EdgeInsets.only(bottom: 16),
                           child: Row(
                             children: [
-                              Builder(builder: (context) {
-                                // fixme text overflow
-                                var name =
-                                    UserDetails.getDisplayName(userDetails)
-                                        .split(" ")
-                                        .first;
-                                var n = name.substring(0, min(name.length, 11));
-                                return Text(n,
-                                    overflow: TextOverflow.ellipsis,
-                                    style:
-                                        TextPalette.getBodyText(Palette.black));
-                              }),
-                              SizedBox(width: 8),
-                              if (userDetails != null &&
-                                  potms.contains(userDetails.documentId) &&
-                                  score > 0)
-                                Image.asset(
-                                  "assets/potm_badge.png",
-                                  width: 20,
-                                )
+                              Expanded(
+                                child: Text(
+                                  "V=votes   S=skips        Received    Given     Vote",
+                                  textAlign: TextAlign.end,
+                                  style: TextPalette.bodyText),
+                              )
                             ],
-                          ),
-                        ),
-                        Spacer(),
-                        if (!extended)
+                          )),
+                    Column(
+                      children: sorted.map((e) {
+                        var user = e.key;
+                        var score = e.value;
+
+                        var userDetails = userState.getUserDetail(user);
+
+                        var widgets = [
                           Container(
-                            height: 8,
-                            width: 72,
-                            child: ClipRRect(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(10)),
-                              child: LinearProgressIndicator(
-                                value: score / 5,
-                                color: Palette.primary,
-                                backgroundColor: Palette.grey_lighter,
-                              ),
+                              width: 18,
+                              child: Text(index.toString(),
+                                  style: TextPalette.bodyText)),
+                          SizedBox(width: 8),
+                          UserAvatar(16, userDetails),
+                          // SizedBox(width: 8),
+                          Padding(
+                            padding: EdgeInsets.only(left: 16),
+                            child: Row(
+                              children: [
+                                Builder(builder: (context) {
+                                  // fixme text overflow
+                                  var name =
+                                      UserDetails.getDisplayName(userDetails)
+                                          .split(" ")
+                                          .first;
+                                  var n =
+                                      name.substring(0, min(name.length, 11));
+                                  return Text(n,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextPalette.getBodyText(
+                                          Palette.black));
+                                }),
+                                SizedBox(width: 8),
+                                if (userDetails != null &&
+                                    potms.contains(userDetails.documentId) &&
+                                    score > 0)
+                                  Image.asset(
+                                    "assets/potm_badge.png",
+                                    width: 20,
+                                  )
+                              ],
                             ),
                           ),
-                        if (extended)
-                          Row(
-                            children: [
-                              Text(
-                                  "S: " +
-                                      ratings
-                                          .getNumberOfSkips(
-                                              userDetails.documentId)
-                                          .toString(),
-                                  style: TextPalette.getBodyText(
-                                      Palette.grey_dark)),
-                              SizedBox(
-                                width: 16,
+                          Spacer(),
+                          if (!extended)
+                            Container(
+                              height: 8,
+                              width: 72,
+                              child: ClipRRect(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(10)),
+                                child: LinearProgressIndicator(
+                                  value: score / 5,
+                                  color: Palette.primary,
+                                  backgroundColor: Palette.grey_lighter,
+                                ),
                               ),
-                              Text(
-                                  "V: " +
-                                      ratings
-                                          .getNumberOfVotes(
-                                              userDetails.documentId)
-                                          .toString(),
-                                  style: TextPalette.getBodyText(
-                                      Palette.grey_dark))
-                            ],
+                            ),
+                          if (extended)
+                            Row(
+                              children: [
+                                Text(
+                                    "V: " + ratings
+                                        .getNumberOfVotes(
+                                            userDetails.documentId)
+                                        .toString(),
+                                    style: TextPalette.getBodyText(
+                                        Colors.green)),
+                                SizedBox(
+                                  width: 6,
+                                ),
+                                Text(
+                                    "S: " + ratings
+                                        .getNumberOfSkips(
+                                            userDetails.documentId)
+                                        .toString(),
+                                    style: TextPalette.getBodyText(
+                                        Palette.grey_dark)),
+                                SizedBox(
+                                  width: 6,
+                                ),
+                                Text(
+                                    "V: " + ratings
+                                        .getNumberOfGivenVotes(
+                                            userDetails.documentId)
+                                        .toString(),
+                                    style: TextPalette.getBodyText(
+                                        Colors.green)),
+                                SizedBox(
+                                  width: 6,
+                                ),
+                                Text(
+                                    "S: " + ratings
+                                        .getNumberOfGivenSkips(
+                                            userDetails.documentId)
+                                        .toString(),
+                                    style: TextPalette.getBodyText(
+                                        Palette.grey_dark))
+                              ],
+                            ),
+                          SizedBox(width: 16),
+                          Container(
+                            width: 22,
+                            child: Text(
+                                (score == 0) ? "  -" : score.toStringAsFixed(1),
+                                style: TextPalette.getBodyText(Palette.black)),
                           ),
-                        SizedBox(width: 16),
-                        Container(
-                          width: 22,
-                          child: Text(
-                              (score == 0) ? "  -" : score.toStringAsFixed(1),
-                              style: TextPalette.getBodyText(Palette.black)),
-                        ),
-                      ];
+                        ];
 
-                      index++;
-                      return Padding(
-                          padding: (index > 2)
-                              ? EdgeInsets.only(top: 16)
-                              : EdgeInsets.zero,
-                          child: InkWell(
-                              onTap: () =>
-                                  ModalBottomSheet.showNutmegModalBottomSheet(
-                                      context,
-                                      JoinedPlayerBottomModal(userDetails)),
-                              child: Row(children: widgets)));
-                    }).toList(),
-                  ),
-                );
+                        index++;
+                        return Padding(
+                            padding: (index > 2)
+                                ? EdgeInsets.only(top: 16)
+                                : EdgeInsets.zero,
+                            child: InkWell(
+                                onTap: () =>
+                                    ModalBottomSheet.showNutmegModalBottomSheet(
+                                        context,
+                                        JoinedPlayerBottomModal(userDetails)),
+                                child: Row(children: widgets)));
+                      }).toList(),
+                    )
+                  ],
+                ));
               },
             );
     }
