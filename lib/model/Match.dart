@@ -4,9 +4,11 @@ import 'UserDetails.dart';
 enum MatchStatus {
   open,                // match is on and can be joined
   full,                // match is full and cannot be joined
+  pre_playing,         // match is on and from now on no-one can leave
+  playing,             // mach is being played
   to_rate,             // match is in the past and within rating window
   rated,               // match is in the past and after rating window (man of the match is available)
-  canceled             // match is canceled
+  cancelled            // match is canceled
 }
 
 class Match {
@@ -60,28 +62,9 @@ class Match {
 
       organizerId = jsonInput["organizerId"];
 
-      _setStatus();
+      status = MatchStatus.values
+          .firstWhere((e) => e.name == jsonInput["status"]);
       this.documentId = documentId;
-  }
-
-  void _setStatus() {
-    if (cancelledAt != null) {
-      status = MatchStatus.canceled;
-    } else if (scoresComputedAt != null) {
-      status = MatchStatus.rated;
-    } else {
-      var isPast = dateTime.isBefore(DateTime.now());
-
-      if (isPast) {
-        status = MatchStatus.to_rate;
-      } else {
-        if (going.length == maxPlayers) {
-          status = MatchStatus.full;
-        } else {
-          status = MatchStatus.open;
-        }
-      }
-    }
   }
 
   Set<String> getPotms() => (_manOfTheMatch == null) ? Set<String>.from([]) : _manOfTheMatch.keys.toSet();

@@ -60,8 +60,10 @@ class MatchesState extends ChangeNotifier {
     MatchStatusForUser matchStatusForUser;
 
     if (ud != null && match.isUserGoing(ud)) {
-      if (match.status == MatchStatus.open || match.status == MatchStatus.canceled) {
+      if (match.status == MatchStatus.open || match.status == MatchStatus.cancelled) {
         matchStatusForUser = MatchStatusForUser.canLeave;
+      } else if (match.status == MatchStatus.pre_playing) {
+        matchStatusForUser = MatchStatusForUser.cannotLeave;
       } else if (match.status == MatchStatus.to_rate) {
         var usersToVote = stillToVote(matchId, ud);
 
@@ -76,7 +78,7 @@ class MatchesState extends ChangeNotifier {
         }
       }
     } else {
-      if (match.status == MatchStatus.canceled || match.status == MatchStatus.full) {
+      if (match.status == MatchStatus.cancelled || match.status == MatchStatus.full) {
         matchStatusForUser = MatchStatusForUser.cannotJoin;
       } else {
         matchStatusForUser = MatchStatusForUser.canJoin;
@@ -95,6 +97,7 @@ class MatchesState extends ChangeNotifier {
     }
 
     var toVote = match.going.keys.toSet();
+    toVote.remove(ud.documentId);
     matchRatings.ratingsReceived.forEach((receiver, given) {
       if (given.keys.contains(ud.documentId)) {
         toVote.remove(receiver);

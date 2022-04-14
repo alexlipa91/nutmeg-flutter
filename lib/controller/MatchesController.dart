@@ -7,14 +7,13 @@ import '../model/PaymentRecap.dart';
 import '../state/MatchesState.dart';
 import '../state/UserState.dart';
 
-
 enum MatchStatusForUser {
-  canJoin,             // user can join the match
-  cannotJoin,          // user cannot join the match (either is full or canceled)
-  canLeave,            // user is in and  can leave the match
-  cannotLeave,         // user is in and cannot leave the match (e.g. 1h before start time)
-  to_rate,             // match is in the past, within rating window and user still has players to rate
-  no_more_to_rate,     // match is in the past, within rating window and user has rated everyone
+  canJoin,                  // user can join the match
+  cannotJoin,               // user cannot join the match (either is full or canceled)
+  canLeave,                 // user is in and  can leave the match
+  cannotLeave,              // user is in and cannot leave the match (e.g. 1h before start time)
+  to_rate,                  // match is in the past, within rating window and user still has players to rate
+  no_more_to_rate,          // match is in the past, within rating window and user has rated everyone
 }
 
 class MatchesController {
@@ -36,11 +35,21 @@ class MatchesController {
     var matchesState = context.read<MatchesState>();
 
     var resp = await apiClient.callFunction("get_all_matches_v2", {});
-    Map<String, dynamic> data = (resp == null) ? Map()
-        : Map<String, dynamic>.from(resp);
+    Map<String, dynamic> data =
+        (resp == null) ? Map() : Map<String, dynamic>.from(resp);
 
     var matches = data.entries
-        .map((e) => Match.fromJson(Map<String, dynamic>.from(e.value), e.key))
+        .map((e) {
+          try {
+            return Match.fromJson(Map<String, dynamic>.from(e.value), e.key);
+          } catch (e, s) {
+            print("Failed to deserialize match");
+            print(e);
+            print(s);
+            return null;
+          }
+        })
+        .where((e) => e != null)
         .toList();
 
     matchesState.setMatches(matches);
@@ -48,8 +57,8 @@ class MatchesController {
   }
 
   // current logged in user joins a match
-  static Future<Match> joinMatch(BuildContext context,
-      String matchId, PaymentRecap paymentStatus) async {
+  static Future<Match> joinMatch(
+      BuildContext context, String matchId, PaymentRecap paymentStatus) async {
     var userState = context.read<UserState>();
 
     await apiClient.callFunction("add_user_to_match", {
@@ -81,17 +90,20 @@ class MatchesController {
   }
 
   static Future<void> editMatch(Match m) async {
-    await apiClient.callFunction(
-        "edit_match", {"id": m.documentId, "data": m.toJson()});
+    await apiClient
+        .callFunction("edit_match", {"id": m.documentId, "data": m.toJson()});
   }
 
   // logged-in user voted 'score' for user 'userId' in match 'matchId'
-  static Future<void> addRating(BuildContext context, String userId, String matchId, double score) async {
+  static Future<void> addRating(
+      BuildContext context, String userId, String matchId, double score) async {
     try {
-      await apiClient.callFunction("add_rating",
-          {"user_id": context.read<UserState>().getLoggedUserDetails().documentId,
-            "user_rated_id": userId,
-            "match_id": matchId, "score": score});
+      await apiClient.callFunction("add_rating", {
+        "user_id": context.read<UserState>().getLoggedUserDetails().documentId,
+        "user_rated_id": userId,
+        "match_id": matchId,
+        "score": score
+      });
     } catch (e, s) {
       print("Failed to add rating: " + e.toString());
       print(s);
@@ -99,20 +111,15 @@ class MatchesController {
   }
 
   static Future<void> resetRatings(String matchId) async {
-    await apiClient.callFunction("reset_ratings_for_match", {
-      "match_id": matchId
-    });
+    await apiClient
+        .callFunction("reset_ratings_for_match", {"match_id": matchId});
   }
 
   static Future<void> closeRatingRound(String matchId) async {
-    await apiClient.callFunction("close_rating_round", {
-      "match_id": matchId
-    });
+    await apiClient.callFunction("close_rating_round", {"match_id": matchId});
   }
 
   static Future<void> cancelMatch(String matchId) async {
-    await apiClient.callFunction("cancel_match", {
-      "match_id": matchId
-    });
+    await apiClient.callFunction("cancel_match", {"match_id": matchId});
   }
 }

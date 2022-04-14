@@ -113,6 +113,9 @@ class MatchDetailsState extends State<MatchDetails> {
     var matchesState = context.watch<MatchesState>();
     var match = matchesState.getMatch(matchId);
 
+    var statusForUser = context.watch<MatchesState>().getMatchStatusForUser(
+        matchId, context.watch<UserState>().getLoggedUserDetails());
+
     var organizerView = userState.isLoggedIn() &&
         match.organizerId == userState.getLoggedUserDetails().documentId;
 
@@ -121,7 +124,9 @@ class MatchDetailsState extends State<MatchDetails> {
     bool shouldNotUseBottomBar =
         match.status == null
             || match.status == MatchStatus.rated
-            || match.status == MatchStatus.canceled;
+            || match.status == MatchStatus.playing
+            || match.status == MatchStatus.cancelled
+            || statusForUser == MatchStatusForUser.no_more_to_rate;
 
     var bottomBar = (shouldNotUseBottomBar)
         ? null

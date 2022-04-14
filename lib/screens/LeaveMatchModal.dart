@@ -48,6 +48,14 @@ class LeaveButton extends StatelessWidget {
       );
 }
 
+class LeaveButtonDisabled extends StatelessWidget {
+
+  @override
+  Widget build(BuildContext context) => GenericButtonWithLoader(
+    "LEAVE MATCH", null, Disabled(),
+  );
+}
+
 class ConfirmLeaveMatchButton extends StatelessWidget {
   final Match match;
 

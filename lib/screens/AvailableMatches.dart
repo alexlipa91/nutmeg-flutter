@@ -187,8 +187,6 @@ class AvailableMatches extends StatelessWidget {
             ),
           );
         }
-        print(section);
-
         result.add(section);
       }
     });

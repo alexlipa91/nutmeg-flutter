@@ -17,7 +17,7 @@ class BottomBarMatch extends StatelessWidget {
   const BottomBarMatch({Key key, this.matchId}) : super(key: key);
 
   String getText(Match match, MatchStatusForUser matchStatusForUser) {
-    if (match.status == MatchStatus.canceled) {
+    if (match.status == MatchStatus.cancelled) {
       return "Cancelled";
     }
     if (match.status == MatchStatus.open) {
@@ -35,6 +35,9 @@ class BottomBarMatch extends StatelessWidget {
       }
       throw Exception("Unexpected");
     }
+    if (match.status == MatchStatus.pre_playing) {
+      return "You are in";
+    }
     throw Exception("Unexpected");
   }
 
@@ -42,7 +45,7 @@ class BottomBarMatch extends StatelessWidget {
       BuildContext context) {
     if (match == null) return Container();
 
-    if (match.status == MatchStatus.canceled) {
+    if (match.status == MatchStatus.cancelled) {
       return Container();
     }
     if (match.status == MatchStatus.open) {
@@ -70,11 +73,18 @@ class BottomBarMatch extends StatelessWidget {
       }
       throw Exception("Unexpected");
     }
+    if (match.status == MatchStatus.pre_playing) {
+      return Text(match.going.length.toString() + " players going",
+          style: TextPalette.bodyText);
+    }
     throw Exception("Unexpected");
   }
 
   Widget getButton(Match match, MatchStatusForUser matchStatusForUser,
       BuildContext context) {
+    if (matchStatusForUser == MatchStatusForUser.cannotLeave) {
+      return LeaveButtonDisabled();
+    }
     if (matchStatusForUser == MatchStatusForUser.canJoin) {
       return JoinButton(matchId: match.documentId);
     }
