@@ -113,10 +113,14 @@ class RatePlayerBottomModal extends StatelessWidget {
     MatchesController.addRating(context, state.getCurrent(), matchId,
         state.getCurrentScore());
 
+    // store also locally so UI changes fast
+    context.read<MatchesState>().addRating(matchId,
+        context.read<UserState>().currentUserId, state.getCurrent(),
+        state.getCurrentScore());
+
     if (state.isLast()) {
       if (state.current + 1 == state.toRate.length) {
-        // here we know for sure that there are no more players to rate. We quickly set the state so the bottom bar changes fast
-        Get.back(result: true);
+        Get.back();
       } else {
         Get.back();
       }

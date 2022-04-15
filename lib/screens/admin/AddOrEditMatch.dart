@@ -251,6 +251,7 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
               Stats(
                 matchId: matchId,
                 matchDatetime: match.dateTime,
+                matchStatusForUser: null,
                 extended: true,
               )
             ],

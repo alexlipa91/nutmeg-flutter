@@ -34,6 +34,13 @@ class MatchRatings {
     return ratings;
   }
 
+  void add(String receives, String gives, int score) {
+    if (!ratingsReceived.containsKey(receives)) {
+      ratingsReceived[receives] = Map();
+    }
+    ratingsReceived[receives][gives] = score;
+  }
+
   int getNumberOfSkips(String user) =>
       (ratingsReceived[user] ?? {}).values.where((e) => e == -1).length;
 

@@ -18,7 +18,7 @@ echo $NOTES > ios/fastlane/metadata/en-GB/release_notes.txt
 (cd android; fastlane run upload_to_play_store track_promote_to:production version_code:$BUILD track:internal)
 
 # submit ios build
-(cd ios; fastlane submit_for_review build_number:$BUILD version:$VERSION --env .env.relase)
+(cd ios; fastlane submit_for_review build_number:$BUILD version:$VERSION)
 
 # create release in github
 gh release create $TAG --notes "$NOTES"

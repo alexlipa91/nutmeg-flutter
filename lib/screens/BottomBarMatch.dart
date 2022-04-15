@@ -12,6 +12,16 @@ import '../controller/MatchesController.dart';
 import '../state/MatchesState.dart';
 
 class BottomBarMatch extends StatelessWidget {
+  static BottomBarMatch getBottomBar(BuildContext context, String matchId,
+      MatchStatus matchStatus, MatchStatusForUser matchStatusForUser) {
+    if (matchStatus == null ||
+        matchStatus == MatchStatus.rated ||
+        matchStatus == MatchStatus.playing ||
+        matchStatus == MatchStatus.cancelled ||
+        matchStatusForUser == MatchStatusForUser.no_more_to_rate) return null;
+    return BottomBarMatch(matchId: matchId);
+  }
+
   final String matchId;
 
   const BottomBarMatch({Key key, this.matchId}) : super(key: key);
@@ -108,8 +118,7 @@ class BottomBarMatch extends StatelessWidget {
     var statusForUser = context.watch<MatchesState>().getMatchStatusForUser(
         matchId, context.watch<UserState>().getLoggedUserDetails());
 
-    if (match == null || statusForUser == null)
-      return Container();
+    if (match == null || statusForUser == null) return Container();
 
     return GenericBottomBar(
         child: Padding(

@@ -57,6 +57,8 @@ class MatchDetailsState extends State<MatchDetails> {
 
   LifecycleEventHandler lifecycleObserver;
 
+  MatchStatusForUser statusForUser;
+
   Future<void> refreshState([showModal = false]) async {
     if (!mounted) {
       return;
@@ -78,14 +80,11 @@ class MatchDetailsState extends State<MatchDetails> {
     UserController.getUserDetails(context, match.organizerId);
 
     if (showModal) {
-      var status = context.read<MatchesState>().getMatchStatusForUser(
+      statusForUser = context.read<MatchesState>().getMatchStatusForUser(
           matchId, context.read<UserState>().getLoggedUserDetails());
 
-      if (status == MatchStatusForUser.to_rate) {
-        bool noMoreToRate =
-            await RatePlayerBottomModal.rateAction(context, matchId);
-        if (noMoreToRate != null && noMoreToRate)
-          status = MatchStatusForUser.no_more_to_rate;
+      if (statusForUser == MatchStatusForUser.to_rate) {
+        await RatePlayerBottomModal.rateAction(context, matchId);
       }
       setState(() {});
     }
@@ -113,26 +112,14 @@ class MatchDetailsState extends State<MatchDetails> {
     var matchesState = context.watch<MatchesState>();
     var match = matchesState.getMatch(matchId);
 
-    var statusForUser = context.watch<MatchesState>().getMatchStatusForUser(
-        matchId, context.watch<UserState>().getLoggedUserDetails());
-
     var organizerView = userState.isLoggedIn() &&
         match != null &&
         match.organizerId == userState.getLoggedUserDetails().documentId;
 
     padB(Widget w) => Padding(padding: EdgeInsets.only(bottom: 16), child: w);
 
-    bool shouldNotUseBottomBar = match.status == null ||
-        match.status == MatchStatus.rated ||
-        match.status == MatchStatus.playing ||
-        match.status == MatchStatus.cancelled ||
-        statusForUser == MatchStatusForUser.no_more_to_rate;
-
-    var bottomBar = (shouldNotUseBottomBar)
-        ? null
-        : BottomBarMatch(
-            matchId: matchId,
-          );
+    var bottomBar = BottomBarMatch.getBottomBar(context,
+        matchId, match.status, statusForUser);
 
     // add padding individually since because of shadow clipping some components need margin
     var widgets = [
@@ -146,7 +133,10 @@ class MatchDetailsState extends State<MatchDetails> {
       // info box
       MatchInfo(matchId),
       // stats
-      Stats(matchId: matchId, matchDatetime: match.dateTime),
+      if (match.status == MatchStatus.rated ||
+          statusForUser == MatchStatusForUser.no_more_to_rate)
+        Stats(matchId: matchId, matchDatetime: match.dateTime,
+            matchStatusForUser: statusForUser),
       // horizontal players list
       if (match != null) PlayerList(match: match),
       if (!match.dateTime.isAfter(DateTime.now()))
@@ -701,19 +691,18 @@ class Stats extends StatelessWidget {
   final String matchId;
   final DateTime matchDatetime;
   final bool extended;
+  final MatchStatusForUser matchStatusForUser;
 
   const Stats(
-      {Key key, this.matchId, this.matchDatetime, this.extended = false})
+      {Key key, this.matchId, this.matchDatetime, this.matchStatusForUser,
+        this.extended = false})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    var matchStatusForUser = context.read<MatchesState>().getMatchStatusForUser(
-        matchId, context.read<UserState>().getLoggedUserDetails());
-
     var child;
     var showingPartial =
-        matchStatusForUser == MatchStatusForUser.no_more_to_rate && extended;
+        matchStatusForUser == null && extended;
 
     // in extended mode, we show also partial results
     if (matchStatusForUser == MatchStatusForUser.no_more_to_rate && !extended) {
@@ -784,9 +773,9 @@ class Stats extends StatelessWidget {
                             children: [
                               Expanded(
                                 child: Text(
-                                  "V=votes   S=skips        Received    Given     Vote",
-                                  textAlign: TextAlign.end,
-                                  style: TextPalette.bodyText),
+                                    "V=votes   S=skips        Received    Given     Vote",
+                                    textAlign: TextAlign.end,
+                                    style: TextPalette.bodyText),
                               )
                             ],
                           )),
@@ -852,40 +841,44 @@ class Stats extends StatelessWidget {
                             Row(
                               children: [
                                 Text(
-                                    "V: " + ratings
-                                        .getNumberOfVotes(
-                                            userDetails.documentId)
-                                        .toString(),
-                                    style: TextPalette.getBodyText(
-                                        Colors.green)),
+                                    "V: " +
+                                        ratings
+                                            .getNumberOfVotes(
+                                                userDetails.documentId)
+                                            .toString(),
+                                    style:
+                                        TextPalette.getBodyText(Colors.green)),
                                 SizedBox(
                                   width: 6,
                                 ),
                                 Text(
-                                    "S: " + ratings
-                                        .getNumberOfSkips(
-                                            userDetails.documentId)
-                                        .toString(),
+                                    "S: " +
+                                        ratings
+                                            .getNumberOfSkips(
+                                                userDetails.documentId)
+                                            .toString(),
                                     style: TextPalette.getBodyText(
                                         Palette.grey_dark)),
                                 SizedBox(
                                   width: 6,
                                 ),
                                 Text(
-                                    "V: " + ratings
-                                        .getNumberOfGivenVotes(
-                                            userDetails.documentId)
-                                        .toString(),
-                                    style: TextPalette.getBodyText(
-                                        Colors.green)),
+                                    "V: " +
+                                        ratings
+                                            .getNumberOfGivenVotes(
+                                                userDetails.documentId)
+                                            .toString(),
+                                    style:
+                                        TextPalette.getBodyText(Colors.green)),
                                 SizedBox(
                                   width: 6,
                                 ),
                                 Text(
-                                    "S: " + ratings
-                                        .getNumberOfGivenSkips(
-                                            userDetails.documentId)
-                                        .toString(),
+                                    "S: " +
+                                        ratings
+                                            .getNumberOfGivenSkips(
+                                                userDetails.documentId)
+                                            .toString(),
                                     style: TextPalette.getBodyText(
                                         Palette.grey_dark))
                               ],

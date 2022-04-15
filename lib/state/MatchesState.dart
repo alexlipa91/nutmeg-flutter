@@ -12,6 +12,7 @@ class MatchesState extends ChangeNotifier {
   // match details
   Map<String, Match> _matches;
 
+  // ratings per match
   Map<String, MatchRatings> _ratingsPerMatch = Map();
 
   void setMatches(List<Match> newMatches) {
@@ -21,6 +22,11 @@ class MatchesState extends ChangeNotifier {
   }
 
   MatchRatings getRatings(String matchId) => _ratingsPerMatch[matchId];
+
+  void addRating(String matchId, String gives, String receives, double score) {
+    _ratingsPerMatch[matchId].add(receives, gives, score.toInt());
+    notifyListeners();
+  }
 
   List<Match> getMatches() {
     if (_matches == null) {
