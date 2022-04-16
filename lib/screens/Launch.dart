@@ -74,11 +74,6 @@ void main() {
                 page: () => AvailableMatches(),
                 transition: Transition.native),
             GetPage(
-                name: '/matchNoTransition/:matchId',
-                transition: Transition.native,
-                transitionDuration: Duration(seconds: 0),
-                page: () => MatchDetails()),
-            GetPage(
                 name: '/match/:matchId',
                 transition: Transition.native,
                 page: () => MatchDetails()),

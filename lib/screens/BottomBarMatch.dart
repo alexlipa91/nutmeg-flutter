@@ -13,7 +13,10 @@ import '../state/MatchesState.dart';
 
 class BottomBarMatch extends StatelessWidget {
   static BottomBarMatch getBottomBar(BuildContext context, String matchId,
-      MatchStatus matchStatus, MatchStatusForUser matchStatusForUser) {
+      MatchStatus matchStatus) {
+    var matchStatusForUser = context.read<MatchesState>().getMatchStatusForUser(matchId,
+        context.read<UserState>().getLoggedUserDetails());
+
     if (matchStatus == null ||
         matchStatus == MatchStatus.rated ||
         matchStatus == MatchStatus.playing ||
@@ -40,6 +43,7 @@ class BottomBarMatch extends StatelessWidget {
       throw Exception("Unexpected");
     }
     if (match.status == MatchStatus.to_rate) {
+      print(matchStatusForUser);
       if (matchStatusForUser == MatchStatusForUser.to_rate) {
         return "Rate Players";
       }

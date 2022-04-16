@@ -70,11 +70,7 @@ class LaunchController {
     if (message.data.containsKey("event")) {
       var event = message.data["event"];
       if (event == "potm") {
-        if (context.read<UserState>().isLoggedIn()) {
-          goToPotmPage(context, message.data["match_id"]);
-        } else {
           goToMatchPage(message.data["match_id"]);
-        }
       }
     } else {
       await goToMatchPage(message.data["match_id"]);
@@ -110,13 +106,6 @@ class LaunchController {
         print(e.message);
       });
     }
-  }
-
-  static Future<void> goToPotmPage(BuildContext context, String matchId) async {
-    await MatchesController.refresh(context, matchId);
-    Get.offAndToNamed("/home");
-    Get.toNamed("/match/" + matchId);
-    await Get.toNamed("/potm");
   }
 
   static Future<void> goToMatchPage(String matchId) async {

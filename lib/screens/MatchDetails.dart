@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -24,6 +25,7 @@ import 'package:nutmeg/widgets/PageTemplate.dart';
 import 'package:nutmeg/widgets/Section.dart';
 import 'package:provider/provider.dart';
 import 'package:readmore/readmore.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:skeletons/skeletons.dart';
 
 import '../state/LoadOnceState.dart';
@@ -57,8 +59,6 @@ class MatchDetailsState extends State<MatchDetails> {
 
   LifecycleEventHandler lifecycleObserver;
 
-  MatchStatusForUser statusForUser;
-
   Future<void> refreshState([showModal = false]) async {
     if (!mounted) {
       return;
@@ -79,6 +79,9 @@ class MatchDetailsState extends State<MatchDetails> {
     // get organizer details
     UserController.getUserDetails(context, match.organizerId);
 
+    var statusForUser = context.read<MatchesState>().getMatchStatusForUser(matchId,
+        context.read<UserState>().getLoggedUserDetails());
+
     if (showModal) {
       statusForUser = context.read<MatchesState>().getMatchStatusForUser(
           matchId, context.read<UserState>().getLoggedUserDetails());
@@ -97,6 +100,21 @@ class MatchDetailsState extends State<MatchDetails> {
     lifecycleObserver = LifecycleEventHandler(resumeCallBack: () async {
       refreshState();
     });
+    // show potm
+    SchedulerBinding.instance.addPostFrameCallback((_) async {
+      var prefs = await SharedPreferences.getInstance();
+      var currentUser = context.read<UserState>().currentUserId;
+      var preferencePath = "potm_screen_showed_" + matchId + "_"
+          + currentUser;
+      var alreadyShown = prefs.getBool(preferencePath) ?? false;
+
+      if (context.read<UserState>().isLoggedIn()
+          && context.read<MatchesState>().getMatch(matchId).getPotms().contains(currentUser)
+          && !alreadyShown) {
+        Get.toNamed("/potm/" + currentUser);
+        prefs.setBool(preferencePath, true);
+      }
+    });
     WidgetsBinding.instance.addObserver(lifecycleObserver);
   }
 
@@ -111,6 +129,8 @@ class MatchDetailsState extends State<MatchDetails> {
     var userState = context.watch<UserState>();
     var matchesState = context.watch<MatchesState>();
     var match = matchesState.getMatch(matchId);
+    var statusForUser = context.read<MatchesState>().getMatchStatusForUser(matchId,
+        context.read<UserState>().getLoggedUserDetails());
 
     var organizerView = userState.isLoggedIn() &&
         match != null &&
@@ -119,7 +139,7 @@ class MatchDetailsState extends State<MatchDetails> {
     padB(Widget w) => Padding(padding: EdgeInsets.only(bottom: 16), child: w);
 
     var bottomBar = BottomBarMatch.getBottomBar(context,
-        matchId, match.status, statusForUser);
+        matchId, match.status);
 
     // add padding individually since because of shadow clipping some components need margin
     var widgets = [
