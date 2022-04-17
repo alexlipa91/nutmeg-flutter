@@ -98,3 +98,5 @@ Future<Tuple2<Version, String>> getVersion() async {
 }
 
 bool shouldDisableRatings = false;
+
+bool removeCreditsFunctionality = false;

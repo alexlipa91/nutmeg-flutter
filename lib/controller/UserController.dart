@@ -215,8 +215,9 @@ class UserController {
 
     var resp = await apiClient.callFunction("get_user", {"id": uid});
 
-    var ud = (resp == null) ? null : UserDetails.fromJson(resp, uid);
-    if (ud != null) userState.setUserDetail(ud);
+    var ud = (resp == null) ? UserDetails.empty(uid)
+        : UserDetails.fromJson(resp, uid);
+    userState.setUserDetail(ud);
 
     return ud;
   }

@@ -21,7 +21,10 @@ class UserAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     if (userDetails == null)
       return SkeletonAvatar(
-        style: SkeletonAvatarStyle(shape: BoxShape.circle, height: radius * 2),
+        style: SkeletonAvatarStyle(
+            width: radius * 2,
+            padding: EdgeInsets.zero,
+            shape: BoxShape.circle, height: radius * 2),
       );
 
     var photoUrl = userDetails?.getPhotoUrl();

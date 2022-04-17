@@ -41,7 +41,7 @@ class LeaveButton extends StatelessWidget {
                         ))
                   ],
                 ),
-              ), action: Row(children: [Expanded(child: ConfirmLeaveMatchButton(match: match))])
+              ), action: Row(children: [Expanded(child: ConfirmLeaveMatchButtonCredits(match: match))])
               ).show(context);
         },
         Secondary(),
@@ -56,10 +56,10 @@ class LeaveButtonDisabled extends StatelessWidget {
   );
 }
 
-class ConfirmLeaveMatchButton extends StatelessWidget {
+class ConfirmLeaveMatchButtonCredits extends StatelessWidget {
   final Match match;
 
-  const ConfirmLeaveMatchButton({Key key, this.match}) : super(key: key);
+  const ConfirmLeaveMatchButtonCredits({Key key, this.match}) : super(key: key);
 
   @override
   Widget build(BuildContext context) => GenericButtonWithLoader(
