@@ -67,8 +67,6 @@ class DynamicLinks {
   }
 }
 
-var isTestPaymentMode = false;
-
 DateTime getBeginningOfTheWeek(DateTime dateTime) {
   var currentDay = dateTime.weekday;
   return DateUtils.dateOnly(dateTime.subtract(Duration(days: currentDay - 1)));
@@ -97,6 +95,9 @@ Future<Tuple2<Version, String>> getVersion() async {
       packageInfo.buildNumber);
 }
 
-bool shouldDisableRatings = false;
+class ConfigsUtils {
 
-bool removeCreditsFunctionality = false;
+  static bool removeCreditsFunctionality() =>
+      true;
+      // FirebaseRemoteConfig.instance.getBool("remove_credit_functionality");
+}

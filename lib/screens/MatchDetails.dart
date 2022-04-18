@@ -166,7 +166,7 @@ class MatchDetailsState extends State<MatchDetails> {
               children: [
                 RuleCard(
                     "Payment Policy",
-                    removeCreditsFunctionality ?
+                    ConfigsUtils.removeCreditsFunctionality() ?
                     "If you leave the match or the match is canceled you will get a refund on the payment method you used to pay.\n\n"
                             "If you don’t show up you won’t get a refund." :
                     "If you leave the match you will get a refund in credits that you can use for other Nutmeg matches.\n\n" +
@@ -823,8 +823,6 @@ class Stats extends StatelessWidget {
                               children: [
                                 Builder(builder: (context) {
                                   // fixme text overflow
-                                  print(user);
-                                  print(userDetails);
                                   if (userDetails == null)
                                     return Skeletons.mText;
 

@@ -10,7 +10,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
-import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/model/UserDetails.dart';
 import 'package:provider/provider.dart';
 import 'package:tuple/tuple.dart';
@@ -121,13 +120,13 @@ class LaunchController {
     trace.start();
 
     FirebaseRemoteConfig firebaseRemoteConfig = FirebaseRemoteConfig.instance;
-    firebaseRemoteConfig.setConfigSettings(RemoteConfigSettings(
+    await firebaseRemoteConfig.setConfigSettings(RemoteConfigSettings(
       fetchTimeout: Duration(seconds: 5),
-      minimumFetchInterval: Duration.zero,
+      minimumFetchInterval: Duration(minutes: 1),
     ));
 
     try {
-      firebaseRemoteConfig.fetchAndActivate();
+      await firebaseRemoteConfig.fetchAndActivate();
     } catch (e, s) {
       print(e);
       print(s);

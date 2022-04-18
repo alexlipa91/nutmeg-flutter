@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:nutmeg/model/Match.dart';
 import 'package:nutmeg/state/AvailableMatchesState.dart';
+import 'package:nutmeg/state/UserState.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:provider/provider.dart';
@@ -84,7 +85,7 @@ class AdminAvailableMatches extends StatelessWidget {
           body: Column(
             children: [
               GenericButtonWithLoader("Player of the Match", (ctx) {
-                Get.toNamed("/potm");
+                Get.toNamed("/potm/" + context.read<UserState>().currentUserId);
               }, Primary()),
               GenericButtonWithLoader("After Login details", (ctx) async {
                 var n = await Get.toNamed("/login/enterDetails");

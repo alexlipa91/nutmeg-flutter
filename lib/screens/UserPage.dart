@@ -154,8 +154,7 @@ class UserPageState extends State<UserPage> {
           )
         ]),
       ),
-      if (!shouldDisableRatings)
-        Padding(
+      Padding(
           padding: EdgeInsets.only(top: 20),
           child:
               Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
@@ -220,8 +219,7 @@ class UserPageState extends State<UserPage> {
             ],
           )),
         ),
-      if (!shouldDisableRatings)
-        Section(
+      Section(
           title: "USEFUL LINK",
           body: InfoContainer(
               child: Column(children: [
