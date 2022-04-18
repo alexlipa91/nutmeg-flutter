@@ -1,1 +1,1 @@
-Fix ratings flow
+Various UI improvements
