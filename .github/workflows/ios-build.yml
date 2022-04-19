@@ -1,7 +1,11 @@
 name: iOS Build
 
 on:
-  push
+  push:
+    branches:
+      - master
+    tags-ignore:
+      - "**"
 
 jobs:
   build_ios:
