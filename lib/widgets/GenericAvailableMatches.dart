@@ -15,9 +15,9 @@ import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/AppBar.dart';
 import 'package:nutmeg/widgets/Avatar.dart';
 import 'package:nutmeg/widgets/Containers.dart';
+import 'package:nutmeg/widgets/RefresherWithObserverWidget.dart';
 import 'package:nutmeg/widgets/Texts.dart';
 import 'package:provider/provider.dart';
-import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 import '../state/AvailableMatchesState.dart';
 import '../state/LoadOnceState.dart';
@@ -31,7 +31,6 @@ class GenericAvailableMatchesList extends StatefulWidget {
   final List<String> tabNames;
   final List<Widget> tabContent;
   final Widget emptyStateWidget;
-  final RefreshController refreshController;
   final FloatingActionButton floatingActionButton;
   final Widget titleWidget;
 
@@ -40,7 +39,6 @@ class GenericAvailableMatchesList extends StatefulWidget {
       this.tabNames,
       this.tabContent,
       this.emptyStateWidget,
-      this.refreshController,
       this.floatingActionButton,
       this.titleWidget);
 
@@ -50,25 +48,6 @@ class GenericAvailableMatchesList extends StatefulWidget {
 
 class GenericAvailableMatchesListState
     extends State<GenericAvailableMatchesList> {
-  LifecycleEventHandler lifeCycleObserver;
-
-  @override
-  void initState() {
-    super.initState();
-    refreshPageState(context);
-    lifeCycleObserver = LifecycleEventHandler(resumeCallBack: () async {
-      if (mounted) {
-        widget.refreshController.requestRefresh();
-      }
-    });
-    WidgetsBinding.instance.addObserver(lifeCycleObserver);
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    WidgetsBinding.instance.removeObserver(lifeCycleObserver);
-  }
 
   Future<void> refreshPageState(BuildContext context) async {
     var matches = await MatchesController.refreshAll(context);
@@ -76,7 +55,6 @@ class GenericAvailableMatchesListState
         .map((e) => e.sportCenterId)
         .toSet()
         .map((s) => SportCentersController.refresh(context, s)));
-    widget.refreshController.refreshCompleted();
   }
 
   Widget waitingWidget() {
@@ -168,14 +146,7 @@ class GenericAvailableMatchesListState
         bottom: false,
         child: Scaffold(
           backgroundColor: Palette.grey_lightest,
-          body: SmartRefresher(
-            enablePullDown: true,
-            enablePullUp: false,
-            header: MaterialClassicHeader(),
-            controller: widget.refreshController,
-            onRefresh: () async {
-              await refreshPageState(context);
-            },
+          body: RefresherWithObserverWidget(
             child: ListView.builder(
                 itemBuilder: (c, i) {
                   var core = (widget.tabContent[selected] == null)
@@ -186,16 +157,16 @@ class GenericAvailableMatchesListState
                     top,
                     Padding(
                         padding:
-                            EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0),
+                        EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0),
                         child: core),
                     SizedBox(
                         height:
-                            max(16.0, MediaQuery.of(context).padding.bottom))
+                        max(16.0, MediaQuery.of(context).padding.bottom))
                   ]);
                   return list[i];
                 },
                 itemCount: 3),
-          ),
+            refreshState: () => refreshPageState(context)),
           floatingActionButton: widget.floatingActionButton,
         ),
       ),
@@ -209,12 +180,11 @@ class GenericMatchInfo extends StatelessWidget {
   final String matchId;
   final double topMargin;
   final Function onTap;
-  final RefreshController refreshController;
 
-  GenericMatchInfo(this.matchId, this.onTap, this.refreshController)
+  GenericMatchInfo(this.matchId, this.onTap)
       : topMargin = 10;
 
-  GenericMatchInfo.first(this.matchId, this.onTap, this.refreshController)
+  GenericMatchInfo.first(this.matchId, this.onTap)
       : topMargin = 0;
 
   @override
@@ -287,7 +257,7 @@ class GenericMatchInfo extends StatelessWidget {
                     ],
                   ))),
         ),
-        onTap: () => onTap(context, match.documentId, refreshController));
+        onTap: () => onTap(context, match.documentId));
   }
 
   Widget applyBadges(BuildContext context, Match match, Widget w) {
@@ -360,12 +330,11 @@ class GenericMatchInfoPast extends StatelessWidget {
   final String matchId;
   final double topMargin;
   final Function onTap;
-  final RefreshController refreshController;
 
-  GenericMatchInfoPast(this.matchId, this.onTap, this.refreshController)
+  GenericMatchInfoPast(this.matchId, this.onTap)
       : topMargin = 10;
 
-  GenericMatchInfoPast.first(this.matchId, this.onTap, this.refreshController)
+  GenericMatchInfoPast.first(this.matchId, this.onTap)
       : topMargin = 0;
 
   @override
@@ -421,7 +390,7 @@ class GenericMatchInfoPast extends StatelessWidget {
                   BadgePosition.bottomEnd(bottom: 8, end: 8))
               : child,
         ),
-        onTap: () => onTap(context, match.documentId, refreshController));
+        onTap: () => onTap(context, match.documentId));
   }
 }
 
@@ -468,30 +437,5 @@ class WeekSeparatorWidget extends StatelessWidget {
       return "NEXT WEEK";
     }
     return "IN MORE THAN TWO WEEKS";
-  }
-}
-
-class LifecycleEventHandler extends WidgetsBindingObserver {
-  final AsyncCallback resumeCallBack;
-
-  LifecycleEventHandler({
-    this.resumeCallBack,
-  });
-
-  @override
-  Future<void> didChangeAppLifecycleState(AppLifecycleState state) async {
-    switch (state) {
-      case AppLifecycleState.resumed:
-        if (resumeCallBack != null) {
-          await resumeCallBack();
-        }
-        break;
-      case AppLifecycleState.inactive:
-        break;
-      case AppLifecycleState.paused:
-        break;
-      case AppLifecycleState.detached:
-        break;
-    }
   }
 }

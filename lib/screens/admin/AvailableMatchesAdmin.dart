@@ -2,13 +2,13 @@ import "package:collection/collection.dart";
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
+import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/model/Match.dart';
 import 'package:nutmeg/state/AvailableMatchesState.dart';
 import 'package:nutmeg/state/UserState.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:provider/provider.dart';
-import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 import '../../state/MatchesState.dart';
 import '../../utils/UiUtils.dart';
@@ -17,12 +17,10 @@ import '../../widgets/Section.dart';
 
 // main widget
 class AdminAvailableMatches extends StatelessWidget {
-  final RefreshController refreshController = RefreshController();
 
-  Future<void> onTap(BuildContext context, String matchId,
-      RefreshController refreshController) async {
+  Future<void> onTap(BuildContext context, String matchId) async {
     await Get.toNamed("/editMatch/" + matchId);
-    await refreshController.requestRefresh();
+    await MatchesController.refresh(context, matchId);
   }
 
   //
@@ -49,10 +47,10 @@ class AdminAvailableMatches extends StatelessWidget {
     matches.forEachIndexed((index, match) {
       if (index == 0) {
         result.add(
-            GenericMatchInfo.first(match.documentId, onTap, refreshController));
+            GenericMatchInfo.first(match.documentId, onTap));
       } else {
         result
-            .add(GenericMatchInfo(match.documentId, onTap, refreshController));
+            .add(GenericMatchInfo(match.documentId, onTap));
       }
     });
 
@@ -119,7 +117,6 @@ class AdminAvailableMatches extends StatelessWidget {
               getExtraWidgets(context)
             ].toList(),
             getEmptyStateWidget(context),
-            refreshController,
             null,
             Column(
               children: [

@@ -32,7 +32,6 @@ import '../state/LoadOnceState.dart';
 import '../state/MatchesState.dart';
 import '../state/UserState.dart';
 import '../widgets/Buttons.dart' as buttons;
-import '../widgets/GenericAvailableMatches.dart';
 import '../widgets/ModalBottomSheet.dart';
 import '../widgets/PlayerBottomModal.dart';
 import '../widgets/Skeletons.dart';
@@ -56,8 +55,6 @@ class MatchDetailsState extends State<MatchDetails> {
   final String matchId;
 
   MatchDetailsState(this.matchId);
-
-  LifecycleEventHandler lifecycleObserver;
 
   Future<void> refreshState([showModal = false]) async {
     if (!mounted) {
@@ -97,9 +94,6 @@ class MatchDetailsState extends State<MatchDetails> {
   void initState() {
     super.initState();
     refreshState(true);
-    lifecycleObserver = LifecycleEventHandler(resumeCallBack: () async {
-      refreshState();
-    });
     // show potm
     SchedulerBinding.instance.addPostFrameCallback((_) async {
       var prefs = await SharedPreferences.getInstance();
@@ -115,13 +109,13 @@ class MatchDetailsState extends State<MatchDetails> {
         prefs.setBool(preferencePath, true);
       }
     });
-    WidgetsBinding.instance.addObserver(lifecycleObserver);
+    // WidgetsBinding.instance.addObserver(lifecycleObserver);
   }
 
   @override
   void dispose() {
     super.dispose();
-    WidgetsBinding.instance.removeObserver(lifecycleObserver);
+    // WidgetsBinding.instance.removeObserver(lifecycleObserver);
   }
 
   @override

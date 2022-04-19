@@ -2,6 +2,7 @@ import "package:collection/collection.dart";
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
+import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/model/Match.dart';
 import 'package:nutmeg/state/LoadOnceState.dart';
 import 'package:nutmeg/utils/Utils.dart';
@@ -9,7 +10,6 @@ import 'package:nutmeg/widgets/GenericAvailableMatches.dart';
 import 'package:nutmeg/widgets/Section.dart';
 import 'package:nutmeg/widgets/Texts.dart';
 import 'package:provider/provider.dart';
-import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 import '../state/AvailableMatchesState.dart';
 import '../state/MatchesState.dart';
@@ -19,16 +19,13 @@ import '../widgets/GenericAvailableMatches.dart';
 
 // main widget
 class AvailableMatches extends StatelessWidget {
-  final RefreshController refreshController = RefreshController();
 
-  Future<void> onTap(BuildContext context, String matchId,
-      RefreshController refreshController) async {
+  Future<void> onTap(BuildContext context, String matchId) async {
     Get.toNamed("/match/" + matchId);
-    await refreshController.requestRefresh();
+    MatchesController.refresh(context, matchId);
   }
 
-  Widget pastWidgets(
-      BuildContext context, RefreshController refreshController) {
+  Widget pastWidgets(BuildContext context) {
     var state = context.watch<MatchesState>();
     var userState = context.watch<UserState>();
     var loadOnceState = context.watch<LoadOnceState>();
@@ -57,11 +54,10 @@ class AvailableMatches extends StatelessWidget {
     if (matches.isNotEmpty) {
       matches.sortedBy((e) => e.dateTime).reversed.forEachIndexed((index, m) {
         if (index == 0) {
-          widgets.add(GenericMatchInfoPast.first(
-              m.documentId, onTap, refreshController));
+          widgets.add(GenericMatchInfoPast.first(m.documentId, onTap));
         } else {
           widgets.add(
-              GenericMatchInfoPast(m.documentId, onTap, refreshController));
+              GenericMatchInfoPast(m.documentId, onTap));
         }
       });
     }
@@ -71,8 +67,7 @@ class AvailableMatches extends StatelessWidget {
     return Column(children: widgets);
   }
 
-  Widget goingWidgets(
-      BuildContext context, RefreshController refreshController) {
+  Widget goingWidgets(BuildContext context) {
     var state = context.watch<MatchesState>();
     var userState = context.watch<UserState>();
     var loadOnceState = context.watch<LoadOnceState>();
@@ -102,9 +97,9 @@ class AvailableMatches extends StatelessWidget {
       matches.sortedBy((e) => e.dateTime).forEachIndexed((index, m) {
         if (index == 0) {
           widgets.add(
-              GenericMatchInfo.first(m.documentId, onTap, refreshController));
+              GenericMatchInfo.first(m.documentId, onTap));
         } else {
-          widgets.add(GenericMatchInfo(m.documentId, onTap, refreshController));
+          widgets.add(GenericMatchInfo(m.documentId, onTap));
         }
       });
     }
@@ -114,8 +109,7 @@ class AvailableMatches extends StatelessWidget {
     return Column(children: widgets);
   }
 
-  Widget upcomingWidgets(
-      BuildContext context, RefreshController refreshController) {
+  Widget upcomingWidgets(BuildContext context) {
     var state = context.watch<MatchesState>();
     var userState = context.watch<UserState>();
     var loadOnceState = context.watch<LoadOnceState>();
@@ -164,9 +158,9 @@ class AvailableMatches extends StatelessWidget {
             e.value.sortedBy((e) => e.dateTime).mapIndexed((index, match) {
           if (index == 0) {
             return GenericMatchInfo.first(
-                match.documentId, onTap, refreshController);
+                match.documentId, onTap);
           }
-          return GenericMatchInfo(match.documentId, onTap, refreshController);
+          return GenericMatchInfo(match.documentId, onTap);
         });
 
         var section;
@@ -196,8 +190,7 @@ class AvailableMatches extends StatelessWidget {
     return Column(children: result);
   }
 
-  Widget getMyMatchesWidgets(
-      BuildContext context, RefreshController refreshController) {
+  Widget getMyMatchesWidgets(BuildContext context) {
     var state = context.read<MatchesState>();
     var userState = context.read<UserState>();
 
@@ -221,9 +214,9 @@ class AvailableMatches extends StatelessWidget {
       matches.sortedBy((e) => e.dateTime).reversed.forEachIndexed((index, m) {
         if (index == 0) {
           widgets.add(
-              GenericMatchInfo.first(m.documentId, onTap, refreshController));
+              GenericMatchInfo.first(m.documentId, onTap));
         } else {
-          widgets.add(GenericMatchInfo(m.documentId, onTap, refreshController));
+          widgets.add(GenericMatchInfo(m.documentId, onTap));
         }
       });
     }
@@ -270,13 +263,12 @@ class AvailableMatches extends StatelessWidget {
               Palette.primary,
               ["UPCOMING", "GOING", "PAST", if (isAdmin) "MY MATCHES"].toList(),
               [
-                upcomingWidgets(context, refreshController),
-                goingWidgets(context, refreshController),
-                pastWidgets(context, refreshController),
-                if (isAdmin) getMyMatchesWidgets(context, refreshController)
+                upcomingWidgets(context),
+                goingWidgets(context),
+                pastWidgets(context),
+                if (isAdmin) getMyMatchesWidgets(context)
               ].toList(),
               getEmptyStateWidget(context),
-              refreshController,
               context.watch<AvailableMatchesUiState>().current == 3
                   ? FloatingActionButton(
                       backgroundColor: Palette.primary,

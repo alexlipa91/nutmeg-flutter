@@ -22,7 +22,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:version/version.dart';
 
 import '../state/UserState.dart';
-import '../widgets/GenericAvailableMatches.dart';
+
 
 class UserPage extends StatefulWidget {
   @override
@@ -36,17 +36,6 @@ class UserPageState extends State<UserPage> {
   final ImageCropper cropper = ImageCropper();
 
   bool loadingPicture = false;
-
-  LifecycleEventHandler lifecycleObserver;
-
-  @override
-  void initState() {
-    super.initState();
-    lifecycleObserver = LifecycleEventHandler(resumeCallBack: () async {
-      refreshPageState();
-    });
-    refreshPageState();
-  }
 
   Future<void> refreshPageState() async {
     await UserController.refreshCurrentUser(context);

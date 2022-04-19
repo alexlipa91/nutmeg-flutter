@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:logger/logger.dart';
 import 'package:nutmeg/controller/LaunchController.dart';
 import 'package:nutmeg/screens/AvailableMatches.dart';
 import 'package:nutmeg/screens/CreateMatch.dart';
@@ -28,6 +29,7 @@ import 'admin/AvailableMatchesAdmin.dart';
 final navigatorKey = GlobalKey<NavigatorState>();
 
 void main() {
+  Logger.level = Level.error;
   WidgetsFlutterBinding.ensureInitialized(); //imp line need to be added first
 
   if (!kIsWeb) {
