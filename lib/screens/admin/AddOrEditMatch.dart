@@ -216,7 +216,7 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                         await MatchesController.cancelMatch(match.documentId);
                         GenericInfoModal(
                                 title:
-                                    "Successfully closed rating round for the match")
+                                    "Successfully canceled match")
                             .show(context);
                       } catch (e, stack) {
                         print(e);
