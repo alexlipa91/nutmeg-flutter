@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:nutmeg/Exceptions.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
@@ -49,6 +50,7 @@ class CreateMatchState extends State<CreateMatch> {
   final TextEditingController priceController = TextEditingController();
   RangeValues numberOfPeopleRangeValues = RangeValues(8, 10);
   bool isTest = false;
+  int repeatsForWeeks = 0;
 
   final dateFormat = DateFormat("dd-MM-yyyy");
   final regexPrice = new RegExp("\\d+(\\.\\d{1,2})?");
@@ -94,7 +96,8 @@ class CreateMatchState extends State<CreateMatch> {
     var widgets = [
       Text("New Match", style: TextPalette.h1Default),
       Section(
-        title: "GENERAL",
+        titleType: "big",
+        title: "General",
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -122,8 +125,10 @@ class CreateMatchState extends State<CreateMatch> {
                       lastDate: DateTime(2035),
                       context: context,
                     );
-                    if (d != null)
+                    if (d != null) {
                       dateEditingController.text = dateFormat.format(d);
+                      setState(() {});
+                    }
                   },
                 )),
               ],
@@ -229,7 +234,7 @@ class CreateMatchState extends State<CreateMatch> {
                       // fixme why we need this?
                       suffixIconConstraints:
                           BoxConstraints.expand(width: 50.0, height: 30.0),
-                      labelText: "Repeat Weekly",
+                      labelText: "Repeat",
                       labelStyle: TextPalette.bodyText,
                       contentPadding: EdgeInsets.symmetric(horizontal: 16.0),
                       filled: true,
@@ -238,62 +243,49 @@ class CreateMatchState extends State<CreateMatch> {
                       border: InputBorder.none,
                     ),
                     onTap: () async {
-                      var choices = ["Don't repeat", "2", "3", "4", "5", "6"];
+                      var weeks = [0, 2, 4, 6, 8, 10];
+                      var choices = weeks.map((e) {
+                        if (e == 0)
+                          return "Does not repeat";
+                        else
+                          return "Weekly for " + e.toString() + " weeks";
+                      }).toList();
 
-                      var i = await ModalBottomSheet.showNutmegModalBottomSheet(
-                          context,
-                          Padding(
-                            padding:
-                                EdgeInsets.only(left: 16, right: 16, top: 16),
-                            child: ListView.builder(
-                                shrinkWrap: true,
-                                scrollDirection: Axis.vertical,
-                                itemCount: choices.length,
-                                itemBuilder: (context, i) => InkWell(
-                                      onTap: () => Navigator.of(context).pop(i),
-                                      child: Padding(
-                                        padding: EdgeInsets.only(
-                                            top: (i == 0) ? 0 : 16.0),
-                                        child: InfoContainer(
-                                            backgroundColor:
-                                                Palette.grey_lightest,
-                                            child: Text(choices[i].toString(),
-                                                style: TextPalette.bodyText)),
-                                      ),
-                                    )),
-                          ));
+                      int i = await showMultipleChoiceSheet("Repeat", choices);
+
                       if (i != null) {
                         repeatWeeklyEditingController.text =
                             choices[i].toString();
-                        setState(() {});
+                        setState(() {
+                          repeatsForWeeks = weeks[i];
+                        });
                       }
                     },
                   ),
                 ),
               ],
             ),
-            SizedBox(
-              height: 16.0,
-            ),
-            if (repeatWeeklyEditingController.text.isNotEmpty &&
-                repeatWeeklyEditingController.text != "Don't repeat" &&
+            if (repeatsForWeeks != 0 &&
                 dateEditingController.text.isNotEmpty)
-              Text(
-                "Last match on " +
-                    dateFormat.format(dateFormat
-                        .parse(dateEditingController.text)
-                        .add(Duration(
-                            days: 7 *
-                                int.parse(
-                                    repeatWeeklyEditingController.text)))),
-                style: TextPalette.bodyText,
-                textAlign: TextAlign.left,
+              Padding(
+                padding: EdgeInsets.only(top: 16),
+                child: Text(
+                  "Last match on " +
+                      dateFormat.format(dateFormat
+                          .parse(dateEditingController.text)
+                          .add(Duration(
+                              days: 7 *
+                                  repeatsForWeeks))),
+                  style: TextPalette.bodyText,
+                  textAlign: TextAlign.left,
+                ),
               )
           ],
         ),
       ),
       Section(
-        title: "COURT",
+        titleType: "big",
+        title: "Court",
         body: Column(
           children: [
             Row(
@@ -324,28 +316,9 @@ class CreateMatchState extends State<CreateMatch> {
                     var sportCenters =
                         context.read<LoadOnceState>().getSportCenters();
 
-                    var i = await ModalBottomSheet.showNutmegModalBottomSheet(
-                        context,
-                        Padding(
-                          padding:
-                              EdgeInsets.only(left: 16, right: 16, top: 16),
-                          child: ListView.builder(
-                              shrinkWrap: true,
-                              scrollDirection: Axis.vertical,
-                              itemCount: sportCenters.length,
-                              itemBuilder: (context, i) => InkWell(
-                                    onTap: () => Navigator.of(context).pop(i),
-                                    child: Padding(
-                                      padding: EdgeInsets.only(
-                                          top: (i == 0) ? 0 : 16.0),
-                                      child: InfoContainer(
-                                          backgroundColor:
-                                              Palette.grey_lightest,
-                                          child: Text(sportCenters[i].name,
-                                              style: TextPalette.bodyText)),
-                                    ),
-                                  )),
-                        ));
+                    var i = await showMultipleChoiceSheet("Location",
+                        sportCenters.map((e) => e.name).toList());
+
                     if (i != null) {
                       sportCenterEditingController.text = sportCenters[i].name;
                       setState(() {
@@ -419,7 +392,8 @@ class CreateMatchState extends State<CreateMatch> {
         ),
       ),
       Section(
-        title: "PRICE",
+        title: "Price",
+        titleType: "big",
         body: Column(
           children: [
             Row(
@@ -462,7 +436,8 @@ class CreateMatchState extends State<CreateMatch> {
         ),
       ),
       Section(
-        title: "NUMBER OF PLAYERS",
+        title: "Number of Players",
+        titleType: "big",
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -506,33 +481,39 @@ class CreateMatchState extends State<CreateMatch> {
                 style: TextPalette.bodyText),
             SizedBox(
               height: 8.0,
-            ),
-            Builder(builder: (BuildContext context) {
+            )
+          ],
+        ),
+      ),
+      Section(
+        title: "Payment",
+        titleType: "big",
+        body: Row(children: [
+          Text("You will get", style: TextPalette.bodyText),
+          Spacer(),
+          Builder(
+            builder: (BuildContext buildContext) {
               if (priceController.text.isEmpty) {
                 return Container();
               }
               var price = double.parse(priceController.text);
-
-              return Row(children: [
-                Text("You will earn between", style: TextPalette.bodyText),
-                Spacer(),
-                Text(
-                    "€ " +
-                        (price * numberOfPeopleRangeValues.start)
-                            .toStringAsFixed(2) +
-                        " - " +
-                        "€ " +
-                        (price * numberOfPeopleRangeValues.end)
-                            .toStringAsFixed(2),
-                    style: TextPalette.h3)
-              ]);
-            })
-          ],
-        ),
+              return Text(
+                  "€ " +
+                      (price * numberOfPeopleRangeValues.start)
+                          .toStringAsFixed(2) +
+                      " - " +
+                      "€ " +
+                      (price * numberOfPeopleRangeValues.end)
+                          .toStringAsFixed(2),
+                  style: TextPalette.h3);
+            }
+          )
+        ]),
       ),
       if (context.read<UserState>().getLoggedUserDetails().isAdmin)
         Section(
-          title: "ADMIN",
+          title: "Admin",
+          titleType: "big",
           body: Row(
             children: [
               Text("Is a test match?", style: TextPalette.bodyText),
@@ -658,4 +639,32 @@ class CreateMatchState extends State<CreateMatch> {
 
   bool isAfter(TimeOfDay a, TimeOfDay b) =>
       (a.hour * 60 + a.minute) > (b.hour * 60 + b.minute);
+
+  Future<int> showMultipleChoiceSheet(String title, List<String> choices) async {
+    int i = await ModalBottomSheet.showNutmegModalBottomSheet(
+        context,
+        Padding(
+          padding:
+          EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: TextPalette.h2,),
+              ListView.builder(
+                shrinkWrap: true,
+                scrollDirection: Axis.vertical,
+                itemCount: choices.length,
+                itemBuilder: (context, i) => InkWell(
+                  onTap: () => Navigator.of(context).pop(i),
+                  child: Padding(
+                    padding: EdgeInsets.only(top: 16.0),
+                    child: Text(choices[i].toString(),
+                        style: GoogleFonts.roboto(color: Palette.grey_dark,
+                            fontSize: 16, fontWeight: FontWeight.w400, height: 1.6)),
+                  ),
+                ))
+          ],)
+        ));
+    return i;
+  }
 }
