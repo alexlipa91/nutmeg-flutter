@@ -13,8 +13,8 @@ class UserDetails {
   Map<String, double> scoreMatches;
   List<String> manOfTheMatch;
 
-  bool _isConnectedAccountComplete;
-  bool _isConnectedAccountTestComplete;
+  String stripeConnectedAccountId;
+  String stripeConnectedAccountTestId;
 
   UserDetails.empty(this.documentId);
 
@@ -40,8 +40,8 @@ class UserDetails {
         joinedMatches = Map<String, dynamic>.from(json["joined_matches"] ?? {}).keys.toList(),
         scoreMatches = Map<String, double>.from(json["scoreMatches"] ?? {}),
         manOfTheMatch = List<String>.from(json["manOfTheMatch"] ?? []),
-        _isConnectedAccountComplete = json["isConnectedAccountComplete"] ?? null,
-        _isConnectedAccountTestComplete = json["isConnectedAccountTestComplete"] ?? null,
+        stripeConnectedAccountId = json["stripeConnectedAccountId"] ?? null,
+        stripeConnectedAccountTestId = json["stripeConnectedAccountTestId"] ?? null,
         organisedMatches = Map<String, dynamic>.from(json["organised_matches"] ?? {}).keys.toList(),
         documentId = documentId;
 
@@ -76,16 +76,10 @@ class UserDetails {
   
   bool getIsAdmin() => (isAdmin == null) ? false : isAdmin;
 
-  bool isOrganiser() {
-    return this._isConnectedAccountComplete != null
-        || this._isConnectedAccountTestComplete != null;
-  }
-
-  bool connectedAccountNeedsCompletion(isTest) {
-    var outcome =
-      isTest ?
-      (_isConnectedAccountTestComplete != null && !_isConnectedAccountTestComplete) :
-      (_isConnectedAccountComplete != null && !_isConnectedAccountComplete);
+  bool isOrganiser(isTest) {
+    var outcome = isTest ?
+    this.stripeConnectedAccountTestId != null :
+    this.stripeConnectedAccountId != null;
     return outcome;
   }
 

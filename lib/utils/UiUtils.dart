@@ -34,6 +34,7 @@ class Palette {
   static var destructive = UiUtils.fromHex("#E34D4F");
   static var green = Colors.green.shade700;
   static var accent = UiUtils.fromHex("#FD9F41");
+  static var warning = UiUtils.fromHex("#FFEDAF");
 }
 
 class TextPalette {

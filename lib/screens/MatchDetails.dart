@@ -76,6 +76,9 @@ class MatchDetailsState extends State<MatchDetails> {
     // get organizer details
     UserController.getUserDetails(context, match.organizerId);
 
+    // fetch on-boarding url if needed
+    context.read<UserState>().fetchOnboardingUrl(match.isTest);
+
     var statusForUser = context.read<MatchesState>().getMatchStatusForUser(matchId,
         context.read<UserState>().getLoggedUserDetails());
 
@@ -138,12 +141,13 @@ class MatchDetailsState extends State<MatchDetails> {
     // add padding individually since because of shadow clipping some components need margin
     var widgets = [
       // title
-      padB(Title(matchId)),
       if (organizerView &&
-          userState
-              .getLoggedUserDetails()
-              .connectedAccountNeedsCompletion(match.isTest))
+          userState.getOnboardingUrl(match.isTest) != null)
         padB(CompleteOrganiserAccountWidget(isTest: match.isTest)),
+      padB(Title(matchId)),
+      if (match.isTest)
+        padB(InfoContainer(backgroundColor: Palette.accent,
+            child: SelectableText("Test match: " + matchId, style: TextPalette.getBodyText(Palette.black),))),
       // info box
       MatchInfo(matchId),
       // stats
@@ -281,8 +285,7 @@ class Title extends StatelessWidget {
       return skeleton;
     }
 
-    var title =
-        (match.isTest) ? match.documentId : sportCenter.name + " - " + sport;
+    var title = sportCenter.name + " - " + sport;
 
     return Text(title,
         style: TextPalette.h1Default, textAlign: TextAlign.start);

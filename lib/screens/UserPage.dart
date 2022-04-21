@@ -15,6 +15,7 @@ import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:nutmeg/widgets/Containers.dart';
 import 'package:nutmeg/widgets/PageTemplate.dart';
 import 'package:nutmeg/widgets/Section.dart';
+import 'package:nutmeg/widgets/WarningWidget.dart';
 import 'package:provider/provider.dart';
 import 'package:skeletons/skeletons.dart';
 import 'package:tuple/tuple.dart';
@@ -38,7 +39,15 @@ class UserPageState extends State<UserPage> {
   bool loadingPicture = false;
 
   Future<void> refreshPageState() async {
-    await UserController.refreshCurrentUser(context);
+    var u = await UserController.refreshCurrentUser(context);
+    var futures = [
+      if (u.isOrganiser(false))
+        context.read<UserState>().fetchOnboardingUrl(false),
+      if (u.isOrganiser(true))
+        context.read<UserState>().fetchOnboardingUrl(true)
+    ];
+
+    await Future.wait(futures);
   }
 
   @override
@@ -167,7 +176,8 @@ class UserPageState extends State<UserPage> {
             )
           ]),
         ),
-      if (userDetails != null && userDetails.isOrganiser())
+      if (userDetails != null &&
+          (userDetails.isOrganiser(true) || userDetails.isOrganiser(false)))
         Section(
           title: "ORGANISER",
           body: Container(
@@ -182,8 +192,8 @@ class UserPageState extends State<UserPage> {
                         description: "Matches Organised")),
               ]),
               if (userDetails != null &&
-                  userDetails.isOrganiser() &&
-                  userDetails.connectedAccountNeedsCompletion(false))
+                  userDetails.isOrganiser(false) &&
+                  userState.getOnboardingUrl(false) != null)
                 Padding(
                   padding: EdgeInsets.only(top: 20),
                   child: Row(
@@ -194,8 +204,8 @@ class UserPageState extends State<UserPage> {
                   ),
                 ),
               if (userDetails != null &&
-                  userDetails.isOrganiser() &&
-                  userDetails.connectedAccountNeedsCompletion(true))
+                  userDetails.isOrganiser(true) &&
+                  userState.getOnboardingUrl(true) != null)
                 Padding(
                   padding: EdgeInsets.only(top: 20),
                   child: Row(
@@ -369,7 +379,7 @@ class UserPageState extends State<UserPage> {
     ];
 
     return PageTemplate(
-      refreshState: () => UserController.refreshCurrentUser(context),
+      refreshState: () => refreshPageState(),
       widgets: widgets,
       appBar: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -458,29 +468,15 @@ class CompleteOrganiserAccountWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     var userState = context.watch<UserState>();
 
-    return InfoContainer(
-        child: Column(
-      children: [
-        Text(
-          "Complete your Stripe organizer account\nto receive payments",
-          style: TextPalette.getBodyText(Palette.black),
-          textAlign: TextAlign.center,
-        ),
-        SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(
-              child: GenericButtonWithLoaderAndErrorHandling(
-                  "COMPLETE" + (isTest ? " TEST" : "") + " ACCOUNT",
-                  (context) async {
-                var url = await UserController.getOnboardUrl(
-                    userState.currentUserId, isTest);
-                await launch(url, forceSafariVC: false);
-              }, Primary()),
-            )
-          ],
-        )
-      ],
-    ));
+    return WarningWidget(
+      title: "Create your " + (this.isTest ? "Test" : "") + " Stripe account",
+      body: "To start receiving payments, you need to create your Stripe account",
+      textAction: (userState.getOnboardingUrl(this.isTest) == null) ? "" : "GO TO STRIPE",
+      action: (userState.getOnboardingUrl(this.isTest) == null) ? null : () async {
+        var url = await UserController
+            .getOnboardUrl(userState.currentUserId, isTest);
+        await launch(url, forceSafariVC: false);
+      },
+    );
   }
 }

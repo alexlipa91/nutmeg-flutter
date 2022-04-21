@@ -12,6 +12,7 @@ class UserState extends ChangeNotifier {
   Map<String, UserDetails> _usersDetails = Map();
 
   String _onboardingUrl;
+  String _onboardingUrlTest;
 
   String get currentUserId => _currentUserId;
 
@@ -47,18 +48,27 @@ class UserState extends ChangeNotifier {
   }
 
   // url to onboard to stripe connect, for organisers
-  Future<void> fetchOnboardingUrl(String matchId, bool isTest) async {
+  Future<void> fetchOnboardingUrl(bool isTest) async {
+    if (isTest)
+      _onboardingUrlTest = null;
+    else
+      _onboardingUrl = null;
+
     var response = await CloudFunctionsClient().callFunction("onboard_account", {
       "user_id": currentUserId,
-      "match_id": matchId,
       "is_test": isTest
     });
 
-    _onboardingUrl = response["url"] ?? null;
+    if (isTest)
+      _onboardingUrlTest = response["url"] ?? null;
+    else
+      _onboardingUrl = response["url"] ?? null;
+
     notifyListeners();
   }
 
-  String getOnboardingUrl() => _onboardingUrl;
+  String getOnboardingUrl(bool isTest) =>
+      isTest ? _onboardingUrlTest : _onboardingUrl;
 
   void setOnboardingUrl(String url) => _onboardingUrl = url;
 }
