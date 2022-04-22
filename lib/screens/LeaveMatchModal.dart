@@ -78,7 +78,7 @@ class ConfirmLeaveMatchButtonCredits extends StatelessWidget {
                   "You can find your credits in your account page. Next time you join a game they will be automatically used.",
               action: InkWell(
                   onTap: () async {
-                    await UserController.refreshCurrentUser(navigatorKey.currentContext);
+                    await UserController.refreshLoggedUser(navigatorKey.currentContext);
                     Navigator.pushReplacement(navigatorKey.currentContext,
                         MaterialPageRoute(builder: (context) => UserPage()));
                   },

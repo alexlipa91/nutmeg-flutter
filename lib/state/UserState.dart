@@ -8,6 +8,11 @@ class UserState extends ChangeNotifier {
   // holds state for all users' data (both logged in user and others)
 
   String _currentUserId;
+
+  set currentUserId(String value) {
+    _currentUserId = value;
+  }
+
   bool _isTestMode = false;
   Map<String, UserDetails> _usersDetails = Map();
 

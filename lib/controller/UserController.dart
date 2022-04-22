@@ -25,11 +25,29 @@ import '../utils/UiUtils.dart';
 class UserController {
   static var apiClient = CloudFunctionsClient();
 
-  static Future<UserDetails> refreshCurrentUser(BuildContext context) async {
+  static Future<UserDetails> initLoggedUser(BuildContext context, String uid) async {
+    var userState = context.read<UserState>();
+    userState.currentUserId = uid;
+    return await refreshLoggedUser(context);
+  }
+
+  // this should be called for logged in user only
+  static Future<UserDetails> refreshLoggedUser(BuildContext context) async {
     var userState = context.read<UserState>();
 
+    // todo refactor this, we set user details in state twice
     var userDetails = await getUserDetails(context, userState.currentUserId);
     userState.setCurrentUserDetails(userDetails);
+
+    // start fetching on-boarding url if needed, but don't wait for it
+    var futures = [
+      if (userDetails.isOrganiser(true))
+        userState.fetchOnboardingUrl(true),
+      if (userDetails.isOrganiser(false))
+        userState.fetchOnboardingUrl(false)
+    ];
+    Future.wait(futures);
+
     return userDetails;
   }
 
@@ -40,7 +58,7 @@ class UserController {
 
     if (u != null) {
       try {
-        var existingUserDetails = await getUserDetails(context, u.uid);
+        var existingUserDetails = await initLoggedUser(context, u.uid);
 
         if (existingUserDetails == null) {
           ud = null;

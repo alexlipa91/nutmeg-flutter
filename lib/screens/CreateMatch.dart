@@ -602,7 +602,7 @@ class CreateMatchState extends State<CreateMatch> {
 
                     var id = await MatchesController.addMatch(match);
                     await MatchesController.refresh(context, id);
-                    await UserController.refreshCurrentUser(context);
+                    await UserController.refreshLoggedUser(context);
                     print("added match with id " + id);
                     return id;
                   });

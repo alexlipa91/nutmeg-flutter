@@ -39,15 +39,7 @@ class UserPageState extends State<UserPage> {
   bool loadingPicture = false;
 
   Future<void> refreshPageState() async {
-    var u = await UserController.refreshCurrentUser(context);
-    var futures = [
-      if (u.isOrganiser(false))
-        context.read<UserState>().fetchOnboardingUrl(false),
-      if (u.isOrganiser(true))
-        context.read<UserState>().fetchOnboardingUrl(true)
-    ];
-
-    await Future.wait(futures);
+    await UserController.refreshLoggedUser(context);
   }
 
   @override
