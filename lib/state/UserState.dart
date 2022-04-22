@@ -49,11 +49,6 @@ class UserState extends ChangeNotifier {
 
   // url to onboard to stripe connect, for organisers
   Future<void> fetchOnboardingUrl(bool isTest) async {
-    if (isTest)
-      _onboardingUrlTest = null;
-    else
-      _onboardingUrl = null;
-
     var response = await CloudFunctionsClient().callFunction("onboard_account", {
       "user_id": currentUserId,
       "is_test": isTest
