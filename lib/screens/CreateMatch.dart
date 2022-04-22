@@ -32,6 +32,8 @@ class CreateMatch extends StatefulWidget {
 }
 
 class CreateMatchState extends State<CreateMatch> {
+  static const String NO_REPEAT = "Does not repeat";
+
   String sportCenterId;
   Sport sport;
 
@@ -44,7 +46,7 @@ class CreateMatchState extends State<CreateMatch> {
   final TextEditingController endTimeEditingController =
       TextEditingController(text: "");
   final TextEditingController repeatWeeklyEditingController =
-      TextEditingController(text: "Don't repeat");
+      TextEditingController(text: NO_REPEAT);
   final TextEditingController sportCenterEditingController =
       TextEditingController(text: "");
   final TextEditingController sportEditingController =
@@ -248,7 +250,7 @@ class CreateMatchState extends State<CreateMatch> {
                       var weeks = [0, 2, 4, 6, 8, 10];
                       var choices = weeks.map((e) {
                         if (e == 0)
-                          return "Does not repeat";
+                          return NO_REPEAT;
                         else
                           return "Weekly for " + e.toString() + " weeks";
                       }).toList();
@@ -358,28 +360,8 @@ class CreateMatchState extends State<CreateMatch> {
                   onTap: () async {
                     var sports = context.read<LoadOnceState>().getSports();
 
-                    var i = await ModalBottomSheet.showNutmegModalBottomSheet(
-                        context,
-                        Padding(
-                          padding:
-                              EdgeInsets.only(left: 16, right: 16, top: 16),
-                          child: ListView.builder(
-                              shrinkWrap: true,
-                              scrollDirection: Axis.vertical,
-                              itemCount: sports.length,
-                              itemBuilder: (context, i) => InkWell(
-                                    onTap: () => Navigator.of(context).pop(i),
-                                    child: Padding(
-                                      padding: EdgeInsets.only(
-                                          top: (i == 0) ? 0 : 16.0),
-                                      child: InfoContainer(
-                                          backgroundColor:
-                                              Palette.grey_lightest,
-                                          child: Text(sports[i].displayTitle,
-                                              style: TextPalette.bodyText)),
-                                    ),
-                                  )),
-                        ));
+                    var i = await showMultipleChoiceSheet("Sport", sports.map((e) => e.displayTitle).toList());
+
                     if (i != null) {
                       sportEditingController.text = sports[i].displayTitle;
                       setState(() {
@@ -684,7 +666,7 @@ class CreateMatchState extends State<CreateMatch> {
         context,
         Padding(
           padding:
-          EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 16),
+          EdgeInsets.only(left: 24, right: 24, top: 24, bottom: 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -698,7 +680,7 @@ class CreateMatchState extends State<CreateMatch> {
                   child: Padding(
                     padding: EdgeInsets.only(top: 16.0),
                     child: Text(choices[i].toString(),
-                        style: GoogleFonts.roboto(color: Palette.grey_dark,
+                        style: GoogleFonts.roboto(color: Palette.black,
                             fontSize: 16, fontWeight: FontWeight.w400, height: 1.6)),
                   ),
                 ))
