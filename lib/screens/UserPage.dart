@@ -36,6 +36,8 @@ class UserPageState extends State<UserPage> {
   final ImagePicker picker = ImagePicker();
   final ImageCropper cropper = ImageCropper();
 
+  final verticalSpace = SizedBox(height: 20);
+
   bool loadingPicture = false;
 
   Future<void> refreshPageState() async {
@@ -51,130 +53,148 @@ class UserPageState extends State<UserPage> {
 
     int creditCount = (userDetails == null) ? 0 : userDetails.creditsInCents;
 
+    var showOrganizerView = userDetails != null &&
+        (userDetails.isOrganiser(true) || userDetails.isOrganiser(false));
+    var showCompleteAccount = userDetails != null &&
+        userDetails.isOrganiser(false) &&
+        userState.getOnboardingUrl(false) != null;
+    var showCompleteAccountTest = userDetails != null &&
+        userDetails.isOrganiser(true) &&
+        userState.getOnboardingUrl(true) != null;
+
     var widgets = [
       Text("Account", style: TextPalette.h1Default),
-      Padding(
-        padding: EdgeInsets.only(top: 20),
-        child: InfoContainer(
-            child: Row(
-          children: [
-            (loadingPicture)
-                ? CircleAvatar(
-                    backgroundColor: Palette.grey_lightest,
-                    radius: 30,
-                    child: Container(
-                      height: 20.0,
-                      width: 20.0,
-                      child: CircularProgressIndicator(
-                        color: Palette.grey_light,
-                        strokeWidth: 2.0,
-                      ),
-                    ))
-                : InkWell(
-                    onTap: (userDetails == null)
-                        ? null
-                        : () async {
-                            setState(() {
-                              loadingPicture = true;
-                            });
-                            try {
-                              await UserController.updloadPicture(
-                                  context, userDetails);
-                            } catch (e, s) {
-                              print(e);
-                              print(s);
-                            }
-                            setState(() {
-                              loadingPicture = false;
-                            });
-                          },
-                    child: Badge(
-                        toAnimate: false,
-                        badgeContent: Icon(Icons.camera_alt_outlined,
-                            size: 16.0, color: Palette.white),
-                        badgeColor: Palette.primary,
-                        elevation: 0,
-                        position:
-                            BadgePosition.bottomEnd(bottom: -5.0, end: -5.0),
-                        child: UserAvatar(30, userDetails))),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 30),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  (userDetails == null)
-                      ? SkeletonLine(
-                          style: SkeletonLineStyle(
-                              height: 12,
-                              width: 200,
-                              borderRadius: BorderRadius.circular(8.0)))
-                      : Text(userDetails.name ?? "N/A", style: TextPalette.h2),
-                  SizedBox(height: 10),
-                  (userDetails == null)
-                      ? SkeletonLine(
-                          style: SkeletonLineStyle(
-                              height: 12,
-                              width: 100,
-                              borderRadius: BorderRadius.circular(8.0)))
-                      : Text(userDetails.email ?? "N/A",
-                          style: TextPalette.bodyText)
-                ],
-              ),
-            )
-          ],
-        )),
-      ),
-      Padding(
-        padding: EdgeInsets.only(top: 20),
-        child:
-            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-          Expanded(
-              child: UserInfoBox(
-                  content: (userDetails == null)
+      verticalSpace,
+      InfoContainer(
+          child: Row(
+        children: [
+          (loadingPicture)
+              ? CircleAvatar(
+                  backgroundColor: Palette.grey_lightest,
+                  radius: 30,
+                  child: Container(
+                    height: 20.0,
+                    width: 20.0,
+                    child: CircularProgressIndicator(
+                      color: Palette.grey_light,
+                      strokeWidth: 2.0,
+                    ),
+                  ))
+              : InkWell(
+                  onTap: (userDetails == null)
                       ? null
-                      : formatCurrency(userDetails.creditsInCents ?? 0),
-                  description: "Credits")),
+                      : () async {
+                          setState(() {
+                            loadingPicture = true;
+                          });
+                          try {
+                            await UserController.updloadPicture(
+                                context, userDetails);
+                          } catch (e, s) {
+                            print(e);
+                            print(s);
+                          }
+                          setState(() {
+                            loadingPicture = false;
+                          });
+                        },
+                  child: Badge(
+                      toAnimate: false,
+                      badgeContent: Icon(Icons.camera_alt_outlined,
+                          size: 16.0, color: Palette.white),
+                      badgeColor: Palette.primary,
+                      elevation: 0,
+                      position:
+                          BadgePosition.bottomEnd(bottom: -5.0, end: -5.0),
+                      child: UserAvatar(30, userDetails))),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 30),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                (userDetails == null)
+                    ? SkeletonLine(
+                        style: SkeletonLineStyle(
+                            height: 12,
+                            width: 200,
+                            borderRadius: BorderRadius.circular(8.0)))
+                    : Text(userDetails.name ?? "N/A", style: TextPalette.h2),
+                SizedBox(height: 10),
+                (userDetails == null)
+                    ? SkeletonLine(
+                        style: SkeletonLineStyle(
+                            height: 12,
+                            width: 100,
+                            borderRadius: BorderRadius.circular(8.0)))
+                    : Text(userDetails.email ?? "N/A",
+                        style: TextPalette.bodyText)
+              ],
+            ),
+          )
+        ],
+      )),
+      verticalSpace,
+      Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+          Expanded(
+        child: UserInfoBox(
+            content: (userDetails == null)
+                ? null
+                : formatCurrency(userDetails.creditsInCents ?? 0),
+            description: "Credits")),
           SizedBox(width: 20),
           Expanded(
-            child: UserInfoBox(
-                content: (userDetails == null)
-                    ? null
-                    : userDetails.getJoinedMatches().length.toString(),
-                description: "Matches Played"),
+      child: UserInfoBox(
+          content: (userDetails == null)
+              ? null
+              : userDetails.getJoinedMatches().length.toString(),
+          description: "Matches Played"),
           )
         ]),
-      ),
-      Padding(
-          padding: EdgeInsets.only(top: 20),
-          child:
-              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+      verticalSpace,
+      Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
             Expanded(
-              child: UserInfoBox(
-                  content: (userDetails == null)
-                      ? null
-                      : (userDetails.getScoreMatches() == -1)
-                          ? "-"
-                          : userDetails.getScoreMatches().toStringAsFixed(1),
-                  description: "Avg. Score"),
+      child: UserInfoBox(
+          content: (userDetails == null)
+              ? null
+              : (userDetails.getScoreMatches() == -1)
+                  ? "-"
+                  : userDetails.getScoreMatches().toStringAsFixed(1),
+          description: "Avg. Score"),
             ),
             SizedBox(width: 20),
             Expanded(
-              child: UserInfoBox(
-                content: (userDetails == null)
-                    ? null
-                    : userDetails.getNumManOfTheMatch().toString(),
-                description: "Player of the Match",
-              ),
+      child: UserInfoBox(
+        content: (userDetails == null)
+            ? null
+            : userDetails.getNumManOfTheMatch().toString(),
+        description: "Player of the Match",
+      ),
             )
           ]),
-        ),
-      if (userDetails != null &&
-          (userDetails.isOrganiser(true) || userDetails.isOrganiser(false)))
+      if (showOrganizerView)
         Section(
           title: "ORGANISER",
           body: Container(
               child: Column(
             children: [
+              if (showCompleteAccount)
+                Row(
+                  children: [
+                    Expanded(
+                        child: CompleteOrganiserAccountWidget(isTest: false))
+                  ],
+                ),
+              if (showCompleteAccount)
+                verticalSpace,
+              if (showCompleteAccountTest)
+                Row(
+                  children: [
+                    Expanded(
+                        child: CompleteOrganiserAccountWidget(isTest: true))
+                  ],
+                ),
+              if (showCompleteAccountTest)
+                verticalSpace,
               Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                 Expanded(
                     child: UserInfoBox(
@@ -183,30 +203,6 @@ class UserPageState extends State<UserPage> {
                             : userDetails.organisedMatches.length.toString(),
                         description: "Matches Organised")),
               ]),
-              if (userDetails != null &&
-                  userDetails.isOrganiser(false) &&
-                  userState.getOnboardingUrl(false) != null)
-                Padding(
-                  padding: EdgeInsets.only(top: 20),
-                  child: Row(
-                    children: [
-                      Expanded(
-                          child: CompleteOrganiserAccountWidget(isTest: false))
-                    ],
-                  ),
-                ),
-              if (userDetails != null &&
-                  userDetails.isOrganiser(true) &&
-                  userState.getOnboardingUrl(true) != null)
-                Padding(
-                  padding: EdgeInsets.only(top: 20),
-                  child: Row(
-                    children: [
-                      Expanded(
-                          child: CompleteOrganiserAccountWidget(isTest: true))
-                    ],
-                  ),
-                ),
             ],
           )),
         ),
@@ -230,35 +226,33 @@ class UserPageState extends State<UserPage> {
               },
             ),
             // LinkInfo(text: "Terms and Conditions"),
-            Padding(
-              padding: EdgeInsets.only(top: 10),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: GenericButtonWithLoader(
-                      "LOGOUT",
-                      (BuildContext context) async {
-                        context
-                            .read<GenericButtonWithLoaderState>()
-                            .change(true);
+            SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(
+                  child: GenericButtonWithLoader(
+                    "LOGOUT",
+                    (BuildContext context) async {
+                      context
+                          .read<GenericButtonWithLoaderState>()
+                          .change(true);
 
-                        try {
-                          await Future.delayed(
-                              Duration(milliseconds: 500),
-                              () => UserController.logout(
-                                  context.read<UserState>()));
-                        } catch (e, stackTrace) {
-                          print(e);
-                          print(stackTrace);
-                        }
-                        // when logging out, go back to first tab in main page
-                        Get.back(result: false);
-                      },
-                      Primary(),
-                    ),
-                  )
-                ],
-              ),
+                      try {
+                        await Future.delayed(
+                            Duration(milliseconds: 500),
+                            () => UserController.logout(
+                                context.read<UserState>()));
+                      } catch (e, stackTrace) {
+                        print(e);
+                        print(stackTrace);
+                      }
+                      // when logging out, go back to first tab in main page
+                      Get.back(result: false);
+                    },
+                    Primary(),
+                  ),
+                )
+              ],
             ),
           ])),
         ),
@@ -267,85 +261,78 @@ class UserPageState extends State<UserPage> {
           title: "ADMIN COMMANDS",
           body: InfoContainer(
               child: Column(children: [
-            Padding(
-              padding: EdgeInsets.only(top: 10),
-              child: Row(
-                children: [
-                  Expanded(
-                      child: GenericButtonWithLoader(
-                    "ADMIN AREA",
-                    (BuildContext context) async {
-                      Get.toNamed("/adminHome");
-                    },
-                    Primary(),
-                  ))
-                ],
-              ),
+            Row(
+              children: [
+                Expanded(
+                    child: GenericButtonWithLoader(
+                  "ADMIN AREA",
+                  (BuildContext context) async {
+                    Get.toNamed("/adminHome");
+                  },
+                  Primary(),
+                ))
+              ],
             ),
-            Padding(
-              padding: EdgeInsets.only(top: 10),
-              child: Row(
-                children: [
-                  Text("Test Mode"),
-                  SizedBox(width: 10),
-                  Switch(
-                    value: context.watch<UserState>().isTestMode,
-                    onChanged: (value) =>
-                        userState.setTestMode(!userState.isTestMode),
-                    activeTrackColor: Colors.red,
-                    activeColor: Colors.red,
-                  ),
-                  Expanded(
-                      child: Text("It allows to see in the UI test matches"))
-                ],
-              ),
+            verticalSpace,
+            Row(
+              children: [
+                Text("Test Mode"),
+                SizedBox(width: 10),
+                Switch(
+                  value: context.watch<UserState>().isTestMode,
+                  onChanged: (value) =>
+                      userState.setTestMode(!userState.isTestMode),
+                  activeTrackColor: Colors.red,
+                  activeColor: Colors.red,
+                ),
+                Expanded(
+                    child: Text("It allows to see in the UI test matches"))
+              ],
             ),
-            Padding(
-              padding: EdgeInsets.only(top: 10),
-              child: Row(
-                children: [
-                  Text("Update Credits (in cents)"),
-                  SizedBox(width: 10),
-                  Expanded(
-                    child: TextFormField(
-                        initialValue: userDetails.creditsInCents.toString(),
-                        keyboardType: TextInputType.number,
-                        inputFormatters: <TextInputFormatter>[
-                          FilteringTextInputFormatter.digitsOnly
-                        ], // Only numbers can be
-                        onChanged: (v) {
-                          var newValue = int.tryParse(v);
-                          if (newValue != null) creditCount = newValue;
-                        }
-                        // entered
-                        ),
-                  ),
-                  SizedBox(width: 10),
-                  Container(
-                    width: 100,
-                    child: GenericButtonWithLoader("SET",
-                        (BuildContext context) async {
-                      context.read<GenericButtonWithLoaderState>().change(true);
-                      userDetails.creditsInCents = creditCount;
-                      try {
-                        await UserController.editUser(context, userDetails);
-                        await GenericInfoModal(
-                                title: "Credits updated",
-                                description: "Your new balance is: " +
-                                    formatCurrency(creditCount))
-                            .show(context);
-                      } catch (e, s) {
-                        print(e);
-                        print(s);
-                        ErrorHandlingUtils.handleError(e, s, context);
+            verticalSpace,
+            Row(
+              children: [
+                Text("Update Credits (in cents)"),
+                SizedBox(width: 10),
+                Expanded(
+                  child: TextFormField(
+                      initialValue: userDetails.creditsInCents.toString(),
+                      keyboardType: TextInputType.number,
+                      inputFormatters: <TextInputFormatter>[
+                        FilteringTextInputFormatter.digitsOnly
+                      ], // Only numbers can be
+                      onChanged: (v) {
+                        var newValue = int.tryParse(v);
+                        if (newValue != null) creditCount = newValue;
                       }
-                      context
-                          .read<GenericButtonWithLoaderState>()
-                          .change(false);
-                    }, Primary()),
-                  )
-                ],
-              ),
+                      // entered
+                      ),
+                ),
+                SizedBox(width: 10),
+                Container(
+                  width: 100,
+                  child: GenericButtonWithLoader("SET",
+                      (BuildContext context) async {
+                    context.read<GenericButtonWithLoaderState>().change(true);
+                    userDetails.creditsInCents = creditCount;
+                    try {
+                      await UserController.editUser(context, userDetails);
+                      await GenericInfoModal(
+                              title: "Credits updated",
+                              description: "Your new balance is: " +
+                                  formatCurrency(creditCount))
+                          .show(context);
+                    } catch (e, s) {
+                      print(e);
+                      print(s);
+                      ErrorHandlingUtils.handleError(e, s, context);
+                    }
+                    context
+                        .read<GenericButtonWithLoaderState>()
+                        .change(false);
+                  }, Primary()),
+                )
+              ],
             ),
           ])),
         ),

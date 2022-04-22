@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -18,6 +19,7 @@ import 'package:nutmeg/widgets/PageTemplate.dart';
 import 'package:nutmeg/widgets/Section.dart';
 import 'package:provider/provider.dart';
 import 'package:time_picker_widget/time_picker_widget.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../state/LoadOnceState.dart';
 import '../model/Sport.dart';
@@ -452,20 +454,26 @@ class CreateMatchState extends State<CreateMatch> {
                     activeTrackColor: Palette.primary,
                     showValueIndicator: ShowValueIndicator.always,
                   ),
-                  child: RangeSlider(
-                    values: numberOfPeopleRangeValues,
-                    max: 22,
-                    min: 6,
-                    divisions: 8,
-                    labels: RangeLabels(
-                      numberOfPeopleRangeValues.start.toString(),
-                      numberOfPeopleRangeValues.end.toString(),
+                  child: SliderTheme(
+                    data: SliderTheme.of(context).copyWith(
+                      showValueIndicator: ShowValueIndicator.never,
+                      inactiveTrackColor: Palette.grey_lighter,
                     ),
-                    onChanged: (RangeValues values) {
-                      setState(() {
-                        numberOfPeopleRangeValues = values;
-                      });
-                    },
+                    child: RangeSlider(
+                      values: numberOfPeopleRangeValues,
+                      max: 22,
+                      min: 6,
+                      divisions: 8,
+                      labels: RangeLabels(
+                        numberOfPeopleRangeValues.start.toString(),
+                        numberOfPeopleRangeValues.end.toString(),
+                      ),
+                      onChanged: (RangeValues values) {
+                        setState(() {
+                          numberOfPeopleRangeValues = values;
+                        });
+                      },
+                    ),
                   ),
                 )),
                 Text(numberOfPeopleRangeValues.end.toStringAsFixed(0),
@@ -488,27 +496,58 @@ class CreateMatchState extends State<CreateMatch> {
       Section(
         title: "Payment",
         titleType: "big",
-        body: Row(children: [
-          Text("You will get", style: TextPalette.bodyText),
-          Spacer(),
-          Builder(
-            builder: (BuildContext buildContext) {
-              if (priceController.text.isEmpty) {
-                return Container();
+        body: Column(
+          children: [
+            SizedBox(height: 8),
+            Row(children: [
+            Text("You will get", style: TextPalette.h3),
+            Spacer(),
+            Builder(
+              builder: (BuildContext buildContext) {
+                var price = double.tryParse(priceController.text);
+                return Text(
+                    (price == null) ? "€ --" :
+                    "€ " +
+                        (price * numberOfPeopleRangeValues.start)
+                            .toStringAsFixed(2) +
+                        " - " +
+                        "€ " +
+                        (price * numberOfPeopleRangeValues.end)
+                            .toStringAsFixed(2),
+                    style: TextPalette.h3);
               }
-              var price = double.parse(priceController.text);
-              return Text(
-                  "€ " +
-                      (price * numberOfPeopleRangeValues.start)
-                          .toStringAsFixed(2) +
-                      " - " +
-                      "€ " +
-                      (price * numberOfPeopleRangeValues.end)
-                          .toStringAsFixed(2),
-                  style: TextPalette.h3);
-            }
-          )
-        ]),
+            ),
+          ]),
+            SizedBox(height: 8),
+            Divider(),
+            RichText(
+              text: TextSpan(
+                  children: [
+                    TextSpan(
+                        text: "Nutmeg releases the money 24h after the match end time. " +
+                            "You will get paid 3 to 5 business days after that with ",
+                        style: TextPalette.bodyText
+                    ),
+                    TextSpan(
+                        text: "Stripe",
+                        recognizer: TapGestureRecognizer()
+                          ..onTap = () async {
+                            final url = 'https://stripe.com';
+                            if (await canLaunch(url)) {
+                              await launch(
+                                url,
+                                forceSafariVC: false,
+                              );
+                            }
+                          },
+                        style: TextPalette.bodyText.copyWith(color: Palette.primary,
+                            decoration: TextDecoration.underline)
+                    )
+                  ],
+              )
+            )
+          ]
+        ),
       ),
       if (context.read<UserState>().getLoggedUserDetails().isAdmin)
         Section(
