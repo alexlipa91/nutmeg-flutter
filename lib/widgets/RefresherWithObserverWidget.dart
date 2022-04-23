@@ -2,11 +2,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
-import 'package:pull_to_refresh/pull_to_refresh.dart';
 
-import '../utils/UiUtils.dart';
 
-/// A SmartRefresher with a lifecycle observer.
+/// A RefreshIndicator with a lifecycle observer.
 /// The refreshState method is called in both cases
 class RefresherWithObserverWidget extends StatefulWidget {
 
@@ -22,9 +20,9 @@ class RefresherWithObserverWidget extends StatefulWidget {
 class RefresherWithObserverWidgetState extends State<RefresherWithObserverWidget> {
 
   final Logger _logger = Logger();
+  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey = new GlobalKey<RefreshIndicatorState>();
 
   RefreshStateOnResumeObserver lifecycleEventHandler;
-  final RefreshController refreshController = RefreshController();
 
   @override
   void initState() {
@@ -32,7 +30,7 @@ class RefresherWithObserverWidgetState extends State<RefresherWithObserverWidget
     lifecycleEventHandler = RefreshStateOnResumeObserver(
         resumeCallBack: () async {
           _logger.d("RefreshWithObserver: requesting refresh");
-          await refreshController.requestRefresh();
+          _refreshIndicatorKey.currentState.show();
         });
     WidgetsBinding.instance.addObserver(lifecycleEventHandler);
     _logger.d("RefreshWithObserver: calling refreshState in initState");
@@ -47,18 +45,11 @@ class RefresherWithObserverWidgetState extends State<RefresherWithObserverWidget
 
   @override
   Widget build(BuildContext context) {
-    return SmartRefresher(
-        enablePullDown: true,
-        enablePullUp: false,
-        header: MaterialClassicHeader(color: Palette.primary),
-        controller: refreshController,
-        onRefresh: () async {
-          _logger.d("RefreshWithObserver: calling SmartRefresher onRefresh");
-          await Future.delayed(Duration(seconds: 3));
-          await widget.refreshState();
-          refreshController.refreshCompleted();
-        },
-        child: widget.child);
+    return RefreshIndicator(
+      key: _refreshIndicatorKey,
+      onRefresh: () => widget.refreshState(),
+      child: widget.child,
+    );
   }
 }
 

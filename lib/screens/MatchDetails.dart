@@ -70,6 +70,9 @@ class MatchDetailsState extends State<MatchDetails> {
 
     Match match = res[1];
 
+    var statusForUser = context.read<MatchesState>().getMatchStatusForUser(matchId,
+        context.read<UserState>().getLoggedUserDetails());
+
     // get users details
     UserController.getBatchUserDetails(context, match.getGoingUsersByTime());
 
@@ -78,9 +81,6 @@ class MatchDetailsState extends State<MatchDetails> {
 
     // fetch on-boarding url if needed
     context.read<UserState>().fetchOnboardingUrl(match.isTest);
-
-    var statusForUser = context.read<MatchesState>().getMatchStatusForUser(matchId,
-        context.read<UserState>().getLoggedUserDetails());
 
     if (showModal) {
       statusForUser = context.read<MatchesState>().getMatchStatusForUser(
