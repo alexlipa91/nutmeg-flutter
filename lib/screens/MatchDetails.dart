@@ -126,9 +126,12 @@ class MatchDetailsState extends State<MatchDetails> {
     var userState = context.watch<UserState>();
     var matchesState = context.watch<MatchesState>();
     var match = matchesState.getMatch(matchId);
+
+    var status = match?.status;
     var statusForUser = context.read<MatchesState>().getMatchStatusForUser(matchId,
         context.read<UserState>().getLoggedUserDetails());
 
+    var isTest = match != null && match.isTest;
     var organizerView = userState.isLoggedIn() &&
         match != null &&
         match.organizerId == userState.getLoggedUserDetails().documentId;
@@ -136,28 +139,28 @@ class MatchDetailsState extends State<MatchDetails> {
     padB(Widget w) => Padding(padding: EdgeInsets.only(bottom: 16), child: w);
 
     var bottomBar = BottomBarMatch.getBottomBar(context,
-        matchId, match.status);
+        matchId, status);
 
     // add padding individually since because of shadow clipping some components need margin
     var widgets = [
       // title
       if (organizerView &&
-          userState.getOnboardingUrl(match.isTest) != null)
-        padB(CompleteOrganiserAccountWidget(isTest: match.isTest)),
+          userState.getOnboardingUrl(isTest) != null)
+        padB(CompleteOrganiserAccountWidget(isTest: isTest)),
       padB(Title(matchId)),
-      if (match.isTest)
+      if (isTest)
         padB(InfoContainer(backgroundColor: Palette.accent,
             child: SelectableText("Test match: " + matchId, style: TextPalette.getBodyText(Palette.black),))),
       // info box
       MatchInfo(matchId),
       // stats
-      if (match.status == MatchStatus.rated ||
+      if (status == MatchStatus.rated ||
           statusForUser == MatchStatusForUser.no_more_to_rate)
         Stats(matchId: matchId, matchDatetime: match.dateTime,
             matchStatusForUser: statusForUser),
       // horizontal players list
       if (match != null) PlayerList(match: match),
-      if (match.dateTime.isAfter(DateTime.now()))
+      if (match != null && match.dateTime.isAfter(DateTime.now()))
         Section(
             title: "DETAILS",
             body: Column(
@@ -509,8 +512,6 @@ class InfoWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    bool shouldLoadSkeleton = title == null;
-
     return Container(
         child: Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -529,15 +530,19 @@ class InfoWidget extends StatelessWidget {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            shouldLoadSkeleton
-                ? Skeletons.xlText
+            title == null
+                ? Padding(
+                padding: EdgeInsets.only(bottom: 6),
+                child: Skeletons.xlText)
                 : Text(title, style: TextPalette.h2),
             SizedBox(
-              height: shouldLoadSkeleton ? 12 : 4,
+              height: 4,
             ),
-            shouldLoadSkeleton
+            subTitle == null
                 ? Skeletons.lText
-                : Text(subTitle, style: TextPalette.bodyText)
+                : Padding(
+                padding: EdgeInsets.only(bottom: 2),
+                child: Text(subTitle, style: TextPalette.bodyText))
           ],
         ),
         if (rightWidget != null)
@@ -651,19 +656,23 @@ class MapCardImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var skeleton = SkeletonAvatar(
+      style: SkeletonAvatarStyle(
+          width: double.infinity,
+          height: 190,
+          borderRadius: BorderRadius.circular(10.0)),
+    );
+
     var match = context.read<MatchesState>().getMatch(matchId);
 
-    if (match == null) {
-      return SkeletonAvatar(
-        style: SkeletonAvatarStyle(
-            width: double.infinity,
-            height: 190,
-            borderRadius: BorderRadius.circular(10.0)),
-      );
-    }
+    if (match == null)
+      return skeleton;
 
     var sportCenter =
         context.read<LoadOnceState>().getSportCenter(match.sportCenterId);
+
+    if (sportCenter == null)
+      return skeleton;
 
     var lat = sportCenter.lat;
     var lng = sportCenter.lng;

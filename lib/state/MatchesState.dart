@@ -10,7 +10,7 @@ import 'package:nutmeg/model/UserDetails.dart';
 class MatchesState extends ChangeNotifier {
 
   // match details
-  Map<String, Match> _matches;
+  Map<String, Match> _matches = Map();
 
   // ratings per match
   Map<String, MatchRatings> _ratingsPerMatch = Map();
@@ -29,9 +29,6 @@ class MatchesState extends ChangeNotifier {
   }
 
   List<Match> getMatches() {
-    if (_matches == null) {
-      return null;
-    }
     return _matches.values.toList()..sort((a, b) => b.dateTime.compareTo(a.dateTime));
   }
 
@@ -39,12 +36,9 @@ class MatchesState extends ChangeNotifier {
       .where((m) => m.dateTime.isAfter(DateTime.now()))
       .toList();
 
-  Match getMatch(String matchId) => (_matches == null) ? null : _matches[matchId];
+  Match getMatch(String matchId) => _matches[matchId];
 
   void setMatch(Match m) {
-    if (_matches == null) {
-      _matches = Map();
-    }
     _matches[m.documentId] = m;
     notifyListeners();
   }
