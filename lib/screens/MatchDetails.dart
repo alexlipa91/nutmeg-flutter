@@ -56,11 +56,7 @@ class MatchDetailsState extends State<MatchDetails> {
 
   MatchDetailsState(this.matchId);
 
-  Future<void> refreshState([showModal = false]) async {
-    if (!mounted) {
-      return;
-    }
-
+  Future<void> refreshState() async {
     List<Future<dynamic>> futures = [
       context.read<MatchesState>().fetchRatings(matchId),
       MatchesController.refresh(context, matchId)
@@ -70,9 +66,6 @@ class MatchDetailsState extends State<MatchDetails> {
 
     Match match = res[1];
 
-    var statusForUser = context.read<MatchesState>().getMatchStatusForUser(matchId,
-        context.read<UserState>().getLoggedUserDetails());
-
     // get users details
     UserController.getBatchUserDetails(context, match.getGoingUsersByTime());
 
@@ -81,24 +74,24 @@ class MatchDetailsState extends State<MatchDetails> {
 
     // fetch on-boarding url if needed
     context.read<UserState>().fetchOnboardingUrl(match.isTest);
-
-    if (showModal) {
-      statusForUser = context.read<MatchesState>().getMatchStatusForUser(
-          matchId, context.read<UserState>().getLoggedUserDetails());
-
-      if (statusForUser == MatchStatusForUser.to_rate) {
-        await RatePlayerBottomModal.rateAction(context, matchId);
-      }
-      setState(() {});
-    }
   }
 
   @override
   void initState() {
     super.initState();
-    refreshState(true);
     // show potm
     SchedulerBinding.instance.addPostFrameCallback((_) async {
+      // show rating modal
+      var statusForUser = context.read<MatchesState>()
+          .getMatchStatusForUser(matchId,
+          context.read<UserState>().getLoggedUserDetails());
+
+      if (statusForUser == MatchStatusForUser.to_rate) {
+        await RatePlayerBottomModal.rateAction(context, matchId);
+        setState(() {});
+      }
+
+      // go to potm
       var prefs = await SharedPreferences.getInstance();
       var currentUser = context.read<UserState>().currentUserId;
       var preferencePath = "potm_screen_showed_" + matchId + "_"
@@ -106,7 +99,8 @@ class MatchDetailsState extends State<MatchDetails> {
       var alreadyShown = prefs.getBool(preferencePath) ?? false;
 
       if (context.read<UserState>().isLoggedIn()
-          && context.read<MatchesState>().getMatch(matchId).getPotms().contains(currentUser)
+          && context.read<MatchesState>()
+              .getMatch(matchId).getPotms().contains(currentUser)
           && !alreadyShown) {
         Get.toNamed("/potm/" + currentUser);
         prefs.setBool(preferencePath, true);
