@@ -9,8 +9,8 @@ import 'package:nutmeg/model/UserDetails.dart';
 
 class MatchesState extends ChangeNotifier {
 
-  // match details
-  Map<String, Match> _matches = Map();
+  // match details (do not initialize this map so that we can differentiate when no data has been fetched, i.e. map is null)
+  Map<String, Match> _matches;
 
   // ratings per match
   Map<String, MatchRatings> _ratingsPerMatch = Map();
@@ -29,7 +29,10 @@ class MatchesState extends ChangeNotifier {
   }
 
   List<Match> getMatches() {
-    return _matches.values.toList()..sort((a, b) => b.dateTime.compareTo(a.dateTime));
+    if (_matches == null)
+      return null;
+    return _matches.values.toList()
+      ..sort((a, b) => b.dateTime.compareTo(a.dateTime));
   }
 
   List<Match> getMatchesInFuture() => getMatches()
@@ -41,6 +44,35 @@ class MatchesState extends ChangeNotifier {
   void setMatch(Match m) {
     _matches[m.documentId] = m;
     notifyListeners();
+  }
+
+  Future<List<Match>> fetchMatches() async {
+    var resp = await CloudFunctionsClient().callFunction("get_all_matches_v2", {});
+    Map<String, dynamic> data =
+    (resp == null) ? Map() : Map<String, dynamic>.from(resp);
+
+    var matches = data.entries
+        .map((e) {
+      try {
+        return Match.fromJson(Map<String, dynamic>.from(e.value), e.key);
+      } catch (e, s) {
+        print("Failed to deserialize match");
+        print(e);
+        print(s);
+        return null;
+      }
+    }).where((e) => e != null).toList();
+
+    if (_matches == null) {
+      _matches = Map();
+    }
+
+    matches.forEach((e) {
+      _matches[e.documentId] = e;
+    });
+    notifyListeners();
+
+    return matches;
   }
 
   Future<MatchRatings> fetchRatings(String matchId) async {

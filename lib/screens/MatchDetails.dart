@@ -112,13 +112,6 @@ class MatchDetailsState extends State<MatchDetails> {
         prefs.setBool(preferencePath, true);
       }
     });
-    // WidgetsBinding.instance.addObserver(lifecycleObserver);
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    // WidgetsBinding.instance.removeObserver(lifecycleObserver);
   }
 
   @override

@@ -31,31 +31,6 @@ class MatchesController {
     return match;
   }
 
-  static Future<List<Match>> refreshAll(BuildContext context) async {
-    var matchesState = context.read<MatchesState>();
-
-    var resp = await apiClient.callFunction("get_all_matches_v2", {});
-    Map<String, dynamic> data =
-        (resp == null) ? Map() : Map<String, dynamic>.from(resp);
-
-    var matches = data.entries
-        .map((e) {
-          try {
-            return Match.fromJson(Map<String, dynamic>.from(e.value), e.key);
-          } catch (e, s) {
-            print("Failed to deserialize match");
-            print(e);
-            print(s);
-            return null;
-          }
-        })
-        .where((e) => e != null)
-        .toList();
-
-    matchesState.setMatches(matches);
-    return matches;
-  }
-
   // current logged in user joins a match
   static Future<Match> joinMatch(
       BuildContext context, String matchId, PaymentRecap paymentStatus) async {
