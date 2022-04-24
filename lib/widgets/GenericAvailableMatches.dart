@@ -148,6 +148,7 @@ class GenericAvailableMatchesListState
           backgroundColor: Palette.grey_lightest,
           body: RefresherWithObserverWidget(
             child: ListView.builder(
+                physics: AlwaysScrollableScrollPhysics(parent: ClampingScrollPhysics()),
                 itemBuilder: (c, i) {
                   var core = (widget.tabContent[selected] == null)
                       ? waitingWidget()

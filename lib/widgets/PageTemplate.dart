@@ -34,6 +34,7 @@ class PageTemplate extends StatelessWidget {
       body: SafeArea(
         bottom: false,
         child: refreshContainer(CustomScrollView(
+          physics: AlwaysScrollableScrollPhysics(parent: ClampingScrollPhysics()),
           slivers: [
             SliverAppBar(
               systemOverlayStyle: SystemUiOverlayStyle.dark,
