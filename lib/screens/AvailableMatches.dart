@@ -122,9 +122,10 @@ class AvailableMatches extends StatelessWidget {
         .where((m) => loadOnceState.getSportCenter(m.sportCenterId) == null)
         .isNotEmpty) return null;
 
+    var hideStatuses = Set.of([MatchStatus.cancelled, MatchStatus.unpublished]);
     var matches = state
         .getMatchesInFuture()
-        .where((e) => !e.wasCancelled())
+        .where((e) => !hideStatuses.contains(e.status))
         .where((e) => (!e.isTest || userState.isTestMode))
         .toList();
 
@@ -251,9 +252,6 @@ class AvailableMatches extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    bool isAdmin = context.watch<UserState>().isLoggedIn() &&
-        context.watch<UserState>().getLoggedUserDetails().isAdmin;
-
     return MultiProvider(
         providers: [
           ChangeNotifierProvider(
@@ -282,7 +280,8 @@ class AvailableMatches extends StatelessWidget {
                   Text("Amsterdam", style: TextPalette.h1Inverted),
                 ],
               ),
-            ));
+            )
+    );
   }
 }
 

@@ -238,11 +238,15 @@ class GenericMatchInfo extends StatelessWidget {
                               SizedBox(
                                 height: 8,
                               ),
-                              (match.cancelledAt != null)
+                              (match.status == MatchStatus.unpublished) ?
+                                Text("Inactive",
+                                  style: TextPalette.getBodyText(
+                                      Palette.darkWarning)) :
+                              (match.status == MatchStatus.cancelled)
                                   ? Text("Cancelled",
                                       style: TextPalette.getBodyText(
                                           Palette.destructive))
-                                  : (match.isFull())
+                                  : (match.status == MatchStatus.full)
                                       ? Text("Full",
                                           style: TextPalette.bodyText,
                                           textAlign: TextAlign.right)
