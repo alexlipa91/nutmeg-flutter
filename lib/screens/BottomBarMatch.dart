@@ -52,6 +52,9 @@ class BottomBarMatch extends StatelessWidget {
     if (match.status == MatchStatus.pre_playing) {
       return "You are in";
     }
+    if (match.status == MatchStatus.unpublished) {
+      return "Not published";
+    }
     throw Exception("Unexpected");
   }
 
@@ -91,11 +94,17 @@ class BottomBarMatch extends StatelessWidget {
       return Text(match.going.length.toString() + " players going",
           style: TextPalette.bodyText);
     }
+    if (match.status == MatchStatus.unpublished) {
+      return Text("Complete your Stripe account", style: TextPalette.bodyText);
+    }
     throw Exception("Unexpected");
   }
 
   Widget getButton(Match match, MatchStatusForUser matchStatusForUser,
       BuildContext context) {
+    if (match.status == MatchStatus.unpublished) {
+      return JoinButtonDisabled();
+    }
     if (matchStatusForUser == MatchStatusForUser.cannotLeave) {
       return LeaveButtonDisabled();
     }

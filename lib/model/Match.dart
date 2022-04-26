@@ -8,7 +8,8 @@ enum MatchStatus {
   playing,             // mach is being played
   to_rate,             // match is in the past and within rating window
   rated,               // match is in the past and after rating window (man of the match is available)
-  cancelled            // match is canceled
+  cancelled,           // match is canceled
+  unpublished        // match is created but not joinable by others
 }
 
 class Match {
@@ -64,6 +65,7 @@ class Match {
 
       status = MatchStatus.values
           .firstWhere((e) => e.name == jsonInput["status"]);
+
       this.documentId = documentId;
   }
 

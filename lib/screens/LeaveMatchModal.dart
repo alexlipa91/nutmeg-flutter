@@ -23,25 +23,34 @@ class LeaveButton extends StatelessWidget {
         "LEAVE MATCH",
         (BuildContext context) async {
           var match = context.read<MatchesState>().getMatch(matchId);
+          // fixme make it parametric
+          var fee = 50;
 
           await GenericInfoModal(
               title: "Leave this match?",
-              description: "We will refund you in credits that you can use in your next matches.",
+              description:
+              ConfigsUtils.removeCreditsFunctionality() ?
+              "We will refund you on the payment method you used to pay. "
+                  "The service fee of ${formatCurrency(fee)} will not be refunded" :
+              "We will refund you in credits that you can use in your next matches.",
               content:
               ModalPaymentDescriptionArea(
                 rows: [],
                 finalRow: Row(
                   children: [
-                    Text("Credits refund", style: TextPalette.h3),
+                    Text(
+                        ConfigsUtils.removeCreditsFunctionality() ?
+                        "Refund" :
+                        "Credits refund", style: TextPalette.h3),
                     Expanded(
                         child: Text(
-                          formatCurrency(match.pricePerPersonInCents) + " euro",
+                          formatCurrency(match.pricePerPersonInCents - fee) + " euro",
                           style: TextPalette.h3,
                           textAlign: TextAlign.end,
                         ))
                   ],
                 ),
-              ), action: Row(children: [Expanded(child: ConfirmLeaveMatchButtonCredits(match: match))])
+              ), action: Row(children: [Expanded(child: ConfirmLeaveMatchButton(match: match))])
               ).show(context);
         },
         Secondary(),
@@ -56,10 +65,11 @@ class LeaveButtonDisabled extends StatelessWidget {
   );
 }
 
-class ConfirmLeaveMatchButtonCredits extends StatelessWidget {
+class ConfirmLeaveMatchButton extends StatelessWidget {
   final Match match;
+  final int fee = 50;
 
-  const ConfirmLeaveMatchButtonCredits({Key key, this.match}) : super(key: key);
+  const ConfirmLeaveMatchButton({Key key, this.match}) : super(key: key);
 
   @override
   Widget build(BuildContext context) => GenericButtonWithLoader(
@@ -72,9 +82,15 @@ class ConfirmLeaveMatchButtonCredits extends StatelessWidget {
           Navigator.of(context).pop(true);
 
           GenericInfoModal(
-              title: formatCurrency(match.pricePerPersonInCents) +
+              title:
+                ConfigsUtils.removeCreditsFunctionality() ?
+                "A refund of ${formatCurrency(match.pricePerPersonInCents - fee)} "
+                    "was issued " :
+              formatCurrency(match.pricePerPersonInCents) +
                   " credits were added to your account",
               description:
+                  ConfigsUtils.removeCreditsFunctionality() ?
+                  "You will receive the money in 3 to 5 business days on the payment method you used." :
                   "You can find your credits in your account page. Next time you join a game they will be automatically used.",
               action: InkWell(
                   onTap: () async {
@@ -83,7 +99,8 @@ class ConfirmLeaveMatchButtonCredits extends StatelessWidget {
                         MaterialPageRoute(builder: (context) => UserPage()));
                   },
                   child:
-                      Padding(
+                  ConfigsUtils.removeCreditsFunctionality() ? Container() :
+                  Padding(
                           padding: EdgeInsets.only(top: 8),
                           child: Text("GO TO MY ACCOUNT", style: TextPalette.linkStyle)))).show(context);
         },

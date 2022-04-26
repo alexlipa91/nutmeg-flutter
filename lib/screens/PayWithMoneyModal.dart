@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:nutmeg/controller/PaymentController.dart';
 import 'package:nutmeg/state/MatchesState.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:provider/provider.dart';
@@ -26,23 +23,11 @@ class PayWithMoneyButton extends StatelessWidget {
           context.read<GenericButtonWithLoaderState>().change(true);
 
           var userState = context.read<UserState>();
-          var userDetails = userState.getLoggedUserDetails();
           var match = context.read<MatchesState>().getMatch(matchId);
+          var url = "https://europe-central2-nutmeg-9099c.cloudfunctions.net/go_to_stripe_checkout?"
+              "is_test=${match.isTest}&user_id=${userState.currentUserId}&match_id=$matchId";
 
-          var sessionUrl;
-          try {
-            sessionUrl = await PaymentController.createCheckout(
-                userDetails.documentId,
-                matchId,
-                paymentRecap.creditsInCentsUsed,
-                match.isTest);
-            // context.read<GenericButtonWithLoaderState>().change(false);
-          } catch (e) {
-            print(e);
-            Get.back(result: false);
-          }
-
-          await launch(sessionUrl, forceSafariVC: false);
+          await launch(url, forceSafariVC: false);
         },
         Primary(),
       );

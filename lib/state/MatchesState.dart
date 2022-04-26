@@ -67,9 +67,7 @@ class MatchesState extends ChangeNotifier {
       _matches = Map();
     }
 
-    matches.forEach((e) {
-      _matches[e.documentId] = e;
-    });
+    _matches = Map.fromEntries(matches.map((e) => MapEntry(e.documentId, e)));
     notifyListeners();
 
     return matches;

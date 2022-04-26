@@ -59,7 +59,7 @@ class JoinModal {
         Text("1x player", style: TextPalette.h3),
         Expanded(
             child: Text(
-          formatCurrency(paymentRecap.matchPriceInCents),
+          formatCurrency(paymentRecap.matchPriceInCents - paymentRecap.fee),
           style: TextPalette.h3,
           textAlign: TextAlign.end,
         ))
@@ -71,7 +71,7 @@ class JoinModal {
           SizedBox(width: 10),
           Text('Service Fee', style: TextPalette.bodyText),
           Expanded(
-              child: Text(formatCurrency(0),
+              child: Text(formatCurrency(paymentRecap.fee),
             style: TextPalette.bodyText,
             textAlign: TextAlign.end,
           ))
