@@ -261,12 +261,12 @@ class AvailableMatches extends StatelessWidget {
         ],
         builder: (context, _) => GenericAvailableMatchesList(
               Palette.primary,
-              ["UPCOMING", "GOING", "PAST", if (isAdmin) "MY MATCHES"].toList(),
+              ["UPCOMING", "GOING", "PAST", "MY MATCHES"].toList(),
               [
                 upcomingWidgets(context),
                 goingWidgets(context),
                 pastWidgets(context),
-                if (isAdmin) getMyMatchesWidgets(context)
+                getMyMatchesWidgets(context)
               ].toList(),
               getEmptyStateWidget(context),
               context.watch<AvailableMatchesUiState>().current == 3
