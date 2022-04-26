@@ -39,15 +39,6 @@ class UserController {
     var userDetails = await getUserDetails(context, userState.currentUserId);
     userState.setCurrentUserDetails(userDetails);
 
-    // start fetching on-boarding url if needed, but don't wait for it
-    var futures = [
-      if (userDetails.isOrganiser(true))
-        userState.fetchOnboardingUrl(true),
-      if (userDetails.isOrganiser(false))
-        userState.fetchOnboardingUrl(false)
-    ];
-    Future.wait(futures);
-
     return userDetails;
   }
 

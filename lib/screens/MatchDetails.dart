@@ -71,9 +71,6 @@ class MatchDetailsState extends State<MatchDetails> {
 
     // get organizer details
     UserController.getUserDetails(context, match.organizerId);
-
-    // fetch on-boarding url if needed
-    context.read<UserState>().fetchOnboardingUrl(match.isTest);
   }
 
   @override
@@ -132,7 +129,8 @@ class MatchDetailsState extends State<MatchDetails> {
     var widgets = [
       // title
       if (organizerView &&
-          userState.getOnboardingUrl(isTest) != null)
+          userState.getLoggedUserDetails().areChargesEnabled(isTest) != null &&
+          !userState.getLoggedUserDetails().areChargesEnabled(isTest))
         padB(CompleteOrganiserAccountWidget(isTest: isTest)),
       padB(Title(matchId)),
       if (isTest)

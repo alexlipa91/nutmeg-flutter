@@ -55,12 +55,7 @@ class UserPageState extends State<UserPage> {
 
     var showOrganizerView = userDetails != null &&
         (userDetails.isOrganiser(true) || userDetails.isOrganiser(false));
-    var showCompleteAccount = userDetails != null &&
-        userDetails.isOrganiser(false) &&
-        userState.getOnboardingUrl(false) != null;
-    var showCompleteAccountTest = userDetails != null &&
-        userDetails.isOrganiser(true) &&
-        userState.getOnboardingUrl(true) != null;
+
 
     var widgets = [
       Text("Account", style: TextPalette.h1Default),
@@ -175,36 +170,51 @@ class UserPageState extends State<UserPage> {
         Section(
           title: "ORGANISER",
           body: Container(
-              child: Column(
-            children: [
-              if (showCompleteAccount)
-                Row(
-                  children: [
-                    Expanded(
-                        child: CompleteOrganiserAccountWidget(isTest: false))
-                  ],
-                ),
-              if (showCompleteAccount)
-                verticalSpace,
-              if (showCompleteAccountTest)
-                Row(
-                  children: [
-                    Expanded(
-                        child: CompleteOrganiserAccountWidget(isTest: true))
-                  ],
-                ),
-              if (showCompleteAccountTest)
-                verticalSpace,
-              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                Expanded(
-                    child: UserInfoBox(
-                        content: (userDetails == null)
-                            ? null
-                            : userDetails.organisedMatches.length.toString(),
-                        description: "Matches Organised")),
-              ]),
-            ],
-          )),
+              child: Builder(
+                builder: (context) {
+                  var widgets = List<Widget>.from([]);
+
+                  void addCompleteBanner(bool isTest) {
+                    if (userDetails != null &&
+                        userDetails.isOrganiser(isTest) &&
+                        !userDetails.areChargesEnabled(isTest))
+                      widgets.addAll([
+                        Row(children: [Expanded(child: CompleteOrganiserAccountWidget(isTest: true))]),
+                        verticalSpace
+                      ]);
+                  }
+                  void addGotoDashboard(bool isTest) {
+                    if (userDetails != null &&
+                        userDetails.isOrganiser(isTest) &&
+                        userDetails.areChargesEnabled(isTest))
+
+                      widgets.addAll([
+                        Row(children: [Expanded(child: GenericButtonWithLoader(
+                          "GO TO STRIPE DASHBOARD" + (isTest ? " TEST" : ""),
+                            (_) async {
+                              var url = "https://europe-central2-nutmeg-9099c.cloudfunctions.net/go_to_account_login_link?"
+                                  "is_test=$isTest&user_id=${userState.currentUserId}";
+
+                              await launch(url, forceSafariVC: false);
+                            }, Primary()
+                        ))]),
+                        verticalSpace
+                      ]);
+                  }
+
+                  addCompleteBanner(true);
+                  addCompleteBanner(false);
+                  addGotoDashboard(true);
+                  addGotoDashboard(false);
+
+                  widgets.add(Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                    Expanded(child: UserInfoBox(content:
+                    (userDetails == null)? null: userDetails.createdMatches.length.toString(),
+                        description: "Matches Organised"))]));
+
+                  return Column(children: widgets);
+                }
+              )),
         ),
       Section(
           title: "USEFUL LINK",
@@ -450,10 +460,9 @@ class CompleteOrganiserAccountWidget extends StatelessWidget {
     return WarningWidget(
       title: "Create your " + (this.isTest ? "Test" : "") + " Stripe account",
       body: "To start receiving payments, you need to create your Stripe account",
-      textAction: (userState.getOnboardingUrl(this.isTest) == null) ? "" : "GO TO STRIPE",
-      action: (userState.getOnboardingUrl(this.isTest) == null) ? null : () async {
-        var url = await UserController
-            .getOnboardUrl(userState.currentUserId, isTest);
+      textAction: "GO TO STRIPE",
+      action: () async {
+        var url = "https://europe-central2-nutmeg-9099c.cloudfunctions.net/go_to_onboard_connected_account?is_test=$isTest&id=${userState.currentUserId}";
         await launch(url, forceSafariVC: false);
       },
     );

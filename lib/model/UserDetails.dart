@@ -9,12 +9,14 @@ class UserDetails {
   int creditsInCents;
 
   List<String> joinedMatches;
-  List<String> organisedMatches;
+  List<String> createdMatches;
+  List<String> createdTestMatches;
   Map<String, double> scoreMatches;
+
   List<String> manOfTheMatch;
 
-  String stripeConnectedAccountId;
-  String stripeConnectedAccountTestId;
+  bool chargesEnabledOnStripe;
+  bool chargesEnabledOnStripeTest;
 
   UserDetails.empty(this.documentId);
 
@@ -40,9 +42,10 @@ class UserDetails {
         joinedMatches = Map<String, dynamic>.from(json["joined_matches"] ?? {}).keys.toList(),
         scoreMatches = Map<String, double>.from(json["scoreMatches"] ?? {}),
         manOfTheMatch = List<String>.from(json["manOfTheMatch"] ?? []),
-        stripeConnectedAccountId = json["stripeConnectedAccountId"] ?? null,
-        stripeConnectedAccountTestId = json["stripeConnectedAccountTestId"] ?? null,
-        organisedMatches = Map<String, dynamic>.from(json["organised_matches"] ?? {}).keys.toList(),
+        chargesEnabledOnStripe = json["chargesEnabledOnStripe"] ?? false,
+        chargesEnabledOnStripeTest = json["chargesEnabledOnStripeTest"] ?? false,
+        createdMatches = Map<String, dynamic>.from(json["created_matches"] ?? {}).keys.toList(),
+        createdTestMatches = Map<String, dynamic>.from(json["created_test_matches"] ?? {}).keys.toList(),
         documentId = documentId;
 
   Map<String, dynamic> toJson() =>
@@ -77,10 +80,13 @@ class UserDetails {
   bool getIsAdmin() => (isAdmin == null) ? false : isAdmin;
 
   bool isOrganiser(isTest) {
-    var outcome = isTest ?
-    this.stripeConnectedAccountTestId != null :
-    this.stripeConnectedAccountId != null;
-    return outcome;
+    if (isTest)
+      return this.createdTestMatches != null && this.createdTestMatches.isNotEmpty;
+    return this.createdMatches != null && this.createdMatches.isNotEmpty;
+  }
+
+  bool areChargesEnabled(bool isTest) {
+    return isTest ? chargesEnabledOnStripeTest : chargesEnabledOnStripe;
   }
 
   static String getDisplayName(UserDetails ud) {
@@ -88,6 +94,11 @@ class UserDetails {
     if (ud.name != null) return ud.name;
     if (ud.email != null && !ud.email.contains("privaterelay")) return ud.email;
     return "Player";
+  }
+
+  @override
+  String toString() {
+    return 'UserDetails{documentId: $documentId, isAdmin: $isAdmin, image: $image, name: $name, email: $email, stripeId: $stripeId, creditsInCents: $creditsInCents, joinedMatches: $joinedMatches, organisedMatches: $createdMatches, organisedMatchesTest: $createdTestMatches, scoreMatches: $scoreMatches, manOfTheMatch: $manOfTheMatch, chargesEnabledOnStripe: $chargesEnabledOnStripe, chargesEnabledOnStripeTest: $chargesEnabledOnStripeTest}';
   }
 }
 

@@ -53,7 +53,8 @@ class MatchesController {
 
     await apiClient.callFunction("remove_user_from_match", {
       'user_id': userState.getLoggedUserDetails().documentId,
-      'match_id': matchId
+      'match_id': matchId,
+      'type': "stripe"
     });
     var m = await refresh(context, matchId);
     return m;

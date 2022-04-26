@@ -14,7 +14,6 @@ import 'package:nutmeg/state/UserState.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/Avatar.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
-import 'package:nutmeg/widgets/Containers.dart';
 import 'package:nutmeg/widgets/PageTemplate.dart';
 import 'package:nutmeg/widgets/Section.dart';
 import 'package:provider/provider.dart';
