@@ -39,7 +39,7 @@ class Match {
 
   Match(this.dateTime, this.sportCenterId, this.sportCenterSubLocation, this.sport,
       this.maxPlayers, this.pricePerPersonInCents, this.duration,
-      this.isTest, [this.minPlayers, this.organizerId]);
+      this.isTest, this.minPlayers, this.organizerId);
 
   Match.fromJson(Map<String, dynamic> jsonInput, String documentId) {
       dateTime = DateTime.parse(jsonInput['dateTime']).toLocal();
