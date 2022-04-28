@@ -138,6 +138,7 @@ class CreateMatchState extends State<CreateMatch> {
                     child: TextFormField(
                         controller: dateEditingController,
                         focusNode: datefocusNode,
+                        readOnly: true,
                         decoration: getTextFormDecoration("Date"),
                         onTap: () async {
                           var d = await showDatePicker(
@@ -162,6 +163,7 @@ class CreateMatchState extends State<CreateMatch> {
                     child: TextFormField(
                   controller: startTimeEditingController,
                   focusNode: startTimefocusNode,
+                  readOnly: true,
                   decoration: getTextFormDecoration("Start time"),
                   onTap: () async {
                     var d = await showCustomTimePicker(
@@ -191,6 +193,7 @@ class CreateMatchState extends State<CreateMatch> {
                     child: TextFormField(
                         enabled: startTimeEditingController.text.isNotEmpty,
                         controller: endTimeEditingController,
+                        readOnly: true,
                         decoration: getTextFormDecoration("End Time",
                             focusColor:
                                 (startTimeEditingController.text.isEmpty)
@@ -226,6 +229,7 @@ class CreateMatchState extends State<CreateMatch> {
               children: [
                 Expanded(
                     child: TextFormField(
+                        readOnly: true,
                         controller: repeatWeeklyEditingController,
                         decoration:
                             getTextFormDecoration("Repeat", isDropdown: true),
@@ -279,6 +283,7 @@ class CreateMatchState extends State<CreateMatch> {
                   enabled:
                       context.watch<LoadOnceState>().getSportCenters() != null,
                   focusNode: sportCenterfocusNode,
+                  readOnly: true,
                   decoration:
                       getTextFormDecoration("Location", isDropdown: true),
                   onTap: () async {
@@ -306,6 +311,7 @@ class CreateMatchState extends State<CreateMatch> {
                 Expanded(
                     child: TextFormField(
                   controller: sportEditingController,
+                  readOnly: true,
                   decoration: getTextFormDecoration("Sport", isDropdown: true),
                   onTap: () async {
                     var sports = context.read<LoadOnceState>().getSports();
