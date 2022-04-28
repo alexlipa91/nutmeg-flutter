@@ -338,6 +338,9 @@ class CreateMatchState extends State<CreateMatch> {
                     child: TextFormField(
                   controller: courtNumberEditingController,
                   readOnly: false,
+                  inputFormatters: [
+                    LengthLimitingTextInputFormatter(5)
+                  ],
                   decoration: getTextFormDecoration("Court number (optional)"),
                 )),
               ],
@@ -371,7 +374,7 @@ class CreateMatchState extends State<CreateMatch> {
                       values: numberOfPeopleRangeValues,
                       max: 22,
                       min: 6,
-                      divisions: 8,
+                      divisions: 22-6,
                       labels: RangeLabels(
                         numberOfPeopleRangeValues.start.toString(),
                         numberOfPeopleRangeValues.end.toString(),
