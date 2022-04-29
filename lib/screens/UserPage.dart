@@ -458,7 +458,7 @@ class CompleteOrganiserAccountWidget extends StatelessWidget {
     var userState = context.watch<UserState>();
 
     return WarningWidget(
-      title: "Create your " + (this.isTest ? "Test" : "") + " Stripe account",
+      title: "Create your " + (this.isTest ? "Test " : "") + "Stripe account",
       body: "To start receiving payments, you need to create your Stripe account",
       textAction: "GO TO STRIPE",
       action: () async {

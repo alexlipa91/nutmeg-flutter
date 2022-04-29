@@ -239,7 +239,7 @@ class GenericMatchInfo extends StatelessWidget {
                                 height: 8,
                               ),
                               (match.status == MatchStatus.unpublished) ?
-                                Text("Inactive",
+                                Text("Not Published",
                                   style: TextPalette.getBodyText(
                                       Palette.darkWarning)) :
                               (match.status == MatchStatus.cancelled)

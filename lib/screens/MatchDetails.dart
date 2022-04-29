@@ -584,7 +584,10 @@ class EmptyPlayerCard extends StatelessWidget {
           child: InfoContainer(
               child: Column(children: [
             InkWell(
-              onTap: () => JoinModal.onJoinGameAction(context, matchId),
+              onTap:
+              context.watch<MatchesState>().getMatch(matchId).status == MatchStatus.unpublished
+                  ?
+              null : () => JoinModal.onJoinGameAction(context, matchId),
               child: CircleAvatar(
                   radius: 25,
                   child: Icon(Icons.add, color: Palette.grey_dark, size: 24),
