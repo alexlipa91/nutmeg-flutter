@@ -24,7 +24,6 @@ import 'package:version/version.dart';
 
 import '../state/UserState.dart';
 
-
 class UserPage extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
@@ -55,7 +54,6 @@ class UserPageState extends State<UserPage> {
 
     var showOrganizerView = userDetails != null &&
         (userDetails.isOrganiser(true) || userDetails.isOrganiser(false));
-
 
     var widgets = [
       Text("Account", style: TextPalette.h1Default),
@@ -130,142 +128,154 @@ class UserPageState extends State<UserPage> {
       )),
       verticalSpace,
       Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-          Expanded(
-        child: UserInfoBox(
-            content: (userDetails == null)
-                ? null
-                : formatCurrency(userDetails.creditsInCents ?? 0),
-            description: "Credits")),
-          SizedBox(width: 20),
-          Expanded(
-      child: UserInfoBox(
-          content: (userDetails == null)
-              ? null
-              : userDetails.getJoinedMatches().length.toString(),
-          description: "Matches Played"),
-          )
-        ]),
+        Expanded(
+            child: UserInfoBox(
+                content: (userDetails == null)
+                    ? null
+                    : formatCurrency(userDetails.creditsInCents ?? 0),
+                description: "Credits")),
+        SizedBox(width: 20),
+        Expanded(
+          child: UserInfoBox(
+              content: (userDetails == null)
+                  ? null
+                  : userDetails.getJoinedMatches().length.toString(),
+              description: "Matches Played"),
+        )
+      ]),
       verticalSpace,
       Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-            Expanded(
-      child: UserInfoBox(
-          content: (userDetails == null)
-              ? null
-              : (userDetails.getScoreMatches() == -1)
-                  ? "-"
-                  : userDetails.getScoreMatches().toStringAsFixed(1),
-          description: "Avg. Score"),
-            ),
-            SizedBox(width: 20),
-            Expanded(
-      child: UserInfoBox(
-        content: (userDetails == null)
-            ? null
-            : userDetails.getNumManOfTheMatch().toString(),
-        description: "Player of the Match",
-      ),
-            )
-          ]),
+        Expanded(
+          child: UserInfoBox(
+              content: (userDetails == null)
+                  ? null
+                  : (userDetails.getScoreMatches() == -1)
+                      ? "-"
+                      : userDetails.getScoreMatches().toStringAsFixed(1),
+              description: "Avg. Score"),
+        ),
+        SizedBox(width: 20),
+        Expanded(
+          child: UserInfoBox(
+            content: (userDetails == null)
+                ? null
+                : userDetails.getNumManOfTheMatch().toString(),
+            description: "Player of the Match",
+          ),
+        )
+      ]),
       if (showOrganizerView)
         Section(
           title: "ORGANISER",
-          body: Container(
-              child: Builder(
-                builder: (context) {
-                  var widgets = List<Widget>.from([]);
+          body: Container(child: Builder(builder: (context) {
+            var widgets = List<Widget>.from([]);
 
-                  void addCompleteBanner(bool isTest) {
-                    if (userDetails != null &&
-                        userDetails.isOrganiser(isTest) &&
-                        !userDetails.areChargesEnabled(isTest))
-                      widgets.addAll([
-                        Row(children: [Expanded(child: CompleteOrganiserAccountWidget(isTest: true))]),
-                        verticalSpace
-                      ]);
-                  }
-                  void addGotoDashboard(bool isTest) {
-                    if (userDetails != null &&
-                        userDetails.isOrganiser(isTest) &&
-                        userDetails.areChargesEnabled(isTest))
+            void addCompleteBanner(bool isTest) {
+              if (userDetails != null &&
+                  userDetails.isOrganiser(isTest) &&
+                  !userDetails.areChargesEnabled(isTest))
+                widgets.addAll([
+                  Row(children: [
+                    Expanded(
+                        child: CompleteOrganiserAccountWidget(isTest: true))
+                  ]),
+                  verticalSpace
+                ]);
+            }
+            addCompleteBanner(true);
+            addCompleteBanner(false);
 
-                      widgets.addAll([
-                        Row(children: [Expanded(child: GenericButtonWithLoader(
-                          "GO TO STRIPE DASHBOARD" + (isTest ? " TEST" : ""),
-                            (_) async {
-                              var url = "https://europe-central2-nutmeg-9099c.cloudfunctions.net/go_to_account_login_link?"
-                                  "is_test=$isTest&user_id=${userState.currentUserId}";
+            widgets.add(Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(child: Builder(builder: (BuildContext context) {
+                    int n = userDetails.createdMatches.length;
+                    var widgets = List<Widget>.from([]);
 
-                              await launch(url, forceSafariVC: false);
-                            }, Primary()
-                        ))]),
-                        verticalSpace
-                      ]);
-                  }
+                    void addGotoDashboard(bool isTest) {
+                      if (userDetails != null &&
+                          userDetails.isOrganiser(isTest) &&
+                          userDetails.areChargesEnabled(isTest))
+                        widgets.addAll([
+                          if (widgets.isNotEmpty)
+                            verticalSpace,
+                          Row(children: [
+                            Expanded(
+                                child: GenericButtonWithLoader(
+                                    "GO TO MY STRIPE DASHBOARD" + (isTest ? " TEST" : ""),
+                                        (_) async {
+                                      var url =
+                                          "https://europe-central2-nutmeg-9099c.cloudfunctions.net/go_to_account_login_link?"
+                                          "is_test=$isTest&user_id=${userState.currentUserId}";
 
-                  addCompleteBanner(true);
-                  addCompleteBanner(false);
-                  addGotoDashboard(true);
-                  addGotoDashboard(false);
+                                      await launch(url, forceSafariVC: false);
+                                    }, Primary()))
+                          ]),
+                        ]);
+                      }
 
-                  widgets.add(Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                    Expanded(child: UserInfoBox(content:
-                    (userDetails == null)? null: userDetails.createdMatches.length.toString(),
-                        description: "Matches Organised"))]));
+                    addGotoDashboard(true);
+                    addGotoDashboard(false);
 
-                  return Column(children: widgets);
-                }
-              )),
+                    return UserInfoBox(
+                        content: (userDetails == null) ? null : n.toString(),
+                        description: "Organized match" + ((n > 1) ? "es" : ""),
+                        bottom: Column(children: widgets),
+                    );
+                  }))
+                ]));
+
+            return Column(children: widgets);
+          })),
         ),
       Section(
-          title: "USEFUL LINK",
-          body: InfoContainer(
-              child: Column(children: [
-            LinkInfo(
-              text: "Follow us on Instagram",
-              onTap: () async {
-                var url = 'https://www.instagram.com/nutmegapp/';
+        title: "USEFUL LINK",
+        body: InfoContainer(
+            child: Column(children: [
+          LinkInfo(
+            text: "Follow us on Instagram",
+            onTap: () async {
+              var url = 'https://www.instagram.com/nutmegapp/';
 
-                if (await canLaunch(url)) {
-                  await launch(
-                    url,
-                    universalLinksOnly: true,
-                  );
-                } else {
-                  throw 'There was a problem to open the url: $url';
-                }
-              },
-            ),
-            // LinkInfo(text: "Terms and Conditions"),
-            SizedBox(height: 10),
-            Row(
-              children: [
-                Expanded(
-                  child: GenericButtonWithLoader(
-                    "LOGOUT",
-                    (BuildContext context) async {
-                      context
-                          .read<GenericButtonWithLoaderState>()
-                          .change(true);
+              if (await canLaunch(url)) {
+                await launch(
+                  url,
+                  universalLinksOnly: true,
+                );
+              } else {
+                throw 'There was a problem to open the url: $url';
+              }
+            },
+          ),
+          // LinkInfo(text: "Terms and Conditions"),
+          SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: GenericButtonWithLoader(
+                  "LOGOUT",
+                  (BuildContext context) async {
+                    context.read<GenericButtonWithLoaderState>().change(true);
 
-                      try {
-                        await Future.delayed(
-                            Duration(milliseconds: 500),
-                            () => UserController.logout(
-                                context.read<UserState>()));
-                      } catch (e, stackTrace) {
-                        print(e);
-                        print(stackTrace);
-                      }
-                      // when logging out, go back to first tab in main page
-                      Get.back(result: false);
-                    },
-                    Primary(),
-                  ),
-                )
-              ],
-            ),
-          ])),
-        ),
+                    try {
+                      await Future.delayed(
+                          Duration(milliseconds: 500),
+                          () =>
+                              UserController.logout(context.read<UserState>()));
+                    } catch (e, stackTrace) {
+                      print(e);
+                      print(stackTrace);
+                    }
+                    // when logging out, go back to first tab in main page
+                    Get.back(result: false);
+                  },
+                  Primary(),
+                ),
+              )
+            ],
+          ),
+        ])),
+      ),
       if (userDetails != null && userDetails.getIsAdmin())
         Section(
           title: "ADMIN COMMANDS",
@@ -295,8 +305,7 @@ class UserPageState extends State<UserPage> {
                   activeTrackColor: Colors.red,
                   activeColor: Colors.red,
                 ),
-                Expanded(
-                    child: Text("It allows to see in the UI test matches"))
+                Expanded(child: Text("It allows to see in the UI test matches"))
               ],
             ),
             verticalSpace,
@@ -337,9 +346,7 @@ class UserPageState extends State<UserPage> {
                       print(s);
                       ErrorHandlingUtils.handleError(e, s, context);
                     }
-                    context
-                        .read<GenericButtonWithLoaderState>()
-                        .change(false);
+                    context.read<GenericButtonWithLoaderState>().change(false);
                   }, Primary()),
                 )
               ],
@@ -408,10 +415,11 @@ class LinkInfo extends StatelessWidget {
 class UserInfoBox extends StatelessWidget {
   final String content;
   final String description;
+  final Widget bottom;
 
   // final Widget badge;
 
-  const UserInfoBox({Key key, this.content, this.description})
+  const UserInfoBox({Key key, this.content, this.description, this.bottom})
       // this.badge
       : super(key: key);
 
@@ -429,7 +437,11 @@ class UserInfoBox extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8.0)))
             : Text(content, style: TextPalette.getStats(Palette.black)),
         SizedBox(height: 4),
-        Text(description, style: TextPalette.bodyText)
+        Text(description, style: TextPalette.bodyText),
+        if (bottom != null)
+          SizedBox(height: 4),
+        if (bottom != null)
+          bottom
       ],
     );
 
@@ -459,10 +471,12 @@ class CompleteOrganiserAccountWidget extends StatelessWidget {
 
     return WarningWidget(
       title: "Create your " + (this.isTest ? "Test " : "") + "Stripe account",
-      body: "To start receiving payments, you need to create your Stripe account",
+      body:
+          "To start receiving payments, you need to create your Stripe account",
       textAction: "GO TO STRIPE",
       action: () async {
-        var url = "https://europe-central2-nutmeg-9099c.cloudfunctions.net/go_to_onboard_connected_account?is_test=$isTest&id=${userState.currentUserId}";
+        var url =
+            "https://europe-central2-nutmeg-9099c.cloudfunctions.net/go_to_onboard_connected_account?is_test=$isTest&id=${userState.currentUserId}";
         await launch(url, forceSafariVC: false);
       },
     );
