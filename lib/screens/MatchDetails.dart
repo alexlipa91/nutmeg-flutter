@@ -298,6 +298,9 @@ class MatchInfo extends StatelessWidget {
         ? null
         : context.watch<LoadOnceState>().getSportCenter(match.sportCenterId);
 
+    var courtType = sportCenter == null ? null : sportCenter.getCourtType();
+    var isIndoor = sportCenter == null ? null : sportCenter.isIndoor();
+
     child = Column(
       children: [
         Row(children: [Expanded(child: SportCenterImageCarousel(match))]),
@@ -363,11 +366,11 @@ class MatchInfo extends StatelessWidget {
             ),
             SizedBox(height: 16),
             InfoWidget(
-                title: match?.sport,
+                title: courtType,
                 icon: Icons.sports_soccer,
                 // todo fix info sport
-                subTitle:
-                    (sportCenter == null) ? null : sportCenter.tags.join(", ")),
+                subTitle: isIndoor ? "Indoor" : "Outdoor"
+            ),
             SizedBox(height: 16),
             InfoWidget(
                 title: (match == null)

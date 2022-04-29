@@ -6,7 +6,7 @@ class SportCenter {
   double lng;
   String neighbourhood;
   String address;
-  List<String> tags;
+  Map<String, dynamic> _info;
 
   String _thumbnailUrl;
   List<String> _imagesUrls;
@@ -18,7 +18,7 @@ class SportCenter {
         address = json['address'],
         lat = json['lat'],
         lng = json['lng'],
-        tags = List<String>.from(json['tags']),
+        _info = Map<String, dynamic>.from(json["info"] ?? {}),
         _thumbnailUrl = json['thumbnailUrl'],
         _imagesUrls = List<String>.from(json["largeImageUrls"] ?? []);
 
@@ -39,5 +39,13 @@ class SportCenter {
       address
           .split(",")
           .first;
+
+  bool hasChangingRooms() => _info["changeRooms"];
+
+  String getCourtType() => _info["courtType"];
+
+  bool isIndoor() => _info["indoor"];
+
+  String getSurface() => _info["surface"];
 }
 
