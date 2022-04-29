@@ -11,6 +11,7 @@ import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/model/Match.dart';
 import 'package:nutmeg/screens/BottomBarMatch.dart';
 import 'package:nutmeg/state/UserState.dart';
+import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
@@ -508,94 +509,114 @@ class CreateMatchState extends State<CreateMatch> {
         )
     ];
 
-    return Form(
-      key: _formKey,
-      child: PageTemplate(
-        refreshState: null,
-        widgets: widgets,
-        appBar: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            BackButton(color: Palette.black),
-          ],
-        ),
-        bottomNavigationBar: GenericBottomBar(
-            child: Padding(
-          padding: EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0),
-          child: Row(children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                      getDateTime() == null ? "" :
-                      getFormattedDate(getDateTime()),
-                      style: TextPalette.bodyText),
-                  SizedBox(height: 4),
-                  Text(
-                      sportCenterEditingController.text,
-                      style: TextPalette.h2),
-                ],
+    return WillPopScope(
+      onWillPop: () async {
+        return await GenericInfoModal(
+          title: "Are you sure you want to leave?",
+          description: "If you leave, all your unsaved changes will be lost.",
+          action: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              GenericButtonWithLoader("CANCEL", (_) async {
+                Navigator.pop(context, false);
+              }, Secondary()),
+              SizedBox(width: 8),
+              GenericButtonWithLoader("YES", (_) async {
+                Navigator.pop(context, true);
+              }, Primary()),
+            ],
+          )
+        ).show(context);
+      },
+      child: Form(
+        key: _formKey,
+        child: PageTemplate(
+          refreshState: null,
+          widgets: widgets,
+          appBar: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              BackButton(color: Palette.black),
+            ],
+          ),
+          bottomNavigationBar: GenericBottomBar(
+              child: Padding(
+            padding: EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0),
+            child: Row(children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                        getDateTime() == null ? "" :
+                        getFormattedDate(getDateTime()),
+                        style: TextPalette.bodyText),
+                    SizedBox(height: 4),
+                    Text(
+                        sportCenterEditingController.text,
+                        style: TextPalette.h2),
+                  ],
+                ),
               ),
-            ),
-            GenericButtonWithLoader("CREATE", (BuildContext context) async {
-              context.read<GenericButtonWithLoaderState>().change(true);
+              GenericButtonWithLoader("CREATE", (BuildContext context) async {
+                context.read<GenericButtonWithLoaderState>().change(true);
 
-              if (_formKey.currentState.validate()) {
-                try {
-                  var etod = toTimeOfTheDay(endTimeEditingController.text);
-                  var day = dateFormat.parse(dateEditingController.text);
-                  var dateTime = getDateTime();
-                  var endTime = DateTime(
-                          day.year, day.month, day.day, etod.hour, etod.minute)
-                      .toUtc();
-                  var duration = endTime.difference(dateTime);
+                if (_formKey.currentState.validate()) {
+                  try {
+                    var etod = toTimeOfTheDay(endTimeEditingController.text);
+                    var day = dateFormat.parse(dateEditingController.text);
+                    var dateTime = getDateTime();
+                    var endTime = DateTime(
+                            day.year, day.month, day.day, etod.hour, etod.minute)
+                        .toUtc();
+                    var duration = endTime.difference(dateTime);
 
-                  var forWeeks =
-                      int.tryParse(repeatWeeklyEditingController.text);
-                  if (forWeeks == null) forWeeks = 1;
+                    var forWeeks =
+                        int.tryParse(repeatWeeklyEditingController.text);
+                    if (forWeeks == null) forWeeks = 1;
 
-                  Iterable<Future<String>> idsFuture =
-                      Iterable<int>.generate(forWeeks).map((w) async {
-                    var match = Match(
-                        dateTime.add(Duration(days: 7 * w)),
-                        sportCenterId,
-                        courtNumberEditingController.text,
-                        sport.displayTitle,
-                        numberOfPeopleRangeValues.end.toInt(),
-                        (double.parse(priceController.text) * 100).toInt(),
-                        duration,
-                        isTest,
-                        numberOfPeopleRangeValues.start.toInt(),
-                        context
-                            .read<UserState>()
-                            .getLoggedUserDetails()
-                            .documentId);
+                    Iterable<Future<String>> idsFuture =
+                        Iterable<int>.generate(forWeeks).map((w) async {
+                      var match = Match(
+                          dateTime.add(Duration(days: 7 * w)),
+                          sportCenterId,
+                          courtNumberEditingController.text,
+                          sport.displayTitle,
+                          numberOfPeopleRangeValues.end.toInt(),
+                          (double.parse(priceController.text) * 100).toInt(),
+                          duration,
+                          isTest,
+                          numberOfPeopleRangeValues.start.toInt(),
+                          context
+                              .read<UserState>()
+                              .getLoggedUserDetails()
+                              .documentId);
 
-                    var id = await MatchesController.addMatch(match);
-                    await MatchesController.refresh(context, id);
-                    await UserController.refreshLoggedUser(context);
-                    print("added match with id " + id);
-                    return id;
-                  });
+                      var id = await MatchesController.addMatch(match);
+                      await MatchesController.refresh(context, id);
+                      await UserController.refreshLoggedUser(context);
+                      print("added match with id " + id);
+                      return id;
+                    });
 
-                  var ids = await Future.wait(idsFuture);
+                    var ids = await Future.wait(idsFuture);
 
-                  Get.offNamed("/match/" + ids.first);
-                } on Exception catch (e, s) {
-                  print(e);
-                  print(s);
-                  ErrorHandlingUtils.handleError(e, s, context);
+                    Get.offNamed("/match/" + ids.first);
+                  } on Exception catch (e, s) {
+                    print(e);
+                    print(s);
+                    ErrorHandlingUtils.handleError(e, s, context);
+                  }
+                } else {
+                  print("validation error");
+                  setState(() {});
                 }
-              } else {
-                print("validation error");
-                setState(() {});
-              }
 
-              context.read<GenericButtonWithLoaderState>().change(false);
-            }, Primary())
-          ]),
-        )),
+                context.read<GenericButtonWithLoaderState>().change(false);
+              }, Primary())
+            ]),
+          )),
+        ),
       ),
     );
   }
