@@ -147,6 +147,7 @@ class GenericAvailableMatchesListState
           backgroundColor: Palette.grey_lightest,
           body: RefresherWithObserverWidget(
             child: ListView.builder(
+                padding: EdgeInsets.zero,
                 physics: AlwaysScrollableScrollPhysics(parent: ClampingScrollPhysics()),
                 itemBuilder: (c, i) {
                   var core = (widget.tabContent[selected] == null)
@@ -160,7 +161,7 @@ class GenericAvailableMatchesListState
                         EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0),
                         child: core),
                     SizedBox(
-                        height: min(16.0, MediaQuery.of(context).padding.bottom)
+                        height: max(16.0, MediaQuery.of(context).padding.bottom)
                     )
                   ]);
                   return list[i];
