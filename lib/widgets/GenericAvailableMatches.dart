@@ -7,7 +7,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/controller/SportCentersController.dart';
 import 'package:nutmeg/model/Match.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
@@ -161,8 +160,8 @@ class GenericAvailableMatchesListState
                         EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0),
                         child: core),
                     SizedBox(
-                        height:
-                        max(16.0, MediaQuery.of(context).padding.bottom))
+                        height: min(16.0, MediaQuery.of(context).padding.bottom)
+                    )
                   ]);
                   return list[i];
                 },
