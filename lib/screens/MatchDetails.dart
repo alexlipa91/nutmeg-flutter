@@ -150,6 +150,8 @@ class MatchDetailsState extends State<MatchDetails> {
             title: "DETAILS",
             body: Column(
               children: [
+                MapCardImage(matchId),
+                SizedBox(height: 16.0),
                 RuleCard(
                     "Payment Policy",
                     ConfigsUtils.removeCreditsFunctionality() ?
@@ -158,8 +160,6 @@ class MatchDetailsState extends State<MatchDetails> {
                     "If you leave the match you will get a refund in credits that you can use for other Nutmeg matches.\n\n" +
                         "If the match is canceled by the organizer, you will get a refund on the payment method you used to pay.\n\n"
                             "If you don’t show up you won’t get a refund."),
-                SizedBox(height: 16.0),
-                MapCardImage(matchId),
                 SizedBox(height: 16.0),
                 if (match != null && match.organizerId != null)
                   Builder(builder: (context) {
