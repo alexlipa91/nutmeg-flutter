@@ -90,7 +90,9 @@ class MatchesState extends ChangeNotifier {
     MatchStatusForUser matchStatusForUser;
 
     if (ud != null && match.isUserGoing(ud)) {
-      if (match.status == MatchStatus.open || match.status == MatchStatus.cancelled) {
+      if (match.status == MatchStatus.open
+          || match.status == MatchStatus.cancelled
+          || match.status == MatchStatus.full) {
         matchStatusForUser = MatchStatusForUser.canLeave;
       } else if (match.status == MatchStatus.pre_playing) {
         matchStatusForUser = MatchStatusForUser.cannotLeave;

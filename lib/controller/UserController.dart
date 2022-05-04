@@ -48,13 +48,14 @@ class UserController {
     UserDetails ud;
 
     if (u != null) {
+      var uid = u.uid;
       try {
-        var existingUserDetails = await initLoggedUser(context, u.uid);
+        var existingUserDetails = await initLoggedUser(context, uid);
 
         if (existingUserDetails == null) {
           ud = null;
         } else {
-          ud = UserDetails.from(u.uid, existingUserDetails);
+          ud = UserDetails.from(uid, existingUserDetails);
         }
       } catch (e, stack) {
         print("Found firebase user but couldn't load details: " + e.toString());

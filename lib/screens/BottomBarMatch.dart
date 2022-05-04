@@ -55,7 +55,13 @@ class BottomBarMatch extends StatelessWidget {
     if (match.status == MatchStatus.unpublished) {
       return "Not published";
     }
-    throw Exception("Unexpected");
+    if (match.status == MatchStatus.full) {
+      if (matchStatusForUser == MatchStatusForUser.canLeave) {
+        return "You are in";
+      }
+      return "Match full";
+    }
+    return "";
   }
 
   Widget getSubText(Match match, MatchStatusForUser matchStatusForUser,
@@ -65,16 +71,14 @@ class BottomBarMatch extends StatelessWidget {
     if (match.status == MatchStatus.cancelled) {
       return Container();
     }
-    if (match.status == MatchStatus.open) {
+    if (match.status == MatchStatus.open || match.status == MatchStatus.full) {
+      print(matchStatusForUser);
       if (matchStatusForUser == MatchStatusForUser.canJoin) {
         return Text(formatCurrency(match.pricePerPersonInCents),
             style: TextPalette.bodyText);
       }
-      if (matchStatusForUser == MatchStatusForUser.canLeave) {
-        return Text(match.going.length.toString() + " players going",
-            style: TextPalette.bodyText);
-      }
-      throw Exception("Unexpected");
+      return Text(match.going.length.toString() + " players going",
+          style: TextPalette.bodyText);
     }
     if (match.status == MatchStatus.to_rate) {
       if (matchStatusForUser == MatchStatusForUser.to_rate) {
@@ -97,7 +101,7 @@ class BottomBarMatch extends StatelessWidget {
     if (match.status == MatchStatus.unpublished) {
       return Text("Complete your Stripe account", style: TextPalette.bodyText);
     }
-    throw Exception("Unexpected");
+    return Text("");
   }
 
   Widget getButton(Match match, MatchStatusForUser matchStatusForUser,
