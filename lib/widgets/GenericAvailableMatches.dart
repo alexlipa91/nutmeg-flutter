@@ -246,7 +246,7 @@ class GenericMatchInfo extends StatelessWidget {
                                   ? Text("Cancelled",
                                       style: TextPalette.getBodyText(
                                           Palette.destructive))
-                                  : (match.status == MatchStatus.full)
+                                  : (match.isFull())
                                       ? Text("Full",
                                           style: TextPalette.bodyText,
                                           textAlign: TextAlign.right)

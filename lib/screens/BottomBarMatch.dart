@@ -8,135 +8,70 @@ import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
 import 'package:provider/provider.dart';
 
-import '../controller/MatchesController.dart';
 import '../state/MatchesState.dart';
 
 class BottomBarMatch extends StatelessWidget {
-  static BottomBarMatch getBottomBar(BuildContext context, String matchId,
-      MatchStatus matchStatus) {
-    var matchStatusForUser = context.read<MatchesState>().getMatchStatusForUser(matchId,
-        context.read<UserState>().getLoggedUserDetails());
 
-    if (matchStatus == null ||
-        matchStatus == MatchStatus.rated ||
-        matchStatus == MatchStatus.playing ||
-        matchStatus == MatchStatus.cancelled ||
-        matchStatusForUser == MatchStatusForUser.no_more_to_rate) return null;
-    return BottomBarMatch(matchId: matchId);
+  static Widget getBottomBar(BuildContext context, String matchId,
+      MatchStatus matchStatus) {
+    // https://docs.google.com/document/d/1PpHh-8blyMYH7ePtU-XIBU289guZX847eBfHz_yqPJ0/edit#
+
+    var match = context.read<MatchesState>().getMatch(matchId);
+
+    if (match == null)
+      return null;
+
+    var isFull = match.isFull();
+    var isGoing = match.isUserGoing(context.read<UserState>().getLoggedUserDetails());
+
+    var bottomBar;
+
+    print(matchStatus);
+
+    switch (matchStatus) {
+      case MatchStatus.open:
+        if (isGoing) {
+          bottomBar = LeaveMatchBottomBar(matchId: matchId, enabled: true);
+        } else {
+          bottomBar = JoinMatchBottomBar(matchId: matchId, enabled: !isFull);
+        }
+        break;
+      case MatchStatus.pre_playing:
+        if (isGoing) {
+          bottomBar = LeaveMatchBottomBar(matchId: matchId, enabled: false);
+        } else {
+          bottomBar = JoinMatchBottomBar(matchId: matchId, enabled: !isFull);
+        }
+        break;
+      case MatchStatus.playing:
+        break;
+      case MatchStatus.to_rate:
+        var stillToVote = context.read<MatchesState>()
+            .stillToVote(matchId, context.read<UserState>().getLoggedUserDetails());
+        if (isGoing && stillToVote.isNotEmpty)
+          bottomBar = RatePlayersBottomBar(matchId: matchId);
+        break;
+      case MatchStatus.rated:
+        break;
+      case MatchStatus.cancelled:
+        bottomBar = MatchCanceledBottomBar(matchId: matchId);
+        break;
+      case MatchStatus.unpublished:
+        bottomBar = NotPublishedBottomBar(matchId: matchId);
+    }
+
+    return bottomBar;
   }
 
   final String matchId;
+  final String text;
+  final String subText;
+  final Widget button;
 
-  const BottomBarMatch({Key key, this.matchId}) : super(key: key);
-
-  String getText(Match match, MatchStatusForUser matchStatusForUser) {
-    if (match.status == MatchStatus.cancelled) {
-      return "Cancelled";
-    }
-    if (match.status == MatchStatus.open) {
-      if (matchStatusForUser == MatchStatusForUser.canJoin) {
-        return match.getSpotsLeft().toString() + " spots left";
-      }
-      if (matchStatusForUser == MatchStatusForUser.canLeave) {
-        return "You are in";
-      }
-      throw Exception("Unexpected");
-    }
-    if (match.status == MatchStatus.to_rate) {
-      print(matchStatusForUser);
-      if (matchStatusForUser == MatchStatusForUser.to_rate) {
-        return "Rate Players";
-      }
-      throw Exception("Unexpected");
-    }
-    if (match.status == MatchStatus.pre_playing) {
-      return "You are in";
-    }
-    if (match.status == MatchStatus.unpublished) {
-      return "Not published";
-    }
-    if (match.status == MatchStatus.full) {
-      if (matchStatusForUser == MatchStatusForUser.canLeave) {
-        return "You are in";
-      }
-      return "Match full";
-    }
-    return "";
-  }
-
-  Widget getSubText(Match match, MatchStatusForUser matchStatusForUser,
-      BuildContext context) {
-    if (match == null) return Container();
-
-    if (match.status == MatchStatus.cancelled) {
-      return Container();
-    }
-    if (match.status == MatchStatus.open || match.status == MatchStatus.full) {
-      print(matchStatusForUser);
-      if (matchStatusForUser == MatchStatusForUser.canJoin) {
-        return Text(formatCurrency(match.pricePerPersonInCents),
-            style: TextPalette.bodyText);
-      }
-      return Text(match.going.length.toString() + " players going",
-          style: TextPalette.bodyText);
-    }
-    if (match.status == MatchStatus.to_rate) {
-      if (matchStatusForUser == MatchStatusForUser.to_rate) {
-        return Text(
-            context
-                    .watch<MatchesState>()
-                    .stillToVote(matchId,
-                        context.read<UserState>().getLoggedUserDetails())
-                    .length
-                    .toString() +
-                " players left",
-            style: TextPalette.bodyText);
-      }
-      throw Exception("Unexpected");
-    }
-    if (match.status == MatchStatus.pre_playing) {
-      return Text(match.going.length.toString() + " players going",
-          style: TextPalette.bodyText);
-    }
-    if (match.status == MatchStatus.unpublished) {
-      return Text("Complete your Stripe account", style: TextPalette.bodyText);
-    }
-    return Text("");
-  }
-
-  Widget getButton(Match match, MatchStatusForUser matchStatusForUser,
-      BuildContext context) {
-    if (match.status == MatchStatus.unpublished) {
-      return JoinButtonDisabled();
-    }
-    if (matchStatusForUser == MatchStatusForUser.cannotLeave) {
-      return LeaveButtonDisabled();
-    }
-    if (matchStatusForUser == MatchStatusForUser.canJoin) {
-      return JoinButton(matchId: match.documentId);
-    }
-    if (matchStatusForUser == MatchStatusForUser.canLeave) {
-      return LeaveButton(matchId: matchId);
-    }
-    if (matchStatusForUser == MatchStatusForUser.cannotJoin) {
-      return JoinButtonDisabled();
-    }
-    if (matchStatusForUser == MatchStatusForUser.to_rate) {
-      return RateButton(matchId: matchId);
-    }
-    throw Exception("Unexpected");
-  }
+  const BottomBarMatch({Key key, this.matchId, this.text, this.subText, this.button}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    var matchesState = context.watch<MatchesState>();
-
-    var match = matchesState.getMatch(matchId);
-    var statusForUser = context.watch<MatchesState>().getMatchStatusForUser(
-        matchId, context.watch<UserState>().getLoggedUserDetails());
-
-    if (match == null || statusForUser == null) return Container();
-
     return GenericBottomBar(
         child: Padding(
       padding: EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0),
@@ -149,15 +84,17 @@ class BottomBarMatch extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(getText(match, statusForUser), style: TextPalette.h2),
+                Text(text, style: TextPalette.h2),
                 SizedBox(
                   height: 4,
                 ),
-                getSubText(match, statusForUser, context),
+                if (subText != null)
+                  Text(subText, style: TextPalette.bodyText),
               ],
             ),
           ),
-          Container(child: getButton(match, statusForUser, context))
+          if (button != null)
+            button
         ],
       ),
     ));
@@ -194,4 +131,86 @@ class GenericBottomBar extends StatelessWidget {
       ],
     );
   }
+}
+
+class MatchCanceledBottomBar extends StatelessWidget {
+
+  final String matchId;
+
+  const MatchCanceledBottomBar({Key key, this.matchId}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) =>
+      BottomBarMatch(matchId: matchId, text: "Cancelled");
+}
+
+class JoinMatchBottomBar extends StatelessWidget {
+
+  final String matchId;
+  final bool enabled;
+
+  const JoinMatchBottomBar({Key key, this.matchId, this.enabled}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    var match = context.read<MatchesState>().getMatch(matchId);
+
+    return BottomBarMatch(matchId: matchId,
+      text: match.getSpotsLeft().toString() + " spots left",
+      subText: formatCurrency(match.pricePerPersonInCents),
+      button: enabled ? JoinButton(matchId: matchId) : JoinButtonDisabled()
+    );
+  }
+}
+
+class LeaveMatchBottomBar extends StatelessWidget {
+
+  final String matchId;
+  final bool enabled;
+
+  const LeaveMatchBottomBar({Key key, this.matchId, this.enabled}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    var match = context.read<MatchesState>().getMatch(matchId);
+
+    return BottomBarMatch(matchId: matchId,
+        text: "You are in!",
+        subText: match.going.length.toString() + " players going",
+        button: enabled ? LeaveButton(matchId: matchId) : LeaveButtonDisabled()
+    );
+  }
+}
+
+class RatePlayersBottomBar extends StatelessWidget {
+
+  final String matchId;
+
+  const RatePlayersBottomBar({Key key, this.matchId}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return BottomBarMatch(matchId: matchId,
+        text: "Rate players",
+        subText: context.watch<MatchesState>().stillToVote(
+            matchId,
+            context.read<UserState>().getLoggedUserDetails()).length.toString() +
+        " players left",
+        button:  RateButton(matchId: matchId)
+    );
+  }
+}
+
+class NotPublishedBottomBar extends StatelessWidget {
+
+  final String matchId;
+
+  const NotPublishedBottomBar({Key key, this.matchId}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) =>
+      BottomBarMatch(matchId: matchId,
+          text: "Not Published",
+          subText: "Complete your Stripe account"
+      );
 }

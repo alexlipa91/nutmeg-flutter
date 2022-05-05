@@ -81,51 +81,12 @@ class MatchesState extends ChangeNotifier {
     return _ratingsPerMatch[matchId];
   }
 
-  MatchStatusForUser getMatchStatusForUser(String matchId, UserDetails ud) {
-    var match = _matches[matchId];
-    if (match == null) {
-      return null;
-    }
-
-    MatchStatusForUser matchStatusForUser;
-
-    if (ud != null && match.isUserGoing(ud)) {
-      if (match.status == MatchStatus.open
-          || match.status == MatchStatus.cancelled
-          || match.status == MatchStatus.full) {
-        matchStatusForUser = MatchStatusForUser.canLeave;
-      } else if (match.status == MatchStatus.pre_playing) {
-        matchStatusForUser = MatchStatusForUser.cannotLeave;
-      } else if (match.status == MatchStatus.to_rate) {
-        var usersToVote = stillToVote(matchId, ud);
-
-        if (usersToVote == null) {
-          return null;
-        }
-
-        if (usersToVote.isEmpty) {
-          matchStatusForUser = MatchStatusForUser.no_more_to_rate;
-        } else {
-          matchStatusForUser = MatchStatusForUser.to_rate;
-        }
-      }
-    } else {
-      if (match.status == MatchStatus.cancelled || match.status == MatchStatus.full) {
-        matchStatusForUser = MatchStatusForUser.cannotJoin;
-      } else {
-        matchStatusForUser = MatchStatusForUser.canJoin;
-      }
-    }
-
-    return matchStatusForUser;
-  }
-
   List<String> stillToVote(String matchId, UserDetails ud) {
     var match = _matches[matchId];
     var matchRatings = _ratingsPerMatch[matchId];
 
     if (match == null || matchRatings == null) {
-      return null;
+      return List.empty();
     }
 
     var toVote = match.going.keys.toSet();

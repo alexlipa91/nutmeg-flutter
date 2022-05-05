@@ -79,13 +79,15 @@ class MatchDetailsState extends State<MatchDetails> {
     // show potm
     SchedulerBinding.instance.addPostFrameCallback((_) async {
       // show rating modal
-      var statusForUser = context.read<MatchesState>()
-          .getMatchStatusForUser(matchId,
-          context.read<UserState>().getLoggedUserDetails());
+      var match = context.read<MatchesState>().getMatch(matchId);
+      if (match.status == MatchStatus.to_rate) {
+        var stillToVote = context.read<MatchesState>().stillToVote(matchId,
+            context.read<UserState>().getLoggedUserDetails());
 
-      if (statusForUser == MatchStatusForUser.to_rate) {
-        await RatePlayerBottomModal.rateAction(context, matchId);
-        setState(() {});
+        if (stillToVote.isNotEmpty) {
+          await RatePlayerBottomModal.rateAction(context, matchId);
+          setState(() {});
+        }
       }
 
       // go to potm
@@ -112,8 +114,6 @@ class MatchDetailsState extends State<MatchDetails> {
     var match = matchesState.getMatch(matchId);
 
     var status = match?.status;
-    var statusForUser = context.read<MatchesState>().getMatchStatusForUser(matchId,
-        context.read<UserState>().getLoggedUserDetails());
 
     var isTest = match != null && match.isTest;
     var organizerView = userState.isLoggedIn() &&
@@ -139,10 +139,8 @@ class MatchDetailsState extends State<MatchDetails> {
       // info box
       MatchInfo(matchId),
       // stats
-      if (status == MatchStatus.rated ||
-          statusForUser == MatchStatusForUser.no_more_to_rate)
-        Stats(matchId: matchId, matchDatetime: match.dateTime,
-            matchStatusForUser: statusForUser),
+      if (status == MatchStatus.rated || status == MatchStatus.to_rate)
+        Stats(matchId: matchId, matchDatetime: match.dateTime),
       // horizontal players list
       if (match != null) PlayerList(match: match),
       if (match != null && match.dateTime.isAfter(DateTime.now()))
@@ -711,21 +709,19 @@ class Stats extends StatelessWidget {
   final String matchId;
   final DateTime matchDatetime;
   final bool extended;
-  final MatchStatusForUser matchStatusForUser;
 
   const Stats(
-      {Key key, this.matchId, this.matchDatetime, this.matchStatusForUser,
-        this.extended = false})
+      {Key key, this.matchId, this.matchDatetime, this.extended = false})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     var child;
-    var showingPartial =
-        matchStatusForUser == null && extended;
+    var stillToRate = context.watch<MatchesState>().stillToVote(matchId,
+        context.read<UserState>().getLoggedUserDetails());
 
     // in extended mode, we show also partial results
-    if (matchStatusForUser == MatchStatusForUser.no_more_to_rate && !extended) {
+    if (stillToRate.isEmpty && !extended) {
       child = Container(
           width: double.infinity,
           child: Column(
@@ -936,7 +932,7 @@ class Stats extends StatelessWidget {
 
     return Container(
       child: Section(
-        title: "MATCH STATS " + (showingPartial ? " (partial)" : ""),
+        title: "MATCH STATS",
         body: InfoContainer(child: child),
       ),
     );

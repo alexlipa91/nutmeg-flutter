@@ -3,7 +3,6 @@ import 'UserDetails.dart';
 
 enum MatchStatus {
   open,                // match is on and can be joined
-  full,                // match is full and cannot be joined
   pre_playing,         // match is on and from now on no-one can leave
   playing,             // mach is being played
   to_rate,             // match is in the past and within rating window
@@ -109,8 +108,6 @@ class Match {
   bool isUserGoing(UserDetails user) => going.containsKey(user.documentId);
 
   double getPrice() => pricePerPersonInCents / 100;
-
-  bool wasCancelled() => cancelledAt != null;
 
   List<String> getGoingUsersByTime() {
     var entries = going.entries.toList()..sort((e1,e2) => -e1.value.compareTo(e2.value));
