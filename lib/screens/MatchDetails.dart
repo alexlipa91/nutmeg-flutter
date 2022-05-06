@@ -721,7 +721,10 @@ class Stats extends StatelessWidget {
         context.read<UserState>().getLoggedUserDetails());
 
     // in extended mode, we show also partial results
-    if (stillToRate.isEmpty && !extended) {
+    if (stillToRate.isEmpty &&
+        !extended &&
+        context.read<MatchesState>().getMatch(matchId).status
+            == MatchStatus.to_rate) {
       child = Container(
           width: double.infinity,
           child: Column(

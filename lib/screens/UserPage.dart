@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
-import 'package:image_cropper/image_cropper.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:nutmeg/Exceptions.dart';
 import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
@@ -32,9 +30,6 @@ class UserPage extends StatefulWidget {
 }
 
 class UserPageState extends State<UserPage> {
-  final ImagePicker picker = ImagePicker();
-  final ImageCropper cropper = ImageCropper();
-
   final verticalSpace = SizedBox(height: 20);
 
   bool loadingPicture = false;
