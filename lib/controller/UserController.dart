@@ -258,6 +258,7 @@ class UserController {
     var original = await ImagePicker().pickImage(source: ImageSource.gallery);
     if (original == null) return;
     File croppedFile = await ImageCropper().cropImage(
+        aspectRatio: CropAspectRatio(ratioX: 1, ratioY: 1),
         sourcePath: original.path,
         aspectRatioPresets: [CropAspectRatioPreset.square],
         androidUiSettings: AndroidUiSettings(
