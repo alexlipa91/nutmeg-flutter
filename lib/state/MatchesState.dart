@@ -39,7 +39,8 @@ class MatchesState extends ChangeNotifier {
       .where((m) => m.dateTime.isAfter(DateTime.now()))
       .toList();
 
-  Match getMatch(String matchId) => _matches[matchId];
+  Match getMatch(String matchId) =>
+      (_matches == null) ? null : _matches[matchId];
 
   void setMatch(Match m) {
     _matches[m.documentId] = m;

@@ -82,6 +82,10 @@ class MatchDetailsState extends State<MatchDetails> {
     SchedulerBinding.instance.addPostFrameCallback((_) async {
       // show rating modal
       var match = context.read<MatchesState>().getMatch(matchId);
+      // it could be we are still fetching the match
+      if (match == null)
+        await MatchesController.refresh(context, matchId);
+
       if (match.status == MatchStatus.to_rate) {
         var stillToVote = context.read<MatchesState>().stillToVote(matchId,
             context.read<UserState>().getLoggedUserDetails());
