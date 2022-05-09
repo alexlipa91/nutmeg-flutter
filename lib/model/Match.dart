@@ -21,7 +21,6 @@ class Match {
   Duration duration;
   String sportCenterSubLocation;
 
-  String sport;
   int pricePerPersonInCents;
   int minPlayers;
   int maxPlayers;
@@ -33,18 +32,18 @@ class Match {
   Map<String, double> _manOfTheMatch;
 
   String organizerId;
+  Duration cancelBefore;
 
   bool isTest;
 
-  Match(this.dateTime, this.sportCenterId, this.sportCenterSubLocation, this.sport,
+  Match(this.dateTime, this.sportCenterId, this.sportCenterSubLocation,
       this.maxPlayers, this.pricePerPersonInCents, this.duration,
-      this.isTest, this.minPlayers, this.organizerId);
+      this.isTest, this.minPlayers, this.organizerId, [this.cancelBefore]);
 
   Match.fromJson(Map<String, dynamic> jsonInput, String documentId) {
       dateTime = DateTime.parse(jsonInput['dateTime']).toLocal();
       sportCenterId = jsonInput['sportCenterId'];
       sportCenterSubLocation = jsonInput['sportCenterSubLocation'];
-      sport = jsonInput['sportInfo'];
       pricePerPersonInCents = jsonInput['pricePerPerson'];
       minPlayers = jsonInput['minPlayers'];
       maxPlayers = jsonInput['maxPlayers'];
@@ -59,6 +58,8 @@ class Match {
       going = _readGoing(jsonInput);
 
       _manOfTheMatch = _readManOfTheMatch(jsonInput);
+      if (jsonInput.containsKey("cancelHoursBefore"))
+        cancelBefore = Duration(hours: jsonInput['cancelHoursBefore']);
 
       organizerId = jsonInput["organizerId"];
 
@@ -89,13 +90,14 @@ class Match {
         'dateTime': dateTime.toUtc().toIso8601String(),
         'sportCenterId': sportCenterId,
         'sportCenterSubLocation': sportCenterSubLocation,
-        'sportInfo': sport,
         'pricePerPerson': pricePerPersonInCents,
         'maxPlayers': maxPlayers,
         'minPlayers': minPlayers,
         'cancelledAt': cancelledAt,
         'duration': duration.inMinutes,
         'organizerId': organizerId,
+        if (cancelBefore != null)
+          'cancelHoursBefore': cancelBefore.inHours,
         'isTest': isTest
       };
 

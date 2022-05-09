@@ -13,7 +13,6 @@ import 'package:nutmeg/screens/BottomBarMatch.dart';
 import 'package:nutmeg/state/UserState.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
-import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:nutmeg/widgets/PageTemplate.dart';
 import 'package:nutmeg/widgets/Section.dart';
@@ -22,7 +21,6 @@ import 'package:time_picker_widget/time_picker_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../state/LoadOnceState.dart';
-import '../model/Sport.dart';
 import '../widgets/ModalBottomSheet.dart';
 
 // main widget
@@ -49,7 +47,7 @@ class CreateMatchState extends State<CreateMatch> {
       // fixme why we need this?
       suffixIconConstraints: BoxConstraints.expand(width: 50.0, height: 30.0),
       suffixIcon: isDropdown ? Icon(Icons.arrow_drop_down) : null,
-      contentPadding: EdgeInsets.symmetric(horizontal: 16.0),
+      contentPadding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 4),
       filled: true,
       focusColor: (focusColor == null) ? Palette.grey_lighter : focusColor,
       fillColor: Palette.grey_lighter,
@@ -61,7 +59,6 @@ class CreateMatchState extends State<CreateMatch> {
   }
 
   String sportCenterId;
-  Sport sport;
 
   final _formKey = GlobalKey<FormState>();
 
@@ -75,14 +72,15 @@ class CreateMatchState extends State<CreateMatch> {
       TextEditingController(text: NO_REPEAT);
   final TextEditingController sportCenterEditingController =
       TextEditingController(text: "");
-  final TextEditingController sportEditingController =
-      TextEditingController(text: "");
   final TextEditingController courtNumberEditingController =
       TextEditingController(text: "");
   final TextEditingController priceController = TextEditingController();
   RangeValues numberOfPeopleRangeValues = RangeValues(8, 10);
   bool isTest = false;
+  bool withAutomaticCancellation = false;
   int repeatsForWeeks = 0;
+  final TextEditingController cancelTimeEditingController =
+    TextEditingController(text: "24");
 
   final dateFormat = DateFormat("dd-MM-yyyy");
   final regexPrice = new RegExp("\\d+(\\.\\d{1,2})?");
@@ -102,11 +100,6 @@ class CreateMatchState extends State<CreateMatch> {
   @override
   void initState() {
     super.initState();
-
-    // set default sport
-    sport = context.read<LoadOnceState>().getSports().first;
-    sportEditingController.text =
-        context.read<LoadOnceState>().getSports().first.displayTitle;
 
     sportCenterfocusNode = FocusNode();
     datefocusNode = FocusNode();
@@ -141,6 +134,10 @@ class CreateMatchState extends State<CreateMatch> {
                         focusNode: datefocusNode,
                         readOnly: true,
                         decoration: getTextFormDecoration("Date"),
+                        validator: (v) {
+                          if (v.isEmpty) return "Required";
+                          return null;
+                        },
                         onTap: () async {
                           var d = await showDatePicker(
                               initialDate:
@@ -164,6 +161,10 @@ class CreateMatchState extends State<CreateMatch> {
                     child: TextFormField(
                   controller: startTimeEditingController,
                   focusNode: startTimefocusNode,
+                  validator: (v) {
+                    if (v.isEmpty) return "Required";
+                    return null;
+                  },
                   readOnly: true,
                   decoration: getTextFormDecoration("Start time"),
                   onTap: () async {
@@ -194,6 +195,10 @@ class CreateMatchState extends State<CreateMatch> {
                     child: TextFormField(
                         enabled: startTimeEditingController.text.isNotEmpty,
                         controller: endTimeEditingController,
+                        validator: (v) {
+                          if (v.isEmpty) return "Required";
+                          return null;
+                        },
                         readOnly: true,
                         decoration: getTextFormDecoration("End Time",
                             focusColor:
@@ -284,6 +289,10 @@ class CreateMatchState extends State<CreateMatch> {
                   enabled:
                       context.watch<LoadOnceState>().getSportCenters() != null,
                   focusNode: sportCenterfocusNode,
+                  validator: (v) {
+                    if (v.isEmpty) return "Required";
+                    return null;
+                  },
                   readOnly: true,
                   decoration:
                       getTextFormDecoration("Location", isDropdown: true),
@@ -311,37 +320,9 @@ class CreateMatchState extends State<CreateMatch> {
               children: [
                 Expanded(
                     child: TextFormField(
-                  controller: sportEditingController,
-                  readOnly: true,
-                  decoration: getTextFormDecoration("Sport", isDropdown: true),
-                  onTap: () async {
-                    var sports = context.read<LoadOnceState>().getSports();
-
-                    var i = await showMultipleChoiceSheet(
-                        "Sport", sports.map((e) => e.displayTitle).toList());
-
-                    if (i != null) {
-                      sportEditingController.text = sports[i].displayTitle;
-                      setState(() {
-                        sport = sports[i];
-                      });
-                    }
-                  },
-                )),
-              ],
-            ),
-            SizedBox(
-              height: 16.0,
-            ),
-            Row(
-              children: [
-                Expanded(
-                    child: TextFormField(
                   controller: courtNumberEditingController,
                   readOnly: false,
-                  inputFormatters: [
-                    LengthLimitingTextInputFormatter(5)
-                  ],
+                  inputFormatters: [LengthLimitingTextInputFormatter(5)],
                   decoration: getTextFormDecoration("Court number (optional)"),
                 )),
               ],
@@ -375,7 +356,7 @@ class CreateMatchState extends State<CreateMatch> {
                       values: numberOfPeopleRangeValues,
                       max: 22,
                       min: 6,
-                      divisions: 22-6,
+                      divisions: 22 - 6,
                       labels: RangeLabels(
                         numberOfPeopleRangeValues.start.toString(),
                         numberOfPeopleRangeValues.end.toString(),
@@ -430,10 +411,11 @@ class CreateMatchState extends State<CreateMatch> {
                           signed: true, decimal: true),
                       autovalidateMode: AutovalidateMode.onUserInteraction,
                       inputFormatters: [
-                        FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*$')),
+                        FilteringTextInputFormatter.allow(
+                            RegExp(r'^\d*\.?\d*$')),
                       ],
-                      decoration: getTextFormDecoration("Price per player", prefixText: "€ ")
-                  )),
+                      decoration: getTextFormDecoration("Price per player",
+                          prefixText: "€ "))),
             ],
           ),
           SizedBox(height: 16),
@@ -484,49 +466,123 @@ class CreateMatchState extends State<CreateMatch> {
           ))
         ]),
       ),
+      Section(
+        title: "Policies",
+        titleType: "big",
+        body: Column(children: [
+          Row(
+            children: [
+              Checkbox(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(5)),
+                  value: withAutomaticCancellation,
+                  activeColor: Palette.primary,
+                  onChanged: (v) {
+                    setState(() {
+                      print("changed");
+                      withAutomaticCancellation = v;
+                    });
+                  }),
+              Flexible(
+                  child: Text(
+                      "Automatically cancel the match if minimum amount of players is not reached",
+                      style: TextPalette.bodyText,
+                      overflow: TextOverflow.visible)),
+            ],
+          ),
+          if (withAutomaticCancellation)
+            Padding(
+              padding: EdgeInsets.only(top: 16),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                        validator: (v) {
+                          var durationSize = int.tryParse(v);
+                          if (durationSize == null)
+                            return "Invalid duration";
+                          Duration duration = Duration(hours: durationSize);
+
+                          var d = getDateTime();
+                          if (d != null && getDateTime().subtract(duration).isBefore(DateTime.now())) {
+                            return "The interval is in the past";
+                          }
+
+                          return null;
+                        },
+                        controller: cancelTimeEditingController,
+                        onChanged: (v) {setState(() {});},
+                        decoration: getTextFormDecoration(null),
+                        keyboardType: TextInputType.numberWithOptions(signed: false, decimal: false)),
+                  ),
+                  SizedBox(width: 16),
+                  Expanded(
+                    child:
+                    TextFormField(
+                        initialValue: "Hours",
+                        readOnly: true,
+                        decoration: getTextFormDecoration(null),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          if (withAutomaticCancellation)
+            Padding(
+                padding: EdgeInsets.only(top: 16),
+                child: Text(
+                    "We will cancel the match if at least "
+                        "${numberOfPeopleRangeValues.start.toInt()} "
+                        "players haven't joined by "
+                        "${cancelTimeEditingController.text} hours",
+                    style: TextPalette.bodyText,
+                    overflow: TextOverflow.visible)
+            )
+        ]),
+      ),
       if (context.read<UserState>().getLoggedUserDetails().isAdmin)
         Section(
-          title: "Admin",
-          titleType: "big",
-          body: Column(children: [
-            Row(
-              children: [
-                Text("Select for test match", style: TextPalette.bodyText),
-                Spacer(),
-                Checkbox(
-                    value: isTest,
-                    activeColor: Palette.primary,
-                    onChanged: (v) {
-                      setState(() {
-                        isTest = v;
-                      });
-                    })
-              ],
-            ),
-            SizedBox(height: 16),
-            Text("A test match will be visible only to Admin users and it will use Stripe test environment (both for organizer account and for users' payments)", style: TextPalette.bodyText),
-          ])
-        )
+            title: "Admin",
+            titleType: "big",
+            body: Column(children: [
+              Row(
+                children: [
+                  Text("Select for test match", style: TextPalette.bodyText),
+                  Spacer(),
+                  Checkbox(
+                      value: isTest,
+                      activeColor: Palette.primary,
+                      onChanged: (v) {
+                        setState(() {
+                          isTest = v;
+                        });
+                      })
+                ],
+              ),
+              SizedBox(height: 16),
+              Text(
+                  "A test match will be visible only to Admin users and it will use Stripe test environment (both for organizer account and for users' payments)",
+                  style: TextPalette.bodyText),
+            ]))
     ];
 
     return WillPopScope(
       onWillPop: () async {
         return await GenericInfoModal(
-          title: "Are you sure you want to leave?",
-          description: "If you leave, all your unsaved changes will be lost.",
-          action: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              GenericButtonWithLoader("CANCEL", (_) async {
-                Navigator.pop(context, false);
-              }, Secondary()),
-              SizedBox(width: 8),
-              GenericButtonWithLoader("YES", (_) async {
-                Navigator.pop(context, true);
-              }, Primary()),
-            ],
-          )
-        ).show(context);
+            title: "Are you sure you want to leave?",
+            description: "If you leave, all your unsaved changes will be lost.",
+            action: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                GenericButtonWithLoader("CANCEL", (_) async {
+                  Navigator.pop(context, false);
+                }, Secondary()),
+                SizedBox(width: 8),
+                GenericButtonWithLoader("YES", (_) async {
+                  Navigator.pop(context, true);
+                }, Primary()),
+              ],
+            )).show(context);
       },
       child: Form(
         key: _formKey,
@@ -544,76 +600,68 @@ class CreateMatchState extends State<CreateMatch> {
             padding: EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0),
             child: Row(children: [
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                        getDateTime() == null ? "" :
-                        getFormattedDate(getDateTime()),
-                        style: TextPalette.bodyText),
-                    SizedBox(height: 4),
-                    Text(
-                        sportCenterEditingController.text,
-                        style: TextPalette.h2),
-                  ],
-                ),
-              ),
-              GenericButtonWithLoader("CREATE", (BuildContext context) async {
-                context.read<GenericButtonWithLoaderState>().change(true);
+                child: GenericButtonWithLoader("CREATE",
+                    (BuildContext context) async {
+                  context.read<GenericButtonWithLoaderState>().change(true);
 
-                if (_formKey.currentState.validate()) {
-                  try {
-                    var etod = toTimeOfTheDay(endTimeEditingController.text);
-                    var day = dateFormat.parse(dateEditingController.text);
-                    var dateTime = getDateTime();
-                    var endTime = DateTime(
-                            day.year, day.month, day.day, etod.hour, etod.minute)
-                        .toUtc();
-                    var duration = endTime.difference(dateTime);
+                  if (_formKey.currentState.validate()) {
+                    try {
+                      var etod = toTimeOfTheDay(endTimeEditingController.text);
+                      var day = dateFormat.parse(dateEditingController.text);
+                      var dateTime = getDateTime();
+                      var endTime = DateTime(day.year, day.month, day.day,
+                              etod.hour, etod.minute)
+                          .toUtc();
+                      var duration = endTime.difference(dateTime);
+                      var cancelBefore = withAutomaticCancellation ?
+                          Duration(hours: int.parse(cancelTimeEditingController.text))
+                          : null;
 
-                    var forWeeks =
-                        int.tryParse(repeatWeeklyEditingController.text);
-                    if (forWeeks == null) forWeeks = 1;
+                      var forWeeks =
+                          int.tryParse(repeatWeeklyEditingController.text);
+                      if (forWeeks == null) forWeeks = 1;
 
-                    Iterable<Future<String>> idsFuture =
-                        Iterable<int>.generate(forWeeks).map((w) async {
-                      var match = Match(
-                          dateTime.add(Duration(days: 7 * w)),
-                          sportCenterId,
-                          courtNumberEditingController.text,
-                          sport.displayTitle,
-                          numberOfPeopleRangeValues.end.toInt(),
-                          (double.parse(priceController.text) * 100).toInt(),
-                          duration,
-                          isTest,
-                          numberOfPeopleRangeValues.start.toInt(),
-                          context
-                              .read<UserState>()
-                              .getLoggedUserDetails()
-                              .documentId);
+                      Iterable<Future<String>> idsFuture =
+                          Iterable<int>.generate(forWeeks).map((w) async {
+                        var match = Match(
+                            dateTime.add(Duration(days: 7 * w)),
+                            sportCenterId,
+                            courtNumberEditingController.text,
+                            numberOfPeopleRangeValues.end.toInt(),
+                            (double.parse(priceController.text) * 100).toInt(),
+                            duration,
+                            isTest,
+                            numberOfPeopleRangeValues.start.toInt(),
+                            context
+                                .read<UserState>()
+                                .getLoggedUserDetails()
+                                .documentId,
+                            cancelBefore
+                        );
 
-                      var id = await MatchesController.addMatch(match);
-                      await MatchesController.refresh(context, id);
-                      await UserController.refreshLoggedUser(context);
-                      print("added match with id " + id);
-                      return id;
-                    });
+                        var id = await MatchesController.addMatch(match);
+                        await MatchesController.refresh(context, id);
+                        await UserController.refreshLoggedUser(context);
+                        print("added match with id " + id);
+                        return id;
+                      });
 
-                    var ids = await Future.wait(idsFuture);
+                      var ids = await Future.wait(idsFuture);
 
-                    Get.offNamed("/match/" + ids.first);
-                  } on Exception catch (e, s) {
-                    print(e);
-                    print(s);
-                    ErrorHandlingUtils.handleError(e, s, context);
+                      Get.offNamed("/match/" + ids.first);
+                    } on Exception catch (e, s) {
+                      print(e);
+                      print(s);
+                      ErrorHandlingUtils.handleError(e, s, context);
+                    }
+                  } else {
+                    print("validation error");
+                    setState(() {});
                   }
-                } else {
-                  print("validation error");
-                  setState(() {});
-                }
 
-                context.read<GenericButtonWithLoaderState>().change(false);
-              }, Primary())
+                  context.read<GenericButtonWithLoaderState>().change(false);
+                }, Primary()),
+              )
             ]),
           )),
         ),
@@ -622,8 +670,8 @@ class CreateMatchState extends State<CreateMatch> {
   }
 
   DateTime getDateTime() {
-    if (dateEditingController.text.isEmpty || startTimeEditingController.text.isEmpty)
-      return null;
+    if (dateEditingController.text.isEmpty ||
+        startTimeEditingController.text.isEmpty) return null;
     var day = dateFormat.parse(dateEditingController.text);
     var stod = toTimeOfTheDay(startTimeEditingController.text);
     return DateTime(day.year, day.month, day.day, stod.hour, stod.minute);
@@ -645,7 +693,8 @@ class CreateMatchState extends State<CreateMatch> {
     int i = await ModalBottomSheet.showNutmegModalBottomSheet(
         context,
         Padding(
-            padding: EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0, bottom: 8.0),
+            padding: EdgeInsets.only(
+                left: 16.0, right: 16.0, top: 16.0, bottom: 8.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

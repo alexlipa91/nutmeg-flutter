@@ -226,7 +226,7 @@ class GenericMatchInfo extends StatelessWidget {
                                         Text(
                                             sportCenter.name +
                                                 " - " +
-                                                match.sport,
+                                                sportCenter.getCourtType(),
                                             style: TextPalette.h2),
                                       ],
                                     ),
@@ -366,7 +366,7 @@ class GenericMatchInfoPast extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(sportCenter.name + " - " + match.sport,
+                        Text(sportCenter.name + " - " + sportCenter.getCourtType(),
                             style: TextPalette.h2),
                         SizedBox(height: 10),
                         Text(sportCenter.name, style: TextPalette.bodyText),

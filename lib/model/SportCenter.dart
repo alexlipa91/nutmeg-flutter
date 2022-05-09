@@ -40,7 +40,7 @@ class SportCenter {
           .split(",")
           .first;
 
-  bool hasChangingRooms() => _info["changeRooms"];
+  bool hasChangingRooms() => _info["changeRooms"] ?? false;
 
   String getCourtType() => _info["courtType"];
 

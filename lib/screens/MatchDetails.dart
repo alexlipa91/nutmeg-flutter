@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -13,6 +14,7 @@ import 'package:map_launcher/src/models.dart' as m;
 import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/model/Match.dart';
+import 'package:nutmeg/model/SportCenter.dart';
 import 'package:nutmeg/model/UserDetails.dart';
 import 'package:nutmeg/screens/JoinModal.dart';
 import 'package:nutmeg/screens/RatePlayersModal.dart';
@@ -148,7 +150,7 @@ class MatchDetailsState extends State<MatchDetails> {
             title: "DETAILS",
             body: Column(
               children: [
-                MapCardImage(matchId),
+                SportCenterDetails(matchId: matchId),
                 SizedBox(height: 16.0),
                 RuleCard(
                     "Payment Policy",
@@ -266,12 +268,11 @@ class Title extends StatelessWidget {
       return skeleton;
     }
     var sportCenter = loadOnceState.getSportCenter(match.sportCenterId);
-    var sport = match.sport;
-    if (sport == null || sportCenter == null) {
+    if (sportCenter == null) {
       return skeleton;
     }
 
-    var title = sportCenter.name + " - " + sport;
+    var title = sportCenter.name + " - " + sportCenter.getCourtType();
 
     return Text(title,
         style: TextPalette.h1Default, textAlign: TextAlign.start);
@@ -363,13 +364,16 @@ class MatchInfo extends StatelessWidget {
               ),
             ),
             SizedBox(height: 16),
-            InfoWidget(
-                title: courtType,
-                icon: Icons.sports_soccer,
-                // todo fix info sport
-                subTitle: isIndoor ? "Indoor" : "Outdoor"
-            ),
-            SizedBox(height: 16),
+            if (isIndoor != null)
+              Padding(
+                padding: EdgeInsets.only(bottom: 16),
+                child: InfoWidget(
+                    title: courtType,
+                    icon: Icons.sports_soccer,
+                    // todo fix info sport
+                    subTitle: isIndoor ? "Indoor" : "Outdoor"
+                ),
+              ),
             InfoWidget(
                 title: (match == null)
                     ? null
@@ -636,6 +640,85 @@ class RuleCard extends StatelessWidget {
       // Text("Rule" * 100, style: TextPalette.bodyText2Gray)
     ]));
   }
+}
+
+class SportCenterDetails extends StatelessWidget {
+
+  final String matchId;
+
+  const SportCenterDetails({Key key, this.matchId}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    var match = context.read<MatchesState>().getMatch(matchId);
+    SportCenter sportCenter;
+
+    if (match != null)
+      sportCenter = context.read<LoadOnceState>()
+          .getSportCenter(match.sportCenterId);
+
+    return InfoContainer(child:
+    Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+      Text("Location", style: TextPalette.h2),
+      SizedBox(height: 8),
+      MapCardImage(matchId),
+      SizedBox(height: 8),
+      Builder(
+          builder: (context) {
+            if (sportCenter == null)
+              return Skeletons.xlText;
+
+            var addressItems = sportCenter.address.split(",");
+
+            return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+              Text(addressItems[0].trim() + ", " + addressItems[1].trim(),
+                  style: TextPalette.bodyText),
+              Text(addressItems[2].trim(), style: TextPalette.bodyText)
+            ]);
+          }),
+      SizedBox(height: 16),
+      if (match != null && match.sportCenterSubLocation.isNotEmpty)
+        Padding(
+          padding: EdgeInsets.only(bottom: 8),
+          child: Row(children: [
+            SvgPicture.asset("assets/icons/nutmeg_icon_court_number.svg"),
+            SizedBox(width: 16),
+            Text("Court number ${match.sportCenterSubLocation}",
+                style: TextPalette.listItem)
+          ],),
+        ),
+      Padding(
+        padding: EdgeInsets.only(bottom: 8),
+        child: Row(children: [
+          SvgPicture.asset("assets/icons/nutmeg_icon_court.svg"),
+          SizedBox(width: 16),
+          (sportCenter == null) ? Skeletons.lText :
+          Text(sportCenter.getCourtType() + " court type", style: TextPalette.listItem)
+        ],),
+      ),
+      Padding(
+        padding: EdgeInsets.only(bottom: 8),
+        child: Row(children: [
+          SvgPicture.asset("assets/icons/nutmeg_icon_shoe.svg"),
+          SizedBox(width: 16),
+          (sportCenter == null) ? Skeletons.lText : Text(sportCenter.getSurface(),
+              style: TextPalette.listItem)
+        ],),
+      ),
+      if (sportCenter != null && sportCenter.hasChangingRooms())
+        Row(children: [
+          // Icon(Icons.jack),
+          SvgPicture.asset("assets/icons/nutmeg_icon_changing_rooms.svg"),
+          SizedBox(width: 16),
+          Text("Change rooms available", style: TextPalette.listItem)
+        ],)
+    ],),);
+  }
+
 }
 
 class MapCardImage extends StatelessWidget {
