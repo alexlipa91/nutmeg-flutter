@@ -87,8 +87,8 @@ class MatchDetailsState extends State<MatchDetails> {
         await MatchesController.refresh(context, matchId);
 
       if (match.status == MatchStatus.to_rate) {
-        var stillToVote = context.read<MatchesState>().stillToVote(matchId,
-            context.read<UserState>().getLoggedUserDetails());
+        var stillToVote = context.read<MatchesState>().stillToVote(
+            matchId, context.read<UserState>().getLoggedUserDetails());
 
         if (stillToVote.isNotEmpty) {
           await RatePlayerBottomModal.rateAction(context, matchId);
@@ -99,14 +99,16 @@ class MatchDetailsState extends State<MatchDetails> {
       // go to potm
       var prefs = await SharedPreferences.getInstance();
       var currentUser = context.read<UserState>().currentUserId;
-      var preferencePath = "potm_screen_showed_" + matchId + "_"
-          + currentUser;
+      var preferencePath = "potm_screen_showed_" + matchId + "_" + currentUser;
       var alreadyShown = prefs.getBool(preferencePath) ?? false;
 
-      if (context.read<UserState>().isLoggedIn()
-          && context.read<MatchesState>()
-              .getMatch(matchId).getPotms().contains(currentUser)
-          && !alreadyShown) {
+      if (context.read<UserState>().isLoggedIn() &&
+          context
+              .read<MatchesState>()
+              .getMatch(matchId)
+              .getPotms()
+              .contains(currentUser) &&
+          !alreadyShown) {
         Get.toNamed("/potm/" + currentUser);
         prefs.setBool(preferencePath, true);
       }
@@ -128,8 +130,7 @@ class MatchDetailsState extends State<MatchDetails> {
 
     padB(Widget w) => Padding(padding: EdgeInsets.only(bottom: 16), child: w);
 
-    var bottomBar = BottomBarMatch.getBottomBar(context,
-        matchId, status);
+    var bottomBar = BottomBarMatch.getBottomBar(context, matchId, status);
 
     // add padding individually since because of shadow clipping some components need margin
     var widgets = [
@@ -140,8 +141,12 @@ class MatchDetailsState extends State<MatchDetails> {
         padB(CompleteOrganiserAccountWidget(isTest: isTest)),
       padB(Title(matchId)),
       if (isTest)
-        padB(InfoContainer(backgroundColor: Palette.accent,
-            child: SelectableText("Test match: " + matchId, style: TextPalette.getBodyText(Palette.black),))),
+        padB(InfoContainer(
+            backgroundColor: Palette.accent,
+            child: SelectableText(
+              "Test match: " + matchId,
+              style: TextPalette.getBodyText(Palette.black),
+            ))),
       // info box
       MatchInfo(matchId),
       // stats
@@ -158,12 +163,12 @@ class MatchDetailsState extends State<MatchDetails> {
                 SizedBox(height: 16.0),
                 RuleCard(
                     "Payment Policy",
-                    ConfigsUtils.removeCreditsFunctionality() ?
-                    "If you leave the match or the match is canceled you will get a refund on the payment method you used to pay.\n\n"
-                            "If you don’t show up you won’t get a refund." :
-                    "If you leave the match you will get a refund in credits that you can use for other Nutmeg matches.\n\n" +
-                        "If the match is canceled by the organizer, you will get a refund on the payment method you used to pay.\n\n"
-                            "If you don’t show up you won’t get a refund."),
+                    ConfigsUtils.removeCreditsFunctionality()
+                        ? "If you leave the match or the match is canceled you will get a refund on the payment method you used to pay.\n\n"
+                            "If you don’t show up you won’t get a refund."
+                        : "If you leave the match you will get a refund in credits that you can use for other Nutmeg matches.\n\n" +
+                            "If the match is canceled by the organizer, you will get a refund on the payment method you used to pay.\n\n"
+                                "If you don’t show up you won’t get a refund."),
                 SizedBox(height: 16.0),
                 if (match != null && match.organizerId != null)
                   Builder(builder: (context) {
@@ -375,8 +380,7 @@ class MatchInfo extends StatelessWidget {
                     title: courtType,
                     icon: Icons.sports_soccer,
                     // todo fix info sport
-                    subTitle: isIndoor ? "Indoor" : "Outdoor"
-                ),
+                    subTitle: isIndoor ? "Indoor" : "Outdoor"),
               ),
             InfoWidget(
                 title: (match == null)
@@ -526,8 +530,8 @@ class InfoWidget extends StatelessWidget {
           children: [
             title == null
                 ? Padding(
-                padding: EdgeInsets.only(bottom: 6),
-                child: Skeletons.xlText)
+                    padding: EdgeInsets.only(bottom: 6),
+                    child: Skeletons.xlText)
                 : Text(title, style: TextPalette.h2),
             SizedBox(
               height: 4,
@@ -535,8 +539,8 @@ class InfoWidget extends StatelessWidget {
             subTitle == null
                 ? Skeletons.lText
                 : Padding(
-                padding: EdgeInsets.only(bottom: 2),
-                child: Text(subTitle, style: TextPalette.bodyText))
+                    padding: EdgeInsets.only(bottom: 2),
+                    child: Text(subTitle, style: TextPalette.bodyText))
           ],
         ),
         if (rightWidget != null)
@@ -593,10 +597,10 @@ class EmptyPlayerCard extends StatelessWidget {
           child: InfoContainer(
               child: Column(children: [
             InkWell(
-              onTap:
-              context.watch<MatchesState>().getMatch(matchId).status == MatchStatus.unpublished
-                  ?
-              null : () => JoinModal.onJoinGameAction(context, matchId),
+              onTap: context.watch<MatchesState>().getMatch(matchId).status ==
+                      MatchStatus.unpublished
+                  ? null
+                  : () => JoinModal.onJoinGameAction(context, matchId),
               child: CircleAvatar(
                   radius: 25,
                   child: Icon(Icons.add, color: Palette.grey_dark, size: 24),
@@ -647,7 +651,6 @@ class RuleCard extends StatelessWidget {
 }
 
 class SportCenterDetails extends StatelessWidget {
-
   final String matchId;
 
   const SportCenterDetails({Key key, this.matchId}) : super(key: key);
@@ -658,71 +661,82 @@ class SportCenterDetails extends StatelessWidget {
     SportCenter sportCenter;
 
     if (match != null)
-      sportCenter = context.read<LoadOnceState>()
-          .getSportCenter(match.sportCenterId);
+      sportCenter =
+          context.read<LoadOnceState>().getSportCenter(match.sportCenterId);
 
-    return InfoContainer(child:
-    Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-      Text("Location", style: TextPalette.h2),
-      SizedBox(height: 8),
-      MapCardImage(matchId),
-      SizedBox(height: 8),
-      Builder(
-          builder: (context) {
-            if (sportCenter == null)
-              return Skeletons.xlText;
+    return InfoContainer(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text("Location", style: TextPalette.h2),
+          SizedBox(height: 8),
+          MapCardImage(matchId),
+          SizedBox(height: 8),
+          Builder(builder: (context) {
+            if (sportCenter == null) return Skeletons.xlText;
 
             var addressItems = sportCenter.address.split(",");
 
             return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-              Text(addressItems[0].trim() + ", " + addressItems[1].trim(),
-                  style: TextPalette.bodyText),
-              Text(addressItems[2].trim(), style: TextPalette.bodyText)
-            ]);
+                  Text(addressItems[0].trim() + ", " + addressItems[1].trim(),
+                      style: TextPalette.bodyText),
+                  Text(addressItems[2].trim(), style: TextPalette.bodyText)
+                ]);
           }),
-      SizedBox(height: 16),
-      if (match != null && match.sportCenterSubLocation.isNotEmpty)
-        Padding(
-          padding: EdgeInsets.only(bottom: 8),
-          child: Row(children: [
-            SvgPicture.asset("assets/icons/nutmeg_icon_court_number.svg"),
-            SizedBox(width: 16),
-            Text("Court number ${match.sportCenterSubLocation}",
-                style: TextPalette.listItem)
-          ],),
-        ),
-      Padding(
-        padding: EdgeInsets.only(bottom: 8),
-        child: Row(children: [
-          SvgPicture.asset("assets/icons/nutmeg_icon_court.svg"),
-          SizedBox(width: 16),
-          (sportCenter == null) ? Skeletons.lText :
-          Text(sportCenter.getCourtType() + " court type", style: TextPalette.listItem)
-        ],),
+          SizedBox(height: 16),
+          if (match != null && match.sportCenterSubLocation.isNotEmpty)
+            Padding(
+              padding: EdgeInsets.only(bottom: 8),
+              child: Row(
+                children: [
+                  SvgPicture.asset("assets/icons/nutmeg_icon_court_number.svg"),
+                  SizedBox(width: 16),
+                  Text("Court number ${match.sportCenterSubLocation}",
+                      style: TextPalette.listItem)
+                ],
+              ),
+            ),
+          Padding(
+            padding: EdgeInsets.only(bottom: 8),
+            child: Row(
+              children: [
+                SvgPicture.asset("assets/icons/nutmeg_icon_court.svg"),
+                SizedBox(width: 16),
+                (sportCenter == null)
+                    ? Skeletons.lText
+                    : Text(sportCenter.getCourtType() + " court type",
+                        style: TextPalette.listItem)
+              ],
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.only(bottom: 8),
+            child: Row(
+              children: [
+                SvgPicture.asset("assets/icons/nutmeg_icon_shoe.svg"),
+                SizedBox(width: 16),
+                (sportCenter == null)
+                    ? Skeletons.lText
+                    : Text(sportCenter.getSurface(),
+                        style: TextPalette.listItem)
+              ],
+            ),
+          ),
+          if (sportCenter != null && sportCenter.hasChangingRooms())
+            Row(
+              children: [
+                // Icon(Icons.jack),
+                SvgPicture.asset("assets/icons/nutmeg_icon_changing_rooms.svg"),
+                SizedBox(width: 16),
+                Text("Change rooms available", style: TextPalette.listItem)
+              ],
+            )
+        ],
       ),
-      Padding(
-        padding: EdgeInsets.only(bottom: 8),
-        child: Row(children: [
-          SvgPicture.asset("assets/icons/nutmeg_icon_shoe.svg"),
-          SizedBox(width: 16),
-          (sportCenter == null) ? Skeletons.lText : Text(sportCenter.getSurface(),
-              style: TextPalette.listItem)
-        ],),
-      ),
-      if (sportCenter != null && sportCenter.hasChangingRooms())
-        Row(children: [
-          // Icon(Icons.jack),
-          SvgPicture.asset("assets/icons/nutmeg_icon_changing_rooms.svg"),
-          SizedBox(width: 16),
-          Text("Change rooms available", style: TextPalette.listItem)
-        ],)
-    ],),);
+    );
   }
-
 }
 
 class MapCardImage extends StatelessWidget {
@@ -741,14 +755,12 @@ class MapCardImage extends StatelessWidget {
 
     var match = context.read<MatchesState>().getMatch(matchId);
 
-    if (match == null)
-      return skeleton;
+    if (match == null) return skeleton;
 
     var sportCenter =
         context.read<LoadOnceState>().getSportCenter(match.sportCenterId);
 
-    if (sportCenter == null)
-      return skeleton;
+    if (sportCenter == null) return skeleton;
 
     var lat = sportCenter.lat;
     var lng = sportCenter.lng;
@@ -795,23 +807,19 @@ class MapCardImage extends StatelessWidget {
 class Stats extends StatelessWidget {
   final String matchId;
   final DateTime matchDatetime;
-  final bool extended;
 
-  const Stats(
-      {Key key, this.matchId, this.matchDatetime, this.extended = false})
-      : super(key: key);
+  const Stats({Key key, this.matchId, this.matchDatetime}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     var child;
-    var stillToRate = context.watch<MatchesState>().stillToVote(matchId,
-        context.read<UserState>().getLoggedUserDetails());
+    var stillToRate = context
+        .watch<MatchesState>()
+        .stillToVote(matchId, context.read<UserState>().getLoggedUserDetails());
 
-    // in extended mode, we show also partial results
     if (stillToRate.isEmpty &&
-        !extended &&
-        context.read<MatchesState>().getMatch(matchId).status
-            == MatchStatus.to_rate) {
+        context.read<MatchesState>().getMatch(matchId).status ==
+            MatchStatus.to_rate) {
       child = Container(
           width: double.infinity,
           child: Column(
@@ -848,23 +856,8 @@ class Stats extends StatelessWidget {
           : Builder(
               builder: (context) {
                 var match = context.watch<MatchesState>().getMatch(matchId);
-                var finalRatings =
-                    ratings.getFinalRatings(match.getGoingUsersByTime());
-
-                var sortedTmp = finalRatings.entries.toList()
-                  ..sort((a, b) => b.value.compareTo(a.value));
-                var potms = match.getPotms();
-                var sorted = List<MapEntry<String, double>>.from([]);
-
-                // first add potms
-                potms.forEach((p) {
-                  sorted.add(MapEntry(p, finalRatings[p]));
-                });
-                // then the rest
-                sortedTmp.forEach((p) {
-                  if (!potms.contains(p.key))
-                    sorted.add(MapEntry(p.key, p.value));
-                });
+                var finalRatings = ratings.getFinalRatings(
+                    match.getGoingUsersByTime(), match.getPotms());
 
                 int index = 1;
 
@@ -872,25 +865,9 @@ class Stats extends StatelessWidget {
                     child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (extended)
-                      Padding(
-                          padding: EdgeInsets.only(bottom: 16),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                    "V=votes   S=skips        Received    Given     Vote",
-                                    textAlign: TextAlign.end,
-                                    style: TextPalette.bodyText),
-                              )
-                            ],
-                          )),
                     Column(
-                      children: sorted.map((e) {
-                        var user = e.key;
-                        var score = e.value;
-
-                        var userDetails = userState.getUserDetail(user);
+                      children: finalRatings.map((r) {
+                        var userDetails = userState.getUserDetail(r.user);
 
                         var widgets = [
                           Container(
@@ -899,7 +876,6 @@ class Stats extends StatelessWidget {
                                   style: TextPalette.bodyText)),
                           SizedBox(width: 8),
                           UserAvatar(16, userDetails),
-                          // SizedBox(width: 8),
                           Padding(
                             padding: EdgeInsets.only(left: 16),
                             child: Row(
@@ -922,8 +898,8 @@ class Stats extends StatelessWidget {
                                 }),
                                 SizedBox(width: 8),
                                 if (userDetails != null &&
-                                    potms.contains(userDetails.documentId) &&
-                                    score > 0)
+                                    r.isPotm &&
+                                    r.vote > 0)
                                   Image.asset(
                                     "assets/potm_badge.png",
                                     width: 20,
@@ -932,71 +908,26 @@ class Stats extends StatelessWidget {
                             ),
                           ),
                           Spacer(),
-                          if (!extended)
-                            Container(
-                              height: 8,
-                              width: 72,
-                              child: ClipRRect(
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(10)),
-                                child: LinearProgressIndicator(
-                                  value: score / 5,
-                                  color: Palette.primary,
-                                  backgroundColor: Palette.grey_lighter,
-                                ),
+                          Container(
+                            height: 8,
+                            width: 72,
+                            child: ClipRRect(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(10)),
+                              child: LinearProgressIndicator(
+                                value: r.vote / 5,
+                                color: Palette.primary,
+                                backgroundColor: Palette.grey_lighter,
                               ),
                             ),
-                          if (extended)
-                            Row(
-                              children: [
-                                Text(
-                                    "V: " +
-                                        ratings
-                                            .getNumberOfVotes(
-                                                userDetails.documentId)
-                                            .toString(),
-                                    style:
-                                        TextPalette.getBodyText(Colors.green)),
-                                SizedBox(
-                                  width: 6,
-                                ),
-                                Text(
-                                    "S: " +
-                                        ratings
-                                            .getNumberOfSkips(
-                                                userDetails.documentId)
-                                            .toString(),
-                                    style: TextPalette.getBodyText(
-                                        Palette.grey_dark)),
-                                SizedBox(
-                                  width: 6,
-                                ),
-                                Text(
-                                    "V: " +
-                                        ratings
-                                            .getNumberOfGivenVotes(
-                                                userDetails.documentId)
-                                            .toString(),
-                                    style:
-                                        TextPalette.getBodyText(Colors.green)),
-                                SizedBox(
-                                  width: 6,
-                                ),
-                                Text(
-                                    "S: " +
-                                        ratings
-                                            .getNumberOfGivenSkips(
-                                                userDetails.documentId)
-                                            .toString(),
-                                    style: TextPalette.getBodyText(
-                                        Palette.grey_dark))
-                              ],
-                            ),
+                          ),
                           SizedBox(width: 16),
                           Container(
                             width: 22,
                             child: Text(
-                                (score == 0) ? "  -" : score.toStringAsFixed(1),
+                                (r.vote == 0)
+                                    ? "  -"
+                                    : r.vote.toStringAsFixed(1),
                                 style: TextPalette.getBodyText(Palette.black)),
                           ),
                         ];

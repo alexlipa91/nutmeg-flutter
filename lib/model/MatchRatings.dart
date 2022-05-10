@@ -1,8 +1,25 @@
+class RatingEntry {
+  final String user;
+  final double vote;
+  final bool isPotm;
+
+  RatingEntry(this.user, this.vote, this.isPotm);
+}
+
+class VotesEntry {
+  final String user;
+  final int numberOfVotes;
+  final int numberOfSkips;
+  final bool isPotm;
+
+  VotesEntry(this.user, this.isPotm, this.numberOfVotes, this.numberOfSkips);
+}
+
+
 class MatchRatings {
   String documentId;
 
   Map<String, Map<String, int>> ratingsReceived;
-
 
   MatchRatings.fromJson(Map<String, dynamic> jsonInput, String documentId) {
     this.ratingsReceived = Map();
@@ -17,22 +34,44 @@ class MatchRatings {
     this.documentId = documentId;
   }
 
-  Map<String, double> getFinalRatings(List<String> usersGoing) {
-    Map<String, double> ratings = Map();
+  List<RatingEntry> getFinalRatings(List<String> usersGoing, Set<String> potm) {
+    List<RatingEntry> ratings = List.from([]);
 
     usersGoing.forEach((user) {
-      // numberOfSkips[user] = (ratingsLists[user] ?? []).where((v) => v < 0).length;
       var votesList = (ratingsReceived[user] ?? {}).values.where((v) => v > 0);
-      // numberOfVotes[user] = votesList.length;
       if (votesList.isNotEmpty) {
-        ratings[user] = votesList.reduce((a, b) => a + b) / votesList.length;
+        ratings.add(RatingEntry(
+            user,
+            votesList.reduce((a, b) => a + b) / votesList.length,
+            potm.contains(user)
+        ));
       } else {
-        ratings[user] = 0;
+        ratings.add(RatingEntry(user, 0, false));
       }
     });
 
+    ratings.sort((a, b) => b.vote.compareTo(a.vote));
+
     return ratings;
   }
+
+  List<VotesEntry> getVotesEntry(List<String> usersGoing, Set<String> potm, String type) {
+    List<VotesEntry> votes = List.from([]);
+
+    usersGoing.forEach((user) {
+      votes.add(VotesEntry(
+          user,
+          potm.contains(user),
+          type == "RECEIVED" ? getNumberOfVotes(user) : getNumberOfGivenVotes(user),
+          type == "RECEIVED" ? getNumberOfSkips(user) : getNumberOfGivenSkips(user)
+      ));
+    });
+
+    votes.sort((a, b) => b.numberOfVotes.compareTo(a.numberOfVotes));
+
+    return votes;
+  }
+
 
   void add(String receives, String gives, int score) {
     if (!ratingsReceived.containsKey(receives)) {
