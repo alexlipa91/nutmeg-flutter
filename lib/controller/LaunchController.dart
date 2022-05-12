@@ -147,18 +147,13 @@ class LaunchController {
     UserDetails availableUserDetails = futuresData[1];
 
     // check if update is necessary
-    try {
-      var current = (minimumVersion).item1;
-      trace.putAttribute("app_version", current.toString());
-      var minimumVersionParts =
-          firebaseRemoteConfig.getString("minimum_app_version").split(".");
-      var minimumRequired = Version(int.parse(minimumVersionParts[0]),
-          int.parse(minimumVersionParts[1]), int.parse(minimumVersionParts[2]));
-      if (current < minimumRequired) throw OutdatedAppException();
-    } catch (s, e) {
-      print(e);
-      print(s);
-    }
+    var current = (minimumVersion).item1;
+    trace.putAttribute("app_version", current.toString());
+    var minimumVersionParts =
+        firebaseRemoteConfig.getString("minimum_app_version").split(".");
+    var minimumRequired = Version(int.parse(minimumVersionParts[0]),
+        int.parse(minimumVersionParts[1]), int.parse(minimumVersionParts[2]));
+    if (current < minimumRequired) throw OutdatedAppException();
 
     if (kDebugMode) {
       // Force disable Crashlytics collection while doing every day development.

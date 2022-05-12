@@ -12,18 +12,6 @@ class PaymentController {
 
   static var apiClient = CloudFunctionsClient();
 
-  static Future<String> createCheckout(String userId, String matchId,
-      int creditsUsed, testMode) async {
-    var result = await apiClient.callFunction("create_stripe_checkout",
-        {
-          'match_id': matchId,
-          'user_id': userId,
-          'credits_used': creditsUsed,
-          'test_mode': testMode
-        });
-    return result["url"];
-  }
-
   static Future<PaymentRecap> generatePaymentRecap(BuildContext context,
       String matchId) async {
     var m = await MatchesController.refresh(context, matchId);
