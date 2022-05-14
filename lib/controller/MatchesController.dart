@@ -7,14 +7,6 @@ import '../model/PaymentRecap.dart';
 import '../state/MatchesState.dart';
 import '../state/UserState.dart';
 
-enum MatchStatusForUser {
-  canJoin,                  // user can join the match
-  cannotJoin,               // user cannot join the match (either is full or canceled)
-  canLeave,                 // user is in and  can leave the match
-  cannotLeave,              // user is in and cannot leave the match (e.g. 1h before start time)
-  to_rate,                  // match is in the past, within rating window and user still has players to rate
-  no_more_to_rate,          // match is in the past, within rating window and user has rated everyone
-}
 
 class MatchesController {
 
@@ -42,8 +34,7 @@ class MatchesController {
       'credits_used': paymentStatus.creditsInCentsUsed,
       'money_paid': paymentStatus.finalPriceToPayInCents()
     });
-    print("joined");
-    var m = await refresh(context, matchId);
+    var  m = await refresh(context, matchId);
     return m;
   }
 
@@ -53,8 +44,7 @@ class MatchesController {
 
     await apiClient.callFunction("remove_user_from_match", {
       'user_id': userState.getLoggedUserDetails().documentId,
-      'match_id': matchId,
-      'type': "stripe"
+      'match_id': matchId
     });
     var m = await refresh(context, matchId);
     return m;

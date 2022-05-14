@@ -26,8 +26,6 @@ class BottomBarMatch extends StatelessWidget {
 
     var bottomBar;
 
-    print(matchStatus);
-
     switch (matchStatus) {
       case MatchStatus.open:
         if (isGoing) {
