@@ -8,11 +8,17 @@ import 'package:get/get_core/src/get_main.dart';
 import 'package:nutmeg/state/UserState.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/Avatar.dart';
+import 'package:nutmeg/widgets/Buttons.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:provider/provider.dart';
+import 'package:screenshot/screenshot.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
+
 
 class PlayerOfTheMatch extends StatelessWidget {
   final GlobalKey previewContainer = new GlobalKey();
+  final screenshotController = ScreenshotController();
 
   @override
   Widget build(BuildContext context) {
@@ -34,40 +40,42 @@ class PlayerOfTheMatch extends StatelessWidget {
           ]))
     ]);
 
-    return RepaintBoundary(
-        key: previewContainer,
-        child: Scaffold(
-          extendBodyBehindAppBar: true,
-          appBar: AppBar(
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            centerTitle: false,
-            automaticallyImplyLeading: false,
-            leadingWidth: 0,
-            actions: [
-              Padding(
-                  padding: EdgeInsets.only(right: 20),
-                  child: InkWell(
-                    child: Icon(Icons.close),
-                    onTap: () => Get.back(),
-                  ))
-            ],
-          ),
-          body: Stack(children: [
-            Container(
-                constraints: BoxConstraints.expand(),
-                decoration: new BoxDecoration(color: Palette.primary)),
-            images,
-            MainArea(userId: uid)
-          ]),
-        ));
+    return Screenshot(
+      controller: screenshotController,
+      child: Scaffold(
+        extendBodyBehindAppBar: true,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          centerTitle: false,
+          automaticallyImplyLeading: false,
+          leadingWidth: 0,
+          actions: [
+            Padding(
+                padding: EdgeInsets.only(right: 20),
+                child: InkWell(
+                  child: Icon(Icons.close),
+                  onTap: () => Get.back(),
+                ))
+          ],
+        ),
+        body: Stack(children: [
+          Container(
+              constraints: BoxConstraints.expand(),
+              decoration: new BoxDecoration(color: Palette.primary)),
+          images,
+          MainArea(userId: uid, screenshotController: screenshotController)
+        ]),
+      ),
+    );
   }
 }
 
 class MainArea extends StatefulWidget {
   final String userId;
+  final ScreenshotController screenshotController;
 
-  const MainArea({Key key, this.userId}) : super(key: key);
+  const MainArea({Key key, this.userId, this.screenshotController}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => MainAreaState();
@@ -142,13 +150,20 @@ class MainAreaState extends State<MainArea> {
                       GenericButtonWithLoader("SEE MATCH STATS",
                           (BuildContext context) async {
                         Get.back();
-                      }, PrimaryInverted())
+                      }, PrimaryInverted()),
+                      ShareButton(() async {
+                        var appDir = await getApplicationDocumentsDirectory();
+                        var filePath = await widget.screenshotController
+                            .captureAndSave(appDir.path);
+                        Share.shareFiles([filePath]);
+                      }, Palette.white)
                     ],
                   ),
                 ),
               ),
             ],
-          )),
+          )
+      ),
     );
   }
 }
