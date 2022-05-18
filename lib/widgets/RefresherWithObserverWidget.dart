@@ -9,9 +9,10 @@ import 'package:logger/logger.dart';
 class RefresherWithObserverWidget extends StatefulWidget {
 
   final Widget child;
+  final Function initState;
   final Function refreshState;
 
-  const RefresherWithObserverWidget({Key key, this.child, this.refreshState}) : super(key: key);
+  const RefresherWithObserverWidget({Key key, this.child, this.refreshState, this.initState}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => RefresherWithObserverWidgetState();
@@ -34,7 +35,12 @@ class RefresherWithObserverWidgetState extends State<RefresherWithObserverWidget
         });
     WidgetsBinding.instance.addObserver(lifecycleEventHandler);
     _logger.d("RefreshWithObserver: calling refreshState in initState");
-    widget.refreshState();
+    if (widget.initState != null) {
+      widget.initState();
+    }
+    else {
+      widget.refreshState();
+    }
   }
 
   @override

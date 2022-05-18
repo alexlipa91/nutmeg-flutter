@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
@@ -58,7 +57,7 @@ class MatchDetailsState extends State<MatchDetails> {
 
   MatchDetailsState(this.matchId);
 
-  Future<void> refreshState() async {
+  Future<void> refreshState(bool showModal) async {
     List<Future<dynamic>> futures = [
       context.read<MatchesState>().fetchRatings(matchId),
       MatchesController.refresh(context, matchId)
@@ -73,18 +72,10 @@ class MatchDetailsState extends State<MatchDetails> {
 
     // get organizer details
     UserController.getUserDetails(context, match.organizerId);
-  }
 
-  @override
-  void initState() {
-    super.initState();
-    // show potm
-    SchedulerBinding.instance.addPostFrameCallback((_) async {
+    if (showModal) {
       // show rating modal
       var match = context.read<MatchesState>().getMatch(matchId);
-      // it could be we are still fetching the match
-      if (match == null)
-        await MatchesController.refresh(context, matchId);
 
       if (match.status == MatchStatus.to_rate) {
         var stillToVote = context.read<MatchesState>().stillToVote(
@@ -112,7 +103,7 @@ class MatchDetailsState extends State<MatchDetails> {
         Get.toNamed("/potm/" + currentUser);
         prefs.setBool(preferencePath, true);
       }
-    });
+    }
   }
 
   @override
@@ -205,7 +196,8 @@ class MatchDetailsState extends State<MatchDetails> {
     ];
 
     return PageTemplate(
-      refreshState: () => refreshState(),
+      initState: () => refreshState(true),
+      refreshState: () => refreshState(false),
       widgets: widgets,
       appBar: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
