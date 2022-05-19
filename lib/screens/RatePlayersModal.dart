@@ -8,6 +8,7 @@ import 'package:nutmeg/state/RatingPlayersState.dart';
 import 'package:nutmeg/state/UserState.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
+import 'package:nutmeg/widgets/FeedbackBottomModal.dart';
 import 'package:nutmeg/widgets/ModalBottomSheet.dart';
 import 'package:provider/provider.dart';
 
@@ -39,7 +40,7 @@ class RatePlayerBottomModal extends StatelessWidget {
 
     toRate.map((e) => UserController.getUserDetails(context, e));
 
-    return await ModalBottomSheet.showNutmegModalBottomSheet(
+    await ModalBottomSheet.showNutmegModalBottomSheet(
         context,
         MultiProvider(
           providers: [
@@ -48,6 +49,7 @@ class RatePlayerBottomModal extends StatelessWidget {
           ],
           child: RatePlayerBottomModal(matchId),
         ));
+    await FeedbackBottomModal.feedbackAction(context);
     // don't refresh the status here because the last rating might have not yet propagated; instead leave RatePlayerBottomModal modify it if necessary
   }
 

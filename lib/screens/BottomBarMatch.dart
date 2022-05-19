@@ -194,7 +194,7 @@ class RatePlayersBottomBar extends StatelessWidget {
             matchId,
             context.read<UserState>().getLoggedUserDetails()).length.toString() +
         " players left",
-        button:  RateButton(matchId: matchId)
+        button: RateButton(matchId: matchId)
     );
   }
 }

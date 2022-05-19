@@ -11,6 +11,7 @@ import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/Avatar.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:nutmeg/widgets/Containers.dart';
+import 'package:nutmeg/widgets/FeedbackBottomModal.dart';
 import 'package:nutmeg/widgets/PageTemplate.dart';
 import 'package:nutmeg/widgets/Section.dart';
 import 'package:nutmeg/widgets/WarningWidget.dart';
@@ -242,7 +243,12 @@ class UserPageState extends State<UserPage> {
               }
             },
           ),
-          // LinkInfo(text: "Terms and Conditions"),
+          LinkInfo(
+                text: "Give us feedback",
+                onTap: () async {
+                  await FeedbackBottomModal.feedbackAction(context);
+                },
+        ),
           SizedBox(height: 10),
           Row(
             children: [

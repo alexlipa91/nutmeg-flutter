@@ -6,15 +6,16 @@ import 'package:nutmeg/widgets/Skeletons.dart';
 import '../model/UserDetails.dart';
 import 'Avatar.dart';
 
-class PlayerBottomModal extends StatelessWidget {
-  PlayerBottomModal(this.userDetails, this.content, this.title, this.subtitle);
+class BottomModalWithTopImage extends StatelessWidget {
 
-  final UserDetails userDetails;
   final String title;
   final String subtitle;
   final Widget content;
+  final Widget topImage;
 
-  @override
+  const BottomModalWithTopImage({Key key, this.title, this.subtitle, this.content, this.topImage})
+      : super(key: key);
+
   Widget build(BuildContext context) {
     return Container(
       child: Container(
@@ -57,7 +58,10 @@ class PlayerBottomModal extends StatelessWidget {
                           top: -50,
                           left: 0,
                           right: 0,
-                          child: UserAvatarWithBorder(userDetails)),
+                          child: CircleAvatar(
+                              backgroundColor: Palette.white,
+                              radius: 38,
+                              child: topImage)),
                     ]),
               ],
             ),
@@ -65,6 +69,25 @@ class PlayerBottomModal extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+
+class PlayerBottomModal extends StatelessWidget {
+  PlayerBottomModal(this.userDetails, this.content, this.title, this.subtitle);
+
+  final UserDetails userDetails;
+  final String title;
+  final String subtitle;
+  final Widget content;
+
+  @override
+  Widget build(BuildContext context) {
+    return BottomModalWithTopImage(
+        title: title,
+        subtitle: subtitle,
+        content: content,
+        topImage: UserAvatar(34, userDetails));
   }
 }
 
