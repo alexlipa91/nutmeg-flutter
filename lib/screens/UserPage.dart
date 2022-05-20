@@ -248,7 +248,13 @@ class UserPageState extends State<UserPage> {
                 onTap: () async {
                   await FeedbackBottomModal.feedbackAction(context);
                 },
-        ),
+          ),
+          LinkInfo(
+            text: "Email support",
+            onTap: () async {
+              await launch("mailto:support@nutmegapp.com?subject=Support request", forceSafariVC: false);
+            }
+          ),
           SizedBox(height: 10),
           Row(
             children: [
