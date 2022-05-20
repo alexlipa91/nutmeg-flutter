@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -75,10 +74,7 @@ class UserController {
   static Future<void> addUser(UserDetails u) async => await apiClient
       .callFunction("add_user", {"id": u.documentId, "data": u.toJson()});
 
-  static Future<void> saveUserTokensToDb(UserDetails userDetails) async {
-    // Get the token each time the application loads
-    String token = await FirebaseMessaging.instance.getToken();
-
+  static Future<void> saveUserTokensToDb(UserDetails userDetails, String token) async {
     // Save the initial token to the database
     try {
       await apiClient.callFunction(
@@ -88,7 +84,8 @@ class UserController {
       print(s);
     }
     // Any time the token refreshes, store this in the database too.
-    FirebaseMessaging.instance.onTokenRefresh.listen(_saveTokenToDatabase);
+    FirebaseMessaging.instance.onTokenRefresh.listen((t) =>
+        _saveTokenToDatabase(userDetails, t));
   }
 
   static Future<AfterLoginCommunication> _login(
@@ -132,20 +129,20 @@ class UserController {
       await addUser(userDetails);
     }
 
+    var token = await FirebaseMessaging.instance.getToken();
+
     userState.setCurrentUserDetails(userDetails);
-    await UserController.saveUserTokensToDb(userDetails);
+    UserController.saveUserTokensToDb(userDetails, token);
     return afterLoginComm;
   }
 
-  static Future<void> _saveTokenToDatabase(String token) async {
+  static Future<void> _saveTokenToDatabase(UserDetails ud, String token) async {
     String userId = FirebaseAuth.instance.currentUser.uid;
     if (userId == null) {
       return;
     }
 
-    await FirebaseFirestore.instance.collection('users').doc(userId).update({
-      'tokens': FieldValue.arrayUnion([token]),
-    });
+    UserController.saveUserTokensToDb(ud, token);
   }
 
   static Future<AfterLoginCommunication> continueWithGoogle(

@@ -183,8 +183,6 @@ class LaunchController {
 
     if (userDetails != null) {
       context.read<UserState>().setCurrentUserDetails(userDetails);
-      // tell the app to save user tokens
-      UserController.saveUserTokensToDb(userDetails);
       trace.putAttribute("user_id", userDetails?.documentId);
     }
 
