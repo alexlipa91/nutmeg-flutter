@@ -11,8 +11,6 @@ import 'package:get/get_core/src/get_main.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:nutmeg/controller/PromotionController.dart';
-import 'package:nutmeg/utils/Utils.dart';
 import 'package:provider/provider.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
@@ -99,13 +97,12 @@ class UserController {
     var afterLoginComm;
 
     // check if first time
-    if (userDetails == null) {
+    if (userDetails is EmptyUserDetails) {
       userDetails = new UserDetails(
           uid,
           false,
           userCredential.user.photoURL,
-          // userCredential.user.displayName,
-          null,
+          userCredential.user.displayName,
           userCredential.user.email);
 
       if (userDetails.name == null || userDetails.name == "") {
@@ -118,14 +115,6 @@ class UserController {
         }
       }
 
-      // check if need to give credits todo generalize
-      int credits = await PromotionController.giveFreeCreditsAtLogin();
-      if (credits > 0) {
-        userDetails.creditsInCents = userDetails.creditsInCents + credits;
-        afterLoginComm = AfterLoginCommunication();
-        afterLoginComm.text = formatCurrency(credits) +
-            " were added to your account.\nJoin a match and use them to pay";
-      }
       await addUser(userDetails);
     }
 
@@ -222,7 +211,7 @@ class UserController {
 
     var resp = await apiClient.callFunction("get_user", {"id": uid});
 
-    var ud = (resp == null) ? UserDetails.empty(uid)
+    var ud = (resp == null) ? EmptyUserDetails.empty(uid)
         : UserDetails.fromJson(resp, uid);
     userState.setUserDetail(ud);
 

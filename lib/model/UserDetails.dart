@@ -102,3 +102,6 @@ class UserDetails {
   }
 }
 
+class EmptyUserDetails extends UserDetails {
+  EmptyUserDetails.empty(String documentId) : super.empty(documentId);
+}
