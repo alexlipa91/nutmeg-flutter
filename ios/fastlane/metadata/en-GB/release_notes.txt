@@ -1,1 +1,1 @@
-Automatic cancellation option
+Fix missing name auth flow
