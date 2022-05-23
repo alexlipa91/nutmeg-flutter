@@ -107,7 +107,8 @@ class Match {
 
   bool isFull() => numPlayersGoing() == maxPlayers;
 
-  bool isUserGoing(UserDetails user) => going.containsKey(user.documentId);
+  bool isUserGoing(UserDetails user) =>
+      user != null && going.containsKey(user.documentId);
 
   double getPrice() => pricePerPersonInCents / 100;
 

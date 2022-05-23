@@ -16,6 +16,7 @@ import '../state/MatchesState.dart';
 import '../state/UserState.dart';
 import '../utils/UiUtils.dart';
 import '../widgets/GenericAvailableMatches.dart';
+import 'Login.dart';
 
 // main widget
 class AvailableMatches extends StatelessWidget {
@@ -243,11 +244,22 @@ class AvailableMatches extends StatelessWidget {
             if (withAction)
               TappableLinkText(
                   text: "CREATE A NEW MATCH",
-                  onTap: (BuildContext context) => Get.toNamed("/createMatch")),
+                  onTap: () => loginAndCreateMatch(context)
+              ),
           ],
         ),
       ),
     );
+  }
+
+  Future<void> loginAndCreateMatch(BuildContext context) async {
+    if (!context.read<UserState>().isLoggedIn()) {
+      await Navigator.push(context,
+          MaterialPageRoute(builder: (context) => Login()));
+    }
+    if (context.read<UserState>().isLoggedIn()) {
+      Get.toNamed("/createMatch");
+    }
   }
 
   @override
@@ -271,7 +283,7 @@ class AvailableMatches extends StatelessWidget {
                   ? FloatingActionButton(
                       backgroundColor: Palette.primary,
                       child: Icon(Icons.add, color: Palette.white),
-                      onPressed: () => Get.toNamed("/createMatch"))
+                      onPressed: () => loginAndCreateMatch(context))
                   : null,
               Column(
                 children: [
