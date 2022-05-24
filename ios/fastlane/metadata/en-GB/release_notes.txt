@@ -1,1 +1,1 @@
-Fix missing name auth flow
+Fix not logged users bug
