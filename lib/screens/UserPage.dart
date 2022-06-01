@@ -135,7 +135,7 @@ class UserPageState extends State<UserPage> {
           child: UserInfoBox(
               content: (userDetails == null)
                   ? null
-                  : userDetails.getJoinedMatches().length.toString(),
+                  : userDetails.getNumJoinedMatches().toString(),
               description: "Matches Played"),
         )
       ]),
@@ -145,7 +145,7 @@ class UserPageState extends State<UserPage> {
           child: UserInfoBox(
               content: (userDetails == null)
                   ? null
-                  : (userDetails.getScoreMatches() == -1)
+                  : (userDetails.getScoreMatches() == null)
                       ? "-"
                       : userDetails.getScoreMatches().toStringAsFixed(1),
               description: "Avg. Score"),

@@ -8,10 +8,11 @@ class UserDetails {
   String stripeId;
   int creditsInCents;
 
-  List<String> joinedMatches;
+  int numJoinedMatches;
+  double averageScore;
+
   List<String> createdMatches;
   List<String> createdTestMatches;
-  Map<String, double> scoreMatches;
 
   List<String> manOfTheMatch;
 
@@ -39,8 +40,8 @@ class UserDetails {
         email = json["email"],
         creditsInCents = json["credits"],
         stripeId = json["stripeId"] ?? null,
-        joinedMatches = Map<String, dynamic>.from(json["joined_matches"] ?? {}).keys.toList(),
-        scoreMatches = Map<String, double>.from(json["scoreMatches"] ?? {}),
+        numJoinedMatches = json["num_matches_joined"] ?? 0,
+        averageScore = json["avg_score"] ?? null,
         manOfTheMatch = List<String>.from(json["manOfTheMatch"] ?? []),
         chargesEnabledOnStripe = json["chargesEnabledOnStripe"] ?? false,
         chargesEnabledOnStripeTest = json["chargesEnabledOnStripeTest"] ?? false,
@@ -59,15 +60,9 @@ class UserDetails {
 
   String getUid() => documentId;
 
-  double getScoreMatches() {
-    if (scoreMatches == null || scoreMatches.isEmpty) {
-      return -1;
-    }
-    return scoreMatches.values.toList()
-        .where((e) => e > 0).reduce((a, b) => a + b) / scoreMatches.length;
-  }
+  double getScoreMatches() => averageScore;
 
-  List<String> getJoinedMatches() => (joinedMatches == null) ? List<String>.empty() : joinedMatches;
+  int getNumJoinedMatches() => numJoinedMatches;
 
   int getNumManOfTheMatch() => (manOfTheMatch == null) ? 0 : manOfTheMatch.length;
 
@@ -94,11 +89,6 @@ class UserDetails {
     if (ud.name != null) return ud.name;
     if (ud.email != null && !ud.email.contains("privaterelay")) return ud.email;
     return "Player";
-  }
-
-  @override
-  String toString() {
-    return 'UserDetails{documentId: $documentId, isAdmin: $isAdmin, image: $image, name: $name, email: $email, stripeId: $stripeId, creditsInCents: $creditsInCents, joinedMatches: $joinedMatches, organisedMatches: $createdMatches, organisedMatchesTest: $createdTestMatches, scoreMatches: $scoreMatches, manOfTheMatch: $manOfTheMatch, chargesEnabledOnStripe: $chargesEnabledOnStripe, chargesEnabledOnStripeTest: $chargesEnabledOnStripeTest}';
   }
 }
 

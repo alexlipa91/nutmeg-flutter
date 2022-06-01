@@ -127,13 +127,13 @@ class JoinedPlayerBottomModal extends StatelessWidget {
               children: [
                 Expanded(
                   child: StatEntry(
-                    stat: userDetails.getJoinedMatches().length.toString(),
+                    stat: userDetails.getNumJoinedMatches().toString(),
                     description: "Matches",
                   ),
                 ),
                 Expanded(
                   child: StatEntry(
-                    stat: (userDetails.getScoreMatches() == -1)
+                    stat: (userDetails.getScoreMatches() == null)
                         ? "-"
                         : userDetails.getScoreMatches().toStringAsFixed(1),
                     description: "Avg. score",
