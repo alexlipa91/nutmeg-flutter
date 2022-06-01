@@ -43,6 +43,8 @@ class MatchesState extends ChangeNotifier {
       (_matches == null) ? null : _matches[matchId];
 
   void setMatch(Match m) {
+    if (_matches == null)
+      _matches = Map();
     _matches[m.documentId] = m;
     notifyListeners();
   }
