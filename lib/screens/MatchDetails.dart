@@ -130,7 +130,6 @@ class MatchDetailsState extends State<MatchDetails> {
           userState.getLoggedUserDetails().areChargesEnabled(isTest) != null &&
           !userState.getLoggedUserDetails().areChargesEnabled(isTest))
         padB(CompleteOrganiserAccountWidget(isTest: isTest)),
-      padB(Title(matchId)),
       if (isTest)
         padB(InfoContainer(
             backgroundColor: Palette.accent,
@@ -145,7 +144,7 @@ class MatchDetailsState extends State<MatchDetails> {
         Stats(matchId: matchId, matchDatetime: match.dateTime),
       // horizontal players list
       if (match != null) PlayerList(match: match),
-      if (match != null && match.dateTime.isAfter(DateTime.now()))
+      if (match != null)
         Section(
             title: "DETAILS",
             body: Column(
@@ -154,12 +153,8 @@ class MatchDetailsState extends State<MatchDetails> {
                 SizedBox(height: 16.0),
                 RuleCard(
                     "Payment Policy",
-                    ConfigsUtils.removeCreditsFunctionality()
-                        ? "If you leave the match or the match is canceled you will get a refund on the payment method you used to pay.\n\n"
-                            "If you don’t show up you won’t get a refund."
-                        : "If you leave the match you will get a refund in credits that you can use for other Nutmeg matches.\n\n" +
-                            "If the match is canceled by the organizer, you will get a refund on the payment method you used to pay.\n\n"
-                                "If you don’t show up you won’t get a refund."),
+                    "If you leave the match or the match is canceled you will get a refund on the payment method you used to pay.\n\n"
+                        "If you don’t show up you won’t get a refund."),
                 SizedBox(height: 16.0),
                 if (match != null && match.organizerId != null)
                   Builder(builder: (context) {
@@ -275,8 +270,11 @@ class Title extends StatelessWidget {
 
     var title = sportCenter.name + " - " + sportCenter.getCourtType();
 
-    return Text(title,
-        style: TextPalette.h1Default, textAlign: TextAlign.start);
+    return Text(
+      title,
+      style: TextPalette.h1Default,
+      // textAlign: TextAlign.start
+    );
   }
 }
 
@@ -298,94 +296,110 @@ class MatchInfo extends StatelessWidget {
         ? null
         : context.watch<LoadOnceState>().getSportCenter(match.sportCenterId);
 
-    var courtType = sportCenter == null ? null : sportCenter.getCourtType();
-    var isIndoor = sportCenter == null ? null : sportCenter.isIndoor();
+    var matchWidget = getStatusWidget(match);
 
     child = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(children: [Expanded(child: SportCenterImageCarousel(match))]),
         Padding(
           padding: EdgeInsets.all(16.0),
-          child: Column(children: [
-            InfoWidget(
-                title: (match == null)
-                    ? null
-                    : getFormattedDateLong(match.dateTime),
-                subTitle: (match == null)
-                    ? null
-                    : getStartAndEndHour(match.dateTime, match.duration)
-                            .join(" - ") +
-                        " - " +
-                        match.duration.inMinutes.toString() +
-                        " min",
-                icon: Icons.schedule),
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Title(matchId),
             SizedBox(height: 16),
-            Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: () async {
-                  if (await MapLauncher.isMapAvailable(m.MapType.google)) {
-                    await MapLauncher.showMarker(
-                      mapType: m.MapType.google,
-                      coords: Coords(sportCenter.lat, sportCenter.lng),
-                      title: "",
-                      extraParams: {
-                        "q": sportCenter.name + "," + sportCenter.address,
-                        "z": "16"
-                      },
-                    );
-                  } else if (await MapLauncher.isMapAvailable(
-                      m.MapType.apple)) {
-                    await MapLauncher.showMarker(
-                      mapType: m.MapType.apple,
-                      coords: Coords(sportCenter.lat, sportCenter.lng),
-                      title: "",
-                      // fixme do something
-                    );
-                  } else {
-                    // fixme do something
-                  }
-                },
-                splashColor: Palette.grey_lighter,
-                child: InfoWidget.withRightWidget(
-                    title: (sportCenter == null)
-                        ? null
-                        : sportCenter.name +
-                            (match.sportCenterSubLocation != null &&
-                                    match.sportCenterSubLocation.isNotEmpty
-                                ? " - " + match.sportCenterSubLocation
-                                : ""),
-                    icon: Icons.place,
-                    subTitle: (sportCenter == null)
-                        ? null
-                        : sportCenter.getShortAddress(),
-                    rightWidget: ClipRRect(
-                        borderRadius: BorderRadius.circular(15.0),
-                        child: Image.asset("assets/map.png", height: 45))),
-              ),
-            ),
+            Builder(builder: (context) {
+              if (sportCenter == null) return Skeletons.xlText;
+
+              var addressItems = sportCenter.address.split(",");
+
+              return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(addressItems[0].trim() + ", " + addressItems[1].trim(),
+                        style: TextPalette.bodyText),
+                    Text(addressItems[2].trim(), style: TextPalette.bodyText)
+                  ]);
+            }),
             SizedBox(height: 16),
-            if (isIndoor != null)
+            if (match != null && match.sportCenterSubLocation.isNotEmpty)
               Padding(
-                padding: EdgeInsets.only(bottom: 16),
-                child: InfoWidget(
-                    title: courtType,
-                    icon: Icons.sports_soccer,
-                    // todo fix info sport
-                    subTitle: isIndoor ? "Indoor" : "Outdoor"),
+                padding: EdgeInsets.only(bottom: 8),
+                child: Row(
+                  children: [
+                    SvgPicture.asset(
+                        "assets/icons/nutmeg_icon_court_number.svg"),
+                    SizedBox(width: 16),
+                    Text("Court number ${match.sportCenterSubLocation}",
+                        style: TextPalette.listItem)
+                  ],
+                ),
               ),
-            InfoWidget(
-                title: (match == null)
-                    ? null
-                    : formatCurrency(match.pricePerPersonInCents),
-                icon: Icons.sell,
-                subTitle: "Pay with Ideal"),
+            IconList(iconAndText: {
+              Icons.calendar_month_outlined:
+                  getFormattedDateLong(match.dateTime),
+              Icons.access_time_outlined:
+                  getStartAndEndHour(match.dateTime, match.duration)
+                      .join(" - "),
+              Icons.local_offer_outlined:
+                  formatCurrency(match.pricePerPersonInCents)
+            }),
+            if (matchWidget != null)
+              Column(children: [
+                SizedBox(height: 16),
+                Divider(color: Palette.grey_light),
+                SizedBox(height: 8),
+                matchWidget
+              ])
           ]),
-        )
+        ),
       ],
     );
 
     return InfoContainer(padding: EdgeInsets.zero, child: child);
+  }
+
+  Row getStatusWidget(Match match) {
+    var color;
+    var icon;
+    var text;
+
+    if (match.status == MatchStatus.open
+        && match.cancelBefore != null
+        && match.getMissingPlayers() > 0) {
+      icon = Icons.hourglass_empty_outlined;
+      color = Palette.primary;
+      text = "Waiting for ${match.getMissingPlayers()} players";
+    } else if (match.getMissingPlayers() == 0 || match.cancelBefore == null) {
+      icon = Icons.check_circle_outline;
+      color = Palette.green;
+      text = "Match is on";
+    } else if (match.status == MatchStatus.cancelled) {
+      icon = Icons.do_disturb_alt_outlined;
+      color = Palette.destructive;
+      text = "Canceled";
+    } else if (match.status == MatchStatus.unpublished) {
+      icon = Icons.warning_amber_outlined;
+      color = Palette.darkWarning;
+      text = "Not published";
+    } else if (match.status == MatchStatus.playing){
+      icon = Icons.history_toggle_off_outlined;
+      color = Palette.grey_dark;
+      text = "In Progress";
+    } else {
+      // todo check default
+      icon = Icons.warning_amber_outlined;
+      color = Palette.darkWarning;
+      text = "Not published";
+    }
+
+    return Row(
+      children: [
+        Icon(icon, color: color, size: 18),
+        SizedBox(width: 8),
+        Text(text, style: TextPalette.getListItem(color))
+      ],
+    );
   }
 }
 
@@ -690,41 +704,16 @@ class SportCenterDetails extends StatelessWidget {
                 ],
               ),
             ),
-          Padding(
-            padding: EdgeInsets.only(bottom: 8),
-            child: Row(
-              children: [
-                SvgPicture.asset("assets/icons/nutmeg_icon_court.svg"),
-                SizedBox(width: 16),
-                (sportCenter == null)
-                    ? Skeletons.lText
-                    : Text(sportCenter.getCourtType() + " court type",
-                        style: TextPalette.listItem)
-              ],
-            ),
-          ),
-          Padding(
-            padding: EdgeInsets.only(bottom: 8),
-            child: Row(
-              children: [
-                SvgPicture.asset("assets/icons/nutmeg_icon_shoe.svg"),
-                SizedBox(width: 16),
-                (sportCenter == null)
-                    ? Skeletons.lText
-                    : Text(sportCenter.getSurface(),
-                        style: TextPalette.listItem)
-              ],
-            ),
-          ),
-          if (sportCenter != null && sportCenter.hasChangingRooms())
-            Row(
-              children: [
-                // Icon(Icons.jack),
-                SvgPicture.asset("assets/icons/nutmeg_icon_changing_rooms.svg"),
-                SizedBox(width: 16),
-                Text("Change rooms available", style: TextPalette.listItem)
-              ],
-            )
+          IconListSvg(svgAndText: {
+            "assets/icons/nutmeg_icon_court.svg": (sportCenter == null)
+                ? null
+                : sportCenter.getCourtType() + " court type",
+            "assets/icons/nutmeg_icon_shoe.svg":
+                (sportCenter == null) ? null : sportCenter.getSurface(),
+            if (sportCenter != null && sportCenter.hasChangingRooms())
+              "assets/icons/nutmeg_icon_changing_rooms.svg":
+                  "Change rooms available"
+          })
         ],
       ),
     );
@@ -949,5 +938,44 @@ class Stats extends StatelessWidget {
         body: InfoContainer(child: child),
       ),
     );
+  }
+}
+
+// todo unify these two
+class IconList extends StatelessWidget {
+  final Map<IconData, String> iconAndText;
+
+  const IconList({Key key, this.iconAndText}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    Iterable<Row> rows = iconAndText.entries.map((e) => Row(children: [
+          Icon(e.key, color: Palette.black, size: 18),
+          SizedBox(width: 16),
+          Text(e.value, style: TextPalette.listItem)
+        ]));
+
+    List<Widget> widgets = interleave(rows.toList(), SizedBox(height: 16));
+
+    return Column(children: widgets);
+  }
+}
+
+class IconListSvg extends StatelessWidget {
+  final Map<String, String> svgAndText;
+
+  const IconListSvg({Key key, this.svgAndText}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    Iterable<Row> rows = svgAndText.entries.map((e) => Row(children: [
+          SvgPicture.asset(e.key, width: 18, height: 18),
+          SizedBox(width: 16),
+          Text(e.value, style: TextPalette.listItem)
+        ]));
+
+    List<Widget> widgets = interleave(rows.toList(), SizedBox(height: 16));
+
+    return Column(children: widgets);
   }
 }

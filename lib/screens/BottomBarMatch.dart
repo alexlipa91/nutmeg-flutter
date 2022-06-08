@@ -52,10 +52,10 @@ class BottomBarMatch extends StatelessWidget {
       case MatchStatus.rated:
         break;
       case MatchStatus.cancelled:
-        bottomBar = MatchCanceledBottomBar(matchId: matchId);
         break;
       case MatchStatus.unpublished:
-        bottomBar = NotPublishedBottomBar(matchId: matchId);
+        if (match.organizerId == context.read<UserState>().currentUserId)
+          bottomBar = NotPublishedBottomBar(matchId: matchId);
     }
 
     return bottomBar;

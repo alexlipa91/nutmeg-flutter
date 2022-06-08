@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'UserDetails.dart';
 
 
@@ -62,6 +64,8 @@ class Match {
         cancelBefore = Duration(hours: jsonInput['cancelHoursBefore']);
 
       organizerId = jsonInput["organizerId"];
+      cancelBefore = jsonInput.containsKey("cancelHoursBefore") ?
+        Duration(hours: jsonInput["cancelHoursBefore"]) : null;
 
       status = MatchStatus.values
           .firstWhere((e) => e.name == jsonInput["status"]);
@@ -69,7 +73,8 @@ class Match {
       this.documentId = documentId;
   }
 
-  Set<String> getPotms() => (_manOfTheMatch == null) ? Set<String>.from([]) : _manOfTheMatch.keys.toSet();
+  Set<String> getPotms() => _manOfTheMatch == null
+      ? Set<String>.from([]) : _manOfTheMatch.keys.toSet();
 
   static Map<String, DateTime> _readGoing(Map<String, dynamic> json) {
     var map = Map<String, dynamic>.from(json["going"] ?? {});
@@ -116,5 +121,7 @@ class Match {
     var entries = going.entries.toList()..sort((e1,e2) => -e1.value.compareTo(e2.value));
     return entries.map((e) => e.key).toList();
   }
+
+  int getMissingPlayers() => max(0, minPlayers - going.length);
 }
 
