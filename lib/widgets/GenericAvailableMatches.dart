@@ -231,12 +231,12 @@ class GenericMatchInfo extends StatelessWidget {
                                       ],
                                     ),
                               SizedBox(
-                                height: 12,
+                                height: 8,
                               ),
                               Text(getFormattedDate(match.dateTime),
-                                  style: TextPalette.getH3(Palette.grey_dark)),
+                                  style: TextPalette.getBodyText(Palette.grey_dark)),
                               SizedBox(
-                                height: 8,
+                                height: 6,
                               ),
                               (match.status == MatchStatus.unpublished) ?
                                 Text("Not Published",
