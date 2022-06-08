@@ -364,16 +364,10 @@ class MatchInfo extends StatelessWidget {
     var icon;
     var text;
 
-    if (match.status == MatchStatus.open
-        && match.cancelBefore != null
-        && match.getMissingPlayers() > 0) {
-      icon = Icons.hourglass_empty_outlined;
-      color = Palette.primary;
-      text = "Waiting for ${match.getMissingPlayers()} players";
-    } else if (match.getMissingPlayers() == 0 || match.cancelBefore == null) {
-      icon = Icons.check_circle_outline;
-      color = Palette.green;
-      text = "Match is on";
+    if (match.status == MatchStatus.playing) {
+      icon = Icons.history_toggle_off_outlined;
+      color = Palette.grey_dark;
+      text = "In Progress";
     } else if (match.status == MatchStatus.cancelled) {
       icon = Icons.do_disturb_alt_outlined;
       color = Palette.destructive;
@@ -382,15 +376,23 @@ class MatchInfo extends StatelessWidget {
       icon = Icons.warning_amber_outlined;
       color = Palette.darkWarning;
       text = "Not published";
-    } else if (match.status == MatchStatus.playing){
-      icon = Icons.history_toggle_off_outlined;
-      color = Palette.grey_dark;
-      text = "In Progress";
+    } else if (match.status == MatchStatus.open &&
+        match.cancelBefore != null &&
+        match.getMissingPlayers() > 0) {
+      icon = Icons.hourglass_empty_outlined;
+      color = Palette.primary;
+      text = "Waiting for ${match.getMissingPlayers()} players";
+    } else if (match.status == MatchStatus.open &&
+            (match.getMissingPlayers() == 0 || match.cancelBefore == null) ||
+        (match.status == MatchStatus.pre_playing &&
+            match.getMissingPlayers() == 0)) {
+      icon = Icons.check_circle_outline;
+      color = Palette.green;
+      text = "Match is on";
     } else {
-      // todo check default
       icon = Icons.warning_amber_outlined;
       color = Palette.darkWarning;
-      text = "Not published";
+      text = "Error";
     }
 
     return Row(
@@ -675,9 +677,9 @@ class SportCenterDetails extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text("Location", style: TextPalette.h2),
-          SizedBox(height: 8),
+          SizedBox(height: 16),
           MapCardImage(matchId),
-          SizedBox(height: 8),
+          SizedBox(height: 16),
           Builder(builder: (context) {
             if (sportCenter == null) return Skeletons.xlText;
 
@@ -955,7 +957,7 @@ class IconList extends StatelessWidget {
           Text(e.value, style: TextPalette.listItem)
         ]));
 
-    List<Widget> widgets = interleave(rows.toList(), SizedBox(height: 16));
+    List<Widget> widgets = interleave(rows.toList(), SizedBox(height: 12));
 
     return Column(children: widgets);
   }
@@ -974,7 +976,7 @@ class IconListSvg extends StatelessWidget {
           Text(e.value, style: TextPalette.listItem)
         ]));
 
-    List<Widget> widgets = interleave(rows.toList(), SizedBox(height: 16));
+    List<Widget> widgets = interleave(rows.toList(), SizedBox(height: 12));
 
     return Column(children: widgets);
   }

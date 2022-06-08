@@ -368,8 +368,12 @@ class GenericMatchInfoPast extends StatelessWidget {
                       children: [
                         Text(sportCenter.name + " - " + sportCenter.getCourtType(),
                             style: TextPalette.h2),
-                        SizedBox(height: 10),
+                        SizedBox(height: 8),
                         Text(sportCenter.name, style: TextPalette.bodyText),
+                        if (match.status == MatchStatus.cancelled)
+                          Padding(padding: EdgeInsets.only(top: 8), child:
+                            Text("Canceled",
+                                style: TextPalette.getBodyText(Palette.destructive)))
                       ],
                     ),
                   ),
