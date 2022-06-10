@@ -322,7 +322,7 @@ class MatchInfo extends StatelessWidget {
                   ]);
             }),
             SizedBox(height: 16),
-            if (match != null && match.sportCenterSubLocation.isNotEmpty)
+            if (match != null && (match.sportCenterSubLocation ?? "").isNotEmpty)
               Padding(
                 padding: EdgeInsets.only(bottom: 8),
                 child: Row(
@@ -390,9 +390,7 @@ class MatchInfo extends StatelessWidget {
       color = Palette.green;
       text = "Match is on";
     } else {
-      icon = Icons.warning_amber_outlined;
-      color = Palette.darkWarning;
-      text = "Error";
+      return null;
     }
 
     return Row(
@@ -694,7 +692,7 @@ class SportCenterDetails extends StatelessWidget {
                 ]);
           }),
           SizedBox(height: 16),
-          if (match != null && match.sportCenterSubLocation.isNotEmpty)
+          if (match != null && (match.sportCenterSubLocation ?? "").isNotEmpty)
             Padding(
               padding: EdgeInsets.only(bottom: 8),
               child: Row(

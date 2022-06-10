@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
-import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/model/Match.dart';
 import "package:collection/collection.dart";
 import 'package:nutmeg/model/MatchRatings.dart';
