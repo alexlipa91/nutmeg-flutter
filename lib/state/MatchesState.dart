@@ -1,7 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 import 'package:nutmeg/model/Match.dart';
-import "package:collection/collection.dart";
 import 'package:nutmeg/model/MatchRatings.dart';
 import 'package:nutmeg/model/UserDetails.dart';
 
@@ -13,12 +12,6 @@ class MatchesState extends ChangeNotifier {
 
   // ratings per match
   Map<String, MatchRatings> _ratingsPerMatch = Map();
-
-  void setMatches(List<Match> newMatches) {
-    _matches = newMatches.groupListsBy((e) => e.documentId)
-        .map((key, value) => MapEntry(key, value.first));
-    notifyListeners();
-  }
 
   MatchRatings getRatings(String matchId) => _ratingsPerMatch[matchId];
 
