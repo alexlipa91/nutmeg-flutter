@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 
+import '../api/CloudFunctionsUtils.dart';
 import '../model/UserDetails.dart';
 
 
@@ -45,6 +46,29 @@ class UserState extends ChangeNotifier {
 
   void logout() {
     _currentUserId = null;
+    notifyListeners();
+  }
+
+  // stats
+  Map<String, List<double>> _usersScores = Map();
+
+  List<double> getUserScores(String uid) => _usersScores[uid];
+
+  Future<void> fetchScores(String userId) async{
+    if (_usersScores.containsKey(userId))
+      return _usersScores[userId];
+
+    var scores = await CloudFunctionsClient()
+        .callFunction("get_last_user_scores", {"id": userId});
+
+    List<double> scoresList = [];
+
+    List<Object> o = scores["scores"];
+    o.forEach((e) {
+      scoresList.add(e);
+    });
+
+    _usersScores[userId] = scoresList;
     notifyListeners();
   }
 }

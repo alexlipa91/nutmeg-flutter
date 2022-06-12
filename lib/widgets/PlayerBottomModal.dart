@@ -1,12 +1,13 @@
 import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:flutter/material.dart';
-import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/Skeletons.dart';
+import 'package:provider/provider.dart';
 import 'package:skeletons/skeletons.dart';
 
 import '../model/UserDetails.dart';
+import '../state/UserState.dart';
 import 'Avatar.dart';
 
 class BottomModalWithTopImage extends StatelessWidget {
@@ -160,84 +161,79 @@ class JoinedPlayerBottomModal extends StatelessWidget {
   }
 }
 
-class PerformanceGraph extends StatelessWidget {
+class PerformanceGraph extends StatefulWidget {
   final String userId;
 
   const PerformanceGraph({Key key, this.userId}) : super(key: key);
 
-  Future<List<double>> _getScores(String userId) async {
-    var scores = await CloudFunctionsClient()
-        .callFunction("get_last_user_scores", {"id": userId});
+  @override
+  State<StatefulWidget> createState() => PerformanceGraphState();
+}
 
-    List<double> scoresList = [];
-
-    List<Object> o = scores["scores"];
-    o.forEach((e) {
-      scoresList.add(e);
-    });
-
-    return scoresList;
+class PerformanceGraphState extends State<PerformanceGraph> {
+  @override
+  void initState() {
+    super.initState();
+    loadState();
   }
+
+  Future<void> loadState() =>
+      context.read<UserState>().fetchScores(widget.userId);
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-        future: _getScores(userId),
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            List<MapEntry> ratesWithIndex =
-            snapshot.data
-                .asMap()
-                .entries
-                .toList();
+    var scores = context.watch<UserState>().getUserScores(widget.userId);
 
-            return new charts.LineChart([
-              new charts.Series<MapEntry, int>(
-                id: 'Rates',
-                colorFn: (_, __) =>
-                    charts.ColorUtil.fromDartColor(Palette.primary),
-                domainFn: (MapEntry e, _) => e.key,
-                measureFn: (MapEntry e, _) => e.value,
-                strokeWidthPxFn: (MapEntry e, _) => 5,
-                data: ratesWithIndex,
+    if (scores == null)
+      return SkeletonAvatar(
+          style: SkeletonAvatarStyle(
+              width: double.infinity,
+              height: 190,
+              borderRadius: BorderRadius.circular(10.0)));
 
-                fillColorFn: (_, __) =>
-                    charts.ColorUtil.fromDartColor(Palette.white),
-              )
-            ],
-                animate: false,
-                domainAxis: new charts.NumericAxisSpec(
-                    renderSpec: new charts.NoneRenderSpec()),
-                primaryMeasureAxis: new charts.NumericAxisSpec(
-                    tickProviderSpec: new charts.StaticNumericTickProviderSpec(
-                        [1, 2, 3, 4, 5].map((e) =>
-                            charts.TickSpec(e,
-                                style: new charts.TextStyleSpec(
-                                    fontFamily: "Roboto",
-                                    fontSize: 16,
-                                    color: charts.ColorUtil.fromDartColor(
-                                        Palette.grey_dark)))).toList()
-                    ),
-                    renderSpec: new charts.GridlineRendererSpec(
-                        labelOffsetFromAxisPx: 20,
-                        labelStyle: new charts.TextStyleSpec(
-                            fontSize: 14, // size in Pts.
-                            color: charts.MaterialPalette.black),
-                        lineStyle: new charts.LineStyleSpec(
-                            color: charts.ColorUtil.fromDartColor(
-                                Palette.grey_lighter)))),
-                defaultRenderer:
-                new charts.LineRendererConfig(
-                  includePoints: true,
-                  radiusPx: 6,
-                ));
-          }
-          return SkeletonAvatar(
-              style: SkeletonAvatarStyle(
-                  width: double.infinity,
-                  height: 190,
-                  borderRadius: BorderRadius.circular(10.0)));
-        });
+    List<MapEntry> ratesWithIndex = scores.asMap().entries.toList();
+
+    return new charts.LineChart([
+      new charts.Series<MapEntry, int>(
+        id: 'Rates',
+        colorFn: (_, __) => charts.ColorUtil.fromDartColor(Palette.primary),
+        domainFn: (MapEntry e, _) => e.key,
+        measureFn: (MapEntry e, _) => e.value,
+        strokeWidthPxFn: (MapEntry e, _) => 5,
+        data: ratesWithIndex,
+        fillColorFn: (_, __) => charts.ColorUtil.fromDartColor(Palette.white),
+      )
+    ],
+        animate: false,
+        domainAxis:
+            new charts.NumericAxisSpec(renderSpec: new charts.NoneRenderSpec()),
+        primaryMeasureAxis: new charts.NumericAxisSpec(
+            tickProviderSpec: new charts.StaticNumericTickProviderSpec([
+              1,
+              2,
+              3,
+              4,
+              5
+            ]
+                .map((e) => charts.TickSpec(e,
+                    style: new charts.TextStyleSpec(
+                        fontFamily: "Roboto",
+                        fontSize: 16,
+                        color:
+                            charts.ColorUtil.fromDartColor(Palette.grey_dark))))
+                .toList()),
+            renderSpec: new charts.GridlineRendererSpec(
+                labelOffsetFromAxisPx: 20,
+                labelStyle: new charts.TextStyleSpec(
+                    fontSize: 14, // size in Pts.
+                    color: charts.MaterialPalette.black),
+                lineStyle: new charts.LineStyleSpec(
+                    color:
+                        charts.ColorUtil.fromDartColor(Palette.grey_lighter)))),
+        defaultRenderer: new charts.LineRendererConfig(
+          includePoints: true,
+          radiusPx: 6,
+        ));
   }
 }
 
