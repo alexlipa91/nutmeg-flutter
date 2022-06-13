@@ -31,6 +31,8 @@ class Match {
 
   Map<String, DateTime> going;
 
+  Map<String, List<String>> teams;
+
   Map<String, double> _manOfTheMatch;
 
   String organizerId;
@@ -57,7 +59,8 @@ class Match {
         scoresComputedAt = DateTime.parse(jsonInput['scoresComputedAt']).toLocal();
 
       isTest = jsonInput["isTest"] ?? false;
-      going = _readGoing(jsonInput);
+      _readGoing(jsonInput);
+      _readTeams(jsonInput);
 
       _manOfTheMatch = _readManOfTheMatch(jsonInput);
       if (jsonInput.containsKey("cancelHoursBefore"))
@@ -76,10 +79,24 @@ class Match {
   Set<String> getPotms() => _manOfTheMatch == null
       ? Set<String>.from([]) : _manOfTheMatch.keys.toSet();
 
-  static Map<String, DateTime> _readGoing(Map<String, dynamic> json) {
+  void _readGoing(Map<String, dynamic> json) {
     var map = Map<String, dynamic>.from(json["going"] ?? {});
-    var x = map.map((key, value) => MapEntry(key, DateTime.parse(value["createdAt"])));
-    return x;
+    going = map.map((key, value) => MapEntry(key, DateTime.parse(value["createdAt"])));
+  }
+
+  void _readTeams(Map<String, dynamic> json) {
+    var map = Map<String, dynamic>.from(json["going"] ?? {});
+    teams = Map();
+    teams["a"] = [];
+    teams["b"] = [];
+
+    map.forEach((key, value) {
+      Map valueMap = value as Map;
+      print(valueMap);
+
+      if (valueMap.containsKey("team"))
+        teams[valueMap["team"]].add(key);
+    });
   }
 
   static Map<String, double> _readManOfTheMatch(Map<String, dynamic> json) {
@@ -123,5 +140,10 @@ class Match {
   }
 
   int getMissingPlayers() => max(0, minPlayers - going.length);
+
+  bool hasTeams() => going.length > 0
+      && teams.values.map((e) => e.length).reduce((a, b) => a + b) == going.length;
+
+  List<String> getTeam(String teamName) => teams[teamName];
 }
 

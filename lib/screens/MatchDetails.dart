@@ -142,8 +142,9 @@ class MatchDetailsState extends State<MatchDetails> {
       // stats
       if (status == MatchStatus.rated || status == MatchStatus.to_rate)
         Stats(matchId: matchId, matchDatetime: match.dateTime),
-      // horizontal players list
-      if (match != null) PlayerList(match: match),
+      // horizontal players list or teams
+      if (match != null)
+        match.hasTeams() ? TeamsWidget(matchId: matchId) : PlayerList(match: match),
       if (match != null)
         Section(
             title: "DETAILS",
@@ -237,6 +238,72 @@ class PlayerList extends StatelessWidget {
                     .getGoingUsersByTime()
                     .map((s) => PlayerCard(s))
                     .toList()),
+      ),
+    );
+  }
+}
+
+class TeamsWidget extends StatelessWidget {
+  final String matchId;
+
+  const TeamsWidget({Key key, this.matchId}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    var match = context.watch<MatchesState>().getMatch(matchId);
+
+    var title = (match == null)
+        ? ""
+        : match.going.length.toString() +
+        "/" +
+        match.maxPlayers.toString() +
+        " PLAYERS";
+
+    var teamA = match.teams.entries.first;
+    var teamB = match.teams.entries.last;
+
+    return Section(
+      title: title,
+      body: InfoContainer(child: IntrinsicHeight(
+        child: Row(children: [
+          getTeamColumn(context, teamA.key, teamA.value),
+          VerticalDivider(
+            thickness: 1,
+            color: Palette.grey_light,
+          ),
+          getTeamColumn(context, teamB.key, teamB.value),
+        ]),
+      )),
+    );
+  }
+
+  getTeamColumn(BuildContext context, String teamName, List<String> players) {
+    var playersWidgets = interleave(
+        players.map((e) {
+          var ud = context.watch<UserState>().getUserDetail(e);
+
+          return Row(children: [
+            UserAvatar(16, ud),
+            SizedBox(width: 16),
+            UserNameWidget(userDetails: ud)
+          ]);
+        }).toList(),
+        SizedBox(height: 16));
+
+    List<Widget> childrenWidgets = [];
+    childrenWidgets.addAll([
+      Text("Team ${teamName.capitalize}", style: TextPalette.getListItem(Palette.black)),
+      SizedBox(height: 24),
+    ]);
+    childrenWidgets.addAll(playersWidgets);
+
+    return Expanded(
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: childrenWidgets,
+        ),
       ),
     );
   }
@@ -861,22 +928,7 @@ class Stats extends StatelessWidget {
                             padding: EdgeInsets.only(left: 16),
                             child: Row(
                               children: [
-                                Builder(builder: (context) {
-                                  // fixme text overflow
-                                  if (userDetails == null)
-                                    return Skeletons.mText;
-
-                                  var name =
-                                      UserDetails.getDisplayName(userDetails)
-                                          .split(" ")
-                                          .first;
-                                  var n =
-                                      name.substring(0, min(name.length, 11));
-                                  return Text(n,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextPalette.getBodyText(
-                                          Palette.black));
-                                }),
+                                UserNameWidget(userDetails: userDetails),
                                 SizedBox(width: 8),
                                 if (userDetails != null &&
                                     r.isPotm &&
@@ -938,6 +990,28 @@ class Stats extends StatelessWidget {
         body: InfoContainer(child: child),
       ),
     );
+  }
+}
+
+class UserNameWidget extends StatelessWidget {
+
+  final UserDetails userDetails;
+
+  const UserNameWidget({Key key, this.userDetails}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    // fixme text overflow
+    if (userDetails == null)
+        return Skeletons.mText;
+
+    var name = UserDetails.getDisplayName(userDetails).split(" ").first;
+
+    var n = name.substring(0, min(name.length, 11));
+
+    return Text(n,
+        overflow: TextOverflow.ellipsis,
+        style: TextPalette.getBodyText(Palette.black));
   }
 }
 

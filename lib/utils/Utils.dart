@@ -33,7 +33,7 @@ String _getFormattedDate(DateTime dateTime, DateFormat dateFormat) {
     dayString = dateFormat.format(dateTime);
   }
 
-  return dayString + " at " + uiHourFormat.format(dateTime);
+  return dayString;
 }
 
 String formatCurrency(int cents) =>
