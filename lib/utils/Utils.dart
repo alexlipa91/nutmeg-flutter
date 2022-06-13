@@ -14,7 +14,11 @@ String getFormattedDate(DateTime dateTime) =>
 String getFormattedDateLong(DateTime dateTime) =>
     _getFormattedDate(dateTime, DateFormat("EEEE, MMM dd"));
 
-String _getFormattedDate(DateTime dateTime, DateFormat dateFormat) {
+String getFormattedDateLongWithHour(DateTime dateTime) =>
+    _getFormattedDate(dateTime, DateFormat("EEEE, MMM dd"), true);
+
+String _getFormattedDate(DateTime dateTime, DateFormat dateFormat,
+    [bool showHours = false]) {
   final now = DateTime.now();
   final today = DateTime(now.year, now.month, now.day);
   final yesterday = DateTime(now.year, now.month, now.day - 1);
@@ -33,7 +37,9 @@ String _getFormattedDate(DateTime dateTime, DateFormat dateFormat) {
     dayString = dateFormat.format(dateTime);
   }
 
-  return dayString;
+  if (!showHours)
+    return dayString;
+  return dayString + " at " + uiHourFormat.format(dateTime);
 }
 
 String formatCurrency(int cents) =>

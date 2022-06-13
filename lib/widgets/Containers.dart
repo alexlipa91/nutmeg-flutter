@@ -38,3 +38,29 @@ class InfoContainer extends StatelessWidget {
         ));
   }
 }
+
+class InfoContainerWithTitle extends StatelessWidget {
+
+  final String title;
+  final Widget body;
+  final EdgeInsets padding;
+
+  const InfoContainerWithTitle({Key key,
+    this.title,
+    this.body,
+    this.padding = const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return InfoContainer(child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title, style: TextPalette.h2),
+        SizedBox(height: 24, width: 100,),
+        body
+    ],),
+      padding: padding,
+    );
+  }
+}

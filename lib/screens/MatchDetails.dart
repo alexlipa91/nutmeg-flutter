@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
@@ -23,7 +24,6 @@ import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/Avatar.dart';
 import 'package:nutmeg/widgets/Containers.dart';
 import 'package:nutmeg/widgets/PageTemplate.dart';
-import 'package:nutmeg/widgets/Section.dart';
 import 'package:provider/provider.dart';
 import 'package:readmore/readmore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -119,8 +119,6 @@ class MatchDetailsState extends State<MatchDetails> {
         match != null &&
         match.organizerId == userState.getLoggedUserDetails().documentId;
 
-    padB(Widget w) => Padding(padding: EdgeInsets.only(bottom: 16), child: w);
-
     var bottomBar = BottomBarMatch.getBottomBar(context, matchId, status);
 
     // add padding individually since because of shadow clipping some components need margin
@@ -129,14 +127,14 @@ class MatchDetailsState extends State<MatchDetails> {
       if (organizerView &&
           userState.getLoggedUserDetails().areChargesEnabled(isTest) != null &&
           !userState.getLoggedUserDetails().areChargesEnabled(isTest))
-        padB(CompleteOrganiserAccountWidget(isTest: isTest)),
+        CompleteOrganiserAccountWidget(isTest: isTest),
       if (isTest)
-        padB(InfoContainer(
+        InfoContainer(
             backgroundColor: Palette.accent,
             child: SelectableText(
               "Test match: " + matchId,
               style: TextPalette.getBodyText(Palette.black),
-            ))),
+            )),
       // info box
       MatchInfo(matchId),
       // stats
@@ -144,57 +142,52 @@ class MatchDetailsState extends State<MatchDetails> {
         Stats(matchId: matchId, matchDatetime: match.dateTime),
       // horizontal players list or teams
       if (match != null)
-        match.hasTeams() ? TeamsWidget(matchId: matchId) : PlayerList(match: match),
+        match.hasTeams()
+            ? TeamsWidget(matchId: matchId)
+            : PlayerList(match: match),
+      if (match != null) SportCenterDetails(matchId: matchId),
       if (match != null)
-        Section(
-            title: "DETAILS",
-            body: Column(
-              children: [
-                SportCenterDetails(matchId: matchId),
-                SizedBox(height: 16.0),
-                RuleCard(
-                    "Payment Policy",
-                    "If you leave the match or the match is canceled you will get a refund on the payment method you used to pay.\n\n"
-                        "If you don’t show up you won’t get a refund."),
-                SizedBox(height: 16.0),
-                if (match != null && match.organizerId != null)
-                  Builder(builder: (context) {
-                    var ud = context
-                        .watch<UserState>()
-                        .getUserDetail(match.organizerId);
+        RuleCard(
+            "Payment Policy",
+            "If you leave the match you will get a refund (excluding Nutmeg service fee).\n"
+            "If the match is cancelled you will get a full refund.\n\n"
+            "If you don’t show up you won’t get a refund.\n\n"
+            + ((match != null && match.cancelBefore != null) ?
+            "The match will be automatically canceled "
+                "${getFormattedDateLongWithHour(match.dateTime.subtract(match.cancelBefore))} "
+                "if less than ${match.minPlayers} players have signed up." : "")
+        ),
+      if (match != null && match.organizerId != null)
+        Builder(builder: (context) {
+          var ud = context.watch<UserState>().getUserDetail(match.organizerId);
 
-                    return InfoContainer(
-                        child: Row(children: [
-                      (ud != null && ud.isAdmin)
-                          ? NutmegAvatar(24.0)
-                          : UserAvatarWithBottomModal(userData: ud),
-                      SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text("Organized by", style: TextPalette.bodyText),
-                            SizedBox(height: 4),
-                            (ud == null)
-                                ? Skeletons.lText
-                                : Text(
-                                    (ud.isAdmin)
-                                        ? "Nutmeg"
-                                        : ud.name.split(" ").first,
-                                    style: TextPalette.h2),
-                          ],
-                        ),
-                      ),
-                    ]));
-                  }),
-              ],
-            )),
+          return InfoContainer(
+              child: Row(children: [
+            (ud != null && ud.isAdmin)
+                ? NutmegAvatar(24.0)
+                : UserAvatarWithBottomModal(userData: ud),
+            SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("Organized by", style: TextPalette.bodyText),
+                  SizedBox(height: 4),
+                  (ud == null)
+                      ? Skeletons.lText
+                      : Text((ud.isAdmin) ? "Nutmeg" : ud.name.split(" ").first,
+                          style: TextPalette.h2),
+                ],
+              ),
+            ),
+          ]));
+        }),
     ];
 
     return PageTemplate(
       initState: () => refreshState(true),
       refreshState: () => refreshState(false),
-      widgets: widgets,
+      widgets: interleave(widgets, SizedBox(height: 16)),
       appBar: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -213,23 +206,19 @@ class MatchDetailsState extends State<MatchDetails> {
 }
 
 class PlayerList extends StatelessWidget {
+  static getTitle(Match match) => (match == null)
+      ? ""
+      : "Players (${match.numPlayersGoing().toString()}/${match.maxPlayers.toString()})";
+
   final Match match;
 
   const PlayerList({Key key, this.match}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    var title = (match == null)
-        ? ""
-        : match.numPlayersGoing().toString() +
-            "/" +
-            match.maxPlayers.toString() +
-            " PLAYERS";
-
-    return Section(
-      title: title,
+    return InfoContainerWithTitle(
+      title: getTitle(match),
       body: SingleChildScrollView(
-        clipBehavior: Clip.none,
         scrollDirection: Axis.horizontal,
         child: Row(
             children: (match.going.isEmpty)
@@ -239,6 +228,7 @@ class PlayerList extends StatelessWidget {
                     .map((s) => PlayerCard(s))
                     .toList()),
       ),
+      padding: EdgeInsets.only(left: 16, top: 16, bottom: 16),
     );
   }
 }
@@ -252,29 +242,21 @@ class TeamsWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     var match = context.watch<MatchesState>().getMatch(matchId);
 
-    var title = (match == null)
-        ? ""
-        : match.going.length.toString() +
-        "/" +
-        match.maxPlayers.toString() +
-        " PLAYERS";
-
     var teamA = match.teams.entries.first;
     var teamB = match.teams.entries.last;
 
-    return Section(
-      title: title,
-      body: InfoContainer(child: IntrinsicHeight(
-        child: Row(children: [
-          getTeamColumn(context, teamA.key, teamA.value),
-          VerticalDivider(
-            thickness: 1,
-            color: Palette.grey_light,
-          ),
-          getTeamColumn(context, teamB.key, teamB.value),
-        ]),
-      )),
-    );
+    return InfoContainerWithTitle(
+        title: PlayerList.getTitle(match),
+        body: IntrinsicHeight(
+          child: Row(children: [
+            getTeamColumn(context, teamA.key, teamA.value),
+            VerticalDivider(
+              thickness: 1,
+              color: Palette.grey_light,
+            ),
+            getTeamColumn(context, teamB.key, teamB.value),
+          ]),
+        ));
   }
 
   getTeamColumn(BuildContext context, String teamName, List<String> players) {
@@ -282,17 +264,21 @@ class TeamsWidget extends StatelessWidget {
         players.map((e) {
           var ud = context.watch<UserState>().getUserDetail(e);
 
-          return Row(children: [
-            UserAvatar(16, ud),
-            SizedBox(width: 16),
-            UserNameWidget(userDetails: ud)
-          ]);
+          return InkWell(
+              onTap: () => ModalBottomSheet.showNutmegModalBottomSheet(
+                  context, JoinedPlayerBottomModal(ud)),
+              child: Row(children: [
+                UserAvatar(16, ud),
+                SizedBox(width: 16),
+                UserNameWidget(userDetails: ud)
+              ]));
         }).toList(),
         SizedBox(height: 16));
 
     List<Widget> childrenWidgets = [];
     childrenWidgets.addAll([
-      Text("Team ${teamName.capitalize}", style: TextPalette.getListItem(Palette.black)),
+      Text("Team ${teamName.capitalize}",
+          style: TextPalette.getListItem(Palette.black)),
       SizedBox(height: 24),
     ]);
     childrenWidgets.addAll(playersWidgets);
@@ -389,7 +375,8 @@ class MatchInfo extends StatelessWidget {
                   ]);
             }),
             SizedBox(height: 16),
-            if (match != null && (match.sportCenterSubLocation ?? "").isNotEmpty)
+            if (match != null &&
+                (match.sportCenterSubLocation ?? "").isNotEmpty)
               Padding(
                 padding: EdgeInsets.only(bottom: 8),
                 child: Row(
@@ -627,6 +614,9 @@ class InfoWidget extends StatelessWidget {
 
 // single player card
 class PlayerCard extends StatelessWidget {
+  static var width = 90.0;
+  static var height = 90.0;
+
   final String userId;
 
   PlayerCard(this.userId);
@@ -635,24 +625,19 @@ class PlayerCard extends StatelessWidget {
   Widget build(BuildContext context) {
     var userData = context.watch<UserState>().getUserDetail(userId);
 
-    return Padding(
-        padding: EdgeInsets.only(right: 10),
-        child: SizedBox(
-          width: 100,
-          child: InfoContainer(
-              child: Column(children: [
-            UserAvatarWithBottomModal(userData: userData),
-            SizedBox(height: 10),
-            (userData == null)
-                ? Skeletons.sText
-                : Text((userData?.name ?? "Player").split(" ").first,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.roboto(
-                        color: Palette.grey_dark,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w400))
-          ])),
-        ));
+    return SizedBox(
+      width: PlayerCard.width,
+      height: PlayerCard.height,
+      child: Column(children: [
+        UserAvatarWithBottomModal(userData: userData),
+        SizedBox(height: 10),
+        (userData == null)
+            ? Skeletons.sText
+            : Text((userData?.name ?? "Player").split(" ").first,
+                overflow: TextOverflow.ellipsis,
+                style: TextPalette.getBodyText(Palette.black))
+      ]),
+    );
   }
 }
 
@@ -663,31 +648,34 @@ class EmptyPlayerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-        padding: EdgeInsets.only(right: 10),
-        child: SizedBox(
-          width: 100,
-          child: InfoContainer(
-              child: Column(children: [
-            InkWell(
-              onTap: context.watch<MatchesState>().getMatch(matchId).status ==
-                      MatchStatus.unpublished
-                  ? null
-                  : () => JoinModal.onJoinGameAction(context, matchId),
+    return SizedBox(
+      width: PlayerCard.width,
+      height: PlayerCard.height,
+      child: Column(children: [
+        InkWell(
+            onTap: context.watch<MatchesState>().getMatch(matchId).status ==
+                    MatchStatus.unpublished
+                ? null
+                : () => JoinModal.onJoinGameAction(context, matchId),
+            child: DottedBorder(
+              borderType: BorderType.Circle,
+              color: Palette.grey_dark,
+              strokeWidth: 1,
+              dashPattern: [4],
               child: CircleAvatar(
                   radius: 25,
                   child: Icon(Icons.add, color: Palette.grey_dark, size: 24),
-                  backgroundColor: Palette.grey_lighter),
-            ),
-            SizedBox(height: 10),
-            Text("Join",
-                overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.roboto(
-                    color: Palette.grey_dark,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w400))
-          ])),
-        ));
+                  backgroundColor: Colors.transparent),
+            )),
+        SizedBox(height: 10),
+        Text("Join",
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.roboto(
+                color: Palette.primary,
+                fontSize: 12,
+                fontWeight: FontWeight.w400))
+      ]),
+    );
   }
 }
 
@@ -701,25 +689,23 @@ class RuleCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
-    return InfoContainer(
-        child:
-            Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-      Text(title, style: TextPalette.h2),
-      SizedBox(height: 10),
-      ReadMoreText(
-        body,
-        style: TextPalette.bodyText,
-        trimLines: 3,
-        colorClickableText: Colors.blue,
-        delimiter: "\n\n",
-        trimMode: TrimMode.Line,
-        trimCollapsedText: 'SHOW MORE',
-        trimExpandedText: 'SHOW LESS',
-        moreStyle: TextPalette.linkStyle,
-        lessStyle: TextPalette.linkStyle,
-      ),
-      // Text("Rule" * 100, style: TextPalette.bodyText2Gray)
-    ]));
+    return InfoContainerWithTitle(
+        title: title,
+        body: Column(children: [
+          ReadMoreText(
+            body,
+            style: TextPalette.bodyText,
+            trimLines: 4,
+            colorClickableText: Colors.blue,
+            delimiter: "\n\n",
+            trimMode: TrimMode.Line,
+            trimCollapsedText: 'SHOW MORE',
+            trimExpandedText: 'SHOW LESS',
+            moreStyle: TextPalette.linkStyle,
+            lessStyle: TextPalette.linkStyle,
+          ),
+          // Text("Rule" * 100, style: TextPalette.bodyText2Gray)
+        ]));
   }
 }
 
@@ -737,12 +723,11 @@ class SportCenterDetails extends StatelessWidget {
       sportCenter =
           context.read<LoadOnceState>().getSportCenter(match.sportCenterId);
 
-    return InfoContainer(
-      child: Column(
+    return InfoContainerWithTitle(
+      title: "Location",
+      body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text("Location", style: TextPalette.h2),
-          SizedBox(height: 16),
           MapCardImage(matchId),
           SizedBox(height: 16),
           Builder(builder: (context) {
@@ -984,17 +969,11 @@ class Stats extends StatelessWidget {
             );
     }
 
-    return Container(
-      child: Section(
-        title: "MATCH STATS",
-        body: InfoContainer(child: child),
-      ),
-    );
+    return InfoContainerWithTitle(title: "Match Stats", body: child);
   }
 }
 
 class UserNameWidget extends StatelessWidget {
-
   final UserDetails userDetails;
 
   const UserNameWidget({Key key, this.userDetails}) : super(key: key);
@@ -1002,8 +981,7 @@ class UserNameWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // fixme text overflow
-    if (userDetails == null)
-        return Skeletons.mText;
+    if (userDetails == null) return Skeletons.mText;
 
     var name = UserDetails.getDisplayName(userDetails).split(" ").first;
 
