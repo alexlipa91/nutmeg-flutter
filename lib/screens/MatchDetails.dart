@@ -265,7 +265,7 @@ class TeamsWidget extends StatelessWidget {
           var ud = context.watch<UserState>().getUserDetail(e);
 
           return InkWell(
-              onTap: () => ModalBottomSheet.showNutmegModalBottomSheet(
+              onTap: ud == null ? null : () => ModalBottomSheet.showNutmegModalBottomSheet(
                   context, JoinedPlayerBottomModal(ud)),
               child: Row(children: [
                 UserAvatar(16, ud),
@@ -956,7 +956,7 @@ class Stats extends StatelessWidget {
                                 ? EdgeInsets.only(top: 16)
                                 : EdgeInsets.zero,
                             child: InkWell(
-                                onTap: () =>
+                                onTap: userDetails == null ? null : () =>
                                     ModalBottomSheet.showNutmegModalBottomSheet(
                                         context,
                                         JoinedPlayerBottomModal(userDetails)),

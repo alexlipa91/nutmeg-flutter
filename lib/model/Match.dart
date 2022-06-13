@@ -92,7 +92,6 @@ class Match {
 
     map.forEach((key, value) {
       Map valueMap = value as Map;
-      print(valueMap);
 
       if (valueMap.containsKey("team"))
         teams[valueMap["team"]].add(key);
