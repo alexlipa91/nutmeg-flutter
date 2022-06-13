@@ -1,4 +1,15 @@
+import 'dart:math';
+
 import 'package:charts_flutter/flutter.dart' as charts;
+import 'package:charts_flutter/src/text_style.dart' as style;
+import 'package:charts_flutter/src/text_element.dart';
+import 'dart:math';
+
+import 'package:charts_flutter/flutter.dart';
+import 'package:charts_flutter/src/text_element.dart' as ChartText;
+import 'package:charts_flutter/src/text_style.dart' as ChartStyle;
+import 'package:flutter/material.dart';
+import 'package:charts_flutter/flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
@@ -230,6 +241,26 @@ class PerformanceGraphState extends State<PerformanceGraph> {
                 lineStyle: new charts.LineStyleSpec(
                     color:
                         charts.ColorUtil.fromDartColor(Palette.grey_lighter)))),
+        behaviors: [
+          charts.LinePointHighlighter(
+            radiusPaddingPx: 3.0,
+            showVerticalFollowLine:
+            charts.LinePointHighlighterFollowLineType.nearest,
+            symbolRenderer: CustomCircleSymbolRenderer(),
+          ),
+        ],
+        selectionModels: [
+          charts.SelectionModelConfig(
+            updatedListener: (charts.SelectionModel model) {
+              if (model.hasDatumSelection) {
+                String rate = model.selectedSeries.first
+                    .measureFn(model.selectedDatum.first.index)
+                    .toStringAsFixed(2);
+                ToolTipMgr.setData(rate);
+              }
+            },
+          ),
+        ],
         defaultRenderer: new charts.LineRendererConfig(
           includePoints: true,
           radiusPx: 6,
@@ -237,53 +268,52 @@ class PerformanceGraphState extends State<PerformanceGraph> {
   }
 }
 
-class PointsLineChart extends StatelessWidget {
-  final List<charts.Series> seriesList;
-  final bool animate;
-
-  PointsLineChart(this.seriesList, {this.animate});
-
-  /// Creates a [LineChart] with sample data and no transition.
-  factory PointsLineChart.withSampleData() {
-    return new PointsLineChart(
-      _createSampleData(),
-      // Disable animations for image tests.
-      animate: false,
-    );
-  }
+class CustomCircleSymbolRenderer extends CircleSymbolRenderer {
 
   @override
-  Widget build(BuildContext context) {
-    return new charts.LineChart(seriesList,
-        animate: animate,
-        defaultRenderer: new charts.LineRendererConfig(includePoints: true));
-  }
+  void paint(ChartCanvas canvas, Rectangle<num> bounds,
+      {List<int> dashPattern,
+        Color fillColor,
+        FillPatternType fillPattern,
+        Color strokeColor,
+        double strokeWidthPx}) {
+    super.paint(canvas, bounds,
+        dashPattern: dashPattern,
+        fillColor: fillColor,
+        strokeColor: strokeColor,
+        strokeWidthPx: strokeWidthPx);
+    canvas.drawRRect(
+      Rectangle(bounds.left - 15, bounds.height - 25,
+          bounds.width + 25, bounds.height + 5),
+      fill: Color.fromOther(color: charts.ColorUtil.fromDartColor(Palette.primary)),
+      roundBottomLeft: true,
+      roundBottomRight: true,
+      roundTopRight: true,
+      roundTopLeft: true,
+      radius: 30
+    );
 
-  /// Create one series with sample hard coded data.
-  static List<charts.Series<LinearSales, int>> _createSampleData() {
-    final data = [
-      new LinearSales(0, 5),
-      new LinearSales(1, 25),
-      new LinearSales(2, 100),
-      new LinearSales(3, 75),
-    ];
+    ChartStyle.TextStyle textStyle = ChartStyle.TextStyle();
 
-    return [
-      new charts.Series<LinearSales, int>(
-        id: 'Sales',
-        colorFn: (_, __) => charts.MaterialPalette.blue.shadeDefault,
-        domainFn: (LinearSales sales, _) => sales.year,
-        measureFn: (LinearSales sales, _) => sales.sales,
-        data: data,
-      )
-    ];
+    textStyle.color = charts.ColorUtil.fromDartColor(Palette.white);
+    textStyle.fontSize = 14;
+    textStyle.fontFamily = "Roboto";
+    textStyle.fontWeight = "w700";
+
+    canvas.drawText(
+        ChartText.TextElement('${ToolTipMgr.data()}', style: textStyle),
+        (bounds.left - 8).round(),
+        (bounds.height - 20).round());
   }
 }
 
-/// Sample linear data type.
-class LinearSales {
-  final int year;
-  final int sales;
+String _data;
 
-  LinearSales(this.year, this.sales);
+class ToolTipMgr {
+
+  static String data() => _data;
+
+  static setData(String data) {
+    _data = data;
+  }
 }
