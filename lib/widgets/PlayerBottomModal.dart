@@ -283,7 +283,7 @@ class CustomCircleSymbolRenderer extends CircleSymbolRenderer {
         strokeColor: strokeColor,
         strokeWidthPx: strokeWidthPx);
     canvas.drawRRect(
-      Rectangle(bounds.left - 15, bounds.height - 32,
+      Rectangle(bounds.left - 8, bounds.height - 32,
           bounds.width + 17, bounds.height + 5),
       fill: Color.fromOther(color: charts.ColorUtil.fromDartColor(Palette.primary)),
       roundBottomLeft: true,
@@ -302,7 +302,7 @@ class CustomCircleSymbolRenderer extends CircleSymbolRenderer {
 
     canvas.drawText(
         ChartText.TextElement('${ToolTipMgr.data()}', style: textStyle),
-        (bounds.left - 7).round(),
+        (bounds.left).round(),
         (bounds.height - 27).round());
   }
 }
