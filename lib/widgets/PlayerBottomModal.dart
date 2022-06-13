@@ -255,7 +255,7 @@ class PerformanceGraphState extends State<PerformanceGraph> {
               if (model.hasDatumSelection) {
                 String rate = model.selectedSeries.first
                     .measureFn(model.selectedDatum.first.index)
-                    .toStringAsFixed(2);
+                    .toStringAsFixed(1);
                 ToolTipMgr.setData(rate);
               }
             },
@@ -283,8 +283,8 @@ class CustomCircleSymbolRenderer extends CircleSymbolRenderer {
         strokeColor: strokeColor,
         strokeWidthPx: strokeWidthPx);
     canvas.drawRRect(
-      Rectangle(bounds.left - 15, bounds.height - 25,
-          bounds.width + 25, bounds.height + 5),
+      Rectangle(bounds.left - 15, bounds.height - 32,
+          bounds.width + 17, bounds.height + 5),
       fill: Color.fromOther(color: charts.ColorUtil.fromDartColor(Palette.primary)),
       roundBottomLeft: true,
       roundBottomRight: true,
@@ -302,8 +302,8 @@ class CustomCircleSymbolRenderer extends CircleSymbolRenderer {
 
     canvas.drawText(
         ChartText.TextElement('${ToolTipMgr.data()}', style: textStyle),
-        (bounds.left - 8).round(),
-        (bounds.height - 20).round());
+        (bounds.left - 7).round(),
+        (bounds.height - 27).round());
   }
 }
 
