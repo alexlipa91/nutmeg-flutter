@@ -267,11 +267,14 @@ class TeamsWidget extends StatelessWidget {
           return InkWell(
               onTap: ud == null ? null : () => ModalBottomSheet.showNutmegModalBottomSheet(
                   context, JoinedPlayerBottomModal(ud)),
-              child: Row(children: [
-                UserAvatar(16, ud),
-                SizedBox(width: 16),
-                UserNameWidget(userDetails: ud)
-              ]));
+              child: SizedBox(
+                height: 32,
+                child: Row(children: [
+                  UserAvatar(16, ud),
+                  SizedBox(width: 16),
+                  UserNameWidget(userDetails: ud)
+                ]),
+              ));
         }).toList(),
         SizedBox(height: 16));
 
