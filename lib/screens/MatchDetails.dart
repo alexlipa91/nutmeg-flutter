@@ -436,7 +436,7 @@ class MatchInfo extends StatelessWidget {
         match.getMissingPlayers() > 0) {
       icon = Icons.hourglass_empty_outlined;
       color = Palette.primary;
-      text = "Waiting for ${match.getMissingPlayers()} players";
+      text = "Waiting for ${match.getMissingPlayers()} more players";
     } else if (match.status == MatchStatus.open &&
             (match.getMissingPlayers() == 0 || match.cancelBefore == null) ||
         (match.status == MatchStatus.pre_playing &&
