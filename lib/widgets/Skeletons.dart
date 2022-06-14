@@ -5,6 +5,11 @@ import 'package:nutmeg/widgets/Containers.dart';
 import 'package:skeletons/skeletons.dart';
 
 class Skeletons {
+  static var fullWidthText = SkeletonLine(
+    style: SkeletonLineStyle(
+        borderRadius: BorderRadius.circular(20), width: double.infinity, height: 12),
+  );
+
   static var xlText = SkeletonLine(
     style: SkeletonLineStyle(
         borderRadius: BorderRadius.circular(20), width: 200, height: 12),

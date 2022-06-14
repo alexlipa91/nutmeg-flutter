@@ -150,13 +150,13 @@ class MatchDetailsState extends State<MatchDetails> {
         RuleCard(
             "Payment Policy",
             "If you leave the match you will get a refund (excluding Nutmeg service fee).\n"
-            "If the match is cancelled you will get a full refund.\n\n"
-            "If you don’t show up you won’t get a refund.\n\n"
-            + ((match != null && match.cancelBefore != null) ?
-            "The match will be automatically canceled "
-                "${getFormattedDateLongWithHour(match.dateTime.subtract(match.cancelBefore))} "
-                "if less than ${match.minPlayers} players have signed up." : "")
-        ),
+                    "If the match is cancelled you will get a full refund.\n\n"
+                    "If you don’t show up you won’t get a refund.\n\n" +
+                ((match != null && match.cancelBefore != null)
+                    ? "The match will be automatically canceled "
+                        "${getFormattedDateLongWithHour(match.dateTime.subtract(match.cancelBefore))} "
+                        "if less than ${match.minPlayers} players have signed up."
+                    : "")),
       if (match != null && match.organizerId != null)
         Builder(builder: (context) {
           var ud = context.watch<UserState>().getUserDetail(match.organizerId);
@@ -265,8 +265,10 @@ class TeamsWidget extends StatelessWidget {
           var ud = context.watch<UserState>().getUserDetail(e);
 
           return InkWell(
-              onTap: ud == null ? null : () => ModalBottomSheet.showNutmegModalBottomSheet(
-                  context, JoinedPlayerBottomModal(ud)),
+              onTap: ud == null
+                  ? null
+                  : () => ModalBottomSheet.showNutmegModalBottomSheet(
+                      context, JoinedPlayerBottomModal(ud)),
               child: SizedBox(
                 height: 32,
                 child: Row(children: [
@@ -392,14 +394,10 @@ class MatchInfo extends StatelessWidget {
                   ],
                 ),
               ),
-            IconList(iconAndText: {
-              Icons.calendar_month_outlined:
-                  getFormattedDateLong(match.dateTime),
-              Icons.access_time_outlined:
-                  getStartAndEndHour(match.dateTime, match.duration)
-                      .join(" - "),
-              Icons.local_offer_outlined:
-                  formatCurrency(match.pricePerPersonInCents)
+            IconList.fromIcon({
+              Icons.calendar_month_outlined: getFormattedDateLong(match.dateTime),
+              Icons.access_time_outlined: getStartAndEndHour(match.dateTime, match.duration).join(" - "),
+              Icons.local_offer_outlined: formatCurrency(match.pricePerPersonInCents)
             }),
             if (matchWidget != null)
               Column(children: [
@@ -734,7 +732,7 @@ class SportCenterDetails extends StatelessWidget {
           MapCardImage(matchId),
           SizedBox(height: 16),
           Builder(builder: (context) {
-            if (sportCenter == null) return Skeletons.xlText;
+            if (sportCenter == null) return Skeletons.fullWidthText;
 
             var addressItems = sportCenter.address.split(",");
 
@@ -759,15 +757,15 @@ class SportCenterDetails extends StatelessWidget {
                 ],
               ),
             ),
-          IconListSvg(svgAndText: {
-            "assets/icons/nutmeg_icon_court.svg": (sportCenter == null)
-                ? null
-                : sportCenter.getCourtType() + " court type",
+          IconList.fromSvg({
+            "assets/icons/nutmeg_icon_court.svg":
+                (sportCenter == null)
+                    ? null
+                    : sportCenter.getCourtType() + " court type",
             "assets/icons/nutmeg_icon_shoe.svg":
                 (sportCenter == null) ? null : sportCenter.getSurface(),
             if (sportCenter != null && sportCenter.hasChangingRooms())
-              "assets/icons/nutmeg_icon_changing_rooms.svg":
-                  "Change rooms available"
+              "assets/icons/nutmeg_icon_changing_rooms.svg": "Change rooms available"
           })
         ],
       ),
@@ -959,10 +957,13 @@ class Stats extends StatelessWidget {
                                 ? EdgeInsets.only(top: 16)
                                 : EdgeInsets.zero,
                             child: InkWell(
-                                onTap: userDetails == null ? null : () =>
-                                    ModalBottomSheet.showNutmegModalBottomSheet(
-                                        context,
-                                        JoinedPlayerBottomModal(userDetails)),
+                                onTap: userDetails == null
+                                    ? null
+                                    : () => ModalBottomSheet
+                                        .showNutmegModalBottomSheet(
+                                            context,
+                                            JoinedPlayerBottomModal(
+                                                userDetails)),
                                 child: Row(children: widgets)));
                       }).toList(),
                     )
@@ -996,37 +997,26 @@ class UserNameWidget extends StatelessWidget {
   }
 }
 
-// todo unify these two
 class IconList extends StatelessWidget {
-  final Map<IconData, String> iconAndText;
+  static var size = 18.0;
+  final Map<Widget, String> widgetAndText;
 
-  const IconList({Key key, this.iconAndText}) : super(key: key);
+  IconList.fromIcon(Map<IconData, String> iconAndText)
+      : widgetAndText = iconAndText.map(
+            (i, t) => MapEntry(Icon(i, color: Palette.black, size: size), t));
 
-  @override
-  Widget build(BuildContext context) {
-    Iterable<Row> rows = iconAndText.entries.map((e) => Row(children: [
-          Icon(e.key, color: Palette.black, size: 18),
-          SizedBox(width: 16),
-          Text(e.value, style: TextPalette.listItem)
-        ]));
-
-    List<Widget> widgets = interleave(rows.toList(), SizedBox(height: 12));
-
-    return Column(children: widgets);
-  }
-}
-
-class IconListSvg extends StatelessWidget {
-  final Map<String, String> svgAndText;
-
-  const IconListSvg({Key key, this.svgAndText}) : super(key: key);
+  IconList.fromSvg(Map<String, String> svgAndText)
+      : widgetAndText = svgAndText.map(
+            (i, t) => MapEntry(SvgPicture.asset(i, width: size, height: size), t));
 
   @override
   Widget build(BuildContext context) {
-    Iterable<Row> rows = svgAndText.entries.map((e) => Row(children: [
-          SvgPicture.asset(e.key, width: 18, height: 18),
+    Iterable<Row> rows = widgetAndText.entries.map((e) => Row(children: [
+          e.key,
           SizedBox(width: 16),
-          Text(e.value, style: TextPalette.listItem)
+          e.value == null
+              ? Skeletons.lText
+              : Text(e.value, style: TextPalette.listItem)
         ]));
 
     List<Widget> widgets = interleave(rows.toList(), SizedBox(height: 12));
