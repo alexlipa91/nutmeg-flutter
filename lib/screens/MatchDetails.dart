@@ -155,7 +155,7 @@ class MatchDetailsState extends State<MatchDetails> {
                 ((match != null && match.cancelBefore != null)
                     ? "The match will be automatically canceled "
                         "${getFormattedDateLongWithHour(match.dateTime.subtract(match.cancelBefore))} "
-                        "if less than ${match.minPlayers} players have signed up."
+                        "if less than ${match.minPlayers} players have joined."
                     : "")),
       if (match != null && match.organizerId != null)
         Builder(builder: (context) {
