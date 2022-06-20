@@ -116,8 +116,9 @@ class UserAvatarWithBorder extends StatelessWidget {
 
 class UserAvatarWithBottomModal extends StatelessWidget {
   final UserDetails userData;
+  final double radius;
 
-  const UserAvatarWithBottomModal({Key key, this.userData}) : super(key: key);
+  const UserAvatarWithBottomModal({Key key, this.userData, this.radius = 24}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -128,6 +129,6 @@ class UserAvatarWithBottomModal extends StatelessWidget {
                 ModalBottomSheet.showNutmegModalBottomSheet(
                     context, JoinedPlayerBottomModal(userData));
               },
-        child: UserAvatar(24, userData));
+        child: UserAvatar(radius, userData));
   }
 }

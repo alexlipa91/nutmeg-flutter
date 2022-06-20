@@ -144,7 +144,7 @@ class MatchDetailsState extends State<MatchDetails> {
       if (match != null)
         match.hasTeams()
             ? TeamsWidget(matchId: matchId)
-            : PlayerList(match: match),
+            : PlayerList(match: match, withJoinButton: bottomBar is JoinMatchBottomBar),
       if (match != null) SportCenterDetails(matchId: matchId),
       if (match != null)
         RuleCard(
@@ -211,24 +211,40 @@ class PlayerList extends StatelessWidget {
       : "Players (${match.numPlayersGoing().toString()}/${match.maxPlayers.toString()})";
 
   final Match match;
+  final bool withJoinButton;
 
-  const PlayerList({Key key, this.match}) : super(key: key);
+  const PlayerList({Key key, this.match, this.withJoinButton}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return InfoContainerWithTitle(
-      title: getTitle(match),
-      body: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-            children: (match.going.isEmpty)
-                ? [EmptyPlayerCard(matchId: match.documentId)]
-                : match
-                    .getGoingUsersByTime()
-                    .map((s) => PlayerCard(s))
-                    .toList()),
-      ),
-      padding: EdgeInsets.only(left: 16, top: 16, bottom: 16),
+    List<Widget> widgets = [];
+
+    var space = (MediaQuery.of(context).size.width - 300) / 3.5;
+
+    List<Widget> cards = [];
+    if (withJoinButton) {
+      cards.add(EmptyPlayerCard(matchId: match.documentId));
+    }
+    match.getGoingUsersByTime().forEach((s) => cards.add(PlayerCard(s)));
+
+    widgets.add(SizedBox(width: 16));
+    widgets.addAll(interleave(cards, SizedBox(width: space)));
+    widgets.add(SizedBox(width: 16));
+
+    // we need to copy this instead of using InfoContainerWithTitle so we can play with the padding and the scrolling
+    return InfoContainer(child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            child: Text(getTitle(match), style: TextPalette.h2)),
+        SizedBox(height: 24),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(children: widgets),
+        ),
+      ],),
+      padding: EdgeInsets.symmetric(vertical: 16),
     );
   }
 }
@@ -615,8 +631,7 @@ class InfoWidget extends StatelessWidget {
 
 // single player card
 class PlayerCard extends StatelessWidget {
-  static var width = 90.0;
-  static var height = 90.0;
+  static var width = 80.0;
 
   final String userId;
 
@@ -626,11 +641,10 @@ class PlayerCard extends StatelessWidget {
   Widget build(BuildContext context) {
     var userData = context.watch<UserState>().getUserDetail(userId);
 
-    return SizedBox(
+    return Container(
       width: PlayerCard.width,
-      height: PlayerCard.height,
       child: Column(children: [
-        UserAvatarWithBottomModal(userData: userData),
+        UserAvatarWithBottomModal(userData: userData, radius: 30),
         SizedBox(height: 10),
         (userData == null)
             ? Skeletons.sText
@@ -651,8 +665,8 @@ class EmptyPlayerCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: PlayerCard.width,
-      height: PlayerCard.height,
-      child: Column(children: [
+      child: Column(
+          children: [
         InkWell(
             onTap: context.watch<MatchesState>().getMatch(matchId).status ==
                     MatchStatus.unpublished
@@ -664,7 +678,7 @@ class EmptyPlayerCard extends StatelessWidget {
               strokeWidth: 1,
               dashPattern: [4],
               child: CircleAvatar(
-                  radius: 25,
+                  radius: 30,
                   child: Icon(Icons.add, color: Palette.grey_dark, size: 24),
                   backgroundColor: Colors.transparent),
             )),
