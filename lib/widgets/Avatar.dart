@@ -45,6 +45,7 @@ class UserAvatar extends StatelessWidget {
                 fontWeight: FontWeight.w600))
         : null;
 
+    print("radius is $radius");
     return CircleAvatar(
         backgroundImage: backgroundImage,
         child: child,

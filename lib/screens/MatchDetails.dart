@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:map_launcher/map_launcher.dart';
 import 'package:map_launcher/src/models.dart' as m;
@@ -641,18 +640,15 @@ class PlayerCard extends StatelessWidget {
   Widget build(BuildContext context) {
     var userData = context.watch<UserState>().getUserDetail(userId);
 
-    return Container(
-      width: PlayerCard.width,
-      child: Column(children: [
-        UserAvatarWithBottomModal(userData: userData, radius: 30),
-        SizedBox(height: 10),
-        (userData == null)
-            ? Skeletons.sText
-            : Text((userData?.name ?? "Player").split(" ").first,
-                overflow: TextOverflow.ellipsis,
-                style: TextPalette.getBodyText(Palette.black))
-      ]),
-    );
+    return Column(children: [
+      UserAvatarWithBottomModal(userData: userData, radius: 30),
+      SizedBox(height: 10),
+      (userData == null)
+          ? Skeletons.sText
+          : Text((userData?.name ?? "Player").split(" ").first,
+              overflow: TextOverflow.ellipsis,
+              style: TextPalette.getBodyText(Palette.black))
+    ]);
   }
 }
 
@@ -663,32 +659,30 @@ class EmptyPlayerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: PlayerCard.width,
+    return InkWell(
+      onTap: context.watch<MatchesState>().getMatch(matchId).status ==
+          MatchStatus.unpublished
+          ? null
+          : () => JoinModal.onJoinGameAction(context, matchId),
       child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-        InkWell(
-            onTap: context.watch<MatchesState>().getMatch(matchId).status ==
-                    MatchStatus.unpublished
-                ? null
-                : () => JoinModal.onJoinGameAction(context, matchId),
-            child: DottedBorder(
+            DottedBorder(
+              padding: EdgeInsets.zero,
               borderType: BorderType.Circle,
               color: Palette.grey_dark,
               strokeWidth: 1,
               dashPattern: [4],
               child: CircleAvatar(
-                  radius: 30,
+                  radius: 29,
                   child: Icon(Icons.add, color: Palette.grey_dark, size: 24),
-                  backgroundColor: Colors.transparent),
-            )),
+                  backgroundColor: Colors.transparent,
+              ),
+            ),
         SizedBox(height: 10),
         Text("Join",
             overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.roboto(
-                color: Palette.primary,
-                fontSize: 12,
-                fontWeight: FontWeight.w400))
+            style: TextPalette.getBodyText(Palette.primary))
       ]),
     );
   }
