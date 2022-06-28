@@ -2,11 +2,11 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nutmeg/controller/UserController.dart';
+import 'package:nutmeg/screens/Launch.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/Containers.dart';
@@ -19,22 +19,6 @@ class Login extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var images = Row(children: [
-      Expanded(
-          child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Align(
-                    alignment: Alignment.topLeft,
-                    child: SvgPicture.asset('assets/launch/blob_top_left.svg')),
-                SvgPicture.asset('assets/launch/blob_middle_middle.svg',
-                    width: MediaQuery.of(context).size.width),
-                Align(
-                    alignment: Alignment.bottomRight,
-                    child: SvgPicture.asset('assets/launch/blob_bottom_right.svg'))
-              ]))
-    ]);
-
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
@@ -60,7 +44,7 @@ class Login extends StatelessWidget {
           Container(
             constraints: BoxConstraints.expand(),
             decoration: new BoxDecoration(color: Palette.primary)),
-          images,
+          LaunchWidgetState.getBackgoundImages(context),
           LoginArea()
         ])
       ),
@@ -86,6 +70,9 @@ class LoginArea extends StatelessWidget {
                     child: Column(
                   children: [
                     SignInButton(provider: Provider.google),
+                    // for some reason on app there is a space but not on web, so we add it
+                    if (kIsWeb)
+                      SizedBox(height: 16),
                     SignInButton(provider: Provider.facebook),
                     if (!kIsWeb && Platform.isIOS)
                       SignInButton(provider: Provider.apple),
