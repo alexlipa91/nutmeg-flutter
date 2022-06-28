@@ -11,8 +11,8 @@ import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/Containers.dart';
 import 'package:provider/provider.dart';
-
 import '../state/LoginStatusChangeNotifier.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 
 class Login extends StatelessWidget {
@@ -87,7 +87,7 @@ class LoginArea extends StatelessWidget {
                   children: [
                     SignInButton(provider: Provider.google),
                     SignInButton(provider: Provider.facebook),
-                    if (Platform.isIOS)
+                    if (!kIsWeb && Platform.isIOS)
                       SignInButton(provider: Provider.apple),
                   ],
                 )),
