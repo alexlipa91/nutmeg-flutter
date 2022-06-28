@@ -143,7 +143,8 @@ class MatchDetailsState extends State<MatchDetails> {
       if (match != null)
         match.hasTeams()
             ? TeamsWidget(matchId: matchId)
-            : PlayerList(match: match, withJoinButton: bottomBar is JoinMatchBottomBar),
+            : PlayerList(match: match,
+            withJoinButton: bottomBar is JoinMatchBottomBar && !match.isFull()),
       if (match != null) SportCenterDetails(matchId: matchId),
       if (match != null)
         RuleCard(
