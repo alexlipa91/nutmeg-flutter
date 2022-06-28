@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 
 class UiUtils {
@@ -85,7 +86,10 @@ class DeviceInfo {
 
   Future<void> init() async {
     DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
-    if (Platform.isIOS) {
+
+    if (kIsWeb) {
+      name = "web";
+    } else if (Platform.isIOS) {
       name = (await deviceInfo.iosInfo).model.toLowerCase();
     } else if (Platform.isAndroid) {
       name = (await deviceInfo.androidInfo).model.toLowerCase();
