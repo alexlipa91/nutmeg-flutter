@@ -244,7 +244,7 @@ class AvailableMatches extends StatelessWidget {
             if (withAction)
               TappableLinkText(
                   text: "CREATE A NEW MATCH",
-                  onTap: () => loginAndCreateMatch(context)
+                  onTap: (BuildContext context) => loginAndCreateMatch(context)
               ),
           ],
         ),
