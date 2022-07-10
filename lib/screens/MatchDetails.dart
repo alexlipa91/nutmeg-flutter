@@ -396,20 +396,6 @@ class MatchInfo extends StatelessWidget {
                   ]);
             }),
             SizedBox(height: 16),
-            if (match != null &&
-                (match.sportCenterSubLocation ?? "").isNotEmpty)
-              Padding(
-                padding: EdgeInsets.only(bottom: 8),
-                child: Row(
-                  children: [
-                    SvgPicture.asset(
-                        "assets/icons/nutmeg_icon_court_number.svg"),
-                    SizedBox(width: 16),
-                    Text("Court number ${match.sportCenterSubLocation}",
-                        style: TextPalette.listItem)
-                  ],
-                ),
-              ),
             IconList.fromIcon({
               Icons.calendar_month_outlined: getFormattedDateLong(match.dateTime),
               Icons.access_time_outlined: getStartAndEndHour(match.dateTime, match.duration).join(" - "),
@@ -754,18 +740,6 @@ class SportCenterDetails extends StatelessWidget {
                 ]);
           }),
           SizedBox(height: 16),
-          if (match != null && (match.sportCenterSubLocation ?? "").isNotEmpty)
-            Padding(
-              padding: EdgeInsets.only(bottom: 8),
-              child: Row(
-                children: [
-                  SvgPicture.asset("assets/icons/nutmeg_icon_court_number.svg"),
-                  SizedBox(width: 16),
-                  Text("Court number ${match.sportCenterSubLocation}",
-                      style: TextPalette.listItem)
-                ],
-              ),
-            ),
           IconList.fromSvg({
             "assets/icons/nutmeg_icon_court.svg":
                 (sportCenter == null)
@@ -774,7 +748,9 @@ class SportCenterDetails extends StatelessWidget {
             "assets/icons/nutmeg_icon_shoe.svg":
                 (sportCenter == null) ? null : sportCenter.getSurface(),
             if (sportCenter != null && sportCenter.hasChangingRooms())
-              "assets/icons/nutmeg_icon_changing_rooms.svg": "Change rooms available"
+              "assets/icons/nutmeg_icon_changing_rooms.svg": "Change rooms available",
+            if (match != null && (match.sportCenterSubLocation ?? "").isNotEmpty)
+              "assets/icons/nutmeg_icon_court_number.svg": "Court number ${match.sportCenterSubLocation}"
           })
         ],
       ),
