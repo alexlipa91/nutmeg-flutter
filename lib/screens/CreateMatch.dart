@@ -78,7 +78,7 @@ class CreateMatchState extends State<CreateMatch> {
   RangeValues numberOfPeopleRangeValues = RangeValues(8, 10);
   bool isTest = false;
   bool withAutomaticCancellation = false;
-  int repeatsForWeeks = 0;
+  int repeatsForWeeks = 1;
   final TextEditingController cancelTimeEditingController =
     TextEditingController(text: "24");
 
@@ -240,9 +240,9 @@ class CreateMatchState extends State<CreateMatch> {
                         decoration:
                             getTextFormDecoration("Repeat", isDropdown: true),
                         onTap: () async {
-                          var weeks = [0, 2, 4, 6, 8, 10];
+                          var weeks = [1, 2, 4, 6, 8, 10];
                           var choices = weeks.map((e) {
-                            if (e == 0)
+                            if (e == 1)
                               return NO_REPEAT;
                             else
                               return "Weekly for " + e.toString() + " weeks";
@@ -261,7 +261,7 @@ class CreateMatchState extends State<CreateMatch> {
                         })),
               ],
             ),
-            if (repeatsForWeeks != 0 && dateEditingController.text.isNotEmpty)
+            if (repeatsForWeeks != 1 && dateEditingController.text.isNotEmpty)
               Padding(
                 padding: EdgeInsets.only(top: 16),
                 child: Text(
@@ -617,9 +617,7 @@ class CreateMatchState extends State<CreateMatch> {
                           Duration(hours: int.parse(cancelTimeEditingController.text))
                           : null;
 
-                      var forWeeks =
-                          int.tryParse(repeatWeeklyEditingController.text);
-                      if (forWeeks == null) forWeeks = 1;
+                      var forWeeks = repeatsForWeeks;
 
                       Iterable<Future<String>> idsFuture =
                           Iterable<int>.generate(forWeeks).map((w) async {
