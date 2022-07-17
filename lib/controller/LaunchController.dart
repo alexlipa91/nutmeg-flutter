@@ -26,6 +26,9 @@ import '../utils/Utils.dart';
 import 'MiscController.dart';
 import 'UserController.dart';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
+
+
 class LaunchController {
   static var apiClient = CloudFunctionsClient();
 
@@ -119,19 +122,6 @@ class LaunchController {
     var trace = FirebasePerformance.instance.newTrace("launch_app");
     trace.start();
 
-    FirebaseRemoteConfig firebaseRemoteConfig = FirebaseRemoteConfig.instance;
-    await firebaseRemoteConfig.setConfigSettings(RemoteConfigSettings(
-      fetchTimeout: Duration(seconds: 5),
-      minimumFetchInterval: Duration(minutes: 1),
-    ));
-
-    try {
-      await firebaseRemoteConfig.fetchAndActivate();
-    } catch (e, s) {
-      print(e);
-      print(s);
-    }
-
     // fetch device model name
     var d = DeviceInfo();
     d.init();
@@ -143,17 +133,32 @@ class LaunchController {
     ];
     var futuresData = await Future.wait(futures);
 
-    Tuple2<Version, String> minimumVersion = futuresData[0];
     UserDetails availableUserDetails = futuresData[1];
 
-    // check if update is necessary
-    var current = (minimumVersion).item1;
-    trace.putAttribute("app_version", current.toString());
-    var minimumVersionParts =
-        firebaseRemoteConfig.getString("minimum_app_version").split(".");
-    var minimumRequired = Version(int.parse(minimumVersionParts[0]),
-        int.parse(minimumVersionParts[1]), int.parse(minimumVersionParts[2]));
-    if (current < minimumRequired) throw OutdatedAppException();
+    if (!kIsWeb) {
+      FirebaseRemoteConfig firebaseRemoteConfig = FirebaseRemoteConfig.instance;
+      await firebaseRemoteConfig.setConfigSettings(RemoteConfigSettings(
+        fetchTimeout: Duration(seconds: 5),
+        minimumFetchInterval: Duration(minutes: 1),
+      ));
+
+      try {
+        await firebaseRemoteConfig.fetchAndActivate();
+      } catch (e, s) {
+        print(e);
+        print(s);
+      }
+
+      Tuple2<Version, String> minimumVersion = futuresData[0];
+
+      var current = (minimumVersion).item1;
+      trace.putAttribute("app_version", current.toString());
+      var minimumVersionParts =
+      firebaseRemoteConfig.getString("minimum_app_version").split(".");
+      var minimumRequired = Version(int.parse(minimumVersionParts[0]),
+          int.parse(minimumVersionParts[1]), int.parse(minimumVersionParts[2]));
+      if (current < minimumRequired) throw OutdatedAppException();
+    }
 
     if (kDebugMode) {
       // Force disable Crashlytics collection while doing every day development.
@@ -196,7 +201,6 @@ class LaunchController {
       provisional: false,
       sound: true,
     );
-    FirebaseMessaging.instance.subscribeToTopic("nutmeg-generic");
 
     // check if coming from link
     Uri deepLink;

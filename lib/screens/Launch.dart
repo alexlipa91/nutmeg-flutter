@@ -70,6 +70,9 @@ void main() {
               primary: Palette.primary,
             ),
           ),
+          unknownRoute: GetPage(
+            name: '/launch',
+            page: () => LaunchWidget()),
           getPages: [
             GetPage(
                 name: '/home',
@@ -145,22 +148,6 @@ class LaunchWidgetState extends State<LaunchWidget> {
 
   @override
   Widget build(BuildContext context) {
-    var images = Row(children: [
-      Expanded(
-          child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-            Align(
-                alignment: Alignment.topLeft,
-                child: SvgPicture.asset('assets/launch/blob_top_left.svg')),
-            SvgPicture.asset('assets/launch/blob_middle_middle.svg',
-                width: MediaQuery.of(context).size.width),
-            Align(
-                alignment: Alignment.bottomRight,
-                child: SvgPicture.asset('assets/launch/blob_bottom_right.svg'))
-          ]))
-    ]);
-
     var mainWidgets =
         Column(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
       Expanded(
@@ -186,8 +173,27 @@ class LaunchWidgetState extends State<LaunchWidget> {
             decoration: BoxDecoration(
               color: Palette.primary,
             ),
-            child: Stack(children: [images, mainWidgets])));
+            child: Stack(children: [getBackgoundImages(context), mainWidgets])));
   }
+
+  static Widget getBackgoundImages(BuildContext context) => Row(children: [
+    Expanded(child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Align(
+              alignment: Alignment.topLeft,
+              child: SvgPicture.asset('assets/launch/blob_top_left.svg')),
+          Expanded(
+            child: SizedBox(
+                width: MediaQuery.of(context).size.width,
+                child: SvgPicture.asset('assets/launch/blob_middle_middle.svg',
+                  fit: BoxFit.fill,)),
+          ),
+          Align(
+              alignment: Alignment.bottomRight,
+              child: SvgPicture.asset('assets/launch/blob_bottom_right.svg'))
+        ]))
+  ]);
 }
 
 // Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
