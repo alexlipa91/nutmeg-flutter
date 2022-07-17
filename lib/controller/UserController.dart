@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:get/get.dart';
@@ -72,9 +73,10 @@ class UserController {
   static Future<void> addUser(UserDetails u) async => await apiClient
       .callFunction("add_user", {"id": u.documentId, "data": u.toJson()});
 
-  static Future<void> saveUserTokensToDb(UserDetails userDetails, String token) async {
+  static Future<void> saveUserTokensToDb(UserDetails userDetails) async {
     // Save the initial token to the database
     try {
+      var token = FirebaseMessaging.instance.getToken();
       await apiClient.callFunction(
           "store_user_token", {"id": userDetails.getUid(), "token": token});
     } on Exception catch (e, s) {
@@ -118,10 +120,9 @@ class UserController {
       await addUser(userDetails);
     }
 
-    var token = await FirebaseMessaging.instance.getToken();
-
     userState.setCurrentUserDetails(userDetails);
-    UserController.saveUserTokensToDb(userDetails, token);
+    UserController.saveUserTokensToDb(userDetails);
+
     return afterLoginComm;
   }
 
@@ -131,40 +132,56 @@ class UserController {
       return;
     }
 
-    UserController.saveUserTokensToDb(ud, token);
+    UserController.saveUserTokensToDb(ud);
   }
 
   static Future<AfterLoginCommunication> continueWithGoogle(
       BuildContext context) async {
     FirebaseAuth auth = FirebaseAuth.instance;
+    var userCredentials;
 
     final GoogleSignIn googleSignIn = GoogleSignIn();
     googleSignIn.disconnect();
     final GoogleSignInAccount googleSignInAccount = await googleSignIn.signIn();
 
     final GoogleSignInAuthentication googleSignInAuthentication =
-        await googleSignInAccount.authentication;
+    await googleSignInAccount.authentication;
 
     final AuthCredential credential = GoogleAuthProvider.credential(
       accessToken: googleSignInAuthentication.accessToken,
       idToken: googleSignInAuthentication.idToken,
     );
-
-    return await _login(context, await auth.signInWithCredential(credential));
+    userCredentials = await auth.signInWithCredential(credential);
+    return await _login(context, userCredentials);
   }
 
   static Future<AfterLoginCommunication> continueWithFacebook(
       BuildContext context) async {
-    // Trigger the sign-in flow
-    final LoginResult loginResult = await FacebookAuth.instance.login();
+    var userCred;
 
-    // Create a credential from the access token
-    final OAuthCredential facebookAuthCredential =
-        FacebookAuthProvider.credential(loginResult.accessToken.token);
+    if (kIsWeb) {
+      // Create a new provider
+      FacebookAuthProvider facebookProvider = FacebookAuthProvider();
 
-    // Once signed in, return the UserCredential
-    var userCred = await FirebaseAuth.instance
-        .signInWithCredential(facebookAuthCredential);
+      facebookProvider.addScope('email');
+      facebookProvider.setCustomParameters({
+        'display': 'popup',
+      });
+
+      // Once signed in, return the UserCredential
+      userCred = await FirebaseAuth.instance.signInWithPopup(facebookProvider);
+    } else {
+      // Trigger the sign-in flow
+      final LoginResult loginResult = await FacebookAuth.instance.login();
+
+      // Create a credential from the access token
+      final OAuthCredential facebookAuthCredential = FacebookAuthProvider
+          .credential(loginResult.accessToken.token);
+
+      // Once signed in, return the UserCredential
+      userCred = await FirebaseAuth.instance
+          .signInWithCredential(facebookAuthCredential);
+    }
     return await _login(context, userCred);
   }
 
