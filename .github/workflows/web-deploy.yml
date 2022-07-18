@@ -23,3 +23,4 @@ jobs:
           repoToken: '${{ secrets.GIT_AUTH_TOKEN }}'
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_NUTMEG_9099C }}'
           projectId: nutmeg-9099c
+          channelId: v0.0.1-preview
