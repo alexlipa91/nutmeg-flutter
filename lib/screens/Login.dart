@@ -70,12 +70,12 @@ class LoginArea extends StatelessWidget {
                     child: Column(
                   children: [
                     SignInButton(provider: Provider.google),
-                    // for some reason on app there is a space but not on web, so we add it
-                    if (kIsWeb)
-                      SizedBox(height: 16),
+                    SizedBox(height: 16),
                     SignInButton(provider: Provider.facebook),
                     if (!kIsWeb && Platform.isIOS)
-                      SignInButton(provider: Provider.apple),
+                      Padding(
+                          padding: EdgeInsets.only(top: 16),
+                          child: SignInButton(provider: Provider.apple)),
                   ],
                 )),
               ),
@@ -131,57 +131,56 @@ class SignInButton extends StatelessWidget {
         throw Exception("Invalid provider");
     }
 
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 10),
-      child: Row(
-        children: [
-          Expanded(
-            child: OutlinedButton(
-              style: OutlinedButton.styleFrom(
-                  backgroundColor: backgroundColor,
-                  side: BorderSide(width: 1.0, color: Palette.grey_light),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(40))),
-              onPressed: () async {
-                context.read<LoginStatusChangeNotifier>().setIsSigningIn(true);
-
-                try {
-                  var communication = await loginFuture();
-                  Get.back(result: communication);
-                } on Exception catch (e, stack) {
-                  print(e);
-                  print(stack);
-                  GenericInfoModal(title: "Sign-in failed",
-                      description: "Please try again or reach out for support").show(context);
-                } finally {
-                  context
-                      .read<LoginStatusChangeNotifier>()
-                      .setIsSigningIn(false);
-                }
-              },
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: <Widget>[
-                  Image(
-                    image: AssetImage(logoPath),
-                    height: 20.0,
-                  ),
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 10),
-                      child: Text(
-                        'CONTINUE WITH ' + provider.toString().split(".").last.toUpperCase(),
-                        style: textStyle,
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  )
-                ],
-              ),
+    return Row(
+      children: [
+        Expanded(
+          child: OutlinedButton(
+            style: OutlinedButton.styleFrom(
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                backgroundColor: backgroundColor,
+                side: BorderSide(width: 1.0, color: Palette.grey_light),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(40))
             ),
-          )
-        ],
-      ),
+            onPressed: () async {
+              context.read<LoginStatusChangeNotifier>().setIsSigningIn(true);
+
+              try {
+                var communication = await loginFuture();
+                Get.back(result: communication);
+              } on Exception catch (e, stack) {
+                print(e);
+                print(stack);
+                GenericInfoModal(title: "Sign-in failed",
+                    description: "Please try again or reach out for support").show(context);
+              } finally {
+                context
+                    .read<LoginStatusChangeNotifier>()
+                    .setIsSigningIn(false);
+              }
+            },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: <Widget>[
+                Image(
+                  image: AssetImage(logoPath),
+                  height: 20.0,
+                ),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 10),
+                    child: Text(
+                      'CONTINUE WITH ' + provider.toString().split(".").last.toUpperCase(),
+                      style: textStyle,
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                )
+              ],
+            ),
+          ),
+        )
+      ],
     );
   }
 }
