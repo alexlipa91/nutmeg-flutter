@@ -1,0 +1,19 @@
+name: Web Build
+
+on:
+  push:
+    branches:
+      - master
+    tags-ignore:
+      - "**"
+
+jobs:
+  build_ios:
+    name: Build Web
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code from ref
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.ref }}
+      - run: flutter build web -t lib/screens/Launch.dart
