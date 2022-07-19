@@ -19,11 +19,9 @@ jobs:
         with:
           flutter-version: '2.10.2'
       - run: flutter build web -t lib/screens/Launch.dart
-      - run: cat firebase.json
-      - run: ls build/web
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GIT_AUTH_TOKEN }}'
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_NUTMEG_9099C }}'
           projectId: nutmeg-9099c
-          channelId: master
+          channelId: live
