@@ -6,6 +6,7 @@ import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_web_frame/flutter_web_frame.dart';
 import 'package:get/get.dart';
 import 'package:logger/logger.dart';
 import 'package:nutmeg/controller/LaunchController.dart';
@@ -59,55 +60,60 @@ void main() {
             0.9,
           ],
         ),
-        child: new GetMaterialApp(
-          navigatorKey: navigatorKey,
-          debugShowCheckedModeBanner: false,
-          home: new Container(
-              decoration: new BoxDecoration(color: Colors.grey.shade400),
-              child: Center(child: new LaunchWidget())),
-          theme: ThemeData(
-            colorScheme: ColorScheme.light().copyWith(
-              primary: Palette.primary,
+        child: FlutterWebFrame(
+          builder: (context) => GetMaterialApp(
+            navigatorKey: navigatorKey,
+            debugShowCheckedModeBanner: false,
+            home: new Container(
+                decoration: new BoxDecoration(color: Colors.grey.shade400),
+                child: Center(child: new LaunchWidget())),
+            theme: ThemeData(
+              colorScheme: ColorScheme.light().copyWith(
+                primary: Palette.primary,
+              ),
             ),
+            unknownRoute: GetPage(
+              name: '/launch',
+              page: () => LaunchWidget()),
+            getPages: [
+              GetPage(
+                  name: '/home',
+                  page: () => AvailableMatches(),
+                  transition: Transition.native),
+              GetPage(
+                  name: '/match/:matchId',
+                  transition: Transition.native,
+                  page: () => MatchDetails()),
+              GetPage(
+                  name: '/login/enterDetails',
+                  page: () => EnterDetails(),
+                  transition: Transition.native),
+              GetPage(
+                  name: '/user',
+                  page: () => UserPage(),
+                  transition: Transition.native),
+              GetPage(
+                  name: '/editMatch/:matchId',
+                  page: () => AdminMatchDetails(),
+                  transition: Transition.native),
+              GetPage(
+                  name: '/adminHome',
+                  page: () => AdminAvailableMatches(),
+                  transition: Transition.native),
+              GetPage(
+                  name: '/potm/:userId',
+                  page: () => PlayerOfTheMatch(),
+                  transition: Transition.native,
+                  transitionDuration: Duration.zero),
+              GetPage(
+                  name: '/createMatch',
+                  page: () => CreateMatch(),
+                  transition: Transition.native),
+            ],
           ),
-          unknownRoute: GetPage(
-            name: '/launch',
-            page: () => LaunchWidget()),
-          getPages: [
-            GetPage(
-                name: '/home',
-                page: () => AvailableMatches(),
-                transition: Transition.native),
-            GetPage(
-                name: '/match/:matchId',
-                transition: Transition.native,
-                page: () => MatchDetails()),
-            GetPage(
-                name: '/login/enterDetails',
-                page: () => EnterDetails(),
-                transition: Transition.native),
-            GetPage(
-                name: '/user',
-                page: () => UserPage(),
-                transition: Transition.native),
-            GetPage(
-                name: '/editMatch/:matchId',
-                page: () => AdminMatchDetails(),
-                transition: Transition.native),
-            GetPage(
-                name: '/adminHome',
-                page: () => AdminAvailableMatches(),
-                transition: Transition.native),
-            GetPage(
-                name: '/potm/:userId',
-                page: () => PlayerOfTheMatch(),
-                transition: Transition.native,
-                transitionDuration: Duration.zero),
-            GetPage(
-                name: '/createMatch',
-                page: () => CreateMatch(),
-                transition: Transition.native),
-          ],
+          maximumSize: Size(475.0, 812.0), // Maximum size
+          enabled: kIsWeb, // default is enable, when disable content is full size
+          backgroundColor: Palette.grey_light,
         ),
       ),
     ));
