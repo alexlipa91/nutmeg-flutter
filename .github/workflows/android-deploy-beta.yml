@@ -13,7 +13,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: ${{ github.ref }}
-      - run: echo $ANDROID_JSON | base64 -d > android/nutmeg-9099c-c70a0f6cba3d.json
+      - run: echo $ANDROID_JSON | base64 -d > android/nutmeg-9099c-sa-credentials.json
         env:
           ANDROID_JSON: ${{ secrets.ANDROID_JSON }}      
       - name: Run Flutter tasks
