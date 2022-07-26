@@ -119,6 +119,7 @@ void main() {
     ));
   }, (Object error, StackTrace stackTrace) async {
     print(error);
+    print(stackTrace);
     print("**** ZONED EXCEPTION ****");
     if (!kIsWeb) {
       FirebaseCrashlytics.instance.recordError(error, stackTrace);

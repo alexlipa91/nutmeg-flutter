@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:dotted_border/dotted_border.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
@@ -86,21 +87,24 @@ class MatchDetailsState extends State<MatchDetails> {
         }
       }
 
-      // go to potm
-      var prefs = await SharedPreferences.getInstance();
-      var currentUser = context.read<UserState>().currentUserId;
-      var preferencePath = "potm_screen_showed_" + matchId + "_" + currentUser;
-      var alreadyShown = prefs.getBool(preferencePath) ?? false;
+      // fixme currently sharedpref gives some error in web
+      if (!kIsWeb) {
+        // go to potm
+        var prefs = await SharedPreferences.getInstance();
+        var currentUser = context.read<UserState>().currentUserId;
+        var preferencePath = "potm_screen_showed_" + matchId + "_" + currentUser;
+        var alreadyShown = prefs.getBool(preferencePath) ?? false;
 
-      if (context.read<UserState>().isLoggedIn() &&
-          context
-              .read<MatchesState>()
-              .getMatch(matchId)
-              .getPotms()
-              .contains(currentUser) &&
-          !alreadyShown) {
-        Get.toNamed("/potm/" + currentUser);
-        prefs.setBool(preferencePath, true);
+        if (context.read<UserState>().isLoggedIn() &&
+            context
+                .read<MatchesState>()
+                .getMatch(matchId)
+                .getPotms()
+                .contains(currentUser) &&
+            !alreadyShown) {
+          Get.toNamed("/potm/" + currentUser);
+          prefs.setBool(preferencePath, true);
+        }
       }
     }
   }
@@ -219,7 +223,7 @@ class PlayerList extends StatelessWidget {
   Widget build(BuildContext context) {
     List<Widget> widgets = [];
 
-    var space = (MediaQuery.of(context).size.width - 300) / 3.5;
+    var space = (min(475, MediaQuery.of(context).size.width) - 300) / 4.5;
 
     List<Widget> cards = [];
     if (withJoinButton) {
