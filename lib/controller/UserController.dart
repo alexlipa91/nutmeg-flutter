@@ -76,7 +76,7 @@ class UserController {
   static Future<void> saveUserTokensToDb(UserDetails userDetails) async {
     // Save the initial token to the database
     try {
-      var token = FirebaseMessaging.instance.getToken();
+      var token = await FirebaseMessaging.instance.getToken();
       await apiClient.callFunction(
           "store_user_token", {"id": userDetails.getUid(), "token": token});
     } on Exception catch (e, s) {

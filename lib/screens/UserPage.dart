@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:nutmeg/Exceptions.dart';
 import 'package:nutmeg/controller/UserController.dart';
+import 'package:nutmeg/model/UserDetails.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
@@ -46,6 +47,8 @@ class UserPageState extends State<UserPage> {
 
     if (userDetails != null && !userState.isLoggedIn()) return Container();
 
+    var loadSkeleton = userDetails == null || userDetails is EmptyUserDetails;
+
     int creditCount = (userDetails == null) ? 0 : userDetails.creditsInCents;
 
     var showOrganizerView = userDetails != null &&
@@ -70,7 +73,7 @@ class UserPageState extends State<UserPage> {
                     ),
                   ))
               : InkWell(
-                  onTap: (userDetails == null)
+                  onTap: (loadSkeleton)
                       ? null
                       : () async {
                           setState(() {
@@ -101,7 +104,7 @@ class UserPageState extends State<UserPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                (userDetails == null)
+                (loadSkeleton)
                     ? SkeletonLine(
                         style: SkeletonLineStyle(
                             height: 12,
@@ -109,7 +112,7 @@ class UserPageState extends State<UserPage> {
                             borderRadius: BorderRadius.circular(8.0)))
                     : Text(userDetails.name ?? "N/A", style: TextPalette.h2),
                 SizedBox(height: 10),
-                (userDetails == null)
+                (loadSkeleton)
                     ? SkeletonLine(
                         style: SkeletonLineStyle(
                             height: 12,
@@ -126,14 +129,14 @@ class UserPageState extends State<UserPage> {
       Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
         Expanded(
             child: UserInfoBox(
-                content: (userDetails == null)
+                content: (loadSkeleton)
                     ? null
                     : formatCurrency(userDetails.creditsInCents ?? 0),
                 description: "Credits")),
         SizedBox(width: 20),
         Expanded(
           child: UserInfoBox(
-              content: (userDetails == null)
+              content: (loadSkeleton)
                   ? null
                   : userDetails.getNumJoinedMatches().toString(),
               description: "Matches Played"),
@@ -143,7 +146,7 @@ class UserPageState extends State<UserPage> {
       Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
         Expanded(
           child: UserInfoBox(
-              content: (userDetails == null)
+              content: (loadSkeleton)
                   ? null
                   : (userDetails.getScoreMatches() == null)
                       ? "-"
@@ -153,7 +156,7 @@ class UserPageState extends State<UserPage> {
         SizedBox(width: 20),
         Expanded(
           child: UserInfoBox(
-            content: (userDetails == null)
+            content: (loadSkeleton)
                 ? null
                 : userDetails.getNumManOfTheMatch().toString(),
             description: "Player of the Match",
@@ -214,7 +217,7 @@ class UserPageState extends State<UserPage> {
                     addGotoDashboard(false);
 
                     return UserInfoBox(
-                        content: (userDetails == null) ? null : n.toString(),
+                        content: (loadSkeleton) ? null : n.toString(),
                         description: "Organized match" + ((n > 1) ? "es" : ""),
                         bottom: Column(children: widgets),
                     );
