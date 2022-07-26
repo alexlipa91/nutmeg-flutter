@@ -73,8 +73,12 @@ void main() {
               ),
             ),
             unknownRoute: GetPage(
-              name: '/launch',
-              page: () => LaunchWidget()),
+              name: '/notFound',
+              page: () => Scaffold(
+                backgroundColor: Palette.primary,
+                body: Center(child: Text("Not Found",
+                  style: TextPalette.getBodyText(Palette.grey_light),)),
+              )),
             getPages: [
               GetPage(
                   name: '/home',
