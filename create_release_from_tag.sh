@@ -20,6 +20,9 @@ echo $NOTES > ios/fastlane/metadata/en-GB/release_notes.txt
 # submit ios build
 (cd ios; fastlane submit_for_review build_number:$BUILD version:$VERSION)
 
+# promote beta hosting site to live
+firebase hosting:clone nutmeg-9099c:beta nutmeg-9099c:live
+
 # create release in github
 gh release create $TAG --notes "$NOTES"
 
