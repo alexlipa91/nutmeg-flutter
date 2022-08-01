@@ -374,7 +374,7 @@ class MatchInfo extends StatelessWidget {
         ? null
         : context.watch<LoadOnceState>().getSportCenter(match.sportCenterId);
 
-    var matchWidget = getStatusWidget(match);
+    var matchWidget = (match == null) ? null : getStatusWidget(match);
 
     child = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -401,9 +401,12 @@ class MatchInfo extends StatelessWidget {
             }),
             SizedBox(height: 16),
             IconList.fromIcon({
-              Icons.calendar_month_outlined: getFormattedDateLong(match.dateTime),
-              Icons.access_time_outlined: getStartAndEndHour(match.dateTime, match.duration).join(" - "),
-              Icons.local_offer_outlined: formatCurrency(match.pricePerPersonInCents)
+              Icons.calendar_month_outlined: (match == null) ? null
+                  : getFormattedDateLong(match.dateTime),
+              Icons.access_time_outlined: (match == null) ? null
+                  : getStartAndEndHour(match.dateTime, match.duration).join(" - "),
+              Icons.local_offer_outlined: (match == null) ? null
+                  : formatCurrency(match.pricePerPersonInCents)
             }),
             if (matchWidget != null)
               Column(children: [
