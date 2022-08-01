@@ -1,1 +1,1 @@
-Improvements to webapp
+Fix null values in match details
