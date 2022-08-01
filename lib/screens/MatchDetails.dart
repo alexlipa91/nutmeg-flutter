@@ -124,69 +124,112 @@ class MatchDetailsState extends State<MatchDetails> {
 
     var bottomBar = BottomBarMatch.getBottomBar(context, matchId, status);
 
-    // add padding individually since because of shadow clipping some components need margin
-    var widgets = [
-      // title
-      if (organizerView &&
-          userState.getLoggedUserDetails().areChargesEnabled(isTest) != null &&
-          !userState.getLoggedUserDetails().areChargesEnabled(isTest))
-        CompleteOrganiserAccountWidget(isTest: isTest),
-      if (isTest)
-        InfoContainer(
-            backgroundColor: Palette.accent,
-            child: SelectableText(
-              "Test match: " + matchId,
-              style: TextPalette.getBodyText(Palette.black),
-            )),
-      // info box
-      MatchInfo(matchId),
-      // stats
-      if (status == MatchStatus.rated || status == MatchStatus.to_rate)
-        Stats(matchId: matchId, matchDatetime: match.dateTime),
-      // horizontal players list or teams
-      if (match != null)
+    var widgets;
+    if (match == null) {
+      var skeletonRepeatedElement = Padding(
+          padding: EdgeInsets.symmetric(vertical: 16.0),
+          child:
+          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            SkeletonLine(
+                style: SkeletonLineStyle(
+                    borderRadius: BorderRadius.circular(20),
+                    width: double.infinity,
+                    height: 24)),
+            Column(children: List<Widget>.filled(3,
+                Padding(
+                  padding: EdgeInsets.only(top: 16),
+                  child: Row(children: [
+                    SkeletonLine(
+                      style: SkeletonLineStyle(
+                          borderRadius: BorderRadius.circular(20),
+                          width: 24,
+                          height: 24),
+                    ),
+                    SizedBox(width: 16),
+                    Expanded(
+                      child: SkeletonLine(
+                        style: SkeletonLineStyle(
+                            borderRadius: BorderRadius.circular(20),
+                            height: 24),
+                      ),
+                    ),
+                  ],),
+                )))
+          ])
+      );
+
+      widgets = [
+        Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(children: [Expanded(child: SportCenterImageCarouselState.getPlaceholder())]),
+          skeletonRepeatedElement,
+          skeletonRepeatedElement,
+          skeletonRepeatedElement
+        ])
+      ];
+    } else {
+      widgets = [
+        // title
+        if (organizerView &&
+            userState.getLoggedUserDetails().areChargesEnabled(isTest) != null &&
+            !userState.getLoggedUserDetails().areChargesEnabled(isTest))
+          CompleteOrganiserAccountWidget(isTest: isTest),
+        if (isTest)
+          InfoContainer(
+              backgroundColor: Palette.accent,
+              child: SelectableText(
+                "Test match: " + matchId,
+                style: TextPalette.getBodyText(Palette.black),
+              )),
+        // info box
+        MatchInfo(match),
+        // stats
+        if (status == MatchStatus.rated || status == MatchStatus.to_rate)
+          Stats(match: match),
+        // horizontal players list or teams
         match.hasTeams()
             ? TeamsWidget(matchId: matchId)
             : PlayerList(match: match,
             withJoinButton: bottomBar is JoinMatchBottomBar && !match.isFull()),
-      if (match != null) SportCenterDetails(matchId: matchId),
-      if (match != null)
+        SportCenterDetails(matchId: matchId),
         RuleCard(
-            "Payment Policy",
-            "If you leave the match you will get a refund (excluding Nutmeg service fee).\n"
-                    "If the match is cancelled you will get a full refund.\n\n"
-                    "If you don’t show up you won’t get a refund.\n\n" +
-                ((match != null && match.cancelBefore != null)
-                    ? "The match will be automatically canceled "
-                        "${getFormattedDateLongWithHour(match.dateTime.subtract(match.cancelBefore))} "
-                        "if less than ${match.minPlayers} players have joined."
-                    : "")),
-      if (match != null && match.organizerId != null)
-        Builder(builder: (context) {
-          var ud = context.watch<UserState>().getUserDetail(match.organizerId);
+              "Payment Policy",
+              "If you leave the match you will get a refund (excluding Nutmeg service fee).\n"
+                  "If the match is cancelled you will get a full refund.\n\n"
+                  "If you don’t show up you won’t get a refund.\n\n" +
+                  ((match != null && match.cancelBefore != null)
+                      ? "The match will be automatically canceled "
+                      "${getFormattedDateLongWithHour(match.dateTime.subtract(match.cancelBefore))} "
+                      "if less than ${match.minPlayers} players have joined."
+                      : "")),
+        if (match.organizerId != null)
+          Builder(builder: (context) {
+            var ud = context.watch<UserState>().getUserDetail(match.organizerId);
 
-          return InfoContainer(
-              child: Row(children: [
-            (ud != null && ud.isAdmin)
-                ? NutmegAvatar(24.0)
-                : UserAvatarWithBottomModal(userData: ud),
-            SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text("Organized by", style: TextPalette.bodyText),
-                  SizedBox(height: 4),
-                  (ud == null)
-                      ? Skeletons.lText
-                      : Text((ud.isAdmin) ? "Nutmeg" : ud.name.split(" ").first,
-                          style: TextPalette.h2),
-                ],
-              ),
-            ),
-          ]));
-        }),
-    ];
+            return InfoContainer(
+                child: Row(children: [
+                  (ud != null && ud.isAdmin)
+                      ? NutmegAvatar(24.0)
+                      : UserAvatarWithBottomModal(userData: ud),
+                  SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text("Organized by", style: TextPalette.bodyText),
+                        SizedBox(height: 4),
+                        (ud == null)
+                            ? Skeletons.lText
+                            : Text((ud.isAdmin) ? "Nutmeg" : ud.name.split(" ").first,
+                            style: TextPalette.h2),
+                      ],
+                    ),
+                  ),
+                ]));
+          }),
+      ];
+    }
 
     return PageTemplate(
       initState: () => refreshState(true),
@@ -321,15 +364,13 @@ class TeamsWidget extends StatelessWidget {
 }
 
 class Title extends StatelessWidget {
-  final String matchId;
+  final Match match;
 
-  Title(this.matchId);
+  Title(this.match);
 
   @override
   Widget build(BuildContext context) {
     var loadOnceState = context.read<LoadOnceState>();
-
-    var match = context.read<MatchesState>().getMatch(matchId);
 
     var skeleton = SkeletonLine(
       style: SkeletonLineStyle(
@@ -360,21 +401,17 @@ class Title extends StatelessWidget {
 class MatchInfo extends StatelessWidget {
   static var dateFormat = DateFormat('MMMM dd \'at\' HH:mm');
 
-  final String matchId;
+  final Match match;
 
-  MatchInfo(this.matchId);
+  MatchInfo(this.match);
 
   @override
   Widget build(BuildContext context) {
     var child;
 
-    var match = context.watch<MatchesState>().getMatch(matchId);
+    var sportCenter = context.watch<LoadOnceState>().getSportCenter(match.sportCenterId);
 
-    var sportCenter = (match == null)
-        ? null
-        : context.watch<LoadOnceState>().getSportCenter(match.sportCenterId);
-
-    var matchWidget = (match == null) ? null : getStatusWidget(match);
+    var matchWidget = getStatusWidget(match);
 
     child = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -384,7 +421,7 @@ class MatchInfo extends StatelessWidget {
           padding: EdgeInsets.all(16.0),
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Title(matchId),
+            Title(match),
             SizedBox(height: 16),
             Builder(builder: (context) {
               if (sportCenter == null) return Skeletons.xlText;
@@ -401,12 +438,12 @@ class MatchInfo extends StatelessWidget {
             }),
             SizedBox(height: 16),
             IconList.fromIcon({
-              Icons.calendar_month_outlined: (match == null) ? null
-                  : getFormattedDateLong(match.dateTime),
-              Icons.access_time_outlined: (match == null) ? null
-                  : getStartAndEndHour(match.dateTime, match.duration).join(" - "),
-              Icons.local_offer_outlined: (match == null) ? null
-                  : formatCurrency(match.pricePerPersonInCents)
+              Icons.calendar_month_outlined:
+              getFormattedDateLong(match.dateTime),
+              Icons.access_time_outlined:
+              getStartAndEndHour(match.dateTime, match.duration).join(" - "),
+              Icons.local_offer_outlined:
+              formatCurrency(match.pricePerPersonInCents)
             }),
             if (matchWidget != null)
               Column(children: [
@@ -480,14 +517,16 @@ class SportCenterImageCarouselState extends State<SportCenterImageCarousel> {
   int _current = 0;
   final CarouselController _controller = CarouselController();
 
+  static Widget getPlaceholder() => SkeletonAvatar(
+    style: SkeletonAvatarStyle(
+        width: double.infinity,
+        height: 190,
+        borderRadius: BorderRadius.circular(10.0)),
+  );
+
   @override
   Widget build(BuildContext context) {
-    var placeHolder = SkeletonAvatar(
-      style: SkeletonAvatarStyle(
-          width: double.infinity,
-          height: 190,
-          borderRadius: BorderRadius.circular(10.0)),
-    );
+    var placeHolder = getPlaceholder();
 
     if (widget.match == null) {
       return placeHolder;
@@ -831,20 +870,19 @@ class MapCardImage extends StatelessWidget {
 }
 
 class Stats extends StatelessWidget {
-  final String matchId;
-  final DateTime matchDatetime;
+  final Match match;
 
-  const Stats({Key key, this.matchId, this.matchDatetime}) : super(key: key);
+  const Stats({Key key, this.match}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     var child;
     var stillToRate = context
         .watch<MatchesState>()
-        .stillToVote(matchId, context.read<UserState>().getLoggedUserDetails());
+        .stillToVote(match.documentId, context.read<UserState>().getLoggedUserDetails());
 
     if (stillToRate.isEmpty &&
-        context.read<MatchesState>().getMatch(matchId).status ==
+        context.read<MatchesState>().getMatch(match.documentId).status ==
             MatchStatus.to_rate) {
       child = Container(
           width: double.infinity,
@@ -865,7 +903,7 @@ class Stats extends StatelessWidget {
               SizedBox(height: 8),
               Text(
                 "Statistics for this match will be available\n" +
-                    getFormattedDate(matchDatetime.add(Duration(days: 1)))
+                    getFormattedDate(match.dateTime.add(Duration(days: 1)))
                         .toLowerCase(),
                 style: TextPalette.bodyText,
                 textAlign: TextAlign.center,
@@ -873,7 +911,7 @@ class Stats extends StatelessWidget {
             ],
           ));
     } else {
-      var ratings = context.watch<MatchesState>().getRatings(matchId);
+      var ratings = context.watch<MatchesState>().getRatings(match.documentId);
       var userState = context.watch<UserState>();
 
       var loadSkeleton = (ratings == null || userState == null);
@@ -881,7 +919,6 @@ class Stats extends StatelessWidget {
           ? StatsSkeleton()
           : Builder(
               builder: (context) {
-                var match = context.watch<MatchesState>().getMatch(matchId);
                 var finalRatings = ratings.getFinalRatings(
                     match.getGoingUsersByTime(), match.getPotms());
 
