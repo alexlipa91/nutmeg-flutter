@@ -44,10 +44,12 @@ class BottomBarMatch extends StatelessWidget {
       case MatchStatus.playing:
         break;
       case MatchStatus.to_rate:
-        var stillToVote = context.read<MatchesState>()
-            .stillToVote(matchId, context.read<UserState>().getLoggedUserDetails());
-        if (isGoing && stillToVote.isNotEmpty)
-          bottomBar = RatePlayersBottomBar(matchId: matchId);
+        if (isGoing) {
+          var stillToVote = context.read<MatchesState>()
+              .stillToVote(matchId, context.read<UserState>().getLoggedUserDetails());
+          if (stillToVote.isNotEmpty)
+            bottomBar = RatePlayersBottomBar(matchId: matchId);
+        }
         break;
       case MatchStatus.rated:
         break;

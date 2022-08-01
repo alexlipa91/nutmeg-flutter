@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/model/Match.dart';
+import 'package:nutmeg/state/AppState.dart';
 import 'package:nutmeg/state/LoadOnceState.dart';
 import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/GenericAvailableMatches.dart';
@@ -22,7 +23,7 @@ import 'Login.dart';
 class AvailableMatches extends StatelessWidget {
 
   Future<void> onTap(BuildContext context, String matchId) async {
-    Get.toNamed("/match/" + matchId);
+    context.read<AppState>().setSelectedMatch(matchId);
     MatchesController.refresh(context, matchId);
   }
 

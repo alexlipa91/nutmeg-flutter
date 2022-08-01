@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:provider/provider.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:intl/intl.dart';
 import 'package:map_launcher/map_launcher.dart';
@@ -24,7 +25,6 @@ import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/Avatar.dart';
 import 'package:nutmeg/widgets/Containers.dart';
 import 'package:nutmeg/widgets/PageTemplate.dart';
-import 'package:provider/provider.dart';
 import 'package:readmore/readmore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:skeletons/skeletons.dart';
@@ -38,29 +38,24 @@ import '../widgets/PlayerBottomModal.dart';
 import '../widgets/Skeletons.dart';
 import 'BottomBarMatch.dart';
 
-class ScreenArguments {
-  final String matchId;
-
-  ScreenArguments(this.matchId);
-}
 
 class MatchDetails extends StatefulWidget {
   static const routeName = "/match";
 
+  final String matchId;
+
+  const MatchDetails({Key key, this.matchId}) : super(key: key);
+
   @override
-  State<StatefulWidget> createState() =>
-      MatchDetailsState(Get.parameters["matchId"]);
+  State<StatefulWidget> createState() => MatchDetailsState();
 }
 
 class MatchDetailsState extends State<MatchDetails> {
-  final String matchId;
-
-  MatchDetailsState(this.matchId);
 
   Future<void> refreshState(bool showModal) async {
     List<Future<dynamic>> futures = [
-      context.read<MatchesState>().fetchRatings(matchId),
-      MatchesController.refresh(context, matchId)
+      context.read<MatchesState>().fetchRatings(widget.matchId),
+      MatchesController.refresh(context, widget.matchId)
     ];
 
     var res = await Future.wait(futures);
@@ -75,30 +70,31 @@ class MatchDetailsState extends State<MatchDetails> {
 
     if (showModal) {
       // show rating modal
-      var match = context.read<MatchesState>().getMatch(matchId);
+      var match = context.read<MatchesState>().getMatch(widget.matchId);
+      var loggedUser = context.read<UserState>().getLoggedUserDetails();
 
-      if (match.status == MatchStatus.to_rate) {
+      if (match.status == MatchStatus.to_rate && match.isUserGoing(loggedUser)) {
         var stillToVote = context.read<MatchesState>().stillToVote(
-            matchId, context.read<UserState>().getLoggedUserDetails());
+            widget.matchId, loggedUser);
 
         if (stillToVote.isNotEmpty) {
-          await RatePlayerBottomModal.rateAction(context, matchId);
+          await RatePlayerBottomModal.rateAction(context, widget.matchId);
           setState(() {});
         }
       }
 
       // fixme currently sharedpref gives some error in web
-      if (!kIsWeb) {
+      if (!kIsWeb && context.read<UserState>().isLoggedIn()) {
         // go to potm
         var prefs = await SharedPreferences.getInstance();
         var currentUser = context.read<UserState>().currentUserId;
-        var preferencePath = "potm_screen_showed_" + matchId + "_" + currentUser;
+        var preferencePath = "potm_screen_showed_" + widget.matchId + "_" + currentUser;
         var alreadyShown = prefs.getBool(preferencePath) ?? false;
 
         if (context.read<UserState>().isLoggedIn() &&
             context
                 .read<MatchesState>()
-                .getMatch(matchId)
+                .getMatch(widget.matchId)
                 .getPotms()
                 .contains(currentUser) &&
             !alreadyShown) {
@@ -113,7 +109,7 @@ class MatchDetailsState extends State<MatchDetails> {
   Widget build(BuildContext context) {
     var userState = context.watch<UserState>();
     var matchesState = context.watch<MatchesState>();
-    var match = matchesState.getMatch(matchId);
+    var match = matchesState.getMatch(widget.matchId);
 
     var status = match?.status;
 
@@ -122,7 +118,7 @@ class MatchDetailsState extends State<MatchDetails> {
         match != null &&
         match.organizerId == userState.getLoggedUserDetails().documentId;
 
-    var bottomBar = BottomBarMatch.getBottomBar(context, matchId, status);
+    var bottomBar = BottomBarMatch.getBottomBar(context, widget.matchId, status);
 
     // add padding individually since because of shadow clipping some components need margin
     var widgets = [
@@ -135,21 +131,21 @@ class MatchDetailsState extends State<MatchDetails> {
         InfoContainer(
             backgroundColor: Palette.accent,
             child: SelectableText(
-              "Test match: " + matchId,
+              "Test match: " + widget.matchId,
               style: TextPalette.getBodyText(Palette.black),
             )),
       // info box
-      MatchInfo(matchId),
+      MatchInfo(widget.matchId),
       // stats
       if (status == MatchStatus.rated || status == MatchStatus.to_rate)
-        Stats(matchId: matchId, matchDatetime: match.dateTime),
+        Stats(matchId: widget.matchId, matchDatetime: match.dateTime),
       // horizontal players list or teams
       if (match != null)
         match.hasTeams()
-            ? TeamsWidget(matchId: matchId)
+            ? TeamsWidget(matchId: widget.matchId)
             : PlayerList(match: match,
             withJoinButton: bottomBar is JoinMatchBottomBar && !match.isFull()),
-      if (match != null) SportCenterDetails(matchId: matchId),
+      if (match != null) SportCenterDetails(matchId: widget.matchId),
       if (match != null)
         RuleCard(
             "Payment Policy",
@@ -200,7 +196,7 @@ class MatchDetailsState extends State<MatchDetails> {
             Align(
                 alignment: Alignment.centerRight,
                 child: buttons.ShareButton(() async {
-                  await DynamicLinks.shareMatchFunction(matchId);
+                  await DynamicLinks.shareMatchFunction(widget.matchId);
                 }, Palette.black, 25.0)),
         ],
       ),
@@ -836,9 +832,16 @@ class Stats extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var child;
-    var stillToRate = context
-        .watch<MatchesState>()
-        .stillToVote(matchId, context.read<UserState>().getLoggedUserDetails());
+    var loggedUser = context.watch<UserState>().getLoggedUserDetails();
+
+    var stillToRate;
+    if (!context.watch<MatchesState>().getMatch(matchId).isUserGoing(loggedUser)) {
+      stillToRate = List<String>.empty();
+    } else {
+      stillToRate = context
+          .watch<MatchesState>()
+          .stillToVote(matchId, loggedUser);
+    }
 
     if (stillToRate.isEmpty &&
         context.read<MatchesState>().getMatch(matchId).status ==

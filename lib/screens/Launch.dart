@@ -17,11 +17,13 @@ import 'package:nutmeg/screens/MatchDetails.dart';
 import 'package:nutmeg/screens/PlayerOfTheMatch.dart';
 import 'package:nutmeg/screens/UserPage.dart';
 import 'package:nutmeg/screens/admin/AddOrEditMatch.dart';
+import 'package:nutmeg/state/AppState.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:provider/provider.dart';
 import 'package:skeletons/skeletons.dart';
 
 import '../Exceptions.dart';
+import '../router/AppRouterDelegate.dart';
 import '../state/LoadOnceState.dart';
 import '../state/MatchesState.dart';
 import '../state/UserState.dart';
@@ -46,6 +48,7 @@ void main() {
         ChangeNotifierProvider(create: (context) => UserState()),
         ChangeNotifierProvider(create: (context) => MatchesState()),
         ChangeNotifierProvider(create: (context) => LoadOnceState()),
+        ChangeNotifierProvider(create: (context) => AppState()),
       ],
       child: SkeletonTheme(
         shimmerGradient: LinearGradient(
@@ -64,59 +67,100 @@ void main() {
           builder: (context) => GetMaterialApp(
             navigatorKey: navigatorKey,
             debugShowCheckedModeBanner: false,
-            home: new Container(
-                decoration: new BoxDecoration(color: Colors.grey.shade400),
-                child: Center(child: new LaunchWidget())),
+            // todo remove getmaterialapp and replace with it
+            home: MaterialApp.router(
+              routeInformationParser: AppRouteInformationParser(),
+              routerDelegate: AppRouterDelegate(
+                  context.watch<AppState>()
+              ),
+              debugShowCheckedModeBanner: false,
+              backButtonDispatcher: RootBackButtonDispatcher(),
+              theme: ThemeData(
+                colorScheme: ColorScheme.light().copyWith(
+                  primary: Palette.primary,
+                ),
+              ),
+            ),
+            // home: Navigator(
+            //   pages: [
+            //     if (!context.watch<AppState>().loadingDone)
+            //       MaterialPage(child: LaunchWidget())
+            //     else
+            //       MaterialPage(child: AvailableMatches()),
+            //     if (context.watch<AppState>().selectedMatch != null)
+            //       MaterialPage(
+            //           key: ValueKey("MatchDetails"),
+            //           name: "MatchDetails",
+            //           child: MatchDetails(matchId: context.read<AppState>().selectedMatch)
+            //       )
+            //   ],
+            //   onPopPage: (route, result) {
+            //     print("popping");
+            //     print(route.settings.name);
+            //
+            //     if (!route.didPop(result)) {
+            //       return false;
+            //     }
+            //
+            //     if (route.settings.name == "MatchDetails") {
+            //       context.read<AppState>().setSelectedMatch(null);
+            //     }
+            //     return true;
+            //   },
+            // ),
+            // new Container(
+            //     decoration: new BoxDecoration(color: Colors.grey.shade400),
+            //     child: Center(child: new LaunchWidget())),
             theme: ThemeData(
               colorScheme: ColorScheme.light().copyWith(
                 primary: Palette.primary,
               ),
             ),
-            unknownRoute: GetPage(
-              name: '/notFound',
-              page: () => Scaffold(
-                backgroundColor: Palette.primary,
-                body: Center(child: Text("Not Found",
-                  style: TextPalette.getBodyText(Palette.grey_light),)),
-              )),
-            getPages: [
-              GetPage(
-                  name: '/home',
-                  page: () => AvailableMatches(),
-                  transition: Transition.native),
-              GetPage(
-                  name: '/match/:matchId',
-                  transition: Transition.native,
-                  page: () => MatchDetails()),
-              GetPage(
-                  name: '/login/enterDetails',
-                  page: () => EnterDetails(),
-                  transition: Transition.native),
-              GetPage(
-                  name: '/user',
-                  page: () => UserPage(),
-                  transition: Transition.native),
-              GetPage(
-                  name: '/editMatch/:matchId',
-                  page: () => AdminMatchDetails(),
-                  transition: Transition.native),
-              GetPage(
-                  name: '/adminHome',
-                  page: () => AdminAvailableMatches(),
-                  transition: Transition.native),
-              GetPage(
-                  name: '/potm/:userId',
-                  page: () => PlayerOfTheMatch(),
-                  transition: Transition.native,
-                  transitionDuration: Duration.zero),
-              GetPage(
-                  name: '/createMatch',
-                  page: () => CreateMatch(),
-                  transition: Transition.native),
-            ],
+            // unknownRoute: GetPage(
+            //   name: '/notFound',
+            //   page: () => Scaffold(
+            //     backgroundColor: Palette.primary,
+            //     body: Center(child: Text("Not Found",
+            //       style: TextPalette.getBodyText(Palette.grey_light),)),
+            //   )),
+            // getPages: [
+            //   GetPage(
+            //       name: '/home',
+            //       page: () => AvailableMatches(),
+            //       transition: Transition.native),
+            //   GetPage(
+            //       name: '/match/:matchId',
+            //       transition: Transition.native,
+            //       page: () => MatchDetails()),
+            //   GetPage(
+            //       name: '/login/enterDetails',
+            //       page: () => EnterDetails(),
+            //       transition: Transition.native),
+            //   GetPage(
+            //       name: '/user',
+            //       page: () => UserPage(),
+            //       transition: Transition.native),
+            //   GetPage(
+            //       name: '/editMatch/:matchId',
+            //       page: () => AdminMatchDetails(),
+            //       transition: Transition.native),
+            //   GetPage(
+            //       name: '/adminHome',
+            //       page: () => AdminAvailableMatches(),
+            //       transition: Transition.native),
+            //   GetPage(
+            //       name: '/potm/:userId',
+            //       page: () => PlayerOfTheMatch(),
+            //       transition: Transition.native,
+            //       transitionDuration: Duration.zero),
+            //   GetPage(
+            //       name: '/createMatch',
+            //       page: () => CreateMatch(),
+            //       transition: Transition.native),
+            // ],
           ),
           maximumSize: Size(475.0, 812.0), // Maximum size
-          enabled: kIsWeb, // default is enable, when disable content is full size
+          enabled: kIsWeb,
           backgroundColor: Palette.grey_light,
         ),
       ),

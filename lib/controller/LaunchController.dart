@@ -11,6 +11,7 @@ import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 import 'package:nutmeg/model/UserDetails.dart';
+import 'package:nutmeg/state/AppState.dart';
 import 'package:provider/provider.dart';
 import 'package:tuple/tuple.dart';
 import 'package:version/version.dart';
@@ -226,7 +227,7 @@ class LaunchController {
       handleMessageFromNotification(context, initialMessage);
     } else {
       print("navigating with normal startup");
-      Get.offAndToNamed("/home");
+      context.read<AppState>().setLoadingDone();
     }
 
     setupNotifications(context);
