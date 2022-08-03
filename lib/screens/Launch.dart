@@ -7,33 +7,26 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_web_frame/flutter_web_frame.dart';
-import 'package:get/get.dart';
 import 'package:logger/logger.dart';
 import 'package:nutmeg/controller/LaunchController.dart';
-import 'package:nutmeg/screens/AvailableMatches.dart';
-import 'package:nutmeg/screens/CreateMatch.dart';
-import 'package:nutmeg/screens/EnterDetails.dart';
-import 'package:nutmeg/screens/MatchDetails.dart';
-import 'package:nutmeg/screens/PlayerOfTheMatch.dart';
-import 'package:nutmeg/screens/UserPage.dart';
-import 'package:nutmeg/screens/admin/AddOrEditMatch.dart';
 import 'package:nutmeg/state/AppState.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:provider/provider.dart';
 import 'package:skeletons/skeletons.dart';
 
 import '../Exceptions.dart';
-import '../router/AppRouterDelegate.dart';
+import '../router/AppRouter.dart';
+import '../router/url_strategy.dart';
 import '../state/LoadOnceState.dart';
 import '../state/MatchesState.dart';
 import '../state/UserState.dart';
-import 'admin/AvailableMatchesAdmin.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
 void main() {
   Logger.level = Level.error;
   WidgetsFlutterBinding.ensureInitialized(); //imp line need to be added first
+  usePathUrlStrategy();
 
   if (!kIsWeb) {
     FlutterError.onError = (FlutterErrorDetails details) async {
@@ -64,11 +57,7 @@ void main() {
           ],
         ),
         child: FlutterWebFrame(
-          builder: (context) => GetMaterialApp(
-            navigatorKey: navigatorKey,
-            debugShowCheckedModeBanner: false,
-            // todo remove getmaterialapp and replace with it
-            home: MaterialApp.router(
+          builder: (context) => MaterialApp.router(
               routeInformationParser: AppRouteInformationParser(),
               routerDelegate: AppRouterDelegate(
                   context.watch<AppState>()
@@ -111,11 +100,7 @@ void main() {
             // new Container(
             //     decoration: new BoxDecoration(color: Colors.grey.shade400),
             //     child: Center(child: new LaunchWidget())),
-            theme: ThemeData(
-              colorScheme: ColorScheme.light().copyWith(
-                primary: Palette.primary,
-              ),
-            ),
+
             // unknownRoute: GetPage(
             //   name: '/notFound',
             //   page: () => Scaffold(
@@ -158,7 +143,6 @@ void main() {
             //       page: () => CreateMatch(),
             //       transition: Transition.native),
             // ],
-          ),
           maximumSize: Size(475.0, 812.0), // Maximum size
           enabled: kIsWeb,
           backgroundColor: Palette.grey_light,

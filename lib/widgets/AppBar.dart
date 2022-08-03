@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
-import 'package:nutmeg/screens/Login.dart';
-import 'package:nutmeg/utils/InfoModals.dart';
+import 'package:nutmeg/router/AppRouter.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:provider/provider.dart';
 
+import '../state/AppState.dart';
 import '../state/UserState.dart';
 import 'Avatar.dart';
 
@@ -69,13 +69,7 @@ class MainAppBar extends NutmegAppBar {
             else
               InkWell(
                 onTap: () async {
-                  var communication = await Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => Login()));
-                  if (communication != null) {
-                    GenericInfoModal(
-                            title: "Welcome", description: communication.text)
-                        .show(context);
-                  }
+                  context.read<AppState>().setPage(NutmegPage.LOGIN);
                 },
                 child: Container(
                   height: 50,

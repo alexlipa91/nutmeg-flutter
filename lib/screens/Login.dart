@@ -35,7 +35,7 @@ class Login extends StatelessWidget {
                 padding: EdgeInsets.only(right: 20),
                 child: InkWell(
                   child: Icon(Icons.close),
-                  onTap: () => Get.back(),
+                  onTap: () => Navigator.of(context).pop(),
                 )
             )
           ],

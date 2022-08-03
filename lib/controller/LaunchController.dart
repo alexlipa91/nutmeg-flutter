@@ -35,17 +35,13 @@ class LaunchController {
 
   static Future<void> handleLink(Uri deepLink, [bool start = false]) async {
     print("handling dynamic link " + deepLink.toString());
+    var context = navigatorKey.currentContext;
 
     if (deepLink.path == "/payment") {
       var outcome = deepLink.queryParameters["outcome"];
       var matchId = deepLink.queryParameters["match_id"];
-      var context = navigatorKey.currentContext;
 
-      var targetRoute = "/match/" + matchId;
-      if (Get.currentRoute != targetRoute)
-        Get.toNamed(targetRoute);
-      else
-        Get.back();
+      context.read<AppState>().setSelectedMatch(matchId);
 
       if (outcome == "success") {
         PaymentDetailsDescription.communicateSuccessToUser(context, matchId);
@@ -57,12 +53,9 @@ class LaunchController {
       return;
     }
     if (deepLink.path == "/match") {
-      await goToMatchPage(deepLink.queryParameters["id"]);
+      context.read<AppState>().setSelectedMatch(deepLink.queryParameters["id"]);
       return;
     }
-    // if we don't know where to go and it's startup, let's go home
-    if (start)
-      Get.offAndToNamed("/home");
   }
 
   static void handleMessageFromNotification(
@@ -70,14 +63,7 @@ class LaunchController {
     print('message ' + message.messageId + ' opened from notification with data '
         + message.data.toString());
 
-    if (message.data.containsKey("event")) {
-      var event = message.data["event"];
-      if (event == "potm") {
-          goToMatchPage(message.data["match_id"]);
-      }
-    } else {
-      await goToMatchPage(message.data["match_id"]);
-    }
+    context.read<AppState>().setSelectedMatch(message.data["match_id"]);
   }
 
   static void setupNotifications(BuildContext context) {
@@ -225,14 +211,14 @@ class LaunchController {
       print("navigating with initial message:" + initialMessage.toString());
       trace.putAttribute("coming_from_notification", true.toString());
       handleMessageFromNotification(context, initialMessage);
-    } else {
-      print("navigating with normal startup");
-      context.read<AppState>().setLoadingDone();
     }
 
     setupNotifications(context);
 
     trace.stop();
+
+    print("load data method is done");
+    context.read<AppState>().setLoadingDone();
   }
 
   static Future<void> loadOnceData(BuildContext context) async {

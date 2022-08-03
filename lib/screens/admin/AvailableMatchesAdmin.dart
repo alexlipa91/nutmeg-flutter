@@ -23,7 +23,6 @@ class AdminAvailableMatches extends StatelessWidget {
     await MatchesController.refresh(context, matchId);
   }
 
-  //
   Widget getMatchWidgets(BuildContext context, bool future) {
     var matchesState = context.watch<MatchesState>();
 

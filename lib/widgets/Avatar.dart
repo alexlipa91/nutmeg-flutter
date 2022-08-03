@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:nutmeg/router/AppRouter.dart';
+import 'package:nutmeg/state/AppState.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:provider/provider.dart';
 import 'package:skeletons/skeletons.dart';
@@ -81,7 +81,8 @@ class LoggedUserAvatarWithRedirectUserPage extends StatelessWidget {
       splashColor: Colors.transparent,
       highlightColor: Colors.transparent,
       onTap: () async {
-        Get.toNamed("/user");
+        print("going to user");
+        context.read<AppState>().setPage(NutmegPage.USER);
       },
       child: Container(
         height: 40,
