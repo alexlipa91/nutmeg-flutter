@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/state/MatchesState.dart';
@@ -40,7 +38,7 @@ class RatePlayerBottomModal extends StatelessWidget {
 
     toRate.map((e) => UserController.getUserDetails(context, e));
 
-    await ModalBottomSheet.showNutmegModalBottomSheet(
+    var completed = await ModalBottomSheet.showNutmegModalBottomSheet(
         context,
         MultiProvider(
           providers: [
@@ -49,7 +47,8 @@ class RatePlayerBottomModal extends StatelessWidget {
           ],
           child: RatePlayerBottomModal(matchId),
         ));
-    await FeedbackBottomModal.feedbackAction(context);
+    if(completed != null && (completed as bool) == true)
+      await FeedbackBottomModal.feedbackAction(context);
     // don't refresh the status here because the last rating might have not yet propagated; instead leave RatePlayerBottomModal modify it if necessary
   }
 
@@ -121,11 +120,7 @@ class RatePlayerBottomModal extends StatelessWidget {
         state.getCurrentScore());
 
     if (state.isLast()) {
-      if (state.current + 1 == state.toRate.length) {
-        Get.back();
-      } else {
-        Get.back();
-      }
+      Navigator.of(context).pop(true);
     } else {
       state.next();
     }

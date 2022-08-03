@@ -877,13 +877,9 @@ class Stats extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var child;
-    var stillToRate = context
-        .watch<MatchesState>()
-        .stillToVote(match.documentId, context.read<UserState>().getLoggedUserDetails());
 
-    if (stillToRate.isEmpty &&
-        context.read<MatchesState>().getMatch(match.documentId).status ==
-            MatchStatus.to_rate) {
+    if (context.read<MatchesState>().getMatch(match.documentId).status ==
+        MatchStatus.to_rate) {
       child = Container(
           width: double.infinity,
           child: Column(
