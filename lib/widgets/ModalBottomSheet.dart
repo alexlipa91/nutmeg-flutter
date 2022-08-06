@@ -4,14 +4,14 @@ import 'package:nutmeg/utils/UiUtils.dart';
 
 class ModalBottomSheet {
 
-  static Future showNutmegModalBottomSheet(BuildContext context, Widget child) {
-    return showModalBottomSheet(
+  static Future<T?> showNutmegModalBottomSheet<T>(BuildContext? context, Widget child) {
+    return showModalBottomSheet<T?>(
       isScrollControlled: true,
       backgroundColor: Palette.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
       ),
-      context: context,
+      context: context!,
       builder: (BuildContext context) => SafeArea(
           minimum: EdgeInsets.only(bottom: 16),
           child: SingleChildScrollView(child: Padding(

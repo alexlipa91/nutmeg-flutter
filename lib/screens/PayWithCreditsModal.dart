@@ -14,7 +14,7 @@ class PayWithCreditsButton extends StatelessWidget {
   final String matchId;
   final PaymentRecap paymentRecap;
 
-  const PayWithCreditsButton({Key key, this.matchId, this.paymentRecap}) : super(key: key);
+  const PayWithCreditsButton({Key? key, required this.matchId, required this.paymentRecap}) : super(key: key);
 
   @override
   Widget build(BuildContext context) =>

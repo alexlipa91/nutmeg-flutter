@@ -1,15 +1,17 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:nutmeg/Exceptions.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/model/Match.dart';
+import 'package:nutmeg/router/AppRouter.dart';
+import 'package:nutmeg/router/AutoRouter.gr.dart';
 import 'package:nutmeg/screens/BottomBarMatch.dart';
+import 'package:nutmeg/state/AppState.dart';
 import 'package:nutmeg/state/UserState.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
@@ -32,7 +34,7 @@ class CreateMatch extends StatefulWidget {
 class CreateMatchState extends State<CreateMatch> {
   static const String NO_REPEAT = "Does not repeat";
 
-  static InputDecoration getTextFormDecoration(String label,
+  static InputDecoration getTextFormDecoration(String? label,
       {bool isDropdown = false, focusColor = null, prefixText = null}) {
     var border = UnderlineInputBorder(
       borderSide: BorderSide.none,
@@ -58,7 +60,7 @@ class CreateMatchState extends State<CreateMatch> {
     );
   }
 
-  String sportCenterId;
+  late String sportCenterId;
 
   final _formKey = GlobalKey<FormState>();
 
@@ -85,9 +87,9 @@ class CreateMatchState extends State<CreateMatch> {
   final dateFormat = DateFormat("dd-MM-yyyy");
   final regexPrice = new RegExp("\\d+(\\.\\d{1,2})?");
 
-  FocusNode sportCenterfocusNode;
-  FocusNode datefocusNode;
-  FocusNode startTimefocusNode;
+  late FocusNode sportCenterfocusNode;
+  late FocusNode datefocusNode;
+  late FocusNode startTimefocusNode;
 
   Future<void> refreshState() async {
     await context.read<LoadOnceState>().fetchSportCenters();
@@ -135,7 +137,7 @@ class CreateMatchState extends State<CreateMatch> {
                         readOnly: true,
                         decoration: getTextFormDecoration("Date"),
                         validator: (v) {
-                          if (v.isEmpty) return "Required";
+                          if (v == null || v.isEmpty) return "Required";
                           return null;
                         },
                         onTap: () async {
@@ -162,25 +164,25 @@ class CreateMatchState extends State<CreateMatch> {
                   controller: startTimeEditingController,
                   focusNode: startTimefocusNode,
                   validator: (v) {
-                    if (v.isEmpty) return "Required";
+                    if (v == null || v.isEmpty) return "Required";
                     return null;
                   },
                   readOnly: true,
                   decoration: getTextFormDecoration("Start time"),
                   onTap: () async {
                     var d = await showCustomTimePicker(
-                      builder: (BuildContext context, Widget child) {
+                      builder: (BuildContext context, Widget? child) {
                         return MediaQuery(
                           data: MediaQuery.of(context)
                               .copyWith(alwaysUse24HourFormat: false),
-                          child: child,
+                          child: child!,
                         );
                       },
                       context: context,
                       // It is a must if you provide selectableTimePredicate
                       onFailValidation: (context) => print(""),
                       initialTime: TimeOfDay(hour: 18, minute: 0),
-                      selectableTimePredicate: (time) => time.minute % 5 == 0,
+                      selectableTimePredicate: (time) => (time?.minute)! % 5 == 0,
                     );
                     if (d != null) {
                       startTimeEditingController.text = getFormattedTime(d);
@@ -196,7 +198,7 @@ class CreateMatchState extends State<CreateMatch> {
                         enabled: startTimeEditingController.text.isNotEmpty,
                         controller: endTimeEditingController,
                         validator: (v) {
-                          if (v.isEmpty) return "Required";
+                          if (v == null || v.isEmpty) return "Required";
                           return null;
                         },
                         readOnly: true,
@@ -210,11 +212,11 @@ class CreateMatchState extends State<CreateMatch> {
                               toTimeOfTheDay(startTimeEditingController.text);
 
                           var d = await showCustomTimePicker(
-                              builder: (BuildContext context, Widget child) {
+                              builder: (BuildContext context, Widget? child) {
                                 return MediaQuery(
                                   data: MediaQuery.of(context)
                                       .copyWith(alwaysUse24HourFormat: false),
-                                  child: child,
+                                  child: child!,
                                 );
                               },
                               context: context,
@@ -290,7 +292,7 @@ class CreateMatchState extends State<CreateMatch> {
                       context.watch<LoadOnceState>().getSportCenters() != null,
                   focusNode: sportCenterfocusNode,
                   validator: (v) {
-                    if (v.isEmpty) return "Required";
+                    if (v == null || v.isEmpty) return "Required";
                     return null;
                   },
                   readOnly: true,
@@ -395,7 +397,7 @@ class CreateMatchState extends State<CreateMatch> {
               Expanded(
                   child: TextFormField(
                       validator: (v) {
-                        if (v.isEmpty) return "Required";
+                        if (v == null || v.isEmpty) return "Required";
                         var f = regexPrice.firstMatch(v);
                         if (f == null || f.end - f.start != v.length)
                           return "Invalid amount";
@@ -480,7 +482,7 @@ class CreateMatchState extends State<CreateMatch> {
                   onChanged: (v) {
                     setState(() {
                       print("changed");
-                      withAutomaticCancellation = v;
+                      withAutomaticCancellation = v!;
                     });
                   }),
               Flexible(
@@ -498,13 +500,13 @@ class CreateMatchState extends State<CreateMatch> {
                   Expanded(
                     child: TextFormField(
                         validator: (v) {
-                          var durationSize = int.tryParse(v);
+                          var durationSize = int.tryParse(v!);
                           if (durationSize == null)
                             return "Invalid duration";
                           Duration duration = Duration(hours: durationSize);
 
                           var d = getDateTime();
-                          if (d != null && getDateTime().subtract(duration).isBefore(DateTime.now())) {
+                          if (d != null && getDateTime()!.subtract(duration).isBefore(DateTime.now())) {
                             return "The interval is in the past";
                           }
 
@@ -540,7 +542,7 @@ class CreateMatchState extends State<CreateMatch> {
             )
         ]),
       ),
-      if (context.read<UserState>().getLoggedUserDetails().isAdmin)
+      if (context.read<UserState>().getLoggedUserDetails()!.isAdmin!)
         Section(
             title: "Admin",
             titleType: "big",
@@ -554,7 +556,7 @@ class CreateMatchState extends State<CreateMatch> {
                       activeColor: Palette.primary,
                       onChanged: (v) {
                         setState(() {
-                          isTest = v;
+                          isTest = v!;
                         });
                       })
                 ],
@@ -604,7 +606,8 @@ class CreateMatchState extends State<CreateMatch> {
                     (BuildContext context) async {
                   context.read<GenericButtonWithLoaderState>().change(true);
 
-                  if (_formKey.currentState.validate()) {
+                  bool? v = _formKey.currentState?.validate();
+                  if (v != null && v) {
                     try {
                       var etod = toTimeOfTheDay(endTimeEditingController.text);
                       var day = dateFormat.parse(dateEditingController.text);
@@ -612,7 +615,7 @@ class CreateMatchState extends State<CreateMatch> {
                       var endTime = DateTime(day.year, day.month, day.day,
                               etod.hour, etod.minute)
                           .toUtc();
-                      var duration = endTime.difference(dateTime);
+                      var duration = endTime.difference(dateTime!);
                       var cancelBefore = withAutomaticCancellation ?
                           Duration(hours: int.parse(cancelTimeEditingController.text))
                           : null;
@@ -632,7 +635,7 @@ class CreateMatchState extends State<CreateMatch> {
                             numberOfPeopleRangeValues.start.toInt(),
                             context
                                 .read<UserState>()
-                                .getLoggedUserDetails()
+                                .getLoggedUserDetails()!
                                 .documentId,
                             cancelBefore
                         );
@@ -646,7 +649,7 @@ class CreateMatchState extends State<CreateMatch> {
 
                       var ids = await Future.wait(idsFuture);
 
-                      Get.offNamed("/match/" + ids.first);
+                      context.router.replace(MatchDetailsRoute(matchId: ids.first));
                     } on Exception catch (e, s) {
                       print(e);
                       print(s);
@@ -667,7 +670,7 @@ class CreateMatchState extends State<CreateMatch> {
     );
   }
 
-  DateTime getDateTime() {
+  DateTime? getDateTime() {
     if (dateEditingController.text.isEmpty ||
         startTimeEditingController.text.isEmpty) return null;
     var day = dateFormat.parse(dateEditingController.text);

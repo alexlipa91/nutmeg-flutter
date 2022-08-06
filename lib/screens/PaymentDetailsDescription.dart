@@ -10,7 +10,7 @@ import '../state/LoadOnceState.dart';
 
 class PaymentDetailsDescription {
   static Future<void> communicateSuccessToUser(
-      BuildContext context, String matchId) async {
+      BuildContext? context, String? matchId) async {
     await ModalBottomSheet.showNutmegModalBottomSheet(
         context,
         Container(
@@ -23,7 +23,7 @@ class PaymentDetailsDescription {
                 radius: 100,
                 backgroundColor: Palette.grey_lighter,
                 backgroundImage: CachedNetworkImageProvider(
-                    context.read<LoadOnceState>().getRandomGif()),
+                    (context?.read<LoadOnceState>().getRandomGif())!),
               ),
               Padding(
                   padding: EdgeInsets.only(top: 30),
@@ -35,7 +35,7 @@ class PaymentDetailsDescription {
               if (!DeviceInfo().name.contains("ipad"))
                 Padding(
                     padding: EdgeInsets.only(top: 20),
-                    child: ShareButtonWithText(matchId, Palette.primary))
+                    child: ShareButtonWithText(matchId!, Palette.primary))
             ],
           ),
         )));

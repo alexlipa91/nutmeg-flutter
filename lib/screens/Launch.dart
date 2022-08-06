@@ -1,6 +1,6 @@
-// @dart=2.9
 import 'dart:async';
 
+import 'package:auto_route/auto_route.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/foundation.dart';
@@ -9,6 +9,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_web_frame/flutter_web_frame.dart';
 import 'package:logger/logger.dart';
 import 'package:nutmeg/controller/LaunchController.dart';
+import 'package:nutmeg/router/AutoRouter.dart';
+import 'package:nutmeg/router/AutoRouter.gr.dart';
 import 'package:nutmeg/state/AppState.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:provider/provider.dart';
@@ -35,6 +37,11 @@ void main() {
     };
   }
 
+  AutoRouterAppRouter appRouter = AutoRouterAppRouter(
+    loadedGuard: LoadedGuard(),
+    loggedGuard: LoggedGuard()
+  );
+
   runZonedGuarded(() {
     runApp(MultiProvider(
       providers: [
@@ -58,10 +65,33 @@ void main() {
         ),
         child: FlutterWebFrame(
           builder: (context) => MaterialApp.router(
-              routeInformationParser: AppRouteInformationParser(),
-              routerDelegate: AppRouterDelegate(
-                  context.watch<AppState>()
-              ),
+              key: navigatorKey,
+              routeInformationParser: appRouter.defaultRouteParser(),
+              routerDelegate: appRouter.delegate(),
+              // AutoRouterDelegate.declarative(
+              //   appRouter,
+              //   routes: (handler) {
+              //     var appState = context.watch<AppState>();
+              //     print("pending routes ${handler.initialPendingRoutes}, appState $appState");
+              //
+              //     var stack;
+              //     if (!appState.loadingDone)
+              //       stack = [LaunchWidgetRoute()];
+              //     else
+              //       stack = List<PageRouteInfo<dynamic>>.of([
+              //           AvailableMatchesRoute(),
+              //           if (appState.selectedMatch != null)
+              //             MatchDetailsRoute(matchId: appState.selectedMatch)
+              //         ]);
+              //
+              //     print("stack is $stack");
+              //     return stack;
+              //   },
+              //   onPopRoute: (route, result) {
+              //       print("popping $route");
+              //   },
+              //
+              // ),
               debugShowCheckedModeBanner: false,
               backButtonDispatcher: RootBackButtonDispatcher(),
               theme: ThemeData(
@@ -160,6 +190,11 @@ void main() {
 }
 
 class LaunchWidget extends StatefulWidget {
+
+  final Function(bool loaded) onLoadedCallback;
+
+  const LaunchWidget({Key? key, required this.onLoadedCallback}) : super(key: key);
+
   @override
   State<StatefulWidget> createState() => LaunchWidgetState();
 }
@@ -168,19 +203,23 @@ class LaunchWidgetState extends State<LaunchWidget> {
   @override
   void initState() {
     super.initState();
-    LaunchController.loadData(context)
+    LaunchController.loadData(context, widget.onLoadedCallback)
         .catchError((e, s) => ErrorHandlingUtils.handleError(e, s, context));
   }
 
   void initDynamicLinks() {
-    FirebaseDynamicLinks.instance.onLink(
-        onSuccess: (PendingDynamicLinkData dynamicLink) async {
-      final Uri deepLink = dynamicLink?.link;
+    Future<Null> Function(PendingDynamicLinkData? dynamicLink) onSuccess =
+        (PendingDynamicLinkData? dynamicLink) async {
+      final Uri? deepLink = dynamicLink?.link;
 
       if (deepLink != null) {
         LaunchController.handleLink(deepLink);
       }
-    }, onError: (OnLinkErrorException e) async {
+    };
+
+    FirebaseDynamicLinks.instance.onLink(
+        onSuccess: onSuccess,
+        onError: (OnLinkErrorException e) async {
       print(e.message);
     });
   }

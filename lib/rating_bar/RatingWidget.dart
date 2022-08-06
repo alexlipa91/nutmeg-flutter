@@ -22,7 +22,7 @@ class RatingBar extends StatelessWidget {
         color: Palette.accent,
         defaultIconData: Icons.star,
         borderColor: Palette.grey_light,
-        spacing: 8.0
+        spacing: 8.0, onRated: (double rating) {  },
     );
   }
 
@@ -48,9 +48,9 @@ class SmoothStarRating extends StatefulWidget {
     this.spacing = 0.0,
     this.rating = 0.0,
     this.defaultIconData = Icons.star_border,
-    this.onRated,
-    this.color,
-    this.borderColor,
+    required this.onRated,
+    required this.color,
+    required this.borderColor,
     this.size = 25,
     this.filledIconData = Icons.star,
     this.halfFilledIconData = Icons.star_half,
@@ -67,7 +67,7 @@ class _SmoothStarRatingState extends State<SmoothStarRating> {
 
   //tracks for user tapping on this widget
   bool isWidgetTapped = false;
-  Timer debounceTimer;
+  late Timer? debounceTimer;
 
   @override
   void initState() {
@@ -199,7 +199,7 @@ class _SmoothStarRatingState extends State<SmoothStarRating> {
     )
         : GestureDetector(
       onTapDown: (detail) {
-        RenderBox box = context.findRenderObject();
+        RenderBox box = context.findRenderObject() as RenderBox;
         var _pos = box.globalToLocal(detail.globalPosition);
         var i = ((_pos.dx - widget.spacing) / widget.size);
         // var newRating =

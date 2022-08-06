@@ -19,14 +19,15 @@ class VotesEntry {
 class MatchRatings {
   String documentId;
 
-  Map<String, Map<String, int>> ratingsReceived;
+  late Map<String, Map<String, int>> ratingsReceived;
 
-  MatchRatings.fromJson(Map<String, dynamic> jsonInput, String documentId) {
+  MatchRatings.fromJson(Map<String, dynamic> jsonInput, String documentId):
+    this.documentId = documentId {
     this.ratingsReceived = Map();
     jsonInput.forEach((receiver, value) {
       this.ratingsReceived[receiver] = Map<String, int>();
       (value as Map).forEach((user, vote) {
-        this.ratingsReceived[receiver][user] = vote;
+        this.ratingsReceived[receiver]![user] = vote;
       });
     });
 
@@ -77,7 +78,7 @@ class MatchRatings {
     if (!ratingsReceived.containsKey(receives)) {
       ratingsReceived[receives] = Map();
     }
-    ratingsReceived[receives][gives] = score;
+    ratingsReceived[receives]![gives] = score;
   }
 
   int getNumberOfSkips(String user) =>
@@ -88,7 +89,7 @@ class MatchRatings {
 
   int getNumberOfGivenVotes(String user) =>
       ratingsReceived.values.where((rec) =>
-      rec.containsKey(user) && rec[user] > 0).length;
+      rec.containsKey(user) && rec[user]! > 0).length;
 
   int getNumberOfGivenSkips(String user) =>
       ratingsReceived.values.where((rec) =>

@@ -8,7 +8,8 @@ class ModalPaymentDescriptionArea extends StatelessWidget {
   final List<Widget> rows;
   final Widget finalRow;
 
-  const ModalPaymentDescriptionArea({Key key, this.rows, this.finalRow})
+  const ModalPaymentDescriptionArea({Key? key, required this.rows,
+    required this.finalRow})
       : super(key: key);
 
   @override

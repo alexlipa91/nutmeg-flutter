@@ -11,7 +11,7 @@ class SportCentersFirestore {
         .withConverter<SportCenter>(
           fromFirestore: (snapshot, _) =>
               SportCenter.fromJson(snapshot.data(), snapshot.id),
-          // toFirestore: (sub, _) => _,
+          toFirestore: (sub, _) => {},
         )
         .get();
 

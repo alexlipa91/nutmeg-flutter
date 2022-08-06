@@ -14,29 +14,29 @@ enum MatchStatus {
 }
 
 class Match {
-  String documentId;
-  MatchStatus status;
+  late String documentId;
+  MatchStatus? status;
 
   DateTime dateTime;
 
   String sportCenterId;
   Duration duration;
-  String sportCenterSubLocation;
+  String? sportCenterSubLocation;
 
   int pricePerPersonInCents;
   int minPlayers;
   int maxPlayers;
-  DateTime cancelledAt;
-  DateTime scoresComputedAt;
+  DateTime? cancelledAt;
+  DateTime? scoresComputedAt;
 
-  Map<String, DateTime> going;
+  Map<String, DateTime>? going;
 
-  Map<String, List<String>> teams;
+  late Map<String, List<String>> teams;
 
-  Map<String, double> _manOfTheMatch;
+  Map<String, double>? _manOfTheMatch;
 
-  String organizerId;
-  Duration cancelBefore;
+  String? organizerId;
+  Duration? cancelBefore;
 
   bool isTest;
 
@@ -44,25 +44,25 @@ class Match {
       this.maxPlayers, this.pricePerPersonInCents, this.duration,
       this.isTest, this.minPlayers, this.organizerId, [this.cancelBefore]);
 
-  Match.fromJson(Map<String, dynamic> jsonInput, String documentId) {
-      dateTime = DateTime.parse(jsonInput['dateTime']).toLocal();
-      sportCenterId = jsonInput['sportCenterId'];
+  Match.fromJson(Map<String, dynamic> jsonInput, String documentId) :
+        dateTime = DateTime.parse(jsonInput['dateTime']).toLocal(),
+        duration = Duration(minutes: jsonInput['duration'] ?? 60),
+        isTest = jsonInput["isTest"] ?? false,
+        minPlayers = jsonInput['minPlayers'] ?? 0,
+        maxPlayers = jsonInput['maxPlayers'],
+        pricePerPersonInCents = jsonInput['pricePerPerson'],
+        _manOfTheMatch = _readManOfTheMatch(jsonInput),
+        sportCenterId = jsonInput['sportCenterId'] {
       sportCenterSubLocation = jsonInput['sportCenterSubLocation'];
-      pricePerPersonInCents = jsonInput['pricePerPerson'];
-      minPlayers = jsonInput['minPlayers'];
-      maxPlayers = jsonInput['maxPlayers'];
-      duration = Duration(minutes: jsonInput['duration'] ?? 60);
 
       if (jsonInput.containsKey("cancelledAt") && jsonInput["cancelledAt"] != null)
         cancelledAt = DateTime.parse(jsonInput['cancelledAt']).toLocal();
       if (jsonInput.containsKey("scoresComputedAt") && jsonInput["scoresComputedAt"] != null)
         scoresComputedAt = DateTime.parse(jsonInput['scoresComputedAt']).toLocal();
 
-      isTest = jsonInput["isTest"] ?? false;
       _readGoing(jsonInput);
       _readTeams(jsonInput);
 
-      _manOfTheMatch = _readManOfTheMatch(jsonInput);
       if (jsonInput.containsKey("cancelHoursBefore"))
         cancelBefore = Duration(hours: jsonInput['cancelHoursBefore']);
 
@@ -77,7 +77,7 @@ class Match {
   }
 
   Set<String> getPotms() => _manOfTheMatch == null
-      ? Set<String>.from([]) : _manOfTheMatch.keys.toSet();
+      ? Set<String>.from([]) : _manOfTheMatch!.keys.toSet();
 
   void _readGoing(Map<String, dynamic> json) {
     var map = Map<String, dynamic>.from(json["going"] ?? {});
@@ -93,12 +93,13 @@ class Match {
     map.forEach((key, value) {
       Map valueMap = value as Map;
 
-      if (valueMap.containsKey("team"))
-        teams[valueMap["team"]].add(key);
+      if (valueMap.containsKey("team")) {
+        teams[valueMap["team"]]?.add(key);
+      }
     });
   }
 
-  static Map<String, double> _readManOfTheMatch(Map<String, dynamic> json) {
+  static Map<String, double>? _readManOfTheMatch(Map<String, dynamic> json) {
     var map = Map<String, dynamic>.from(json["manOfTheMatch"] ?? {});
     if (map.isEmpty) {
       return null;
@@ -118,31 +119,32 @@ class Match {
         'duration': duration.inMinutes,
         'organizerId': organizerId,
         if (cancelBefore != null)
-          'cancelHoursBefore': cancelBefore.inHours,
+          'cancelHoursBefore': cancelBefore?.inHours,
         'isTest': isTest
       };
 
   int getSpotsLeft() => maxPlayers - numPlayersGoing();
 
-  int numPlayersGoing() => going.length;
+  int numPlayersGoing() => going?.length ?? 0;
 
   bool isFull() => numPlayersGoing() == maxPlayers;
 
-  bool isUserGoing(UserDetails user) =>
-      user != null && going.containsKey(user.documentId);
+  bool isUserGoing(UserDetails? user) =>
+      user != null && (going ?? {}).containsKey(user.documentId);
 
   double getPrice() => pricePerPersonInCents / 100;
 
   List<String> getGoingUsersByTime() {
-    var entries = going.entries.toList()..sort((e1,e2) => -e1.value.compareTo(e2.value));
+    var entries = (going?.entries.toList() ?? [])..sort((e1,e2) => -e1.value.compareTo(e2.value));
     return entries.map((e) => e.key).toList();
   }
 
-  int getMissingPlayers() => max(0, minPlayers - going.length);
+  int getMissingPlayers() => max(0, minPlayers - (going?.length ?? 0));
 
-  bool hasTeams() => going.length > 0
-      && teams.values.map((e) => e.length).reduce((a, b) => a + b) == going.length;
+  bool hasTeams() => (going?.length ?? 0) > 0
+      && teams.values.map((e) => e.length).reduce((a, b) => a + b)
+          == (going?.length ?? 0);
 
-  List<String> getTeam(String teamName) => teams[teamName];
+  List<String>? getTeam(String teamName) => teams[teamName];
 }
 

@@ -12,13 +12,13 @@ import '../state/MatchesState.dart';
 
 class BottomBarMatch extends StatelessWidget {
 
-  static Widget getBottomBar(BuildContext context, String matchId,
-      MatchStatus matchStatus) {
+  static Widget? getBottomBar(BuildContext context, String matchId,
+      MatchStatus? matchStatus) {
     // https://docs.google.com/document/d/1PpHh-8blyMYH7ePtU-XIBU289guZX847eBfHz_yqPJ0/edit#
 
     var match = context.read<MatchesState>().getMatch(matchId);
 
-    if (match == null)
+    if (match == null || matchStatus == null)
       return null;
 
     var isFull = match.isFull();
@@ -46,7 +46,7 @@ class BottomBarMatch extends StatelessWidget {
       case MatchStatus.to_rate:
         if (isGoing) {
           var stillToVote = context.read<MatchesState>()
-              .stillToVote(matchId, context.read<UserState>().getLoggedUserDetails());
+              .stillToVote(matchId, context.read<UserState>().getLoggedUserDetails()!);
           if (stillToVote.isNotEmpty)
             bottomBar = RatePlayersBottomBar(matchId: matchId);
         }
@@ -65,10 +65,11 @@ class BottomBarMatch extends StatelessWidget {
 
   final String matchId;
   final String text;
-  final String subText;
-  final Widget button;
+  final String? subText;
+  final Widget? button;
 
-  const BottomBarMatch({Key key, this.matchId, this.text, this.subText, this.button}) : super(key: key);
+  const BottomBarMatch({Key? key, required this.matchId, required this.text,
+    this.subText, this.button}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -89,12 +90,12 @@ class BottomBarMatch extends StatelessWidget {
                   height: 4,
                 ),
                 if (subText != null)
-                  Text(subText, style: TextPalette.bodyText),
+                  Text(subText!, style: TextPalette.bodyText),
               ],
             ),
           ),
           if (button != null)
-            button
+            button!
         ],
       ),
     ));
@@ -104,7 +105,7 @@ class BottomBarMatch extends StatelessWidget {
 class GenericBottomBar extends StatelessWidget {
   final Widget child;
 
-  const GenericBottomBar({Key key, this.child}) : super(key: key);
+  const GenericBottomBar({Key? key, required this.child}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -137,11 +138,11 @@ class MatchCanceledBottomBar extends StatelessWidget {
 
   final String matchId;
 
-  const MatchCanceledBottomBar({Key key, this.matchId}) : super(key: key);
+  const MatchCanceledBottomBar({Key? key, required this.matchId}) : super(key: key);
 
   @override
   Widget build(BuildContext context) =>
-      BottomBarMatch(matchId: matchId, text: "Cancelled");
+      BottomBarMatch(matchId: matchId, text: "Cancelled",);
 }
 
 class JoinMatchBottomBar extends StatelessWidget {
@@ -149,15 +150,15 @@ class JoinMatchBottomBar extends StatelessWidget {
   final String matchId;
   final bool enabled;
 
-  const JoinMatchBottomBar({Key key, this.matchId, this.enabled}) : super(key: key);
+  const JoinMatchBottomBar({Key? key, required this.matchId, required this.enabled}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     var match = context.read<MatchesState>().getMatch(matchId);
 
     return BottomBarMatch(matchId: matchId,
-      text: match.getSpotsLeft().toString() + " spots left",
-      subText: formatCurrency(match.pricePerPersonInCents),
+      text: "${match?.getSpotsLeft()} spots left",
+      subText: formatCurrency(match?.pricePerPersonInCents ?? 0),
       button: enabled ? JoinButton(matchId: matchId) : JoinButtonDisabled()
     );
   }
@@ -168,7 +169,7 @@ class LeaveMatchBottomBar extends StatelessWidget {
   final String matchId;
   final bool enabled;
 
-  const LeaveMatchBottomBar({Key key, this.matchId, this.enabled}) : super(key: key);
+  const LeaveMatchBottomBar({Key? key, required this.matchId, required this.enabled}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -176,7 +177,7 @@ class LeaveMatchBottomBar extends StatelessWidget {
 
     return BottomBarMatch(matchId: matchId,
         text: "You are in!",
-        subText: match.going.length.toString() + " players going",
+        subText: match!.going!.length.toString() + " players going",
         button: enabled ? LeaveButton(matchId: matchId) : LeaveButtonDisabled()
     );
   }
@@ -186,7 +187,7 @@ class RatePlayersBottomBar extends StatelessWidget {
 
   final String matchId;
 
-  const RatePlayersBottomBar({Key key, this.matchId}) : super(key: key);
+  const RatePlayersBottomBar({Key? key, required this.matchId}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -194,7 +195,7 @@ class RatePlayersBottomBar extends StatelessWidget {
         text: "Rate players",
         subText: context.watch<MatchesState>().stillToVote(
             matchId,
-            context.read<UserState>().getLoggedUserDetails()).length.toString() +
+            context.read<UserState>().getLoggedUserDetails()!).length.toString() +
         " players left",
         button: RateButton(matchId: matchId)
     );
@@ -205,7 +206,7 @@ class NotPublishedBottomBar extends StatelessWidget {
 
   final String matchId;
 
-  const NotPublishedBottomBar({Key key, this.matchId}) : super(key: key);
+  const NotPublishedBottomBar({Key? key, required this.matchId}) : super(key: key);
 
   @override
   Widget build(BuildContext context) =>

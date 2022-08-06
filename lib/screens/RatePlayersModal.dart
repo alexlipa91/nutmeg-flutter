@@ -19,7 +19,7 @@ import '../widgets/Texts.dart';
 class RateButton extends StatelessWidget {
   final String matchId;
 
-  const RateButton({Key key, this.matchId}) : super(key: key);
+  const RateButton({Key? key, required this.matchId}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -33,10 +33,10 @@ class RateButton extends StatelessWidget {
 }
 
 class RatePlayerBottomModal extends StatelessWidget {
-  static Future<bool> rateAction(BuildContext context, String matchId) async {
+  static Future<bool?> rateAction(BuildContext context, String matchId) async {
     var toRate = context
         .read<MatchesState>()
-        .stillToVote(matchId, context.read<UserState>().getLoggedUserDetails());
+        .stillToVote(matchId, context.read<UserState>().getLoggedUserDetails()!);
 
     toRate.map((e) => UserController.getUserDetails(context, e));
 
@@ -62,15 +62,15 @@ class RatePlayerBottomModal extends StatelessWidget {
     var state = context.watch<RatingPlayersState>();
     var match = context.read<MatchesState>().getMatch(matchId);
 
-    var alreadyRated = match.numPlayersGoing() - state.toRate.length;
+    var alreadyRated = match!.numPlayersGoing() - state.toRate.length;
 
     var current = context.watch<UserState>().getUserDetail(state.getCurrent());
 
-    var nameParts = (current == null) ? null : current.name.split(" ");
+    var nameParts = (current == null) ? null : current.name?.split(" ");
     var name = (nameParts == null) ? null : nameParts.first;
 
     return PlayerBottomModal(
-        current,
+        current!,
         Column(
           children: [
             RatingBar(),
@@ -117,7 +117,7 @@ class RatePlayerBottomModal extends StatelessWidget {
 
     // store also locally so UI changes fast
     context.read<MatchesState>().addRating(matchId,
-        context.read<UserState>().currentUserId, state.getCurrent(),
+        context.read<UserState>().currentUserId!, state.getCurrent(),
         state.getCurrentScore());
 
     if (state.isLast()) {

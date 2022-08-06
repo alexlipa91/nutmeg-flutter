@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:nutmeg/router/AppRouter.dart';
-import 'package:nutmeg/state/AppState.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:provider/provider.dart';
 import 'package:skeletons/skeletons.dart';
@@ -13,7 +11,7 @@ import 'PlayerBottomModal.dart';
 
 class UserAvatar extends StatelessWidget {
   final double radius;
-  final UserDetails userDetails;
+  final UserDetails? userDetails;
 
   const UserAvatar(this.radius, this.userDetails);
 
@@ -32,12 +30,12 @@ class UserAvatar extends StatelessWidget {
     var backgroundColor = Palette.grey_lighter;
     var backgroundImage = (photoUrl == null) ? null : NetworkImage(photoUrl);
 
-    var displayName = UserDetails.getDisplayName(userDetails).toUpperCase();
+    var displayName = UserDetails.getDisplayName(userDetails!)?.toUpperCase();
 
     var fontSize = radius;
 
     var child = (photoUrl == null)
-        ? Text(displayName[0],
+        ? Text(displayName![0],
             textAlign: TextAlign.center,
             style: GoogleFonts.roboto(
                 color: Palette.grey_dark,
@@ -72,7 +70,7 @@ class NutmegAvatar extends StatelessWidget {
 class LoggedUserAvatarWithRedirectUserPage extends StatelessWidget {
   final double radius;
 
-  const LoggedUserAvatarWithRedirectUserPage({Key key, this.radius})
+  const LoggedUserAvatarWithRedirectUserPage({Key? key, required this.radius})
       : super(key: key);
 
   @override
@@ -82,7 +80,7 @@ class LoggedUserAvatarWithRedirectUserPage extends StatelessWidget {
       highlightColor: Colors.transparent,
       onTap: () async {
         print("going to user");
-        context.read<AppState>().setPage(NutmegPage.USER);
+        // context.read<AppState>().addToStack(NutmegPage.USER);
       },
       child: Container(
         height: 40,
@@ -94,7 +92,8 @@ class LoggedUserAvatarWithRedirectUserPage extends StatelessWidget {
               // height and width nullify radius
               child: Center(
                   child: UserAvatar(
-                      200, context.watch<UserState>().getLoggedUserDetails()))),
+                      200,
+                      context.watch<UserState>().getLoggedUserDetails()))),
         ),
       ),
     );
@@ -116,10 +115,11 @@ class UserAvatarWithBorder extends StatelessWidget {
 }
 
 class UserAvatarWithBottomModal extends StatelessWidget {
-  final UserDetails userData;
+  final UserDetails? userData;
   final double radius;
 
-  const UserAvatarWithBottomModal({Key key, this.userData, this.radius = 24}) : super(key: key);
+  const UserAvatarWithBottomModal({Key? key, this.userData,
+    this.radius = 24}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -128,7 +128,7 @@ class UserAvatarWithBottomModal extends StatelessWidget {
             ? null
             : () {
                 ModalBottomSheet.showNutmegModalBottomSheet(
-                    context, JoinedPlayerBottomModal(userData));
+                    context, JoinedPlayerBottomModal(userData!));
               },
         child: UserAvatar(radius, userData));
   }

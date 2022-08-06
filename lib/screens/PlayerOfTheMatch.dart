@@ -64,7 +64,7 @@ class PlayerOfTheMatch extends StatelessWidget {
               constraints: BoxConstraints.expand(),
               decoration: new BoxDecoration(color: Palette.primary)),
           images,
-          MainArea(userId: uid, screenshotController: screenshotController)
+          MainArea(userId: uid!, screenshotController: screenshotController)
         ]),
       ),
     );
@@ -75,7 +75,7 @@ class MainArea extends StatefulWidget {
   final String userId;
   final ScreenshotController screenshotController;
 
-  const MainArea({Key key, this.userId, this.screenshotController}) : super(key: key);
+  const MainArea({Key? key, required this.userId, required this.screenshotController}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => MainAreaState();
@@ -123,7 +123,7 @@ class MainAreaState extends State<MainArea> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      UserAvatar(48, userDetails),
+                      UserAvatar(48, userDetails!),
                       SizedBox(height: 24),
                       Text("Player of the Match",
                           textAlign: TextAlign.center,
@@ -131,7 +131,7 @@ class MainAreaState extends State<MainArea> {
                       SizedBox(height: 4),
                       Text(
                           "Congratulations " +
-                              userDetails.name +
+                              (userDetails.name)! +
                               "! You won the Player of the Match award",
                           textAlign: TextAlign.center,
                           style: TextPalette.getBodyText(Palette.white)),
@@ -155,7 +155,7 @@ class MainAreaState extends State<MainArea> {
                         var appDir = await getApplicationDocumentsDirectory();
                         var filePath = await widget.screenshotController
                             .captureAndSave(appDir.path);
-                        Share.shareFiles([filePath]);
+                        Share.shareFiles([filePath!]);
                       }, Palette.white)
                     ],
                   ),

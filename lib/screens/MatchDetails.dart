@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:dotted_border/dotted_border.dart';
@@ -8,7 +9,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:intl/intl.dart';
 import 'package:map_launcher/map_launcher.dart';
 import 'package:map_launcher/src/models.dart' as m;
@@ -40,11 +40,10 @@ import 'BottomBarMatch.dart';
 
 
 class MatchDetails extends StatefulWidget {
-  static const routeName = "/match";
-
   final String matchId;
 
-  const MatchDetails({Key key, this.matchId}) : super(key: key);
+  const MatchDetails({Key? key,
+    @PathParam('id') required this.matchId}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => MatchDetailsState();
@@ -73,9 +72,9 @@ class MatchDetailsState extends State<MatchDetails> {
       var match = context.read<MatchesState>().getMatch(widget.matchId);
       var loggedUser = context.read<UserState>().getLoggedUserDetails();
 
-      if (match.status == MatchStatus.to_rate && match.isUserGoing(loggedUser)) {
+      if (match?.status == MatchStatus.to_rate && match!.isUserGoing(loggedUser)) {
         var stillToVote = context.read<MatchesState>().stillToVote(
-            widget.matchId, loggedUser);
+            widget.matchId, loggedUser!);
 
         if (stillToVote.isNotEmpty) {
           await RatePlayerBottomModal.rateAction(context, widget.matchId);
@@ -87,14 +86,14 @@ class MatchDetailsState extends State<MatchDetails> {
       if (!kIsWeb && context.read<UserState>().isLoggedIn()) {
         // go to potm
         var prefs = await SharedPreferences.getInstance();
-        var currentUser = context.read<UserState>().currentUserId;
+        var currentUser = context.read<UserState>().currentUserId!;
         var preferencePath = "potm_screen_showed_" + widget.matchId + "_" + currentUser;
         var alreadyShown = prefs.getBool(preferencePath) ?? false;
 
         if (context.read<UserState>().isLoggedIn() &&
             context
                 .read<MatchesState>()
-                .getMatch(widget.matchId)
+                .getMatch(widget.matchId)!
                 .getPotms()
                 .contains(currentUser) &&
             !alreadyShown) {
@@ -107,16 +106,18 @@ class MatchDetailsState extends State<MatchDetails> {
 
   @override
   Widget build(BuildContext context) {
+    print("match id is ${widget.matchId}");
+
     var userState = context.watch<UserState>();
     var matchesState = context.watch<MatchesState>();
-    var match = matchesState.getMatch(widget.matchId);
+    Match? match = matchesState.getMatch(widget.matchId);
 
     var status = match?.status;
 
     var isTest = match != null && match.isTest;
     var organizerView = userState.isLoggedIn() &&
         match != null &&
-        match.organizerId == userState.getLoggedUserDetails().documentId;
+        match.organizerId == userState.getLoggedUserDetails()!.documentId;
 
     var bottomBar = BottomBarMatch.getBottomBar(context, widget.matchId, status);
 
@@ -124,8 +125,8 @@ class MatchDetailsState extends State<MatchDetails> {
     var widgets = [
       // title
       if (organizerView &&
-          userState.getLoggedUserDetails().areChargesEnabled(isTest) != null &&
-          !userState.getLoggedUserDetails().areChargesEnabled(isTest))
+          userState.getLoggedUserDetails()?.areChargesEnabled(isTest) != null &&
+          !userState.getLoggedUserDetails()!.areChargesEnabled(isTest))
         CompleteOrganiserAccountWidget(isTest: isTest),
       if (isTest)
         InfoContainer(
@@ -138,7 +139,7 @@ class MatchDetailsState extends State<MatchDetails> {
       MatchInfo(widget.matchId),
       // stats
       if (status == MatchStatus.rated || status == MatchStatus.to_rate)
-        Stats(matchId: widget.matchId, matchDatetime: match.dateTime),
+        Stats(matchId: widget.matchId),
       // horizontal players list or teams
       if (match != null)
         match.hasTeams()
@@ -152,18 +153,19 @@ class MatchDetailsState extends State<MatchDetails> {
             "If you leave the match you will get a refund (excluding Nutmeg service fee).\n"
                     "If the match is cancelled you will get a full refund.\n\n"
                     "If you don’t show up you won’t get a refund.\n\n" +
-                ((match != null && match.cancelBefore != null)
+                (match.cancelBefore != null
                     ? "The match will be automatically canceled "
-                        "${getFormattedDateLongWithHour(match.dateTime.subtract(match.cancelBefore))} "
+                        "${getFormattedDateLongWithHour(match.dateTime
+                    .subtract(match.cancelBefore!))} "
                         "if less than ${match.minPlayers} players have joined."
                     : "")),
       if (match != null && match.organizerId != null)
         Builder(builder: (context) {
-          var ud = context.watch<UserState>().getUserDetail(match.organizerId);
+          var ud = context.watch<UserState>().getUserDetail(match.organizerId!);
 
           return InfoContainer(
               child: Row(children: [
-            (ud != null && ud.isAdmin)
+            (ud != null && ud.isAdmin!)
                 ? NutmegAvatar(24.0)
                 : UserAvatarWithBottomModal(userData: ud),
             SizedBox(width: 16),
@@ -175,7 +177,7 @@ class MatchDetailsState extends State<MatchDetails> {
                   SizedBox(height: 4),
                   (ud == null)
                       ? Skeletons.lText
-                      : Text((ud.isAdmin) ? "Nutmeg" : ud.name.split(" ").first,
+                      : Text((ud.isAdmin!) ? "Nutmeg" : ud.name!.split(" ").first,
                           style: TextPalette.h2),
                 ],
               ),
@@ -213,7 +215,7 @@ class PlayerList extends StatelessWidget {
   final Match match;
   final bool withJoinButton;
 
-  const PlayerList({Key key, this.match, this.withJoinButton}) : super(key: key);
+  const PlayerList({Key? key, required this.match, required this.withJoinButton}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -252,13 +254,13 @@ class PlayerList extends StatelessWidget {
 class TeamsWidget extends StatelessWidget {
   final String matchId;
 
-  const TeamsWidget({Key key, this.matchId}) : super(key: key);
+  const TeamsWidget({Key? key, required this.matchId}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     var match = context.watch<MatchesState>().getMatch(matchId);
 
-    var teamA = match.teams.entries.first;
+    var teamA = match!.teams.entries.first;
     var teamB = match.teams.entries.last;
 
     return InfoContainerWithTitle(
@@ -338,11 +340,11 @@ class Title extends StatelessWidget {
       return skeleton;
     }
     var sportCenter = loadOnceState.getSportCenter(match.sportCenterId);
-    if (sportCenter == null) {
+    if (sportCenter == null || sportCenter.getCourtType() == null) {
       return skeleton;
     }
 
-    var title = sportCenter.name + " - " + sportCenter.getCourtType();
+    var title = sportCenter.name + " - " + sportCenter.getCourtType()!;
 
     return Text(
       title,
@@ -397,9 +399,12 @@ class MatchInfo extends StatelessWidget {
             }),
             SizedBox(height: 16),
             IconList.fromIcon({
-              Icons.calendar_month_outlined: getFormattedDateLong(match.dateTime),
-              Icons.access_time_outlined: getStartAndEndHour(match.dateTime, match.duration).join(" - "),
-              Icons.local_offer_outlined: formatCurrency(match.pricePerPersonInCents)
+              Icons.calendar_month_outlined: (match == null) ? null
+                  : getFormattedDateLong(match.dateTime),
+              Icons.access_time_outlined: (match == null) ? null
+                  : getStartAndEndHour(match.dateTime, match.duration).join(" - "),
+              Icons.local_offer_outlined: (match == null) ? null
+                  : formatCurrency(match.pricePerPersonInCents)
             }),
             if (matchWidget != null)
               Column(children: [
@@ -416,10 +421,13 @@ class MatchInfo extends StatelessWidget {
     return InfoContainer(padding: EdgeInsets.zero, child: child);
   }
 
-  Row getStatusWidget(Match match) {
+  Row? getStatusWidget(Match? match) {
     var color;
     var icon;
     var text;
+
+    if (match == null)
+      return null;
 
     if (match.status == MatchStatus.playing) {
       icon = Icons.history_toggle_off_outlined;
@@ -461,7 +469,7 @@ class MatchInfo extends StatelessWidget {
 }
 
 class SportCenterImageCarousel extends StatefulWidget {
-  final Match match;
+  final Match? match;
 
   SportCenterImageCarousel(this.match);
 
@@ -486,9 +494,9 @@ class SportCenterImageCarouselState extends State<SportCenterImageCarousel> {
       return placeHolder;
     }
 
-    var sportCenter = context
+    var sportCenter = (widget.match == null) ? null : context
         .read<LoadOnceState>()
-        .getSportCenter(widget.match.sportCenterId);
+        .getSportCenter(widget.match!.sportCenterId);
 
     if (sportCenter == null) {
       return placeHolder;
@@ -563,12 +571,12 @@ class InfoWidget extends StatelessWidget {
   final IconData icon;
   final String subTitle;
 
-  final Widget rightWidget;
+  final Widget? rightWidget;
 
-  InfoWidget({this.title, this.icon, this.subTitle}) : rightWidget = null;
+  InfoWidget({required this.title, required this.icon, required this.subTitle}) : rightWidget = null;
 
   InfoWidget.withRightWidget(
-      {this.title, this.icon, this.subTitle, Widget rightWidget})
+      {required this.title, required this.icon, required this.subTitle, required Widget rightWidget})
       : rightWidget = rightWidget;
 
   @override
@@ -632,7 +640,7 @@ class PlayerCard extends StatelessWidget {
       SizedBox(height: 10),
       (userData == null)
           ? Skeletons.sText
-          : Text((userData?.name ?? "Player").split(" ").first,
+          : Text((userData.name ?? "Player").split(" ").first,
               overflow: TextOverflow.ellipsis,
               style: TextPalette.getBodyText(Palette.black))
     ]);
@@ -642,12 +650,12 @@ class PlayerCard extends StatelessWidget {
 class EmptyPlayerCard extends StatelessWidget {
   final String matchId;
 
-  const EmptyPlayerCard({Key key, this.matchId}) : super(key: key);
+  const EmptyPlayerCard({Key? key, required this.matchId}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: context.watch<MatchesState>().getMatch(matchId).status ==
+      onTap: context.watch<MatchesState>().getMatch(matchId)!.status ==
           MatchStatus.unpublished
           ? null
           : () => JoinModal.onJoinGameAction(context, matchId),
@@ -708,12 +716,12 @@ class RuleCard extends StatelessWidget {
 class SportCenterDetails extends StatelessWidget {
   final String matchId;
 
-  const SportCenterDetails({Key key, this.matchId}) : super(key: key);
+  const SportCenterDetails({Key? key, required this.matchId}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     var match = context.read<MatchesState>().getMatch(matchId);
-    SportCenter sportCenter;
+    SportCenter? sportCenter;
 
     if (match != null)
       sportCenter =
@@ -742,9 +750,9 @@ class SportCenterDetails extends StatelessWidget {
           SizedBox(height: 16),
           IconList.fromSvg({
             "assets/icons/nutmeg_icon_court.svg":
-                (sportCenter == null)
+                (sportCenter == null || sportCenter.getCourtType() == null)
                     ? null
-                    : sportCenter.getCourtType() + " court type",
+                    : sportCenter.getCourtType()! + " court type",
             "assets/icons/nutmeg_icon_shoe.svg":
                 (sportCenter == null) ? null : sportCenter.getSurface(),
             if (sportCenter != null && sportCenter.hasChangingRooms())
@@ -795,7 +803,7 @@ class MapCardImage extends StatelessWidget {
 
     return InkWell(
       onTap: () async {
-        if (await MapLauncher.isMapAvailable(m.MapType.google)) {
+        if (await MapLauncher.isMapAvailable(m.MapType.google) ?? false) {
           await MapLauncher.showMarker(
             mapType: m.MapType.google,
             coords: Coords(lat, lng),
@@ -805,7 +813,7 @@ class MapCardImage extends StatelessWidget {
               "z": "16"
             },
           );
-        } else if (await MapLauncher.isMapAvailable(m.MapType.apple)) {
+        } else if (await MapLauncher.isMapAvailable(m.MapType.apple) ?? false) {
           await MapLauncher.showMarker(
             mapType: m.MapType.apple,
             coords: Coords(sportCenter.lat, sportCenter.lng),
@@ -825,26 +833,30 @@ class MapCardImage extends StatelessWidget {
 
 class Stats extends StatelessWidget {
   final String matchId;
-  final DateTime matchDatetime;
 
-  const Stats({Key key, this.matchId, this.matchDatetime}) : super(key: key);
+  const Stats({Key? key, required this.matchId}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     var child;
     var loggedUser = context.watch<UserState>().getLoggedUserDetails();
 
+    var match = context.watch<MatchesState>().getMatch(matchId);
+
+    if (match == null)
+      return StatsSkeleton();
+
     var stillToRate;
-    if (!context.watch<MatchesState>().getMatch(matchId).isUserGoing(loggedUser)) {
+    if (!match.isUserGoing(loggedUser)) {
       stillToRate = List<String>.empty();
     } else {
       stillToRate = context
           .watch<MatchesState>()
-          .stillToVote(matchId, loggedUser);
+          .stillToVote(matchId, loggedUser!);
     }
 
     if (stillToRate.isEmpty &&
-        context.read<MatchesState>().getMatch(matchId).status ==
+        context.read<MatchesState>().getMatch(matchId)!.status ==
             MatchStatus.to_rate) {
       child = Container(
           width: double.infinity,
@@ -865,7 +877,7 @@ class Stats extends StatelessWidget {
               SizedBox(height: 8),
               Text(
                 "Statistics for this match will be available\n" +
-                    getFormattedDate(matchDatetime.add(Duration(days: 1)))
+                    getFormattedDate(match.dateTime.add(Duration(days: 1)))
                         .toLowerCase(),
                 style: TextPalette.bodyText,
                 textAlign: TextAlign.center,
@@ -876,14 +888,13 @@ class Stats extends StatelessWidget {
       var ratings = context.watch<MatchesState>().getRatings(matchId);
       var userState = context.watch<UserState>();
 
-      var loadSkeleton = (ratings == null || userState == null);
-      child = (loadSkeleton)
+      child = (ratings == null)
           ? StatsSkeleton()
           : Builder(
               builder: (context) {
                 var match = context.watch<MatchesState>().getMatch(matchId);
                 var finalRatings = ratings.getFinalRatings(
-                    match.getGoingUsersByTime(), match.getPotms());
+                    match!.getGoingUsersByTime(), match.getPotms());
 
                 int index = 1;
 
@@ -970,16 +981,16 @@ class Stats extends StatelessWidget {
 }
 
 class UserNameWidget extends StatelessWidget {
-  final UserDetails userDetails;
+  final UserDetails? userDetails;
 
-  const UserNameWidget({Key key, this.userDetails}) : super(key: key);
+  const UserNameWidget({Key? key, this.userDetails}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     // fixme text overflow
     if (userDetails == null) return Skeletons.mText;
 
-    var name = UserDetails.getDisplayName(userDetails).split(" ").first;
+    var name = UserDetails.getDisplayName(userDetails!)!.split(" ").first;
 
     var n = name.substring(0, min(name.length, 11));
 
@@ -991,13 +1002,13 @@ class UserNameWidget extends StatelessWidget {
 
 class IconList extends StatelessWidget {
   static var size = 18.0;
-  final Map<Widget, String> widgetAndText;
+  final Map<Widget, String?> widgetAndText;
 
-  IconList.fromIcon(Map<IconData, String> iconAndText)
+  IconList.fromIcon(Map<IconData, String?> iconAndText)
       : widgetAndText = iconAndText.map(
             (i, t) => MapEntry(Icon(i, color: Palette.black, size: size), t));
 
-  IconList.fromSvg(Map<String, String> svgAndText)
+  IconList.fromSvg(Map<String, String?> svgAndText)
       : widgetAndText = svgAndText.map(
             (i, t) => MapEntry(SvgPicture.asset(i, width: size, height: size), t));
 
@@ -1008,7 +1019,7 @@ class IconList extends StatelessWidget {
           SizedBox(width: 16),
           e.value == null
               ? Skeletons.lText
-              : Text(e.value, style: TextPalette.listItem)
+              : Text(e.value!, style: TextPalette.listItem)
         ]));
 
     List<Widget> widgets = interleave(rows.toList(), SizedBox(height: 12));

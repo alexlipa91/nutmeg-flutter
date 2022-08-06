@@ -2,8 +2,6 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/screens/Launch.dart';
@@ -16,6 +14,10 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 
 
 class Login extends StatelessWidget {
+
+  final Function(bool logged) onLoggedCallback;
+
+  const Login({Key? key, required this.onLoggedCallback}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +37,7 @@ class Login extends StatelessWidget {
                 padding: EdgeInsets.only(right: 20),
                 child: InkWell(
                   child: Icon(Icons.close),
-                  onTap: () => Navigator.of(context).pop(),
+                  onTap: () => Navigator.of(context).pop()
                 )
             )
           ],
@@ -45,7 +47,7 @@ class Login extends StatelessWidget {
             constraints: BoxConstraints.expand(),
             decoration: new BoxDecoration(color: Palette.primary)),
           LaunchWidgetState.getBackgoundImages(context),
-          LoginArea()
+          LoginArea(onLoggedCallback: onLoggedCallback)
         ])
       ),
     );
@@ -53,6 +55,10 @@ class Login extends StatelessWidget {
 }
 
 class LoginArea extends StatelessWidget {
+
+  final Function(bool logged) onLoggedCallback;
+
+  const LoginArea({Key? key, required this.onLoggedCallback}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -69,13 +75,16 @@ class LoginArea extends StatelessWidget {
                 child: InfoContainer(
                     child: Column(
                   children: [
-                    SignInButton(provider: Provider.google),
+                    SignInButton(provider: Provider.google,
+                        onLoggedCallback: onLoggedCallback),
                     SizedBox(height: 16),
-                    SignInButton(provider: Provider.facebook),
+                    SignInButton(provider: Provider.facebook,
+                        onLoggedCallback: onLoggedCallback),
                     if (!kIsWeb && Platform.isIOS)
                       Padding(
                           padding: EdgeInsets.only(top: 16),
-                          child: SignInButton(provider: Provider.apple)),
+                          child: SignInButton(provider: Provider.apple,
+                            onLoggedCallback: onLoggedCallback)),
                   ],
                 )),
               ),
@@ -98,8 +107,9 @@ enum Provider { facebook, google, apple }
 class SignInButton extends StatelessWidget {
 
   final Provider provider;
+  final Function(bool logged) onLoggedCallback;
 
-  const SignInButton({Key key, this.provider}) : super(key: key);
+  const SignInButton({Key? key, required this.provider, required this.onLoggedCallback}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -146,8 +156,8 @@ class SignInButton extends StatelessWidget {
               context.read<LoginStatusChangeNotifier>().setIsSigningIn(true);
 
               try {
-                var communication = await loginFuture();
-                Get.back(result: communication);
+                await loginFuture();
+                onLoggedCallback.call(true);
               } on Exception catch (e, stack) {
                 print(e);
                 print(stack);

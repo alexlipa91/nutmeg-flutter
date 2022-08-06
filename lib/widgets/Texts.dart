@@ -21,7 +21,8 @@ class TappableLinkText extends StatelessWidget {
   final String text;
   final Function onTap;
 
-  const TappableLinkText({Key key, this.text, this.onTap}) : super(key: key);
+  const TappableLinkText({Key? key, required this.text,
+    required this.onTap}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

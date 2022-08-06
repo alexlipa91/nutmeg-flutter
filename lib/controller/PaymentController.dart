@@ -18,9 +18,10 @@ class PaymentController {
     var u = await UserController.refreshLoggedUser(context);
 
     int creditsUsed;
-    if (u.creditsInCents > 0) {
+
+    if ((u.creditsInCents ?? 0) > 0) {
       // can use
-      creditsUsed = min(m.pricePerPersonInCents, u.creditsInCents);
+      creditsUsed = min(m.pricePerPersonInCents, u.creditsInCents!);
     } else {
       creditsUsed = 0;
     }

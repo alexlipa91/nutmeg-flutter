@@ -16,7 +16,7 @@ import 'UserPage.dart';
 class LeaveButton extends StatelessWidget {
   final String matchId;
 
-  const LeaveButton({Key key, this.matchId}) : super(key: key);
+  const LeaveButton({Key? key, required this.matchId}) : super(key: key);
 
   @override
   Widget build(BuildContext context) => GenericButtonWithLoader(
@@ -44,7 +44,7 @@ class LeaveButton extends StatelessWidget {
                         "Credits refund", style: TextPalette.h3),
                     Expanded(
                         child: Text(
-                          formatCurrency(match.pricePerPersonInCents - fee) + " euro",
+                          formatCurrency(match!.pricePerPersonInCents - fee) + " euro",
                           style: TextPalette.h3,
                           textAlign: TextAlign.end,
                         ))
@@ -69,7 +69,7 @@ class ConfirmLeaveMatchButton extends StatelessWidget {
   final Match match;
   final int fee = 50;
 
-  const ConfirmLeaveMatchButton({Key key, this.match}) : super(key: key);
+  const ConfirmLeaveMatchButton({Key? key, required this.match}) : super(key: key);
 
   @override
   Widget build(BuildContext context) => GenericButtonWithLoader(
@@ -95,8 +95,8 @@ class ConfirmLeaveMatchButton extends StatelessWidget {
               action: InkWell(
                   onTap: () async {
                     await UserController.refreshLoggedUser(navigatorKey.currentContext);
-                    Navigator.pushReplacement(navigatorKey.currentContext,
-                        MaterialPageRoute(builder: (context) => UserPage()));
+                    // Navigator.pushReplacement(navigatorKey.currentContext,
+                    //     MaterialPageRoute(builder: (context) => UserPage()));
                   },
                   child:
                   ConfigsUtils.removeCreditsFunctionality() ? Container() :

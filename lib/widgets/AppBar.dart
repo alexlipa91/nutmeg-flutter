@@ -1,8 +1,11 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:nutmeg/router/AppRouter.dart';
+import 'package:nutmeg/router/AutoRouter.gr.dart';
+import 'package:nutmeg/screens/Login.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:provider/provider.dart';
 
@@ -17,7 +20,8 @@ class NutmegAppBar extends StatelessWidget with PreferredSizeWidget {
   final SystemUiOverlayStyle systemUiOverlayStyle;
 
   const NutmegAppBar(
-      {Key key, this.backgroundColor, this.mainRow, this.systemUiOverlayStyle})
+      {Key? key, required this.backgroundColor, required this.mainRow,
+        required this.systemUiOverlayStyle})
       : super(key: key);
 
   @override
@@ -36,10 +40,10 @@ class NutmegAppBar extends StatelessWidget with PreferredSizeWidget {
   Size get preferredSize => Size.fromHeight(50.0);
 }
 
-class MainAppBar extends NutmegAppBar {
-  final color;
+class MainAppBar extends StatelessWidget with PreferredSizeWidget {
+  Color color;
 
-  MainAppBar(this.color);
+  MainAppBar(this.color) : super();
 
   @override
   Widget build(BuildContext context) {
@@ -69,7 +73,9 @@ class MainAppBar extends NutmegAppBar {
             else
               InkWell(
                 onTap: () async {
-                  context.read<AppState>().setPage(NutmegPage.LOGIN);
+                  context.router.push(LoginRoute(onLoggedCallback: (isLogged) {
+                    context.router.removeLast();
+                  }));
                 },
                 child: Container(
                   height: 50,
@@ -83,4 +89,7 @@ class MainAppBar extends NutmegAppBar {
       ),
     );
   }
+
+  @override
+  Size get preferredSize => Size.fromHeight(50.0);
 }

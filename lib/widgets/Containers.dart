@@ -17,7 +17,7 @@ class InfoContainer extends StatelessWidget {
   final EdgeInsets margin;
   final backgroundColor;
 
-  const InfoContainer({this.child,
+  const InfoContainer({required this.child,
     this.padding = const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
     this.margin = const EdgeInsets.all(0),
     this.backgroundColor = Palette.white
@@ -45,9 +45,9 @@ class InfoContainerWithTitle extends StatelessWidget {
   final Widget body;
   final EdgeInsets padding;
 
-  const InfoContainerWithTitle({Key key,
-    this.title,
-    this.body,
+  const InfoContainerWithTitle({Key? key,
+    required this.title,
+    required this.body,
     this.padding = const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
   }) : super(key: key);
 

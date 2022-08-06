@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
@@ -11,7 +12,7 @@ import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 import 'package:nutmeg/model/UserDetails.dart';
-import 'package:nutmeg/state/AppState.dart';
+import 'package:nutmeg/router/AutoRouter.gr.dart';
 import 'package:provider/provider.dart';
 import 'package:tuple/tuple.dart';
 import 'package:version/version.dart';
@@ -19,6 +20,7 @@ import 'package:version/version.dart';
 import '../Exceptions.dart';
 import '../screens/Launch.dart';
 import '../screens/PaymentDetailsDescription.dart';
+import '../state/AppState.dart';
 import '../state/LoadOnceState.dart';
 import '../state/UserState.dart';
 import '../utils/InfoModals.dart';
@@ -31,6 +33,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 
 
 class LaunchController {
+  static bool loadingDone = false;
   static var apiClient = CloudFunctionsClient();
 
   static Future<void> handleLink(Uri deepLink, [bool start = false]) async {
@@ -41,7 +44,8 @@ class LaunchController {
       var outcome = deepLink.queryParameters["outcome"];
       var matchId = deepLink.queryParameters["match_id"];
 
-      context.read<AppState>().setSelectedMatch(matchId);
+      // context.read<AppState>().setStack(
+      //     List<NutmegPage>.from([NutmegPage.HOME, NutmegPage.MATCH]), matchId);
 
       if (outcome == "success") {
         PaymentDetailsDescription.communicateSuccessToUser(context, matchId);
@@ -53,17 +57,21 @@ class LaunchController {
       return;
     }
     if (deepLink.path == "/match") {
-      context.read<AppState>().setSelectedMatch(deepLink.queryParameters["id"]);
+      // context.read<AppState>().setStack(
+      //     List<NutmegPage>.from([NutmegPage.HOME, NutmegPage.MATCH]),
+      //     deepLink.queryParameters["id"]);
       return;
     }
   }
 
   static void handleMessageFromNotification(
       BuildContext context, RemoteMessage message) async {
-    print('message ' + message.messageId + ' opened from notification with data '
+    print('message ${message.messageId} opened from notification with data '
         + message.data.toString());
 
-    context.read<AppState>().setSelectedMatch(message.data["match_id"]);
+    // context.read<AppState>().setStack(
+    //     List<NutmegPage>.from([NutmegPage.HOME, NutmegPage.MATCH]),
+    //     message.data["match_id"]);
   }
 
   static void setupNotifications(BuildContext context) {
@@ -84,25 +92,24 @@ class LaunchController {
     });
 
     if (!kIsWeb) {
-      FirebaseDynamicLinks.instance.onLink(
-          onSuccess: (PendingDynamicLinkData dynamicLink) async {
-        final Uri deepLink = dynamicLink?.link;
+      Future<Null> Function(PendingDynamicLinkData? dynamicLink) future =
+          (PendingDynamicLinkData? dynamicLink) async {
+        final Uri? deepLink = dynamicLink?.link;
 
         if (deepLink != null) {
           LaunchController.handleLink(deepLink);
         }
-      }, onError: (OnLinkErrorException e) async {
+      };
+
+      FirebaseDynamicLinks.instance.onLink(
+          onSuccess: future, onError: (OnLinkErrorException e) async {
         print(e.message);
       });
     }
   }
 
-  static Future<void> goToMatchPage(String matchId) async {
-    Get.offAndToNamed("/home");
-    await Get.toNamed("/match/" + matchId);
-  }
-
-  static Future<void> loadData(BuildContext context) async {
+  static Future<void> loadData(BuildContext context,
+      Function(bool loaded) onLoadedCallback) async {
     print("start loading data function");
     await Firebase.initializeApp();
 
@@ -120,7 +127,7 @@ class LaunchController {
     ];
     var futuresData = await Future.wait(futures);
 
-    UserDetails availableUserDetails = futuresData[1];
+    UserDetails? availableUserDetails = futuresData[1];
 
     if (!kIsWeb) {
       FirebaseRemoteConfig firebaseRemoteConfig = FirebaseRemoteConfig.instance;
@@ -175,7 +182,7 @@ class LaunchController {
 
     if (userDetails != null) {
       context.read<UserState>().setCurrentUserDetails(userDetails);
-      trace.putAttribute("user_id", userDetails?.documentId);
+      trace.putAttribute("user_id", userDetails.documentId);
     }
 
     // request permissions
@@ -190,17 +197,17 @@ class LaunchController {
     );
 
     // check if coming from link
-    Uri deepLink;
+    Uri? deepLink;
 
     if (!kIsWeb) {
-      final PendingDynamicLinkData data =
+      final PendingDynamicLinkData? data =
           await FirebaseDynamicLinks.instance.getInitialLink();
 
       deepLink = data?.link;
     }
 
     // check if coming from notification
-    RemoteMessage initialMessage =
+    RemoteMessage? initialMessage =
         await FirebaseMessaging.instance.getInitialMessage();
 
     if (deepLink != null) {
@@ -218,7 +225,7 @@ class LaunchController {
     trace.stop();
 
     print("load data method is done");
-    context.read<AppState>().setLoadingDone();
+    onLoadedCallback.call(true);
   }
 
   static Future<void> loadOnceData(BuildContext context) async {
