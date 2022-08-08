@@ -29,4 +29,20 @@ class CloudFunctionsClient {
 
     return resp.data;
   }
+
+  Future<Map<String, dynamic>?> callLocal(String name, Map<String, dynamic> data) async {
+    print("Calling local " + name + " with data " + data.toString());
+
+    var client = FirebaseFunctions.instanceFor(region: "europe-central2");
+    client.useFunctionsEmulator("localhost", 8080);
+
+    HttpsCallable callable = client.httpsCallable(name);
+    var resp = await callable(data);
+
+    // trace.setMetric("duration_ms", stopwatch.elapsed.inMilliseconds);
+    // trace.stop();
+
+    return resp.data;
+  }
+
 }

@@ -1,4 +1,3 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
@@ -10,9 +9,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
+import 'package:go_router/go_router.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 import 'package:nutmeg/model/UserDetails.dart';
-import 'package:nutmeg/router/AutoRouter.gr.dart';
 import 'package:provider/provider.dart';
 import 'package:tuple/tuple.dart';
 import 'package:version/version.dart';
@@ -20,7 +19,6 @@ import 'package:version/version.dart';
 import '../Exceptions.dart';
 import '../screens/Launch.dart';
 import '../screens/PaymentDetailsDescription.dart';
-import '../state/AppState.dart';
 import '../state/LoadOnceState.dart';
 import '../state/UserState.dart';
 import '../utils/InfoModals.dart';
@@ -109,7 +107,7 @@ class LaunchController {
   }
 
   static Future<void> loadData(BuildContext context,
-      Function(bool loaded) onLoadedCallback) async {
+      String? from) async {
     print("start loading data function");
     await Firebase.initializeApp();
 
@@ -225,7 +223,10 @@ class LaunchController {
     trace.stop();
 
     print("load data method is done");
-    onLoadedCallback.call(true);
+
+    LaunchController.loadingDone = true;
+    print(from);
+    context.go(from ?? "/");
   }
 
   static Future<void> loadOnceData(BuildContext context) async {

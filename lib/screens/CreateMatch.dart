@@ -2,16 +2,14 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:nutmeg/Exceptions.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/model/Match.dart';
-import 'package:nutmeg/router/AppRouter.dart';
-import 'package:nutmeg/router/AutoRouter.gr.dart';
 import 'package:nutmeg/screens/BottomBarMatch.dart';
-import 'package:nutmeg/state/AppState.dart';
 import 'package:nutmeg/state/UserState.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
@@ -35,7 +33,7 @@ class CreateMatchState extends State<CreateMatch> {
   static const String NO_REPEAT = "Does not repeat";
 
   static InputDecoration getTextFormDecoration(String? label,
-      {bool isDropdown = false, focusColor = null, prefixText = null}) {
+      {bool isDropdown = false, focusColor, prefixText}) {
     var border = UnderlineInputBorder(
       borderSide: BorderSide.none,
       borderRadius: BorderRadius.circular(8),
@@ -649,7 +647,7 @@ class CreateMatchState extends State<CreateMatch> {
 
                       var ids = await Future.wait(idsFuture);
 
-                      context.router.replace(MatchDetailsRoute(matchId: ids.first));
+                      context.go("/match/${ids.first}");
                     } on Exception catch (e, s) {
                       print(e);
                       print(s);

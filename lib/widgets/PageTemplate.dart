@@ -30,7 +30,7 @@ class PageTemplate extends StatelessWidget {
         : RefresherWithObserverWidget(
       refreshState: refreshState!,
       child: w,
-      initState: initState!,
+      initState: initState,
     );
 
     return Scaffold(

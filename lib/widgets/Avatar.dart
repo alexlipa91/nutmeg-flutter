@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:provider/provider.dart';
@@ -78,10 +79,7 @@ class LoggedUserAvatarWithRedirectUserPage extends StatelessWidget {
     return InkWell(
       splashColor: Colors.transparent,
       highlightColor: Colors.transparent,
-      onTap: () async {
-        print("going to user");
-        // context.read<AppState>().addToStack(NutmegPage.USER);
-      },
+      onTap: () async => context.go("/user"),
       child: Container(
         height: 40,
         width: 40,

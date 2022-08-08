@@ -1,24 +1,24 @@
 import 'dart:async';
 
-import 'package:auto_route/auto_route.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_web_frame/flutter_web_frame.dart';
+import 'package:go_router/go_router.dart';
 import 'package:logger/logger.dart';
 import 'package:nutmeg/controller/LaunchController.dart';
-import 'package:nutmeg/router/AutoRouter.dart';
-import 'package:nutmeg/router/AutoRouter.gr.dart';
-import 'package:nutmeg/state/AppState.dart';
+import 'package:nutmeg/screens/AvailableMatches.dart';
+import 'package:nutmeg/screens/CreateMatch.dart';
+import 'package:nutmeg/screens/Login.dart';
+import 'package:nutmeg/screens/MatchDetails.dart';
+import 'package:nutmeg/screens/UserPage.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:provider/provider.dart';
 import 'package:skeletons/skeletons.dart';
 
 import '../Exceptions.dart';
-import '../router/AppRouter.dart';
-import '../router/url_strategy.dart';
 import '../state/LoadOnceState.dart';
 import '../state/MatchesState.dart';
 import '../state/UserState.dart';
@@ -28,7 +28,6 @@ final navigatorKey = GlobalKey<NavigatorState>();
 void main() {
   Logger.level = Level.error;
   WidgetsFlutterBinding.ensureInitialized(); //imp line need to be added first
-  usePathUrlStrategy();
 
   if (!kIsWeb) {
     FlutterError.onError = (FlutterErrorDetails details) async {
@@ -37,10 +36,67 @@ void main() {
     };
   }
 
-  AutoRouterAppRouter appRouter = AutoRouterAppRouter(
-    loadedGuard: LoadedGuard(),
-    loggedGuard: LoggedGuard()
+  final appRouter = GoRouter(
+    debugLogDiagnostics: true,
+    urlPathStrategy: UrlPathStrategy.path,
+    routes: [
+      GoRoute(
+        path: '/launch',
+        builder: (context, state) => LaunchWidget(from: state.queryParams["from"]),
+      ),
+      GoRoute(
+        path: '/',
+        builder: (context, state) => AvailableMatches(),
+        routes: [
+          GoRoute(
+            path: 'match/:id',
+            builder: (context, state) => MatchDetails(matchId: state.params["id"]!),
+          ),
+          GoRoute(
+            path: 'login',
+            builder: (context, state) => Login(from: state.queryParams["from"]),
+          ),
+          GoRoute(
+            path: 'user',
+            builder: (context, state) => UserPage(),
+          ),
+          GoRoute(
+            path: 'createMatch',
+            builder: (context, state) => CreateMatch(),
+          ),
+          GoRoute(
+            path: 'match/:id',
+            builder: (context, state) => MatchDetails(matchId: state.params["id"]!),
+          ),
+        ]
+      ),
+    ],
+
+    // redirect to the launch page
+    redirect: (state) {
+      if (!LaunchController.loadingDone) {
+        if (state.subloc != "/launch") {
+          var from = state.subloc == '/' ? '' : '?from=${state.subloc}';
+          return "/launch$from";
+        } else {
+          return null;
+        }
+      }
+
+      if ((state.subloc == "/createMatch" || state.subloc == "/user")
+          && !navigatorKey.currentContext!.read<UserState>().isLoggedIn()) {
+        var from = state.subloc == '/' ? '' : '?from=${state.subloc}';
+        return "/login$from";
+      }
+
+      return null;
+    },
   );
+
+  // AutoRouterAppRouter appRouter = AutoRouterAppRouter(
+  //   loadedGuard: LoadedGuard(),
+  //   loggedGuard: LoggedGuard()
+  // );
 
   runZonedGuarded(() {
     runApp(MultiProvider(
@@ -48,7 +104,6 @@ void main() {
         ChangeNotifierProvider(create: (context) => UserState()),
         ChangeNotifierProvider(create: (context) => MatchesState()),
         ChangeNotifierProvider(create: (context) => LoadOnceState()),
-        ChangeNotifierProvider(create: (context) => AppState()),
       ],
       child: SkeletonTheme(
         shimmerGradient: LinearGradient(
@@ -66,8 +121,10 @@ void main() {
         child: FlutterWebFrame(
           builder: (context) => MaterialApp.router(
               key: navigatorKey,
-              routeInformationParser: appRouter.defaultRouteParser(),
-              routerDelegate: appRouter.delegate(),
+              routeInformationParser: appRouter.routeInformationParser,
+              routerDelegate: appRouter.routerDelegate,
+
+              routeInformationProvider: appRouter.routeInformationProvider,
               // AutoRouterDelegate.declarative(
               //   appRouter,
               //   routes: (handler) {
@@ -191,9 +248,9 @@ void main() {
 
 class LaunchWidget extends StatefulWidget {
 
-  final Function(bool loaded) onLoadedCallback;
+  final String? from;
 
-  const LaunchWidget({Key? key, required this.onLoadedCallback}) : super(key: key);
+  const LaunchWidget({Key? key, this.from}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => LaunchWidgetState();
@@ -203,7 +260,7 @@ class LaunchWidgetState extends State<LaunchWidget> {
   @override
   void initState() {
     super.initState();
-    LaunchController.loadData(context, widget.onLoadedCallback)
+    LaunchController.loadData(context, widget.from)
         .catchError((e, s) => ErrorHandlingUtils.handleError(e, s, context));
   }
 

@@ -1,15 +1,11 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
-import 'package:nutmeg/router/AppRouter.dart';
-import 'package:nutmeg/router/AutoRouter.gr.dart';
-import 'package:nutmeg/screens/Login.dart';
+import 'package:go_router/go_router.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:provider/provider.dart';
 
-import '../state/AppState.dart';
 import '../state/UserState.dart';
 import 'Avatar.dart';
 
@@ -73,9 +69,7 @@ class MainAppBar extends StatelessWidget with PreferredSizeWidget {
             else
               InkWell(
                 onTap: () async {
-                  context.router.push(LoginRoute(onLoggedCallback: (isLogged) {
-                    context.router.removeLast();
-                  }));
+                  context.go("/login");
                 },
                 child: Container(
                   height: 50,

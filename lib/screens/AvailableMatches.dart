@@ -1,9 +1,7 @@
-import 'package:auto_route/auto_route.dart';
 import "package:collection/collection.dart";
 import 'package:flutter/material.dart';
-import 'package:nutmeg/controller/MatchesController.dart';
+import 'package:go_router/go_router.dart';
 import 'package:nutmeg/model/Match.dart';
-import 'package:nutmeg/router/AutoRouter.gr.dart';
 import 'package:nutmeg/state/LoadOnceState.dart';
 import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/GenericAvailableMatches.dart';
@@ -20,10 +18,7 @@ import '../widgets/GenericAvailableMatches.dart';
 // main widget
 class AvailableMatches extends StatelessWidget {
 
-  Future<void> onTap(BuildContext context, String matchId) async {
-    context.router.push(MatchDetailsRoute(matchId: matchId));
-    MatchesController.refresh(context, matchId);
-  }
+  Future<void> onTap(BuildContext context, String matchId) async => context.go("/match/$matchId");
 
   Widget? pastWidgets(BuildContext context) {
     var state = context.watch<MatchesState>();
@@ -243,16 +238,12 @@ class AvailableMatches extends StatelessWidget {
             if (withAction)
               TappableLinkText(
                   text: "CREATE A NEW MATCH",
-                  onTap: (BuildContext context) => loginAndCreateMatch(context)
+                  onTap: (BuildContext context) => context.go("/createMatch")
               ),
           ],
         ),
       ),
     );
-  }
-
-  Future<void> loginAndCreateMatch(BuildContext context) async {
-    context.router.push(CreateMatchRoute());
   }
 
   @override
@@ -276,7 +267,7 @@ class AvailableMatches extends StatelessWidget {
                   ? FloatingActionButton(
                       backgroundColor: Palette.primary,
                       child: Icon(Icons.add, color: Palette.white),
-                      onPressed: () => loginAndCreateMatch(context))
+                      onPressed: () => context.go("/createMatch"))
                   : null,
               Column(
                 children: [
