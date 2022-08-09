@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:provider/provider.dart';
@@ -60,7 +58,7 @@ class MainAppBar extends StatelessWidget with PreferredSizeWidget {
             InkWell(
                 splashColor: Colors.transparent,
                 highlightColor: Colors.transparent,
-                onTap: () => Get.toNamed("/home"),
+                onTap: () => context.go("/"),
                 child: Image.asset('assets/nutmeg_white.png', height: 24)),
             if (isLoggedIn)
               Builder(

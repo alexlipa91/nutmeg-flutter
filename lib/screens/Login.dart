@@ -11,7 +11,6 @@ import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/Containers.dart';
 import 'package:provider/provider.dart';
 import '../state/LoginStatusChangeNotifier.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
 
 
 class Login extends StatelessWidget {
@@ -38,7 +37,9 @@ class Login extends StatelessWidget {
                 padding: EdgeInsets.only(right: 20),
                 child: InkWell(
                   child: Icon(Icons.close),
-                  onTap: () => Navigator.of(context).pop()
+                  onTap: () =>
+                      GoRouter.of(context).location == "/user/login"
+                          ? context.go("/") : context.pop()
                 )
             )
           ],
@@ -108,7 +109,8 @@ class SignInButton extends StatelessWidget {
   final Provider provider;
   final String? from;
 
-  const SignInButton({Key? key, required this.provider, this.from}) : super(key: key);
+  const SignInButton({Key? key, required this.provider, this.from})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -156,7 +158,7 @@ class SignInButton extends StatelessWidget {
 
               try {
                 await loginFuture();
-                context.go(from ?? "/");
+                context.pop();
               } on Exception catch (e, stack) {
                 print(e);
                 print(stack);

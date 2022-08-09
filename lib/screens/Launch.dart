@@ -36,6 +36,11 @@ void main() {
     };
   }
 
+  var login = GoRoute(
+    path: 'login',
+    builder: (context, state) => Login(),
+  );
+
   final appRouter = GoRouter(
     debugLogDiagnostics: true,
     urlPathStrategy: UrlPathStrategy.path,
@@ -48,13 +53,11 @@ void main() {
         path: '/',
         builder: (context, state) => AvailableMatches(),
         routes: [
-          GoRoute(
-            path: 'login',
-            builder: (context, state) => Login(from: state.queryParams["from"]),
-          ),
+          login,
           GoRoute(
             path: 'user',
             builder: (context, state) => UserPage(),
+            routes: [login]
           ),
           GoRoute(
             path: 'createMatch',
@@ -65,12 +68,6 @@ void main() {
             builder: (context, state) => MatchDetails(
                   matchId: state.params["id"]!,
                   paymentOutcome: state.queryParams["payment_outcome"]),
-            routes: [
-              GoRoute(
-                path: 'login',
-                builder: (context, state) => Login(),
-              ),
-            ]
           ),
         ]
       ),
@@ -78,22 +75,16 @@ void main() {
 
     // redirect to the launch page
     redirect: (state) {
-      if (!LaunchController.loadingDone) {
-        if (state.subloc != "/launch") {
+      var redirectUrl;
+      if (!LaunchController.loadingDone && state.subloc != "/launch") {
           var from = state.location == '/' ? '' : '?from=${state.location}';
-          return "/launch$from";
-        } else {
-          return null;
-        }
+          redirectUrl = "/launch$from";
+      } else if (!navigatorKey.currentContext!.read<UserState>().isLoggedIn()) {
+        if ({"/createMatch", "/user"}.contains(state.subloc))
+          redirectUrl = "/login?from=${state.location}";
       }
 
-      if ((state.subloc == "/createMatch" || state.subloc == "/user")
-          && !navigatorKey.currentContext!.read<UserState>().isLoggedIn()) {
-        var from = state.subloc == '/' ? '' : '?from=${state.subloc}';
-        return "/login$from";
-      }
-
-      return null;
+      return redirectUrl;
     },
   );
 

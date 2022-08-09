@@ -41,7 +41,7 @@ class UserController {
   }
 
   static Future<UserDetails?> getUserIfAvailable(BuildContext context) async {
-    User? u = FirebaseAuth.instance.currentUser;
+    User? u = await FirebaseAuth.instance.authStateChanges().first;
 
     UserDetails? ud;
 
