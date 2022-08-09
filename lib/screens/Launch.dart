@@ -113,7 +113,6 @@ void main() {
               key: navigatorKey,
               routeInformationParser: appRouter.routeInformationParser,
               routerDelegate: appRouter.routerDelegate,
-
               routeInformationProvider: appRouter.routeInformationProvider,
               debugShowCheckedModeBanner: false,
               backButtonDispatcher: RootBackButtonDispatcher(),
