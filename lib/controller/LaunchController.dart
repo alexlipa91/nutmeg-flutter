@@ -18,16 +18,12 @@ import 'package:version/version.dart';
 
 import '../Exceptions.dart';
 import '../screens/Launch.dart';
-import '../screens/PaymentDetailsDescription.dart';
 import '../state/LoadOnceState.dart';
 import '../state/UserState.dart';
-import '../utils/InfoModals.dart';
 import '../utils/UiUtils.dart';
 import '../utils/Utils.dart';
 import 'MiscController.dart';
 import 'UserController.dart';
-
-import 'package:flutter/foundation.dart' show kIsWeb;
 
 
 class LaunchController {
@@ -36,48 +32,26 @@ class LaunchController {
 
   static Future<void> handleLink(Uri deepLink, [bool start = false]) async {
     print("handling dynamic link " + deepLink.toString());
-    var context = navigatorKey.currentContext;
-
-    if (deepLink.path == "/payment") {
-      var outcome = deepLink.queryParameters["outcome"];
-      var matchId = deepLink.queryParameters["match_id"];
-
-      // context.read<AppState>().setStack(
-      //     List<NutmegPage>.from([NutmegPage.HOME, NutmegPage.MATCH]), matchId);
-
-      if (outcome == "success") {
-        PaymentDetailsDescription.communicateSuccessToUser(context, matchId);
-      } else {
-        await GenericInfoModal(
-                title: "Payment Failed!", description: "Please try again")
-            .show(context);
-      }
-      return;
-    }
-    if (deepLink.path == "/match") {
-      // context.read<AppState>().setStack(
-      //     List<NutmegPage>.from([NutmegPage.HOME, NutmegPage.MATCH]),
-      //     deepLink.queryParameters["id"]);
-      return;
-    }
+    navigatorKey.currentContext?.go(deepLink.path);
   }
 
-  static void handleMessageFromNotification(
+  static void _handleMessageFromNotification(
       BuildContext context, RemoteMessage message) async {
     print('message ${message.messageId} opened from notification with data '
         + message.data.toString());
 
+    // todo
     // context.read<AppState>().setStack(
     //     List<NutmegPage>.from([NutmegPage.HOME, NutmegPage.MATCH]),
     //     message.data["match_id"]);
   }
 
-  static void setupNotifications(BuildContext context) {
+  static void _setupNotifications(BuildContext context) {
     print("setting up notification handler");
 
     FirebaseMessaging.onMessageOpenedApp.listen((m) {
       print("called onMsgOpenedApp callback");
-      handleMessageFromNotification(context, m);
+      _handleMessageFromNotification(context, m);
     });
 
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
@@ -121,7 +95,7 @@ class LaunchController {
     List<Future<dynamic>> futures = [
       getVersion(),
       UserController.getUserIfAvailable(context),
-      loadOnceData(context)
+      _loadOnceData(context)
     ];
     var futuresData = await Future.wait(futures);
 
@@ -215,21 +189,19 @@ class LaunchController {
     } else if (initialMessage != null) {
       print("navigating with initial message:" + initialMessage.toString());
       trace.putAttribute("coming_from_notification", true.toString());
-      handleMessageFromNotification(context, initialMessage);
+      _handleMessageFromNotification(context, initialMessage);
     }
 
-    setupNotifications(context);
+    _setupNotifications(context);
 
     trace.stop();
 
     print("load data method is done");
-
     LaunchController.loadingDone = true;
-    print(from);
     context.go(from ?? "/");
   }
 
-  static Future<void> loadOnceData(BuildContext context) async {
+  static Future<void> _loadOnceData(BuildContext context) async {
     print("loading static data");
     var futures = [
       MiscController.getGifs(context.read<LoadOnceState>())

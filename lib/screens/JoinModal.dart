@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:nutmeg/controller/PaymentController.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
@@ -111,14 +112,8 @@ class JoinModal {
     var userState = context.read<UserState>();
     var match = context.read<MatchesState>().getMatch(matchId);
 
-    if (!userState.isLoggedIn()) {
-      // AfterLoginCommunication communication = await Navigator.push(
-      //     context, MaterialPageRoute(builder: (context) => Login()));
-      // if (communication != null) {
-      //   await GenericInfoModal(title: "Welcome", description: communication.text)
-      //       .show(context);
-      // }
-    }
+    if (!userState.isLoggedIn())
+      context.go("/match/$matchId/login");
 
     if (userState.isLoggedIn()) {
       var paymentRecap = await PaymentController.generatePaymentRecap(

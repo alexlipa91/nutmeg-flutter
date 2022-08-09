@@ -49,10 +49,6 @@ void main() {
         builder: (context, state) => AvailableMatches(),
         routes: [
           GoRoute(
-            path: 'match/:id',
-            builder: (context, state) => MatchDetails(matchId: state.params["id"]!),
-          ),
-          GoRoute(
             path: 'login',
             builder: (context, state) => Login(from: state.queryParams["from"]),
           ),
@@ -66,7 +62,15 @@ void main() {
           ),
           GoRoute(
             path: 'match/:id',
-            builder: (context, state) => MatchDetails(matchId: state.params["id"]!),
+            builder: (context, state) => MatchDetails(
+                  matchId: state.params["id"]!,
+                  paymentOutcome: state.queryParams["payment_outcome"]),
+            routes: [
+              GoRoute(
+                path: 'login',
+                builder: (context, state) => Login(),
+              ),
+            ]
           ),
         ]
       ),
@@ -76,7 +80,7 @@ void main() {
     redirect: (state) {
       if (!LaunchController.loadingDone) {
         if (state.subloc != "/launch") {
-          var from = state.subloc == '/' ? '' : '?from=${state.subloc}';
+          var from = state.location == '/' ? '' : '?from=${state.location}';
           return "/launch$from";
         } else {
           return null;
@@ -92,11 +96,6 @@ void main() {
       return null;
     },
   );
-
-  // AutoRouterAppRouter appRouter = AutoRouterAppRouter(
-  //   loadedGuard: LoadedGuard(),
-  //   loggedGuard: LoggedGuard()
-  // );
 
   runZonedGuarded(() {
     runApp(MultiProvider(
@@ -125,30 +124,6 @@ void main() {
               routerDelegate: appRouter.routerDelegate,
 
               routeInformationProvider: appRouter.routeInformationProvider,
-              // AutoRouterDelegate.declarative(
-              //   appRouter,
-              //   routes: (handler) {
-              //     var appState = context.watch<AppState>();
-              //     print("pending routes ${handler.initialPendingRoutes}, appState $appState");
-              //
-              //     var stack;
-              //     if (!appState.loadingDone)
-              //       stack = [LaunchWidgetRoute()];
-              //     else
-              //       stack = List<PageRouteInfo<dynamic>>.of([
-              //           AvailableMatchesRoute(),
-              //           if (appState.selectedMatch != null)
-              //             MatchDetailsRoute(matchId: appState.selectedMatch)
-              //         ]);
-              //
-              //     print("stack is $stack");
-              //     return stack;
-              //   },
-              //   onPopRoute: (route, result) {
-              //       print("popping $route");
-              //   },
-              //
-              // ),
               debugShowCheckedModeBanner: false,
               backButtonDispatcher: RootBackButtonDispatcher(),
               theme: ThemeData(
@@ -157,79 +132,6 @@ void main() {
                 ),
               ),
             ),
-            // home: Navigator(
-            //   pages: [
-            //     if (!context.watch<AppState>().loadingDone)
-            //       MaterialPage(child: LaunchWidget())
-            //     else
-            //       MaterialPage(child: AvailableMatches()),
-            //     if (context.watch<AppState>().selectedMatch != null)
-            //       MaterialPage(
-            //           key: ValueKey("MatchDetails"),
-            //           name: "MatchDetails",
-            //           child: MatchDetails(matchId: context.read<AppState>().selectedMatch)
-            //       )
-            //   ],
-            //   onPopPage: (route, result) {
-            //     print("popping");
-            //     print(route.settings.name);
-            //
-            //     if (!route.didPop(result)) {
-            //       return false;
-            //     }
-            //
-            //     if (route.settings.name == "MatchDetails") {
-            //       context.read<AppState>().setSelectedMatch(null);
-            //     }
-            //     return true;
-            //   },
-            // ),
-            // new Container(
-            //     decoration: new BoxDecoration(color: Colors.grey.shade400),
-            //     child: Center(child: new LaunchWidget())),
-
-            // unknownRoute: GetPage(
-            //   name: '/notFound',
-            //   page: () => Scaffold(
-            //     backgroundColor: Palette.primary,
-            //     body: Center(child: Text("Not Found",
-            //       style: TextPalette.getBodyText(Palette.grey_light),)),
-            //   )),
-            // getPages: [
-            //   GetPage(
-            //       name: '/home',
-            //       page: () => AvailableMatches(),
-            //       transition: Transition.native),
-            //   GetPage(
-            //       name: '/match/:matchId',
-            //       transition: Transition.native,
-            //       page: () => MatchDetails()),
-            //   GetPage(
-            //       name: '/login/enterDetails',
-            //       page: () => EnterDetails(),
-            //       transition: Transition.native),
-            //   GetPage(
-            //       name: '/user',
-            //       page: () => UserPage(),
-            //       transition: Transition.native),
-            //   GetPage(
-            //       name: '/editMatch/:matchId',
-            //       page: () => AdminMatchDetails(),
-            //       transition: Transition.native),
-            //   GetPage(
-            //       name: '/adminHome',
-            //       page: () => AdminAvailableMatches(),
-            //       transition: Transition.native),
-            //   GetPage(
-            //       name: '/potm/:userId',
-            //       page: () => PlayerOfTheMatch(),
-            //       transition: Transition.native,
-            //       transitionDuration: Duration.zero),
-            //   GetPage(
-            //       name: '/createMatch',
-            //       page: () => CreateMatch(),
-            //       transition: Transition.native),
-            // ],
           maximumSize: Size(475.0, 812.0), // Maximum size
           enabled: kIsWeb,
           backgroundColor: Palette.grey_light,
@@ -249,8 +151,9 @@ void main() {
 class LaunchWidget extends StatefulWidget {
 
   final String? from;
+  final Map<String, String>? queryParams;
 
-  const LaunchWidget({Key? key, this.from}) : super(key: key);
+  const LaunchWidget({Key? key, this.from, this.queryParams}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => LaunchWidgetState();

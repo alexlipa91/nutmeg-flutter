@@ -32,18 +32,23 @@ import 'package:skeletons/skeletons.dart';
 import '../state/LoadOnceState.dart';
 import '../state/MatchesState.dart';
 import '../state/UserState.dart';
+import '../utils/InfoModals.dart';
 import '../widgets/Buttons.dart' as buttons;
 import '../widgets/ModalBottomSheet.dart';
 import '../widgets/PlayerBottomModal.dart';
 import '../widgets/Skeletons.dart';
 import 'BottomBarMatch.dart';
+import 'PaymentDetailsDescription.dart';
 
 
 class MatchDetails extends StatefulWidget {
   final String matchId;
+  final String? paymentOutcome;
 
   const MatchDetails({Key? key,
-    @PathParam('id') required this.matchId}) : super(key: key);
+    @PathParam('id') required this.matchId,
+    @QueryParam('payment_outcome') this.paymentOutcome,
+  }) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => MatchDetailsState();
@@ -51,7 +56,54 @@ class MatchDetails extends StatefulWidget {
 
 class MatchDetailsState extends State<MatchDetails> {
 
-  Future<void> refreshState(bool showModal) async {
+  Future<void> myInitState() async {
+    await refreshState();
+
+    // check if payment outcome
+    if (widget.paymentOutcome != null)
+      if (widget.paymentOutcome! == "success")
+        PaymentDetailsDescription.communicateSuccessToUser(context, widget.matchId);
+      else
+        GenericInfoModal(
+            title: "Payment Failed!", description: "Please try again")
+            .show(context);
+
+    // show rating modal
+    var match = context.read<MatchesState>().getMatch(widget.matchId);
+    var loggedUser = context.read<UserState>().getLoggedUserDetails();
+
+    if (match?.status == MatchStatus.to_rate && match!.isUserGoing(loggedUser)) {
+      var stillToVote = context.read<MatchesState>().stillToVote(
+          widget.matchId, loggedUser!);
+
+      if (stillToVote.isNotEmpty) {
+        await RatePlayerBottomModal.rateAction(context, widget.matchId);
+        setState(() {});
+      }
+    }
+
+    // fixme currently sharedpref gives some error in web
+    if (!kIsWeb && context.read<UserState>().isLoggedIn()) {
+      // go to potm
+      var prefs = await SharedPreferences.getInstance();
+      var currentUser = context.read<UserState>().currentUserId!;
+      var preferencePath = "potm_screen_showed_" + widget.matchId + "_" + currentUser;
+      var alreadyShown = prefs.getBool(preferencePath) ?? false;
+
+      if (context.read<UserState>().isLoggedIn() &&
+          context
+              .read<MatchesState>()
+              .getMatch(widget.matchId)!
+              .getPotms()
+              .contains(currentUser) &&
+          !alreadyShown) {
+        Get.toNamed("/potm/" + currentUser);
+        prefs.setBool(preferencePath, true);
+      }
+    }
+  }
+
+  Future<void> refreshState() async {
     List<Future<dynamic>> futures = [
       context.read<MatchesState>().fetchRatings(widget.matchId),
       MatchesController.refresh(context, widget.matchId)
@@ -66,48 +118,10 @@ class MatchDetailsState extends State<MatchDetails> {
 
     // get organizer details
     UserController.getUserDetails(context, match.organizerId);
-
-    if (showModal) {
-      // show rating modal
-      var match = context.read<MatchesState>().getMatch(widget.matchId);
-      var loggedUser = context.read<UserState>().getLoggedUserDetails();
-
-      if (match?.status == MatchStatus.to_rate && match!.isUserGoing(loggedUser)) {
-        var stillToVote = context.read<MatchesState>().stillToVote(
-            widget.matchId, loggedUser!);
-
-        if (stillToVote.isNotEmpty) {
-          await RatePlayerBottomModal.rateAction(context, widget.matchId);
-          setState(() {});
-        }
-      }
-
-      // fixme currently sharedpref gives some error in web
-      if (!kIsWeb && context.read<UserState>().isLoggedIn()) {
-        // go to potm
-        var prefs = await SharedPreferences.getInstance();
-        var currentUser = context.read<UserState>().currentUserId!;
-        var preferencePath = "potm_screen_showed_" + widget.matchId + "_" + currentUser;
-        var alreadyShown = prefs.getBool(preferencePath) ?? false;
-
-        if (context.read<UserState>().isLoggedIn() &&
-            context
-                .read<MatchesState>()
-                .getMatch(widget.matchId)!
-                .getPotms()
-                .contains(currentUser) &&
-            !alreadyShown) {
-          Get.toNamed("/potm/" + currentUser);
-          prefs.setBool(preferencePath, true);
-        }
-      }
-    }
   }
 
   @override
   Widget build(BuildContext context) {
-    print("match id is ${widget.matchId}");
-
     var userState = context.watch<UserState>();
     var matchesState = context.watch<MatchesState>();
     Match? match = matchesState.getMatch(widget.matchId);
@@ -187,8 +201,8 @@ class MatchDetailsState extends State<MatchDetails> {
     ];
 
     return PageTemplate(
-      initState: () => refreshState(true),
-      refreshState: () => refreshState(false),
+      initState: () => myInitState(),
+      refreshState: () => refreshState(),
       widgets: interleave(widgets, SizedBox(height: 16)),
       appBar: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -208,7 +222,7 @@ class MatchDetailsState extends State<MatchDetails> {
 }
 
 class PlayerList extends StatelessWidget {
-  static getTitle(Match match) => (match == null)
+  static getTitle(Match? match) => (match == null)
       ? ""
       : "Players (${match.numPlayersGoing().toString()}/${match.maxPlayers.toString()})";
 
