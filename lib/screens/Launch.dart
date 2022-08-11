@@ -122,7 +122,7 @@ void main() {
                 ),
               ),
             ),
-          maximumSize: Size(475.0, 812.0), // Maximum size
+          maximumSize: Size(812.0, 812.0), // Maximum size
           enabled: kIsWeb,
           backgroundColor: Palette.grey_light,
         ),

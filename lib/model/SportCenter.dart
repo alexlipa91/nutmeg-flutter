@@ -6,6 +6,7 @@ class SportCenter {
   double lng;
   String neighbourhood;
   String address;
+  String cid;
   Map<String, dynamic> _info;
 
   String _thumbnailUrl;
@@ -18,6 +19,7 @@ class SportCenter {
         address = json['address'],
         lat = json['lat'],
         lng = json['lng'],
+        cid = json['cid'],
         _info = Map<String, dynamic>.from(json["info"] ?? {}),
         _thumbnailUrl = json['thumbnailUrl'],
         _imagesUrls = List<String>.from(json["largeImageUrls"] ?? []);

@@ -28,6 +28,7 @@ import 'package:nutmeg/widgets/PageTemplate.dart';
 import 'package:readmore/readmore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:skeletons/skeletons.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../state/LoadOnceState.dart';
 import '../state/MatchesState.dart';
@@ -166,7 +167,7 @@ class MatchDetailsState extends State<MatchDetails> {
             "Payment Policy",
             "If you leave the match you will get a refund (excluding Nutmeg service fee).\n"
                     "If the match is cancelled you will get a full refund.\n\n"
-                    "If you don’t show up you won’t get a refund.\n\n" +
+                    "If you don’t show up you won’t get a refund." +
                 (match.cancelBefore != null
                     ? "The match will be automatically canceled "
                         "${getFormattedDateLongWithHour(match.dateTime
@@ -817,7 +818,9 @@ class MapCardImage extends StatelessWidget {
 
     return InkWell(
       onTap: () async {
-        if (await MapLauncher.isMapAvailable(m.MapType.google) ?? false) {
+        if (kIsWeb) {
+          launchUrl(Uri.parse("https://maps.google.com/?cid=${sportCenter.cid}"));
+        } else if (await MapLauncher.isMapAvailable(m.MapType.google) ?? false) {
           await MapLauncher.showMarker(
             mapType: m.MapType.google,
             coords: Coords(lat, lng),

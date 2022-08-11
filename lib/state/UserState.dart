@@ -21,7 +21,7 @@ class UserState extends ChangeNotifier {
 
   void setCurrentUserDetails(UserDetails u) {
     _currentUserId = u.documentId;
-    if (u.getIsAdmin() != null && u.getIsAdmin()) {
+    if (u.getIsAdmin()) {
       _isTestMode = true;
     }
     setUserDetail(u);
@@ -62,7 +62,7 @@ class UserState extends ChangeNotifier {
 
     List<double> scoresList = [];
 
-    List<Object> o = scores!["scores"];
+    List<dynamic> o = scores!["scores"];
     o.forEach((e) {
       scoresList.add(e as double);
     });
