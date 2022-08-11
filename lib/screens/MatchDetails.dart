@@ -169,7 +169,7 @@ class MatchDetailsState extends State<MatchDetails> {
                     "If the match is cancelled you will get a full refund.\n\n"
                     "If you don’t show up you won’t get a refund." +
                 (match.cancelBefore != null
-                    ? "\nThe match will be automatically canceled "
+                    ? "\n\nThe match will be automatically canceled "
                         "${getFormattedDateLongWithHour(match.dateTime
                     .subtract(match.cancelBefore!))} "
                         "if less than ${match.minPlayers} players have joined."
