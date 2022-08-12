@@ -12,6 +12,7 @@ import 'package:get/get_core/src/get_main.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:nutmeg/screens/EnterDetails.dart';
 import 'package:provider/provider.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
@@ -101,7 +102,8 @@ class UserController {
           userCredential.user?.email);
 
       if (userDetails.name == null || userDetails.name == "") {
-        var name = await Get.toNamed("/login/enterDetails");
+        var name = await Navigator.of(context).push(
+            MaterialPageRoute(builder: (context) => EnterDetails()));
         if (name == null || name == "") {
           // Navigator.pop(context);
           return null;

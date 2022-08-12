@@ -12,6 +12,7 @@ import 'package:get/get_core/src/get_main.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 import 'package:nutmeg/model/UserDetails.dart';
+import 'package:nutmeg/screens/EnterDetails.dart';
 import 'package:provider/provider.dart';
 import 'package:tuple/tuple.dart';
 import 'package:version/version.dart';
@@ -141,7 +142,8 @@ class LaunchController {
     // fixme force users without name
     if (userDetails != null &&
         (userDetails.name == null || userDetails.name == "")) {
-      var name = await Get.toNamed("/login/enterDetails");
+      var name = await Navigator.of(context).push(
+          MaterialPageRoute(builder: (context) => EnterDetails()));
       if (name == null || name == "") {
         // Navigator.pop(context);
         // SystemNavigator.pop();

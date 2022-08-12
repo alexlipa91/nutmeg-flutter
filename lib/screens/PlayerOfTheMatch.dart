@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
+import 'package:go_router/go_router.dart';
 import 'package:nutmeg/state/UserState.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/Avatar.dart';
@@ -55,7 +56,7 @@ class PlayerOfTheMatch extends StatelessWidget {
                 padding: EdgeInsets.only(right: 20),
                 child: InkWell(
                   child: Icon(Icons.close),
-                  onTap: () => Get.back(),
+                  onTap: () => GoRouter.of(context).pop(),
                 ))
           ],
         ),
@@ -148,9 +149,9 @@ class MainAreaState extends State<MainArea> {
                           ]),
                       SizedBox(height: 24),
                       GenericButtonWithLoader("SEE MATCH STATS",
-                          (BuildContext context) async {
-                        Get.back();
-                      }, PrimaryInverted()),
+                              (BuildContext context) async =>
+                                  GoRouter.of(context).pop(),
+                          PrimaryInverted()),
                       ShareButton(() async {
                         var appDir = await getApplicationDocumentsDirectory();
                         var filePath = await widget.screenshotController

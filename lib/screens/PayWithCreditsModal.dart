@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
+import 'package:go_router/go_router.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/screens/PaymentDetailsDescription.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
@@ -26,7 +27,7 @@ class PayWithCreditsButton extends StatelessWidget {
           await MatchesController.joinMatch(context, matchId, paymentRecap);
           context.read<GenericButtonWithLoaderState>().change(false);
 
-          Get.back(result: true);
+          GoRouter.of(context).pop();
           await PaymentDetailsDescription.communicateSuccessToUser(context, matchId);
         },
         Primary(),

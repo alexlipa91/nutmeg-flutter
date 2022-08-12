@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
+import 'package:go_router/go_router.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/state/MatchesState.dart';
@@ -108,10 +109,6 @@ class RatePlayerBottomModal extends StatelessWidget {
   Future<void> store(BuildContext context) async {
     var state = context.read<RatingPlayersState>();
 
-    if (state.getCurrent() == null) {
-      return;
-    }
-
     MatchesController.addRating(context, state.getCurrent(), matchId,
         state.getCurrentScore());
 
@@ -121,11 +118,7 @@ class RatePlayerBottomModal extends StatelessWidget {
         state.getCurrentScore());
 
     if (state.isLast()) {
-      if (state.current + 1 == state.toRate.length) {
-        Get.back();
-      } else {
-        Get.back();
-      }
+      GoRouter.of(context).pop();
     } else {
       state.next();
     }
