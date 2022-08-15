@@ -325,15 +325,13 @@ class TeamsWidget extends StatelessWidget {
 }
 
 class Title extends StatelessWidget {
-  final String matchId;
+  final Match match;
 
-  Title(this.matchId);
+  Title(this.match);
 
   @override
   Widget build(BuildContext context) {
     var loadOnceState = context.read<LoadOnceState>();
-
-    var match = context.read<MatchesState>().getMatch(matchId);
 
     var skeleton = SkeletonLine(
       style: SkeletonLineStyle(
@@ -364,19 +362,15 @@ class Title extends StatelessWidget {
 class MatchInfo extends StatelessWidget {
   static var dateFormat = DateFormat('MMMM dd \'at\' HH:mm');
 
-  final String matchId;
+  final Match match;
 
-  MatchInfo(this.matchId);
+  MatchInfo(this.match);
 
   @override
   Widget build(BuildContext context) {
     var child;
 
-    var match = context.watch<MatchesState>().getMatch(matchId);
-
-    var sportCenter = (match == null)
-        ? null
-        : context.watch<LoadOnceState>().getSportCenter(match.sportCenterId);
+    var sportCenter = context.watch<LoadOnceState>().getSportCenter(match.sportCenterId);
 
     var matchWidget = getStatusWidget(match);
 
@@ -388,7 +382,7 @@ class MatchInfo extends StatelessWidget {
           padding: EdgeInsets.all(16.0),
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Title(matchId),
+            Title(match),
             SizedBox(height: 16),
             Builder(builder: (context) {
               if (sportCenter == null) return Skeletons.xlText;
@@ -487,14 +481,16 @@ class SportCenterImageCarouselState extends State<SportCenterImageCarousel> {
   int _current = 0;
   final CarouselController _controller = CarouselController();
 
+  static Widget getPlaceholder() => SkeletonAvatar(
+    style: SkeletonAvatarStyle(
+        width: double.infinity,
+        height: 190,
+        borderRadius: BorderRadius.circular(10.0)),
+  );
+
   @override
   Widget build(BuildContext context) {
-    var placeHolder = SkeletonAvatar(
-      style: SkeletonAvatarStyle(
-          width: double.infinity,
-          height: 190,
-          borderRadius: BorderRadius.circular(10.0)),
-    );
+    var placeHolder = getPlaceholder();
 
     if (widget.match == null) {
       return placeHolder;
@@ -863,9 +859,8 @@ class Stats extends StatelessWidget {
           .stillToVote(matchId, loggedUser!);
     }
 
-    if (stillToRate.isEmpty &&
-        context.read<MatchesState>().getMatch(matchId)!.status ==
-            MatchStatus.to_rate) {
+    if (context.read<MatchesState>().getMatch(match.documentId).status ==
+        MatchStatus.to_rate) {
       child = Container(
           width: double.infinity,
           child: Column(
@@ -893,14 +888,13 @@ class Stats extends StatelessWidget {
             ],
           ));
     } else {
-      var ratings = context.watch<MatchesState>().getRatings(matchId);
+      var ratings = context.watch<MatchesState>().getRatings(match.documentId);
       var userState = context.watch<UserState>();
 
       child = (ratings == null)
           ? StatsSkeleton()
           : Builder(
               builder: (context) {
-                var match = context.watch<MatchesState>().getMatch(matchId);
                 var finalRatings = ratings.getFinalRatings(
                     match!.getGoingUsersByTime(), match.getPotms());
 

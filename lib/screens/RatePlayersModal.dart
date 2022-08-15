@@ -41,7 +41,7 @@ class RatePlayerBottomModal extends StatelessWidget {
 
     toRate.map((e) => UserController.getUserDetails(context, e));
 
-    await ModalBottomSheet.showNutmegModalBottomSheet(
+    var completed = await ModalBottomSheet.showNutmegModalBottomSheet(
         context,
         MultiProvider(
           providers: [
@@ -50,7 +50,8 @@ class RatePlayerBottomModal extends StatelessWidget {
           ],
           child: RatePlayerBottomModal(matchId),
         ));
-    await FeedbackBottomModal.feedbackAction(context);
+    if(completed != null && (completed as bool) == true)
+      await FeedbackBottomModal.feedbackAction(context);
     // don't refresh the status here because the last rating might have not yet propagated; instead leave RatePlayerBottomModal modify it if necessary
   }
 
