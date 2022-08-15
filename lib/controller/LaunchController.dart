@@ -37,11 +37,7 @@ class LaunchController {
       BuildContext context, RemoteMessage message) async {
     print('message ${message.messageId} opened from notification with data '
         + message.data.toString());
-
-    // todo
-    // context.read<AppState>().setStack(
-    //     List<NutmegPage>.from([NutmegPage.HOME, NutmegPage.MATCH]),
-    //     message.data["match_id"]);
+    GoRouter.of(context).go(message.data["route"]);
   }
 
   static void _setupNotifications(BuildContext context) {
