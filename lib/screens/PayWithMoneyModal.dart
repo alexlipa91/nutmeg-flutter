@@ -4,7 +4,6 @@ import 'package:nutmeg/state/MatchesState.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'dart:html' as html;
 
 import '../model/PaymentRecap.dart';
 import '../state/UserState.dart';
@@ -33,7 +32,7 @@ class PayWithMoneyButton extends StatelessWidget {
             url = "$url&is_web=true";
 
           if (kIsWeb)
-            html.window.open(url,"_self");
+            await launchUrl(Uri.parse(url), webOnlyWindowName: "_self");
           else
             await launch(url, forceSafariVC: false);
         },

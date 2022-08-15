@@ -28,9 +28,11 @@ class LaunchController {
   static bool loadingDone = false;
   static var apiClient = CloudFunctionsClient();
 
-  static Future<void> handleLink(Uri deepLink, [bool start = false]) async {
+  static Future<void> handleLink(Uri deepLink) async {
     print("handling dynamic link " + deepLink.toString());
-    navigatorKey.currentContext?.go(deepLink.path);
+    var fullPath = "${deepLink.path}?${deepLink.queryParameters
+        .entries.map((e) => "${e.key}=${e.value}").join("&")}";
+    GoRouter.of(appRouter.navigator!.context).go(fullPath);
   }
 
   static void _handleMessageFromNotification(
@@ -67,8 +69,8 @@ class LaunchController {
         }
       };
 
-      FirebaseDynamicLinks.instance.onLink(
-          onSuccess: future, onError: (OnLinkErrorException e) async {
+      FirebaseDynamicLinks.instance.onLink(onSuccess: future,
+          onError: (OnLinkErrorException e) async {
         print(e.message);
       });
     }
@@ -180,7 +182,7 @@ class LaunchController {
     if (deepLink != null) {
       print("navigating with deep link:" + deepLink.toString());
       trace.putAttribute("coming_from_deeplink", true.toString());
-      handleLink(deepLink, true);
+      handleLink(deepLink);
     } else if (initialMessage != null) {
       print("navigating with initial message:" + initialMessage.toString());
       trace.putAttribute("coming_from_notification", true.toString());

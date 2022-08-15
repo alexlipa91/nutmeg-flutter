@@ -25,39 +25,25 @@ import '../state/UserState.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
-void main() {
-  Logger.level = Level.error;
-  WidgetsFlutterBinding.ensureInitialized(); //imp line need to be added first
-
-  if (!kIsWeb) {
-    FlutterError.onError = (FlutterErrorDetails details) async {
-      print("*** CAUGHT FROM FRAMEWORK ***");
-      await FirebaseCrashlytics.instance.recordFlutterError(details);
-    };
-  }
-
-  var login = GoRoute(
-    path: 'login',
-    builder: (context, state) => Login(),
-  );
-
-  final appRouter = GoRouter(
-    debugLogDiagnostics: true,
-    urlPathStrategy: UrlPathStrategy.path,
-    routes: [
-      GoRoute(
-        path: '/launch',
-        builder: (context, state) => LaunchWidget(from: state.queryParams["from"]),
-      ),
-      GoRoute(
+final appRouter = GoRouter(
+  debugLogDiagnostics: true,
+  urlPathStrategy: UrlPathStrategy.path,
+  routes: [
+    GoRoute(
+      path: '/launch',
+      builder: (context, state) => LaunchWidget(from: state.queryParams["from"]),
+    ),
+    GoRoute(
         path: '/',
         builder: (context, state) => AvailableMatches(),
         routes: [
-          login,
+          GoRoute(path: 'login', builder: (context, state) => Login()),
           GoRoute(
-            path: 'user',
-            builder: (context, state) => UserPage(),
-            routes: [login]
+              path: 'user',
+              builder: (context, state) => UserPage(),
+              routes: [
+                GoRoute(path: 'login', builder: (context, state) => Login())
+              ]
           ),
           GoRoute(
             path: 'createMatch',
@@ -66,34 +52,49 @@ void main() {
           GoRoute(
             path: 'match/:id',
             builder: (context, state) => MatchDetails(
-                  matchId: state.params["id"]!,
-                  paymentOutcome: state.queryParams["payment_outcome"]),
+                key: ValueKey("MatchDetails-${state.params["id"]}"
+                    "-${state.queryParams["payment_outcome"] ?? "none"}"),
+                matchId: state.params["id"]!,
+                paymentOutcome: state.queryParams["payment_outcome"]),
           ),
           GoRoute(
             path: 'match/:id/potm',
             builder: (context, state) => MatchDetails(
-                matchId: state.params["id"]!,
-                fromPotm: true,
+              matchId: state.params["id"]!,
+              fromPotm: true,
             ),
           ),
         ]
-      ),
-    ],
+    ),
+  ],
+  // redirect to the launch page
+  redirect: (state) {
+    var redirectUrl;
+    if (!LaunchController.loadingDone && state.subloc != "/launch") {
+      var from = state.location == '/' ? '' : '?from=${state.location}';
+      redirectUrl = "/launch$from";
+    } else if (!navigatorKey.currentContext!.read<UserState>().isLoggedIn()) {
+      if ({"/createMatch", "/user"}.contains(state.subloc))
+        redirectUrl = "/login?from=${state.location}";
+    }
 
-    // redirect to the launch page
-    redirect: (state) {
-      var redirectUrl;
-      if (!LaunchController.loadingDone && state.subloc != "/launch") {
-          var from = state.location == '/' ? '' : '?from=${state.location}';
-          redirectUrl = "/launch$from";
-      } else if (!navigatorKey.currentContext!.read<UserState>().isLoggedIn()) {
-        if ({"/createMatch", "/user"}.contains(state.subloc))
-          redirectUrl = "/login?from=${state.location}";
-      }
+    return redirectUrl;
+  },
+);
 
-      return redirectUrl;
-    },
-  );
+
+void main() {
+  Logger.level = Level.error;
+  WidgetsFlutterBinding.ensureInitialized(); //imp line need to be added first
+
+  if (!kIsWeb) {
+    FlutterError.onError = (FlutterErrorDetails details) async {
+      print(details.exceptionAsString());
+      print(details.stack);
+      print("*** CAUGHT FROM FRAMEWORK ***");
+      await FirebaseCrashlytics.instance.recordFlutterError(details);
+    };
+  }
 
   runZonedGuarded(() {
     runApp(MultiProvider(

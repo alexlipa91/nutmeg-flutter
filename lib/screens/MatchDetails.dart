@@ -63,13 +63,17 @@ class MatchDetailsState extends State<MatchDetails> {
     await refreshState();
 
     // check if payment outcome
-    if (widget.paymentOutcome != null)
-      if (widget.paymentOutcome! == "success")
-        PaymentDetailsDescription.communicateSuccessToUser(context, widget.matchId);
-      else
+    if (widget.paymentOutcome != null) {
+      if (ModalBottomSheet.isOpen)
+        Navigator.of(context).pop();
+      if (widget.paymentOutcome! == "success") {
+        PaymentDetailsDescription.communicateSuccessToUser(context,
+            widget.matchId);
+      } else
         GenericInfoModal(
             title: "Payment Failed!", description: "Please try again")
             .show(context);
+    }
 
     // show rating modal
     var match = context.read<MatchesState>().getMatch(widget.matchId);
@@ -96,6 +100,7 @@ class MatchDetailsState extends State<MatchDetails> {
   }
 
   Future<void> refreshState() async {
+    print("refresh state match details");
     List<Future<dynamic>> futures = [
       context.read<MatchesState>().fetchRatings(widget.matchId),
       MatchesController.refresh(context, widget.matchId)
@@ -128,88 +133,132 @@ class MatchDetailsState extends State<MatchDetails> {
     var bottomBar = BottomBarMatch.getBottomBar(context, widget.matchId, status);
 
     // add padding individually since because of shadow clipping some components need margin
-    var widgets = [
-      // title
-      if (organizerView &&
-          userState.getLoggedUserDetails()?.areChargesEnabled(isTest) != null &&
-          !userState.getLoggedUserDetails()!.areChargesEnabled(isTest))
-        CompleteOrganiserAccountWidget(isTest: isTest),
-      if (isTest)
-        InfoContainer(
-            backgroundColor: Palette.accent,
-            child: SelectableText(
-              "Test match: " + widget.matchId,
-              style: TextPalette.getBodyText(Palette.black),
-            )),
-      // info box
-      MatchInfo(widget.matchId),
-      // stats
-      if (status == MatchStatus.rated || status == MatchStatus.to_rate)
-        Stats(matchId: widget.matchId),
-      // horizontal players list or teams
-      if (match != null)
-        match.hasTeams()
-            ? TeamsWidget(matchId: widget.matchId)
-            : PlayerList(match: match,
-            withJoinButton: bottomBar is JoinMatchBottomBar && !match.isFull()),
-      if (match != null) SportCenterDetails(matchId: widget.matchId),
-      if (match != null)
+    var widgets;
+    if (match == null) {
+      var skeletonRepeatedElement = Padding(
+          padding: EdgeInsets.symmetric(vertical: 16.0),
+          child:
+          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            SkeletonLine(
+                style: SkeletonLineStyle(
+                    borderRadius: BorderRadius.circular(20),
+                    width: double.infinity,
+                    height: 24)),
+            Column(children: List<Widget>.filled(3,
+                Padding(
+                  padding: EdgeInsets.only(top: 16),
+                  child: Row(children: [
+                    SkeletonLine(
+                      style: SkeletonLineStyle(
+                          borderRadius: BorderRadius.circular(20),
+                          width: 24,
+                          height: 24),
+                    ),
+                    SizedBox(width: 16),
+                    Expanded(
+                      child: SkeletonLine(
+                        style: SkeletonLineStyle(
+                            borderRadius: BorderRadius.circular(20),
+                            height: 24),
+                      ),
+                    ),
+                  ],),
+                )))
+          ])
+      );
+
+      widgets = [
+        Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(children: [Expanded(child: SportCenterImageCarouselState.getPlaceholder())]),
+              skeletonRepeatedElement,
+              skeletonRepeatedElement,
+              skeletonRepeatedElement
+            ])
+      ];
+    } else {
+      widgets = [
+        // title
+        if (organizerView &&
+            userState.getLoggedUserDetails()?.areChargesEnabled(isTest) != null &&
+            !userState.getLoggedUserDetails()!.areChargesEnabled(isTest))
+          CompleteOrganiserAccountWidget(isTest: isTest),
+        if (isTest)
+          InfoContainer(
+              backgroundColor: Palette.accent,
+              child: SelectableText(
+                "Test match: " + widget.matchId,
+                style: TextPalette.getBodyText(Palette.black),
+              )),
+        // info box
+        MatchInfo(match),
+        // stats
+        if (status == MatchStatus.rated || status == MatchStatus.to_rate)
+          Stats(match: match),
+        // horizontal players list or teams
+          match.hasTeams()
+              ? TeamsWidget(matchId: widget.matchId)
+              : PlayerList(match: match,
+              withJoinButton: bottomBar is JoinMatchBottomBar && !match.isFull()),
+        SportCenterDetails(matchId: widget.matchId),
         RuleCard(
             "Payment Policy",
-            "If you leave the match you will get a refund (excluding Nutmeg service fee).\n"
-                    "If the match is cancelled you will get a full refund.\n\n"
-                    "If you don’t show up you won’t get a refund." +
-                (match.cancelBefore != null
-                    ? "\n\nThe match will be automatically canceled "
-                        "${getFormattedDateLongWithHour(match.dateTime
-                    .subtract(match.cancelBefore!))} "
-                        "if less than ${match.minPlayers} players have joined."
-                    : "")),
-      if (match != null && match.organizerId != null)
-        Builder(builder: (context) {
-          var ud = context.watch<UserState>().getUserDetail(match.organizerId!);
+              "If you leave the match you will get a refund (excluding Nutmeg service fee).\n"
+                  "If the match is cancelled you will get a full refund.\n\n"
+                  "If you don’t show up you won’t get a refund." +
+                  (match.cancelBefore != null
+                      ? "\n\nThe match will be automatically canceled "
+                      "${getFormattedDateLongWithHour(match.dateTime
+                      .subtract(match.cancelBefore!))} "
+                      "if less than ${match.minPlayers} players have joined."
+                      : "")),
+        if (match.organizerId != null)
+          Builder(builder: (context) {
+            var ud = context.watch<UserState>().getUserDetail(match.organizerId!);
 
-          return InfoContainer(
-              child: Row(children: [
-            (ud != null && ud.isAdmin!)
-                ? NutmegAvatar(24.0)
-                : UserAvatarWithBottomModal(userData: ud),
-            SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text("Organized by", style: TextPalette.bodyText),
-                  SizedBox(height: 4),
-                  (ud == null)
-                      ? Skeletons.lText
-                      : Text((ud.isAdmin!) ? "Nutmeg" : ud.name!.split(" ").first,
-                          style: TextPalette.h2),
-                ],
-              ),
-            ),
-          ]));
-        }),
-    ];
+            return InfoContainer(
+                child: Row(children: [
+                  (ud != null && ud.isAdmin!)
+                      ? NutmegAvatar(24.0)
+                      : UserAvatarWithBottomModal(userData: ud),
+                  SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text("Organized by", style: TextPalette.bodyText),
+                        SizedBox(height: 4),
+                        (ud == null)
+                            ? Skeletons.lText
+                            : Text((ud.isAdmin!) ? "Nutmeg" : ud.name!.split(" ").first,
+                            style: TextPalette.h2),
+                      ],
+                    ),
+                  ),
+                ]));
+          }),
+      ];
+    }
 
     return PageTemplate(
-      initState: () => myInitState(),
-      refreshState: () => refreshState(),
-      widgets: interleave(widgets, SizedBox(height: 16)),
-      appBar: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          BackButton(color: Palette.black),
-          if (!DeviceInfo().name.contains("ipad"))
-            Align(
-                alignment: Alignment.centerRight,
-                child: buttons.ShareButton(() async {
-                  await DynamicLinks.shareMatchFunction(widget.matchId);
-                }, Palette.black, 25.0)),
-        ],
-      ),
-      bottomNavigationBar: bottomBar,
-    );
+        initState: () => myInitState(),
+        refreshState: () => refreshState(),
+        widgets: interleave(widgets, SizedBox(height: 16)),
+        appBar: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            BackButton(color: Palette.black),
+            if (!DeviceInfo().name.contains("ipad"))
+              Align(
+                  alignment: Alignment.centerRight,
+                  child: buttons.ShareButton(() async {
+                    await DynamicLinks.shareMatchFunction(widget.matchId);
+                  }, Palette.black, 25.0)),
+          ],
+        ),
+        bottomNavigationBar: bottomBar,
+      );
   }
 }
 
@@ -836,31 +885,15 @@ class MapCardImage extends StatelessWidget {
 }
 
 class Stats extends StatelessWidget {
-  final String matchId;
+  final Match match;
 
-  const Stats({Key? key, required this.matchId}) : super(key: key);
+  Stats({Key? key, required this.match}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     var child;
-    var loggedUser = context.watch<UserState>().getLoggedUserDetails();
 
-    var match = context.watch<MatchesState>().getMatch(matchId);
-
-    if (match == null)
-      return StatsSkeleton();
-
-    var stillToRate;
-    if (!match.isUserGoing(loggedUser)) {
-      stillToRate = List<String>.empty();
-    } else {
-      stillToRate = context
-          .watch<MatchesState>()
-          .stillToVote(matchId, loggedUser!);
-    }
-
-    if (context.read<MatchesState>().getMatch(match.documentId).status ==
-        MatchStatus.to_rate) {
+    if (match.status == MatchStatus.to_rate) {
       child = Container(
           width: double.infinity,
           child: Column(
@@ -891,12 +924,13 @@ class Stats extends StatelessWidget {
       var ratings = context.watch<MatchesState>().getRatings(match.documentId);
       var userState = context.watch<UserState>();
 
-      child = (ratings == null)
+      var loadSkeleton = ratings == null;
+      child = (loadSkeleton)
           ? StatsSkeleton()
           : Builder(
               builder: (context) {
-                var finalRatings = ratings.getFinalRatings(
-                    match!.getGoingUsersByTime(), match.getPotms());
+                var finalRatings = ratings!.getFinalRatings(
+                    match.getGoingUsersByTime(), match.getPotms());
 
                 int index = 1;
 

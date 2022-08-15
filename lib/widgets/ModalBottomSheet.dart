@@ -4,8 +4,11 @@ import 'package:nutmeg/utils/UiUtils.dart';
 
 class ModalBottomSheet {
 
-  static Future<T?> showNutmegModalBottomSheet<T>(BuildContext? context, Widget child) {
-    return showModalBottomSheet<T?>(
+  static bool isOpen = false;
+
+  static Future<T?> showNutmegModalBottomSheet<T>(BuildContext? context, Widget child) async {
+    isOpen = true;
+    var returnValue = await showModalBottomSheet<T?>(
       isScrollControlled: true,
       backgroundColor: Palette.white,
       shape: RoundedRectangleBorder(
@@ -18,5 +21,7 @@ class ModalBottomSheet {
               padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
               child: Wrap(children: [child]))))
     );
+    isOpen = false;
+    return returnValue;
   }
  }
