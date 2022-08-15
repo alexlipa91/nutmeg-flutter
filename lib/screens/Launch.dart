@@ -9,12 +9,10 @@ import 'package:flutter_web_frame/flutter_web_frame.dart';
 import 'package:go_router/go_router.dart';
 import 'package:logger/logger.dart';
 import 'package:nutmeg/controller/LaunchController.dart';
-import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/screens/AvailableMatches.dart';
 import 'package:nutmeg/screens/CreateMatch.dart';
 import 'package:nutmeg/screens/Login.dart';
 import 'package:nutmeg/screens/MatchDetails.dart';
-import 'package:nutmeg/screens/PlayerOfTheMatch.dart';
 import 'package:nutmeg/screens/UserPage.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:provider/provider.dart';
@@ -70,22 +68,14 @@ void main() {
             builder: (context, state) => MatchDetails(
                   matchId: state.params["id"]!,
                   paymentOutcome: state.queryParams["payment_outcome"]),
-            routes: [
-              GoRoute(
-                path: 'potm',
-                builder: (context, state) {
-                  var loggedUser = context.read<UserState>().getLoggedUserDetails();
-                  var matchId = state.params["id"];
-
-                  if (loggedUser != null
-                      && context.read<MatchesState>().getMatch(matchId!)!.getPotms()
-                          .contains(loggedUser.documentId)
-                      && !UserController.hasSeenPotmScreen(matchId, loggedUser.documentId)) {
-                    return PlayerOfTheMatch();
-                  }
-                  return MatchDetails(matchId: matchId!);
-                }),
-            ]),
+          ),
+          GoRoute(
+            path: 'match/:id/potm',
+            builder: (context, state) => MatchDetails(
+                matchId: state.params["id"]!,
+                fromPotm: true,
+            ),
+          ),
         ]
       ),
     ],
