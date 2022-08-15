@@ -23,8 +23,6 @@ class PlayerOfTheMatch extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var uid = Get.parameters["userId"];
-
     var images = Row(children: [
       Expanded(
           child: Column(

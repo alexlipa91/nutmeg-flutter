@@ -26,7 +26,6 @@ import 'package:nutmeg/widgets/Avatar.dart';
 import 'package:nutmeg/widgets/Containers.dart';
 import 'package:nutmeg/widgets/PageTemplate.dart';
 import 'package:readmore/readmore.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:skeletons/skeletons.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -80,26 +79,6 @@ class MatchDetailsState extends State<MatchDetails> {
       if (stillToVote.isNotEmpty) {
         await RatePlayerBottomModal.rateAction(context, widget.matchId);
         setState(() {});
-      }
-    }
-
-    // fixme currently sharedpref gives some error in web
-    if (!kIsWeb && context.read<UserState>().isLoggedIn()) {
-      // go to potm
-      var prefs = await SharedPreferences.getInstance();
-      var currentUser = context.read<UserState>().currentUserId!;
-      var preferencePath = "potm_screen_showed_" + widget.matchId + "_" + currentUser;
-      var alreadyShown = prefs.getBool(preferencePath) ?? false;
-
-      if (context.read<UserState>().isLoggedIn() &&
-          context
-              .read<MatchesState>()
-              .getMatch(widget.matchId)!
-              .getPotms()
-              .contains(currentUser) &&
-          !alreadyShown) {
-        Get.toNamed("/potm/" + currentUser);
-        prefs.setBool(preferencePath, true);
       }
     }
   }
