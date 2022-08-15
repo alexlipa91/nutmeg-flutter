@@ -3,8 +3,6 @@ import 'dart:math';
 import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nutmeg/state/UserState.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
@@ -20,6 +18,10 @@ import 'package:share_plus/share_plus.dart';
 class PlayerOfTheMatch extends StatelessWidget {
   final GlobalKey previewContainer = new GlobalKey();
   final screenshotController = ScreenshotController();
+
+  final String? userId;
+
+  PlayerOfTheMatch({Key? key, this.userId}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -63,7 +65,8 @@ class PlayerOfTheMatch extends StatelessWidget {
               constraints: BoxConstraints.expand(),
               decoration: new BoxDecoration(color: Palette.primary)),
           images,
-          MainArea(userId: uid!, screenshotController: screenshotController)
+          MainArea(userId: userId ?? context.read<UserState>().currentUserId!,
+              screenshotController: screenshotController)
         ]),
       ),
     );
