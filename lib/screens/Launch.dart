@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/foundation.dart';
@@ -17,6 +16,7 @@ import 'package:nutmeg/screens/UserPage.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:provider/provider.dart';
 import 'package:skeletons/skeletons.dart';
+import 'package:universal_html/html.dart';
 
 import '../Exceptions.dart';
 import '../state/LoadOnceState.dart';

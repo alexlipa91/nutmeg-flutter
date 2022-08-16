@@ -7,7 +7,6 @@ import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:get/get.dart';
 import 'package:nutmeg/screens/PlayerOfTheMatch.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -100,7 +99,6 @@ class MatchDetailsState extends State<MatchDetails> {
   }
 
   Future<void> refreshState() async {
-    print("refresh state match details");
     List<Future<dynamic>> futures = [
       context.read<MatchesState>().fetchRatings(widget.matchId),
       MatchesController.refresh(context, widget.matchId)
@@ -121,7 +119,10 @@ class MatchDetailsState extends State<MatchDetails> {
   Widget build(BuildContext context) {
     var userState = context.watch<UserState>();
     var matchesState = context.watch<MatchesState>();
+
     Match? match = matchesState.getMatch(widget.matchId);
+    SportCenter? sportCenter = (match == null)
+        ? null : context.watch<LoadOnceState>().getSportCenter(match.sportCenterId);
 
     var status = match?.status;
 
@@ -134,7 +135,7 @@ class MatchDetailsState extends State<MatchDetails> {
 
     // add padding individually since because of shadow clipping some components need margin
     var widgets;
-    if (match == null) {
+    if (match == null || sportCenter == null) {
       var skeletonRepeatedElement = Padding(
           padding: EdgeInsets.symmetric(vertical: 16.0),
           child:
@@ -192,7 +193,7 @@ class MatchDetailsState extends State<MatchDetails> {
                 style: TextPalette.getBodyText(Palette.black),
               )),
         // info box
-        MatchInfo(match),
+        MatchInfo(match, sportCenter),
         // stats
         if (status == MatchStatus.rated || status == MatchStatus.to_rate)
           Stats(match: match),
@@ -201,7 +202,7 @@ class MatchDetailsState extends State<MatchDetails> {
               ? TeamsWidget(matchId: widget.matchId)
               : PlayerList(match: match,
               withJoinButton: bottomBar is JoinMatchBottomBar && !match.isFull()),
-        SportCenterDetails(matchId: widget.matchId),
+        SportCenterDetails(match: match, sportCenter: sportCenter),
         RuleCard(
             "Payment Policy",
               "If you leave the match you will get a refund (excluding Nutmeg service fee).\n"
@@ -355,7 +356,7 @@ class TeamsWidget extends StatelessWidget {
 
     List<Widget> childrenWidgets = [];
     childrenWidgets.addAll([
-      Text("Team ${teamName.capitalize}",
+      Text("Team ${teamName.toUpperCase()}",
           style: TextPalette.getListItem(Palette.black)),
       SizedBox(height: 24),
     ]);
@@ -375,34 +376,15 @@ class TeamsWidget extends StatelessWidget {
 
 class Title extends StatelessWidget {
   final Match match;
+  final SportCenter sportCenter;
 
-  Title(this.match);
+  Title(this.match, this.sportCenter);
 
   @override
   Widget build(BuildContext context) {
-    var loadOnceState = context.read<LoadOnceState>();
-
-    var skeleton = SkeletonLine(
-      style: SkeletonLineStyle(
-          borderRadius: BorderRadius.circular(20),
-          width: double.infinity,
-          height: 24),
-    );
-
-    if (match == null) {
-      return skeleton;
-    }
-    var sportCenter = loadOnceState.getSportCenter(match.sportCenterId);
-    if (sportCenter == null || sportCenter.getCourtType() == null) {
-      return skeleton;
-    }
-
-    var title = sportCenter.name + " - " + sportCenter.getCourtType()!;
-
     return Text(
-      title,
+      sportCenter.name + " - " + sportCenter.getCourtType()!,
       style: TextPalette.h1Default,
-      // textAlign: TextAlign.start
     );
   }
 }
@@ -412,14 +394,13 @@ class MatchInfo extends StatelessWidget {
   static var dateFormat = DateFormat('MMMM dd \'at\' HH:mm');
 
   final Match match;
+  final SportCenter sportCenter;
 
-  MatchInfo(this.match);
+  MatchInfo(this.match, this.sportCenter);
 
   @override
   Widget build(BuildContext context) {
     var child;
-
-    var sportCenter = context.watch<LoadOnceState>().getSportCenter(match.sportCenterId);
 
     var matchWidget = getStatusWidget(match);
 
@@ -431,11 +412,9 @@ class MatchInfo extends StatelessWidget {
           padding: EdgeInsets.all(16.0),
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Title(match),
+            Title(match, sportCenter),
             SizedBox(height: 16),
             Builder(builder: (context) {
-              if (sportCenter == null) return Skeletons.xlText;
-
               var addressItems = sportCenter.address.split(",");
 
               return Column(
@@ -448,12 +427,9 @@ class MatchInfo extends StatelessWidget {
             }),
             SizedBox(height: 16),
             IconList.fromIcon({
-              Icons.calendar_month_outlined: (match == null) ? null
-                  : getFormattedDateLong(match.dateTime),
-              Icons.access_time_outlined: (match == null) ? null
-                  : getStartAndEndHour(match.dateTime, match.duration).join(" - "),
-              Icons.local_offer_outlined: (match == null) ? null
-                  : formatCurrency(match.pricePerPersonInCents)
+              Icons.calendar_month_outlined: getFormattedDateLong(match.dateTime),
+              Icons.access_time_outlined: getStartAndEndHour(match.dateTime, match.duration).join(" - "),
+              Icons.local_offer_outlined: formatCurrency(match.pricePerPersonInCents)
             }),
             if (matchWidget != null)
               Column(children: [
@@ -518,7 +494,7 @@ class MatchInfo extends StatelessWidget {
 }
 
 class SportCenterImageCarousel extends StatefulWidget {
-  final Match? match;
+  final Match match;
 
   SportCenterImageCarousel(this.match);
 
@@ -533,7 +509,6 @@ class SportCenterImageCarouselState extends State<SportCenterImageCarousel> {
   static Widget getPlaceholder() => SkeletonAvatar(
     style: SkeletonAvatarStyle(
         width: double.infinity,
-        height: 190,
         borderRadius: BorderRadius.circular(10.0)),
   );
 
@@ -541,13 +516,9 @@ class SportCenterImageCarouselState extends State<SportCenterImageCarousel> {
   Widget build(BuildContext context) {
     var placeHolder = getPlaceholder();
 
-    if (widget.match == null) {
-      return placeHolder;
-    }
-
-    var sportCenter = (widget.match == null) ? null : context
+    var sportCenter = context
         .read<LoadOnceState>()
-        .getSportCenter(widget.match!.sportCenterId);
+        .getSportCenter(widget.match.sportCenterId);
 
     if (sportCenter == null) {
       return placeHolder;
@@ -609,7 +580,8 @@ class SportCenterImageCarouselState extends State<SportCenterImageCarousel> {
                             : Colors.transparent),
                   ),
                 );
-              }).toList()),
+              }
+            ).toList()),
         ),
       ],
     );
@@ -765,29 +737,22 @@ class RuleCard extends StatelessWidget {
 }
 
 class SportCenterDetails extends StatelessWidget {
-  final String matchId;
+  final SportCenter sportCenter;
+  final Match match;
 
-  const SportCenterDetails({Key? key, required this.matchId}) : super(key: key);
+  const SportCenterDetails({Key? key, required this.match,
+    required this.sportCenter}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    var match = context.read<MatchesState>().getMatch(matchId);
-    SportCenter? sportCenter;
-
-    if (match != null)
-      sportCenter =
-          context.read<LoadOnceState>().getSportCenter(match.sportCenterId);
-
     return InfoContainerWithTitle(
       title: "Location",
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          MapCardImage(matchId),
+          MapCardImage(sportCenter),
           SizedBox(height: 16),
           Builder(builder: (context) {
-            if (sportCenter == null) return Skeletons.fullWidthText;
-
             var addressItems = sportCenter.address.split(",");
 
             return Column(
@@ -801,14 +766,13 @@ class SportCenterDetails extends StatelessWidget {
           SizedBox(height: 16),
           IconList.fromSvg({
             "assets/icons/nutmeg_icon_court.svg":
-                (sportCenter == null || sportCenter.getCourtType() == null)
+                (sportCenter.getCourtType() == null)
                     ? null
                     : sportCenter.getCourtType()! + " court type",
-            "assets/icons/nutmeg_icon_shoe.svg":
-                (sportCenter == null) ? null : sportCenter.getSurface(),
-            if (sportCenter != null && sportCenter.hasChangingRooms())
+            "assets/icons/nutmeg_icon_shoe.svg": sportCenter.getSurface(),
+            if (sportCenter.hasChangingRooms())
               "assets/icons/nutmeg_icon_changing_rooms.svg": "Change rooms available",
-            if (match != null && (match.sportCenterSubLocation ?? "").isNotEmpty)
+            if ((match.sportCenterSubLocation ?? "").isNotEmpty)
               "assets/icons/nutmeg_icon_court_number.svg": "Court number ${match.sportCenterSubLocation}"
           })
         ],
@@ -818,28 +782,12 @@ class SportCenterDetails extends StatelessWidget {
 }
 
 class MapCardImage extends StatelessWidget {
-  final String matchId;
+  final SportCenter sportCenter;
 
-  MapCardImage(this.matchId);
+  MapCardImage(this.sportCenter);
 
   @override
   Widget build(BuildContext context) {
-    var skeleton = SkeletonAvatar(
-      style: SkeletonAvatarStyle(
-          width: double.infinity,
-          height: 190,
-          borderRadius: BorderRadius.circular(10.0)),
-    );
-
-    var match = context.read<MatchesState>().getMatch(matchId);
-
-    if (match == null) return skeleton;
-
-    var sportCenter =
-        context.read<LoadOnceState>().getSportCenter(match.sportCenterId);
-
-    if (sportCenter == null) return skeleton;
-
     var lat = sportCenter.lat;
     var lng = sportCenter.lng;
 

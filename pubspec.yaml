@@ -62,7 +62,6 @@ dependencies:
   badges: ^2.0.2
   firebase_analytics: ^8.0.0
   firebase_performance: ^0.8.0+7
-  get: ^4.6.1
   skeletons: ^0.0.3
   material_design_icons_flutter: ^5.0.6595
   time_picker_widget: ^1.0.0+10
@@ -76,6 +75,7 @@ dependencies:
   dotted_border: ^2.0.0+2
   flutter_web_frame: ^0.0.3
   go_router: ^4.2.7
+  universal_html: ^2.0.8
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.

@@ -674,13 +674,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.1.3"
-  get:
-    dependency: "direct main"
-    description:
-      name: get
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "4.6.5"
   glob:
     dependency: transitive
     description:
@@ -1401,7 +1394,7 @@ packages:
     source: hosted
     version: "1.3.0"
   universal_html:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: universal_html
       url: "https://pub.dartlang.org"

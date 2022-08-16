@@ -3,8 +3,6 @@ import 'dart:math';
 import 'package:cool_alert/cool_alert.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/model/MatchRatings.dart';
 import 'package:nutmeg/state/UserState.dart';

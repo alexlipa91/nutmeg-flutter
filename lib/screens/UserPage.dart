@@ -1,12 +1,8 @@
 import 'package:badges/badges.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:nutmeg/Exceptions.dart';
+import 'package:go_router/go_router.dart';
 import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/model/UserDetails.dart';
-import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/Avatar.dart';
@@ -293,9 +289,8 @@ class UserPageState extends State<UserPage> {
                 Expanded(
                     child: GenericButtonWithLoader(
                   "ADMIN AREA",
-                  (BuildContext context) async {
-                    Get.toNamed("/adminHome");
-                  },
+                  (BuildContext context) async =>
+                      GoRouter.of(context).go("/admin"),
                   Primary(),
                 ))
               ],
