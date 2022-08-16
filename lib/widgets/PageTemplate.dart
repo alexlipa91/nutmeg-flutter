@@ -7,15 +7,15 @@ import 'package:nutmeg/widgets/RefresherWithObserverWidget.dart';
 
 
 class PageTemplate extends StatelessWidget {
-  final Function initState;
-  final Function refreshState;
+  final Function? initState;
+  final Function? refreshState;
   final List<Widget> widgets;
-  final Row appBar;
-  final Widget bottomNavigationBar;
+  final Row? appBar;
+  final Widget? bottomNavigationBar;
 
-  const PageTemplate({Key key,
+  const PageTemplate({Key? key,
     this.refreshState,
-    this.widgets,
+    required this.widgets,
     this.appBar,
     this.bottomNavigationBar,
     this.initState}) : super(key: key);
@@ -28,7 +28,7 @@ class PageTemplate extends StatelessWidget {
     var refreshContainer = (Widget w) => (refreshState == null)
         ? Container(child: w)
         : RefresherWithObserverWidget(
-      refreshState: refreshState,
+      refreshState: refreshState!,
       child: w,
       initState: initState,
     );

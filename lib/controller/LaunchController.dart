@@ -4,87 +4,49 @@ import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_performance/firebase_performance.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
+import 'package:go_router/go_router.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 import 'package:nutmeg/model/UserDetails.dart';
+import 'package:nutmeg/screens/EnterDetails.dart';
 import 'package:provider/provider.dart';
 import 'package:tuple/tuple.dart';
 import 'package:version/version.dart';
 
 import '../Exceptions.dart';
 import '../screens/Launch.dart';
-import '../screens/PaymentDetailsDescription.dart';
 import '../state/LoadOnceState.dart';
 import '../state/UserState.dart';
-import '../utils/InfoModals.dart';
 import '../utils/UiUtils.dart';
 import '../utils/Utils.dart';
 import 'MiscController.dart';
 import 'UserController.dart';
 
-import 'package:flutter/foundation.dart' show kIsWeb;
-
 
 class LaunchController {
+  static bool loadingDone = false;
   static var apiClient = CloudFunctionsClient();
 
-  static Future<void> handleLink(Uri deepLink, [bool start = false]) async {
+  static Future<void> handleLink(Uri deepLink) async {
     print("handling dynamic link " + deepLink.toString());
-
-    if (deepLink.path == "/payment") {
-      var outcome = deepLink.queryParameters["outcome"];
-      var matchId = deepLink.queryParameters["match_id"];
-      var context = navigatorKey.currentContext;
-
-      var targetRoute = "/match/" + matchId;
-      if (Get.currentRoute != targetRoute)
-        Get.toNamed(targetRoute);
-      else
-        Get.back();
-
-      if (outcome == "success") {
-        PaymentDetailsDescription.communicateSuccessToUser(context, matchId);
-      } else {
-        await GenericInfoModal(
-                title: "Payment Failed!", description: "Please try again")
-            .show(context);
-      }
-      return;
-    }
-    if (deepLink.path == "/match") {
-      await goToMatchPage(deepLink.queryParameters["id"]);
-      return;
-    }
-    // if we don't know where to go and it's startup, let's go home
-    if (start)
-      Get.offAndToNamed("/home");
+    var fullPath = "${deepLink.path}?${deepLink.queryParameters
+        .entries.map((e) => "${e.key}=${e.value}").join("&")}";
+    GoRouter.of(appRouter.navigator!.context).go(fullPath);
   }
 
-  static void handleMessageFromNotification(
-      BuildContext context, RemoteMessage message) async {
-    print('message ' + message.messageId + ' opened from notification with data '
+  static void _handleMessageFromNotification(RemoteMessage message) async {
+    print('message ${message.messageId} opened from notification with data '
         + message.data.toString());
-
-    if (message.data.containsKey("event")) {
-      var event = message.data["event"];
-      if (event == "potm") {
-          goToMatchPage(message.data["match_id"]);
-      }
-    } else {
-      await goToMatchPage(message.data["match_id"]);
-    }
+    GoRouter.of(appRouter.navigator!.context).go(message.data["route"]);
   }
 
-  static void setupNotifications(BuildContext context) {
+  static void _setupNotifications(BuildContext context) {
     print("setting up notification handler");
 
     FirebaseMessaging.onMessageOpenedApp.listen((m) {
       print("called onMsgOpenedApp callback");
-      handleMessageFromNotification(context, m);
+      _handleMessageFromNotification(m);
     });
 
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
@@ -97,25 +59,24 @@ class LaunchController {
     });
 
     if (!kIsWeb) {
-      FirebaseDynamicLinks.instance.onLink(
-          onSuccess: (PendingDynamicLinkData dynamicLink) async {
-        final Uri deepLink = dynamicLink?.link;
+      Future<Null> Function(PendingDynamicLinkData? dynamicLink) future =
+          (PendingDynamicLinkData? dynamicLink) async {
+        final Uri? deepLink = dynamicLink?.link;
 
         if (deepLink != null) {
           LaunchController.handleLink(deepLink);
         }
-      }, onError: (OnLinkErrorException e) async {
+      };
+
+      FirebaseDynamicLinks.instance.onLink(onSuccess: future,
+          onError: (OnLinkErrorException e) async {
         print(e.message);
       });
     }
   }
 
-  static Future<void> goToMatchPage(String matchId) async {
-    Get.offAndToNamed("/home");
-    await Get.toNamed("/match/" + matchId);
-  }
-
-  static Future<void> loadData(BuildContext context) async {
+  static Future<void> loadData(BuildContext context,
+      String? from) async {
     print("start loading data function");
     await Firebase.initializeApp();
 
@@ -129,11 +90,11 @@ class LaunchController {
     List<Future<dynamic>> futures = [
       getVersion(),
       UserController.getUserIfAvailable(context),
-      loadOnceData(context)
+      _loadOnceData(context)
     ];
     var futuresData = await Future.wait(futures);
 
-    UserDetails availableUserDetails = futuresData[1];
+    UserDetails? availableUserDetails = futuresData[1];
 
     if (!kIsWeb) {
       FirebaseRemoteConfig firebaseRemoteConfig = FirebaseRemoteConfig.instance;
@@ -175,7 +136,8 @@ class LaunchController {
     // fixme force users without name
     if (userDetails != null &&
         (userDetails.name == null || userDetails.name == "")) {
-      var name = await Get.toNamed("/login/enterDetails");
+      var name = await Navigator.of(context).push(
+          MaterialPageRoute(builder: (context) => EnterDetails()));
       if (name == null || name == "") {
         // Navigator.pop(context);
         // SystemNavigator.pop();
@@ -188,7 +150,7 @@ class LaunchController {
 
     if (userDetails != null) {
       context.read<UserState>().setCurrentUserDetails(userDetails);
-      trace.putAttribute("user_id", userDetails?.documentId);
+      trace.putAttribute("user_id", userDetails.documentId);
     }
 
     // request permissions
@@ -203,38 +165,39 @@ class LaunchController {
     );
 
     // check if coming from link
-    Uri deepLink;
+    Uri? deepLink;
 
     if (!kIsWeb) {
-      final PendingDynamicLinkData data =
+      final PendingDynamicLinkData? data =
           await FirebaseDynamicLinks.instance.getInitialLink();
 
       deepLink = data?.link;
     }
 
     // check if coming from notification
-    RemoteMessage initialMessage =
+    RemoteMessage? initialMessage =
         await FirebaseMessaging.instance.getInitialMessage();
 
     if (deepLink != null) {
       print("navigating with deep link:" + deepLink.toString());
       trace.putAttribute("coming_from_deeplink", true.toString());
-      handleLink(deepLink, true);
+      handleLink(deepLink);
     } else if (initialMessage != null) {
       print("navigating with initial message:" + initialMessage.toString());
       trace.putAttribute("coming_from_notification", true.toString());
-      handleMessageFromNotification(context, initialMessage);
-    } else {
-      print("navigating with normal startup");
-      Get.offAndToNamed("/home");
+      _handleMessageFromNotification(initialMessage);
     }
 
-    setupNotifications(context);
+    _setupNotifications(context);
 
     trace.stop();
+
+    print("load data method is done");
+    LaunchController.loadingDone = true;
+    context.go(from ?? "/");
   }
 
-  static Future<void> loadOnceData(BuildContext context) async {
+  static Future<void> _loadOnceData(BuildContext context) async {
     print("loading static data");
     var futures = [
       MiscController.getGifs(context.read<LoadOnceState>())

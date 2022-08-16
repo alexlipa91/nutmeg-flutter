@@ -1,8 +1,6 @@
 import "package:collection/collection.dart";
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:nutmeg/controller/MatchesController.dart';
+import 'package:go_router/go_router.dart';
 import 'package:nutmeg/model/Match.dart';
 import 'package:nutmeg/state/LoadOnceState.dart';
 import 'package:nutmeg/utils/Utils.dart';
@@ -16,17 +14,13 @@ import '../state/MatchesState.dart';
 import '../state/UserState.dart';
 import '../utils/UiUtils.dart';
 import '../widgets/GenericAvailableMatches.dart';
-import 'Login.dart';
 
 // main widget
 class AvailableMatches extends StatelessWidget {
 
-  Future<void> onTap(BuildContext context, String matchId) async {
-    Get.toNamed("/match/" + matchId);
-    MatchesController.refresh(context, matchId);
-  }
+  Future<void> onTap(BuildContext context, String matchId) async => context.go("/match/$matchId");
 
-  Widget pastWidgets(BuildContext context) {
+  Widget? pastWidgets(BuildContext context) {
     var state = context.watch<MatchesState>();
     var userState = context.watch<UserState>();
     var loadOnceState = context.watch<LoadOnceState>();
@@ -35,7 +29,7 @@ class AvailableMatches extends StatelessWidget {
       return null;
     }
     if (state
-        .getMatches()
+        .getMatches()!
         .where((m) => loadOnceState.getSportCenter(m.sportCenterId) == null)
         .isNotEmpty) return null;
 
@@ -45,9 +39,9 @@ class AvailableMatches extends StatelessWidget {
 
     var now = DateTime.now();
     var matches = state
-        .getMatches()
+        .getMatches()!
         .where((e) => (!e.isTest || userState.isTestMode))
-        .where((m) => userState.isLoggedIn() && m.isUserGoing(userState.getLoggedUserDetails()))
+        .where((m) => userState.isLoggedIn() && m.isUserGoing(userState.getLoggedUserDetails()!))
         .where((m) => m.dateTime.isBefore(now));
 
     List<Widget> widgets = [];
@@ -68,7 +62,7 @@ class AvailableMatches extends StatelessWidget {
     return Column(children: widgets);
   }
 
-  Widget goingWidgets(BuildContext context) {
+  Widget? goingWidgets(BuildContext context) {
     var state = context.watch<MatchesState>();
     var userState = context.watch<UserState>();
     var loadOnceState = context.watch<LoadOnceState>();
@@ -77,7 +71,7 @@ class AvailableMatches extends StatelessWidget {
       return null;
     }
     if (state
-        .getMatches()
+        .getMatches()!
         .where((m) => loadOnceState.getSportCenter(m.sportCenterId) == null)
         .isNotEmpty) return null;
 
@@ -87,9 +81,9 @@ class AvailableMatches extends StatelessWidget {
 
     var now = DateTime.now();
     var matches = state
-        .getMatches()
+        .getMatches()!
         .where((e) => (!e.isTest || userState.isTestMode))
-        .where((m) => userState.isLoggedIn() && m.isUserGoing(userState.getLoggedUserDetails()))
+        .where((m) => userState.isLoggedIn() && m.isUserGoing(userState.getLoggedUserDetails()!))
         .where((m) => m.dateTime.isAfter(now));
 
     List<Widget> widgets = [];
@@ -110,7 +104,7 @@ class AvailableMatches extends StatelessWidget {
     return Column(children: widgets);
   }
 
-  Widget upcomingWidgets(BuildContext context) {
+  Widget? upcomingWidgets(BuildContext context) {
     var state = context.watch<MatchesState>();
     var userState = context.watch<UserState>();
     var loadOnceState = context.watch<LoadOnceState>();
@@ -119,7 +113,7 @@ class AvailableMatches extends StatelessWidget {
       return null;
     }
     if (state
-        .getMatches()
+        .getMatches()!
         .where((m) => loadOnceState.getSportCenter(m.sportCenterId) == null)
         .isNotEmpty) return null;
 
@@ -143,13 +137,13 @@ class AvailableMatches extends StatelessWidget {
 
     var groupedByWeeksIntervals = Map<String, List<Match>>();
     if (grouped.containsKey(0))
-      groupedByWeeksIntervals["THIS WEEK"] = grouped[0];
+      groupedByWeeksIntervals["THIS WEEK"] = grouped[0]!;
     if (grouped.containsKey(1))
-      groupedByWeeksIntervals["NEXT WEEK"] = grouped[1];
+      groupedByWeeksIntervals["NEXT WEEK"] = grouped[1]!;
     groupedByWeeksIntervals["IN MORE THAN TWO WEEKS"] = List<Match>.from([]);
     sortedWeeks.forEach((w) {
       if (w > 1) {
-        groupedByWeeksIntervals["IN MORE THAN TWO WEEKS"].addAll(grouped[w]);
+        groupedByWeeksIntervals["IN MORE THAN TWO WEEKS"]?.addAll(grouped[w]!);
       }
     });
 
@@ -192,7 +186,7 @@ class AvailableMatches extends StatelessWidget {
     return Column(children: result);
   }
 
-  Widget getMyMatchesWidgets(BuildContext context) {
+  Widget? getMyMatchesWidgets(BuildContext context) {
     var state = context.read<MatchesState>();
     var userState = context.read<UserState>();
 
@@ -205,10 +199,10 @@ class AvailableMatches extends StatelessWidget {
     }
 
     var matches = state
-        .getMatches()
+        .getMatches()!
         .where((e) => (!e.isTest || userState.isTestMode))
         .where((m) =>
-            m.organizerId == userState.getLoggedUserDetails().documentId);
+            m.organizerId == userState.getLoggedUserDetails()!.documentId);
 
     List<Widget> widgets = [];
 
@@ -244,22 +238,12 @@ class AvailableMatches extends StatelessWidget {
             if (withAction)
               TappableLinkText(
                   text: "CREATE A NEW MATCH",
-                  onTap: (BuildContext context) => loginAndCreateMatch(context)
+                  onTap: (BuildContext context) => context.go("/createMatch")
               ),
           ],
         ),
       ),
     );
-  }
-
-  Future<void> loginAndCreateMatch(BuildContext context) async {
-    if (!context.read<UserState>().isLoggedIn()) {
-      await Navigator.push(context,
-          MaterialPageRoute(builder: (context) => Login()));
-    }
-    if (context.read<UserState>().isLoggedIn()) {
-      Get.toNamed("/createMatch");
-    }
   }
 
   @override
@@ -283,7 +267,7 @@ class AvailableMatches extends StatelessWidget {
                   ? FloatingActionButton(
                       backgroundColor: Palette.primary,
                       child: Icon(Icons.add, color: Palette.white),
-                      onPressed: () => loginAndCreateMatch(context))
+                      onPressed: () => context.go("/createMatch"))
                   : null,
               Column(
                 children: [

@@ -16,7 +16,7 @@ class MatchesController {
     var matchesState = context.read<MatchesState>();
 
     var resp = await apiClient.callFunction("get_match_v2", {'id': matchId});
-    var match = Match.fromJson(resp, matchId);
+    var match = Match.fromJson(resp!, matchId);
 
     matchesState.setMatch(match);
 
@@ -29,7 +29,7 @@ class MatchesController {
     var userState = context.read<UserState>();
 
     await apiClient.callFunction("add_user_to_match", {
-      'user_id': userState.getLoggedUserDetails().documentId,
+      'user_id': userState.getLoggedUserDetails()?.documentId,
       'match_id': matchId,
       'credits_used': paymentStatus.creditsInCentsUsed,
       'money_paid': paymentStatus.finalPriceToPayInCents()
@@ -43,7 +43,7 @@ class MatchesController {
     var userState = context.read<UserState>();
 
     await apiClient.callFunction("remove_user_from_match", {
-      'user_id': userState.getLoggedUserDetails().documentId,
+      'user_id': userState.getLoggedUserDetails()?.documentId,
       'match_id': matchId
     });
     var m = await refresh(context, matchId);
@@ -52,7 +52,7 @@ class MatchesController {
 
   static Future<String> addMatch(Match m) async {
     var resp = await apiClient.callFunction("add_match", m.toJson());
-    return resp["id"];
+    return resp!["id"];
   }
 
   static Future<void> editMatch(Match m) async {
@@ -65,7 +65,7 @@ class MatchesController {
       BuildContext context, String userId, String matchId, double score) async {
     try {
       await apiClient.callFunction("add_rating", {
-        "user_id": context.read<UserState>().getLoggedUserDetails().documentId,
+        "user_id": context.read<UserState>().getLoggedUserDetails()?.documentId,
         "user_rated_id": userId,
         "match_id": matchId,
         "score": score

@@ -9,10 +9,10 @@ class Section extends StatelessWidget {
   final Widget body;
   final double topSpace;
 
-  const Section({Key key, this.title, this.body, this.topSpace = 32,
+  const Section({Key? key, required this.title, required this.body, this.topSpace = 32,
     this.titleType = "normal"}) : super(key: key);
 
-  TextStyle _getStyle() {
+  TextStyle? _getStyle() {
     if (titleType == "big")
       return TextPalette.h2;
     if (titleType == "normal")

@@ -2,9 +2,7 @@ import 'dart:math';
 
 import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
+import 'package:nutmeg/screens/Launch.dart';
 import 'package:nutmeg/state/UserState.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/Avatar.dart';
@@ -20,26 +18,12 @@ class PlayerOfTheMatch extends StatelessWidget {
   final GlobalKey previewContainer = new GlobalKey();
   final screenshotController = ScreenshotController();
 
+  final String? userId;
+
+  PlayerOfTheMatch({Key? key, this.userId}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
-    var uid = Get.parameters["userId"];
-
-    var images = Row(children: [
-      Expanded(
-          child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-            Align(
-                alignment: Alignment.topLeft,
-                child: SvgPicture.asset('assets/launch/blob_top_left.svg')),
-            SvgPicture.asset('assets/launch/blob_middle_middle.svg',
-                width: MediaQuery.of(context).size.width),
-            Align(
-                alignment: Alignment.bottomRight,
-                child: SvgPicture.asset('assets/launch/blob_bottom_right.svg'))
-          ]))
-    ]);
-
     return Screenshot(
       controller: screenshotController,
       child: Scaffold(
@@ -55,7 +39,7 @@ class PlayerOfTheMatch extends StatelessWidget {
                 padding: EdgeInsets.only(right: 20),
                 child: InkWell(
                   child: Icon(Icons.close),
-                  onTap: () => Get.back(),
+                  onTap: () => Navigator.of(context).pop(),
                 ))
           ],
         ),
@@ -63,8 +47,9 @@ class PlayerOfTheMatch extends StatelessWidget {
           Container(
               constraints: BoxConstraints.expand(),
               decoration: new BoxDecoration(color: Palette.primary)),
-          images,
-          MainArea(userId: uid, screenshotController: screenshotController)
+          LaunchWidgetState.getBackgoundImages(context),
+          MainArea(userId: userId ?? context.read<UserState>().currentUserId!,
+              screenshotController: screenshotController)
         ]),
       ),
     );
@@ -75,7 +60,7 @@ class MainArea extends StatefulWidget {
   final String userId;
   final ScreenshotController screenshotController;
 
-  const MainArea({Key key, this.userId, this.screenshotController}) : super(key: key);
+  const MainArea({Key? key, required this.userId, required this.screenshotController}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => MainAreaState();
@@ -94,9 +79,7 @@ class MainAreaState extends State<MainArea> {
   @override
   Widget build(BuildContext context) {
     var userState = context.read<UserState>();
-    var userDetails = (widget.userId == null)
-        ? userState.getLoggedUserDetails()
-        : userState.getUserDetail(widget.userId);
+    var userDetails = userState.getUserDetail(widget.userId);
 
     return Padding(
       padding: EdgeInsets.all(16.0),
@@ -123,7 +106,7 @@ class MainAreaState extends State<MainArea> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      UserAvatar(48, userDetails),
+                      UserAvatar(48, userDetails!),
                       SizedBox(height: 24),
                       Text("Player of the Match",
                           textAlign: TextAlign.center,
@@ -131,7 +114,7 @@ class MainAreaState extends State<MainArea> {
                       SizedBox(height: 4),
                       Text(
                           "Congratulations " +
-                              userDetails.name +
+                              (userDetails.name)! +
                               "! You won the Player of the Match award",
                           textAlign: TextAlign.center,
                           style: TextPalette.getBodyText(Palette.white)),
@@ -148,14 +131,14 @@ class MainAreaState extends State<MainArea> {
                           ]),
                       SizedBox(height: 24),
                       GenericButtonWithLoader("SEE MATCH STATS",
-                          (BuildContext context) async {
-                        Get.back();
-                      }, PrimaryInverted()),
+                              (BuildContext context) async =>
+                                  Navigator.of(context).pop(),
+                          PrimaryInverted()),
                       ShareButton(() async {
                         var appDir = await getApplicationDocumentsDirectory();
                         var filePath = await widget.screenshotController
                             .captureAndSave(appDir.path);
-                        Share.shareFiles([filePath]);
+                        Share.shareFiles([filePath!]);
                       }, Palette.white)
                     ],
                   ),

@@ -9,10 +9,11 @@ import 'package:logger/logger.dart';
 class RefresherWithObserverWidget extends StatefulWidget {
 
   final Widget child;
-  final Function initState;
+  final Function? initState;
   final Function refreshState;
 
-  const RefresherWithObserverWidget({Key key, this.child, this.refreshState, this.initState}) : super(key: key);
+  const RefresherWithObserverWidget({Key? key, required this.child,
+    required this.refreshState, this.initState}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => RefresherWithObserverWidgetState();
@@ -23,7 +24,7 @@ class RefresherWithObserverWidgetState extends State<RefresherWithObserverWidget
   final Logger _logger = Logger();
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey = new GlobalKey<RefreshIndicatorState>();
 
-  RefreshStateOnResumeObserver lifecycleEventHandler;
+  late RefreshStateOnResumeObserver lifecycleEventHandler;
 
   @override
   void initState() {
@@ -31,12 +32,12 @@ class RefresherWithObserverWidgetState extends State<RefresherWithObserverWidget
     lifecycleEventHandler = RefreshStateOnResumeObserver(
         resumeCallBack: () async {
           _logger.d("RefreshWithObserver: requesting refresh");
-          _refreshIndicatorKey.currentState.show();
+          _refreshIndicatorKey.currentState?.show();
         });
     WidgetsBinding.instance.addObserver(lifecycleEventHandler);
     _logger.d("RefreshWithObserver: calling refreshState in initState");
     if (widget.initState != null) {
-      widget.initState();
+      widget.initState!();
     }
     else {
       widget.refreshState();
@@ -63,7 +64,7 @@ class RefreshStateOnResumeObserver extends WidgetsBindingObserver {
   final AsyncCallback resumeCallBack;
 
   RefreshStateOnResumeObserver({
-    this.resumeCallBack,
+    required this.resumeCallBack,
   });
 
   @override

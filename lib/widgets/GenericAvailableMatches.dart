@@ -27,11 +27,11 @@ import 'Skeletons.dart';
 
 class GenericAvailableMatchesList extends StatefulWidget {
   final appBarColor;
-  final List<String> tabNames;
-  final List<Widget> tabContent;
-  final Widget emptyStateWidget;
-  final FloatingActionButton floatingActionButton;
-  final Widget titleWidget;
+  final List<String?> tabNames;
+  final List<Widget?> tabContent;
+  final Widget? emptyStateWidget;
+  final FloatingActionButton? floatingActionButton;
+  final Widget? titleWidget;
 
   const GenericAvailableMatchesList(
       this.appBarColor,
@@ -49,6 +49,7 @@ class GenericAvailableMatchesListState
     extends State<GenericAvailableMatchesList> {
 
   Future<void> refreshPageState(BuildContext context) async {
+    print('refreshing page state');
     var matches = await context.read<MatchesState>().fetchMatches();
     Future.wait(matches
         .map((e) => e.sportCenterId)
@@ -96,7 +97,7 @@ class GenericAvailableMatchesListState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              widget.titleWidget,
+              widget.titleWidget!,
               SizedBox(height: 24),
               SingleChildScrollView(
                 clipBehavior: Clip.none,
@@ -116,7 +117,7 @@ class GenericAvailableMatchesListState
                     child: Padding(
                       padding:
                           EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                      child: Text(title, style: textStyle),
+                      child: Text(title!, style: textStyle),
                     ),
                     onPressed: () =>
                         context.read<AvailableMatchesUiState>().changeTo(index),
@@ -167,7 +168,7 @@ class GenericAvailableMatchesListState
                   return list[i];
                 },
                 itemCount: 3),
-            refreshState: () => refreshPageState(context)),
+            refreshState: () => refreshPageState(context), initState: null),
           floatingActionButton: widget.floatingActionButton,
         ),
       ),
@@ -208,25 +209,26 @@ class GenericMatchInfo extends StatelessWidget {
               backgroundColor: Palette.white,
               child: applyBadges(
                   context,
-                  match,
+                  match!,
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      MatchThumbnail(image: sportCenter?.getThumbnailUrl()),
+                      MatchThumbnail(image: sportCenter!.getThumbnailUrl()),
                       SizedBox(width: 15),
                       Expanded(
                         child: Column(
                             mainAxisAlignment: MainAxisAlignment.start,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              (sportCenter == null)
+                              (sportCenter == null ||
+                                  sportCenter.getCourtType() == null)
                                   ? Skeletons.mText
                                   : Row(
                                       children: [
                                         Text(
                                             sportCenter.name +
                                                 " - " +
-                                                sportCenter.getCourtType(),
+                                                sportCenter.getCourtType()!,
                                             style: TextPalette.h2),
                                       ],
                                     ),
@@ -302,7 +304,7 @@ class GenericMatchInfo extends StatelessWidget {
     var finalWidget = w;
 
     var shouldShowUserBadge = context.watch<UserState>().isLoggedIn() &&
-        match.isUserGoing(context.watch<UserState>().getLoggedUserDetails());
+        match.isUserGoing(context.watch<UserState>().getLoggedUserDetails()!);
 
     var badges = [];
 
@@ -348,7 +350,10 @@ class GenericMatchInfoPast extends StatelessWidget {
 
     var match = context.watch<MatchesState>().getMatch(matchId);
 
-    var sportCenter = loadOnceState.getSportCenter(match.sportCenterId);
+    if (match == null)
+      return Container();
+
+    var sportCenter = loadOnceState.getSportCenter(match.sportCenterId)!;
 
     var child = InfoContainer(
       backgroundColor: Palette.white,
@@ -366,7 +371,7 @@ class GenericMatchInfoPast extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(sportCenter.name + " - " + sportCenter.getCourtType(),
+                        Text(sportCenter.name + " - " + sportCenter.getCourtType()!,
                             style: TextPalette.h2),
                         SizedBox(height: 8),
                         Text(sportCenter.name, style: TextPalette.bodyText),
@@ -404,9 +409,9 @@ class GenericMatchInfoPast extends StatelessWidget {
 }
 
 class MatchThumbnail extends StatelessWidget {
-  final String image;
+  final String? image;
 
-  const MatchThumbnail({Key key, this.image}) : super(key: key);
+  const MatchThumbnail({Key? key, this.image}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -414,7 +419,7 @@ class MatchThumbnail extends StatelessWidget {
         width: 60,
         height: 78,
         child: CachedNetworkImage(
-          imageUrl: image,
+          imageUrl: image!,
           fadeInDuration: Duration(milliseconds: 0),
           imageBuilder: (context, imageProvider) => Container(
               decoration: BoxDecoration(

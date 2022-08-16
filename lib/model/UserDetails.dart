@@ -1,23 +1,23 @@
 class UserDetails {
   String documentId;
 
-  bool isAdmin;
-  String image;
-  String name;
-  String email;
-  String stripeId;
-  int creditsInCents;
+  bool? isAdmin;
+  String? image;
+  String? name;
+  String? email;
+  String? stripeId;
+  int? creditsInCents;
 
-  int numJoinedMatches;
-  double averageScore;
+  int? numJoinedMatches;
+  double? averageScore;
 
-  List<String> createdMatches;
-  List<String> createdTestMatches;
+  List<String>? createdMatches;
+  List<String>? createdTestMatches;
 
-  List<String> manOfTheMatch;
+  List<String>? manOfTheMatch;
 
-  bool chargesEnabledOnStripe;
-  bool chargesEnabledOnStripeTest;
+  bool? chargesEnabledOnStripe;
+  bool? chargesEnabledOnStripeTest;
 
   UserDetails.empty(this.documentId);
 
@@ -60,34 +60,34 @@ class UserDetails {
 
   String getUid() => documentId;
 
-  double getScoreMatches() => averageScore;
+  double? getScoreMatches() => averageScore;
 
-  int getNumJoinedMatches() => numJoinedMatches;
+  int? getNumJoinedMatches() => numJoinedMatches;
 
-  int getNumManOfTheMatch() => (manOfTheMatch == null) ? 0 : manOfTheMatch.length;
+  int getNumManOfTheMatch() => manOfTheMatch?.length ?? 0;
 
-  String getStripeId() => stripeId;
+  String? getStripeId() => stripeId;
 
   void setStripeId(String stripeId) => stripeId = stripeId;
 
-  String getPhotoUrl() => image;
+  String? getPhotoUrl() => image;
   
-  bool getIsAdmin() => (isAdmin == null) ? false : isAdmin;
+  bool getIsAdmin() => (isAdmin == null) ? false : isAdmin!;
 
   bool isOrganiser(isTest) {
     if (isTest)
-      return this.createdTestMatches != null && this.createdTestMatches.isNotEmpty;
-    return this.createdMatches != null && this.createdMatches.isNotEmpty;
+      return this.createdTestMatches != null && this.createdTestMatches!.isNotEmpty;
+    return this.createdMatches != null && this.createdMatches!.isNotEmpty;
   }
 
   bool areChargesEnabled(bool isTest) {
-    return isTest ? chargesEnabledOnStripeTest : chargesEnabledOnStripe;
+    return isTest ? chargesEnabledOnStripeTest ?? false : chargesEnabledOnStripe ?? false;
   }
 
-  static String getDisplayName(UserDetails ud) {
+  static String? getDisplayName(UserDetails ud) {
     if (ud == null) return "Player";
     if (ud.name != null) return ud.name;
-    if (ud.email != null && !ud.email.contains("privaterelay")) return ud.email;
+    if (ud.email != null && !ud.email!.contains("privaterelay")) return ud.email;
     return "Player";
   }
 }

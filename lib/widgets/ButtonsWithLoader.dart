@@ -18,7 +18,7 @@ class GenericButtonWithLoaderState extends ChangeNotifier {
 
 class GenericButtonWithLoader extends StatelessWidget {
   final String text;
-  final Function onPressed;
+  final Function? onPressed;
   final ButtonType buttonType;
 
   GenericButtonWithLoader(this.text, this.onPressed, this.buttonType);
@@ -53,7 +53,7 @@ class GenericButtonWithLoader extends StatelessWidget {
                 ? null
                 : (onPressed == null)
                     ? null
-                    : () => onPressed(context),
+                    : () => onPressed!(context),
             style: ButtonStyle(
               elevation: MaterialStateProperty.all(0),
               backgroundColor:
@@ -96,10 +96,10 @@ class GenericButtonWithLoaderAndErrorHandling extends StatelessWidget {
 }
 
 abstract class ButtonType {
-  Color backgroundColor;
-  TextStyle textStyle;
-  Color borderColor;
-  Color loaderColor;
+  late Color backgroundColor;
+  late TextStyle textStyle;
+  late Color borderColor;
+  late Color loaderColor;
 }
 
 class Primary extends ButtonType {

@@ -7,12 +7,12 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
-import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:nutmeg/screens/EnterDetails.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 import '../api/CloudFunctionsUtils.dart';
@@ -30,31 +30,26 @@ class UserController {
   }
 
   // this should be called for logged in user only
-  static Future<UserDetails> refreshLoggedUser(BuildContext context) async {
-    var userState = context.read<UserState>();
+  static Future<UserDetails> refreshLoggedUser(BuildContext? context) async {
+    var userState = context?.read<UserState>();
 
     // todo refactor this, we set user details in state twice
-    var userDetails = await getUserDetails(context, userState.currentUserId);
-    userState.setCurrentUserDetails(userDetails);
+    var userDetails = await getUserDetails(context!, userState?.currentUserId);
+    userState?.setCurrentUserDetails(userDetails);
 
     return userDetails;
   }
 
-  static Future<UserDetails> getUserIfAvailable(BuildContext context) async {
-    User u = FirebaseAuth.instance.currentUser;
+  static Future<UserDetails?> getUserIfAvailable(BuildContext context) async {
+    User? u = await FirebaseAuth.instance.authStateChanges().first;
 
-    UserDetails ud;
+    UserDetails? ud;
 
     if (u != null) {
       var uid = u.uid;
       try {
         var existingUserDetails = await initLoggedUser(context, uid);
-
-        if (existingUserDetails == null) {
-          ud = null;
-        } else {
-          ud = UserDetails.from(uid, existingUserDetails);
-        }
+        ud = UserDetails.from(uid, existingUserDetails);
       } catch (e, stack) {
         print("Found firebase user but couldn't load details: " + e.toString());
         print(stack);
@@ -88,27 +83,26 @@ class UserController {
         _saveTokenToDatabase(userDetails, t));
   }
 
-  static Future<AfterLoginCommunication> _login(
+  static Future<void> _login(
       BuildContext context, UserCredential userCredential) async {
     var userState = context.read<UserState>();
 
-    var uid = userCredential.user.uid;
+    var uid = userCredential.user?.uid;
 
     UserDetails userDetails = await getUserDetails(context, uid);
-
-    var afterLoginComm;
 
     // check if first time
     if (userDetails is EmptyUserDetails) {
       userDetails = new UserDetails(
-          uid,
+          uid!,
           false,
-          userCredential.user.photoURL,
-          userCredential.user.displayName,
-          userCredential.user.email);
+          userCredential.user?.photoURL,
+          userCredential.user?.displayName,
+          userCredential.user?.email);
 
       if (userDetails.name == null || userDetails.name == "") {
-        var name = await Get.toNamed("/login/enterDetails");
+        var name = await Navigator.of(context).push(
+            MaterialPageRoute(builder: (context) => EnterDetails()));
         if (name == null || name == "") {
           // Navigator.pop(context);
           return null;
@@ -122,12 +116,10 @@ class UserController {
 
     userState.setCurrentUserDetails(userDetails);
     UserController.saveUserTokensToDb(userDetails);
-
-    return afterLoginComm;
   }
 
   static Future<void> _saveTokenToDatabase(UserDetails ud, String token) async {
-    String userId = FirebaseAuth.instance.currentUser.uid;
+    String? userId = FirebaseAuth.instance.currentUser?.uid;
     if (userId == null) {
       return;
     }
@@ -135,27 +127,27 @@ class UserController {
     UserController.saveUserTokensToDb(ud);
   }
 
-  static Future<AfterLoginCommunication> continueWithGoogle(
+  static Future<void> continueWithGoogle(
       BuildContext context) async {
     FirebaseAuth auth = FirebaseAuth.instance;
     var userCredentials;
 
     final GoogleSignIn googleSignIn = GoogleSignIn();
     googleSignIn.disconnect();
-    final GoogleSignInAccount googleSignInAccount = await googleSignIn.signIn();
+    final GoogleSignInAccount? googleSignInAccount = await googleSignIn.signIn();
 
-    final GoogleSignInAuthentication googleSignInAuthentication =
-    await googleSignInAccount.authentication;
+    final GoogleSignInAuthentication? googleSignInAuthentication =
+    await googleSignInAccount?.authentication;
 
     final AuthCredential credential = GoogleAuthProvider.credential(
-      accessToken: googleSignInAuthentication.accessToken,
-      idToken: googleSignInAuthentication.idToken,
+      accessToken: googleSignInAuthentication?.accessToken,
+      idToken: googleSignInAuthentication?.idToken,
     );
     userCredentials = await auth.signInWithCredential(credential);
-    return await _login(context, userCredentials);
+    await _login(context, userCredentials);
   }
 
-  static Future<AfterLoginCommunication> continueWithFacebook(
+  static Future<void> continueWithFacebook(
       BuildContext context) async {
     var userCred;
 
@@ -176,16 +168,16 @@ class UserController {
 
       // Create a credential from the access token
       final OAuthCredential facebookAuthCredential = FacebookAuthProvider
-          .credential(loginResult.accessToken.token);
+          .credential(loginResult.accessToken?.token ?? "");
 
       // Once signed in, return the UserCredential
       userCred = await FirebaseAuth.instance
           .signInWithCredential(facebookAuthCredential);
     }
-    return await _login(context, userCred);
+    await _login(context, userCred);
   }
 
-  static Future<AfterLoginCommunication> continueWithApple(
+  static Future<void> continueWithApple(
       BuildContext context) async {
     // To prevent replay attacks with the credential returned from Apple, we
     // include a nonce in the credential request. When signing in in with
@@ -223,13 +215,13 @@ class UserController {
   }
 
   static Future<UserDetails> getUserDetails(
-      BuildContext context, String uid) async {
+      BuildContext context, String? uid) async {
     var userState = context.read<UserState>();
 
     var resp = await apiClient.callFunction("get_user", {"id": uid});
 
-    var ud = (resp == null) ? EmptyUserDetails.empty(uid)
-        : UserDetails.fromJson(resp, uid);
+    var ud = (resp == null) ? EmptyUserDetails.empty(uid!)
+        : UserDetails.fromJson(resp, uid!);
     userState.setUserDetail(ud);
 
     return ud;
@@ -249,7 +241,7 @@ class UserController {
         "get_users_to_rate", {"match_id": matchId, "user_id": userId});
 
     List<String> users = List<String>.from([]);
-    resp.values.first.forEach((r) {
+    resp?.values.first.forEach((r) {
       users.add(r);
     });
 
@@ -260,7 +252,7 @@ class UserController {
       BuildContext context, UserDetails userDetails) async {
     var original = await ImagePicker().pickImage(source: ImageSource.gallery);
     if (original == null) return;
-    File croppedFile = await ImageCropper().cropImage(
+    File? croppedFile = await ImageCropper().cropImage(
         aspectRatio: CropAspectRatio(ratioX: 1, ratioY: 1),
         sourcePath: original.path,
         aspectRatioPresets: [CropAspectRatioPreset.square],
@@ -284,8 +276,16 @@ class UserController {
     userDetails.image = await uploaded.ref.getDownloadURL();
     await UserController.editUser(context, userDetails);
   }
+
+  static Future<bool> hasSeenPotmScreen(String matchId, String userId) async {
+    if (!kIsWeb) {
+      var prefs = await SharedPreferences.getInstance();
+      var preferencePath = "potm_screen_showed_" + matchId + "_" + userId;
+      return prefs.getBool(preferencePath) ?? false;
+    }
+
+    // todo for web try to use cookies
+    return true;
+  }
 }
 
-class AfterLoginCommunication {
-  String text;
-}

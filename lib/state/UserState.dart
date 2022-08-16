@@ -6,23 +6,22 @@ import '../model/UserDetails.dart';
 
 class UserState extends ChangeNotifier {
   // holds state for all users' data (both logged in user and others)
+  String? _currentUserId;
 
-  String _currentUserId;
-
-  set currentUserId(String value) {
+  set currentUserId(String? value) {
     _currentUserId = value;
   }
 
   bool _isTestMode = false;
   Map<String, UserDetails> _usersDetails = Map();
 
-  String get currentUserId => _currentUserId;
+  String? get currentUserId => _currentUserId;
 
-  UserDetails getLoggedUserDetails() => _usersDetails[_currentUserId];
+  UserDetails? getLoggedUserDetails() => _usersDetails[_currentUserId];
 
   void setCurrentUserDetails(UserDetails u) {
     _currentUserId = u.documentId;
-    if (u.getIsAdmin() != null && u.getIsAdmin()) {
+    if (u.getIsAdmin()) {
       _isTestMode = true;
     }
     setUserDetail(u);
@@ -33,7 +32,7 @@ class UserState extends ChangeNotifier {
     notifyListeners();
   }
 
-  UserDetails getUserDetail(String uid) => _usersDetails[uid];
+  UserDetails? getUserDetail(String uid) => _usersDetails[uid];
 
   bool get isTestMode => _isTestMode;
 
@@ -52,9 +51,9 @@ class UserState extends ChangeNotifier {
   // stats
   Map<String, List<double>> _usersScores = Map();
 
-  List<double> getUserScores(String uid) => _usersScores[uid];
+  List<double>? getUserScores(String uid) => _usersScores[uid];
 
-  Future<void> fetchScores(String userId) async{
+  Future<List<double>?> fetchScores(String userId) async{
     if (_usersScores.containsKey(userId))
       return _usersScores[userId];
 
@@ -63,9 +62,9 @@ class UserState extends ChangeNotifier {
 
     List<double> scoresList = [];
 
-    List<Object> o = scores["scores"];
+    List<dynamic> o = scores!["scores"];
     o.forEach((e) {
-      scoresList.add(e);
+      scoresList.add(e as double);
     });
 
     _usersScores[userId] = scoresList;

@@ -8,14 +8,14 @@ import '../model/SportCenter.dart';
 class LoadOnceState extends ChangeNotifier {
   Map<String, SportCenter> _sportCenters = Map();
   List<Sport> _sports = [Sport("5v5"), Sport("6v6")];
-  List<String> joinedGifs;
+  late List<String> joinedGifs;
 
   void setSportCenter(String sportCenterId, SportCenter sportCenter) {
     _sportCenters[sportCenterId] = sportCenter;
     notifyListeners();
   }
 
-  SportCenter getSportCenter(String id) => _sportCenters[id];
+  SportCenter? getSportCenter(String id) => _sportCenters[id];
 
   List<Sport> getSports() => _sports.toList();
 

@@ -6,18 +6,20 @@ class SportCenter {
   double lng;
   String neighbourhood;
   String address;
+  String cid;
   Map<String, dynamic> _info;
 
   String _thumbnailUrl;
   List<String> _imagesUrls;
 
-  SportCenter.fromJson(Map<String, dynamic> json, String documentId)
+  SportCenter.fromJson(Map<String, dynamic>? json, String documentId)
       : placeId = documentId,
-        name = json['name'],
+        name = json!['name'],
         neighbourhood = json['neighbourhood'],
         address = json['address'],
         lat = json['lat'],
         lng = json['lng'],
+        cid = json['cid'],
         _info = Map<String, dynamic>.from(json["info"] ?? {}),
         _thumbnailUrl = json['thumbnailUrl'],
         _imagesUrls = List<String>.from(json["largeImageUrls"] ?? []);
@@ -42,7 +44,7 @@ class SportCenter {
 
   bool hasChangingRooms() => _info["changeRooms"] ?? false;
 
-  String getCourtType() => _info["courtType"];
+  String? getCourtType() => _info["courtType"];
 
   bool isIndoor() => _info["indoor"];
 

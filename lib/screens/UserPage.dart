@@ -49,8 +49,6 @@ class UserPageState extends State<UserPage> {
 
     var loadSkeleton = userDetails == null || userDetails is EmptyUserDetails;
 
-    int creditCount = (userDetails == null) ? 0 : userDetails.creditsInCents;
-
     var showOrganizerView = userDetails != null &&
         (userDetails.isOrganiser(true) || userDetails.isOrganiser(false));
 
@@ -81,7 +79,7 @@ class UserPageState extends State<UserPage> {
                           });
                           try {
                             await UserController.updloadPicture(
-                                context, userDetails);
+                                context, userDetails!);
                           } catch (e, s) {
                             print(e);
                             print(s);
@@ -110,7 +108,7 @@ class UserPageState extends State<UserPage> {
                             height: 12,
                             width: 200,
                             borderRadius: BorderRadius.circular(8.0)))
-                    : Text(userDetails.name ?? "N/A", style: TextPalette.h2),
+                    : Text(userDetails!.name ?? "N/A", style: TextPalette.h2),
                 SizedBox(height: 10),
                 (loadSkeleton)
                     ? SkeletonLine(
@@ -118,7 +116,7 @@ class UserPageState extends State<UserPage> {
                             height: 12,
                             width: 100,
                             borderRadius: BorderRadius.circular(8.0)))
-                    : Text(userDetails.email ?? "N/A",
+                    : Text(userDetails!.email ?? "N/A",
                         style: TextPalette.bodyText)
               ],
             ),
@@ -131,14 +129,14 @@ class UserPageState extends State<UserPage> {
             child: UserInfoBox(
                 content: (loadSkeleton)
                     ? null
-                    : formatCurrency(userDetails.creditsInCents ?? 0),
+                    : formatCurrency(userDetails?.creditsInCents ?? 0),
                 description: "Credits")),
         SizedBox(width: 20),
         Expanded(
           child: UserInfoBox(
-              content: (loadSkeleton)
+              content: (loadSkeleton || userDetails?.getNumJoinedMatches() == null)
                   ? null
-                  : userDetails.getNumJoinedMatches().toString(),
+                  : userDetails?.getNumJoinedMatches().toString(),
               description: "Matches Played"),
         )
       ]),
@@ -148,9 +146,9 @@ class UserPageState extends State<UserPage> {
           child: UserInfoBox(
               content: (loadSkeleton)
                   ? null
-                  : (userDetails.getScoreMatches() == null)
+                  : (userDetails?.getScoreMatches() == null)
                       ? "-"
-                      : userDetails.getScoreMatches().toStringAsFixed(1),
+                      : userDetails?.getScoreMatches()?.toStringAsFixed(1),
               description: "Avg. Score"),
         ),
         SizedBox(width: 20),
@@ -158,7 +156,7 @@ class UserPageState extends State<UserPage> {
           child: UserInfoBox(
             content: (loadSkeleton)
                 ? null
-                : userDetails.getNumManOfTheMatch().toString(),
+                : userDetails?.getNumManOfTheMatch().toString(),
             description: "Player of the Match",
           ),
         )
@@ -188,7 +186,7 @@ class UserPageState extends State<UserPage> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Expanded(child: Builder(builder: (BuildContext context) {
-                    int n = userDetails.createdMatches.length;
+                    int n = userDetails?.createdMatches!.length ?? 0;
                     var widgets = List<Widget>.from([]);
 
                     void addGotoDashboard(bool isTest) {
@@ -276,8 +274,7 @@ class UserPageState extends State<UserPage> {
                       print(e);
                       print(stackTrace);
                     }
-                    // when logging out, go back to first tab in main page
-                    Get.back(result: false);
+                    Navigator.of(context).pop();
                   },
                   Primary(),
                 ),
@@ -318,49 +315,49 @@ class UserPageState extends State<UserPage> {
                 Expanded(child: Text("It allows to see in the UI test matches"))
               ],
             ),
-            verticalSpace,
-            Row(
-              children: [
-                Text("Update Credits (in cents)"),
-                SizedBox(width: 10),
-                Expanded(
-                  child: TextFormField(
-                      initialValue: userDetails.creditsInCents.toString(),
-                      keyboardType: TextInputType.number,
-                      inputFormatters: <TextInputFormatter>[
-                        FilteringTextInputFormatter.digitsOnly
-                      ], // Only numbers can be
-                      onChanged: (v) {
-                        var newValue = int.tryParse(v);
-                        if (newValue != null) creditCount = newValue;
-                      }
-                      // entered
-                      ),
-                ),
-                SizedBox(width: 10),
-                Container(
-                  width: 100,
-                  child: GenericButtonWithLoader("SET",
-                      (BuildContext context) async {
-                    context.read<GenericButtonWithLoaderState>().change(true);
-                    userDetails.creditsInCents = creditCount;
-                    try {
-                      await UserController.editUser(context, userDetails);
-                      await GenericInfoModal(
-                              title: "Credits updated",
-                              description: "Your new balance is: " +
-                                  formatCurrency(creditCount))
-                          .show(context);
-                    } catch (e, s) {
-                      print(e);
-                      print(s);
-                      ErrorHandlingUtils.handleError(e, s, context);
-                    }
-                    context.read<GenericButtonWithLoaderState>().change(false);
-                  }, Primary()),
-                )
-              ],
-            ),
+            // verticalSpace,
+            // Row(
+            //   children: [
+            //     Text("Update Credits (in cents)"),
+            //     SizedBox(width: 10),
+            //     Expanded(
+            //       child: TextFormField(
+            //           initialValue: userDetails.creditsInCents.toString(),
+            //           keyboardType: TextInputType.number,
+            //           inputFormatters: <TextInputFormatter>[
+            //             FilteringTextInputFormatter.digitsOnly
+            //           ], // Only numbers can be
+            //           onChanged: (v) {
+            //             var newValue = int.tryParse(v);
+            //             if (newValue != null) creditCount = newValue;
+            //           }
+            //           // entered
+            //           ),
+            //     ),
+            //     SizedBox(width: 10),
+            //     Container(
+            //       width: 100,
+            //       child: GenericButtonWithLoader("SET",
+            //           (BuildContext context) async {
+            //         context.read<GenericButtonWithLoaderState>().change(true);
+            //         userDetails.creditsInCents = creditCount;
+            //         try {
+            //           await UserController.editUser(context, userDetails);
+            //           await GenericInfoModal(
+            //                   title: "Credits updated",
+            //                   description: "Your new balance is: " +
+            //                       formatCurrency(creditCount))
+            //               .show(context);
+            //         } catch (e, s) {
+            //           print(e);
+            //           print(s);
+            //           ErrorHandlingUtils.handleError(e, s, context);
+            //         }
+            //         context.read<GenericButtonWithLoaderState>().change(false);
+            //       }, Primary()),
+            //     )
+            //   ],
+            // ),
           ])),
         ),
       Padding(
@@ -372,9 +369,9 @@ class UserPageState extends State<UserPage> {
                 builder: (context, snapshot) => Text(
                       "v" +
                           ((snapshot.hasData)
-                              ? (snapshot.data.item1.toString() +
+                              ? (snapshot.data!.item1.toString() +
                                   " build " +
-                                  snapshot.data.item2)
+                                  snapshot.data!.item2)
                               : ""),
                       style: TextPalette.bodyText,
                       textAlign: TextAlign.right,
@@ -390,7 +387,9 @@ class UserPageState extends State<UserPage> {
       appBar: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          BackButton(color: Palette.black),
+          BackButton(
+              color: Palette.black,
+              onPressed: () => Navigator.pop(context)),
         ],
       ),
     );
@@ -399,14 +398,14 @@ class UserPageState extends State<UserPage> {
 
 class LinkInfo extends StatelessWidget {
   final String text;
-  final Function onTap;
+  final Function? onTap;
 
-  const LinkInfo({Key key, this.text, this.onTap}) : super(key: key);
+  const LinkInfo({Key? key, required this.text, this.onTap}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: onTap,
+      onTap: () => onTap!(),
       child: Padding(
         padding: EdgeInsets.only(top: 10),
         child: Column(children: [
@@ -423,13 +422,13 @@ class LinkInfo extends StatelessWidget {
 }
 
 class UserInfoBox extends StatelessWidget {
-  final String content;
-  final String description;
-  final Widget bottom;
+  final String? content;
+  final String? description;
+  final Widget? bottom;
 
   // final Widget badge;
 
-  const UserInfoBox({Key key, this.content, this.description, this.bottom})
+  const UserInfoBox({Key? key, this.content, this.description, this.bottom})
       // this.badge
       : super(key: key);
 
@@ -445,13 +444,13 @@ class UserInfoBox extends StatelessWidget {
                     width: 80,
                     height: 12,
                     borderRadius: BorderRadius.circular(8.0)))
-            : Text(content, style: TextPalette.getStats(Palette.black)),
+            : Text(content!, style: TextPalette.getStats(Palette.black)),
         SizedBox(height: 4),
-        Text(description, style: TextPalette.bodyText),
+        Text(description!, style: TextPalette.bodyText),
         if (bottom != null)
           SizedBox(height: 4),
         if (bottom != null)
-          bottom
+          bottom!
       ],
     );
 
@@ -472,7 +471,7 @@ class UserInfoBox extends StatelessWidget {
 class CompleteOrganiserAccountWidget extends StatelessWidget {
   final bool isTest;
 
-  const CompleteOrganiserAccountWidget({Key key, this.isTest})
+  const CompleteOrganiserAccountWidget({Key? key, required this.isTest})
       : super(key: key);
 
   @override

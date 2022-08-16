@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:nutmeg/controller/PaymentController.dart';
-import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
@@ -11,7 +11,6 @@ import 'package:provider/provider.dart';
 import '../model/PaymentRecap.dart';
 import '../state/MatchesState.dart';
 import '../state/UserState.dart';
-import 'Login.dart';
 import 'PayWithCreditsModal.dart';
 import 'PayWithMoneyModal.dart';
 
@@ -26,7 +25,7 @@ class JoinButtonDisabled extends StatelessWidget {
 class JoinButton extends StatelessWidget {
   final String matchId;
 
-  const JoinButton({Key key, this.matchId}) : super(key: key);
+  const JoinButton({Key? key, required this.matchId}) : super(key: key);
 
   @override
   Widget build(BuildContext context) => GenericButtonWithLoader(
@@ -52,7 +51,7 @@ class JoinModal {
           child: CircleAvatar(
               backgroundColor: Colors.transparent,
               backgroundImage: NetworkImage(
-                  context.read<UserState>().getLoggedUserDetails().getPhotoUrl()),
+                  context.read<UserState>().getLoggedUserDetails()!.getPhotoUrl()!),
               radius: 15),
         ),
         SizedBox(width: 10),
@@ -113,18 +112,12 @@ class JoinModal {
     var userState = context.read<UserState>();
     var match = context.read<MatchesState>().getMatch(matchId);
 
-    if (!userState.isLoggedIn()) {
-      AfterLoginCommunication communication = await Navigator.push(
-          context, MaterialPageRoute(builder: (context) => Login()));
-      if (communication != null) {
-        await GenericInfoModal(title: "Welcome", description: communication.text)
-            .show(context);
-      }
-    }
+    if (!userState.isLoggedIn())
+      context.go("/match/$matchId/login");
 
     if (userState.isLoggedIn()) {
       var paymentRecap = await PaymentController.generatePaymentRecap(
-          context, match.documentId);
+          context, match!.documentId);
 
       await GenericInfoModal(
           title: "Join this match",

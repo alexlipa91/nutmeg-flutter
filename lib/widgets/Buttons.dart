@@ -6,7 +6,7 @@ import 'package:nutmeg/utils/Utils.dart';
 // MAIN PAGE BUTTONS
 class PrimaryButton extends StatelessWidget {
   final String text;
-  final Function onPressed;
+  final Function? onPressed;
 
   PrimaryButton(this.text, this.onPressed);
 
@@ -20,7 +20,7 @@ class PrimaryButton extends StatelessWidget {
 
   TextStyle getTextStyle() => TextPalette.linkStyleInverted;
 
-  Function onPressedFunction() => onPressed;
+  Function? onPressedFunction() => onPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +28,7 @@ class PrimaryButton extends StatelessWidget {
       height: 40,
       width: 200,
       child: TextButton(
-        onPressed: onPressedFunction(),
+        onPressed: () => onPressedFunction(),
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 25),
           child: Text(

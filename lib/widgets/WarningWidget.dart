@@ -9,7 +9,8 @@ class WarningWidget extends StatelessWidget {
   final String textAction;
   final Function action;
 
-  const WarningWidget({Key key, this.title, this.body, this.textAction, this.action}) : super(key: key);
+  const WarningWidget({Key? key, required this.title, required this.body,
+    required this.textAction, required this.action}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

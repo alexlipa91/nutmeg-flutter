@@ -22,13 +22,13 @@ import '../state/UserState.dart';
 import 'Avatar.dart';
 
 class BottomModalWithTopImage extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final Widget content;
-  final Widget topImage;
+  final String? title;
+  final String? subtitle;
+  final Widget? content;
+  final Widget? topImage;
 
   const BottomModalWithTopImage(
-      {Key key, this.title, this.subtitle, this.content, this.topImage})
+      {Key? key, this.title, this.subtitle, this.content, this.topImage})
       : super(key: key);
 
   Widget build(BuildContext context) {
@@ -57,16 +57,16 @@ class BottomModalWithTopImage extends StatelessWidget {
                             children: [
                               SizedBox(height: 44),
                               (title != null)
-                                  ? Text(title, style: TextPalette.h2)
+                                  ? Text(title!, style: TextPalette.h2)
                                   : Skeletons.xlTextCenter,
                               if (subtitle != null)
                                 Padding(
                                     padding: EdgeInsets.only(top: 4),
-                                    child: Text(subtitle,
+                                    child: Text(subtitle!,
                                         style: TextPalette.getBodyText(
                                             Palette.grey_dark))),
                               SizedBox(height: 24),
-                              content
+                              content!
                             ],
                           )),
                       Positioned(
@@ -91,8 +91,8 @@ class PlayerBottomModal extends StatelessWidget {
   PlayerBottomModal(this.userDetails, this.content, this.title, this.subtitle);
 
   final UserDetails userDetails;
-  final String title;
-  final String subtitle;
+  final String? title;
+  final String? subtitle;
   final Widget content;
 
   @override
@@ -106,19 +106,20 @@ class PlayerBottomModal extends StatelessWidget {
 }
 
 class StatEntry extends StatelessWidget {
-  final String stat;
-  final String description;
+  final String? stat;
+  final String? description;
 
-  const StatEntry({Key key, this.stat, this.description}) : super(key: key);
+  const StatEntry({Key? key, required this.stat,
+    required this.description}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Container(
       child: Column(
         children: [
-          Text(stat, style: TextPalette.getStats(Palette.black)),
+          Text(stat!, style: TextPalette.getStats(Palette.black)),
           SizedBox(height: 4),
-          Text(description, style: TextPalette.bodyText)
+          Text(description!, style: TextPalette.bodyText)
         ],
       ),
     );
@@ -148,7 +149,7 @@ class JoinedPlayerBottomModal extends StatelessWidget {
                 child: StatEntry(
                   stat: (userDetails.getScoreMatches() == null)
                       ? "-"
-                      : userDetails.getScoreMatches().toStringAsFixed(1),
+                      : userDetails.getScoreMatches()?.toStringAsFixed(1),
                   description: "Avg. score",
                 ),
               ),
@@ -160,7 +161,7 @@ class JoinedPlayerBottomModal extends StatelessWidget {
               ),
             ],
           ),
-          if (userDetails.numJoinedMatches > 0)
+          if ((userDetails.numJoinedMatches ?? 0) > 0)
             Padding(
                 padding: EdgeInsets.only(top: 24.0, left: 8, right: 8),
                 child: SizedBox(
@@ -175,7 +176,7 @@ class JoinedPlayerBottomModal extends StatelessWidget {
 class PerformanceGraph extends StatefulWidget {
   final String userId;
 
-  const PerformanceGraph({Key key, this.userId}) : super(key: key);
+  const PerformanceGraph({Key? key, required this.userId}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => PerformanceGraphState();
@@ -253,9 +254,9 @@ class PerformanceGraphState extends State<PerformanceGraph> {
           charts.SelectionModelConfig(
             updatedListener: (charts.SelectionModel model) {
               if (model.hasDatumSelection) {
-                String rate = model.selectedSeries.first
+                String rate = (model.selectedSeries.first
                     .measureFn(model.selectedDatum.first.index)
-                    .toStringAsFixed(1);
+                    ?? 0).toStringAsFixed(1);
                 ToolTipMgr.setData(rate);
               }
             },
@@ -272,11 +273,11 @@ class CustomCircleSymbolRenderer extends CircleSymbolRenderer {
 
   @override
   void paint(ChartCanvas canvas, Rectangle<num> bounds,
-      {List<int> dashPattern,
-        Color fillColor,
-        FillPatternType fillPattern,
-        Color strokeColor,
-        double strokeWidthPx}) {
+      {List<int>? dashPattern,
+        Color? fillColor,
+        FillPatternType? fillPattern,
+        Color? strokeColor,
+        double? strokeWidthPx}) {
     super.paint(canvas, bounds,
         dashPattern: dashPattern,
         fillColor: fillColor,
@@ -307,11 +308,11 @@ class CustomCircleSymbolRenderer extends CircleSymbolRenderer {
   }
 }
 
-String _data;
+String? _data;
 
 class ToolTipMgr {
 
-  static String data() => _data;
+  static String data() => _data!;
 
   static setData(String data) {
     _data = data;
