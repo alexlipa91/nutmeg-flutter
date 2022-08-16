@@ -119,7 +119,7 @@ class RatePlayerBottomModal extends StatelessWidget {
         state.getCurrentScore());
 
     if (state.isLast()) {
-      GoRouter.of(context).pop();
+      Navigator.of(context).pop(true);
     } else {
       state.next();
     }

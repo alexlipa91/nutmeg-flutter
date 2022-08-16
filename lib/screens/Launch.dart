@@ -51,18 +51,16 @@ final appRouter = GoRouter(
           ),
           GoRoute(
             path: 'match/:id',
-            builder: (context, state) => MatchDetails(
-                key: ValueKey("MatchDetails-${state.params["id"]}"
-                    "-${state.queryParams["payment_outcome"] ?? "none"}"),
+            builder: (context, state) {
+              var keyString = "MatchDetails-${state.params["id"]}-"
+                  "${state.queryParams.entries
+                  .map((e) => "${e.key}-${e.value}").join("-")}";
+              return MatchDetails(
+                key: ValueKey(keyString),
                 matchId: state.params["id"]!,
-                paymentOutcome: state.queryParams["payment_outcome"]),
-          ),
-          GoRoute(
-            path: 'match/:id/potm',
-            builder: (context, state) => MatchDetails(
-              matchId: state.params["id"]!,
-              fromPotm: true,
-            ),
+                fromPotm: (state.queryParams["show_potm"] ?? "false") == "true",
+                paymentOutcome: state.queryParams["payment_outcome"]);
+            }
           ),
         ]
     ),

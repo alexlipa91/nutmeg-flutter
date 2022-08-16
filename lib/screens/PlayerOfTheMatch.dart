@@ -2,8 +2,7 @@ import 'dart:math';
 
 import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:go_router/go_router.dart';
+import 'package:nutmeg/screens/Launch.dart';
 import 'package:nutmeg/state/UserState.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/Avatar.dart';
@@ -25,22 +24,6 @@ class PlayerOfTheMatch extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var images = Row(children: [
-      Expanded(
-          child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-            Align(
-                alignment: Alignment.topLeft,
-                child: SvgPicture.asset('assets/launch/blob_top_left.svg')),
-            SvgPicture.asset('assets/launch/blob_middle_middle.svg',
-                width: MediaQuery.of(context).size.width),
-            Align(
-                alignment: Alignment.bottomRight,
-                child: SvgPicture.asset('assets/launch/blob_bottom_right.svg'))
-          ]))
-    ]);
-
     return Screenshot(
       controller: screenshotController,
       child: Scaffold(
@@ -56,7 +39,7 @@ class PlayerOfTheMatch extends StatelessWidget {
                 padding: EdgeInsets.only(right: 20),
                 child: InkWell(
                   child: Icon(Icons.close),
-                  onTap: () => GoRouter.of(context).pop(),
+                  onTap: () => Navigator.of(context).pop(),
                 ))
           ],
         ),
@@ -64,7 +47,7 @@ class PlayerOfTheMatch extends StatelessWidget {
           Container(
               constraints: BoxConstraints.expand(),
               decoration: new BoxDecoration(color: Palette.primary)),
-          images,
+          LaunchWidgetState.getBackgoundImages(context),
           MainArea(userId: userId ?? context.read<UserState>().currentUserId!,
               screenshotController: screenshotController)
         ]),
@@ -96,9 +79,7 @@ class MainAreaState extends State<MainArea> {
   @override
   Widget build(BuildContext context) {
     var userState = context.read<UserState>();
-    var userDetails = (widget.userId == null)
-        ? userState.getLoggedUserDetails()
-        : userState.getUserDetail(widget.userId);
+    var userDetails = userState.getUserDetail(widget.userId);
 
     return Padding(
       padding: EdgeInsets.all(16.0),
@@ -151,7 +132,7 @@ class MainAreaState extends State<MainArea> {
                       SizedBox(height: 24),
                       GenericButtonWithLoader("SEE MATCH STATS",
                               (BuildContext context) async =>
-                                  GoRouter.of(context).pop(),
+                                  Navigator.of(context).pop(),
                           PrimaryInverted()),
                       ShareButton(() async {
                         var appDir = await getApplicationDocumentsDirectory();

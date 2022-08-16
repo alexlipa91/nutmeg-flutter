@@ -32,8 +32,8 @@ class SmoothStarRating extends StatefulWidget {
   final int starCount;
   final double rating;
   final RatingChangeCallback onRated;
-  final Color color;
-  final Color borderColor;
+  final Color? color;
+  final Color? borderColor;
   final double size;
   final bool allowHalfRating;
   final IconData filledIconData;
@@ -67,7 +67,7 @@ class _SmoothStarRatingState extends State<SmoothStarRating> {
 
   //tracks for user tapping on this widget
   bool isWidgetTapped = false;
-  late Timer? debounceTimer;
+  Timer? debounceTimer;
 
   @override
   void initState() {

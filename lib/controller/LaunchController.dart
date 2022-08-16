@@ -35,11 +35,10 @@ class LaunchController {
     GoRouter.of(appRouter.navigator!.context).go(fullPath);
   }
 
-  static void _handleMessageFromNotification(
-      BuildContext context, RemoteMessage message) async {
+  static void _handleMessageFromNotification(RemoteMessage message) async {
     print('message ${message.messageId} opened from notification with data '
         + message.data.toString());
-    GoRouter.of(context).go(message.data["route"]);
+    GoRouter.of(appRouter.navigator!.context).go(message.data["route"]);
   }
 
   static void _setupNotifications(BuildContext context) {
@@ -47,7 +46,7 @@ class LaunchController {
 
     FirebaseMessaging.onMessageOpenedApp.listen((m) {
       print("called onMsgOpenedApp callback");
-      _handleMessageFromNotification(context, m);
+      _handleMessageFromNotification(m);
     });
 
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
@@ -186,7 +185,7 @@ class LaunchController {
     } else if (initialMessage != null) {
       print("navigating with initial message:" + initialMessage.toString());
       trace.putAttribute("coming_from_notification", true.toString());
-      _handleMessageFromNotification(context, initialMessage);
+      _handleMessageFromNotification(initialMessage);
     }
 
     _setupNotifications(context);

@@ -93,7 +93,7 @@ class MatchDetailsState extends State<MatchDetails> {
         widget.fromPotm == true &&
         loggedUser != null &&
         match != null &&
-        match.getPotms().contains(loggedUser)) {
+        match.getPotms().contains(loggedUser.documentId)) {
       if (!await UserController.hasSeenPotmScreen(widget.matchId, loggedUser.documentId))
         Navigator.push(context, MaterialPageRoute(builder: (context) => PlayerOfTheMatch()));
     }
