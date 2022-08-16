@@ -49,8 +49,6 @@ class UserPageState extends State<UserPage> {
 
     var loadSkeleton = userDetails == null || userDetails is EmptyUserDetails;
 
-    int creditCount = (userDetails == null) ? 0 : userDetails.creditsInCents ?? 0;
-
     var showOrganizerView = userDetails != null &&
         (userDetails.isOrganiser(true) || userDetails.isOrganiser(false));
 
@@ -317,49 +315,49 @@ class UserPageState extends State<UserPage> {
                 Expanded(child: Text("It allows to see in the UI test matches"))
               ],
             ),
-            verticalSpace,
-            Row(
-              children: [
-                Text("Update Credits (in cents)"),
-                SizedBox(width: 10),
-                Expanded(
-                  child: TextFormField(
-                      initialValue: userDetails.creditsInCents.toString(),
-                      keyboardType: TextInputType.number,
-                      inputFormatters: <TextInputFormatter>[
-                        FilteringTextInputFormatter.digitsOnly
-                      ], // Only numbers can be
-                      onChanged: (v) {
-                        var newValue = int.tryParse(v);
-                        if (newValue != null) creditCount = newValue;
-                      }
-                      // entered
-                      ),
-                ),
-                SizedBox(width: 10),
-                Container(
-                  width: 100,
-                  child: GenericButtonWithLoader("SET",
-                      (BuildContext context) async {
-                    context.read<GenericButtonWithLoaderState>().change(true);
-                    userDetails.creditsInCents = creditCount;
-                    try {
-                      await UserController.editUser(context, userDetails);
-                      await GenericInfoModal(
-                              title: "Credits updated",
-                              description: "Your new balance is: " +
-                                  formatCurrency(creditCount))
-                          .show(context);
-                    } catch (e, s) {
-                      print(e);
-                      print(s);
-                      ErrorHandlingUtils.handleError(e, s, context);
-                    }
-                    context.read<GenericButtonWithLoaderState>().change(false);
-                  }, Primary()),
-                )
-              ],
-            ),
+            // verticalSpace,
+            // Row(
+            //   children: [
+            //     Text("Update Credits (in cents)"),
+            //     SizedBox(width: 10),
+            //     Expanded(
+            //       child: TextFormField(
+            //           initialValue: userDetails.creditsInCents.toString(),
+            //           keyboardType: TextInputType.number,
+            //           inputFormatters: <TextInputFormatter>[
+            //             FilteringTextInputFormatter.digitsOnly
+            //           ], // Only numbers can be
+            //           onChanged: (v) {
+            //             var newValue = int.tryParse(v);
+            //             if (newValue != null) creditCount = newValue;
+            //           }
+            //           // entered
+            //           ),
+            //     ),
+            //     SizedBox(width: 10),
+            //     Container(
+            //       width: 100,
+            //       child: GenericButtonWithLoader("SET",
+            //           (BuildContext context) async {
+            //         context.read<GenericButtonWithLoaderState>().change(true);
+            //         userDetails.creditsInCents = creditCount;
+            //         try {
+            //           await UserController.editUser(context, userDetails);
+            //           await GenericInfoModal(
+            //                   title: "Credits updated",
+            //                   description: "Your new balance is: " +
+            //                       formatCurrency(creditCount))
+            //               .show(context);
+            //         } catch (e, s) {
+            //           print(e);
+            //           print(s);
+            //           ErrorHandlingUtils.handleError(e, s, context);
+            //         }
+            //         context.read<GenericButtonWithLoaderState>().change(false);
+            //       }, Primary()),
+            //     )
+            //   ],
+            // ),
           ])),
         ),
       Padding(
