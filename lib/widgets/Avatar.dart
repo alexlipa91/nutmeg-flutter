@@ -31,7 +31,7 @@ class UserAvatar extends StatelessWidget {
     var backgroundColor = Palette.grey_lighter;
     var backgroundImage = (photoUrl == null) ? null : NetworkImage(photoUrl);
 
-    var displayName = UserDetails.getDisplayName(userDetails!)?.toUpperCase();
+    var displayName = UserDetails.getDisplayName(userDetails)?.toUpperCase();
 
     var fontSize = radius;
 

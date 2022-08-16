@@ -60,9 +60,9 @@ class UserDetails {
 
   String getUid() => documentId;
 
-  double? getScoreMatches() => averageScore;
+  double getScoreMatches() => averageScore ?? 0.0;
 
-  int? getNumJoinedMatches() => numJoinedMatches;
+  int getNumJoinedMatches() => numJoinedMatches ?? 0;
 
   int getNumManOfTheMatch() => manOfTheMatch?.length ?? 0;
 
@@ -84,14 +84,10 @@ class UserDetails {
     return isTest ? chargesEnabledOnStripeTest ?? false : chargesEnabledOnStripe ?? false;
   }
 
-  static String? getDisplayName(UserDetails ud) {
+  static String? getDisplayName(UserDetails? ud) {
     if (ud == null) return "Player";
     if (ud.name != null) return ud.name;
     if (ud.email != null && !ud.email!.contains("privaterelay")) return ud.email;
     return "Player";
   }
-}
-
-class EmptyUserDetails extends UserDetails {
-  EmptyUserDetails.empty(String documentId) : super.empty(documentId);
 }

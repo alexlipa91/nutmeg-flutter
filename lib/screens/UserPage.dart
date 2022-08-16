@@ -2,7 +2,6 @@ import 'package:badges/badges.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nutmeg/controller/UserController.dart';
-import 'package:nutmeg/model/UserDetails.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/Avatar.dart';
@@ -10,6 +9,7 @@ import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:nutmeg/widgets/Containers.dart';
 import 'package:nutmeg/widgets/FeedbackBottomModal.dart';
 import 'package:nutmeg/widgets/PageTemplate.dart';
+import 'package:nutmeg/widgets/PlayerBottomModal.dart';
 import 'package:nutmeg/widgets/Section.dart';
 import 'package:nutmeg/widgets/WarningWidget.dart';
 import 'package:provider/provider.dart';
@@ -32,9 +32,8 @@ class UserPageState extends State<UserPage> {
 
   bool loadingPicture = false;
 
-  Future<void> refreshPageState() async {
-    await UserController.refreshLoggedUser(context);
-  }
+  Future<void> refreshPageState() async =>
+      UserController.refreshLoggedUser(context);
 
   @override
   Widget build(BuildContext context) {
@@ -43,338 +42,376 @@ class UserPageState extends State<UserPage> {
 
     if (userDetails != null && !userState.isLoggedIn()) return Container();
 
-    var loadSkeleton = userDetails == null || userDetails is EmptyUserDetails;
+    var loadSkeleton = userDetails == null;
 
     var showOrganizerView = userDetails != null &&
         (userDetails.isOrganiser(true) || userDetails.isOrganiser(false));
 
-    var widgets = [
-      Text("Account", style: TextPalette.h1Default),
-      verticalSpace,
-      InfoContainer(
-          child: Row(
+    var widgets;
+    if (loadSkeleton) {
+      var userInfoBoxSkeleton = Expanded(
+          child: InfoContainer(
+              child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          (loadingPicture)
-              ? CircleAvatar(
-                  backgroundColor: Palette.grey_lightest,
-                  radius: 30,
-                  child: Container(
-                    height: 20.0,
-                    width: 20.0,
-                    child: CircularProgressIndicator(
-                      color: Palette.grey_light,
-                      strokeWidth: 2.0,
-                    ),
-                  ))
-              : InkWell(
-                  onTap: (loadSkeleton)
-                      ? null
-                      : () async {
-                          setState(() {
-                            loadingPicture = true;
-                          });
-                          try {
-                            await UserController.updloadPicture(
-                                context, userDetails!);
-                          } catch (e, s) {
-                            print(e);
-                            print(s);
-                          }
-                          setState(() {
-                            loadingPicture = false;
-                          });
-                        },
-                  child: Badge(
-                      toAnimate: false,
-                      badgeContent: Icon(Icons.camera_alt_outlined,
-                          size: 16.0, color: Palette.white),
-                      badgeColor: Palette.primary,
-                      elevation: 0,
-                      position:
-                          BadgePosition.bottomEnd(bottom: -5.0, end: -5.0),
-                      child: UserAvatar(30, userDetails))),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 30),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                (loadSkeleton)
-                    ? SkeletonLine(
-                        style: SkeletonLineStyle(
-                            height: 12,
-                            width: 200,
-                            borderRadius: BorderRadius.circular(8.0)))
-                    : Text(userDetails!.name ?? "N/A", style: TextPalette.h2),
-                SizedBox(height: 10),
-                (loadSkeleton)
-                    ? SkeletonLine(
-                        style: SkeletonLineStyle(
-                            height: 12,
-                            width: 100,
-                            borderRadius: BorderRadius.circular(8.0)))
-                    : Text(userDetails!.email ?? "N/A",
-                        style: TextPalette.bodyText)
-              ],
+          SkeletonLine(
+              style: SkeletonLineStyle(
+                  alignment: AlignmentDirectional.center,
+                  width: 80,
+                  height: 12,
+                  borderRadius: BorderRadius.circular(8.0))),
+          SizedBox(height: 4),
+          SkeletonLine(
+              style: SkeletonLineStyle(
+                  alignment: AlignmentDirectional.center,
+                  width: 80,
+                  height: 12,
+                  borderRadius: BorderRadius.circular(8.0))),
+        ],
+      )));
+      var userInfoBoxRowSkeleton = Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [userInfoBoxSkeleton, userInfoBoxSkeleton]);
+
+      widgets = [
+        Text("Account", style: TextPalette.h1Default),
+        verticalSpace,
+        InfoContainer(
+            child: Row(
+          children: [
+            (loadingPicture)
+                ? CircleAvatar(
+                    backgroundColor: Palette.grey_lightest,
+                    radius: 30,
+                    child: Container(
+                      height: 20.0,
+                      width: 20.0,
+                      child: CircularProgressIndicator(
+                        color: Palette.grey_light,
+                        strokeWidth: 2.0,
+                      ),
+                    ))
+                : InkWell(
+                    onTap: (loadSkeleton)
+                        ? null
+                        : () async {
+                            setState(() {
+                              loadingPicture = true;
+                            });
+                            try {
+                              await UserController.updloadPicture(
+                                  context, userDetails!);
+                            } catch (e, s) {
+                              print(e);
+                              print(s);
+                            }
+                            setState(() {
+                              loadingPicture = false;
+                            });
+                          },
+                    child: Badge(
+                        toAnimate: false,
+                        badgeContent: Icon(Icons.camera_alt_outlined,
+                            size: 16.0, color: Palette.white),
+                        badgeColor: Palette.primary,
+                        elevation: 0,
+                        position:
+                            BadgePosition.bottomEnd(bottom: -5.0, end: -5.0),
+                        child: UserAvatar(30, userDetails))),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 30),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SkeletonLine(
+                      style: SkeletonLineStyle(
+                          height: 12,
+                          width: 200,
+                          borderRadius: BorderRadius.circular(8.0))),
+                  SizedBox(height: 10),
+                  SkeletonLine(
+                      style: SkeletonLineStyle(
+                          height: 12,
+                          width: 100,
+                          borderRadius: BorderRadius.circular(8.0)))
+                ],
+              ),
+            )
+          ],
+        )),
+        verticalSpace,
+        userInfoBoxRowSkeleton,
+        verticalSpace,
+        userInfoBoxRowSkeleton,
+      ];
+    } else {
+      widgets = [
+        Text("Account", style: TextPalette.h1Default),
+        verticalSpace,
+        InfoContainer(
+            child: Row(
+          children: [
+            (loadingPicture)
+                ? CircleAvatar(
+                    backgroundColor: Palette.grey_lightest,
+                    radius: 30,
+                    child: Container(
+                      height: 20.0,
+                      width: 20.0,
+                      child: CircularProgressIndicator(
+                        color: Palette.grey_light,
+                        strokeWidth: 2.0,
+                      ),
+                    ))
+                : InkWell(
+                    onTap: () async {
+                      setState(() {
+                        loadingPicture = true;
+                      });
+                      try {
+                        await UserController.updloadPicture(
+                            context, userDetails!);
+                      } catch (e, s) {
+                        print(e);
+                        print(s);
+                      }
+                      setState(() {
+                        loadingPicture = false;
+                      });
+                    },
+                    child: Badge(
+                        toAnimate: false,
+                        badgeContent: Icon(Icons.camera_alt_outlined,
+                            size: 16.0, color: Palette.white),
+                        badgeColor: Palette.primary,
+                        elevation: 0,
+                        position:
+                            BadgePosition.bottomEnd(bottom: -5.0, end: -5.0),
+                        child: UserAvatar(30, userDetails))),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 30),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(userDetails!.name ?? "N/A", style: TextPalette.h2),
+                  SizedBox(height: 10),
+                  Text(userDetails.email ?? "N/A", style: TextPalette.bodyText)
+                ],
+              ),
+            )
+          ],
+        )),
+        verticalSpace,
+        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+          Expanded(
+              child: UserInfoBox(
+                  content: formatCurrency(userDetails.creditsInCents ?? 0),
+                  description: "Credits")),
+          SizedBox(width: 20),
+          Expanded(
+            child: UserInfoBox(
+                content: userDetails.getNumJoinedMatches().toString(),
+                description: "Matches Played"),
+          )
+        ]),
+        verticalSpace,
+        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+          Expanded(
+            child: UserInfoBox(
+                content: userDetails.getScoreMatches().toStringAsFixed(1),
+                description: "Avg. Score"),
+          ),
+          SizedBox(width: 20),
+          Expanded(
+            child: UserInfoBox(
+              content: userDetails.getNumManOfTheMatch().toString(),
+              description: "Player of the Match",
             ),
           )
-        ],
-      )),
-      verticalSpace,
-      Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-        Expanded(
-            child: UserInfoBox(
-                content: (loadSkeleton)
-                    ? null
-                    : formatCurrency(userDetails?.creditsInCents ?? 0),
-                description: "Credits")),
-        SizedBox(width: 20),
-        Expanded(
-          child: UserInfoBox(
-              content: (loadSkeleton || userDetails?.getNumJoinedMatches() == null)
-                  ? null
-                  : userDetails?.getNumJoinedMatches().toString(),
-              description: "Matches Played"),
-        )
-      ]),
-      verticalSpace,
-      Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-        Expanded(
-          child: UserInfoBox(
-              content: (loadSkeleton)
-                  ? null
-                  : (userDetails?.getScoreMatches() == null)
-                      ? "-"
-                      : userDetails?.getScoreMatches()?.toStringAsFixed(1),
-              description: "Avg. Score"),
-        ),
-        SizedBox(width: 20),
-        Expanded(
-          child: UserInfoBox(
-            content: (loadSkeleton)
-                ? null
-                : userDetails?.getNumManOfTheMatch().toString(),
-            description: "Player of the Match",
-          ),
-        )
-      ]),
-      if (showOrganizerView)
+        ]),
         Section(
-          title: "ORGANISER",
-          body: Container(child: Builder(builder: (context) {
-            var widgets = List<Widget>.from([]);
+          title: "PERFORMANCE",
+          body: SizedBox(
+              height: 150,
+              child: PerformanceGraph(userId: userDetails.documentId))
+        ),
+        if (showOrganizerView)
+          Section(
+            title: "ORGANISER",
+            body: Container(child: Builder(builder: (context) {
+              var widgets = List<Widget>.from([]);
 
-            void addCompleteBanner(bool isTest) {
-              if (userDetails != null &&
-                  userDetails.isOrganiser(isTest) &&
-                  !userDetails.areChargesEnabled(isTest))
-                widgets.addAll([
-                  Row(children: [
-                    Expanded(
-                        child: CompleteOrganiserAccountWidget(isTest: true))
-                  ]),
-                  verticalSpace
-                ]);
-            }
-            addCompleteBanner(true);
-            addCompleteBanner(false);
+              void addCompleteBanner(bool isTest) {
+                if (userDetails != null &&
+                    userDetails.isOrganiser(isTest) &&
+                    !userDetails.areChargesEnabled(isTest))
+                  widgets.addAll([
+                    Row(children: [
+                      Expanded(
+                          child: CompleteOrganiserAccountWidget(isTest: true))
+                    ]),
+                    verticalSpace
+                  ]);
+              }
 
-            widgets.add(Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(child: Builder(builder: (BuildContext context) {
-                    int n = userDetails?.createdMatches!.length ?? 0;
-                    var widgets = List<Widget>.from([]);
+              addCompleteBanner(true);
+              addCompleteBanner(false);
 
-                    void addGotoDashboard(bool isTest) {
-                      if (userDetails != null &&
-                          userDetails.isOrganiser(isTest) &&
-                          userDetails.areChargesEnabled(isTest))
-                        widgets.addAll([
-                          if (widgets.isNotEmpty)
-                            verticalSpace,
-                          Row(children: [
-                            Expanded(
-                                child: GenericButtonWithLoader(
-                                    "GO TO MY STRIPE DASHBOARD" + (isTest ? " TEST" : ""),
-                                        (_) async {
-                                      var url =
-                                          "https://europe-central2-nutmeg-9099c.cloudfunctions.net/go_to_account_login_link?"
-                                          "is_test=$isTest&user_id=${userState.currentUserId}";
+              widgets.add(Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(child: Builder(builder: (BuildContext context) {
+                      int n = userDetails.createdMatches!.length;
+                      var widgets = List<Widget>.from([]);
 
-                                      await launch(url, forceSafariVC: false);
-                                    }, Primary()))
-                          ]),
-                        ]);
+                      void addGotoDashboard(bool isTest) {
+                        if (userDetails.isOrganiser(isTest) &&
+                            userDetails.areChargesEnabled(isTest))
+                          widgets.addAll([
+                            if (widgets.isNotEmpty) verticalSpace,
+                            Row(children: [
+                              Expanded(
+                                  child: GenericButtonWithLoader(
+                                      "GO TO MY STRIPE DASHBOARD" +
+                                          (isTest ? " TEST" : ""), (_) async {
+                                var url =
+                                    "https://europe-central2-nutmeg-9099c.cloudfunctions.net/go_to_account_login_link?"
+                                    "is_test=$isTest&user_id=${userState.currentUserId}";
+
+                                await launch(url, forceSafariVC: false);
+                              }, Primary()))
+                            ]),
+                          ]);
                       }
 
-                    addGotoDashboard(true);
-                    addGotoDashboard(false);
+                      addGotoDashboard(true);
+                      addGotoDashboard(false);
 
-                    return UserInfoBox(
+                      return UserInfoBox(
                         content: (loadSkeleton) ? null : n.toString(),
                         description: "Organized match" + ((n > 1) ? "es" : ""),
                         bottom: Column(children: widgets),
-                    );
-                  }))
-                ]));
+                      );
+                    }))
+                  ]));
 
-            return Column(children: widgets);
-          })),
-        ),
-      Section(
-        title: "USEFUL LINK",
-        body: InfoContainer(
-            child: Column(children: [
-          LinkInfo(
-            text: "Follow us on Instagram",
-            onTap: () async {
-              var url = 'https://www.instagram.com/nutmegapp/';
-
-              if (await canLaunch(url)) {
-                await launch(
-                  url,
-                  universalLinksOnly: true,
-                );
-              } else {
-                throw 'There was a problem to open the url: $url';
-              }
-            },
+              return Column(children: widgets);
+            })),
           ),
-          LinkInfo(
-                text: "Give us feedback",
-                onTap: () async {
-                  await FeedbackBottomModal.feedbackAction(context);
-                },
-          ),
-          LinkInfo(
-            text: "Email support",
-            onTap: () async {
-              await launch("mailto:support@nutmegapp.com?subject=Support request", forceSafariVC: false);
-            }
-          ),
-          SizedBox(height: 10),
-          Row(
-            children: [
-              Expanded(
-                child: GenericButtonWithLoader(
-                  "LOGOUT",
-                  (BuildContext context) async {
-                    context.read<GenericButtonWithLoaderState>().change(true);
-
-                    try {
-                      await Future.delayed(
-                          Duration(milliseconds: 500),
-                          () =>
-                              UserController.logout(context.read<UserState>()));
-                    } catch (e, stackTrace) {
-                      print(e);
-                      print(stackTrace);
-                    }
-                    Navigator.of(context).pop();
-                  },
-                  Primary(),
-                ),
-              )
-            ],
-          ),
-        ])),
-      ),
-      if (userDetails != null && userDetails.getIsAdmin())
         Section(
-          title: "ADMIN COMMANDS",
+          title: "USEFUL LINK",
           body: InfoContainer(
               child: Column(children: [
+            LinkInfo(
+              text: "Follow us on Instagram",
+              onTap: () async {
+                var url = 'https://www.instagram.com/nutmegapp/';
+
+                if (await canLaunch(url)) {
+                  await launch(
+                    url,
+                    universalLinksOnly: true,
+                  );
+                } else {
+                  throw 'There was a problem to open the url: $url';
+                }
+              },
+            ),
+            LinkInfo(
+              text: "Give us feedback",
+              onTap: () async {
+                await FeedbackBottomModal.feedbackAction(context);
+              },
+            ),
+            LinkInfo(
+                text: "Email support",
+                onTap: () async {
+                  await launch(
+                      "mailto:support@nutmegapp.com?subject=Support request",
+                      forceSafariVC: false);
+                }),
+            SizedBox(height: 10),
             Row(
               children: [
                 Expanded(
-                    child: GenericButtonWithLoader(
-                  "ADMIN AREA",
-                  (BuildContext context) async =>
-                      GoRouter.of(context).go("/admin"),
-                  Primary(),
-                ))
+                  child: GenericButtonWithLoader(
+                    "LOGOUT",
+                    (BuildContext context) async {
+                      context.read<GenericButtonWithLoaderState>().change(true);
+
+                      try {
+                        await Future.delayed(
+                            Duration(milliseconds: 500),
+                            () => UserController.logout(
+                                context.read<UserState>()));
+                      } catch (e, stackTrace) {
+                        print(e);
+                        print(stackTrace);
+                      }
+                      Navigator.of(context).pop();
+                    },
+                    Primary(),
+                  ),
+                )
               ],
             ),
-            verticalSpace,
-            Row(
-              children: [
-                Text("Test Mode"),
-                SizedBox(width: 10),
-                Switch(
-                  value: context.watch<UserState>().isTestMode,
-                  onChanged: (value) =>
-                      userState.setTestMode(!userState.isTestMode),
-                  activeTrackColor: Colors.red,
-                  activeColor: Colors.red,
-                ),
-                Expanded(child: Text("It allows to see in the UI test matches"))
-              ],
-            ),
-            // verticalSpace,
-            // Row(
-            //   children: [
-            //     Text("Update Credits (in cents)"),
-            //     SizedBox(width: 10),
-            //     Expanded(
-            //       child: TextFormField(
-            //           initialValue: userDetails.creditsInCents.toString(),
-            //           keyboardType: TextInputType.number,
-            //           inputFormatters: <TextInputFormatter>[
-            //             FilteringTextInputFormatter.digitsOnly
-            //           ], // Only numbers can be
-            //           onChanged: (v) {
-            //             var newValue = int.tryParse(v);
-            //             if (newValue != null) creditCount = newValue;
-            //           }
-            //           // entered
-            //           ),
-            //     ),
-            //     SizedBox(width: 10),
-            //     Container(
-            //       width: 100,
-            //       child: GenericButtonWithLoader("SET",
-            //           (BuildContext context) async {
-            //         context.read<GenericButtonWithLoaderState>().change(true);
-            //         userDetails.creditsInCents = creditCount;
-            //         try {
-            //           await UserController.editUser(context, userDetails);
-            //           await GenericInfoModal(
-            //                   title: "Credits updated",
-            //                   description: "Your new balance is: " +
-            //                       formatCurrency(creditCount))
-            //               .show(context);
-            //         } catch (e, s) {
-            //           print(e);
-            //           print(s);
-            //           ErrorHandlingUtils.handleError(e, s, context);
-            //         }
-            //         context.read<GenericButtonWithLoaderState>().change(false);
-            //       }, Primary()),
-            //     )
-            //   ],
-            // ),
           ])),
         ),
-      Padding(
-        padding: EdgeInsets.only(top: 8),
-        child: Center(
-          child: Container(
-            child: FutureBuilder<Tuple2<Version, String>>(
-                future: getVersion(),
-                builder: (context, snapshot) => Text(
-                      "v" +
-                          ((snapshot.hasData)
-                              ? (snapshot.data!.item1.toString() +
-                                  " build " +
-                                  snapshot.data!.item2)
-                              : ""),
-                      style: TextPalette.bodyText,
-                      textAlign: TextAlign.right,
-                    )),
+        if (userDetails.getIsAdmin())
+          Section(
+            title: "ADMIN COMMANDS",
+            body: InfoContainer(
+                child: Column(children: [
+              Row(
+                children: [
+                  Expanded(
+                      child: GenericButtonWithLoader(
+                    "ADMIN AREA",
+                    (BuildContext context) async =>
+                        GoRouter.of(context).go("/admin"),
+                    Primary(),
+                  ))
+                ],
+              ),
+              verticalSpace,
+              Row(
+                children: [
+                  Text("Test Mode"),
+                  SizedBox(width: 10),
+                  Switch(
+                    value: context.watch<UserState>().isTestMode,
+                    onChanged: (value) =>
+                        userState.setTestMode(!userState.isTestMode),
+                    activeTrackColor: Colors.red,
+                    activeColor: Colors.red,
+                  ),
+                  Expanded(
+                      child: Text("It allows to see in the UI test matches"))
+                ],
+              ),
+            ])),
           ),
-        ),
-      )
-    ];
+        Padding(
+          padding: EdgeInsets.only(top: 8),
+          child: Center(
+            child: Container(
+              child: FutureBuilder<Tuple2<Version, String>>(
+                  future: getVersion(),
+                  builder: (context, snapshot) => Text(
+                        "v" +
+                            ((snapshot.hasData)
+                                ? (snapshot.data!.item1.toString() +
+                                    " build " +
+                                    snapshot.data!.item2)
+                                : ""),
+                        style: TextPalette.bodyText,
+                        textAlign: TextAlign.right,
+                      )),
+            ),
+          ),
+        )
+      ];
+    }
 
     return PageTemplate(
       refreshState: () => refreshPageState(),
@@ -383,8 +420,7 @@ class UserPageState extends State<UserPage> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           BackButton(
-              color: Palette.black,
-              onPressed: () => Navigator.pop(context)),
+              color: Palette.black, onPressed: () => Navigator.pop(context)),
         ],
       ),
     );
@@ -442,10 +478,8 @@ class UserInfoBox extends StatelessWidget {
             : Text(content!, style: TextPalette.getStats(Palette.black)),
         SizedBox(height: 4),
         Text(description!, style: TextPalette.bodyText),
-        if (bottom != null)
-          SizedBox(height: 4),
-        if (bottom != null)
-          bottom!
+        if (bottom != null) SizedBox(height: 4),
+        if (bottom != null) bottom!
       ],
     );
 

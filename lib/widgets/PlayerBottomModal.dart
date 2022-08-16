@@ -1,15 +1,10 @@
 import 'dart:math';
 
 import 'package:charts_flutter/flutter.dart' as charts;
-import 'package:charts_flutter/src/text_style.dart' as style;
-import 'package:charts_flutter/src/text_element.dart';
-import 'dart:math';
 
 import 'package:charts_flutter/flutter.dart';
 import 'package:charts_flutter/src/text_element.dart' as ChartText;
 import 'package:charts_flutter/src/text_style.dart' as ChartStyle;
-import 'package:flutter/material.dart';
-import 'package:charts_flutter/flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
@@ -147,9 +142,7 @@ class JoinedPlayerBottomModal extends StatelessWidget {
               ),
               Expanded(
                 child: StatEntry(
-                  stat: (userDetails.getScoreMatches() == null)
-                      ? "-"
-                      : userDetails.getScoreMatches()?.toStringAsFixed(1),
+                  stat: userDetails.getScoreMatches().toStringAsFixed(1),
                   description: "Avg. score",
                 ),
               ),

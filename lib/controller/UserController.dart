@@ -23,7 +23,7 @@ import '../utils/UiUtils.dart';
 class UserController {
   static var apiClient = CloudFunctionsClient();
 
-  static Future<UserDetails> initLoggedUser(BuildContext context, String uid) async {
+  static Future<UserDetails?> initLoggedUser(BuildContext context, String uid) async {
     var userState = context.read<UserState>();
     userState.currentUserId = uid;
     return await refreshLoggedUser(context);
@@ -32,12 +32,8 @@ class UserController {
   // this should be called for logged in user only
   static Future<UserDetails> refreshLoggedUser(BuildContext? context) async {
     var userState = context?.read<UserState>();
-
-    // todo refactor this, we set user details in state twice
     var userDetails = await getUserDetails(context!, userState?.currentUserId);
-    userState?.setCurrentUserDetails(userDetails);
-
-    return userDetails;
+    return userDetails!;
   }
 
   static Future<UserDetails?> getUserIfAvailable(BuildContext context) async {
@@ -48,8 +44,7 @@ class UserController {
     if (u != null) {
       var uid = u.uid;
       try {
-        var existingUserDetails = await initLoggedUser(context, uid);
-        ud = UserDetails.from(uid, existingUserDetails);
+        ud = await getUserDetails(context, uid);
       } catch (e, stack) {
         print("Found firebase user but couldn't load details: " + e.toString());
         print(stack);
@@ -89,10 +84,10 @@ class UserController {
 
     var uid = userCredential.user?.uid;
 
-    UserDetails userDetails = await getUserDetails(context, uid);
+    UserDetails? userDetails = await getUserDetails(context, uid);
 
     // check if first time
-    if (userDetails is EmptyUserDetails) {
+    if (userDetails == null) {
       userDetails = new UserDetails(
           uid!,
           false,
@@ -209,20 +204,20 @@ class UserController {
     return _login(context, userCredential);
   }
 
-  static Future<List<UserDetails>> getBatchUserDetails(
+  static Future<List<UserDetails?>> getBatchUserDetails(
       BuildContext context, List<String> uids) async {
     return await Future.wait(uids.map((e) => getUserDetails(context, e)));
   }
 
-  static Future<UserDetails> getUserDetails(
+  static Future<UserDetails?> getUserDetails(
       BuildContext context, String? uid) async {
     var userState = context.read<UserState>();
 
     var resp = await apiClient.callFunction("get_user", {"id": uid});
 
-    var ud = (resp == null) ? EmptyUserDetails.empty(uid!)
-        : UserDetails.fromJson(resp, uid!);
-    userState.setUserDetail(ud);
+    var ud = (resp == null) ? null : UserDetails.fromJson(resp, uid!);
+    if (ud != null)
+      userState.setUserDetail(ud);
 
     return ud;
   }
