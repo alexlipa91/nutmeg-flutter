@@ -245,7 +245,7 @@ class MatchDetailsState extends State<MatchDetails> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             BackButton(color: Palette.black),
-            if (!DeviceInfo().name.contains("ipad"))
+            if (!DeviceInfo().name.contains("ipad") && !kIsWeb)
               Align(
                   alignment: Alignment.centerRight,
                   child: buttons.ShareButton(() async {
