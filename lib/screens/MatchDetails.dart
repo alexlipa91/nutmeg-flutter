@@ -7,7 +7,6 @@ import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:nutmeg/screens/PlayerOfTheMatch.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:map_launcher/map_launcher.dart';
@@ -44,12 +43,10 @@ import 'PaymentDetailsDescription.dart';
 class MatchDetails extends StatefulWidget {
   final String matchId;
   final String? paymentOutcome;
-  final bool? fromPotm;
 
   const MatchDetails({Key? key,
     @PathParam('id') required this.matchId,
-    @QueryParam('payment_outcome') this.paymentOutcome,
-    this.fromPotm,
+    @QueryParam('payment_outcome') this.paymentOutcome
   }) : super(key: key);
 
   @override
@@ -88,13 +85,11 @@ class MatchDetailsState extends State<MatchDetails> {
       }
     }
 
-    if (widget.fromPotm != null &&
-        widget.fromPotm == true &&
-        loggedUser != null &&
+    if (loggedUser != null &&
         match != null &&
         match.getPotms().contains(loggedUser.documentId)) {
-      if (!await UserController.hasSeenPotmScreen(widget.matchId, loggedUser.documentId))
-        Navigator.push(context, MaterialPageRoute(builder: (context) => PlayerOfTheMatch()));
+      UserController.showPotmIfNotSeen(context,
+          widget.matchId, loggedUser.documentId);
     }
   }
 

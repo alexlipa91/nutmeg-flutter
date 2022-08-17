@@ -17,6 +17,7 @@ import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 import '../api/CloudFunctionsUtils.dart';
 import '../model/UserDetails.dart';
+import '../screens/PlayerOfTheMatch.dart';
 import '../state/UserState.dart';
 import '../utils/UiUtils.dart';
 
@@ -272,15 +273,17 @@ class UserController {
     await UserController.editUser(context, userDetails);
   }
 
-  static Future<bool> hasSeenPotmScreen(String matchId, String userId) async {
-    if (!kIsWeb) {
-      var prefs = await SharedPreferences.getInstance();
-      var preferencePath = "potm_screen_showed_" + matchId + "_" + userId;
-      return prefs.getBool(preferencePath) ?? false;
-    }
+  static Future<void> showPotmIfNotSeen(BuildContext context,
+      String matchId, String userId) async {
+    var prefs = await SharedPreferences.getInstance();
+    var preferencePath = "potm_screen_showed_" + matchId + "_" + userId;
+    var seen = prefs.getBool(preferencePath) ?? false;
 
-    // todo for web try to use cookies
-    return true;
+    if (!seen) {
+      Navigator.push(context,
+          MaterialPageRoute(builder: (context) => PlayerOfTheMatch()));
+      prefs.setBool(preferencePath, true);
+    }
   }
 }
 

@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:confetti/confetti.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:nutmeg/screens/Launch.dart';
 import 'package:nutmeg/state/UserState.dart';
@@ -134,7 +135,8 @@ class MainAreaState extends State<MainArea> {
                               (BuildContext context) async =>
                                   Navigator.of(context).pop(),
                           PrimaryInverted()),
-                      ShareButton(() async {
+                      if (!kIsWeb)
+                        ShareButton(() async {
                         var appDir = await getApplicationDocumentsDirectory();
                         var filePath = await widget.screenshotController
                             .captureAndSave(appDir.path);

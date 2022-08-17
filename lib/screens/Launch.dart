@@ -16,7 +16,6 @@ import 'package:nutmeg/screens/UserPage.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:provider/provider.dart';
 import 'package:skeletons/skeletons.dart';
-import 'package:universal_html/html.dart';
 
 import '../Exceptions.dart';
 import '../state/LoadOnceState.dart';
@@ -58,7 +57,6 @@ final appRouter = GoRouter(
               return MatchDetails(
                 key: ValueKey(keyString),
                 matchId: state.params["id"]!,
-                fromPotm: (state.queryParams["show_potm"] ?? "false") == "true",
                 paymentOutcome: state.queryParams["payment_outcome"]);
             }
           ),
