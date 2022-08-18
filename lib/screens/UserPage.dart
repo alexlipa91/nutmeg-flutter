@@ -242,8 +242,7 @@ class UserPageState extends State<UserPage> {
               var widgets = List<Widget>.from([]);
 
               void addCompleteBanner(bool isTest) {
-                if (userDetails != null &&
-                    userDetails.isOrganiser(isTest) &&
+                if (userDetails.isOrganiser(isTest) &&
                     !userDetails.areChargesEnabled(isTest))
                   widgets.addAll([
                     Row(children: [
