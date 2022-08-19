@@ -7,7 +7,6 @@
     "theme_color": "#0175C2",
     "description": "A new Flutter project.",
     "orientation": "portrait-primary",
-    "prefer_related_applications": false,
     "icons": [
         {
             "src": "icons/Icon-192.png",
@@ -18,6 +17,17 @@
             "src": "icons/Icon-512.png",
             "sizes": "512x512",
             "type": "image/png"
+        }
+    ],
+    "prefer_related_applications": true,
+    "related_applications": [
+        {
+            "platform": "play",
+            "id": "com.nutmeg.nutmeg"
+        },
+        {
+            "platform": "itunes",
+            "id": "com.nutmeg.app"
         }
     ]
 }
