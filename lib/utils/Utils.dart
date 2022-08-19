@@ -54,7 +54,7 @@ class DynamicLinks {
   static shareMatchFunction(String matchId) async {
     final DynamicLinkParameters parameters = DynamicLinkParameters(
       uriPrefix: 'https://nutmegapp.page.link',
-      link: Uri.parse('https://nutmegapp.com/match?id=' + matchId),
+      link: Uri.parse('https://web.nutmegapp.com/match/' + matchId),
       androidParameters: AndroidParameters(
         packageName: 'com.nutmeg.nutmeg',
         minimumVersion: 0,
