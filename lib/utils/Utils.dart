@@ -52,17 +52,21 @@ List<String> getStartAndEndHour(DateTime dateTime, Duration duration) => [
 
 class DynamicLinks {
   static shareMatchFunction(String matchId) async {
+    var deepLinkUrl = Uri.parse('https://web.nutmegapp.com/match/' + matchId);
+
     final DynamicLinkParameters parameters = DynamicLinkParameters(
       uriPrefix: 'https://nutmegapp.page.link',
-      link: Uri.parse('https://web.nutmegapp.com/match/' + matchId),
+      link: deepLinkUrl,
       androidParameters: AndroidParameters(
         packageName: 'com.nutmeg.nutmeg',
         minimumVersion: 0,
+        fallbackUrl: deepLinkUrl
       ),
       iosParameters: IosParameters(
         bundleId: 'com.nutmeg.app',
         minimumVersion: '1',
         appStoreId: '1592985083',
+        fallbackUrl: deepLinkUrl
       ),
     );
     var url = await parameters.buildShortLink();
