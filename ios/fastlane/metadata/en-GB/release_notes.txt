@@ -1,1 +1,1 @@
-Add dynamic link for web
+Fix UI bug in payment flow when user has no picture
