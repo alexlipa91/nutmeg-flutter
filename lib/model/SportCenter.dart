@@ -6,10 +6,10 @@ class SportCenter {
   double lng;
   String neighbourhood;
   String address;
-  String cid;
+  String? cid;
   Map<String, dynamic> _info;
 
-  String _thumbnailUrl;
+  String? _thumbnailUrl;
   List<String> _imagesUrls;
 
   SportCenter.fromJson(Map<String, dynamic>? json, String documentId)
@@ -33,7 +33,7 @@ class SportCenter {
   int get hashCode => super.hashCode;
 
   String getThumbnailUrl() => _thumbnailUrl == null
-      ? "https://storage.googleapis.com/nutmeg-9099c.appspot.com/sportcenters/default/thumbnail.png" : _thumbnailUrl;
+      ? "https://storage.googleapis.com/nutmeg-9099c.appspot.com/sportcenters/default/thumbnail.png" : _thumbnailUrl!;
 
   List<String> getImagesUrls() => _imagesUrls.isEmpty ? ["https://storage.googleapis.com/nutmeg-9099c.appspot.com/sportcenters/default/large/1.png"] : _imagesUrls;
 
@@ -48,6 +48,6 @@ class SportCenter {
 
   bool isIndoor() => _info["indoor"];
 
-  String getSurface() => _info["surface"];
+  String? getSurface() => _info["surface"];
 }
 

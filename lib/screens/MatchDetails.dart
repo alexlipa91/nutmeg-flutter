@@ -384,6 +384,36 @@ class Title extends StatelessWidget {
   }
 }
 
+class AddressRow extends StatelessWidget {
+
+  final SportCenter sportCenter;
+
+  const AddressRow({Key? key, required this.sportCenter}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Builder(builder: (context) {
+      var addressItems = sportCenter.address.split(",");
+
+      var firstRowText = addressItems[0].trim();
+      if (addressItems.length > 1)
+        firstRowText = firstRowText + ", " + addressItems[1].trim();
+
+      String? secondRowText = (addressItems.length > 2)
+          ? addressItems[2].trim() : null;
+
+      return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(firstRowText, style: TextPalette.bodyText),
+            if (secondRowText != null)
+              Text(secondRowText, style: TextPalette.bodyText)
+          ]);
+    });
+  }
+}
+
+
 // info card
 class MatchInfo extends StatelessWidget {
   static var dateFormat = DateFormat('MMMM dd \'at\' HH:mm');
@@ -409,17 +439,7 @@ class MatchInfo extends StatelessWidget {
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Title(match, sportCenter),
             SizedBox(height: 16),
-            Builder(builder: (context) {
-              var addressItems = sportCenter.address.split(",");
-
-              return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(addressItems[0].trim() + ", " + addressItems[1].trim(),
-                        style: TextPalette.bodyText),
-                    Text(addressItems[2].trim(), style: TextPalette.bodyText)
-                  ]);
-            }),
+            AddressRow(sportCenter: sportCenter),
             SizedBox(height: 16),
             IconList.fromIcon({
               Icons.calendar_month_outlined: getFormattedDateLong(match.dateTime),
@@ -747,24 +767,15 @@ class SportCenterDetails extends StatelessWidget {
         children: [
           MapCardImage(sportCenter),
           SizedBox(height: 16),
-          Builder(builder: (context) {
-            var addressItems = sportCenter.address.split(",");
-
-            return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(addressItems[0].trim() + ", " + addressItems[1].trim(),
-                      style: TextPalette.bodyText),
-                  Text(addressItems[2].trim(), style: TextPalette.bodyText)
-                ]);
-          }),
+          AddressRow(sportCenter: sportCenter),
           SizedBox(height: 16),
           IconList.fromSvg({
             "assets/icons/nutmeg_icon_court.svg":
                 (sportCenter.getCourtType() == null)
                     ? null
                     : sportCenter.getCourtType()! + " court type",
-            "assets/icons/nutmeg_icon_shoe.svg": sportCenter.getSurface(),
+            if (sportCenter.getSurface() != null)
+              "assets/icons/nutmeg_icon_shoe.svg": sportCenter.getSurface(),
             if (sportCenter.hasChangingRooms())
               "assets/icons/nutmeg_icon_changing_rooms.svg": "Change rooms available",
             if ((match.sportCenterSubLocation ?? "").isNotEmpty)
