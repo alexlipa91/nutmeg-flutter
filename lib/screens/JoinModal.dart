@@ -4,6 +4,7 @@ import 'package:nutmeg/controller/PaymentController.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
+import 'package:nutmeg/widgets/Avatar.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:nutmeg/widgets/ModalPaymentDescriptionArea.dart';
 import 'package:provider/provider.dart';
@@ -48,11 +49,8 @@ class JoinModal {
         Container(
           height: 24,
           width: 24,
-          child: CircleAvatar(
-              backgroundColor: Colors.transparent,
-              backgroundImage: NetworkImage(
-                  context.read<UserState>().getLoggedUserDetails()!.getPhotoUrl()!),
-              radius: 15),
+          child: UserAvatar(15,
+              context.read<UserState>().getLoggedUserDetails()),
         ),
         SizedBox(width: 10),
         Text("1x player", style: TextPalette.h3),

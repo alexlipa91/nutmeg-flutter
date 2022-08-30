@@ -29,13 +29,14 @@ class UserAvatar extends StatelessWidget {
     var photoUrl = userDetails?.getPhotoUrl();
 
     var backgroundColor = Palette.grey_lighter;
-    var backgroundImage = (photoUrl == null) ? null : NetworkImage(photoUrl);
+    var backgroundImage = (photoUrl == null || photoUrl == "")
+        ? null : NetworkImage(photoUrl);
 
     var displayName = UserDetails.getDisplayName(userDetails)?.toUpperCase();
 
     var fontSize = radius;
 
-    var child = (photoUrl == null)
+    var child = (photoUrl == null || photoUrl == "")
         ? Text(displayName![0],
             textAlign: TextAlign.center,
             style: GoogleFonts.roboto(
