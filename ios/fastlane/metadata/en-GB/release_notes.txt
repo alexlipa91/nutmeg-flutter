@@ -1,1 +1,1 @@
-Fix UI bug in payment flow when user has no picture
+Some null checking fixes on sportcenter objects
