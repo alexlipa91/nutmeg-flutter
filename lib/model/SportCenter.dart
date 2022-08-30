@@ -32,9 +32,11 @@ class SportCenter {
   @override
   int get hashCode => super.hashCode;
 
+  // images are 60x78
   String getThumbnailUrl() => _thumbnailUrl == null
       ? "https://storage.googleapis.com/nutmeg-9099c.appspot.com/sportcenters/default/thumbnail.png" : _thumbnailUrl!;
 
+  // images are 670x358
   List<String> getImagesUrls() => _imagesUrls.isEmpty ? ["https://storage.googleapis.com/nutmeg-9099c.appspot.com/sportcenters/default/large/1.png"] : _imagesUrls;
 
   String getShortAddress() =>
@@ -45,8 +47,6 @@ class SportCenter {
   bool hasChangingRooms() => _info["changeRooms"] ?? false;
 
   String? getCourtType() => _info["courtType"];
-
-  bool isIndoor() => _info["indoor"];
 
   String? getSurface() => _info["surface"];
 }
