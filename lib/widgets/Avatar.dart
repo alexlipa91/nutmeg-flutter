@@ -91,7 +91,7 @@ class LoggedUserAvatarWithRedirectUserPage extends StatelessWidget {
               // height and width nullify radius
               child: Center(
                   child: UserAvatar(
-                      200,
+                      15,
                       context.watch<UserState>().getLoggedUserDetails()))),
         ),
       ),
