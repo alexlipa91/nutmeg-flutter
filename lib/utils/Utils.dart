@@ -45,6 +45,15 @@ String _getFormattedDate(DateTime dateTime, DateFormat dateFormat,
 String formatCurrency(int cents) =>
     NumberFormat.simpleCurrency(name: "EUR").format(cents / 100);
 
+String formatEmail(String? email) {
+  if (email == null)
+    return "N/A";
+  var parts = email.split("@");
+  if (parts.length > 1 && parts[1] == "privaterelay.appleid.com")
+    return "N/A";
+  return email;
+}
+
 List<String> getStartAndEndHour(DateTime dateTime, Duration duration) => [
       uiHourFormat.format(dateTime),
       uiHourFormat.format(dateTime.add(duration))

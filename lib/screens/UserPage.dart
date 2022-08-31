@@ -195,7 +195,7 @@ class UserPageState extends State<UserPage> {
                 children: [
                   Text(userDetails!.name ?? "N/A", style: TextPalette.h2),
                   SizedBox(height: 10),
-                  Text(userDetails.email ?? "N/A", style: TextPalette.bodyText)
+                  Text(formatEmail(userDetails.email), style: TextPalette.bodyText)
                 ],
               ),
             )
