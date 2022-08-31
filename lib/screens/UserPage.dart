@@ -229,12 +229,13 @@ class UserPageState extends State<UserPage> {
             ),
           )
         ]),
-        Section(
-          title: "PERFORMANCE",
-          body: SizedBox(
-              height: 150,
-              child: PerformanceGraph(userId: userDetails.documentId))
-        ),
+        if (userDetails.getNumJoinedMatches() > 0)
+          Section(
+              title: "PERFORMANCE",
+              body: SizedBox(
+                  height: 150,
+                  child: PerformanceGraph(userId: userDetails.documentId))
+          ),
         if (showOrganizerView)
           Section(
             title: "ORGANISER",

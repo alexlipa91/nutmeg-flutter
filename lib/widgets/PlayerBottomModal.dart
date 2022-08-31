@@ -104,8 +104,8 @@ class StatEntry extends StatelessWidget {
   final String? stat;
   final String? description;
 
-  const StatEntry({Key? key, required this.stat,
-    required this.description}) : super(key: key);
+  const StatEntry({Key? key, required this.stat, required this.description})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -166,126 +166,118 @@ class JoinedPlayerBottomModal extends StatelessWidget {
   }
 }
 
-class PerformanceGraph extends StatefulWidget {
+class PerformanceGraph extends StatelessWidget {
   final String userId;
 
   const PerformanceGraph({Key? key, required this.userId}) : super(key: key);
 
   @override
-  State<StatefulWidget> createState() => PerformanceGraphState();
-}
-
-class PerformanceGraphState extends State<PerformanceGraph> {
-  @override
-  void initState() {
-    super.initState();
-    loadState();
-  }
-
-  Future<void> loadState() =>
-      context.read<UserState>().fetchScores(widget.userId);
-
-  @override
   Widget build(BuildContext context) {
-    var scores = context.watch<UserState>().getUserScores(widget.userId);
+    return FutureBuilder<List<double>>(
+        future: context.read<UserState>().fetchScores(userId),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData)
+            return SkeletonAvatar(
+                style: SkeletonAvatarStyle(
+                    width: double.infinity,
+                    height: 190,
+                    borderRadius: BorderRadius.circular(10.0)));
 
-    if (scores == null)
-      return SkeletonAvatar(
-          style: SkeletonAvatarStyle(
-              width: double.infinity,
-              height: 190,
-              borderRadius: BorderRadius.circular(10.0)));
+          List<MapEntry> ratesWithIndex =
+              (snapshot.data ?? []).asMap().entries.toList();
 
-    List<MapEntry> ratesWithIndex = scores.asMap().entries.toList();
-
-    return new charts.LineChart([
-      new charts.Series<MapEntry, int>(
-        id: 'Rates',
-        colorFn: (_, __) => charts.ColorUtil.fromDartColor(Palette.primary),
-        domainFn: (MapEntry e, _) => e.key,
-        measureFn: (MapEntry e, _) => e.value,
-        strokeWidthPxFn: (MapEntry e, _) => 5,
-        data: ratesWithIndex,
-        fillColorFn: (_, __) => charts.ColorUtil.fromDartColor(Palette.white),
-      )
-    ],
-        animate: false,
-        domainAxis:
-            new charts.NumericAxisSpec(renderSpec: new charts.NoneRenderSpec()),
-        primaryMeasureAxis: new charts.NumericAxisSpec(
-            tickProviderSpec: new charts.StaticNumericTickProviderSpec([
-              1,
-              2,
-              3,
-              4,
-              5
-            ]
-                .map((e) => charts.TickSpec(e,
-                    style: new charts.TextStyleSpec(
-                        fontFamily: "Roboto",
-                        fontSize: 16,
-                        color:
-                            charts.ColorUtil.fromDartColor(Palette.grey_dark))))
-                .toList()),
-            renderSpec: new charts.GridlineRendererSpec(
-                labelOffsetFromAxisPx: 20,
-                labelStyle: new charts.TextStyleSpec(
-                    fontSize: 14, // size in Pts.
-                    color: charts.MaterialPalette.black),
-                lineStyle: new charts.LineStyleSpec(
-                    color:
-                        charts.ColorUtil.fromDartColor(Palette.grey_lighter)))),
-        behaviors: [
-          charts.LinePointHighlighter(
-            radiusPaddingPx: 3.0,
-            showVerticalFollowLine:
-            charts.LinePointHighlighterFollowLineType.nearest,
-            symbolRenderer: CustomCircleSymbolRenderer(),
-          ),
-        ],
-        selectionModels: [
-          charts.SelectionModelConfig(
-            updatedListener: (charts.SelectionModel model) {
-              if (model.hasDatumSelection) {
-                String rate = (model.selectedSeries.first
-                    .measureFn(model.selectedDatum.first.index)
-                    ?? 0).toStringAsFixed(1);
-                ToolTipMgr.setData(rate);
-              }
-            },
-          ),
-        ],
-        defaultRenderer: new charts.LineRendererConfig(
-          includePoints: true,
-          radiusPx: 6,
-        ));
+          return new charts.LineChart(
+              [
+                new charts.Series<MapEntry, int>(
+                  id: 'Rates',
+                  colorFn: (_, __) =>
+                      charts.ColorUtil.fromDartColor(Palette.primary),
+                  domainFn: (MapEntry e, _) => e.key,
+                  measureFn: (MapEntry e, _) => e.value,
+                  strokeWidthPxFn: (MapEntry e, _) => 5,
+                  data: ratesWithIndex,
+                  fillColorFn: (_, __) =>
+                      charts.ColorUtil.fromDartColor(Palette.white),
+                )
+              ],
+              animate: false,
+              domainAxis: new charts.NumericAxisSpec(
+                  renderSpec: new charts.NoneRenderSpec()),
+              primaryMeasureAxis: new charts.NumericAxisSpec(
+                  tickProviderSpec: new charts.StaticNumericTickProviderSpec([
+                    1,
+                    2,
+                    3,
+                    4,
+                    5
+                  ]
+                      .map((e) => charts.TickSpec(e,
+                          style: new charts.TextStyleSpec(
+                              fontFamily: "Roboto",
+                              fontSize: 16,
+                              color: charts.ColorUtil.fromDartColor(
+                                  Palette.grey_dark))))
+                      .toList()),
+                  renderSpec: new charts.GridlineRendererSpec(
+                      labelOffsetFromAxisPx: 20,
+                      labelStyle: new charts.TextStyleSpec(
+                          fontSize: 14, // size in Pts.
+                          color: charts.MaterialPalette.black),
+                      lineStyle: new charts.LineStyleSpec(
+                          color: charts.ColorUtil.fromDartColor(
+                              Palette.grey_lighter)))),
+              behaviors: [
+                charts.LinePointHighlighter(
+                  radiusPaddingPx: 3.0,
+                  showVerticalFollowLine:
+                      charts.LinePointHighlighterFollowLineType.nearest,
+                  symbolRenderer: CustomCircleSymbolRenderer(),
+                ),
+              ],
+              selectionModels: [
+                charts.SelectionModelConfig(
+                  updatedListener: (charts.SelectionModel model) {
+                    if (model.hasDatumSelection) {
+                      String rate = (model.selectedSeries.first
+                                  .measureFn(model.selectedDatum.first.index) ??
+                              0)
+                          .toStringAsFixed(1);
+                      ToolTipMgr.setData(rate);
+                    }
+                  },
+                ),
+              ],
+              defaultRenderer: new charts.LineRendererConfig(
+                includePoints: true,
+                radiusPx: 6,
+              ));
+        });
   }
 }
 
 class CustomCircleSymbolRenderer extends CircleSymbolRenderer {
-
   @override
   void paint(ChartCanvas canvas, Rectangle<num> bounds,
       {List<int>? dashPattern,
-        Color? fillColor,
-        FillPatternType? fillPattern,
-        Color? strokeColor,
-        double? strokeWidthPx}) {
+      Color? fillColor,
+      FillPatternType? fillPattern,
+      Color? strokeColor,
+      double? strokeWidthPx}) {
     super.paint(canvas, bounds,
         dashPattern: dashPattern,
         fillColor: fillColor,
         strokeColor: strokeColor,
         strokeWidthPx: strokeWidthPx);
     canvas.drawRRect(
-      Rectangle(bounds.left - 8, bounds.height - 32,
-          bounds.width + 17, bounds.height + 5),
-      fill: Color.fromOther(color: charts.ColorUtil.fromDartColor(Palette.primary)),
-      roundBottomLeft: true,
-      roundBottomRight: true,
-      roundTopRight: true,
-      roundTopLeft: true,
-      radius: 30
-    );
+        Rectangle(bounds.left - 8, bounds.height - 32, bounds.width + 17,
+            bounds.height + 5),
+        fill: Color.fromOther(
+            color: charts.ColorUtil.fromDartColor(Palette.primary)),
+        roundBottomLeft: true,
+        roundBottomRight: true,
+        roundTopRight: true,
+        roundTopLeft: true,
+        radius: 30);
 
     ChartStyle.TextStyle textStyle = ChartStyle.TextStyle();
 
@@ -304,7 +296,6 @@ class CustomCircleSymbolRenderer extends CircleSymbolRenderer {
 String? _data;
 
 class ToolTipMgr {
-
   static String data() => _data!;
 
   static setData(String data) {

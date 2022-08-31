@@ -51,11 +51,11 @@ class UserState extends ChangeNotifier {
   // stats
   Map<String, List<double>> _usersScores = Map();
 
-  List<double>? getUserScores(String uid) => _usersScores[uid];
+  List<double> getUserScores(String uid) => _usersScores[uid] ?? [];
 
-  Future<List<double>?> fetchScores(String userId) async{
+  Future<List<double>> fetchScores(String userId) async{
     if (_usersScores.containsKey(userId))
-      return _usersScores[userId];
+      return _usersScores[userId] ?? [];
 
     var scores = await CloudFunctionsClient()
         .callFunction("get_last_user_scores", {"id": userId});
@@ -69,5 +69,6 @@ class UserState extends ChangeNotifier {
 
     _usersScores[userId] = scoresList;
     notifyListeners();
+    return scoresList;
   }
 }
