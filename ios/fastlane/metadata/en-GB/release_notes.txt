@@ -1,1 +1,1 @@
-Some null checking fixes on sportcenter objects
+Fix how users see private email
