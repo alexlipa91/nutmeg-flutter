@@ -33,6 +33,7 @@ import '../state/MatchesState.dart';
 import '../state/UserState.dart';
 import '../utils/InfoModals.dart';
 import '../widgets/Buttons.dart' as buttons;
+import '../widgets/ButtonsWithLoader.dart';
 import '../widgets/ModalBottomSheet.dart';
 import '../widgets/PlayerBottomModal.dart';
 import '../widgets/Skeletons.dart';
@@ -197,6 +198,8 @@ class MatchDetailsState extends State<MatchDetails> {
               ? TeamsWidget(matchId: widget.matchId)
               : PlayerList(match: match,
               withJoinButton: bottomBar is JoinMatchBottomBar && !match.isFull()),
+        if (match.organizerId != null && match.organizerId == userState.currentUserId)
+          OrganiserArea(match: match),
         SportCenterDetails(match: match, sportCenter: sportCenter),
         RuleCard(
             "Payment Policy",
@@ -1015,5 +1018,57 @@ class IconList extends StatelessWidget {
     List<Widget> widgets = interleave(rows.toList(), SizedBox(height: 12));
 
     return Column(children: widgets);
+  }
+}
+
+class OrganiserArea extends StatelessWidget {
+
+  final Match match;
+
+  const OrganiserArea({Key? key, required this.match}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return InfoContainerWithTitle(
+      title: "Organiser",
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+              match.cancelledAt == null ?
+              "Currently collected: ${formatCurrency(match.numPlayersGoing() * match.pricePerPersonInCents)}"
+                  : "Match cancelled: ${match.numPlayersGoing()} players have been refunded",
+              style: TextPalette.bodyText),
+          if (match.numPlayersGoing() > 0 && match.status == MatchStatus.open)
+            Padding(
+              padding: EdgeInsets.only(top: 16),
+              child: GenericButtonWithLoaderAndErrorHandling(
+                "CANCEL MATCH",
+                (BuildContext context) async {
+                  bool? proceed = await GenericInfoModal(
+                      title: "Are you sure you want to cancel the match?",
+                      description: "This will mark the match as canceled and each player will receive a full refund. "
+                          "This action cannot be undone.",
+                      action: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          GenericButtonWithLoader("CANCEL", (_) async {
+                            Navigator.pop(context, false);
+                          }, Secondary()),
+                          SizedBox(width: 8),
+                          GenericButtonWithLoader("YES", (_) async {
+                            Navigator.pop(context, true);
+                          }, Primary()),
+                        ],
+                      )).show(context);
+                  if (proceed ?? false) {
+                    await MatchesController.cancelMatch(match.documentId);
+                    await MatchesController.refresh(context, match.documentId);
+                  }
+                },
+                Destructive()),
+            ),
+        ],),
+    );
   }
 }
