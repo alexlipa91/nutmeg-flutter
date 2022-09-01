@@ -180,6 +180,10 @@ class LaunchController {
 
     _setupNotifications(context);
 
+    print("load data method is done");
+    LaunchController.loadingDone = true;
+
+    // navigate to next screen
     if (deepLink != null) {
       print("navigating with deep link:" + deepLink.toString());
       trace.putAttribute("coming_from_deeplink", true.toString());
@@ -192,11 +196,7 @@ class LaunchController {
       print("normal navigation");
       context.go(from ?? "/");
     }
-
     trace.stop();
-
-    print("load data method is done");
-    LaunchController.loadingDone = true;
   }
 
   static Future<void> _loadOnceData(BuildContext context) async {
