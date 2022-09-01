@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/model/Match.dart';
 import 'package:nutmeg/state/AvailableMatchesState.dart';
+import 'package:nutmeg/state/LoadOnceState.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:provider/provider.dart';
@@ -24,10 +25,15 @@ class AdminAvailableMatches extends StatelessWidget {
 
   Widget? getMatchWidgets(BuildContext context, bool future) {
     var matchesState = context.watch<MatchesState>();
+    var loadOnceState = context.watch<LoadOnceState>();
 
     if (matchesState.getMatches() == null) {
       return null;
     }
+    if (matchesState
+        .getMatches()!
+        .where((m) => loadOnceState.getSportCenter(m.sportCenterId) == null)
+        .isNotEmpty) return null;
 
     List<Match> matches = matchesState
         .getMatches()!
