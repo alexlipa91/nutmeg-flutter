@@ -220,8 +220,7 @@ class GenericMatchInfo extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.start,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              (sportCenter == null ||
-                                  sportCenter.getCourtType() == null)
+                              (sportCenter.getCourtType() == null)
                                   ? Skeletons.mText
                                   : Row(
                                       children: [
