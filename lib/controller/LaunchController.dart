@@ -178,6 +178,8 @@ class LaunchController {
     RemoteMessage? initialMessage =
         await FirebaseMessaging.instance.getInitialMessage();
 
+    _setupNotifications(context);
+
     if (deepLink != null) {
       print("navigating with deep link:" + deepLink.toString());
       trace.putAttribute("coming_from_deeplink", true.toString());
@@ -186,15 +188,15 @@ class LaunchController {
       print("navigating with initial message:" + initialMessage.toString());
       trace.putAttribute("coming_from_notification", true.toString());
       _handleMessageFromNotification(initialMessage);
+    } else {
+      print("normal navigation");
+      context.go(from ?? "/");
     }
-
-    _setupNotifications(context);
 
     trace.stop();
 
     print("load data method is done");
     LaunchController.loadingDone = true;
-    context.go(from ?? "/");
   }
 
   static Future<void> _loadOnceData(BuildContext context) async {
