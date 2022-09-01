@@ -40,6 +40,9 @@ class UserController {
   static Future<UserDetails?> getUserIfAvailable(BuildContext context) async {
     User? u = await FirebaseAuth.instance.authStateChanges().first;
 
+    // use this to navigate as another user for testing
+    // return await getUserDetails(context, "uid");
+
     UserDetails? ud;
 
     if (u != null) {
