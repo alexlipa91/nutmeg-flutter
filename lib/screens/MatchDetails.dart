@@ -983,7 +983,7 @@ class UserNameWidget extends StatelessWidget {
     // fixme text overflow
     if (userDetails == null) return Skeletons.mText;
 
-    var name = UserDetails.getDisplayName(userDetails)!.split(" ").first;
+    var name = UserDetails.getDisplayName(userDetails).split(" ").first;
 
     var n = name.substring(0, min(name.length, 11));
 

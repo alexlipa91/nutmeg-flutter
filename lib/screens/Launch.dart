@@ -13,6 +13,7 @@ import 'package:nutmeg/screens/CreateMatch.dart';
 import 'package:nutmeg/screens/Login.dart';
 import 'package:nutmeg/screens/MatchDetails.dart';
 import 'package:nutmeg/screens/UserPage.dart';
+import 'package:nutmeg/screens/admin/AvailableMatchesAdmin.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:provider/provider.dart';
 import 'package:skeletons/skeletons.dart';
@@ -21,6 +22,7 @@ import '../Exceptions.dart';
 import '../state/LoadOnceState.dart';
 import '../state/MatchesState.dart';
 import '../state/UserState.dart';
+import 'admin/AddOrEditMatch.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
@@ -62,16 +64,40 @@ final appRouter = GoRouter(
           ),
         ]
     ),
+    GoRoute(
+      path: '/admin',
+      builder: (context, state) => AdminAvailableMatches(),
+      routes: [
+        GoRoute(
+            path: 'match/:id',
+            builder: (context, state) {
+              var keyString = "AdminMatchDetails-${state.params["id"]}-"
+                  "${state.queryParams.entries
+                  .map((e) => "${e.key}-${e.value}").join("-")}";
+              return AdminMatchDetails(
+                  key: ValueKey(keyString),
+                  matchId: state.params["id"]!);
+            }
+        ),
+      ]
+    )
   ],
   // redirect to the launch page
   redirect: (state) {
     var redirectUrl;
+    var userState = navigatorKey.currentContext!.read<UserState>();
+
     if (!LaunchController.loadingDone && state.subloc != "/launch") {
+      // the loading
       var from = state.location == '/' ? '' : '?from=${state.location}';
       redirectUrl = "/launch$from";
-    } else if (!navigatorKey.currentContext!.read<UserState>().isLoggedIn()) {
-      if ({"/createMatch", "/user"}.contains(state.subloc))
+    } else if (!userState.isLoggedIn()) {
+      // the pages that need login
+      if ({"/createMatch", "/user", "/admin"}.contains(state.subloc))
         redirectUrl = "/login?from=${state.location}";
+    } else if (!(userState.getLoggedUserDetails()!.isAdmin ?? false)
+        && state.subloc == "/admin") {
+      redirectUrl = "/";
     }
 
     return redirectUrl;
