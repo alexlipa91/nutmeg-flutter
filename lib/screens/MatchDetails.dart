@@ -57,7 +57,14 @@ class MatchDetails extends StatefulWidget {
 class MatchDetailsState extends State<MatchDetails> {
 
   Future<void> myInitState() async {
-    await refreshState();
+    // don't block if some match data is already available
+    if (context.read<MatchesState>().getMatch(widget.matchId) == null) {
+      await refreshState();
+    } else {
+      refreshState();
+    }
+
+    Match match = context.read<MatchesState>().getMatch(widget.matchId)!;
 
     // check if payment outcome
     if (widget.paymentOutcome != null) {
@@ -73,10 +80,9 @@ class MatchDetailsState extends State<MatchDetails> {
     }
 
     // show rating modal
-    var match = context.read<MatchesState>().getMatch(widget.matchId);
     var loggedUser = context.read<UserState>().getLoggedUserDetails();
 
-    if (match?.status == MatchStatus.to_rate && match!.isUserGoing(loggedUser)) {
+    if (match.status == MatchStatus.to_rate && match.isUserGoing(loggedUser)) {
       var stillToVote = context.read<MatchesState>().stillToVote(
           widget.matchId, loggedUser!);
 
@@ -87,7 +93,6 @@ class MatchDetailsState extends State<MatchDetails> {
     }
 
     if (loggedUser != null &&
-        match != null &&
         match.getPotms().contains(loggedUser.documentId)) {
       UserController.showPotmIfNotSeen(context,
           widget.matchId, loggedUser.documentId);

@@ -51,10 +51,12 @@ class AdminAvailableMatches extends StatelessWidget {
     matches.forEachIndexed((index, match) {
       if (index == 0) {
         result.add(
-            GenericMatchInfo.first(match.documentId, onTap));
+            GenericMatchInfo.first(matchesState.getMatch(match.documentId)!,
+                loadOnceState.getSportCenter(match.sportCenterId)!, onTap));
       } else {
         result
-            .add(GenericMatchInfo(match.documentId, onTap));
+            .add(GenericMatchInfo(matchesState.getMatch(match.documentId)!,
+            loadOnceState.getSportCenter(match.sportCenterId)!, onTap));
       }
     });
 

@@ -20,18 +20,26 @@ class AvailableMatches extends StatelessWidget {
 
   Future<void> onTap(BuildContext context, String matchId) async => context.go("/match/$matchId");
 
-  Widget? pastWidgets(BuildContext context) {
-    var state = context.watch<MatchesState>();
-    var userState = context.watch<UserState>();
-    var loadOnceState = context.watch<LoadOnceState>();
+  bool _isLoading(BuildContext context) {
+    var state = context.read<MatchesState>();
+    var loadOnceState = context.read<LoadOnceState>();
 
     if (state.getMatches() == null) {
-      return null;
+      return true;
     }
     if (state
         .getMatches()!
         .where((m) => loadOnceState.getSportCenter(m.sportCenterId) == null)
-        .isNotEmpty) return null;
+        .isNotEmpty) return true;
+    return false;
+  }
+
+  Widget? pastWidgets(BuildContext context) {
+    var state = context.watch<MatchesState>();
+    var userState = context.watch<UserState>();
+
+    if (_isLoading(context))
+      return null;
 
     if (!userState.isLoggedIn()) {
       return getEmptyStateWidget(context, false);
@@ -67,13 +75,8 @@ class AvailableMatches extends StatelessWidget {
     var userState = context.watch<UserState>();
     var loadOnceState = context.watch<LoadOnceState>();
 
-    if (state.getMatches() == null) {
+    if (_isLoading(context))
       return null;
-    }
-    if (state
-        .getMatches()!
-        .where((m) => loadOnceState.getSportCenter(m.sportCenterId) == null)
-        .isNotEmpty) return null;
 
     if (!userState.isLoggedIn()) {
       return getEmptyStateWidget(context);
@@ -92,9 +95,12 @@ class AvailableMatches extends StatelessWidget {
       matches.sortedBy((e) => e.dateTime).forEachIndexed((index, m) {
         if (index == 0) {
           widgets.add(
-              GenericMatchInfo.first(m.documentId, onTap));
+              GenericMatchInfo.first(state.getMatch(m.documentId)!,
+                  loadOnceState.getSportCenter(m.sportCenterId)!,
+                  onTap));
         } else {
-          widgets.add(GenericMatchInfo(m.documentId, onTap));
+          widgets.add(GenericMatchInfo(state.getMatch(m.documentId)!,
+              loadOnceState.getSportCenter(m.sportCenterId)!, onTap));
         }
       });
     }
@@ -109,13 +115,8 @@ class AvailableMatches extends StatelessWidget {
     var userState = context.watch<UserState>();
     var loadOnceState = context.watch<LoadOnceState>();
 
-    if (state.getMatches() == null) {
+    if (_isLoading(context))
       return null;
-    }
-    if (state
-        .getMatches()!
-        .where((m) => loadOnceState.getSportCenter(m.sportCenterId) == null)
-        .isNotEmpty) return null;
 
     var hideStatuses = Set.of([MatchStatus.cancelled, MatchStatus.unpublished]);
     var matches = state
@@ -149,14 +150,15 @@ class AvailableMatches extends StatelessWidget {
 
     List<Widget> result = [];
     groupedByWeeksIntervals.entries.forEachIndexed((index, e) {
-      if (e.value != null && e.value.isNotEmpty) {
+      if (e.value.isNotEmpty) {
         var widgets =
             e.value.sortedBy((e) => e.dateTime).mapIndexed((index, match) {
           if (index == 0) {
-            return GenericMatchInfo.first(
-                match.documentId, onTap);
+            return GenericMatchInfo.first(state.getMatch(match.documentId)!,
+                loadOnceState.getSportCenter(match.sportCenterId)!, onTap);
           }
-          return GenericMatchInfo(match.documentId, onTap);
+          return GenericMatchInfo(state.getMatch(match.documentId)!,
+              loadOnceState.getSportCenter(match.sportCenterId)!, onTap);
         });
 
         var section;
@@ -189,10 +191,10 @@ class AvailableMatches extends StatelessWidget {
   Widget? getMyMatchesWidgets(BuildContext context) {
     var state = context.read<MatchesState>();
     var userState = context.read<UserState>();
+    var loadOnceState = context.watch<LoadOnceState>();
 
-    if (state.getMatches() == null) {
+    if (_isLoading(context))
       return null;
-    }
 
     if (!userState.isLoggedIn()) {
       return getEmptyStateWidget(context);
@@ -210,9 +212,11 @@ class AvailableMatches extends StatelessWidget {
       matches.sortedBy((e) => e.dateTime).reversed.forEachIndexed((index, m) {
         if (index == 0) {
           widgets.add(
-              GenericMatchInfo.first(m.documentId, onTap));
+              GenericMatchInfo.first(state.getMatch(m.documentId)!,
+                  loadOnceState.getSportCenter(m.sportCenterId)!, onTap));
         } else {
-          widgets.add(GenericMatchInfo(m.documentId, onTap));
+          widgets.add(GenericMatchInfo(state.getMatch(m.documentId)!,
+              loadOnceState.getSportCenter(m.sportCenterId)!, onTap));
         }
       });
     }

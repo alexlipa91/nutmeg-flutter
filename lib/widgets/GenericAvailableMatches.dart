@@ -9,6 +9,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:nutmeg/controller/SportCentersController.dart';
 import 'package:nutmeg/model/Match.dart';
+import 'package:nutmeg/model/SportCenter.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/AppBar.dart';
@@ -179,27 +180,20 @@ class GenericAvailableMatchesListState
 class GenericMatchInfo extends StatelessWidget {
   static var monthDayFormat = DateFormat('HH:mm');
 
-  final String matchId;
+  final Match match;
+  final SportCenter sportCenter;
+
   final double topMargin;
   final Function onTap;
 
-  GenericMatchInfo(this.matchId, this.onTap)
+  GenericMatchInfo(this.match, this.sportCenter, this.onTap)
       : topMargin = 10;
 
-  GenericMatchInfo.first(this.matchId, this.onTap)
+  GenericMatchInfo.first(this.match, this.sportCenter, this.onTap)
       : topMargin = 0;
 
   @override
   Widget build(BuildContext context) {
-    var matchesState = context.watch<MatchesState>();
-    var match = matchesState.getMatch(matchId);
-
-    var loadOnceState = context.read<LoadOnceState>();
-
-    var sportCenter = (match == null)
-        ? null
-        : loadOnceState.getSportCenter(match.sportCenterId);
-
     return InkWell(
         splashColor: Colors.transparent,
         highlightColor: Colors.transparent,
@@ -209,11 +203,11 @@ class GenericMatchInfo extends StatelessWidget {
               backgroundColor: Palette.white,
               child: applyBadges(
                   context,
-                  match!,
+                  match,
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      MatchThumbnail(image: sportCenter!.getThumbnailUrl()),
+                      MatchThumbnail(image: sportCenter.getThumbnailUrl()),
                       SizedBox(width: 15),
                       Expanded(
                         child: Column(
