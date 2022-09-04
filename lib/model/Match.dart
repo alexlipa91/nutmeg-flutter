@@ -28,6 +28,7 @@ class Match {
   int maxPlayers;
   DateTime? cancelledAt;
   DateTime? scoresComputedAt;
+  DateTime? paidOutAt;
 
   Map<String, DateTime>? going;
 
@@ -72,6 +73,8 @@ class Match {
 
       status = MatchStatus.values
           .firstWhere((e) => e.name == jsonInput["status"]);
+
+      paidOutAt = jsonInput["paid_out_at"];
 
       this.documentId = documentId;
   }

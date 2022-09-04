@@ -1034,16 +1034,21 @@ class OrganiserArea extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var infoText = "";
+    if (match.cancelledAt == null) {
+      infoText += "Collected: ${formatCurrency(match.numPlayersGoing() * match.pricePerPersonInCents)}";
+      if (match.paidOutAt != null)
+        infoText += "\\nPaid out to your bank account on: ${getFormattedDate(match.paidOutAt!)}";
+    }
+    else
+      infoText += "Match cancelled: ${match.numPlayersGoing()} players have been refunded";
+
     return InfoContainerWithTitle(
       title: "Organiser",
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-              match.cancelledAt == null ?
-              "Currently collected: ${formatCurrency(match.numPlayersGoing() * match.pricePerPersonInCents)}"
-                  : "Match cancelled: ${match.numPlayersGoing()} players have been refunded",
-              style: TextPalette.bodyText),
+          Text(infoText, style: TextPalette.bodyText),
           if (match.numPlayersGoing() > 0 && match.status == MatchStatus.open)
             Padding(
               padding: EdgeInsets.only(top: 16),

@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
@@ -283,8 +282,6 @@ class UserController {
     var seen = prefs.getBool(preferencePath) ?? false;
 
     seen = false;
-
-    print(seen);
 
     if (!seen) {
       Navigator.push(context,
