@@ -513,9 +513,7 @@ class CompleteOrganiserAccountWidget extends StatelessWidget {
           "To start receiving payments, you need to create your Stripe account",
       textAction: "GO TO STRIPE",
       action: () async {
-        var url =
-            "https://europe-central2-nutmeg-9099c.cloudfunctions.net/go_to_onboard_connected_account?is_test=$isTest&id=${userState.currentUserId}";
-        await launch(url, forceSafariVC: false);
+        await launch(getStripeUrl(isTest, userState.currentUserId!), forceSafariVC: false);
       },
     );
   }

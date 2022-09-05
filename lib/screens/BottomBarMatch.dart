@@ -7,6 +7,7 @@ import 'package:nutmeg/state/UserState.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../state/MatchesState.dart';
 
@@ -209,9 +210,16 @@ class NotPublishedBottomBar extends StatelessWidget {
   const NotPublishedBottomBar({Key? key, required this.matchId}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) =>
-      BottomBarMatch(matchId: matchId,
-          text: "Not Published",
-          subText: "Complete your Stripe account"
-      );
+  Widget build(BuildContext context) {
+    var userState = context.read<UserState>();
+
+    return BottomBarMatch(matchId: matchId,text: "Not Published",
+        subText: "Complete your Stripe account to receive payments and publish this match",
+        button: InkWell(onTap: () =>
+            launch(getStripeUrl(userState.isTestMode, userState.currentUserId!), forceSafariVC: false),
+            child: Padding(
+                padding: EdgeInsets.only(top: 8),
+                child: Text("GO TO STRIPE", style: TextPalette.linkStyle)))
+    );
+  }
 }

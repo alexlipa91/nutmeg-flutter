@@ -120,3 +120,6 @@ class ConfigsUtils {
       true;
       // FirebaseRemoteConfig.instance.getBool("remove_credit_functionality");
 }
+
+String getStripeUrl(bool isTest, String userId) =>
+    "https://europe-central2-nutmeg-9099c.cloudfunctions.net/go_to_onboard_connected_account?is_test=$isTest&id=$userId";

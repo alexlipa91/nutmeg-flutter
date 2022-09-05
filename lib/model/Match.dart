@@ -74,7 +74,8 @@ class Match {
       status = MatchStatus.values
           .firstWhere((e) => e.name == jsonInput["status"]);
 
-      paidOutAt = jsonInput["paid_out_at"];
+      if (jsonInput.containsKey("paid_out_at"))
+        paidOutAt = DateTime.parse(jsonInput['paid_out_at']).toLocal();
 
       this.documentId = documentId;
   }
