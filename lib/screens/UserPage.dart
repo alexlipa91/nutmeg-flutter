@@ -233,8 +233,9 @@ class UserPageState extends State<UserPage> {
           Section(
               title: "PERFORMANCE",
               body: SizedBox(
-                  height: 150,
-                  child: PerformanceGraph(userId: userDetails.documentId))
+                  height: 180,
+                  child: InfoContainer(child:
+                  PerformanceGraph(userId: userDetails.documentId)))
           ),
         if (showOrganizerView)
           Section(
