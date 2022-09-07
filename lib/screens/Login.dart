@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/screens/Launch.dart';
@@ -37,9 +36,7 @@ class Login extends StatelessWidget {
                 padding: EdgeInsets.only(right: 20),
                 child: InkWell(
                   child: Icon(Icons.close),
-                  onTap: () =>
-                      GoRouter.of(context).location == "/user/login"
-                          ? context.go("/") : context.pop()
+                  onTap: () => Navigator.of(context).pop()
                 )
             )
           ],
@@ -158,7 +155,7 @@ class SignInButton extends StatelessWidget {
 
               try {
                 await loginFuture();
-                context.pop();
+                Navigator.of(context).pop();
               } on Exception catch (e, stack) {
                 print(e);
                 print(stack);
