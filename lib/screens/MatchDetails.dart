@@ -176,7 +176,10 @@ class MatchDetailsState extends State<MatchDetails> {
               Row(children: [Expanded(child: SportCenterImageCarouselState.getPlaceholder())]),
               skeletonRepeatedElement,
               skeletonRepeatedElement,
-              skeletonRepeatedElement
+              skeletonRepeatedElement,
+              skeletonRepeatedElement,
+              skeletonRepeatedElement,
+              skeletonRepeatedElement,
             ])
       ];
     } else {
@@ -532,6 +535,7 @@ class SportCenterImageCarouselState extends State<SportCenterImageCarousel> {
   static Widget getPlaceholder() => SkeletonAvatar(
     style: SkeletonAvatarStyle(
         width: double.infinity,
+        height: 213,
         borderRadius: BorderRadius.circular(10.0)),
   );
 
@@ -645,19 +649,13 @@ class InfoWidget extends StatelessWidget {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            title == null
-                ? Padding(
-                    padding: EdgeInsets.only(bottom: 6),
-                    child: Skeletons.xlText)
-                : Text(title, style: TextPalette.h2),
+            Text(title, style: TextPalette.h2),
             SizedBox(
               height: 4,
             ),
-            subTitle == null
-                ? Skeletons.lText
-                : Padding(
-                    padding: EdgeInsets.only(bottom: 2),
-                    child: Text(subTitle, style: TextPalette.bodyText))
+            Padding(
+                padding: EdgeInsets.only(bottom: 2),
+                child: Text(subTitle, style: TextPalette.bodyText))
           ],
         ),
         if (rightWidget != null)
