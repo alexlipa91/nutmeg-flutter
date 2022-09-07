@@ -1,1 +1,1 @@
-Add more info in organizer onboarding flow
+Fix login flow from join modal
