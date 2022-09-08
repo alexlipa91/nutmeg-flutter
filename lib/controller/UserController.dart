@@ -251,6 +251,8 @@ class UserController {
     var original = await ImagePicker().pickImage(source: ImageSource.gallery);
     if (original == null) return;
     File? croppedFile = await ImageCropper().cropImage(
+        maxHeight: 512,
+        maxWidth: 512,
         aspectRatio: CropAspectRatio(ratioX: 1, ratioY: 1),
         sourcePath: original.path,
         aspectRatioPresets: [CropAspectRatioPreset.square],
@@ -259,16 +261,13 @@ class UserController {
             toolbarWidgetColor: Palette.grey_light,
             initAspectRatio: CropAspectRatioPreset.original,
             activeControlsWidgetColor: Palette.primary,
-            lockAspectRatio: false),
+            lockAspectRatio: true),
         iosUiSettings: IOSUiSettings(
           minimumAspectRatio: 1.0,
         ));
     if (croppedFile == null) return;
     var uploaded = await FirebaseStorage.instance
-        .ref("users/" +
-            userDetails.documentId +
-            "_" +
-            DateTime.now().millisecondsSinceEpoch.toString())
+        .ref("users/" + userDetails.documentId)
         .putFile(croppedFile);
     print(await uploaded.ref.getDownloadURL());
     userDetails.image = await uploaded.ref.getDownloadURL();
