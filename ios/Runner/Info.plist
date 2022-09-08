@@ -96,5 +96,7 @@
     <false/>
     <key>NSPhotoLibraryUsageDescription</key>
     <string>Photo Library Access Warning</string>
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
 </dict>
 </plist>
