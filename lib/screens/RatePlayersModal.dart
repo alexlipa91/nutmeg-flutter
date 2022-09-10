@@ -89,18 +89,21 @@ class RatePlayerBottomModal extends StatelessWidget {
 
     var widgets = [
       RatingBar(),
-      if (showSkillsArea)
-        Column(children: [
-          SizedBox(height: 24),
-          Text("Select $name top skills today"),
-          SizedBox(height: 18),
-          Wrap(
-            alignment: WrapAlignment.center,
-            spacing: 12,
-            runSpacing: 12,
-            children: _getSkillsButtons(context),
-          ),
-        ],),
+      AnimatedContainer(
+        duration: Duration(milliseconds: 400),
+        height: showSkillsArea ? 150 : 0,
+        child: Column(children: [
+            SizedBox(height: 24),
+            Text("Select $name top skills today"),
+            SizedBox(height: 18),
+            Wrap(
+              alignment: WrapAlignment.center,
+              spacing: 12,
+              runSpacing: 12,
+              children: _getSkillsButtons(context),
+            ),
+          ],),
+      ),
       SizedBox(height: 18),
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
