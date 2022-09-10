@@ -32,7 +32,8 @@ class RateButton extends StatelessWidget {
 }
 
 class RatePlayerBottomModal extends StatelessWidget {
-  static Future<bool?> rateAction(BuildContext context, String matchId) async {
+
+  static Future<void> rateAction(BuildContext context, String matchId) async {
     var toRate = context
         .read<MatchesState>()
         .stillToVote(matchId, context.read<UserState>().getLoggedUserDetails()!);
@@ -57,7 +58,8 @@ class RatePlayerBottomModal extends StatelessWidget {
 
   RatePlayerBottomModal(this.matchId);
 
-  List<Widget> _getSkillsButtons(BuildContext context) => Skills.values.map((s) =>
+  List<Widget> _getSkillsButtons(BuildContext context) =>
+      Skills.values.map((s) =>
       GenericButtonWithLoader(s.name, (BuildContext context) {
         var ratingsState = context.read<RatingPlayersState>();
 
@@ -90,7 +92,7 @@ class RatePlayerBottomModal extends StatelessWidget {
     var widgets = [
       RatingBar(),
       AnimatedContainer(
-        duration: Duration(milliseconds: 400),
+        duration: Duration(milliseconds: 300),
         height: showSkillsArea ? 150 : 0,
         child: Column(children: [
             SizedBox(height: 24),
@@ -108,7 +110,7 @@ class RatePlayerBottomModal extends StatelessWidget {
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // trick for alignemnt
+          // trick for alignment
           Text("ABCD", style: TextPalette.getLinkStyle(Palette.white)),
           Container(
             height: 40, // align to tappable area
