@@ -15,6 +15,16 @@ class VotesEntry {
   VotesEntry(this.user, this.isPotm, this.numberOfVotes, this.numberOfSkips);
 }
 
+enum Skills {
+  Goalkeeping,
+  Speed,
+  Strength,
+  Defending,
+  Shooting,
+  Dribbling,
+  Passing,
+}
+
 
 class MatchRatings {
   String documentId;

@@ -3,6 +3,7 @@ import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 import 'package:nutmeg/model/Match.dart';
 import 'package:provider/provider.dart';
 
+import '../model/MatchRatings.dart';
 import '../model/PaymentRecap.dart';
 import '../state/MatchesState.dart';
 import '../state/UserState.dart';
@@ -62,13 +63,15 @@ class MatchesController {
 
   // logged-in user voted 'score' for user 'userId' in match 'matchId'
   static Future<void> addRating(
-      BuildContext context, String userId, String matchId, double score) async {
+      BuildContext context, String userId, String matchId, double score,
+      Set<Skills> skills) async {
     try {
       await apiClient.callFunction("add_rating", {
         "user_id": context.read<UserState>().getLoggedUserDetails()?.documentId,
         "user_rated_id": userId,
         "match_id": matchId,
-        "score": score
+        "score": score,
+        "skills": skills.map((e) => e.name).toList()
       });
     } catch (e, s) {
       print("Failed to add rating: " + e.toString());

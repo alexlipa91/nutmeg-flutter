@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../model/MatchRatings.dart';
+
 
 class RatingPlayersState extends ChangeNotifier {
 
@@ -8,6 +10,7 @@ class RatingPlayersState extends ChangeNotifier {
 
   int current = 0;
   double currentScore = -1;
+  Set<Skills> selectedSkills = Set.of([]);
 
   RatingPlayersState(this.toRate);
 
@@ -22,11 +25,22 @@ class RatingPlayersState extends ChangeNotifier {
       current++;
     }
     currentScore = -1;
+    selectedSkills = Set.of([]);
     notifyListeners();
   }
 
   void setCurrentScore(double score) {
     currentScore = score;
+    notifyListeners();
+  }
+
+  void selectSkill(Skills s) {
+    selectedSkills.add(s);
+    notifyListeners();
+  }
+
+  void unselectSkill(Skills s) {
+    selectedSkills.remove(s);
     notifyListeners();
   }
 }

@@ -10,6 +10,7 @@ import 'package:nutmeg/widgets/FeedbackBottomModal.dart';
 import 'package:nutmeg/widgets/ModalBottomSheet.dart';
 import 'package:provider/provider.dart';
 
+import '../model/MatchRatings.dart';
 import '../rating_bar/RatingWidget.dart';
 import '../widgets/PlayerBottomModal.dart';
 import '../widgets/Texts.dart';
@@ -56,6 +57,18 @@ class RatePlayerBottomModal extends StatelessWidget {
 
   RatePlayerBottomModal(this.matchId);
 
+  List<Widget> _getSkillsButtons(BuildContext context) => Skills.values.map((s) =>
+      GenericButtonWithLoader(s.name, (BuildContext context) {
+        var ratingsState = context.read<RatingPlayersState>();
+
+        if (ratingsState.selectedSkills.contains(s))
+          ratingsState.unselectSkill(s);
+        else
+          ratingsState.selectSkill(s);
+      }, context.watch<RatingPlayersState>().selectedSkills.contains(s)
+          ? Primary() : Secondary()),
+  ).toList();
+
   @override
   Widget build(BuildContext context) {
     var state = context.watch<RatingPlayersState>();
@@ -65,41 +78,59 @@ class RatePlayerBottomModal extends StatelessWidget {
 
     var current = context.watch<UserState>().getUserDetail(state.getCurrent());
 
-    var nameParts = (current == null) ? null : current.name?.split(" ");
+    // user data might still have to be loaded; in that case we wait
+    if (current == null)
+      return Container();
+
+    var nameParts = current.name?.split(" ");
     var name = (nameParts == null) ? null : nameParts.first;
 
-    return PlayerBottomModal(
-        current!,
-        Column(
-          children: [
-            RatingBar(),
-            SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // trick for alignemnt
-                Text("ABCD", style: TextPalette.getLinkStyle(Palette.white)),
-                Container(
-                  height: 40, // align to tappable area
-                  child: Align(
-                    alignment: Alignment.center,
-                    child: Text(
-                        (alreadyRated + state.current).toString() +
-                            "/" +
-                            (match.numPlayersGoing() - 1).toString() +
-                            " players",
-                        style: TextPalette.getBodyText(Palette.black)),
-                  ),
-                ),
-                TappableLinkText(
-                    text: (state.currentScore > 0) ? "NEXT" : "SKIP",
-                    onTap: (BuildContext context) async {
-                      store(context);
-                    }),
-              ],
+    bool showSkillsArea = context.watch<RatingPlayersState>().currentScore != -1;
+
+    var widgets = [
+      RatingBar(),
+      if (showSkillsArea)
+        Column(children: [
+          SizedBox(height: 24),
+          Text("Select $name top skills today"),
+          SizedBox(height: 18),
+          Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 12,
+            runSpacing: 12,
+            children: _getSkillsButtons(context),
+          ),
+        ],),
+      SizedBox(height: 18),
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          // trick for alignemnt
+          Text("ABCD", style: TextPalette.getLinkStyle(Palette.white)),
+          Container(
+            height: 40, // align to tappable area
+            child: Align(
+              alignment: Alignment.center,
+              child: Text(
+                  (alreadyRated + state.current).toString() +
+                      "/" +
+                      (match.numPlayersGoing() - 1).toString() +
+                      " players",
+                  style: TextPalette.getBodyText(Palette.black)),
             ),
-          ],
-        ),
+          ),
+          TappableLinkText(
+              text: (state.currentScore > 0) ? "NEXT" : "SKIP",
+              onTap: (BuildContext context) async {
+                store(context);
+              }),
+        ],
+      ),
+    ];
+
+    return PlayerBottomModal(
+        current,
+        Column(children: widgets),
         (name == null) ? null : "How was " + name + "'s performance?",
         (name == null) ? null : name + " won't see your score");
   }
@@ -108,7 +139,7 @@ class RatePlayerBottomModal extends StatelessWidget {
     var state = context.read<RatingPlayersState>();
 
     MatchesController.addRating(context, state.getCurrent(), matchId,
-        state.getCurrentScore());
+        state.getCurrentScore(), state.selectedSkills);
 
     // store also locally so UI changes fast
     context.read<MatchesState>().addRating(matchId,
