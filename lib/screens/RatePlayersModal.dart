@@ -89,53 +89,54 @@ class RatePlayerBottomModal extends StatelessWidget {
 
     bool showSkillsArea = context.watch<RatingPlayersState>().currentScore != -1;
 
-    var widgets = [
-      RatingBar(),
-      AnimatedContainer(
-        duration: Duration(milliseconds: 300),
-        height: showSkillsArea ? 150 : 0,
-        child: Column(children: [
-            SizedBox(height: 24),
-            Text("Select $name top skills today"),
-            SizedBox(height: 18),
-            Wrap(
-              alignment: WrapAlignment.center,
-              spacing: 12,
-              runSpacing: 12,
-              children: _getSkillsButtons(context),
-            ),
-          ],),
-      ),
-      SizedBox(height: 18),
-      Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          // trick for alignment
-          Text("ABCD", style: TextPalette.getLinkStyle(Palette.white)),
-          Container(
-            height: 40, // align to tappable area
-            child: Align(
-              alignment: Alignment.center,
-              child: Text(
-                  (alreadyRated + state.current).toString() +
-                      "/" +
-                      (match.numPlayersGoing() - 1).toString() +
-                      " players",
-                  style: TextPalette.getBodyText(Palette.black)),
-            ),
-          ),
-          TappableLinkText(
-              text: (state.currentScore > 0) ? "NEXT" : "SKIP",
-              onTap: (BuildContext context) async {
-                store(context);
-              }),
-        ],
-      ),
-    ];
-
     return PlayerBottomModal(
         current,
-        Column(children: widgets),
+        Column(children: [
+          RatingBar(),
+          AnimatedSize(
+            duration: Duration(milliseconds: 1000),
+            curve: Curves.easeInOutCubic,
+            child: Container(
+              height: showSkillsArea ? null : 0,
+              child: Column(children: [
+                SizedBox(height: 24),
+                Text("Select $name top skills today"),
+                SizedBox(height: 18),
+                Wrap(
+                  alignment: WrapAlignment.center,
+                  spacing: 12,
+                  runSpacing: 12,
+                  children: _getSkillsButtons(context),
+                ),
+              ],),
+            ),
+          ),
+          SizedBox(height: 18),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // trick for alignment
+              Text("ABCD", style: TextPalette.getLinkStyle(Palette.white)),
+              Container(
+                height: 40, // align to tappable area
+                child: Align(
+                  alignment: Alignment.center,
+                  child: Text(
+                      (alreadyRated + state.current).toString() +
+                          "/" +
+                          (match.numPlayersGoing() - 1).toString() +
+                          " players",
+                      style: TextPalette.getBodyText(Palette.black)),
+                ),
+              ),
+              TappableLinkText(
+                  text: (state.currentScore > 0) ? "NEXT" : "SKIP",
+                  onTap: (BuildContext context) async {
+                    store(context);
+                  }),
+            ],
+          ),
+        ]),
         (name == null) ? null : "How was " + name + "'s performance?",
         (name == null) ? null : name + " won't see your score");
   }
