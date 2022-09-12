@@ -193,9 +193,7 @@ class MatchDetailsState extends State<MatchDetails> {
 
             return InfoContainer(
                 child: Row(children: [
-                  (ud != null && ud.isAdmin!)
-                      ? NutmegAvatar(24.0)
-                      : UserAvatarWithBottomModal(userData: ud),
+                  UserAvatarWithBottomModal(userData: ud),
                   SizedBox(width: 16),
                   Expanded(
                     child: Column(
@@ -205,7 +203,7 @@ class MatchDetailsState extends State<MatchDetails> {
                         SizedBox(height: 4),
                         (ud == null)
                             ? Skeletons.lText
-                            : Text((ud.isAdmin!) ? "Nutmeg" : ud.name!.split(" ").first,
+                            : Text(ud.name!.split(" ").first,
                             style: TextPalette.h2),
                       ],
                     ),
