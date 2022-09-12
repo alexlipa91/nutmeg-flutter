@@ -100,7 +100,8 @@ class RatePlayerBottomModal extends StatelessWidget {
               height: showSkillsArea ? null : 0,
               child: Column(children: [
                 SizedBox(height: 24),
-                Text("Select $name top skills today"),
+                Text("Select $name top skills",
+                    style: TextPalette.getBodyText(Palette.grey_dark)),
                 SizedBox(height: 18),
                 Wrap(
                   alignment: WrapAlignment.center,
