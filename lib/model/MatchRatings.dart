@@ -16,13 +16,13 @@ class VotesEntry {
 }
 
 enum Skills {
-  Goalkeeping,
   Speed,
-  Strength,
-  Defending,
   Shooting,
-  Dribbling,
   Passing,
+  Dribbling,
+  Defending,
+  Physicality,
+  Goalkeeping,
 }
 
 

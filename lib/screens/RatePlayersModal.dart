@@ -94,8 +94,8 @@ class RatePlayerBottomModal extends StatelessWidget {
         Column(children: [
           RatingBar(),
           AnimatedSize(
-            duration: Duration(milliseconds: 1000),
-            curve: Curves.easeInOutCubic,
+            duration: Duration(milliseconds: 500),
+            curve: Curves.fastOutSlowIn,
             child: Container(
               height: showSkillsArea ? null : 0,
               child: Column(children: [
