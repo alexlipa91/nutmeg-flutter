@@ -218,7 +218,8 @@ class UserPageState extends State<UserPage> {
         Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
           Expanded(
             child: UserInfoBox(
-                content: userDetails.getScoreMatches().toStringAsFixed(1),
+                content: (userDetails.getScoreMatches() == null)
+                    ? "-" : userDetails.getScoreMatches()!.toStringAsFixed(1),
                 description: "Avg. Score"),
           ),
           SizedBox(width: 20),

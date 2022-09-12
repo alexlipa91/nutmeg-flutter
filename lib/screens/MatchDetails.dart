@@ -137,49 +137,16 @@ class MatchDetailsState extends State<MatchDetails> {
     // add padding individually since because of shadow clipping some components need margin
     var widgets;
     if (match == null || sportCenter == null) {
-      var skeletonRepeatedElement = Padding(
-          padding: EdgeInsets.symmetric(vertical: 16.0),
-          child:
-          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            SkeletonLine(
-                style: SkeletonLineStyle(
-                    borderRadius: BorderRadius.circular(20),
-                    width: double.infinity,
-                    height: 24)),
-            Column(children: List<Widget>.filled(3,
-                Padding(
-                  padding: EdgeInsets.only(top: 16),
-                  child: Row(children: [
-                    SkeletonLine(
-                      style: SkeletonLineStyle(
-                          borderRadius: BorderRadius.circular(20),
-                          width: 24,
-                          height: 24),
-                    ),
-                    SizedBox(width: 16),
-                    Expanded(
-                      child: SkeletonLine(
-                        style: SkeletonLineStyle(
-                            borderRadius: BorderRadius.circular(20),
-                            height: 24),
-                      ),
-                    ),
-                  ],),
-                )))
-          ])
-      );
-
       widgets = [
         Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(children: [Expanded(child: SportCenterImageCarouselState.getPlaceholder())]),
-              skeletonRepeatedElement,
-              skeletonRepeatedElement,
-              skeletonRepeatedElement,
-              skeletonRepeatedElement,
-              skeletonRepeatedElement,
-              skeletonRepeatedElement,
+              Row(children: [Expanded(child: SkeletonMatchDetails.imageSkeleton())]),
+              SkeletonMatchDetails.skeletonRepeatedElement(),
+              SkeletonMatchDetails.skeletonRepeatedElement(),
+              SkeletonMatchDetails.skeletonRepeatedElement(),
+              SkeletonMatchDetails.skeletonRepeatedElement(),
+              SkeletonMatchDetails.skeletonRepeatedElement(),
             ])
       ];
     } else {

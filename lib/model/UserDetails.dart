@@ -60,7 +60,7 @@ class UserDetails {
 
   String getUid() => documentId;
 
-  double getScoreMatches() => averageScore ?? 0.0;
+  double? getScoreMatches() => averageScore;
 
   int getNumJoinedMatches() => numJoinedMatches ?? 0;
 

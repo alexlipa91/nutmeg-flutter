@@ -48,26 +48,25 @@ class SkeletonAvailableMatches extends StatelessWidget {
           children: [
             SkeletonAvatar(
               style: SkeletonAvatarStyle(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(20),
                 width: 60,
                 height: 78,
               ),
             ),
             SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                children: [
-                  Skeletons.xlText,
-                  SizedBox(
-                    height: 12,
-                  ),
-                  Skeletons.lText,
-                  SizedBox(
-                    height: 12,
-                  ),
-                  Skeletons.mText
-                ],
-              ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Skeletons.xlText,
+                SizedBox(
+                  height: 12,
+                ),
+                Skeletons.lText,
+                SizedBox(
+                  height: 12,
+                ),
+                Skeletons.mText
+              ],
             )
           ],
         ),
@@ -76,35 +75,32 @@ class SkeletonAvailableMatches extends StatelessWidget {
   }
 }
 
-class SkeletonMatchDetails extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return SkeletonItem(
-        child: Column(
-      children: [
-        SkeletonAvatar(
-          style: SkeletonAvatarStyle(
-            borderRadius: BorderRadius.circular(8),
-            width: double.infinity,
-            minHeight: (MediaQuery.of(context).size.height / 5) - 1,
-            maxHeight: MediaQuery.of(context).size.height / 5,
-          ),
-        ),
-        SizedBox(height: 12),
-        SkeletonParagraph(
-          style: SkeletonParagraphStyle(
-              lines: 3,
-              spacing: 15,
-              lineStyle: SkeletonLineStyle(
-                borderRadius: BorderRadius.circular(8),
-                minLength: MediaQuery.of(context).size.width - 1,
-                maxLength: MediaQuery.of(context).size.width,
-                height: 20,
-              )),
-        )
-      ],
-    ));
-  }
+class SkeletonMatchDetails {
+
+  static Widget skeletonRepeatedElement() => Padding(
+      padding: EdgeInsets.symmetric(vertical: 16.0),
+      child:
+      Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Skeletons.fullWidthText,
+        Column(children: List<Widget>.filled(3,
+            Padding(
+              padding: EdgeInsets.only(top: 16),
+              child: Row(children: [
+                Skeletons.sText,
+                SizedBox(width: 12),
+                Expanded(
+                  child: Skeletons.fullWidthText
+                ),
+              ],),
+            )))
+      ])
+  );
+
+  static Widget imageSkeleton() => SkeletonAvatar(
+      style: SkeletonAvatarStyle(
+          width: double.infinity,
+          height: 213,
+          borderRadius: BorderRadius.circular(10.0)));
 }
 
 class StatsSkeleton extends StatelessWidget {
