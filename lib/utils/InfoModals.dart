@@ -40,13 +40,10 @@ class GenericInfoModal<T> {
     }
 
     return ModalBottomSheet.showNutmegModalBottomSheet<T>(context, Container(
-      child: Padding(
-        // make 32 if find visual cue
-          padding: padding,
-          child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: widgets)),
+      child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: widgets),
     ));
   }
 }

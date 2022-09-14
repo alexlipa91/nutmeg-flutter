@@ -1,26 +1,32 @@
-import 'package:auto_route/auto_route.dart';
+import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:google_place/google_place.dart';
 import 'package:intl/intl.dart';
 import 'package:nutmeg/Exceptions.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/model/Match.dart';
+import 'package:nutmeg/model/SportCenter.dart';
 import 'package:nutmeg/screens/BottomBarMatch.dart';
 import 'package:nutmeg/state/UserState.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
+import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:nutmeg/widgets/PageTemplate.dart';
 import 'package:nutmeg/widgets/Section.dart';
+import 'package:nutmeg/widgets/Texts.dart';
 import 'package:provider/provider.dart';
 import 'package:time_picker_widget/time_picker_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../state/LoadOnceState.dart';
+import '../widgets/GenericAvailableMatches.dart';
 import '../widgets/ModalBottomSheet.dart';
 
 // main widget
@@ -80,7 +86,7 @@ class CreateMatchState extends State<CreateMatch> {
   bool withAutomaticCancellation = false;
   int repeatsForWeeks = 1;
   final TextEditingController cancelTimeEditingController =
-    TextEditingController(text: "24");
+      TextEditingController(text: "24");
 
   final dateFormat = DateFormat("dd-MM-yyyy");
   final regexPrice = new RegExp("\\d+(\\.\\d{1,2})?");
@@ -180,7 +186,8 @@ class CreateMatchState extends State<CreateMatch> {
                       // It is a must if you provide selectableTimePredicate
                       onFailValidation: (context) => print(""),
                       initialTime: TimeOfDay(hour: 18, minute: 0),
-                      selectableTimePredicate: (time) => (time?.minute)! % 5 == 0,
+                      selectableTimePredicate: (time) =>
+                          (time?.minute)! % 5 == 0,
                     );
                     if (d != null) {
                       startTimeEditingController.text = getFormattedTime(d);
@@ -248,8 +255,8 @@ class CreateMatchState extends State<CreateMatch> {
                               return "Weekly for " + e.toString() + " weeks";
                           }).toList();
 
-                          int i =
-                              await showMultipleChoiceSheet("Repeat", choices);
+                          int? i = await showMultipleChoiceSheetWithText(
+                            context, "Repeat", choices);
 
                           if (i != null) {
                             repeatWeeklyEditingController.text =
@@ -286,8 +293,7 @@ class CreateMatchState extends State<CreateMatch> {
                 Expanded(
                     child: TextFormField(
                   controller: sportCenterEditingController,
-                  enabled:
-                      context.watch<LoadOnceState>().getSportCenters() != null,
+                  enabled: true,
                   focusNode: sportCenterfocusNode,
                   validator: (v) {
                     if (v == null || v.isEmpty) return "Required";
@@ -297,16 +303,14 @@ class CreateMatchState extends State<CreateMatch> {
                   decoration:
                       getTextFormDecoration("Location", isDropdown: true),
                   onTap: () async {
-                    var sportCenters =
-                        context.read<LoadOnceState>().getSportCenters();
+                    SportCenter? sp =
+                        await ModalBottomSheet.showNutmegModalBottomSheet(
+                            context, LocationsBottomSheet());
 
-                    var i = await showMultipleChoiceSheet(
-                        "Location", sportCenters.map((e) => e.name).toList());
-
-                    if (i != null) {
-                      sportCenterEditingController.text = sportCenters[i].name;
+                    if (sp != null) {
+                      sportCenterEditingController.text = sp.name;
                       setState(() {
-                        sportCenterId = sportCenters[i].placeId;
+                        sportCenterId = sp.placeId;
                       });
                     }
                   },
@@ -499,29 +503,33 @@ class CreateMatchState extends State<CreateMatch> {
                     child: TextFormField(
                         validator: (v) {
                           var durationSize = int.tryParse(v!);
-                          if (durationSize == null)
-                            return "Invalid duration";
+                          if (durationSize == null) return "Invalid duration";
                           Duration duration = Duration(hours: durationSize);
 
                           var d = getDateTime();
-                          if (d != null && getDateTime()!.subtract(duration).isBefore(DateTime.now())) {
+                          if (d != null &&
+                              getDateTime()!
+                                  .subtract(duration)
+                                  .isBefore(DateTime.now())) {
                             return "The interval is in the past";
                           }
 
                           return null;
                         },
                         controller: cancelTimeEditingController,
-                        onChanged: (v) {setState(() {});},
+                        onChanged: (v) {
+                          setState(() {});
+                        },
                         decoration: getTextFormDecoration(null),
-                        keyboardType: TextInputType.numberWithOptions(signed: false, decimal: false)),
+                        keyboardType: TextInputType.numberWithOptions(
+                            signed: false, decimal: false)),
                   ),
                   SizedBox(width: 16),
                   Expanded(
-                    child:
-                    TextFormField(
-                        initialValue: "Hours",
-                        readOnly: true,
-                        decoration: getTextFormDecoration(null),
+                    child: TextFormField(
+                      initialValue: "Hours",
+                      readOnly: true,
+                      decoration: getTextFormDecoration(null),
                     ),
                   ),
                 ],
@@ -532,12 +540,11 @@ class CreateMatchState extends State<CreateMatch> {
                 padding: EdgeInsets.only(top: 16),
                 child: Text(
                     "We will cancel the match if at least "
-                        "${numberOfPeopleRangeValues.start.toInt()} "
-                        "players haven't joined by "
-                        "${cancelTimeEditingController.text} hours",
+                    "${numberOfPeopleRangeValues.start.toInt()} "
+                    "players haven't joined by "
+                    "${cancelTimeEditingController.text} hours",
                     style: TextPalette.bodyText,
-                    overflow: TextOverflow.visible)
-            )
+                    overflow: TextOverflow.visible))
         ]),
       ),
       if (context.read<UserState>().getLoggedUserDetails()!.isAdmin!)
@@ -614,8 +621,10 @@ class CreateMatchState extends State<CreateMatch> {
                               etod.hour, etod.minute)
                           .toUtc();
                       var duration = endTime.difference(dateTime!);
-                      var cancelBefore = withAutomaticCancellation ?
-                          Duration(hours: int.parse(cancelTimeEditingController.text))
+                      var cancelBefore = withAutomaticCancellation
+                          ? Duration(
+                              hours:
+                                  int.parse(cancelTimeEditingController.text))
                           : null;
 
                       var forWeeks = repeatsForWeeks;
@@ -635,8 +644,7 @@ class CreateMatchState extends State<CreateMatch> {
                                 .read<UserState>()
                                 .getLoggedUserDetails()!
                                 .documentId,
-                            cancelBefore
-                        );
+                            cancelBefore);
 
                         var id = await MatchesController.addMatch(match);
                         await MatchesController.refresh(context, id);
@@ -687,39 +695,330 @@ class CreateMatchState extends State<CreateMatch> {
   bool isAfter(TimeOfDay a, TimeOfDay b) =>
       (a.hour * 60 + a.minute) > (b.hour * 60 + b.minute);
 
-  Future<int> showMultipleChoiceSheet(
+  static Future<int?> showMultipleChoiceSheetWithText(BuildContext context,
       String title, List<String> choices) async {
-    int i = await ModalBottomSheet.showNutmegModalBottomSheet(
+    int? i = await ModalBottomSheet.showNutmegModalBottomSheet(
         context,
-        Padding(
-            padding: EdgeInsets.only(
-                left: 16.0, right: 16.0, top: 16.0, bottom: 8.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: TextPalette.h2,
-                ),
-                SizedBox(height: 8.0),
-                ListView.builder(
-                    shrinkWrap: true,
-                    scrollDirection: Axis.vertical,
-                    itemCount: choices.length,
-                    itemBuilder: (context, i) => InkWell(
-                          onTap: () => Navigator.of(context).pop(i),
-                          child: Padding(
-                            padding: EdgeInsets.only(top: 8.0, bottom: 8.0),
-                            child: Text(choices[i].toString(),
-                                style: GoogleFonts.roboto(
-                                    color: Palette.black,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w400,
-                                    height: 1.6)),
-                          ),
-                        ))
-              ],
-            )));
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: TextPalette.h2,
+            ),
+            SizedBox(height: 8.0),
+            ListView.builder(
+                shrinkWrap: true,
+                scrollDirection: Axis.vertical,
+                itemCount: choices.length,
+                itemBuilder: (context, i) => InkWell(
+                      onTap: () => Navigator.of(context).pop(i),
+                      child: Padding(
+                        padding: EdgeInsets.only(top: 8.0, bottom: 8.0),
+                        child: Text(choices[i].toString(),
+                            style: GoogleFonts.roboto(
+                                color: Palette.black,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w400,
+                                height: 1.6)),
+                      ),
+                    ))
+          ],
+        ));
     return i;
+  }
+}
+
+class LocationsBottomSheet extends StatelessWidget {
+
+  @override
+  Widget build(BuildContext context) {
+    List<Widget> widgets = [];
+    widgets.add(SizedBox(height: 16));
+    widgets.addAll(interleave(context
+        .read<LoadOnceState>()
+        .getSportCenters()
+        .map((e) => InkWell(
+          onTap: () => Navigator.pop(context, e),
+          child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+          MatchThumbnail(image: e.getThumbnailUrl(), height: 60),
+          SizedBox(width: 16),
+          Expanded(
+            child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(e.name, style: TextPalette.h3),
+                  SizedBox(
+                    height: 8,
+                  ),
+                  Text(e.address,
+                      style: TextPalette.getBodyText(
+                          Palette.grey_dark)),
+                ]),
+          ),
+      ],
+    ),
+        )).toList(),
+        SizedBox(height: 16)));
+
+    widgets.add(Section(title: "Your Courts",
+        titleType: "big",
+        body: Column(children: [
+        SizedBox(height: 16),
+        InkWell(
+          onTap: () async {
+            await ModalBottomSheet.showNutmegModalBottomSheet(context, CreateCourtBottomSheet());
+          },
+          child: Row(children: [
+              Container(
+                height: 60,
+                width: 60,
+                child: DottedBorder(
+                  padding: EdgeInsets.zero,
+                  borderType: BorderType.RRect,
+                  radius: Radius.circular(10),
+                  color: Palette.grey_dark,
+                  strokeWidth: 1,
+                  dashPattern: [4],
+                  child: CircleAvatar(
+                    radius: 29,
+                    child: Icon(Icons.add, color: Palette.grey_dark, size: 24),
+                    backgroundColor: Colors.transparent,
+                  ),
+                ),
+              ),
+              SizedBox(width: 16),
+              Text("CREATE NEW COURT", style: TextPalette.linkStyle),
+            ],),
+        )
+    ],)));
+
+    return Section(
+        title: "Popular courts",
+        topSpace: 0,
+        titleType: "big",
+        body: Column(children: widgets)
+    );
+  }
+}
+
+
+class CreateCourtBottomSheet extends StatefulWidget {
+
+  @override
+  State<StatefulWidget> createState() => CreateCourtBottomSheetState();
+}
+
+class CreateCourtBottomSheetState extends State<CreateCourtBottomSheet> {
+
+  final TextEditingController surfaceController = TextEditingController();
+  final TextEditingController sizeController = TextEditingController();
+
+  bool changeRoomsAvailable = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: Column(children: [
+        Section(title: "Court Information", topSpace: 0, titleType: "big", body: Column(
+          children: [
+            Row(children: [
+              Expanded(child: SearchLocation())
+            ],)
+          ],
+        )),
+        Section(title: "Court Type", titleType: "big", body: Column(
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                      child: TextFormField(
+                          readOnly: true,
+                          controller: surfaceController,
+                          decoration: CreateMatchState
+                              .getTextFormDecoration("Surface", isDropdown: true),
+                          onTap: () async {
+                            var surfaces = ["Indoor", "Outdoor"];
+
+                            int? i = await CreateMatchState
+                                .showMultipleChoiceSheetWithText(context,
+                                "Surface", surfaces);
+
+                            if (i != null) {
+                              surfaceController.text = surfaces[i];
+                              // setState(() {
+                              //   repeatsForWeeks = weeks[i];
+                              // });
+                            }
+                          }
+                        )
+                    ),
+                ],
+              ),
+              SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                      child: TextFormField(
+                          readOnly: true,
+                          controller: sizeController,
+                          decoration: CreateMatchState
+                              .getTextFormDecoration("Size", isDropdown: true),
+                          onTap: () async {
+                            var sizes = ["5v5", "6v6", "7v7", "11v11"];
+
+                            int? i = await CreateMatchState
+                                .showMultipleChoiceSheetWithText(context,
+                                "Size", sizes);
+
+                            if (i != null) {
+                              sizeController.text = sizes[i];
+                            }
+                          })),
+                ],
+              ),
+            ]
+        )),
+        Section(title: "Facilities", titleType: "big", body: Column(
+          children: [
+            Row(
+              children: [
+                Checkbox(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5)),
+                    value: changeRoomsAvailable,
+                    activeColor: Palette.primary,
+                    onChanged: (v) {
+                      if (v != null) {
+                        setState(() {
+                          changeRoomsAvailable = v;
+                        });
+                      }
+                    }),
+                Flexible(
+                    child: Text(
+                        "Change Rooms available",
+                        style: TextPalette.bodyText,
+                        overflow: TextOverflow.visible)),
+              ],
+            ),
+          ],
+        )),
+        SizedBox(height: 32,),
+        Row(children: [
+          Expanded(
+            child: GenericButtonWithLoader("CREATE NEW COURT",
+                    (BuildContext context) async {
+                  context.read<GenericButtonWithLoaderState>().change(true);
+
+                  // bool? v = _formKey.currentState?.validate();
+                  // if (v != null && v) {
+                  //   try {
+                  //     var etod = toTimeOfTheDay(endTimeEditingController.text);
+                  //     var day = dateFormat.parse(dateEditingController.text);
+                  //     var dateTime = getDateTime();
+                  //     var endTime = DateTime(day.year, day.month, day.day,
+                  //         etod.hour, etod.minute)
+                  //         .toUtc();
+                  //     var duration = endTime.difference(dateTime!);
+                  //     var cancelBefore = withAutomaticCancellation
+                  //         ? Duration(
+                  //         hours:
+                  //         int.parse(cancelTimeEditingController.text))
+                  //         : null;
+                  //
+                  //     var forWeeks = repeatsForWeeks;
+                  //
+                  //     Iterable<Future<String>> idsFuture =
+                  //     Iterable<int>.generate(forWeeks).map((w) async {
+                  //       var match = Match(
+                  //           dateTime.add(Duration(days: 7 * w)),
+                  //           sportCenterId,
+                  //           courtNumberEditingController.text,
+                  //           numberOfPeopleRangeValues.end.toInt(),
+                  //           (double.parse(priceController.text) * 100).toInt(),
+                  //           duration,
+                  //           isTest,
+                  //           numberOfPeopleRangeValues.start.toInt(),
+                  //           context
+                  //               .read<UserState>()
+                  //               .getLoggedUserDetails()!
+                  //               .documentId,
+                  //           cancelBefore);
+                  //
+                  //       var id = await MatchesController.addMatch(match);
+                  //       await MatchesController.refresh(context, id);
+                  //       await UserController.refreshLoggedUser(context);
+                  //       print("added match with id " + id);
+                  //       return id;
+                  //     });
+                  //
+                  //     var ids = await Future.wait(idsFuture);
+                  //
+                  //     context.go("/match/${ids.first}");
+                  //   } on Exception catch (e, s) {
+                  //     print(e);
+                  //     print(s);
+                  //     ErrorHandlingUtils.handleError(e, s, context);
+                  //   }
+                  // } else {
+                  //   print("validation error");
+                  //   setState(() {});
+                  // }
+
+                  context.read<GenericButtonWithLoaderState>().change(false);
+                }, Primary()),
+          )
+        ]),
+      ],),
+    );
+  }
+}
+
+class SearchLocation extends StatefulWidget {
+
+  @override
+  State<StatefulWidget> createState() => SearchLocationState();
+}
+
+class SearchLocationState extends State<SearchLocation> {
+
+  final TextEditingController textEditingController = TextEditingController();
+
+  List<AutocompletePrediction>? predictions;
+
+  @override
+  Widget build(BuildContext context) {
+
+    return TypeAheadField<AutocompletePrediction>(
+      textFieldConfiguration: TextFieldConfiguration(
+          style: TextPalette.getBodyText(Palette.black),
+          decoration: CreateMatchState.getTextFormDecoration("Court Address"),
+          controller: textEditingController
+      ),
+      suggestionsCallback: (pattern) async {
+        List<AutocompletePrediction> predictions = [];
+        if (pattern.isNotEmpty) {
+          var googlePlace = GooglePlace("AIzaSyDlU4z5DbXqoafB-T-t2mJ8rGv3Y4rAcWY");
+          var result = await googlePlace.autocomplete.get(pattern);
+          predictions = result?.predictions ?? [];
+        }
+        return predictions;
+      },
+      itemBuilder: (context, suggestion) {
+        return ListTile(
+          leading: Icon(Icons.place),
+          title: Text(suggestion.description ?? ""),
+          // subtitle: Text('\$${suggestion['price']}'),
+        );
+      },
+      noItemsFoundBuilder: (value) => Container(height: 10),
+      onSuggestionSelected: (suggestion) {
+        textEditingController.text = suggestion.description ?? "";
+      },
+    );
   }
 }

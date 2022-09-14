@@ -33,47 +33,44 @@ class BottomModalWithTopImage extends StatelessWidget {
             borderRadius: new BorderRadius.only(
                 topLeft: const Radius.circular(20.0),
                 topRight: const Radius.circular(20.0))),
-        child: Padding(
-          padding: GenericInfoModal.padding,
-          child: Container(
-            child: Wrap(
-              children: [
-                Stack(
-                    alignment: AlignmentDirectional.bottomStart,
-                    clipBehavior: Clip.none,
-                    children: [
-                      Container(
-                          decoration: BoxDecoration(
-                              color: Palette.white,
-                              borderRadius: GenericInfoModal.modalRadius),
-                          width: double.infinity,
-                          child: Column(
-                            children: [
-                              SizedBox(height: 44),
-                              (title != null)
-                                  ? Text(title!, style: TextPalette.h2)
-                                  : Skeletons.xlTextCenter,
-                              if (subtitle != null)
-                                Padding(
-                                    padding: EdgeInsets.only(top: 4),
-                                    child: Text(subtitle!,
-                                        style: TextPalette.getBodyText(
-                                            Palette.grey_dark))),
-                              SizedBox(height: 24),
-                              content!
-                            ],
-                          )),
-                      Positioned(
-                          top: -50,
-                          left: 0,
-                          right: 0,
-                          child: CircleAvatar(
-                              backgroundColor: Palette.white,
-                              radius: 38,
-                              child: topImage)),
-                    ]),
-              ],
-            ),
+        child: Container(
+          child: Wrap(
+            children: [
+              Stack(
+                  alignment: AlignmentDirectional.bottomStart,
+                  clipBehavior: Clip.none,
+                  children: [
+                    Container(
+                        decoration: BoxDecoration(
+                            color: Palette.white,
+                            borderRadius: GenericInfoModal.modalRadius),
+                        width: double.infinity,
+                        child: Column(
+                          children: [
+                            SizedBox(height: 44),
+                            (title != null)
+                                ? Text(title!, style: TextPalette.h2)
+                                : Skeletons.xlTextCenter,
+                            if (subtitle != null)
+                              Padding(
+                                  padding: EdgeInsets.only(top: 4),
+                                  child: Text(subtitle!,
+                                      style: TextPalette.getBodyText(
+                                          Palette.grey_dark))),
+                            SizedBox(height: 24),
+                            content!
+                          ],
+                        )),
+                    Positioned(
+                        top: -50,
+                        left: 0,
+                        right: 0,
+                        child: CircleAvatar(
+                            backgroundColor: Palette.white,
+                            radius: 38,
+                            child: topImage)),
+                  ]),
+            ],
           ),
         ),
       ),

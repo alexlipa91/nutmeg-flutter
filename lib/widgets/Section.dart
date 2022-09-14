@@ -17,6 +17,7 @@ class Section extends StatelessWidget {
       return TextPalette.h2;
     if (titleType == "normal")
       return TextPalette.h4;
+    return null;
   }
 
   @override
