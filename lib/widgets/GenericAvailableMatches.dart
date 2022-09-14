@@ -403,15 +403,16 @@ class GenericMatchInfoPast extends StatelessWidget {
 }
 
 class MatchThumbnail extends StatelessWidget {
-  final String? image;
+  final String image;
+  final double height;
 
-  const MatchThumbnail({Key? key, this.image}) : super(key: key);
+  const MatchThumbnail({this.height = 78, required this.image});
 
   @override
   Widget build(BuildContext context) {
     return Container(
         width: 60,
-        height: 78,
+        height: height,
         child: CachedNetworkImage(
           imageUrl: image!,
           fadeInDuration: Duration(milliseconds: 0),

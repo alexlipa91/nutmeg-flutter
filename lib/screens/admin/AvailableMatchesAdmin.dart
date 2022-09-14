@@ -1,8 +1,11 @@
 import "package:collection/collection.dart";
 import 'package:flutter/material.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_place/google_place.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/model/Match.dart';
+import 'package:nutmeg/screens/CreateMatch.dart';
 import 'package:nutmeg/state/AvailableMatchesState.dart';
 import 'package:nutmeg/state/LoadOnceState.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
@@ -100,7 +103,21 @@ class AdminAvailableMatches extends StatelessWidget {
                         description:
                             "Page returned the following data: " + n.toString())
                     .show(context);
-              }, Primary())
+              }, Primary()),
+              TextField(
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(),
+                  hintText: 'Enter a search term',
+                ),
+                onChanged: (v) async {
+                  var googlePlace = GooglePlace("AIzaSyDlU4z5DbXqoafB-T-t2mJ8rGv3Y4rAcWY");
+                  var result = await googlePlace.autocomplete.get(v);
+                  result?.predictions?.forEach((element) {
+                    print(element.description);
+                  });
+                },
+              ),
+              SearchLocation()
             ],
           ),
           topSpace: 16,
@@ -136,3 +153,4 @@ class AdminAvailableMatches extends StatelessWidget {
     );
   }
 }
+
