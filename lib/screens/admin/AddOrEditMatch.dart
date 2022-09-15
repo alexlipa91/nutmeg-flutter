@@ -8,6 +8,7 @@ import 'package:nutmeg/model/MatchRatings.dart';
 import 'package:nutmeg/state/UserState.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
+import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:provider/provider.dart';
 
@@ -60,7 +61,7 @@ class AdminMatchDetailsState extends State<AdminMatchDetails> {
 
   @override
   Widget build(BuildContext context) {
-    var match = context.watch<MatchesState>().getMatch(widget.matchId);
+    Match? match = context.watch<MatchesState>().getMatch(widget.matchId);
 
     return Scaffold(
         appBar: AppBar(
@@ -89,13 +90,13 @@ class AdminMatchDetailsState extends State<AdminMatchDetails> {
             ],
           ),
         ),
-        body: Container(
+        body: (match == null) ? Container() : Container(
           color: Palette.grey_lightest,
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 30, vertical: 20),
             child: Column(children: [
               Expanded(
-                child: AddOrEditMatchForm(match: match!),
+                child: AddOrEditMatchForm(match: match),
               )
             ]),
           ),
@@ -122,10 +123,6 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
   }
 
   Future<void> loadState() async {
-    await Future.wait(widget.match
-        .getGoingUsersByTime()
-        .map((e) => UserController.getUserDetails(context, e)));
-
     if (widget.match.dateTime.isBefore(DateTime.now())) {
       var r = await context.read<MatchesState>().fetchRatings(widget.match.documentId);
       setState(() {
@@ -250,7 +247,9 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                               })
                             ]))
                         .toList()),
-              VoteStats(match: widget.match)
+              VoteStats(match: widget.match),
+              SizedBox(height: 16),
+              SkillStats(matchId: widget.match.documentId)
             ],
           ),
         ));
@@ -492,5 +491,76 @@ class VoteStatsState extends State<VoteStats> {
                         JoinedPlayerBottomModal(userDetails!)),
                 child: Row(children: widgets)));
       }).toList();
+  }
+}
+
+class SkillStats extends StatelessWidget {
+
+  final String matchId;
+
+  const SkillStats({Key? key, required this.matchId}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    var ratings = context.watch<MatchesState>().getRatings(matchId);
+
+    var child = (ratings == null)
+        ? StatsSkeleton()
+        : Builder(
+      builder: (context) {
+        Map<String, List<SkillRatingEntry>> skillsRatings = ratings.getSkillRatings();
+
+        return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: interleave(skillsRatings.entries.map((s) => Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                  UserAvatar(16, context.watch<UserState>().getUserDetail(s.key)),
+                  SizedBox(width: 16,),
+                  Container(
+                    width: 256,
+                    child: Builder(builder: (context) {
+                      var ud = context.watch<UserState>().getUserDetail(s.key);
+                      if (ud == null) return Skeletons.mText;
+
+                      return Text(
+                          UserDetails.getDisplayName(ud).split(" ").first,
+                        style: TextPalette.getBodyText(Palette.black),);
+                    }),
+                  ),
+                  Expanded(
+                    child: Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+
+                          children: interleave(s.value.map((e) => Row(children: [
+                        Container(
+                          width: 180,
+                          child: Text(e.s.toString().split(".")[1],
+                              style: TextPalette.getBodyText(Palette.black)),
+                        ),
+                        Spacer(),
+                        Container(
+                          width: 32,
+                          child: Text(e.totals.toString(),
+                              style: TextPalette.getBodyText(Palette.black)),
+                        ),
+                        Spacer(),
+                        Container(
+                          width: 32,
+                          child: Text(e.percentage.toString() + " %",
+                               style: TextPalette.getBodyText(Palette.black)),
+                        ),
+                          ],)).toList(), SizedBox(height: 8,))
+                      ),
+                  ),
+              ],),
+              ).toList(), Divider())
+        );
+      },
+    );
+
+    return InfoContainer(child: child);
   }
 }

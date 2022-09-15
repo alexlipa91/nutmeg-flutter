@@ -69,7 +69,7 @@ class MatchesState extends ChangeNotifier {
   }
 
   Future<MatchRatings?> fetchRatings(String matchId) async {
-    var r = await CloudFunctionsClient().callFunction("get_ratings_by_match_v2", {
+    var r = await CloudFunctionsClient().callFunction("get_ratings_by_match_v3", {
       "match_id": matchId
     });
     _ratingsPerMatch[matchId] = MatchRatings.fromJson(r!, matchId);

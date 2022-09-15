@@ -6,6 +6,14 @@ class RatingEntry {
   RatingEntry(this.user, this.vote, this.isPotm);
 }
 
+class SkillRatingEntry {
+  final Skills s;
+  final int totals;
+  final int percentage;
+
+  SkillRatingEntry(this.s, this.totals, this.percentage);
+}
+
 class VotesEntry {
   final String user;
   final int numberOfVotes;
@@ -15,7 +23,8 @@ class VotesEntry {
   VotesEntry(this.user, this.isPotm, this.numberOfVotes, this.numberOfSkips);
 }
 
-enum Skills {
+enum
+Skills {
   Speed,
   Shooting,
   Passing,
@@ -27,22 +36,31 @@ enum Skills {
 
 
 class MatchRatings {
-  String documentId;
+  final String documentId;
 
   late Map<String, Map<String, int>> ratingsReceived;
+  late Map<String, Map<String, List<Skills>>> skillsRatingsReceived;
 
   MatchRatings.fromJson(Map<String, dynamic> jsonInput, String documentId):
     this.documentId = documentId {
+
     this.ratingsReceived = Map();
-    jsonInput.forEach((receiver, value) {
+    jsonInput["scores"].forEach((receiver, value) {
       this.ratingsReceived[receiver] = Map<String, int>();
       (value as Map).forEach((user, vote) {
         this.ratingsReceived[receiver]![user] = vote;
       });
     });
 
-    Map<String, dynamic>.from(jsonInput);
-    this.documentId = documentId;
+    this.skillsRatingsReceived = Map();
+    jsonInput["skills"].forEach((receiver, value) {
+      this.skillsRatingsReceived[receiver] = Map<String, List<Skills>>();
+      (value as Map).forEach((user, skillsString) {
+        this.skillsRatingsReceived[receiver]![user] =
+            List<String>.from(skillsString).map((e) => Skills.values.byName(e))
+                .toList();
+      });
+    });
   }
 
   List<RatingEntry> getFinalRatings(List<String> usersGoing, Set<String> potm) {
@@ -63,6 +81,27 @@ class MatchRatings {
 
     ratings.sort((a, b) => b.vote.compareTo(a.vote));
 
+    return ratings;
+  }
+
+  Map<String, List<SkillRatingEntry>> getSkillRatings() {
+    Map<String, List<SkillRatingEntry>> ratings = Map();
+
+    skillsRatingsReceived.forEach((user, ratesReceived) {
+      Map<Skills, int> totals = Map();
+
+      ratesReceived.forEach((_, rated) {
+        rated.forEach((skill) {
+          totals[skill] = (totals[skill] ?? 0) + 1;
+        });
+      });
+
+      ratings[user] = totals.entries.map((e) {
+          return SkillRatingEntry(
+              e.key, e.value, (e.value / ratesReceived.length * 100).toInt());})
+          .toList()
+        ..sort((a, b) => b.percentage - a.percentage);
+    });
     return ratings;
   }
 
