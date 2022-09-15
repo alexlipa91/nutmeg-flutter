@@ -130,18 +130,22 @@ class UserController {
     FirebaseAuth auth = FirebaseAuth.instance;
     var userCredentials;
 
-    final GoogleSignIn googleSignIn = GoogleSignIn();
-    googleSignIn.disconnect();
-    final GoogleSignInAccount? googleSignInAccount = await googleSignIn.signIn();
+    if (kIsWeb) {
+      userCredentials = await auth.signInWithPopup(GoogleAuthProvider());
+    } else {
+      final GoogleSignIn googleSignIn = GoogleSignIn();
+      googleSignIn.disconnect();
+      final GoogleSignInAccount? googleSignInAccount = await googleSignIn.signIn();
 
-    final GoogleSignInAuthentication? googleSignInAuthentication =
-    await googleSignInAccount?.authentication;
+      final GoogleSignInAuthentication? googleSignInAuthentication =
+      await googleSignInAccount?.authentication;
 
-    final AuthCredential credential = GoogleAuthProvider.credential(
-      accessToken: googleSignInAuthentication?.accessToken,
-      idToken: googleSignInAuthentication?.idToken,
-    );
-    userCredentials = await auth.signInWithCredential(credential);
+      final AuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: googleSignInAuthentication?.accessToken,
+        idToken: googleSignInAuthentication?.idToken,
+      );
+      userCredentials = await auth.signInWithCredential(credential);
+    }
     await _login(context, userCredentials);
   }
 
