@@ -57,12 +57,7 @@ class MatchDetails extends StatefulWidget {
 class MatchDetailsState extends State<MatchDetails> {
 
   Future<void> myInitState() async {
-    // don't block if some match data is already available
-    if (context.read<MatchesState>().getMatch(widget.matchId) == null) {
-      await refreshState();
-    } else {
-      refreshState();
-    }
+    await refreshState();
 
     Match match = context.read<MatchesState>().getMatch(widget.matchId)!;
 
@@ -86,7 +81,7 @@ class MatchDetailsState extends State<MatchDetails> {
       var stillToVote = context.read<MatchesState>().stillToVote(
           widget.matchId, loggedUser!);
 
-      if (stillToVote.isNotEmpty) {
+      if (stillToVote != null && stillToVote.isNotEmpty) {
         await RatePlayerBottomModal.rateAction(context, widget.matchId);
         setState(() {});
       }

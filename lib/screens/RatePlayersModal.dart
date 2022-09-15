@@ -36,7 +36,7 @@ class RatePlayerBottomModal extends StatelessWidget {
   static Future<void> rateAction(BuildContext context, String matchId) async {
     var toRate = context
         .read<MatchesState>()
-        .stillToVote(matchId, context.read<UserState>().getLoggedUserDetails()!);
+        .stillToVote(matchId, context.read<UserState>().getLoggedUserDetails()!)!;
 
     toRate.map((e) => UserController.getUserDetails(context, e));
 

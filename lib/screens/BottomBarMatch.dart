@@ -48,7 +48,7 @@ class BottomBarMatch extends StatelessWidget {
         if (isGoing) {
           var stillToVote = context.read<MatchesState>()
               .stillToVote(matchId, context.read<UserState>().getLoggedUserDetails()!);
-          if (stillToVote.isNotEmpty)
+          if (stillToVote != null && stillToVote.isNotEmpty)
             bottomBar = RatePlayersBottomBar(matchId: matchId);
         }
         break;
@@ -196,7 +196,7 @@ class RatePlayersBottomBar extends StatelessWidget {
         text: "Rate players",
         subText: context.watch<MatchesState>().stillToVote(
             matchId,
-            context.read<UserState>().getLoggedUserDetails()!).length.toString() +
+            context.read<UserState>().getLoggedUserDetails()!)!.length.toString() +
         " players left",
         button: RateButton(matchId: matchId)
     );

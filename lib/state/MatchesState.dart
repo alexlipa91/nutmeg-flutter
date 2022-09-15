@@ -76,7 +76,7 @@ class MatchesState extends ChangeNotifier {
     return _ratingsPerMatch[matchId];
   }
 
-  List<String> stillToVote(String matchId, UserDetails ud) {
+  List<String>? stillToVote(String matchId, UserDetails ud) {
     var match = _matches![matchId];
     var matchRatings = _ratingsPerMatch[matchId];
 
@@ -84,7 +84,7 @@ class MatchesState extends ChangeNotifier {
       throw Exception("Match $matchId not found");
 
     if (matchRatings == null)
-      return List.empty();
+      return null;
 
     var toVote = (match.going ?? {}) .keys.toSet();
     toVote.remove(ud.documentId);
