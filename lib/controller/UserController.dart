@@ -280,10 +280,8 @@ class UserController {
     var preferencePath = "potm_screen_showed_" + matchId + "_" + userId;
     var seen = prefs.getBool(preferencePath) ?? false;
 
-    seen = false;
-
     if (!seen) {
-      Navigator.push(context,
+      await Navigator.push(context,
           MaterialPageRoute(builder: (context) => PlayerOfTheMatch()));
       prefs.setBool(preferencePath, true);
     }
