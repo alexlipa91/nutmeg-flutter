@@ -5,12 +5,12 @@ import '../model/SportCenter.dart';
 
 class SportCentersFirestore {
 
-  static Future<List<SportCenter>> getSportCenters() async {
+  static Future<List<SavedSportCenter>> getSportCenters() async {
     var subscriptionsRef = await FirebaseFirestore.instance
         .collection('sport_centers')
-        .withConverter<SportCenter>(
+        .withConverter<SavedSportCenter>(
           fromFirestore: (snapshot, _) =>
-              SportCenter.fromJson(snapshot.data(), snapshot.id),
+              SavedSportCenter.fromJson(snapshot.data(), snapshot.id),
           toFirestore: (sub, _) => {},
         )
         .get();

@@ -1,52 +1,81 @@
 class SportCenter {
   String placeId;
-
-  String name;
+  String address;
   double lat;
   double lng;
-  String neighbourhood;
-  String address;
-  String? cid;
   Map<String, dynamic> _info;
 
-  String? _thumbnailUrl;
-  List<String> _imagesUrls;
+  String getName() => address.split(",")[0];
 
-  SportCenter.fromJson(Map<String, dynamic>? json, String documentId)
-      : placeId = documentId,
-        name = json!['name'],
-        neighbourhood = json['neighbourhood'],
-        address = json['address'],
-        lat = json['lat'],
-        lng = json['lng'],
-        cid = json['cid'],
-        _info = Map<String, dynamic>.from(json["info"] ?? {}),
-        _thumbnailUrl = json['thumbnailUrl'],
-        _imagesUrls = List<String>.from(json["largeImageUrls"] ?? []);
+  String getThumbnailUrl() =>
+      "https://storage.googleapis.com/nutmeg-9099c.appspot.com/sportcenters/default/thumbnail.png";
 
-  String getName() => name;
-
-  bool operator ==(dynamic other) =>
-      other != null && other is SportCenter && this.placeId == other.placeId;
-
-  @override
-  int get hashCode => super.hashCode;
-
-  // images are 60x78
-  String getThumbnailUrl() => _thumbnailUrl == null
-      ? "https://storage.googleapis.com/nutmeg-9099c.appspot.com/sportcenters/default/thumbnail.png" : _thumbnailUrl!;
-
-  // images are 670x358
-  List<String> getImagesUrls() => _imagesUrls.isEmpty ? ["https://storage.googleapis.com/nutmeg-9099c.appspot.com/sportcenters/default/large/1.png"] : _imagesUrls;
-
-  String getShortAddress() =>
-      address
-          .split(",")
-          .first;
+  List<String> getImagesUrls() => [
+    "https://storage.googleapis.com/nutmeg-9099c.appspot.com/sportcenters/default/large/1.png"
+  ];
 
   bool hasChangingRooms() => _info["changeRooms"] ?? false;
 
   String? getCourtType() => _info["courtType"];
 
   String? getSurface() => _info["surface"];
+
+  SportCenter(this.address, this.placeId, this.lat, this.lng, this._info);
+
+  SportCenter.fromJson(Map<String, dynamic>? json, String documentId):
+        address = json!['address'],
+        placeId = documentId,
+        lat = json['lat'],
+        lng = json['lng'],
+        _info = Map<String, dynamic>.from(json["info"] ?? {});
+
+  Map<String, dynamic> toJson() =>
+      {
+        'address': address,
+        'placeId': placeId,
+        'info': _info,
+        'lat': lat,
+        'lng': lng
+      };
+}
+
+class SavedSportCenter extends SportCenter {
+  String name;
+
+  String neighbourhood;
+  String? cid;
+
+  String? _thumbnailUrl;
+  List<String> _imagesUrls;
+
+  SavedSportCenter.fromJson(Map<String, dynamic>? json, String documentId)
+      : name = json!['name'],
+        neighbourhood = json['neighbourhood'],
+        cid = json['cid'],
+        _thumbnailUrl = json['thumbnailUrl'],
+        _imagesUrls = List<String>.from(json["largeImageUrls"] ?? []),
+        super.fromJson(json, documentId);
+
+  @override
+  String getName() => name;
+
+  bool operator ==(dynamic other) =>
+      other != null && other is SavedSportCenter && this.placeId == other.placeId;
+
+  @override
+  int get hashCode => super.hashCode;
+
+  // images are 60x78
+  @override
+  String getThumbnailUrl() => _thumbnailUrl == null
+      ? "https://storage.googleapis.com/nutmeg-9099c.appspot.com/sportcenters/default/thumbnail.png" : _thumbnailUrl!;
+
+  // images are 670x358
+  @override
+  List<String> getImagesUrls() => _imagesUrls.isEmpty ? ["https://storage.googleapis.com/nutmeg-9099c.appspot.com/sportcenters/default/large/1.png"] : _imagesUrls;
+
+  String getShortAddress() =>
+      address
+          .split(",")
+          .first;
 }

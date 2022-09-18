@@ -6,20 +6,20 @@ import '../model/SportCenter.dart';
 
 
 class LoadOnceState extends ChangeNotifier {
-  Map<String, SportCenter> _sportCenters = Map();
+  Map<String, SavedSportCenter> _sportCenters = Map();
   List<Sport> _sports = [Sport("5v5"), Sport("6v6")];
   late List<String> joinedGifs;
 
-  void setSportCenter(String sportCenterId, SportCenter sportCenter) {
+  void setSportCenter(String sportCenterId, SavedSportCenter sportCenter) {
     _sportCenters[sportCenterId] = sportCenter;
     notifyListeners();
   }
 
-  SportCenter? getSportCenter(String id) => _sportCenters[id];
+  SavedSportCenter? getSportCenter(String id) => _sportCenters[id];
 
   List<Sport> getSports() => _sports.toList();
 
-  Future<List<SportCenter>> fetchSportCenters() async {
+  Future<List<SavedSportCenter>> fetchSportCenters() async {
     var sportCenters = await SportCentersFirestore.getSportCenters();
     sportCenters.forEach((e) {
       _sportCenters[e.placeId] = e;
@@ -27,7 +27,7 @@ class LoadOnceState extends ChangeNotifier {
     return sportCenters;
   }
 
-  List<SportCenter> getSportCenters() => _sportCenters.values.toList();
+  List<SavedSportCenter> getSportCenters() => _sportCenters.values.toList();
 
   String getRandomGif() {
     joinedGifs..shuffle();
