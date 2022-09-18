@@ -117,8 +117,8 @@ class MatchDetailsState extends State<MatchDetails> {
 
     Match? match = matchesState.getMatch(widget.matchId);
     SportCenter? sportCenter = (match == null)
-        ? null
-        : context.watch<LoadOnceState>().getSportCenter(match.sportCenterId);
+        ? null : match.sportCenter ??
+        context.watch<LoadOnceState>().getSportCenter(match.sportCenterId!);
 
     var status = match?.status;
 
@@ -368,7 +368,7 @@ class Title extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Text(
-      sportCenter.name + " - " + sportCenter.getCourtType()!,
+      sportCenter.getName() + " - " + sportCenter.getCourtType()!,
       style: TextPalette.h1Default,
     );
   }
@@ -418,7 +418,7 @@ class MatchInfo extends StatelessWidget {
     child = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(children: [Expanded(child: SportCenterImageCarousel(match))]),
+        Row(children: [Expanded(child: SportCenterImageCarousel(match, sportCenter))]),
         Padding(
           padding: EdgeInsets.all(16.0),
           child:
@@ -499,8 +499,9 @@ class MatchInfo extends StatelessWidget {
 
 class SportCenterImageCarousel extends StatefulWidget {
   final Match match;
+  final SportCenter sportCenter;
 
-  SportCenterImageCarousel(this.match);
+  SportCenterImageCarousel(this.match, this.sportCenter);
 
   @override
   State<StatefulWidget> createState() => SportCenterImageCarouselState();
@@ -521,16 +522,8 @@ class SportCenterImageCarouselState extends State<SportCenterImageCarousel> {
   Widget build(BuildContext context) {
     var placeHolder = getPlaceholder();
 
-    var sportCenter = context
-        .read<LoadOnceState>()
-        .getSportCenter(widget.match.sportCenterId);
-
-    if (sportCenter == null) {
-      return placeHolder;
-    }
-
     List<Widget> itemsToShow = List<Widget>.from(
-        sportCenter.getImagesUrls().map((i) => CachedNetworkImage(
+        widget.sportCenter.getImagesUrls().map((i) => CachedNetworkImage(
               imageUrl: i,
               fadeInDuration: Duration(milliseconds: 0),
               fadeOutDuration: Duration(milliseconds: 0),
@@ -797,16 +790,15 @@ class MapCardImage extends StatelessWidget {
     return InkWell(
       onTap: () async {
         if (kIsWeb) {
-          launchUrl(
-              Uri.parse("https://maps.google.com/?cid=${sportCenter.cid}"));
-        } else if (await MapLauncher.isMapAvailable(m.MapType.google) ??
-            false) {
+          // todo get cid for dynamic sportcenter
+          // launchUrl(Uri.parse("https://maps.google.com/?cid=${sportCenter.cid}"));
+        } else if (await MapLauncher.isMapAvailable(m.MapType.google) ?? false) {
           await MapLauncher.showMarker(
             mapType: m.MapType.google,
             coords: Coords(lat, lng),
             title: "",
             extraParams: {
-              "q": sportCenter.name + "," + sportCenter.address,
+              "q": sportCenter.getName() + "," + sportCenter.address,
               "z": "16"
             },
           );

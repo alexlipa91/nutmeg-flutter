@@ -23,8 +23,7 @@ class VotesEntry {
   VotesEntry(this.user, this.isPotm, this.numberOfVotes, this.numberOfSkips);
 }
 
-enum
-Skills {
+enum Skills {
   Speed,
   Shooting,
   Passing,

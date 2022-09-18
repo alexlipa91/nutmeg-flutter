@@ -1,5 +1,7 @@
 import 'dart:math';
 
+import 'package:nutmeg/model/SportCenter.dart';
+
 import 'UserDetails.dart';
 
 
@@ -19,7 +21,9 @@ class Match {
 
   DateTime dateTime;
 
-  String sportCenterId;
+  String? sportCenterId;
+  SportCenter? sportCenter;
+
   Duration duration;
   String? sportCenterSubLocation;
 
@@ -41,7 +45,7 @@ class Match {
 
   bool isTest;
 
-  Match(this.dateTime, this.sportCenterId, this.sportCenterSubLocation,
+  Match(this.dateTime, this.sportCenterId, this.sportCenter, this.sportCenterSubLocation,
       this.maxPlayers, this.pricePerPersonInCents, this.duration,
       this.isTest, this.minPlayers, this.organizerId, [this.cancelBefore]);
 
@@ -76,6 +80,11 @@ class Match {
 
       if (jsonInput.containsKey("paid_out_at"))
         paidOutAt = DateTime.parse(jsonInput['paid_out_at']).toLocal();
+
+      if (jsonInput.containsKey("sportCenter")) {
+        sportCenter = SportCenter.fromJson(jsonInput["sportCenter"],
+            jsonInput["sportCenter"]["placeId"]);
+      }
 
       this.documentId = documentId;
   }
@@ -115,6 +124,7 @@ class Match {
       {
         'dateTime': dateTime.toUtc().toIso8601String(),
         'sportCenterId': sportCenterId,
+        'sportCenter': sportCenter?.toJson(),
         'sportCenterSubLocation': sportCenterSubLocation,
         'pricePerPerson': pricePerPersonInCents,
         'maxPlayers': maxPlayers,

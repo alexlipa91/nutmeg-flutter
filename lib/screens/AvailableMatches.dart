@@ -29,7 +29,7 @@ class AvailableMatches extends StatelessWidget {
     }
     if (state
         .getMatches()!
-        .where((m) => loadOnceState.getSportCenter(m.sportCenterId) == null)
+        .where((m) => m.sportCenterId != null && loadOnceState.getSportCenter(m.sportCenterId!) == null)
         .isNotEmpty) return true;
     return false;
   }
@@ -96,11 +96,12 @@ class AvailableMatches extends StatelessWidget {
         if (index == 0) {
           widgets.add(
               GenericMatchInfo.first(state.getMatch(m.documentId)!,
-                  loadOnceState.getSportCenter(m.sportCenterId)!,
+                  m.sportCenter ?? loadOnceState.getSportCenter(m.sportCenterId!)!,
                   onTap));
         } else {
           widgets.add(GenericMatchInfo(state.getMatch(m.documentId)!,
-              loadOnceState.getSportCenter(m.sportCenterId)!, onTap));
+              m.sportCenter ?? loadOnceState.getSportCenter(m.sportCenterId!)!,
+              onTap));
         }
       });
     }
@@ -155,10 +156,12 @@ class AvailableMatches extends StatelessWidget {
             e.value.sortedBy((e) => e.dateTime).mapIndexed((index, match) {
           if (index == 0) {
             return GenericMatchInfo.first(state.getMatch(match.documentId)!,
-                loadOnceState.getSportCenter(match.sportCenterId)!, onTap);
+                match.sportCenter ?? loadOnceState.getSportCenter(match.sportCenterId!)!,
+                onTap);
           }
           return GenericMatchInfo(state.getMatch(match.documentId)!,
-              loadOnceState.getSportCenter(match.sportCenterId)!, onTap);
+              match.sportCenter ?? loadOnceState.getSportCenter(match.sportCenterId!)!,
+              onTap);
         });
 
         var section;
@@ -213,10 +216,12 @@ class AvailableMatches extends StatelessWidget {
         if (index == 0) {
           widgets.add(
               GenericMatchInfo.first(state.getMatch(m.documentId)!,
-                  loadOnceState.getSportCenter(m.sportCenterId)!, onTap));
+                  m.sportCenter ?? loadOnceState.getSportCenter(m.sportCenterId!)!,
+                  onTap));
         } else {
           widgets.add(GenericMatchInfo(state.getMatch(m.documentId)!,
-              loadOnceState.getSportCenter(m.sportCenterId)!, onTap));
+              m.sportCenter ?? loadOnceState.getSportCenter(m.sportCenterId!)!,
+              onTap));
         }
       });
     }

@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:badges/badges.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -54,8 +53,9 @@ class GenericAvailableMatchesListState
     var matches = await context.read<MatchesState>().fetchMatches();
     Future.wait(matches
         .map((e) => e.sportCenterId)
+        .where((s) => s != null)
         .toSet()
-        .map((s) => SportCentersController.refresh(context, s)));
+        .map((s) => SportCentersController.refresh(context, s!)));
   }
 
   Widget waitingWidget() {
@@ -220,7 +220,7 @@ class GenericMatchInfo extends StatelessWidget {
                                   : Row(
                                       children: [
                                         Text(
-                                            sportCenter.name +
+                                            sportCenter.getName() +
                                                 " - " +
                                                 sportCenter.getCourtType()!,
                                             style: TextPalette.h2),
@@ -347,7 +347,7 @@ class GenericMatchInfoPast extends StatelessWidget {
     if (match == null)
       return Container();
 
-    var sportCenter = loadOnceState.getSportCenter(match.sportCenterId)!;
+    var sportCenter = match.sportCenter ?? loadOnceState.getSportCenter(match.sportCenterId!)!;
 
     var child = InfoContainer(
       backgroundColor: Palette.white,
@@ -365,10 +365,10 @@ class GenericMatchInfoPast extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(sportCenter.name + " - " + sportCenter.getCourtType()!,
+                        Text(sportCenter.getName() + " - " + sportCenter.getCourtType()!,
                             style: TextPalette.h2),
                         SizedBox(height: 8),
-                        Text(sportCenter.name, style: TextPalette.bodyText),
+                        Text(sportCenter.getName(), style: TextPalette.bodyText),
                         if (match.status == MatchStatus.cancelled)
                           Padding(padding: EdgeInsets.only(top: 8), child:
                             Text("Canceled",
@@ -414,7 +414,7 @@ class MatchThumbnail extends StatelessWidget {
         width: 60,
         height: height,
         child: CachedNetworkImage(
-          imageUrl: image!,
+          imageUrl: image,
           fadeInDuration: Duration(milliseconds: 0),
           imageBuilder: (context, imageProvider) => Container(
               decoration: BoxDecoration(

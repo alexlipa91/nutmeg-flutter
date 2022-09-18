@@ -72,7 +72,10 @@ class MatchesState extends ChangeNotifier {
     var r = await CloudFunctionsClient().callFunction("get_ratings_by_match_v3", {
       "match_id": matchId
     });
-    _ratingsPerMatch[matchId] = MatchRatings.fromJson(r!, matchId);
+    if (r == null)
+      return null;
+
+    _ratingsPerMatch[matchId] = MatchRatings.fromJson(r, matchId);
     return _ratingsPerMatch[matchId];
   }
 
