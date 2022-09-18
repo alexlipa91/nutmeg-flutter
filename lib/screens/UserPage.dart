@@ -230,7 +230,7 @@ class UserPageState extends State<UserPage> {
             ),
           )
         ]),
-        if (userDetails.getNumJoinedMatches() > 0)
+        if (userDetails.getLastScores().length > 0)
           Section(
               title: "PERFORMANCE",
               body: SizedBox(

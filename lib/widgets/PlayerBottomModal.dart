@@ -10,7 +10,6 @@ import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/Skeletons.dart';
 import 'package:provider/provider.dart';
-import 'package:skeletons/skeletons.dart';
 
 import '../model/UserDetails.dart';
 import '../state/UserState.dart';
@@ -155,7 +154,7 @@ class JoinedPlayerBottomModal extends StatelessWidget {
               ),
             ],
           ),
-          if ((userDetails.numJoinedMatches ?? 0) > 0)
+          if (userDetails.getLastScores().length > 0)
             Padding(
                 padding: EdgeInsets.only(top: 24.0, left: 8, right: 8),
                 child: SizedBox(
@@ -174,20 +173,10 @@ class PerformanceGraph extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<double>>(
-        future: context.read<UserState>().fetchScores(userId),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData)
-            return SkeletonAvatar(
-                style: SkeletonAvatarStyle(
-                    width: double.infinity,
-                    height: 190,
-                    borderRadius: BorderRadius.circular(10.0)));
+    List<MapEntry> ratesWithIndex = (context.read<UserState>()
+        .getUserDetail(userId)!.lastScores ?? []).asMap().entries.toList();
 
-          List<MapEntry> ratesWithIndex =
-              (snapshot.data ?? []).asMap().entries.toList();
-
-          return new charts.LineChart(
+    return new charts.LineChart(
               [
                 new charts.Series<MapEntry, int>(
                   id: 'Rates',
@@ -252,7 +241,6 @@ class PerformanceGraph extends StatelessWidget {
                 includePoints: true,
                 radiusPx: 6,
               ));
-        });
   }
 }
 

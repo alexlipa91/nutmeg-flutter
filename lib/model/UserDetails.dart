@@ -10,6 +10,7 @@ class UserDetails {
 
   int? numJoinedMatches;
   double? averageScore;
+  List<double>? lastScores;
 
   List<String>? createdMatches;
   List<String>? createdTestMatches;
@@ -43,6 +44,7 @@ class UserDetails {
         numJoinedMatches = json["num_matches_joined"] ?? 0,
         averageScore = json["avg_score"] ?? null,
         potmCount = json["potm_count"] ?? 0,
+        lastScores = (json["last_scores"] == null) ? [] : List<double>.from(json["last_scores"]),
         chargesEnabledOnStripe = json["chargesEnabledOnStripe"] ?? false,
         chargesEnabledOnStripeTest = json["chargesEnabledOnStripeTest"] ?? false,
         createdMatches = Map<String, dynamic>.from(json["created_matches"] ?? {}).keys.toList(),
@@ -63,6 +65,8 @@ class UserDetails {
   double? getScoreMatches() => averageScore;
 
   int getNumJoinedMatches() => numJoinedMatches ?? 0;
+
+  List<double> getLastScores() => lastScores ?? [];
 
   int getNumManOfTheMatch() => potmCount ?? 0;
 
