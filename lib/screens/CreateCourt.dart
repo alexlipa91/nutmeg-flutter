@@ -52,7 +52,7 @@ class CreateCourtState extends State<CreateCourt> {
                         textFieldConfiguration: TextFieldConfiguration(
                             style: TextPalette.getBodyText(Palette.black),
                             decoration: CreateMatchState.getTextFormDecoration(
-                                "Court Address"),
+                                "Court Location"),
                             controller: textEditingController),
                         suggestionsCallback: (pattern) async {
                           List<AutocompletePrediction> predictions = [];
