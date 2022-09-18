@@ -14,7 +14,7 @@ class UserDetails {
   List<String>? createdMatches;
   List<String>? createdTestMatches;
 
-  List<String>? manOfTheMatch;
+  int? potmCount;
 
   bool? chargesEnabledOnStripe;
   bool? chargesEnabledOnStripeTest;
@@ -42,7 +42,7 @@ class UserDetails {
         stripeId = json["stripeId"] ?? null,
         numJoinedMatches = json["num_matches_joined"] ?? 0,
         averageScore = json["avg_score"] ?? null,
-        manOfTheMatch = List<String>.from(json["manOfTheMatch"] ?? []),
+        potmCount = json["potm_count"] ?? 0,
         chargesEnabledOnStripe = json["chargesEnabledOnStripe"] ?? false,
         chargesEnabledOnStripeTest = json["chargesEnabledOnStripeTest"] ?? false,
         createdMatches = Map<String, dynamic>.from(json["created_matches"] ?? {}).keys.toList(),
@@ -64,7 +64,7 @@ class UserDetails {
 
   int getNumJoinedMatches() => numJoinedMatches ?? 0;
 
-  int getNumManOfTheMatch() => manOfTheMatch?.length ?? 0;
+  int getNumManOfTheMatch() => potmCount ?? 0;
 
   String? getStripeId() => stripeId;
 
