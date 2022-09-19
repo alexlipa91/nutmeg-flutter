@@ -994,7 +994,8 @@ class OrganiserArea extends StatelessWidget {
   Widget build(BuildContext context) {
     var infoText = "";
     if (match.cancelledAt == null) {
-      infoText += "Collected: ${formatCurrency(match.numPlayersGoing() * match.pricePerPersonInCents)}";
+      infoText += "Collected: ${formatCurrency(match.numPlayersGoing()
+          * (match.pricePerPersonInCents - match.getServiceFee()))}";
       if (match.paidOutAt != null)
         infoText += "\\nPaid out to your bank account on: ${getFormattedDate(match.paidOutAt!)}";
     }

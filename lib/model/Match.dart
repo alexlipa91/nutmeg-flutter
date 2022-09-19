@@ -136,7 +136,7 @@ class Match {
   bool isUserGoing(UserDetails? user) =>
       user != null && (going ?? {}).containsKey(user.documentId);
 
-  double getPrice() => pricePerPersonInCents / 100;
+  int getServiceFee() => 50;
 
   List<String> getGoingUsersByTime() {
     var entries = (going?.entries.toList() ?? [])..sort((e1,e2) => -e1.value.compareTo(e2.value));
