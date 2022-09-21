@@ -1,11 +1,12 @@
 class SportCenter {
   String placeId;
   String address;
+  String name;
   double lat;
   double lng;
   Map<String, dynamic> _info;
 
-  String getName() => address.split(",")[0];
+  String getName() => name;
 
   String getThumbnailUrl() =>
       "https://storage.googleapis.com/nutmeg-9099c.appspot.com/sportcenters/default/thumbnail.png";
@@ -20,10 +21,11 @@ class SportCenter {
 
   String? getSurface() => _info["surface"];
 
-  SportCenter(this.address, this.placeId, this.lat, this.lng, this._info);
+  SportCenter(this.address, this.name, this.placeId, this.lat, this.lng, this._info);
 
   SportCenter.fromJson(Map<String, dynamic>? json, String documentId):
         address = json!['address'],
+        name = json['name'],
         placeId = documentId,
         lat = json['lat'],
         lng = json['lng'],
@@ -33,6 +35,7 @@ class SportCenter {
       {
         'address': address,
         'placeId': placeId,
+        'name': name,
         'info': _info,
         'lat': lat,
         'lng': lng
@@ -40,8 +43,6 @@ class SportCenter {
 }
 
 class SavedSportCenter extends SportCenter {
-  String name;
-
   String neighbourhood;
   String? cid;
 
@@ -49,15 +50,11 @@ class SavedSportCenter extends SportCenter {
   List<String> _imagesUrls;
 
   SavedSportCenter.fromJson(Map<String, dynamic>? json, String documentId)
-      : name = json!['name'],
-        neighbourhood = json['neighbourhood'],
+      : neighbourhood = json!['neighbourhood'],
         cid = json['cid'],
         _thumbnailUrl = json['thumbnailUrl'],
         _imagesUrls = List<String>.from(json["largeImageUrls"] ?? []),
         super.fromJson(json, documentId);
-
-  @override
-  String getName() => name;
 
   bool operator ==(dynamic other) =>
       other != null && other is SavedSportCenter && this.placeId == other.placeId;
