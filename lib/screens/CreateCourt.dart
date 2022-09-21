@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:google_place/google_place.dart';
+import 'package:nutmeg/controller/SportCentersController.dart';
 import 'package:nutmeg/model/SportCenter.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
@@ -16,8 +17,6 @@ class CreateCourt extends StatefulWidget {
 }
 
 class CreateCourtState extends State<CreateCourt> {
-  final GooglePlace googlePlace = GooglePlace("AIzaSyDlU4z5DbXqoafB-T-t2mJ8rGv3Y4rAcWY");
-
   final TextEditingController surfaceController = TextEditingController();
   final TextEditingController sizeController = TextEditingController();
   final TextEditingController textEditingController = TextEditingController();
@@ -28,6 +27,7 @@ class CreateCourtState extends State<CreateCourt> {
   bool changeRoomsAvailable = false;
 
   String? address;
+  String? name;
   String? placeId;
   double? lat;
   double? lng;
@@ -48,38 +48,37 @@ class CreateCourtState extends State<CreateCourt> {
                   Row(
                     children: [
                       Expanded(
-                          child: TypeAheadField<AutocompletePrediction>(
+                          child: TypeAheadField<Map<String, dynamic>>(
                         textFieldConfiguration: TextFieldConfiguration(
                             style: TextPalette.getBodyText(Palette.black),
                             decoration: CreateMatchState.getTextFormDecoration(
                                 "Court Location"),
                             controller: textEditingController),
                         suggestionsCallback: (pattern) async {
-                          List<AutocompletePrediction> predictions = [];
+                          List<Map<String, dynamic>> predictions = [];
                           if (pattern.isNotEmpty) {
-                            var result =
-                                await googlePlace.autocomplete.get(pattern);
-                            predictions = result?.predictions ?? [];
+                            var result = await SportCentersController
+                                .getPlacePrediction(pattern);
+                            predictions = result;
                           }
                           return predictions;
                         },
                         itemBuilder: (context, suggestion) {
                           return ListTile(
                             leading: Icon(Icons.place),
-                            title: Text(suggestion.description ?? ""),
+                            title: Text(suggestion["formatted_address"] ?? ""),
                           );
                         },
                         noItemsFoundBuilder: (value) => Container(height: 10),
                         onSuggestionSelected: (suggestion) async {
                           textEditingController.text =
-                              suggestion.description ?? "";
-                          var resp = await googlePlace.details.get(suggestion.placeId!);
-
+                              suggestion["formatted_address"] ?? "";
                           setState(() {
-                            placeId = suggestion.placeId;
-                            address = suggestion.description;
-                            lng = resp?.result?.geometry?.location?.lng!;
-                            lat = resp?.result?.geometry?.location?.lat!;
+                            placeId = suggestion["place_id"];
+                            name = suggestion["name"];
+                            address = suggestion["formatted_address"];
+                            lng = suggestion["geometry"]["location"]["lng"];
+                            lat = suggestion["geometry"]["location"]["lat"];
                           });
                         },
                       ))
@@ -196,7 +195,7 @@ class CreateCourtState extends State<CreateCourt> {
                   info["surface"] = surfaceController.text;
 
                   Navigator.of(context).pop(
-                      SportCenter(address!, placeId!, lat!, lng!, info));
+                      SportCenter(address!, name!, placeId!, lat!, lng!, info));
                 }
               }, Primary()),
             )

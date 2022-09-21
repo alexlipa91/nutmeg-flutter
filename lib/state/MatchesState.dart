@@ -51,11 +51,12 @@ class MatchesState extends ChangeNotifier {
     (resp == null) ? Map() : Map<String, dynamic>.from(resp);
 
     List<Match> matches = data.entries
-        .map((e) {
+        .map((element) {
       try {
-        return Match.fromJson(Map<String, dynamic>.from(e.value), e.key);
+        return Match.fromJson(Map<String, dynamic>.from(element.value),
+            element.key);
       } catch (e, s) {
-        print("Failed to deserialize match");
+        print("Failed to deserialize match ${element.key.toString()}");
         print(e);
         print(s);
         return null;

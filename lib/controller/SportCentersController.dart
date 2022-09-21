@@ -19,4 +19,12 @@ class SportCentersController {
 
     return sportCenter;
   }
+
+  static Future<List<Map<String, dynamic>>> getPlacePrediction(String query) async {
+    Map<String, dynamic> data = await CloudFunctionsClient()
+        .callFunction("get_location_predictions_from_query", {"query" : query})
+        ?? {};
+
+    return List<Map<String, dynamic>>.from(data["predictions"] ?? []);
+  }
 }
