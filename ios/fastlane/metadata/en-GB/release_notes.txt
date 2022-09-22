@@ -1,1 +1,1 @@
-Add skills ratings
+Fix a bug preventing user profile images to show
