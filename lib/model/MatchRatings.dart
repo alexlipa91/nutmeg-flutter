@@ -45,7 +45,7 @@ class MatchRatings {
     this.documentId = documentId {
 
     this.ratingsReceived = Map();
-    jsonInput["scores"].forEach((receiver, value) {
+    (jsonInput["scores"] ?? {}).forEach((receiver, value) {
       this.ratingsReceived[receiver] = Map<String, int>();
       (value as Map).forEach((user, vote) {
         this.ratingsReceived[receiver]![user] = vote;
@@ -53,7 +53,7 @@ class MatchRatings {
     });
 
     this.skillsRatingsReceived = Map();
-    jsonInput["skills"].forEach((receiver, value) {
+    (jsonInput["skills"] ?? {}).forEach((receiver, value) {
       this.skillsRatingsReceived[receiver] = Map<String, List<Skills>>();
       (value as Map).forEach((user, skillsString) {
         this.skillsRatingsReceived[receiver]![user] =
