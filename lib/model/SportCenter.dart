@@ -43,7 +43,7 @@ class SportCenter {
 }
 
 class SavedSportCenter extends SportCenter {
-  String neighbourhood;
+  String? neighbourhood;
   String? cid;
 
   String? _thumbnailUrl;

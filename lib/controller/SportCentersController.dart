@@ -27,4 +27,13 @@ class SportCentersController {
 
     return List<Map<String, dynamic>>.from(data["predictions"] ?? []);
   }
+
+  static Future<List<SportCenter>> getUserSportCenters(String uid) async {
+    Map<String, dynamic> data = await CloudFunctionsClient()
+        .callFunction("get_user_sportcenters", {"user_id" : uid})
+        ?? {};
+
+    return data.entries.map((e) => SportCenter.fromJson(e.value, e.key))
+        .toList();
+  }
 }

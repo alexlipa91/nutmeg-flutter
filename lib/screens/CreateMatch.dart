@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:nutmeg/Exceptions.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
+import 'package:nutmeg/controller/SportCentersController.dart';
 import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/model/Match.dart';
 import 'package:nutmeg/model/SportCenter.dart';
@@ -19,6 +20,7 @@ import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:nutmeg/widgets/PageTemplate.dart';
 import 'package:nutmeg/widgets/Section.dart';
+import 'package:nutmeg/widgets/Skeletons.dart';
 import 'package:provider/provider.dart';
 import 'package:time_picker_widget/time_picker_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -728,81 +730,123 @@ class CreateMatchState extends State<CreateMatch> {
   }
 }
 
-class LocationsBottomSheet extends StatelessWidget {
+class SportCenterRow extends StatelessWidget {
+
+  final SportCenter sportCenter;
+
+  const SportCenterRow({Key? key, required this.sportCenter}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    List<Widget> widgets = [];
-    widgets.add(SizedBox(height: 16));
-    widgets.addAll(interleave(context
-        .read<LoadOnceState>()
-        .getSportCenters()
-        .map((e) => InkWell(
-          onTap: () => Navigator.pop(context, e),
-          child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-          MatchThumbnail(image: e.getThumbnailUrl(), height: 60),
+    return InkWell(
+      onTap: () => Navigator.pop(context, sportCenter),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          MatchThumbnail(image: sportCenter.getThumbnailUrl(), height: 60),
           SizedBox(width: 16),
           Expanded(
             child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(e.name, style: TextPalette.h3),
+                  Text(sportCenter.getName(), style: TextPalette.h3),
                   SizedBox(
                     height: 8,
                   ),
-                  Text(e.address,
+                  Text(sportCenter.address,
                       style: TextPalette.getBodyText(
                           Palette.grey_dark)),
                 ]),
           ),
-      ],
-    ),
-        )).toList(),
-        SizedBox(height: 16)));
+        ],
+      ),
+    );
+  }
+}
 
-    widgets.add(Section(title: "Your Courts",
-        titleType: "big",
-        body: Column(children: [
-        SizedBox(height: 16),
-        InkWell(
-          onTap: () async {
-            var court = await Navigator.push(context,
-                MaterialPageRoute(builder: (context) =>
-                    CreateCourt()));
-            Navigator.of(context).pop(court);
-          },
-          child: Row(children: [
-              Container(
-                height: 60,
-                width: 60,
-                child: DottedBorder(
-                  padding: EdgeInsets.zero,
-                  borderType: BorderType.RRect,
-                  radius: Radius.circular(10),
-                  color: Palette.grey_dark,
-                  strokeWidth: 1,
-                  dashPattern: [4],
-                  child: CircleAvatar(
-                    radius: 29,
-                    child: Icon(Icons.add, color: Palette.grey_dark, size: 24),
-                    backgroundColor: Colors.transparent,
-                  ),
-                ),
-              ),
-              SizedBox(width: 16),
-              Text("CREATE NEW COURT", style: TextPalette.linkStyle),
-            ],),
-        )
-    ],)));
+class LocationsBottomSheet extends StatelessWidget {
 
-    return Section(
-        title: "Popular courts",
-        topSpace: 0,
-        titleType: "big",
-        body: Column(children: widgets)
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<List<SportCenter>>(
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          List<Widget> widgets = [];
+          widgets.addAll(interleave(context
+              .read<LoadOnceState>()
+              .getSportCenters()
+              .map((e) => SportCenterRow(sportCenter: e)).toList(),
+              SizedBox(height: 16)));
+
+          if ((snapshot.data ?? []).isNotEmpty) {
+            widgets.add(SizedBox(height: 8));
+            widgets.add(Section(title: "Your Courts",
+                titleType: "big",
+                belowTitleSpace: 16,
+                topSpace: 16,
+                body: Builder(
+                  builder: (context) {
+                    List<Widget> yourCourtsWidgets = [];
+                    yourCourtsWidgets.addAll(interleave(snapshot.data!
+                        .map((e) => SportCenterRow(sportCenter: e))
+                        .toList(),
+                      SizedBox(height: 16),
+                    ));
+
+                    yourCourtsWidgets.addAll([
+                      SizedBox(height: 16),
+                      InkWell(
+                        onTap: () async {
+                          var court = await Navigator.push(context,
+                              MaterialPageRoute(builder: (context) =>
+                                  CreateCourt()));
+                          Navigator.of(context).pop(court);
+                        },
+                        child: Row(children: [
+                          Container(
+                            height: 60,
+                            width: 60,
+                            child: DottedBorder(
+                              padding: EdgeInsets.zero,
+                              borderType: BorderType.RRect,
+                              radius: Radius.circular(10),
+                              color: Palette.grey_dark,
+                              strokeWidth: 1,
+                              dashPattern: [4],
+                              child: CircleAvatar(
+                                radius: 29,
+                                child: Icon(Icons.add, color: Palette.grey_dark, size: 24),
+                                backgroundColor: Colors.transparent,
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 16),
+                          Text("CREATE NEW COURT", style: TextPalette.linkStyle),
+                        ],),
+                      )
+                    ]);
+
+                    return Column(children: yourCourtsWidgets);
+                  },
+                )));
+          }
+
+          return Section(
+              title: "Popular courts",
+              topSpace: 0,
+              titleType: "big",
+              belowTitleSpace: 16,
+              body: Column(children: widgets));
+        } else {
+          return Column(children: [
+            SkeletonAvailableMatches(),
+            SkeletonAvailableMatches()
+          ]);
+        }
+      },
+      future: SportCentersController.getUserSportCenters(
+          context.read<UserState>().getLoggedUserDetails()!.documentId),
     );
   }
 }

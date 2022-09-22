@@ -8,8 +8,10 @@ class Section extends StatelessWidget {
   final String titleType;
   final Widget body;
   final double topSpace;
+  final double belowTitleSpace;
 
-  const Section({Key? key, required this.title, required this.body, this.topSpace = 32,
+  const Section({Key? key, required this.title, required this.body,
+    this.topSpace = 32, this.belowTitleSpace = 10,
     this.titleType = "normal"}) : super(key: key);
 
   TextStyle? _getStyle() {
@@ -28,7 +30,7 @@ class Section extends StatelessWidget {
         children: [
           SizedBox(height: topSpace),
           Text(title, style: _getStyle(), textAlign: TextAlign.start,),
-          SizedBox(height: 10,),
+          SizedBox(height: belowTitleSpace),
           body
         ]
       ),
