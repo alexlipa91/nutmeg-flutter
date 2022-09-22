@@ -19,6 +19,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:version/version.dart';
 
 import '../state/UserState.dart';
+import '../utils/InfoModals.dart';
 
 class UserPage extends StatefulWidget {
   @override
@@ -332,7 +333,7 @@ class UserPageState extends State<UserPage> {
                       "mailto:support@nutmegapp.com?subject=Support request",
                       forceSafariVC: false);
                 }),
-            SizedBox(height: 10),
+            SizedBox(height: 16),
             Row(
               children: [
                 Expanded(
@@ -357,6 +358,42 @@ class UserPageState extends State<UserPage> {
                 )
               ],
             ),
+            SizedBox(height: 16),
+            Row(
+                  children: [
+                    Expanded(
+                      child: GenericButtonWithLoader(
+                        "DELETE PROFILE",
+                        (BuildContext context) async {
+                          var shouldCancel = await GenericInfoModal(
+                              title: "Are you sure you want to delete your profile?",
+                              description: "This is going to permanently delete all your data stored in Nutmeg and cannot be undone.",
+                              action: Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  GenericButtonWithLoader("CANCEL", (_) async {
+                                    Navigator.pop(context, false);
+                                  }, Secondary()),
+                                  SizedBox(width: 8),
+                                  GenericButtonWithLoader("YES", (_) async {
+                                    Navigator.pop(context, true);
+                                  }, Primary()),
+                                ],
+                              )).show(context);
+
+                          if (shouldCancel) {
+                            await Future.delayed(
+                                Duration(milliseconds: 500),
+                                    () => UserController.logout(
+                                    context.read<UserState>()));
+                            Navigator.of(context).pop();
+                          }
+                        },
+                        Destructive()
+                      ),
+                    )
+                  ],
+                ),
           ])),
         ),
         if (userDetails.getIsAdmin())
