@@ -362,9 +362,9 @@ class UserPageState extends State<UserPage> {
             Row(
                   children: [
                     Expanded(
-                      child: GenericButtonWithLoader(
-                        "DELETE PROFILE",
-                        (BuildContext context) async {
+                      child: InkWell(
+                        child: Text("Delete Profile", style: TextPalette.h3),
+                        onTap:() async {
                           var shouldCancel = await GenericInfoModal(
                               title: "Are you sure you want to delete your profile?",
                               description: "This is going to permanently delete all your data stored in Nutmeg and cannot be undone.",
@@ -388,8 +388,7 @@ class UserPageState extends State<UserPage> {
                                     context.read<UserState>()));
                             Navigator.of(context).pop();
                           }
-                        },
-                        Destructive()
+                        }
                       ),
                     )
                   ],
