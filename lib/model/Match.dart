@@ -124,13 +124,17 @@ class Match {
   Map<String, dynamic> toJson() =>
       {
         'dateTime': dateTime.toUtc().toIso8601String(),
-        'sportCenterId': sportCenterId,
-        'sportCenter': sportCenter?.toJson(),
-        'sportCenterSubLocation': sportCenterSubLocation,
+        if (sportCenterId != null)
+          'sportCenterId': sportCenterId,
+        if (sportCenter != null)
+          'sportCenter': sportCenter!.toJson(),
+        if (sportCenterSubLocation != null)
+          'sportCenterSubLocation': sportCenterSubLocation,
         'pricePerPerson': pricePerPersonInCents,
         'maxPlayers': maxPlayers,
         'minPlayers': minPlayers,
-        'cancelledAt': cancelledAt,
+        if (cancelledAt != null)
+          'cancelledAt': cancelledAt,
         'duration': duration.inMinutes,
         'organizerId': organizerId,
         if (cancelBefore != null)
