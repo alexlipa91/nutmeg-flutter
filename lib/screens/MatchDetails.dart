@@ -40,22 +40,21 @@ import '../widgets/Skeletons.dart';
 import 'BottomBarMatch.dart';
 import 'PaymentDetailsDescription.dart';
 
-
 class MatchDetails extends StatefulWidget {
   final String matchId;
   final String? paymentOutcome;
 
-  const MatchDetails({Key? key,
-    @PathParam('id') required this.matchId,
-    @QueryParam('payment_outcome') this.paymentOutcome
-  }) : super(key: key);
+  const MatchDetails(
+      {Key? key,
+      @PathParam('id') required this.matchId,
+      @QueryParam('payment_outcome') this.paymentOutcome})
+      : super(key: key);
 
   @override
   State<StatefulWidget> createState() => MatchDetailsState();
 }
 
 class MatchDetailsState extends State<MatchDetails> {
-
   Future<void> myInitState() async {
     await refreshState();
 
@@ -63,14 +62,13 @@ class MatchDetailsState extends State<MatchDetails> {
 
     // check if payment outcome
     if (widget.paymentOutcome != null) {
-      if (ModalBottomSheet.isOpen)
-        Navigator.of(context).pop();
+      if (ModalBottomSheet.isOpen) Navigator.of(context).pop();
       if (widget.paymentOutcome! == "success") {
-        PaymentDetailsDescription.communicateSuccessToUser(context,
-            widget.matchId);
+        PaymentDetailsDescription.communicateSuccessToUser(
+            context, widget.matchId);
       } else
         GenericInfoModal(
-            title: "Payment Failed!", description: "Please try again")
+                title: "Payment Failed!", description: "Please try again")
             .show(context);
     }
 
@@ -78,8 +76,8 @@ class MatchDetailsState extends State<MatchDetails> {
     var loggedUser = context.read<UserState>().getLoggedUserDetails();
 
     if (match.status == MatchStatus.to_rate && match.isUserGoing(loggedUser)) {
-      var stillToVote = context.read<MatchesState>().stillToVote(
-          widget.matchId, loggedUser!);
+      var stillToVote =
+          context.read<MatchesState>().stillToVote(widget.matchId, loggedUser!);
 
       if (stillToVote != null && stillToVote.isNotEmpty) {
         await RatePlayerBottomModal.rateAction(context, widget.matchId);
@@ -89,8 +87,8 @@ class MatchDetailsState extends State<MatchDetails> {
 
     if (loggedUser != null &&
         match.getPotms().contains(loggedUser.documentId)) {
-      UserController.showPotmIfNotSeen(context,
-          widget.matchId, loggedUser.documentId);
+      UserController.showPotmIfNotSeen(
+          context, widget.matchId, loggedUser.documentId);
     }
   }
 
@@ -118,7 +116,8 @@ class MatchDetailsState extends State<MatchDetails> {
 
     Match? match = matchesState.getMatch(widget.matchId);
     SportCenter? sportCenter = (match == null)
-        ? null : context.watch<LoadOnceState>().getSportCenter(match.sportCenterId);
+        ? null
+        : context.watch<LoadOnceState>().getSportCenter(match.sportCenterId);
 
     var status = match?.status;
 
@@ -127,28 +126,30 @@ class MatchDetailsState extends State<MatchDetails> {
         match != null &&
         match.organizerId == userState.getLoggedUserDetails()!.documentId;
 
-    var bottomBar = BottomBarMatch.getBottomBar(context, widget.matchId, status);
+    var bottomBar =
+        BottomBarMatch.getBottomBar(context, widget.matchId, status);
 
     // add padding individually since because of shadow clipping some components need margin
     var widgets;
     if (match == null || sportCenter == null) {
       widgets = [
-        Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(children: [Expanded(child: SkeletonMatchDetails.imageSkeleton())]),
-              SkeletonMatchDetails.skeletonRepeatedElement(),
-              SkeletonMatchDetails.skeletonRepeatedElement(),
-              SkeletonMatchDetails.skeletonRepeatedElement(),
-              SkeletonMatchDetails.skeletonRepeatedElement(),
-              SkeletonMatchDetails.skeletonRepeatedElement(),
-            ])
+        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(children: [
+            Expanded(child: SkeletonMatchDetails.imageSkeleton())
+          ]),
+          SkeletonMatchDetails.skeletonRepeatedElement(),
+          SkeletonMatchDetails.skeletonRepeatedElement(),
+          SkeletonMatchDetails.skeletonRepeatedElement(),
+          SkeletonMatchDetails.skeletonRepeatedElement(),
+          SkeletonMatchDetails.skeletonRepeatedElement(),
+        ])
       ];
     } else {
       widgets = [
         // title
         if (organizerView &&
-            userState.getLoggedUserDetails()?.areChargesEnabled(isTest) != null &&
+            userState.getLoggedUserDetails()?.areChargesEnabled(isTest) !=
+                null &&
             !userState.getLoggedUserDetails()!.areChargesEnabled(isTest))
           CompleteOrganiserAccountWidget(isTest: isTest),
         if (isTest)
@@ -164,68 +165,81 @@ class MatchDetailsState extends State<MatchDetails> {
         if (status == MatchStatus.rated || status == MatchStatus.to_rate)
           Stats(match: match),
         // horizontal players list or teams
-          match.hasTeams()
-              ? TeamsWidget(matchId: widget.matchId)
-              : PlayerList(match: match,
-              withJoinButton: bottomBar is JoinMatchBottomBar && !match.isFull()),
-        if (match.organizerId != null && match.organizerId == userState.currentUserId)
+        match.hasTeams()
+            ? TeamsWidget(matchId: widget.matchId)
+            : PlayerList(
+                match: match,
+                withJoinButton:
+                    bottomBar is JoinMatchBottomBar && !match.isFull()),
+        if (match.organizerId != null &&
+            match.organizerId == userState.currentUserId)
           OrganiserArea(match: match),
         SportCenterDetails(match: match, sportCenter: sportCenter),
-        RuleCard(
-            "Payment Policy",
+        Builder(builder: (context) {
+          var cancellationText = "";
+
+          if (match.cancelBefore != null) {
+            var cancellationDate = match.dateTime.subtract(match.cancelBefore!);
+
+            if (cancellationDate.isAfter(DateTime.now())) {
+              cancellationText = "\n\nThe match will be automatically canceled "
+                  "${getFormattedDateLongWithHour(cancellationDate)} "
+                  "if less than ${match.minPlayers} players have joined.";
+            }
+          }
+
+          return RuleCard(
+              "Payment Policy",
               "If you leave the match you will get a refund (excluding Nutmeg service fee).\n"
-                  "If the match is cancelled you will get a full refund.\n\n"
-                  "If you don’t show up you won’t get a refund." +
-                  (match.cancelBefore != null
-                      ? "\n\nThe match will be automatically canceled "
-                      "${getFormattedDateLongWithHour(match.dateTime
-                      .subtract(match.cancelBefore!))} "
-                      "if less than ${match.minPlayers} players have joined."
-                      : "")),
+                      "If the match is cancelled you will get a full refund.\n\n"
+                      "If you don’t show up you won’t get a refund." +
+                  cancellationText);
+        }),
         if (match.organizerId != null)
           Builder(builder: (context) {
-            var ud = context.watch<UserState>().getUserDetail(match.organizerId!);
+            var ud =
+                context.watch<UserState>().getUserDetail(match.organizerId!);
 
             return InfoContainer(
                 child: Row(children: [
-                  UserAvatarWithBottomModal(userData: ud),
-                  SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text("Organized by", style: TextPalette.bodyText),
-                        SizedBox(height: 4),
-                        (ud == null)
-                            ? Skeletons.lText
-                            : Text(ud.name!.split(" ").first,
+              UserAvatarWithBottomModal(userData: ud),
+              SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("Organized by", style: TextPalette.bodyText),
+                    SizedBox(height: 4),
+                    (ud == null)
+                        ? Skeletons.lText
+                        : Text(ud.name!.split(" ").first,
                             style: TextPalette.h2),
-                      ],
-                    ),
-                  ),
-                ]));
+                  ],
+                ),
+              ),
+            ]));
           }),
       ];
     }
 
     return PageTemplate(
-        initState: () => myInitState(),
-        refreshState: () => refreshState(),
-        widgets: interleave(widgets, SizedBox(height: 16)),
-        appBar: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            BackButton(color: Palette.black),
-            if (!DeviceInfo().name.contains("ipad") && !kIsWeb)
-              Align(
-                  alignment: Alignment.centerRight,
-                  child: buttons.ShareButton(() async {
-                    await DynamicLinks.shareMatchFunction(widget.matchId);
-                  }, Palette.black, 25.0)),
-          ],
-        ),
-        bottomNavigationBar: bottomBar,
-      );
+      initState: () => myInitState(),
+      refreshState: () => refreshState(),
+      widgets: interleave(widgets, SizedBox(height: 16)),
+      appBar: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          BackButton(color: Palette.black),
+          if (!DeviceInfo().name.contains("ipad") && !kIsWeb)
+            Align(
+                alignment: Alignment.centerRight,
+                child: buttons.ShareButton(() async {
+                  await DynamicLinks.shareMatchFunction(widget.matchId);
+                }, Palette.black, 25.0)),
+        ],
+      ),
+      bottomNavigationBar: bottomBar,
+    );
   }
 }
 
@@ -237,7 +251,9 @@ class PlayerList extends StatelessWidget {
   final Match match;
   final bool withJoinButton;
 
-  const PlayerList({Key? key, required this.match, required this.withJoinButton}) : super(key: key);
+  const PlayerList(
+      {Key? key, required this.match, required this.withJoinButton})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -256,18 +272,20 @@ class PlayerList extends StatelessWidget {
     widgets.add(SizedBox(width: 16));
 
     // we need to copy this instead of using InfoContainerWithTitle so we can play with the padding and the scrolling
-    return InfoContainer(child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16),
-            child: Text(getTitle(match), style: TextPalette.h2)),
-        SizedBox(height: 24),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(children: widgets),
-        ),
-      ],),
+    return InfoContainer(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: Text(getTitle(match), style: TextPalette.h2)),
+          SizedBox(height: 24),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(children: widgets),
+          ),
+        ],
+      ),
       padding: EdgeInsets.symmetric(vertical: 16),
     );
   }
@@ -356,7 +374,6 @@ class Title extends StatelessWidget {
 }
 
 class AddressRow extends StatelessWidget {
-
   final SportCenter sportCenter;
 
   const AddressRow({Key? key, required this.sportCenter}) : super(key: key);
@@ -370,20 +387,17 @@ class AddressRow extends StatelessWidget {
       if (addressItems.length > 1)
         firstRowText = firstRowText + ", " + addressItems[1].trim();
 
-      String? secondRowText = (addressItems.length > 2)
-          ? addressItems[2].trim() : null;
+      String? secondRowText =
+          (addressItems.length > 2) ? addressItems[2].trim() : null;
 
-      return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(firstRowText, style: TextPalette.bodyText),
-            if (secondRowText != null)
-              Text(secondRowText, style: TextPalette.bodyText)
-          ]);
+      return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(firstRowText, style: TextPalette.bodyText),
+        if (secondRowText != null)
+          Text(secondRowText, style: TextPalette.bodyText)
+      ]);
     });
   }
 }
-
 
 // info card
 class MatchInfo extends StatelessWidget {
@@ -413,9 +427,13 @@ class MatchInfo extends StatelessWidget {
             AddressRow(sportCenter: sportCenter),
             SizedBox(height: 16),
             IconList.fromIcon({
-              Icons.calendar_month_outlined: getFormattedDateLong(match.dateTime),
-              Icons.access_time_outlined: getStartAndEndHour(match.dateTime, match.duration).join(" - "),
-              Icons.local_offer_outlined: formatCurrency(match.pricePerPersonInCents)
+              Icons.calendar_month_outlined:
+                  getFormattedDateLong(match.dateTime),
+              Icons.access_time_outlined:
+                  getStartAndEndHour(match.dateTime, match.duration)
+                      .join(" - "),
+              Icons.local_offer_outlined:
+                  formatCurrency(match.pricePerPersonInCents)
             }),
             if (matchWidget != null)
               Column(children: [
@@ -437,8 +455,7 @@ class MatchInfo extends StatelessWidget {
     var icon;
     var text;
 
-    if (match == null)
-      return null;
+    if (match == null) return null;
 
     if (match.status == MatchStatus.playing) {
       icon = Icons.history_toggle_off_outlined;
@@ -493,11 +510,11 @@ class SportCenterImageCarouselState extends State<SportCenterImageCarousel> {
   final CarouselController _controller = CarouselController();
 
   static Widget getPlaceholder() => SkeletonAvatar(
-    style: SkeletonAvatarStyle(
-        width: double.infinity,
-        height: 213,
-        borderRadius: BorderRadius.circular(10.0)),
-  );
+        style: SkeletonAvatarStyle(
+            width: double.infinity,
+            height: 213,
+            borderRadius: BorderRadius.circular(10.0)),
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -567,8 +584,7 @@ class SportCenterImageCarouselState extends State<SportCenterImageCarousel> {
                             : Colors.transparent),
                   ),
                 );
-              }
-            ).toList()),
+              }).toList()),
         ),
       ],
     );
@@ -583,10 +599,14 @@ class InfoWidget extends StatelessWidget {
 
   final Widget? rightWidget;
 
-  InfoWidget({required this.title, required this.icon, required this.subTitle}) : rightWidget = null;
+  InfoWidget({required this.title, required this.icon, required this.subTitle})
+      : rightWidget = null;
 
   InfoWidget.withRightWidget(
-      {required this.title, required this.icon, required this.subTitle, required Widget rightWidget})
+      {required this.title,
+      required this.icon,
+      required this.subTitle,
+      required Widget rightWidget})
       : rightWidget = rightWidget;
 
   @override
@@ -660,24 +680,22 @@ class EmptyPlayerCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: context.watch<MatchesState>().getMatch(matchId)!.status ==
-          MatchStatus.unpublished
+              MatchStatus.unpublished
           ? null
           : () => JoinModal.onJoinGameAction(context, matchId),
-      child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            DottedBorder(
-              padding: EdgeInsets.zero,
-              borderType: BorderType.Circle,
-              color: Palette.grey_dark,
-              strokeWidth: 1,
-              dashPattern: [4],
-              child: CircleAvatar(
-                  radius: 29,
-                  child: Icon(Icons.add, color: Palette.grey_dark, size: 24),
-                  backgroundColor: Colors.transparent,
-              ),
-            ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
+        DottedBorder(
+          padding: EdgeInsets.zero,
+          borderType: BorderType.Circle,
+          color: Palette.grey_dark,
+          strokeWidth: 1,
+          dashPattern: [4],
+          child: CircleAvatar(
+            radius: 29,
+            child: Icon(Icons.add, color: Palette.grey_dark, size: 24),
+            backgroundColor: Colors.transparent,
+          ),
+        ),
         SizedBox(height: 10),
         Text("Join",
             overflow: TextOverflow.ellipsis,
@@ -721,8 +739,9 @@ class SportCenterDetails extends StatelessWidget {
   final SportCenter sportCenter;
   final Match match;
 
-  const SportCenterDetails({Key? key, required this.match,
-    required this.sportCenter}) : super(key: key);
+  const SportCenterDetails(
+      {Key? key, required this.match, required this.sportCenter})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -743,9 +762,11 @@ class SportCenterDetails extends StatelessWidget {
             if (sportCenter.getSurface() != null)
               "assets/icons/nutmeg_icon_shoe.svg": sportCenter.getSurface(),
             if (sportCenter.hasChangingRooms())
-              "assets/icons/nutmeg_icon_changing_rooms.svg": "Change rooms available",
+              "assets/icons/nutmeg_icon_changing_rooms.svg":
+                  "Change rooms available",
             if ((match.sportCenterSubLocation ?? "").isNotEmpty)
-              "assets/icons/nutmeg_icon_court_number.svg": "Court number ${match.sportCenterSubLocation}"
+              "assets/icons/nutmeg_icon_court_number.svg":
+                  "Court number ${match.sportCenterSubLocation}"
           })
         ],
       ),
@@ -775,8 +796,10 @@ class MapCardImage extends StatelessWidget {
     return InkWell(
       onTap: () async {
         if (kIsWeb) {
-          launchUrl(Uri.parse("https://maps.google.com/?cid=${sportCenter.cid}"));
-        } else if (await MapLauncher.isMapAvailable(m.MapType.google) ?? false) {
+          launchUrl(
+              Uri.parse("https://maps.google.com/?cid=${sportCenter.cid}"));
+        } else if (await MapLauncher.isMapAvailable(m.MapType.google) ??
+            false) {
           await MapLauncher.showMarker(
             mapType: m.MapType.google,
             coords: Coords(lat, lng),
@@ -965,8 +988,8 @@ class IconList extends StatelessWidget {
             (i, t) => MapEntry(Icon(i, color: Palette.black, size: size), t));
 
   IconList.fromSvg(Map<String, String?> svgAndText)
-      : widgetAndText = svgAndText.map(
-            (i, t) => MapEntry(SvgPicture.asset(i, width: size, height: size), t));
+      : widgetAndText = svgAndText.map((i, t) =>
+            MapEntry(SvgPicture.asset(i, width: size, height: size), t));
 
   @override
   Widget build(BuildContext context) {
@@ -985,7 +1008,6 @@ class IconList extends StatelessWidget {
 }
 
 class OrganiserArea extends StatelessWidget {
-
   final Match match;
 
   const OrganiserArea({Key? key, required this.match}) : super(key: key);
@@ -994,13 +1016,14 @@ class OrganiserArea extends StatelessWidget {
   Widget build(BuildContext context) {
     var infoText = "";
     if (match.cancelledAt == null) {
-      infoText += "Collected: ${formatCurrency(match.numPlayersGoing()
-          * (match.pricePerPersonInCents - match.getServiceFee()))}";
+      infoText +=
+          "Collected: ${formatCurrency(match.numPlayersGoing() * (match.pricePerPersonInCents - match.getServiceFee()))}";
       if (match.paidOutAt != null)
-        infoText += "\\nPaid out to your bank account on: ${getFormattedDate(match.paidOutAt!)}";
-    }
-    else
-      infoText += "Match cancelled: ${match.numPlayersGoing()} players have been refunded";
+        infoText +=
+            "\\nPaid out to your bank account on: ${getFormattedDate(match.paidOutAt!)}";
+    } else
+      infoText +=
+          "Match cancelled: ${match.numPlayersGoing()} players have been refunded";
 
     return InfoContainerWithTitle(
       title: "Organiser",
@@ -1011,33 +1034,33 @@ class OrganiserArea extends StatelessWidget {
           if (match.numPlayersGoing() > 0 && match.status == MatchStatus.open)
             Padding(
               padding: EdgeInsets.only(top: 16),
-              child: GenericButtonWithLoaderAndErrorHandling(
-                "CANCEL MATCH",
-                (BuildContext context) async {
-                  bool? proceed = await GenericInfoModal(
-                      title: "Are you sure you want to cancel the match?",
-                      description: "This will mark the match as canceled and each player will receive a full refund. "
-                          "This action cannot be undone.",
-                      action: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          GenericButtonWithLoader("CANCEL", (_) async {
-                            Navigator.pop(context, false);
-                          }, Secondary()),
-                          SizedBox(width: 8),
-                          GenericButtonWithLoader("YES", (_) async {
-                            Navigator.pop(context, true);
-                          }, Primary()),
-                        ],
-                      )).show(context);
-                  if (proceed ?? false) {
-                    await MatchesController.cancelMatch(match.documentId);
-                    await MatchesController.refresh(context, match.documentId);
-                  }
-                },
-                Destructive()),
+              child: GenericButtonWithLoaderAndErrorHandling("CANCEL MATCH",
+                  (BuildContext context) async {
+                bool? proceed = await GenericInfoModal(
+                    title: "Are you sure you want to cancel the match?",
+                    description:
+                        "This will mark the match as canceled and each player will receive a full refund. "
+                        "This action cannot be undone.",
+                    action: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        GenericButtonWithLoader("CANCEL", (_) async {
+                          Navigator.pop(context, false);
+                        }, Secondary()),
+                        SizedBox(width: 8),
+                        GenericButtonWithLoader("YES", (_) async {
+                          Navigator.pop(context, true);
+                        }, Primary()),
+                      ],
+                    )).show(context);
+                if (proceed ?? false) {
+                  await MatchesController.cancelMatch(match.documentId);
+                  await MatchesController.refresh(context, match.documentId);
+                }
+              }, Destructive()),
             ),
-        ],),
+        ],
+      ),
     );
   }
 }
