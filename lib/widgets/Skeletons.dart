@@ -42,34 +42,32 @@ class SkeletonAvailableMatches extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InfoContainer(
-      child: SkeletonItem(
-        child: Row(
-          children: [
-            SkeletonAvatar(
-              style: SkeletonAvatarStyle(
-                borderRadius: BorderRadius.circular(20),
-                width: 60,
-                height: 78,
-              ),
+    return SkeletonItem(
+      child: Row(
+        children: [
+          SkeletonAvatar(
+            style: SkeletonAvatarStyle(
+              borderRadius: BorderRadius.circular(20),
+              width: 60,
+              height: 78,
             ),
-            SizedBox(width: 12),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Skeletons.xlText,
-                SizedBox(
-                  height: 12,
-                ),
-                Skeletons.lText,
-                SizedBox(
-                  height: 12,
-                ),
-                Skeletons.mText
-              ],
-            )
-          ],
-        ),
+          ),
+          SizedBox(width: 12),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Skeletons.xlText,
+              SizedBox(
+                height: 12,
+              ),
+              Skeletons.lText,
+              SizedBox(
+                height: 12,
+              ),
+              Skeletons.mText
+            ],
+          )
+        ],
       ),
     );
   }

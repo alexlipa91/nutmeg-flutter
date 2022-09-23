@@ -60,11 +60,11 @@ class GenericAvailableMatchesListState
 
   Widget waitingWidget() {
     var waitingWidgets = interleave(
-        List<Widget>.filled(3, SkeletonAvailableMatches()),
+        List<Widget>.filled(5, SkeletonAvailableMatches()),
         SizedBox(
-          height: 10,
-        ),
-        true);
+          height: 24,
+        ));
+
     return Column(children: waitingWidgets);
   }
 
@@ -197,6 +197,7 @@ class GenericMatchInfo extends StatelessWidget {
     return InkWell(
         splashColor: Colors.transparent,
         highlightColor: Colors.transparent,
+        hoverColor: Colors.transparent,
         child: Padding(
           padding: EdgeInsets.only(top: topMargin),
           child: InfoContainer(
