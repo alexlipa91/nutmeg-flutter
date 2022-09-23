@@ -78,6 +78,7 @@ dependencies:
   universal_html: ^2.0.8
   google_place: ^0.4.7
   flutter_typeahead: ^4.1.0
+  flutter_native_splash: ^2.2.9
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -145,3 +146,5 @@ flutter_icons:
   android: true
   ios: true
 
+flutter_native_splash:
+  color: "#394BBB"
