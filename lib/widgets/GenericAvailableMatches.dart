@@ -228,7 +228,7 @@ class GenericMatchInfo extends StatelessWidget {
                               SizedBox(
                                 height: 8,
                               ),
-                              Text(getFormattedDate(match.dateTime),
+                              Text(getFormattedDateWithHour(match.dateTime),
                                   style: TextPalette.getBodyText(Palette.grey_dark)),
                               SizedBox(
                                 height: 6,

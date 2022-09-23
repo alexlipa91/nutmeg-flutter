@@ -11,6 +11,9 @@ var uiHourFormat = new DateFormat("HH:mm");
 String getFormattedDate(DateTime dateTime) =>
     _getFormattedDate(dateTime, DateFormat("E, MMM dd"));
 
+String getFormattedDateWithHour(DateTime dateTime) =>
+    _getFormattedDate(dateTime, DateFormat("E, MMM dd"), true);
+
 String getFormattedDateLong(DateTime dateTime) =>
     _getFormattedDate(dateTime, DateFormat("EEEE, MMM dd"));
 
