@@ -1,1 +1,1 @@
-Fix a bug preventing user profile images to show
+Add option to delete user profile
