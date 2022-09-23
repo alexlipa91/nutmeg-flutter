@@ -118,7 +118,7 @@ class AvailableMatches extends StatelessWidget {
     if (_isLoading(context))
       return null;
 
-    var hideStatuses = Set.of([MatchStatus.cancelled, MatchStatus.unpublished]);
+    var hideStatuses = Set.of([MatchStatus.unpublished]);
     var matches = state
         .getMatchesInFuture()
         .where((e) => !hideStatuses.contains(e.status))
