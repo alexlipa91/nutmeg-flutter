@@ -17,6 +17,7 @@ enum MatchStatus {
 
 class Match {
   late String documentId;
+
   MatchStatus? status;
 
   DateTime dateTime;
@@ -34,9 +35,9 @@ class Match {
   DateTime? scoresComputedAt;
   DateTime? paidOutAt;
 
-  Map<String, DateTime>? going;
+  Map<String, DateTime> going;
 
-  late Map<String, List<String>> teams;
+  Map<String, List<String>> teams;
 
   Map<String, double>? _manOfTheMatch;
 
@@ -47,7 +48,9 @@ class Match {
 
   Match(this.dateTime, this.sportCenterId, this.sportCenter, this.sportCenterSubLocation,
       this.maxPlayers, this.pricePerPersonInCents, this.duration,
-      this.isTest, this.minPlayers, this.organizerId, [this.cancelBefore]);
+      this.isTest, this.minPlayers, this.organizerId, [this.cancelBefore]) :
+    teams = Map(),
+    going = Map();
 
   Match.fromJson(Map<String, dynamic> jsonInput, String documentId) :
         dateTime = DateTime.parse(jsonInput['dateTime']).toLocal(),
@@ -55,18 +58,17 @@ class Match {
         isTest = jsonInput["isTest"] ?? false,
         minPlayers = jsonInput['minPlayers'] ?? 0,
         maxPlayers = jsonInput['maxPlayers'],
+        going = _readGoing(jsonInput),
+        teams = _readTeams(jsonInput),
         pricePerPersonInCents = jsonInput['pricePerPerson'],
         _manOfTheMatch = _readManOfTheMatch(jsonInput),
         sportCenterId = jsonInput['sportCenterId'] {
-      sportCenterSubLocation = jsonInput['sportCenterSubLocation'];
+        sportCenterSubLocation = jsonInput['sportCenterSubLocation'];
 
       if (jsonInput.containsKey("cancelledAt") && jsonInput["cancelledAt"] != null)
         cancelledAt = DateTime.parse(jsonInput['cancelledAt']).toLocal();
       if (jsonInput.containsKey("scoresComputedAt") && jsonInput["scoresComputedAt"] != null)
         scoresComputedAt = DateTime.parse(jsonInput['scoresComputedAt']).toLocal();
-
-      _readGoing(jsonInput);
-      _readTeams(jsonInput);
 
       if (jsonInput.containsKey("cancelHoursBefore"))
         cancelBefore = Duration(hours: jsonInput['cancelHoursBefore']);
@@ -93,24 +95,26 @@ class Match {
   Set<String> getPotms() => _manOfTheMatch == null
       ? Set<String>.from([]) : _manOfTheMatch!.keys.toSet();
 
-  void _readGoing(Map<String, dynamic> json) {
+  static Map<String, DateTime> _readGoing(Map<String, dynamic> json) {
     var map = Map<String, dynamic>.from(json["going"] ?? {});
-    going = map.map((key, value) => MapEntry(key, DateTime.parse(value["createdAt"])));
+    return map.map((key, value) =>
+        MapEntry(key, DateTime.parse(value["createdAt"])));
   }
 
-  void _readTeams(Map<String, dynamic> json) {
-    var map = Map<String, dynamic>.from(json["going"] ?? {});
-    teams = Map();
+  static Map<String, List<String>> _readTeams(Map<String, dynamic> json) {
+    var goingMap = Map<String, dynamic>.from(json["going"] ?? {});
+    Map<String, List<String>> teams = Map();
     teams["a"] = [];
     teams["b"] = [];
 
-    map.forEach((key, value) {
+    goingMap.forEach((key, value) {
       Map valueMap = value as Map;
 
       if (valueMap.containsKey("team")) {
         teams[valueMap["team"]]?.add(key);
       }
     });
+    return teams;
   }
 
   static Map<String, double>? _readManOfTheMatch(Map<String, dynamic> json) {
@@ -144,25 +148,28 @@ class Match {
 
   int getSpotsLeft() => maxPlayers - numPlayersGoing();
 
-  int numPlayersGoing() => going?.length ?? 0;
+  int numPlayersGoing() => going.length;
 
   bool isFull() => numPlayersGoing() == maxPlayers;
 
   bool isUserGoing(UserDetails? user) =>
-      user != null && (going ?? {}).containsKey(user.documentId);
+      user != null && going.containsKey(user.documentId);
 
   int getServiceFee() => 50;
 
   List<String> getGoingUsersByTime() {
-    var entries = (going?.entries.toList() ?? [])..sort((e1,e2) => -e1.value.compareTo(e2.value));
+    var entries = going.entries.toList()
+      ..sort((e1,e2) => -e1.value.compareTo(e2.value));
     return entries.map((e) => e.key).toList();
   }
 
-  int getMissingPlayers() => max(0, minPlayers - (going?.length ?? 0));
+  int getGoingPlayers() => going.length;
 
-  bool hasTeams() => (going?.length ?? 0) > 0
+  int getMissingPlayers() => max(0, minPlayers - going.length);
+
+  bool hasTeams() => going.length > 0
       && teams.values.map((e) => e.length).reduce((a, b) => a + b)
-          == (going?.length ?? 0);
+          == going.length;
 
   List<String>? getTeam(String teamName) => teams[teamName];
 }

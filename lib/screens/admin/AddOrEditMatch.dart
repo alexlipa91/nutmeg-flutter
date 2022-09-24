@@ -49,8 +49,8 @@ class AdminMatchDetailsState extends State<AdminMatchDetails> {
     var m = result[0] as Match;
 
     // get users details
-    Future.wait(
-        (m.going ?? {}).keys.map((e) => UserController.getUserDetails(context, e)));
+    Future.wait(m.getGoingUsersByTime().map((e) =>
+        UserController.getUserDetails(context, e)));
   }
 
   @override

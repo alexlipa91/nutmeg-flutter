@@ -150,6 +150,9 @@ void main() {
                 colorScheme: ColorScheme.light().copyWith(
                   primary: Palette.primary,
                 ),
+                hoverColor: Colors.transparent,
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent
               ),
             ),
           maximumSize: Size(812.0, 812.0), // Maximum size
@@ -180,6 +183,7 @@ class LaunchWidget extends StatefulWidget {
 }
 
 class LaunchWidgetState extends State<LaunchWidget> {
+
   @override
   void initState() {
     super.initState();
@@ -207,9 +211,8 @@ class LaunchWidgetState extends State<LaunchWidget> {
   @override
   Widget build(BuildContext context) {
     var mainWidgets =
-        Column(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-      Expanded(
-        child: Row(
+      Column(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+        Expanded(child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Column(
@@ -222,8 +225,7 @@ class LaunchWidgetState extends State<LaunchWidget> {
               ],
             )
           ],
-        ),
-      )
+        ))
     ]);
 
     return Scaffold(
