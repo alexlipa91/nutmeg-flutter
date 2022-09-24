@@ -95,7 +95,7 @@
 	<key>ITSAppUsesNonExemptEncryption</key>
     <false/>
     <key>NSPhotoLibraryUsageDescription</key>
-    <string>Photo Library Access Warning</string>
+    <string>Allow users to select profile picture</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 </dict>
