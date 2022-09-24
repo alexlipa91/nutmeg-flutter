@@ -1,45 +1,60 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/material.dart';
+import 'package:skeletons/skeletons.dart';
+
 class SportCenter {
   String placeId;
   String address;
   String name;
   double lat;
   double lng;
-  Map<String, dynamic> _info;
 
-  String getName() => name;
+  String surface;
+  bool? hasChangingRooms;
+  String courtType;
 
-  String getThumbnailUrl() =>
-      "https://storage.googleapis.com/nutmeg-9099c.appspot.com/sportcenters/default/thumbnail.png";
+  SportCenter(this.placeId, this.address, this.name, this.lat, this.lng,
+      this.surface, this.hasChangingRooms, this.courtType);
 
-  List<String> getImagesUrls() => [
-    "https://storage.googleapis.com/nutmeg-9099c.appspot.com/sportcenters/default/large/1.png"
-  ];
-
-  bool hasChangingRooms() => _info["changeRooms"] ?? false;
-
-  String? getCourtType() => _info["courtType"];
-
-  String? getSurface() => _info["surface"];
-
-  SportCenter(this.address, this.name, this.placeId, this.lat, this.lng, this._info);
-
-  SportCenter.fromJson(Map<String, dynamic>? json, String documentId):
-        address = json!['address'],
-        name = json['name'],
-        placeId = documentId,
+  SportCenter.fromJson(Map<String, dynamic>? json, String documentId)
+      : placeId = documentId,
+        name = json!['name'],
+        address = json['address'],
         lat = json['lat'],
         lng = json['lng'],
-        _info = Map<String, dynamic>.from(json["info"] ?? {});
+        surface = json["surface"],
+        hasChangingRooms = json['hasChangingRooms'],
+        courtType = json['courtType']!;
 
-  Map<String, dynamic> toJson() =>
-      {
+  Map<String, dynamic> toJson() => {
         'address': address,
         'placeId': placeId,
         'name': name,
-        'info': _info,
         'lat': lat,
-        'lng': lng
+        'lng': lng,
+        'surface': surface,
+        if (hasChangingRooms != null)
+          'hasChangingRooms': hasChangingRooms!,
+        'courtType': courtType
       };
+
+  Widget getThumbnail() {
+    var surf = surface.toLowerCase() == "indoor" ? "indoor" : "outdoor";
+    return Image.asset("assets/sportcenters/${surf}_thumb.png");
+  }
+
+  List<Widget> getCarouselImages() {
+    var surf = surface.toLowerCase() == "indoor" ? "indoor" : "outdoor";
+    return [Image.asset("assets/sportcenters/${surf}_carousel.png")];
+  }
+
+  String getName() => name;
+
+  String getCourtType() => courtType;
+
+  String getSurface() => surface;
+
+  bool? getHasChangingRooms() => hasChangingRooms;
 }
 
 class SavedSportCenter extends SportCenter {
@@ -57,22 +72,64 @@ class SavedSportCenter extends SportCenter {
         super.fromJson(json, documentId);
 
   bool operator ==(dynamic other) =>
-      other != null && other is SavedSportCenter && this.placeId == other.placeId;
+      other != null &&
+      other is SavedSportCenter &&
+      this.placeId == other.placeId;
 
   @override
   int get hashCode => super.hashCode;
 
+  List<String> getImagesUrls() => _imagesUrls.isEmpty
+      ? [
+          "https://storage.googleapis.com/nutmeg-9099c.appspot.com/sportcenters/default/large/1.png"
+        ]
+      : _imagesUrls;
+
   // images are 60x78
   @override
-  String getThumbnailUrl() => _thumbnailUrl == null
-      ? "https://storage.googleapis.com/nutmeg-9099c.appspot.com/sportcenters/default/thumbnail.png" : _thumbnailUrl!;
+  Widget getThumbnail() {
+    return CachedNetworkImage(
+      imageUrl: _thumbnailUrl == null
+          ? "https://storage.googleapis.com/nutmeg-9099c.appspot.com/sportcenters/default/thumbnail.png"
+          : _thumbnailUrl!,
+      fadeInDuration: Duration(milliseconds: 0),
+      imageBuilder: (context, imageProvider) => Container(
+          decoration: BoxDecoration(
+        image: DecorationImage(
+          image: imageProvider,
+          fit: BoxFit.fill,
+        ),
+        borderRadius: BorderRadius.all(Radius.circular(10)),
+      )),
+      // placeholder: (context, url) => placeHolder,
+      errorWidget: (context, url, error) => Icon(Icons.error),
+    );
+  }
 
-  // images are 670x358
   @override
-  List<String> getImagesUrls() => _imagesUrls.isEmpty ? ["https://storage.googleapis.com/nutmeg-9099c.appspot.com/sportcenters/default/large/1.png"] : _imagesUrls;
+  List<Widget> getCarouselImages() => _imagesUrls
+      .map((i) => CachedNetworkImage(
+            imageUrl: i,
+            fadeInDuration: Duration(milliseconds: 0),
+            fadeOutDuration: Duration(milliseconds: 0),
+            imageBuilder: (context, imageProvider) => Container(
+                decoration: BoxDecoration(
+              image: DecorationImage(
+                image: imageProvider,
+                fit: BoxFit.fill,
+              ),
+            )),
+            placeholder: (context, imageProvider) => SkeletonAvatar(
+              style: SkeletonAvatarStyle(
+                  width: double.infinity,
+                  height: 213,
+                  borderRadius: BorderRadius.circular(10.0)),
+            ),
+            errorWidget: (context, url, error) => Icon(Icons.error),
+          ))
+      .toList();
 
-  String getShortAddress() =>
-      address
-          .split(",")
-          .first;
+  String getShortAddress() => address.split(",").first;
+
+  String getSurface() => surface;
 }

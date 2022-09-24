@@ -1,8 +1,6 @@
 import 'dart:math';
 
 import 'package:badges/badges.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -58,15 +56,7 @@ class GenericAvailableMatchesListState
         .map((s) => SportCentersController.refresh(context, s!)));
   }
 
-  Widget waitingWidget() {
-    var waitingWidgets = interleave(
-        List<Widget>.filled(5, SkeletonAvailableMatches()),
-        SizedBox(
-          height: 24,
-        ));
-
-    return Column(children: waitingWidgets);
-  }
+  Widget waitingWidget() => ListOfMatchesSkeleton(repeatFor: 5);
 
   @override
   Widget build(BuildContext context) {
@@ -195,9 +185,6 @@ class GenericMatchInfo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-        splashColor: Colors.transparent,
-        highlightColor: Colors.transparent,
-        hoverColor: Colors.transparent,
         child: Padding(
           padding: EdgeInsets.only(top: topMargin),
           child: InfoContainer(
@@ -208,21 +195,19 @@ class GenericMatchInfo extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      MatchThumbnail(image: sportCenter.getThumbnailUrl()),
+                      MatchThumbnail(image: sportCenter.getThumbnail()),
                       SizedBox(width: 15),
                       Expanded(
                         child: Column(
                             mainAxisAlignment: MainAxisAlignment.start,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              (sportCenter.getCourtType() == null)
-                                  ? Skeletons.mText
-                                  : Row(
+                              Row(
                                       children: [
                                         Text(
                                             sportCenter.getName() +
                                                 " - " +
-                                                sportCenter.getCourtType()!,
+                                                sportCenter.getCourtType(),
                                             style: TextPalette.h2),
                                       ],
                                     ),
@@ -365,7 +350,7 @@ class GenericMatchInfoPast extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(sportCenter.getName() + " - " + sportCenter.getCourtType()!,
+                        Text(sportCenter.getName() + " - " + sportCenter.getCourtType(),
                             style: TextPalette.h2),
                         SizedBox(height: 8),
                         Text(sportCenter.getName(), style: TextPalette.bodyText),
@@ -403,7 +388,7 @@ class GenericMatchInfoPast extends StatelessWidget {
 }
 
 class MatchThumbnail extends StatelessWidget {
-  final String image;
+  final Widget image;
   final double height;
 
   const MatchThumbnail({this.height = 78, required this.image});
@@ -413,20 +398,7 @@ class MatchThumbnail extends StatelessWidget {
     return Container(
         width: 60,
         height: height,
-        child: CachedNetworkImage(
-          imageUrl: image,
-          fadeInDuration: Duration(milliseconds: 0),
-          imageBuilder: (context, imageProvider) => Container(
-              decoration: BoxDecoration(
-            image: DecorationImage(
-              image: imageProvider,
-              fit: BoxFit.fill,
-            ),
-            borderRadius: BorderRadius.all(Radius.circular(10)),
-          )),
-          // placeholder: (context, url) => placeHolder,
-          errorWidget: (context, url, error) => Icon(Icons.error),
-        ));
+        child: image);
   }
 }
 

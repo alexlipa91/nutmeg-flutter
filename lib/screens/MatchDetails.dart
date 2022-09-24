@@ -25,8 +25,6 @@ import 'package:nutmeg/widgets/Avatar.dart';
 import 'package:nutmeg/widgets/Containers.dart';
 import 'package:nutmeg/widgets/PageTemplate.dart';
 import 'package:readmore/readmore.dart';
-import 'package:skeletons/skeletons.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../state/LoadOnceState.dart';
 import '../state/MatchesState.dart';
@@ -131,51 +129,40 @@ class MatchDetailsState extends State<MatchDetails> {
 
     // add padding individually since because of shadow clipping some components need margin
     var widgets;
-    if (match == null || sportCenter == null) {
-      widgets = [
-        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Row(children: [
-            Expanded(child: SkeletonMatchDetails.imageSkeleton())
-          ]),
-          SkeletonMatchDetails.skeletonRepeatedElement(),
-          SkeletonMatchDetails.skeletonRepeatedElement(),
-          SkeletonMatchDetails.skeletonRepeatedElement(),
-          SkeletonMatchDetails.skeletonRepeatedElement(),
-          SkeletonMatchDetails.skeletonRepeatedElement(),
-        ])
-      ];
-    } else {
-      widgets = [
-        // title
-        if (organizerView &&
-            userState.getLoggedUserDetails()?.areChargesEnabled(isTest) !=
-                null &&
-            !userState.getLoggedUserDetails()!.areChargesEnabled(isTest))
-          CompleteOrganiserAccountWidget(isTest: isTest),
-        if (isTest)
-          InfoContainer(
+    if (match == null || sportCenter == null)
+      return MatchDetailsSkeleton();
+
+    widgets = [
+      // title
+      if (organizerView &&
+          userState.getLoggedUserDetails()?.areChargesEnabled(isTest) !=
+              null &&
+          !userState.getLoggedUserDetails()!.areChargesEnabled(isTest))
+        CompleteOrganiserAccountWidget(isTest: isTest),
+      if (isTest)
+        InfoContainer(
               backgroundColor: Palette.accent,
               child: SelectableText(
                 "Test match: " + widget.matchId,
                 style: TextPalette.getBodyText(Palette.black),
               )),
-        // info box
-        MatchInfo(match, sportCenter),
-        // stats
-        if (status == MatchStatus.rated || status == MatchStatus.to_rate)
-          Stats(match: match),
-        // horizontal players list or teams
-        match.hasTeams()
-            ? TeamsWidget(matchId: widget.matchId)
-            : PlayerList(
+      // info box
+      MatchInfo(match, sportCenter),
+      // stats
+      if (status == MatchStatus.rated || status == MatchStatus.to_rate)
+        Stats(match: match),
+      // horizontal players list or teams
+      match.hasTeams()
+          ? TeamsWidget(matchId: widget.matchId)
+          : PlayerList(
                 match: match,
                 withJoinButton:
                     bottomBar is JoinMatchBottomBar && !match.isFull()),
-        if (match.organizerId != null &&
-            match.organizerId == userState.currentUserId)
-          OrganiserArea(match: match),
-        SportCenterDetails(match: match, sportCenter: sportCenter),
-        Builder(builder: (context) {
+      if (match.organizerId != null &&
+          match.organizerId == userState.currentUserId)
+        OrganiserArea(match: match),
+      SportCenterDetails(match: match, sportCenter: sportCenter),
+      Builder(builder: (context) {
           var cancellationText = "";
 
           if (match.cancelBefore != null) {
@@ -195,8 +182,8 @@ class MatchDetailsState extends State<MatchDetails> {
                       "If you don’t show up you won’t get a refund." +
                   cancellationText);
         }),
-        if (match.organizerId != null)
-          Builder(builder: (context) {
+      if (match.organizerId != null)
+        Builder(builder: (context) {
             var ud =
                 context.watch<UserState>().getUserDetail(match.organizerId!);
 
@@ -219,8 +206,7 @@ class MatchDetailsState extends State<MatchDetails> {
               ),
             ]));
           }),
-      ];
-    }
+    ];
 
     return PageTemplate(
       initState: () => myInitState(),
@@ -367,7 +353,7 @@ class Title extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Text(
-      sportCenter.getName() + " - " + sportCenter.getCourtType()!,
+      sportCenter.getName() + " - " + sportCenter.getCourtType(),
       style: TextPalette.h1Default,
     );
   }
@@ -510,32 +496,9 @@ class SportCenterImageCarouselState extends State<SportCenterImageCarousel> {
   int _current = 0;
   final CarouselController _controller = CarouselController();
 
-  static Widget getPlaceholder() => SkeletonAvatar(
-        style: SkeletonAvatarStyle(
-            width: double.infinity,
-            height: 213,
-            borderRadius: BorderRadius.circular(10.0)),
-      );
-
   @override
   Widget build(BuildContext context) {
-    var placeHolder = getPlaceholder();
-
-    List<Widget> itemsToShow = List<Widget>.from(
-        widget.sportCenter.getImagesUrls().map((i) => CachedNetworkImage(
-              imageUrl: i,
-              fadeInDuration: Duration(milliseconds: 0),
-              fadeOutDuration: Duration(milliseconds: 0),
-              imageBuilder: (context, imageProvider) => Container(
-                  decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: imageProvider,
-                  fit: BoxFit.fill,
-                ),
-              )),
-              placeholder: (context, imageProvider) => placeHolder,
-              errorWidget: (context, url, error) => Icon(Icons.error),
-            )));
+    var itemsToShow = widget.sportCenter.getCarouselImages();
 
     return Stack(
       children: [
@@ -749,12 +712,9 @@ class SportCenterDetails extends StatelessWidget {
           SizedBox(height: 16),
           IconList.fromSvg({
             "assets/icons/nutmeg_icon_court.svg":
-                (sportCenter.getCourtType() == null)
-                    ? null
-                    : sportCenter.getCourtType()! + " court type",
-            if (sportCenter.getSurface() != null)
-              "assets/icons/nutmeg_icon_shoe.svg": sportCenter.getSurface(),
-            if (sportCenter.hasChangingRooms())
+            sportCenter.getCourtType() + " court type",
+            "assets/icons/nutmeg_icon_shoe.svg": sportCenter.surface,
+            if (sportCenter.getHasChangingRooms() ?? false)
               "assets/icons/nutmeg_icon_changing_rooms.svg":
                   "Change rooms available",
             if ((match.sportCenterSubLocation ?? "").isNotEmpty)

@@ -90,7 +90,7 @@ class MatchesState extends ChangeNotifier {
     if (matchRatings == null)
       return null;
 
-    var toVote = (match.going ?? {}) .keys.toSet();
+    var toVote = match.getGoingUsersByTime().toSet();
     toVote.remove(ud.documentId);
     matchRatings.ratingsReceived.forEach((receiver, given) {
       if (given.keys.contains(ud.documentId)) {

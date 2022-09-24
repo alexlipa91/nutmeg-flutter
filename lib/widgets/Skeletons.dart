@@ -38,67 +38,86 @@ class Skeletons {
   );
 }
 
-class SkeletonAvailableMatches extends StatelessWidget {
+class ListOfMatchesSkeleton extends StatelessWidget {
+
+  final int repeatFor;
+
+  const ListOfMatchesSkeleton({Key? key, required this.repeatFor}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return SkeletonItem(
-      child: Row(
-        children: [
-          SkeletonAvatar(
-            style: SkeletonAvatarStyle(
-              borderRadius: BorderRadius.circular(20),
-              width: 60,
-              height: 78,
+    return Column(
+        children: interleave(
+            List<Widget>.filled(repeatFor,
+                SkeletonItem(
+        child: Row(
+          children: [
+            SkeletonAvatar(
+              style: SkeletonAvatarStyle(
+                borderRadius: BorderRadius.circular(20),
+                width: 60,
+                height: 78,
+              ),
             ),
-          ),
-          SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Skeletons.xlText,
-              SizedBox(
-                height: 12,
-              ),
-              Skeletons.lText,
-              SizedBox(
-                height: 12,
-              ),
-              Skeletons.mText
-            ],
-          )
-        ],
-      ),
+            SizedBox(width: 12),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Skeletons.xlText,
+                SizedBox(
+                  height: 12,
+                ),
+                Skeletons.lText,
+                SizedBox(
+                  height: 12,
+                ),
+                Skeletons.mText
+              ],
+            )
+          ],
+        ),
+      )
+            ),
+            SizedBox(height: 24,)
+        )
     );
   }
 }
 
-class SkeletonMatchDetails {
+class MatchDetailsSkeleton extends StatelessWidget {
 
-  static Widget skeletonRepeatedElement() => Padding(
-      padding: EdgeInsets.symmetric(vertical: 16.0),
-      child:
-      Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Skeletons.fullWidthText,
-        Column(children: List<Widget>.filled(3,
-            Padding(
-              padding: EdgeInsets.only(top: 16),
-              child: Row(children: [
-                Skeletons.sText,
-                SizedBox(width: 12),
-                Expanded(
-                  child: Skeletons.fullWidthText
-                ),
-              ],),
-            )))
-      ])
-  );
+  @override
+  Widget build(BuildContext context) {
+    List<Widget> widgets = [];
+    widgets.add(Row(children: [
+      Expanded(child: SkeletonAvatar(
+          style: SkeletonAvatarStyle(
+              width: double.infinity,
+              height: 213,
+              borderRadius: BorderRadius.circular(10.0))))
+    ]));
+    widgets.addAll(List<Widget>.filled(5, Padding(
+        padding: EdgeInsets.symmetric(vertical: 16.0),
+        child:
+        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Skeletons.fullWidthText,
+          Column(children: List<Widget>.filled(3,
+              Padding(
+                padding: EdgeInsets.only(top: 16),
+                child: Row(children: [
+                  Skeletons.sText,
+                  SizedBox(width: 12),
+                  Expanded(
+                      child: Skeletons.fullWidthText
+                  ),
+                ],),
+              )))
+        ])
+    )));
 
-  static Widget imageSkeleton() => SkeletonAvatar(
-      style: SkeletonAvatarStyle(
-          width: double.infinity,
-          height: 213,
-          borderRadius: BorderRadius.circular(10.0)));
+    return Column(crossAxisAlignment: CrossAxisAlignment.start,
+        children: widgets);
+  }
 }
 
 class StatsSkeleton extends StatelessWidget {

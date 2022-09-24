@@ -743,7 +743,7 @@ class SportCenterRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          MatchThumbnail(image: sportCenter.getThumbnailUrl(), height: 60),
+          MatchThumbnail(image: sportCenter.getThumbnail(), height: 60),
           SizedBox(width: 16),
           Expanded(
             child: Column(
@@ -772,78 +772,69 @@ class LocationsBottomSheet extends StatelessWidget {
     return FutureBuilder<List<SportCenter>>(
       builder: (context, snapshot) {
         if (snapshot.hasData) {
-          List<Widget> widgets = [];
-          widgets.addAll(interleave(context
-              .read<LoadOnceState>()
-              .getSportCenters()
-              .map((e) => SportCenterRow(sportCenter: e)).toList(),
-              SizedBox(height: 16)));
-
-          if ((snapshot.data ?? []).isNotEmpty) {
-            widgets.add(SizedBox(height: 8));
-            widgets.add(Section(title: "Your Courts",
-                titleType: "big",
-                belowTitleSpace: 16,
-                topSpace: 16,
-                body: Builder(
-                  builder: (context) {
-                    List<Widget> yourCourtsWidgets = [];
-                    yourCourtsWidgets.addAll(interleave(snapshot.data!
-                        .map((e) => SportCenterRow(sportCenter: e))
-                        .toList(),
-                      SizedBox(height: 16),
-                    ));
-
-                    yourCourtsWidgets.addAll([
-                      SizedBox(height: 16),
-                      InkWell(
-                        onTap: () async {
-                          var court = await Navigator.push(context,
-                              MaterialPageRoute(builder: (context) =>
-                                  CreateCourt()));
-                          Navigator.of(context).pop(court);
-                        },
-                        child: Row(children: [
-                          Container(
-                            height: 60,
-                            width: 60,
-                            child: DottedBorder(
-                              padding: EdgeInsets.zero,
-                              borderType: BorderType.RRect,
-                              radius: Radius.circular(10),
-                              color: Palette.grey_dark,
-                              strokeWidth: 1,
-                              dashPattern: [4],
-                              child: CircleAvatar(
-                                radius: 29,
-                                child: Icon(Icons.add, color: Palette.grey_dark, size: 24),
-                                backgroundColor: Colors.transparent,
-                              ),
-                            ),
-                          ),
-                          SizedBox(width: 16),
-                          Text("CREATE NEW COURT", style: TextPalette.linkStyle),
-                        ],),
-                      )
-                    ]);
-
-                    return Column(children: yourCourtsWidgets);
-                  },
-                )));
-          }
-
-          return Section(
+          var popularCourts = Section(
               title: "Popular courts",
               topSpace: 0,
               titleType: "big",
               belowTitleSpace: 16,
-              body: Column(children: widgets));
-        } else {
-          return Column(children: [
-            SkeletonAvailableMatches(),
-            SkeletonAvailableMatches()
-          ]);
+              body: Column(children: interleave(context
+                  .read<LoadOnceState>()
+                  .getSportCenters()
+                  .map((e) => SportCenterRow(sportCenter: e)).toList(),
+                  SizedBox(height: 16)).toList()));
+          var yourCourts = Section(
+              title: "Your Courts",
+              titleType: "big",
+              topSpace: 32,
+              belowTitleSpace: 16,
+              body: Builder(
+                builder: (context) {
+                  List<Widget> yourCourtsWidgets = [];
+                  yourCourtsWidgets.addAll(interleave(snapshot.data!
+                      .map((e) => SportCenterRow(sportCenter: e))
+                      .toList(),
+                    SizedBox(height: 16),
+                  ));
+
+                  yourCourtsWidgets.addAll([
+                    InkWell(
+                      onTap: () async {
+                        var court = await Navigator.push(context,
+                            MaterialPageRoute(builder: (context) =>
+                                CreateCourt()));
+                        Navigator.of(context).pop(court);
+                      },
+                      child: Row(children: [
+                        Container(
+                          height: 60,
+                          width: 60,
+                          child: DottedBorder(
+                            padding: EdgeInsets.zero,
+                            borderType: BorderType.RRect,
+                            radius: Radius.circular(10),
+                            color: Palette.grey_dark,
+                            strokeWidth: 1,
+                            dashPattern: [4],
+                            child: CircleAvatar(
+                              radius: 29,
+                              child: Icon(Icons.add, color: Palette.grey_dark, size: 24),
+                              backgroundColor: Colors.transparent,
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 16),
+                        Text("CREATE NEW COURT", style: TextPalette.linkStyle),
+                      ],),
+                    )
+                  ]);
+
+                  return Column(children: yourCourtsWidgets);
+                },
+              ));
+
+          return Column(children: [popularCourts, yourCourts]);
         }
+        return ListOfMatchesSkeleton(repeatFor: 2);
       },
       future: SportCentersController.getUserSportCenters(
           context.read<UserState>().getLoggedUserDetails()!.documentId),

@@ -188,14 +188,11 @@ class CreateCourtState extends State<CreateCourt> {
                   (BuildContext context) async {
                 bool? v = _formKey.currentState?.validate();
                 if (v != null && v) {
-                  Map<String, dynamic> info = Map();
-                  if (changeRoomsAvailable)
-                    info["changeRooms"] = true;
-                  info["courtType"] = sizeController.text;
-                  info["surface"] = surfaceController.text;
-
                   Navigator.of(context).pop(
-                      SportCenter(address!, name!, placeId!, lat!, lng!, info));
+                      SportCenter(placeId!, address!, name!, lat!, lng!,
+                          surfaceController.text,
+                          changeRoomsAvailable,
+                          sizeController.text));
                 }
               }, Primary()),
             )
