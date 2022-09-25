@@ -1,1 +1,1 @@
-Add option to delete user profile
+Add explanation to photo access policy for iOS
