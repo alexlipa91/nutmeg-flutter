@@ -39,13 +39,30 @@ class SportCenter {
       };
 
   Widget getThumbnail() {
-    var surf = surface.toLowerCase() == "indoor" ? "indoor" : "outdoor";
-    return Image.asset("assets/sportcenters/${surf}_thumb.png");
+    var surf = surface.toLowerCase() == "indoor" ? "indoor" : "grass";
+    return Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: Image.asset("assets/sportcenters/${surf}_thumb.png").image,
+            fit: BoxFit.fill,
+          ),
+          borderRadius: BorderRadius.all(Radius.circular(10)),
+        )
+    );
   }
 
   List<Widget> getCarouselImages() {
-    var surf = surface.toLowerCase() == "indoor" ? "indoor" : "outdoor";
-    return [Image.asset("assets/sportcenters/${surf}_carousel.png")];
+    var surf = surface.toLowerCase() == "indoor" ? "indoor" : "grass";
+    return [
+      Container(
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              image: Image.asset("assets/sportcenters/${surf}_carousel.png").image,
+              fit: BoxFit.fill,
+            ),
+            borderRadius: BorderRadius.all(Radius.circular(10)),
+          )
+      )];
   }
 
   String getName() => name;

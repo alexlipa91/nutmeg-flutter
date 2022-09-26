@@ -130,40 +130,51 @@ class MatchDetailsState extends State<MatchDetails> {
 
     // add padding individually since because of shadow clipping some components need margin
     var widgets;
-    if (match == null || sportCenter == null)
-      return MatchDetailsSkeleton();
-
-    widgets = [
-      // title
-      if (organizerView &&
-          userState.getLoggedUserDetails()?.areChargesEnabled(isTest) !=
-              null &&
-          !userState.getLoggedUserDetails()!.areChargesEnabled(isTest))
-        CompleteOrganiserAccountWidget(isTest: isTest),
-      if (isTest)
-        InfoContainer(
+    if (match == null || sportCenter == null) {
+      widgets = [
+        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(children: [
+            Expanded(child: SkeletonMatchDetails.imageSkeleton())
+          ]),
+          SkeletonMatchDetails.skeletonRepeatedElement(),
+          SkeletonMatchDetails.skeletonRepeatedElement(),
+          SkeletonMatchDetails.skeletonRepeatedElement(),
+          SkeletonMatchDetails.skeletonRepeatedElement(),
+          SkeletonMatchDetails.skeletonRepeatedElement(),
+        ])
+      ];
+    } else {
+      widgets = [
+        // title
+        if (organizerView &&
+            userState.getLoggedUserDetails()?.areChargesEnabled(isTest) !=
+                null &&
+            !userState.getLoggedUserDetails()!.areChargesEnabled(isTest))
+          CompleteOrganiserAccountWidget(isTest: isTest),
+        if (isTest)
+          InfoContainer(
               backgroundColor: Palette.accent,
               child: SelectableText(
                 "Test match: " + widget.matchId,
                 style: TextPalette.getBodyText(Palette.black),
               )),
-      // info box
-      MatchInfo(match, sportCenter),
-      // stats
-      if (status == MatchStatus.rated || status == MatchStatus.to_rate)
-        Stats(match: match),
-      // horizontal players list or teams
-      match.hasTeams()
-          ? TeamsWidget(matchId: widget.matchId)
-          : PlayerList(
-                match: match,
-                withJoinButton:
-                    bottomBar is JoinMatchBottomBar && !match.isFull()),
-      if (match.organizerId != null &&
-          match.organizerId == userState.currentUserId)
-        OrganiserArea(match: match),
-      SportCenterDetails(match: match, sportCenter: sportCenter),
-      Builder(builder: (context) {
+        // info box
+        MatchInfo(match, sportCenter),
+        // stats
+        if (status == MatchStatus.rated || status == MatchStatus.to_rate)
+          Stats(match: match),
+        // horizontal players list or teams
+        match.hasTeams()
+            ? TeamsWidget(matchId: widget.matchId)
+            : PlayerList(
+            match: match,
+            withJoinButton:
+            bottomBar is JoinMatchBottomBar && !match.isFull()),
+        if (match.organizerId != null &&
+            match.organizerId == userState.currentUserId)
+          OrganiserArea(match: match),
+        SportCenterDetails(match: match, sportCenter: sportCenter),
+        Builder(builder: (context) {
           var cancellationText = "";
 
           if (match.cancelBefore != null) {
@@ -179,35 +190,36 @@ class MatchDetailsState extends State<MatchDetails> {
           return RuleCard(
               "Payment Policy",
               "If you leave the match you will get a refund (excluding Nutmeg service fee).\n"
-                      "If the match is cancelled you will get a full refund.\n\n"
-                      "If you don’t show up you won’t get a refund." +
+                  "If the match is cancelled you will get a full refund.\n\n"
+                  "If you don’t show up you won’t get a refund." +
                   cancellationText);
         }),
-      if (match.organizerId != null)
-        Builder(builder: (context) {
+        if (match.organizerId != null)
+          Builder(builder: (context) {
             var ud =
-                context.watch<UserState>().getUserDetail(match.organizerId!);
+            context.watch<UserState>().getUserDetail(match.organizerId!);
 
             return InfoContainer(
                 child: Row(children: [
-              UserAvatarWithBottomModal(userData: ud),
-              SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text("Organized by", style: TextPalette.bodyText),
-                    SizedBox(height: 4),
-                    (ud == null)
-                        ? Skeletons.lText
-                        : Text(ud.name!.split(" ").first,
+                  UserAvatarWithBottomModal(userData: ud),
+                  SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text("Organized by", style: TextPalette.bodyText),
+                        SizedBox(height: 4),
+                        (ud == null)
+                            ? Skeletons.lText
+                            : Text(ud.name!.split(" ").first,
                             style: TextPalette.h2),
-                  ],
-                ),
-              ),
-            ]));
+                      ],
+                    ),
+                  ),
+                ]));
           }),
-    ];
+      ];
+    }
 
     return PageTemplate(
       initState: () => myInitState(),
@@ -367,22 +379,7 @@ class AddressRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Builder(builder: (context) {
-      var addressItems = sportCenter.address.split(",");
-
-      var firstRowText = addressItems[0].trim();
-      if (addressItems.length > 1)
-        firstRowText = firstRowText + ", " + addressItems[1].trim();
-
-      String? secondRowText =
-          (addressItems.length > 2) ? addressItems[2].trim() : null;
-
-      return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(firstRowText, style: TextPalette.bodyText),
-        if (secondRowText != null)
-          Text(secondRowText, style: TextPalette.bodyText)
-      ]);
-    });
+      return Text(sportCenter.address);
   }
 }
 

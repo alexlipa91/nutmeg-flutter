@@ -796,6 +796,10 @@ class LocationsBottomSheet extends StatelessWidget {
                     SizedBox(height: 16),
                   ));
 
+                  if ((snapshot.data ?? []).isNotEmpty) {
+                    yourCourtsWidgets.add(SizedBox(height: 16,));
+                  }
+
                   yourCourtsWidgets.addAll([
                     InkWell(
                       onTap: () async {
