@@ -194,6 +194,7 @@ class GenericMatchInfo extends StatelessWidget {
                   match,
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       MatchThumbnail(image: sportCenter.getThumbnail()),
                       SizedBox(width: 15),
@@ -391,7 +392,7 @@ class MatchThumbnail extends StatelessWidget {
   final Widget image;
   final double height;
 
-  const MatchThumbnail({this.height = 78, required this.image});
+  const MatchThumbnail({this.height = 60, required this.image});
 
   @override
   Widget build(BuildContext context) {

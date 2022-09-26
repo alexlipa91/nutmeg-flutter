@@ -1,7 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:nutmeg/utils/Utils.dart';
-import 'package:nutmeg/widgets/Containers.dart';
 import 'package:skeletons/skeletons.dart';
 
 class Skeletons {
@@ -84,40 +83,32 @@ class ListOfMatchesSkeleton extends StatelessWidget {
   }
 }
 
-class MatchDetailsSkeleton extends StatelessWidget {
+class SkeletonMatchDetails {
 
-  @override
-  Widget build(BuildContext context) {
-    List<Widget> widgets = [];
-    widgets.add(Row(children: [
-      Expanded(child: SkeletonAvatar(
-          style: SkeletonAvatarStyle(
-              width: double.infinity,
-              height: 213,
-              borderRadius: BorderRadius.circular(10.0))))
-    ]));
-    widgets.addAll(List<Widget>.filled(5, Padding(
-        padding: EdgeInsets.symmetric(vertical: 16.0),
-        child:
-        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Skeletons.fullWidthText,
-          Column(children: List<Widget>.filled(3,
-              Padding(
-                padding: EdgeInsets.only(top: 16),
-                child: Row(children: [
-                  Skeletons.sText,
-                  SizedBox(width: 12),
-                  Expanded(
-                      child: Skeletons.fullWidthText
-                  ),
-                ],),
-              )))
-        ])
-    )));
+  static Widget skeletonRepeatedElement() => Padding(
+      padding: EdgeInsets.symmetric(vertical: 16.0),
+      child:
+      Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Skeletons.fullWidthText,
+        Column(children: List<Widget>.filled(3,
+            Padding(
+              padding: EdgeInsets.only(top: 16),
+              child: Row(children: [
+                Skeletons.sText,
+                SizedBox(width: 12),
+                Expanded(
+                  child: Skeletons.fullWidthText
+                ),
+              ],),
+            )))
+      ])
+  );
 
-    return Column(crossAxisAlignment: CrossAxisAlignment.start,
-        children: widgets);
-  }
+  static Widget imageSkeleton() => SkeletonAvatar(
+      style: SkeletonAvatarStyle(
+          width: double.infinity,
+          height: 213,
+          borderRadius: BorderRadius.circular(10.0)));
 }
 
 class StatsSkeleton extends StatelessWidget {

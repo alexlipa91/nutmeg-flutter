@@ -7,7 +7,9 @@ import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:nutmeg/widgets/PageTemplate.dart';
 import 'package:nutmeg/widgets/Section.dart';
+import 'package:provider/provider.dart';
 
+import '../widgets/ModalBottomSheet.dart';
 import 'BottomBarMatch.dart';
 import 'CreateMatch.dart';
 
@@ -64,21 +66,29 @@ class CreateCourtState extends State<CreateCourt> {
                           return predictions;
                         },
                         itemBuilder: (context, suggestion) {
+                          var description = suggestion["description"];
+                          var matchedSubstrings =
+                          suggestion["matched_substrings"];
+                          // matchedSubstrings[0]["length"]
+                          // matchedSubstrings[0]["offset"]
+                          // todo get match bold
+
                           return ListTile(
                             leading: Icon(Icons.place),
-                            title: Text(suggestion["formatted_address"] ?? ""),
-                          );
+                            title: RichText(
+                              text: TextSpan(
+                              style: TextPalette.bodyText,
+                              children: <TextSpan>[
+                                TextSpan(text: description),
+                            ],)
+                          ));
                         },
                         noItemsFoundBuilder: (value) => Container(height: 10),
                         onSuggestionSelected: (suggestion) async {
                           textEditingController.text =
-                              suggestion["formatted_address"] ?? "";
+                              suggestion["description"] ?? "";
                           setState(() {
                             placeId = suggestion["place_id"];
-                            name = suggestion["name"];
-                            address = suggestion["formatted_address"];
-                            lng = suggestion["geometry"]["location"]["lng"];
-                            lat = suggestion["geometry"]["location"]["lat"];
                           });
                         },
                       ))
@@ -100,14 +110,28 @@ class CreateCourtState extends State<CreateCourt> {
                           "Surface",
                           isDropdown: true),
                       onTap: () async {
-                        var surfaces = ["Indoor", "Outdoor"];
+                        String? surface = await ModalBottomSheet.showNutmegModalBottomSheet(
+                            context,
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Surface",
+                                  style: TextPalette.h2,
+                                ),
+                                SizedBox(height: 16.0),
+                                SurfaceRow(title: "Indoor",
+                                    description: "Boots without studs",
+                                    imagePath: "assets/sportcenters/indoor_thumb.png"),
+                                SizedBox(height: 16.0),
+                                SurfaceRow(title: "Grass",
+                                    description: "For boots that require studs",
+                                    imagePath: "assets/sportcenters/grass_thumb.png"),
+                              ],
+                            ));
 
-                        int? i = await CreateMatchState
-                            .showMultipleChoiceSheetWithText(
-                                context, "Surface", surfaces);
-
-                        if (i != null) {
-                          surfaceController.text = surfaces[i];
+                        if (surface != null) {
+                          surfaceController.text = surface;
                         }
                       },
                       validator: (v) {
@@ -186,19 +210,70 @@ class CreateCourtState extends State<CreateCourt> {
             Expanded(
               child: GenericButtonWithLoader("CREATE NEW COURT",
                   (BuildContext context) async {
+                context.read<GenericButtonWithLoaderState>().change(true);
+
                 bool? v = _formKey.currentState?.validate();
                 if (v != null && v) {
+                  Map<String, dynamic> placeInfo = await SportCentersController
+                      .getPlaceDetails(placeId!);
+
                   Navigator.of(context).pop(
-                      SportCenter(placeId!, address!, name!, lat!, lng!,
+                      SportCenter(placeId!,
+                          placeInfo["formatted_address"],
+                          placeInfo["name"],
+                          placeInfo["geometry"]["location"]["lat"],
+                          placeInfo["geometry"]["location"]["lng"],
                           surfaceController.text,
                           changeRoomsAvailable,
                           sizeController.text));
                 }
+
+                // todo fetch details for place
+
+                context.read<GenericButtonWithLoaderState>().change(false);
               }, Primary()),
             )
           ]),
         )),
       ),
+    );
+  }
+}
+
+class SurfaceRow extends StatelessWidget {
+
+  final String title;
+  final String description;
+  final String imagePath;
+
+  const SurfaceRow({Key? key, required this.title,
+    required this.description, required this.imagePath}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: () => Navigator.of(context).pop(title),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10), // Image border
+            child: SizedBox.fromSize(
+              size: Size.fromRadius(30), // Image radius
+              child: Image.asset(imagePath),
+            ),
+          ),
+          SizedBox(width: 16),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: TextPalette.h3,),
+              SizedBox(height: 8),
+              Text(description,
+                style: TextPalette.bodyText,)
+            ],
+          )
+        ],),
     );
   }
 }
