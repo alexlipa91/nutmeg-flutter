@@ -3,6 +3,8 @@ import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:google_place/google_place.dart';
 import 'package:nutmeg/controller/SportCentersController.dart';
 import 'package:nutmeg/model/SportCenter.dart';
+import 'package:nutmeg/state/UserSportCentersState.dart';
+import 'package:nutmeg/state/UserState.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:nutmeg/widgets/PageTemplate.dart';
@@ -14,6 +16,11 @@ import 'BottomBarMatch.dart';
 import 'CreateMatch.dart';
 
 class CreateCourt extends StatefulWidget {
+
+  UserSportCentersState userSportCentersState;
+
+  CreateCourt(this.userSportCentersState);
+
   @override
   State<StatefulWidget> createState() => CreateCourtState();
 }
@@ -208,29 +215,28 @@ class CreateCourtState extends State<CreateCourt> {
           padding: EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0),
           child: Row(children: [
             Expanded(
-              child: GenericButtonWithLoader("CREATE NEW COURT",
-                  (BuildContext context) async {
-                context.read<GenericButtonWithLoaderState>().change(true);
-
+              child: GenericButtonWithLoaderAndErrorHandling("CREATE NEW COURT",
+                  (_) async {
                 bool? v = _formKey.currentState?.validate();
                 if (v != null && v) {
                   Map<String, dynamic> placeInfo = await SportCentersController
                       .getPlaceDetails(placeId!);
 
-                  Navigator.of(context).pop(
-                      SportCenter(placeId!,
-                          placeInfo["formatted_address"],
-                          placeInfo["name"],
-                          placeInfo["geometry"]["location"]["lat"],
-                          placeInfo["geometry"]["location"]["lng"],
-                          surfaceController.text,
-                          changeRoomsAvailable,
-                          sizeController.text));
+                  var sportCenter = SportCenter(placeId!,
+                      placeInfo["formatted_address"],
+                      placeInfo["name"],
+                      placeInfo["geometry"]["location"]["lat"],
+                      placeInfo["geometry"]["location"]["lng"],
+                      surfaceController.text,
+                      changeRoomsAvailable,
+                      sizeController.text);
+
+                  widget.userSportCentersState.addSportCenter(
+                      context.read<UserState>().getLoggedUserDetails()!.documentId,
+                      sportCenter);
+
+                  Navigator.of(context).pop();
                 }
-
-                // todo fetch details for place
-
-                context.read<GenericButtonWithLoaderState>().change(false);
               }, Primary()),
             )
           ]),
