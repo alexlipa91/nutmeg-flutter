@@ -1,6 +1,8 @@
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:nutmeg/model/Match.dart';
+import 'package:nutmeg/model/SportCenter.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:tuple/tuple.dart';
@@ -63,8 +65,8 @@ List<String> getStartAndEndHour(DateTime dateTime, Duration duration) => [
     ];
 
 class DynamicLinks {
-  static shareMatchFunction(String matchId) async {
-    var deepLinkUrl = Uri.parse('https://web.nutmegapp.com/match/' + matchId);
+  static shareMatchFunction(Match match, SportCenter sportCenter) async {
+    var deepLinkUrl = Uri.parse('https://web.nutmegapp.com/match/' + match.documentId);
 
     final DynamicLinkParameters parameters = DynamicLinkParameters(
       uriPrefix: 'https://nutmegapp.page.link',
@@ -80,6 +82,10 @@ class DynamicLinks {
         appStoreId: '1592985083',
         fallbackUrl: deepLinkUrl
       ),
+      socialMetaTagParameters: SocialMetaTagParameters(
+        title: "Match on ${getFormattedDate(match.dateTime)}",
+        description: "Location: ${sportCenter.name}",
+      )
     );
     var url = await parameters.buildShortLink();
 

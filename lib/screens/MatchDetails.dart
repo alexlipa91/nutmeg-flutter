@@ -65,7 +65,8 @@ class MatchDetailsState extends State<MatchDetails> {
       if (ModalBottomSheet.isOpen) Navigator.of(context).pop();
       if (widget.paymentOutcome! == "success") {
         PaymentDetailsDescription.communicateSuccessToUser(
-            context, widget.matchId);
+            context, match, context.read<LoadOnceState>()
+            .getSportCenter(match.sportCenterId)!);
       } else
         GenericInfoModal(
                 title: "Payment Failed!", description: "Please try again")
@@ -234,7 +235,7 @@ class MatchDetailsState extends State<MatchDetails> {
             Align(
                 alignment: Alignment.centerRight,
                 child: buttons.ShareButton(() async {
-                  await DynamicLinks.shareMatchFunction(widget.matchId);
+                  await DynamicLinks.shareMatchFunction(match!, sportCenter!);
                 }, Palette.black, 25.0)),
         ],
       ),

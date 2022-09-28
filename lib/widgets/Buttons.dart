@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:nutmeg/model/Match.dart';
+import 'package:nutmeg/model/SportCenter.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
 
@@ -149,12 +151,13 @@ class ShareButton extends StatelessWidget {
 }
 
 class ShareButtonWithText extends StatelessWidget {
-  final String matchId;
+  final Match match;
+  final SportCenter sportCenter;
   final Color color;
   final bool withText;
   final double iconSize;
 
-  ShareButtonWithText(this.matchId, this.color, [double size = 20])
+  ShareButtonWithText(this.match, this.sportCenter, this.color, [double size = 20])
       : withText = false,
         iconSize = size;
 
@@ -174,7 +177,7 @@ class ShareButtonWithText extends StatelessWidget {
     return InkWell(
         child: child,
         onTap: () async {
-          await DynamicLinks.shareMatchFunction(matchId);
+          await DynamicLinks.shareMatchFunction(match, sportCenter);
         });
   }
 }

@@ -127,7 +127,7 @@ class JoinModal {
             Expanded(
                 child: (paymentRecap.finalPriceToPayInCents() == 0)
                     ? PayWithCreditsButton(
-                        matchId: matchId, paymentRecap: paymentRecap)
+                        match: match, paymentRecap: paymentRecap)
                     : PayWithMoneyButton(
                         matchId: matchId, paymentRecap: paymentRecap))
           ])).show(context);

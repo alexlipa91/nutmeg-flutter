@@ -1,5 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:nutmeg/model/Match.dart';
+import 'package:nutmeg/model/SportCenter.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/Buttons.dart';
@@ -10,7 +12,7 @@ import '../state/LoadOnceState.dart';
 
 class PaymentDetailsDescription {
   static Future<void> communicateSuccessToUser(
-      BuildContext? context, String? matchId) async {
+      BuildContext? context, Match match, SportCenter sportCenter) async {
     await ModalBottomSheet.showNutmegModalBottomSheet(
         context,
         Container(
@@ -35,7 +37,8 @@ class PaymentDetailsDescription {
               if (!DeviceInfo().name.contains("ipad"))
                 Padding(
                     padding: EdgeInsets.only(top: 20),
-                    child: ShareButtonWithText(matchId!, Palette.primary))
+                    child: ShareButtonWithText(match,
+                        sportCenter, Palette.primary))
             ],
           ),
         )));
