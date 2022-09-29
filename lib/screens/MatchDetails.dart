@@ -50,9 +50,16 @@ class MatchDetails extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() => MatchDetailsState();
+
+  static SportCenter? getSportCenter(BuildContext context, Match? match) {
+    return (match == null)
+        ? null : match.sportCenter ??
+        context.watch<LoadOnceState>().getSportCenter(match.sportCenterId!);
+  }
 }
 
 class MatchDetailsState extends State<MatchDetails> {
+
   Future<void> myInitState() async {
     await refreshState();
 
@@ -63,8 +70,7 @@ class MatchDetailsState extends State<MatchDetails> {
       if (ModalBottomSheet.isOpen) Navigator.of(context).pop();
       if (widget.paymentOutcome! == "success") {
         PaymentDetailsDescription.communicateSuccessToUser(
-            context, match, context.read<LoadOnceState>()
-            .getSportCenter(match.sportCenterId)!);
+            context, match, MatchDetails.getSportCenter(context, match)!);
       } else
         GenericInfoModal(
                 title: "Payment Failed!", description: "Please try again")
@@ -114,9 +120,7 @@ class MatchDetailsState extends State<MatchDetails> {
     var matchesState = context.watch<MatchesState>();
 
     Match? match = matchesState.getMatch(widget.matchId);
-    SportCenter? sportCenter = (match == null)
-        ? null : match.sportCenter ??
-        context.watch<LoadOnceState>().getSportCenter(match.sportCenterId!);
+    SportCenter? sportCenter = MatchDetails.getSportCenter(context, match);
 
     var status = match?.status;
 
