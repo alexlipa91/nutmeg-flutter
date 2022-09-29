@@ -73,12 +73,22 @@ class CreateCourtState extends State<CreateCourt> {
                           return predictions;
                         },
                         itemBuilder: (context, suggestion) {
-                          var description = suggestion["description"];
-                          var matchedSubstrings =
-                          suggestion["matched_substrings"];
-                          // matchedSubstrings[0]["length"]
-                          // matchedSubstrings[0]["offset"]
-                          // todo get match bold
+                          String description = suggestion["description"];
+                          var matchedSubstrings = suggestion["matched_substrings"];
+
+                          // todo check case of more matches
+                          var firstMatch = matchedSubstrings[0];
+                          String? boldText;
+                          String normalText;
+
+                          if (firstMatch["offset"] == 0) {
+                            boldText = description.substring(0,
+                                firstMatch["length"]);
+                            normalText = description
+                                .substring(firstMatch["length"]!);
+                          } else {
+                            normalText = description;
+                          }
 
                           return ListTile(
                             leading: Icon(Icons.place),
@@ -86,7 +96,11 @@ class CreateCourtState extends State<CreateCourt> {
                               text: TextSpan(
                               style: TextPalette.bodyText,
                               children: <TextSpan>[
-                                TextSpan(text: description),
+                                if (boldText != null)
+                                  TextSpan(text: boldText,
+                                      style: TextPalette.bodyText
+                                          .copyWith(fontWeight: FontWeight.bold)),
+                                TextSpan(text: normalText),
                             ],)
                           ));
                         },
