@@ -53,13 +53,13 @@ class MatchDetails extends StatefulWidget {
 
   static SportCenter? getSportCenter(BuildContext context, Match? match) {
     return (match == null)
-        ? null : match.sportCenter ??
-        context.watch<LoadOnceState>().getSportCenter(match.sportCenterId!);
+        ? null
+        : match.sportCenter ??
+            context.watch<LoadOnceState>().getSportCenter(match.sportCenterId!);
   }
 }
 
 class MatchDetailsState extends State<MatchDetails> {
-
   Future<void> myInitState() async {
     await refreshState();
 
@@ -171,12 +171,9 @@ class MatchDetailsState extends State<MatchDetails> {
         match.hasTeams()
             ? TeamsWidget(matchId: widget.matchId)
             : PlayerList(
-            match: match,
-            withJoinButton:
-            bottomBar is JoinMatchBottomBar && !match.isFull()),
-        if (match.organizerId != null &&
-            match.organizerId == userState.currentUserId)
-          OrganiserArea(match: match),
+                match: match,
+                withJoinButton:
+                    bottomBar is JoinMatchBottomBar && !match.isFull()),
         SportCenterDetails(match: match, sportCenter: sportCenter),
         Builder(builder: (context) {
           var cancellationText = "";
@@ -194,33 +191,33 @@ class MatchDetailsState extends State<MatchDetails> {
           return RuleCard(
               "Payment Policy",
               "If you leave the match you will get a refund (excluding Nutmeg service fee).\n"
-                  "If the match is cancelled you will get a full refund.\n\n"
-                  "If you don’t show up you won’t get a refund." +
+                      "If the match is cancelled you will get a full refund.\n\n"
+                      "If you don’t show up you won’t get a refund." +
                   cancellationText);
         }),
         if (match.organizerId != null)
           Builder(builder: (context) {
             var ud =
-            context.watch<UserState>().getUserDetail(match.organizerId!);
+                context.watch<UserState>().getUserDetail(match.organizerId!);
 
             return InfoContainer(
                 child: Row(children: [
-                  UserAvatarWithBottomModal(userData: ud),
-                  SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text("Organized by", style: TextPalette.bodyText),
-                        SizedBox(height: 4),
-                        (ud == null)
-                            ? Skeletons.lText
-                            : Text(ud.name!.split(" ").first,
+              UserAvatarWithBottomModal(userData: ud),
+              SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("Organized by", style: TextPalette.bodyText),
+                    SizedBox(height: 4),
+                    (ud == null)
+                        ? Skeletons.lText
+                        : Text(ud.name!.split(" ").first,
                             style: TextPalette.h2),
-                      ],
-                    ),
-                  ),
-                ]));
+                  ],
+                ),
+              ),
+            ]));
           }),
       ];
     }
@@ -383,7 +380,7 @@ class AddressRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-      return Text(sportCenter.address);
+    return Text(sportCenter.address);
   }
 }
 
@@ -401,11 +398,14 @@ class MatchInfo extends StatelessWidget {
     var child;
 
     var matchWidget = getStatusWidget(match);
+    var loggedUser = context.watch<UserState>().getLoggedUserDetails();
 
     child = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(children: [Expanded(child: SportCenterImageCarousel(match, sportCenter))]),
+        Row(children: [
+          Expanded(child: SportCenterImageCarousel(match, sportCenter))
+        ]),
         Padding(
           padding: EdgeInsets.all(16.0),
           child:
@@ -413,6 +413,68 @@ class MatchInfo extends StatelessWidget {
             Title(match, sportCenter),
             SizedBox(height: 16),
             AddressRow(sportCenter: sportCenter),
+            if (match.organizerId != null &&
+                loggedUser != null &&
+                match.organizerId == loggedUser.documentId)
+              Padding(
+                padding: EdgeInsets.only(top: 16),
+                child: Row(children: [
+                  Expanded(
+                      child: GenericButtonWithLoader("MANAGE", (_) {
+                    ModalBottomSheet.showNutmegModalBottomSheet(
+                        context,
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            InkWell(
+                                onTap: () async {
+                                  DynamicLinks.shareMatchFunction(
+                                      match, sportCenter);
+                                  Navigator.of(context).pop();
+                                },
+                                child:
+                                    Text("Share", style: TextPalette.listItem)),
+                            if (match.dateTime.isAfter(DateTime.now()))
+                              Padding(
+                                padding: EdgeInsets.only(top: 16),
+                                child: InkWell(
+                                  onTap: () async {
+                                    await GenericInfoModal(
+                                        title:
+                                            "Are you sure you want to cancel the match?",
+                                        description:
+                                            "The players that joined will get a full refund.",
+                                        action: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.end,
+                                          children: [
+                                            Expanded(
+                                              child:
+                                                  GenericButtonWithLoaderAndErrorHandling(
+                                                      "CONFIRM", (_) async {
+                                                await MatchesController
+                                                    .cancelMatch(
+                                                        match.documentId);
+                                                await MatchesController.refresh(
+                                                    context, match.documentId);
+                                                Navigator.pop(context);
+                                              }, Primary()),
+                                            )
+                                          ],
+                                        )).show(context);
+
+                                    Navigator.pop(context);
+                                  },
+                                  child: Text("Cancel",
+                                      style: TextPalette.getListItem(
+                                          Palette.destructive)),
+                                ),
+                              ),
+                          ],
+                        ));
+                  }, Primary()))
+                ]),
+              ),
             SizedBox(height: 16),
             IconList.fromIcon({
               Icons.calendar_month_outlined:
@@ -714,7 +776,7 @@ class SportCenterDetails extends StatelessWidget {
           SizedBox(height: 16),
           IconList.fromSvg({
             "assets/icons/nutmeg_icon_court.svg":
-            sportCenter.getCourtType() + " court type",
+                sportCenter.getCourtType() + " court type",
             "assets/icons/nutmeg_icon_shoe.svg": sportCenter.surface,
             if (sportCenter.getHasChangingRooms() ?? false)
               "assets/icons/nutmeg_icon_changing_rooms.svg":
@@ -753,7 +815,8 @@ class MapCardImage extends StatelessWidget {
         if (kIsWeb) {
           // todo get cid for dynamic sportcenter
           // launchUrl(Uri.parse("https://maps.google.com/?cid=${sportCenter.cid}"));
-        } else if (await MapLauncher.isMapAvailable(m.MapType.google) ?? false) {
+        } else if (await MapLauncher.isMapAvailable(m.MapType.google) ??
+            false) {
           await MapLauncher.showMarker(
             mapType: m.MapType.google,
             coords: Coords(lat, lng),
@@ -958,63 +1021,5 @@ class IconList extends StatelessWidget {
     List<Widget> widgets = interleave(rows.toList(), SizedBox(height: 12));
 
     return Column(children: widgets);
-  }
-}
-
-class OrganiserArea extends StatelessWidget {
-  final Match match;
-
-  const OrganiserArea({Key? key, required this.match}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    var infoText = "";
-    if (match.cancelledAt == null) {
-      infoText +=
-          "Collected: ${formatCurrency(match.numPlayersGoing() * (match.pricePerPersonInCents - match.getServiceFee()))}";
-      if (match.paidOutAt != null)
-        infoText +=
-            "\\nPaid out to your bank account on: ${getFormattedDate(match.paidOutAt!)}";
-    } else
-      infoText +=
-          "Match cancelled: ${match.numPlayersGoing()} players have been refunded";
-
-    return InfoContainerWithTitle(
-      title: "Organiser",
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(infoText, style: TextPalette.bodyText),
-          if (match.numPlayersGoing() > 0 && match.status == MatchStatus.open)
-            Padding(
-              padding: EdgeInsets.only(top: 16),
-              child: GenericButtonWithLoaderAndErrorHandling("CANCEL MATCH",
-                  (BuildContext context) async {
-                bool? proceed = await GenericInfoModal(
-                    title: "Are you sure you want to cancel the match?",
-                    description:
-                        "This will mark the match as canceled and each player will receive a full refund. "
-                        "This action cannot be undone.",
-                    action: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        GenericButtonWithLoader("CANCEL", (_) async {
-                          Navigator.pop(context, false);
-                        }, Secondary()),
-                        SizedBox(width: 8),
-                        GenericButtonWithLoader("YES", (_) async {
-                          Navigator.pop(context, true);
-                        }, Primary()),
-                      ],
-                    )).show(context);
-                if (proceed ?? false) {
-                  await MatchesController.cancelMatch(match.documentId);
-                  await MatchesController.refresh(context, match.documentId);
-                }
-              }, Destructive()),
-            ),
-        ],
-      ),
-    );
   }
 }
