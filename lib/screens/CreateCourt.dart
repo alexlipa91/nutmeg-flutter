@@ -3,7 +3,6 @@ import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:google_place/google_place.dart';
 import 'package:nutmeg/controller/SportCentersController.dart';
 import 'package:nutmeg/model/SportCenter.dart';
-import 'package:nutmeg/state/UserSportCentersState.dart';
 import 'package:nutmeg/state/UserState.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
@@ -17,15 +16,12 @@ import 'CreateMatch.dart';
 
 class CreateCourt extends StatefulWidget {
 
-  UserSportCentersState userSportCentersState;
-
-  CreateCourt(this.userSportCentersState);
-
   @override
   State<StatefulWidget> createState() => CreateCourtState();
 }
 
 class CreateCourtState extends State<CreateCourt> {
+
   final TextEditingController surfaceController = TextEditingController();
   final TextEditingController sizeController = TextEditingController();
   final TextEditingController textEditingController = TextEditingController();
@@ -245,7 +241,7 @@ class CreateCourtState extends State<CreateCourt> {
                       changeRoomsAvailable,
                       sizeController.text);
 
-                  widget.userSportCentersState.addSportCenter(
+                  context.read<UserState>().addSportCenter(
                       context.read<UserState>().getLoggedUserDetails()!.documentId,
                       sportCenter);
 

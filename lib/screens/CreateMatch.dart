@@ -12,7 +12,6 @@ import 'package:nutmeg/model/Match.dart';
 import 'package:nutmeg/model/SportCenter.dart';
 import 'package:nutmeg/screens/BottomBarMatch.dart';
 import 'package:nutmeg/screens/CreateCourt.dart';
-import 'package:nutmeg/state/UserSportCentersState.dart';
 import 'package:nutmeg/state/UserState.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
@@ -97,6 +96,7 @@ class CreateMatchState extends State<CreateMatch> {
 
   Future<void> refreshState() async {
     await context.read<LoadOnceState>().fetchSportCenters();
+    context.read<UserState>().fetchSportCenters();
   }
 
   void unfocusIfNoValue(FocusNode focusNode, TextEditingController controller) {
@@ -353,10 +353,7 @@ class CreateMatchState extends State<CreateMatch> {
                     SportCenter? sp =
                         await ModalBottomSheet.showNutmegModalBottomSheet(
                             context,
-                            ChangeNotifierProvider(
-                              create: (_) => UserSportCentersState(),
-                              child: LocationsBottomSheet(),
-                            ));
+                            LocationsBottomSheet());
 
                     if (sp != null) {
                       sportCenterEditingController.text = sp.getName();
@@ -825,26 +822,13 @@ class SportCenterRow extends StatelessWidget {
   }
 }
 
-class LocationsBottomSheet extends StatefulWidget {
-
-  @override
-  State<StatefulWidget> createState() => LocationsBottomSheetState();
-}
-
-class LocationsBottomSheetState extends State<LocationsBottomSheet> {
-
-  @override
-  void initState() {
-    super.initState();
-    context.read<UserSportCentersState>()
-        .fetchSportCenters(context.read<UserState>().currentUserId!);
-  }
+class LocationsBottomSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var userSportCentersState = context.watch<UserSportCentersState>();
+    var userState = context.watch<UserState>();
 
-    if (userSportCentersState.getSportCenters() == null)
+    if (userState.getSportCenters() == null)
       return ListOfMatchesSkeleton(repeatFor: 2);
 
     var popularCourts = Section(
@@ -865,14 +849,14 @@ class LocationsBottomSheetState extends State<LocationsBottomSheet> {
         body: Builder(
           builder: (context) {
             List<Widget> yourCourtsWidgets = [];
-            yourCourtsWidgets.addAll(interleave(userSportCentersState
+            yourCourtsWidgets.addAll(interleave(userState
                 .getSportCenters()!
                 .map((e) => SportCenterRow(sportCenter: e))
                 .toList(),
               SizedBox(height: 16),
             ));
 
-            if (userSportCentersState.getSportCenters()!.isNotEmpty) {
+            if (userState.getSportCenters()!.isNotEmpty) {
               yourCourtsWidgets.add(SizedBox(height: 16,));
             }
 
@@ -881,7 +865,7 @@ class LocationsBottomSheetState extends State<LocationsBottomSheet> {
                 onTap: () async {
                   await Navigator.push(context,
                       MaterialPageRoute(builder: (context) =>
-                          CreateCourt(userSportCentersState)));
+                          CreateCourt()));
                 },
                 child: Row(children: [
                   Container(

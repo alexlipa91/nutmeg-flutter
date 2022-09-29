@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 
 import '../api/CloudFunctionsUtils.dart';
+import '../controller/SportCentersController.dart';
+import '../model/SportCenter.dart';
 import '../model/UserDetails.dart';
 
 
@@ -70,5 +72,27 @@ class UserState extends ChangeNotifier {
     _usersScores[userId] = scoresList;
     notifyListeners();
     return scoresList;
+  }
+
+  // SPORT CENTERS
+  List<SportCenter>? _sportCenters;
+
+  void fetchSportCenters() async {
+    _sportCenters = await SportCentersController
+        .getUserSportCenters(currentUserId!);
+    notifyListeners();
+  }
+
+  List<SportCenter>? getSportCenters() => _sportCenters;
+
+  void addSportCenter(String uid, SportCenter sportCenter) {
+    _sportCenters!.add(sportCenter);
+
+    CloudFunctionsClient().callFunction("add_user_sportcenter", {
+      "user_id": uid,
+      "sport_center": sportCenter.toJson()
+    });
+
+    notifyListeners();
   }
 }
