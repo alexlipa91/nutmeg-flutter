@@ -7,6 +7,8 @@ import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
+import 'package:nutmeg/controller/SportCentersController.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:map_launcher/map_launcher.dart';
@@ -26,7 +28,6 @@ import 'package:nutmeg/widgets/Containers.dart';
 import 'package:nutmeg/widgets/PageTemplate.dart';
 import 'package:readmore/readmore.dart';
 
-import '../state/LoadOnceState.dart';
 import '../state/MatchesState.dart';
 import '../state/UserState.dart';
 import '../utils/InfoModals.dart';
@@ -50,13 +51,6 @@ class MatchDetails extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() => MatchDetailsState();
-
-  static SportCenter? getSportCenter(BuildContext context, Match? match) {
-    return (match == null)
-        ? null
-        : match.sportCenter ??
-            context.watch<LoadOnceState>().getSportCenter(match.sportCenterId!);
-  }
 }
 
 class MatchDetailsState extends State<MatchDetails> {
@@ -70,7 +64,7 @@ class MatchDetailsState extends State<MatchDetails> {
       if (ModalBottomSheet.isOpen) Navigator.of(context).pop();
       if (widget.paymentOutcome! == "success") {
         PaymentDetailsDescription.communicateSuccessToUser(
-            context, match, MatchDetails.getSportCenter(context, match)!);
+            context, match, SportCentersController.getSportCenter(context, match)!);
       } else
         GenericInfoModal(
                 title: "Payment Failed!", description: "Please try again")
@@ -120,7 +114,8 @@ class MatchDetailsState extends State<MatchDetails> {
     var matchesState = context.watch<MatchesState>();
 
     Match? match = matchesState.getMatch(widget.matchId);
-    SportCenter? sportCenter = MatchDetails.getSportCenter(context, match);
+    SportCenter? sportCenter = SportCentersController
+        .getSportCenter(context, match);
 
     var status = match?.status;
 
@@ -428,12 +423,22 @@ class MatchInfo extends StatelessWidget {
                           children: [
                             InkWell(
                                 onTap: () async {
-                                  DynamicLinks.shareMatchFunction(
-                                      match, sportCenter);
+                                  context.go("/match/${match.documentId}/edit");
                                   Navigator.of(context).pop();
                                 },
-                                child:
-                                    Text("Share", style: TextPalette.listItem)),
+                                child: Text("Edit",
+                                    style: TextPalette.listItem)),
+                            Padding(
+                              padding: EdgeInsets.only(top: 16),
+                              child: InkWell(
+                                  onTap: () async {
+                                    DynamicLinks.shareMatchFunction(
+                                        match, sportCenter);
+                                    Navigator.of(context).pop();
+                                  },
+                                  child:
+                                      Text("Share", style: TextPalette.listItem)),
+                            ),
                             if (match.dateTime.isAfter(DateTime.now()))
                               Padding(
                                 padding: EdgeInsets.only(top: 16),
@@ -441,20 +446,20 @@ class MatchInfo extends StatelessWidget {
                                   onTap: () async {
                                     await GenericInfoModal(
                                         title:
-                                            "Are you sure you want to cancel the match?",
+                                        "Are you sure you want to cancel the match?",
                                         description:
-                                            "The players that joined will get a full refund.",
+                                        "The players that joined will get a full refund.",
                                         action: Row(
                                           mainAxisAlignment:
-                                              MainAxisAlignment.end,
+                                          MainAxisAlignment.end,
                                           children: [
                                             Expanded(
                                               child:
-                                                  GenericButtonWithLoaderAndErrorHandling(
-                                                      "CONFIRM", (_) async {
+                                              GenericButtonWithLoaderAndErrorHandling(
+                                                  "CONFIRM", (_) async {
                                                 await MatchesController
                                                     .cancelMatch(
-                                                        match.documentId);
+                                                    match.documentId);
                                                 await MatchesController.refresh(
                                                     context, match.documentId);
                                                 Navigator.pop(context);

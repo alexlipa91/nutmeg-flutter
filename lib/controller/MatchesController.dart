@@ -56,9 +56,10 @@ class MatchesController {
     return resp!["id"];
   }
 
-  static Future<void> editMatch(Match m) async {
-    await apiClient
-        .callFunction("edit_match", {"id": m.documentId, "data": m.toJson()});
+  static Future<void> editMatch(Match m, String documentId) async {
+    var json = m.toJson();
+    json["id"] = documentId;
+    await apiClient.callFunction("add_match", json);
   }
 
   // logged-in user voted 'score' for user 'userId' in match 'matchId'

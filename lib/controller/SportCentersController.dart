@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 import 'package:provider/provider.dart';
 
+import '../model/Match.dart';
 import '../model/SportCenter.dart';
 import '../state/LoadOnceState.dart';
 
@@ -51,5 +52,12 @@ class SportCentersController {
 
     return data.entries.map((e) => SportCenter.fromJson(e.value, e.key))
         .toList();
+  }
+
+  static SportCenter? getSportCenter(BuildContext context, Match? match) {
+    return (match == null)
+        ? null
+        : match.sportCenter ??
+        context.watch<LoadOnceState>().getSportCenter(match.sportCenterId!);
   }
 }

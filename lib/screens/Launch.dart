@@ -60,7 +60,15 @@ final appRouter = GoRouter(
                 key: ValueKey(keyString),
                 matchId: state.params["id"]!,
                 paymentOutcome: state.queryParams["payment_outcome"]);
-            }
+            },
+            routes: [
+              GoRoute(
+                path: 'edit',
+                builder: (context, state) => CreateMatch.edit(
+                    context.read<MatchesState>().getMatch(state.params["id"]!)
+                )
+              )
+            ]
           ),
         ]
     ),
@@ -152,7 +160,7 @@ void main() {
                 ),
                 hoverColor: Colors.transparent,
                 splashColor: Colors.transparent,
-                highlightColor: Colors.transparent
+                highlightColor: Colors.transparent,
               ),
             ),
           maximumSize: Size(812.0, 812.0), // Maximum size

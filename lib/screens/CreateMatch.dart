@@ -7,7 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:nutmeg/Exceptions.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
-import 'package:nutmeg/controller/UserController.dart';
+import 'package:nutmeg/controller/SportCentersController.dart';
 import 'package:nutmeg/model/Match.dart';
 import 'package:nutmeg/model/SportCenter.dart';
 import 'package:nutmeg/screens/BottomBarMatch.dart';
@@ -31,6 +31,13 @@ import '../widgets/ModalBottomSheet.dart';
 
 // main widget
 class CreateMatch extends StatefulWidget {
+  
+  final Match? existingMatch;
+
+  CreateMatch() : existingMatch = null;
+  
+  CreateMatch.edit(this.existingMatch);
+  
   @override
   State<StatefulWidget> createState() => CreateMatchState();
 }
@@ -39,7 +46,7 @@ class CreateMatchState extends State<CreateMatch> {
   static const String NO_REPEAT = "Does not repeat";
 
   static InputDecoration getTextFormDecoration(String? label,
-      {bool isDropdown = false, focusColor, prefixText}) {
+      {bool isDropdown = false, bool fill = true, focusColor, prefixText}) {
     var border = UnderlineInputBorder(
       borderSide: BorderSide.none,
       borderRadius: BorderRadius.circular(8),
@@ -56,7 +63,7 @@ class CreateMatchState extends State<CreateMatch> {
       contentPadding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 4),
       filled: true,
       focusColor: (focusColor == null) ? Palette.grey_lighter : focusColor,
-      fillColor: Palette.grey_lighter,
+      fillColor: fill ? Palette.grey_lighter : Palette.grey_light,
       disabledBorder: border,
       focusedBorder: border,
       enabledBorder: border,
@@ -68,25 +75,18 @@ class CreateMatchState extends State<CreateMatch> {
 
   final _formKey = GlobalKey<FormState>();
 
-  final TextEditingController dateEditingController =
-      TextEditingController(text: "");
-  final TextEditingController startTimeEditingController =
-      TextEditingController(text: "");
-  final TextEditingController endTimeEditingController =
-      TextEditingController(text: "");
-  final TextEditingController repeatWeeklyEditingController =
-      TextEditingController(text: NO_REPEAT);
-  final TextEditingController sportCenterEditingController =
-      TextEditingController(text: "");
-  final TextEditingController courtNumberEditingController =
-      TextEditingController(text: "");
-  final TextEditingController priceController = TextEditingController();
-  RangeValues numberOfPeopleRangeValues = RangeValues(8, 10);
-  bool isTest = false;
-  bool withAutomaticCancellation = false;
-  int repeatsForWeeks = 1;
-  final TextEditingController cancelTimeEditingController =
-      TextEditingController(text: "24");
+  late TextEditingController dateEditingController;
+  late TextEditingController startTimeEditingController;
+  late TextEditingController endTimeEditingController;
+  late TextEditingController sportCenterEditingController;
+  late TextEditingController repeatWeeklyEditingController;
+  late TextEditingController courtNumberEditingController;
+  late TextEditingController priceController;
+  late RangeValues numberOfPeopleRangeValues;
+  late bool isTest;
+  late bool withAutomaticCancellation;
+  late int repeatsForWeeks;
+  late TextEditingController cancelTimeEditingController;
 
   final dateFormat = DateFormat("dd-MM-yyyy");
   final regexPrice = new RegExp("\\d+(\\.\\d{1,2})?");
@@ -106,6 +106,49 @@ class CreateMatchState extends State<CreateMatch> {
   @override
   void initState() {
     super.initState();
+    
+    if (widget.existingMatch == null) {
+      dateEditingController = TextEditingController();
+      startTimeEditingController = TextEditingController();
+      endTimeEditingController = TextEditingController();
+      sportCenterEditingController = TextEditingController();
+      repeatWeeklyEditingController = TextEditingController(text: NO_REPEAT);
+      courtNumberEditingController = TextEditingController();
+      priceController = TextEditingController();
+      numberOfPeopleRangeValues = RangeValues(8, 10);
+      isTest = false;
+      withAutomaticCancellation = false;
+      repeatsForWeeks = 1;
+      cancelTimeEditingController = TextEditingController(text: "24");
+    } else {
+      dateEditingController = TextEditingController(text: dateFormat
+          .format(widget.existingMatch!.dateTime));
+      startTimeEditingController = TextEditingController(
+          text: getFormattedTime(TimeOfDay.fromDateTime(widget.existingMatch!.dateTime)));
+      endTimeEditingController = TextEditingController(
+          text: getFormattedTime(TimeOfDay.fromDateTime(
+              widget.existingMatch!.dateTime.add(widget.existingMatch!.duration)))
+      );
+      sportCenterEditingController = TextEditingController(
+        text: SportCentersController.getSportCenter(context, widget.existingMatch)!.name
+      );
+      repeatWeeklyEditingController = TextEditingController(text: NO_REPEAT);
+      courtNumberEditingController = TextEditingController(
+          text: widget.existingMatch!.sportCenterSubLocation);
+      priceController = TextEditingController(
+          text: (widget.existingMatch!.pricePerPersonInCents / 100).toString());
+      numberOfPeopleRangeValues = RangeValues(widget.existingMatch!.minPlayers.toDouble(), 
+          widget.existingMatch!.maxPlayers.toDouble());
+      isTest = widget.existingMatch!.isTest;
+      withAutomaticCancellation = widget.existingMatch!.cancelBefore != null;
+      repeatsForWeeks = 1;
+      cancelTimeEditingController = TextEditingController(
+          text: widget.existingMatch!.cancelBefore?.inHours.toString());
+
+      sportCenter = SportCentersController.getSportCenter(context,
+          widget.existingMatch!)!;
+    }
+
 
     sportCenterfocusNode = FocusNode();
     datefocusNode = FocusNode();
@@ -125,7 +168,8 @@ class CreateMatchState extends State<CreateMatch> {
   @override
   Widget build(BuildContext context) {
     var widgets = [
-      Text("New Match", style: TextPalette.h1Default),
+      Text("${widget.existingMatch != null ? "Edit": "New"} Match",
+          style: TextPalette.h1Default),
       Section(
         titleType: "big",
         title: "General",
@@ -238,10 +282,12 @@ class CreateMatchState extends State<CreateMatch> {
             SizedBox(
               height: 16.0,
             ),
-            Row(
+            if (widget.existingMatch == null)
+              Row(
               children: [
                 Expanded(
                     child: TextFormField(
+                        enabled: widget.existingMatch == null,
                         readOnly: true,
                         controller: repeatWeeklyEditingController,
                         decoration:
@@ -293,7 +339,7 @@ class CreateMatchState extends State<CreateMatch> {
                 Expanded(
                     child: TextFormField(
                   controller: sportCenterEditingController,
-                  enabled: true,
+                  enabled: widget.existingMatch == null,
                   focusNode: sportCenterfocusNode,
                   validator: (v) {
                     if (v == null || v.isEmpty) return "Required";
@@ -301,7 +347,8 @@ class CreateMatchState extends State<CreateMatch> {
                   },
                   readOnly: true,
                   decoration:
-                      getTextFormDecoration("Location", isDropdown: true),
+                      getTextFormDecoration("Location", isDropdown: true,
+                          fill: widget.existingMatch == null),
                   onTap: () async {
                     SportCenter? sp =
                         await ModalBottomSheet.showNutmegModalBottomSheet(
@@ -397,11 +444,11 @@ class CreateMatchState extends State<CreateMatch> {
         title: "Payment",
         titleType: "big",
         body: Column(children: [
-          // SizedBox(height: 8),
           Row(
             children: [
               Expanded(
                   child: TextFormField(
+                      enabled: widget.existingMatch == null,
                       validator: (v) {
                         if (v == null || v.isEmpty) return "Required";
                         var f = regexPrice.firstMatch(v);
@@ -423,7 +470,8 @@ class CreateMatchState extends State<CreateMatch> {
                             RegExp(r'^\d*\.?\d*$')),
                       ],
                       decoration: getTextFormDecoration("Price per player",
-                          prefixText: "€ "))),
+                          prefixText: "€ ",
+                          fill: widget.existingMatch == null))),
             ],
           ),
           SizedBox(height: 16),
@@ -474,11 +522,12 @@ class CreateMatchState extends State<CreateMatch> {
           ))
         ]),
       ),
-      Section(
-        title: "Policies",
-        titleType: "big",
-        body: Column(children: [
-          Row(
+      if (widget.existingMatch == null)
+        Section(
+          title: "Policies",
+          titleType: "big",
+          body: Column(children: [
+            Row(
             children: [
               Checkbox(
                   shape: RoundedRectangleBorder(
@@ -487,7 +536,6 @@ class CreateMatchState extends State<CreateMatch> {
                   activeColor: Palette.primary,
                   onChanged: (v) {
                     setState(() {
-                      print("changed");
                       withAutomaticCancellation = v!;
                     });
                   }),
@@ -498,8 +546,8 @@ class CreateMatchState extends State<CreateMatch> {
                       overflow: TextOverflow.visible)),
             ],
           ),
-          if (withAutomaticCancellation)
-            Padding(
+            if (withAutomaticCancellation)
+              Padding(
               padding: EdgeInsets.only(top: 16),
               child: Row(
                 children: [
@@ -539,8 +587,8 @@ class CreateMatchState extends State<CreateMatch> {
                 ],
               ),
             ),
-          if (withAutomaticCancellation)
-            Padding(
+            if (withAutomaticCancellation)
+              Padding(
                 padding: EdgeInsets.only(top: 16),
                 child: Text(
                     "We will cancel the match if at least "
@@ -549,9 +597,10 @@ class CreateMatchState extends State<CreateMatch> {
                     "${cancelTimeEditingController.text} hours",
                     style: TextPalette.bodyText,
                     overflow: TextOverflow.visible))
-        ]),
-      ),
-      if (context.read<UserState>().getLoggedUserDetails()!.isAdmin!)
+          ]),
+        ),
+      if (widget.existingMatch == null
+          && context.read<UserState>().getLoggedUserDetails()!.isAdmin!)
         Section(
             title: "Admin",
             titleType: "big",
@@ -611,7 +660,8 @@ class CreateMatchState extends State<CreateMatch> {
             padding: EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0),
             child: Row(children: [
               Expanded(
-                child: GenericButtonWithLoader("CREATE",
+                child: GenericButtonWithLoader(
+                    widget.existingMatch == null ? "CREATE": "EDIT",
                     (BuildContext context) async {
                   context.read<GenericButtonWithLoaderState>().change(true);
 
@@ -651,9 +701,15 @@ class CreateMatchState extends State<CreateMatch> {
                                 .documentId,
                             cancelBefore);
 
-                        var id = await MatchesController.addMatch(match);
+                        var id;
+                        if (widget.existingMatch == null) {
+                          id = await MatchesController.addMatch(match);
+                        } else {
+                          await MatchesController.editMatch(match,
+                              widget.existingMatch!.documentId);
+                          id = widget.existingMatch!.documentId;
+                        }
                         await MatchesController.refresh(context, id);
-                        await UserController.refreshLoggedUser(context);
                         print("added match with id " + id);
                         return id;
                       });
