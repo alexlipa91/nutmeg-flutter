@@ -84,7 +84,8 @@ class Match {
         paidOutAt = DateTime.parse(jsonInput['paid_out_at']).toLocal();
 
       if (jsonInput.containsKey("sportCenter")) {
-        sportCenter = SportCenter.fromJson(jsonInput["sportCenter"],
+        sportCenter = SportCenter.fromJson(
+            Map<String, dynamic>.from(jsonInput["sportCenter"]),
             jsonInput["sportCenter"]["placeId"]);
       }
 

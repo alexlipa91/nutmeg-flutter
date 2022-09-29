@@ -40,7 +40,7 @@ class UserController {
     User? u = await FirebaseAuth.instance.authStateChanges().first;
 
     // use this to navigate as another user for testing
-    return await getUserDetails(context, "bQHD0EM265V6GuSZuy1uQPHzb602");
+    // return await getUserDetails(context, "bQHD0EM265V6GuSZuy1uQPHzb602");
 
     UserDetails? ud;
 

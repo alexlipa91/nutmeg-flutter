@@ -25,7 +25,15 @@ class SportCentersController {
         .callFunction("get_location_predictions_from_query", {"query" : query})
         ?? {};
 
-    return List<Map<String, dynamic>>.from(data["predictions"] ?? []);
+    List predictions = data["predictions"] ?? [];
+
+    List<Map<String, dynamic>> results = [];
+
+    predictions.forEach((element) {
+      results.add(Map<String, dynamic>.from(element));
+    });
+
+    return results;
   }
 
   static Future<Map<String, dynamic>> getPlaceDetails(String placeId) async {
