@@ -120,8 +120,7 @@ class JoinModal {
 
       await GenericInfoModal(
           title: "Join this match",
-          description:
-              "If you leave the match you will get a refund in credits.",
+          description: "If you leave the match you will get a refund",
           content: getModalDescriptionArea(context, paymentRecap),
           action: Row(children: [
             Expanded(

@@ -50,7 +50,8 @@ class SportCentersController {
         .callFunction("get_user_sportcenters", {"user_id" : uid})
         ?? {};
 
-    return data.entries.map((e) => SportCenter.fromJson(e.value, e.key))
+    return data.entries.map((e) => SportCenter
+        .fromJson(Map<String, dynamic>.from(e.value), e.key))
         .toList();
   }
 

@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:nutmeg/utils/Utils.dart';
+import 'package:nutmeg/widgets/Containers.dart';
 import 'package:skeletons/skeletons.dart';
 
 class Skeletons {
@@ -48,34 +49,36 @@ class ListOfMatchesSkeleton extends StatelessWidget {
     return Column(
         children: interleave(
             List<Widget>.filled(repeatFor,
-                SkeletonItem(
-        child: Row(
+                InfoContainer(
+                  child: SkeletonItem(
+                    child: Row(
           children: [
             SkeletonAvatar(
               style: SkeletonAvatarStyle(
-                borderRadius: BorderRadius.circular(20),
-                width: 60,
-                height: 78,
+                  borderRadius: BorderRadius.circular(20),
+                  width: 60,
+                  height: 78,
               ),
             ),
             SizedBox(width: 12),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Skeletons.xlText,
-                SizedBox(
-                  height: 12,
-                ),
-                Skeletons.lText,
-                SizedBox(
-                  height: 12,
-                ),
-                Skeletons.mText
+                  Skeletons.xlText,
+                  SizedBox(
+                    height: 12,
+                  ),
+                  Skeletons.lText,
+                  SizedBox(
+                    height: 12,
+                  ),
+                  Skeletons.mText
               ],
             )
           ],
         ),
-      )
+                  ),
+                )
             ),
             SizedBox(height: 24,)
         )

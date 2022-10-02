@@ -56,7 +56,7 @@ class GenericAvailableMatchesListState
         .map((s) => SportCentersController.refresh(context, s!)));
   }
 
-  Widget waitingWidget() => ListOfMatchesSkeleton(repeatFor: 5);
+  Widget waitingWidget() => ListOfMatchesSkeleton(repeatFor: 3);
 
   @override
   Widget build(BuildContext context) {
