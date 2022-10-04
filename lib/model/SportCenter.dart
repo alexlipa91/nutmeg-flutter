@@ -12,9 +12,7 @@ class SportCenter {
   String surface;
   bool? hasChangingRooms;
   String courtType;
-
-  SportCenter(this.placeId, this.address, this.name, this.lat, this.lng,
-      this.surface, this.hasChangingRooms, this.courtType);
+  String timezoneId;
 
   SportCenter.fromJson(Map<String, dynamic>? json, String documentId)
       : placeId = documentId,
@@ -24,6 +22,7 @@ class SportCenter {
         lng = json['lng'],
         surface = json["surface"],
         hasChangingRooms = json['hasChangingRooms'],
+        timezoneId = json["timeZoneId"] ?? "Europe/Amsterdam",
         courtType = json['courtType']!;
 
   Map<String, dynamic> toJson() => {
@@ -33,6 +32,7 @@ class SportCenter {
         'lat': lat,
         'lng': lng,
         'surface': surface,
+        'timeZoneId': timezoneId,
         if (hasChangingRooms != null)
           'hasChangingRooms': hasChangingRooms!,
         'courtType': courtType
@@ -149,4 +149,6 @@ class SavedSportCenter extends SportCenter {
   String getShortAddress() => address.split(",").first;
 
   String getSurface() => surface;
+
+  String getTimezoneId() => "Europe/Amsterdam";
 }

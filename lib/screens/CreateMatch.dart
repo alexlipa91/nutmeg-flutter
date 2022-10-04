@@ -95,8 +95,10 @@ class CreateMatchState extends State<CreateMatch> {
   late FocusNode startTimefocusNode;
 
   Future<void> refreshState() async {
-    await context.read<LoadOnceState>().fetchSportCenters();
-    context.read<UserState>().fetchSportCenters();
+    await Future.wait([
+      context.read<LoadOnceState>().fetchSportCenters(),
+      context.read<UserState>().fetchSportCenters()
+    ]);
   }
 
   void unfocusIfNoValue(FocusNode focusNode, TextEditingController controller) {

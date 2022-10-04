@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:nutmeg/model/SportCenter.dart';
+import 'package:timezone/timezone.dart' as tz;
 
 import 'UserDetails.dart';
 
@@ -53,7 +54,7 @@ class Match {
     going = Map();
 
   Match.fromJson(Map<String, dynamic> jsonInput, String documentId) :
-        dateTime = DateTime.parse(jsonInput['dateTime']).toLocal(),
+        dateTime = localizeDateTime(DateTime.parse(jsonInput['dateTime'])),
         duration = Duration(minutes: jsonInput['duration'] ?? 60),
         isTest = jsonInput["isTest"] ?? false,
         minPlayers = jsonInput['minPlayers'] ?? 0,
@@ -172,5 +173,8 @@ class Match {
           == going.length;
 
   List<String>? getTeam(String teamName) => teams[teamName];
+
+  static DateTime localizeDateTime(DateTime d) =>
+      tz.TZDateTime.from(d, tz.getLocation("Europe/Amsterdam"));
 }
 

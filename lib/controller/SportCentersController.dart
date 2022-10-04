@@ -61,4 +61,15 @@ class SportCentersController {
         : match.sportCenter ??
         context.watch<LoadOnceState>().getSportCenter(match.sportCenterId!);
   }
+
+  static Future<void> addSportCenterFromPlace(
+      String placeId,
+      String userId,
+      Map<String, dynamic> info) async {
+    await CloudFunctionsClient().callFunction("add_user_sportcenter_from_place_id", {
+      "place_id": placeId,
+      "additional_info": info,
+      "user_id": userId,
+    });
+  }
 }

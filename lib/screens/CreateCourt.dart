@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:google_place/google_place.dart';
 import 'package:nutmeg/controller/SportCentersController.dart';
-import 'package:nutmeg/model/SportCenter.dart';
 import 'package:nutmeg/state/UserState.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
@@ -23,7 +22,7 @@ class CreateCourt extends StatefulWidget {
 class CreateCourtState extends State<CreateCourt> {
 
   final TextEditingController surfaceController = TextEditingController();
-  final TextEditingController sizeController = TextEditingController();
+  final TextEditingController courtTypeController = TextEditingController();
   final TextEditingController textEditingController = TextEditingController();
 
   final _formKey = GlobalKey<FormState>();
@@ -164,7 +163,7 @@ class CreateCourtState extends State<CreateCourt> {
                     Expanded(
                         child: TextFormField(
                       readOnly: true,
-                      controller: sizeController,
+                      controller: courtTypeController,
                       decoration: CreateMatchState.getTextFormDecoration("Size",
                           isDropdown: true),
                       onTap: () async {
@@ -175,7 +174,7 @@ class CreateCourtState extends State<CreateCourt> {
                                 context, "Size", sizes);
 
                         if (i != null) {
-                          sizeController.text = sizes[i];
+                          courtTypeController.text = sizes[i];
                         }
                       },
                       validator: (v) {
@@ -229,21 +228,16 @@ class CreateCourtState extends State<CreateCourt> {
                   (_) async {
                 bool? v = _formKey.currentState?.validate();
                 if (v != null && v) {
-                  Map<String, dynamic> placeInfo = await SportCentersController
-                      .getPlaceDetails(placeId!);
+                  await SportCentersController.addSportCenterFromPlace(placeId!,
+                    context.read<UserState>().getLoggedUserDetails()!.documentId,
+                    {
+                      "surface": surfaceController.text,
+                      "hasChangingRooms": changeRoomsAvailable,
+                      "courtType": courtTypeController.text
+                    },
+                  );
 
-                  var sportCenter = SportCenter(placeId!,
-                      placeInfo["formatted_address"],
-                      placeInfo["name"],
-                      placeInfo["geometry"]["location"]["lat"],
-                      placeInfo["geometry"]["location"]["lng"],
-                      surfaceController.text,
-                      changeRoomsAvailable,
-                      sizeController.text);
-
-                  context.read<UserState>().addSportCenter(
-                      context.read<UserState>().getLoggedUserDetails()!.documentId,
-                      sportCenter);
+                  await context.read<UserState>().fetchSportCenters();
 
                   Navigator.of(context).pop();
                 }

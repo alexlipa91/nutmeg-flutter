@@ -13,6 +13,7 @@ import 'package:nutmeg/screens/EnterDetails.dart';
 import 'package:provider/provider.dart';
 import 'package:tuple/tuple.dart';
 import 'package:version/version.dart';
+import 'package:timezone/data/latest.dart' as tz;
 
 import '../Exceptions.dart';
 import '../screens/Launch.dart';
@@ -179,6 +180,8 @@ class LaunchController {
         await FirebaseMessaging.instance.getInitialMessage();
 
     _setupNotifications(context);
+
+    tz.initializeTimeZones();
 
     print("load data method is done");
     LaunchController.loadingDone = true;

@@ -7,6 +7,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:tuple/tuple.dart';
 import 'package:version/version.dart';
+import 'package:timezone/timezone.dart' as tz;
 
 var uiHourFormat = new DateFormat("HH:mm");
 
@@ -15,6 +16,16 @@ String getFormattedDate(DateTime dateTime) =>
 
 String getFormattedDateWithHour(DateTime dateTime) =>
     _getFormattedDate(dateTime, DateFormat("E, MMM dd"), true);
+
+String getFormattedDateWithHourAndTimezone(DateTime dateTime) {
+  var location = tz.getLocation("Europe/Amsterdam");
+  var localizedDate = tz.TZDateTime.from(dateTime, location);
+
+  return _getFormattedDate(
+      localizedDate,
+      DateFormat("E, MMM dd"), true)
+      + " GMT ${localizedDate.timeZoneOffset.inHours}";
+}
 
 String getFormattedDateLong(DateTime dateTime) =>
     _getFormattedDate(dateTime, DateFormat("EEEE, MMM dd"));
