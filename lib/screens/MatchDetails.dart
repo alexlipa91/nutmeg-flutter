@@ -470,7 +470,7 @@ class MatchInfo extends StatelessWidget {
 
                                     Navigator.pop(context);
                                   },
-                                  child: Text("Cancel",
+                                  child: Text("Cancel Match",
                                       style: TextPalette.getListItem(
                                           Palette.destructive)),
                                 ),
