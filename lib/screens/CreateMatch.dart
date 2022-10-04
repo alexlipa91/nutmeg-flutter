@@ -831,7 +831,7 @@ class LocationsBottomSheet extends StatelessWidget {
     var userState = context.watch<UserState>();
 
     if (userState.getSportCenters() == null)
-      return ListOfMatchesSkeleton(repeatFor: 2);
+      return ListOfMatchesSkeleton.withoutContainer(repeatFor: 2);
 
     var popularCourts = Section(
         title: "Popular courts",

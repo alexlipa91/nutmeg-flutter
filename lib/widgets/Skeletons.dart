@@ -41,44 +41,54 @@ class Skeletons {
 class ListOfMatchesSkeleton extends StatelessWidget {
 
   final int repeatFor;
+  final bool withContainer;
 
-  const ListOfMatchesSkeleton({Key? key, required this.repeatFor}) : super(key: key);
+  const ListOfMatchesSkeleton({Key? key, required this.repeatFor}) :
+        withContainer = true,
+        super(key: key);
+
+  const ListOfMatchesSkeleton.withoutContainer({Key? key, required this.repeatFor}) :
+        withContainer = false,
+        super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    var item = SkeletonItem(
+      child: Row(
+        children: [
+          SkeletonAvatar(
+            style: SkeletonAvatarStyle(
+              borderRadius: BorderRadius.circular(20),
+              width: 60,
+              height: 78,
+            ),
+          ),
+          SizedBox(width: 12),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Skeletons.xlText,
+              SizedBox(
+                height: 12,
+              ),
+              Skeletons.lText,
+              SizedBox(
+                height: 12,
+              ),
+              Skeletons.mText
+            ],
+          )
+        ],
+      ),
+    );
+
     return Column(
         children: interleave(
             List<Widget>.filled(repeatFor,
+                withContainer ?
                 InfoContainer(
-                  child: SkeletonItem(
-                    child: Row(
-          children: [
-            SkeletonAvatar(
-              style: SkeletonAvatarStyle(
-                  borderRadius: BorderRadius.circular(20),
-                  width: 60,
-                  height: 78,
-              ),
-            ),
-            SizedBox(width: 12),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                  Skeletons.xlText,
-                  SizedBox(
-                    height: 12,
-                  ),
-                  Skeletons.lText,
-                  SizedBox(
-                    height: 12,
-                  ),
-                  Skeletons.mText
-              ],
-            )
-          ],
-        ),
-                  ),
-                )
+                  child: item
+                ) : item
             ),
             SizedBox(height: 24,)
         )
