@@ -44,12 +44,18 @@ class UserDetails {
         numJoinedMatches = json["num_matches_joined"] ?? 0,
         averageScore = json["avg_score"] ?? null,
         potmCount = json["potm_count"] ?? 0,
-        lastScores = (json["last_scores"] == null) ? [] : List<double>.from(json["last_scores"]),
+        lastScores = (json["last_scores"] == null) ? []
+            : _readLastScores(Map<String, double>.from(json["last_date_scores"])),
         chargesEnabledOnStripe = json["chargesEnabledOnStripe"] ?? false,
         chargesEnabledOnStripeTest = json["chargesEnabledOnStripeTest"] ?? false,
         createdMatches = Map<String, dynamic>.from(json["created_matches"] ?? {}).keys.toList(),
         createdTestMatches = Map<String, dynamic>.from(json["created_test_matches"] ?? {}).keys.toList(),
         documentId = documentId;
+
+  static List<double> _readLastScores(Map<String, double> lastDateScores) {
+    var sortedKeys = lastDateScores.keys.toList()..sort();
+    return sortedKeys.map((d) => lastDateScores[d]!).toList();
+  }
 
   Map<String, dynamic> toJson() =>
       {
