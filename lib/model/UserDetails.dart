@@ -44,7 +44,7 @@ class UserDetails {
         numJoinedMatches = json["num_matches_joined"] ?? 0,
         averageScore = json["avg_score"] ?? null,
         potmCount = json["potm_count"] ?? 0,
-        lastScores = (json["last_scores"] == null) ? []
+        lastScores = (json["last_date_scores"] == null) ? []
             : _readLastScores(Map<String, double>.from(json["last_date_scores"])),
         chargesEnabledOnStripe = json["chargesEnabledOnStripe"] ?? false,
         chargesEnabledOnStripeTest = json["chargesEnabledOnStripeTest"] ?? false,
