@@ -9,53 +9,12 @@ import 'package:tuple/tuple.dart';
 import 'package:version/version.dart';
 import 'package:timezone/timezone.dart' as tz;
 
-var uiHourFormat = new DateFormat("HH:mm");
 
-String getFormattedDate(DateTime dateTime) =>
-    _getFormattedDate(dateTime, DateFormat("E, MMM dd"));
-
-String getFormattedDateWithHour(DateTime dateTime) =>
-    _getFormattedDate(dateTime, DateFormat("E, MMM dd"), true);
-
-String getFormattedDateWithHourAndTimezone(DateTime dateTime) {
-  var location = tz.getLocation("Europe/Amsterdam");
-  var localizedDate = tz.TZDateTime.from(dateTime, location);
-
-  return _getFormattedDate(
-      localizedDate,
-      DateFormat("E, MMM dd"), true)
-      + " GMT ${localizedDate.timeZoneOffset.inHours}";
-}
-
-String getFormattedDateLong(DateTime dateTime) =>
-    _getFormattedDate(dateTime, DateFormat("EEEE, MMM dd"));
-
-String getFormattedDateLongWithHour(DateTime dateTime) =>
-    _getFormattedDate(dateTime, DateFormat("EEEE, MMM dd"), true);
-
-String _getFormattedDate(DateTime dateTime, DateFormat dateFormat,
-    [bool showHours = false]) {
-  final now = DateTime.now();
-  final today = DateTime(now.year, now.month, now.day);
-  final yesterday = DateTime(now.year, now.month, now.day - 1);
-  final tomorrow = DateTime(now.year, now.month, now.day + 1);
-
-  var dayString;
-
-  final aDate = DateTime(dateTime.year, dateTime.month, dateTime.day);
-  if (aDate == today) {
-    dayString = "Today";
-  } else if (aDate == yesterday) {
-    dayString = "Yesterday";
-  } else if (aDate == tomorrow) {
-    dayString = "Tomorrow";
-  } else {
-    dayString = dateFormat.format(dateTime);
-  }
-
-  if (!showHours)
-    return dayString;
-  return dayString + " at " + uiHourFormat.format(dateTime);
+String gmtSuffix(String timeZoneId) {
+  var hourOffset = tz.TZDateTime.from(DateTime.now(),
+      tz.getLocation(timeZoneId)).timeZoneOffset.inHours;
+  var gmtString = ((hourOffset > 0) ? "+" : "-") + hourOffset.toString();
+  return "GMT$gmtString";
 }
 
 String formatCurrency(int cents) =>
@@ -70,12 +29,9 @@ String formatEmail(String? email) {
   return email;
 }
 
-List<String> getStartAndEndHour(DateTime dateTime, Duration duration) => [
-      uiHourFormat.format(dateTime),
-      uiHourFormat.format(dateTime.add(duration))
-    ];
-
 class DynamicLinks {
+  static var dayDateFormat = DateFormat("EEEE, MMM dd");
+
   static shareMatchFunction(Match match, SportCenter sportCenter) async {
     var deepLinkUrl = Uri.parse('https://web.nutmegapp.com/match/' + match.documentId);
 
@@ -94,7 +50,9 @@ class DynamicLinks {
         fallbackUrl: deepLinkUrl
       ),
       socialMetaTagParameters: SocialMetaTagParameters(
-        title: "Match on ${getFormattedDate(match.dateTime)}",
+        title: "Match on ${dayDateFormat
+            .format(match.getLocalizedTime(sportCenter.timezoneId))} "
+            "${gmtSuffix(sportCenter.timezoneId)}",
         description: "Location: ${sportCenter.name}",
       )
     );

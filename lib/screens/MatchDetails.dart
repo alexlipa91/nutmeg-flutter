@@ -54,6 +54,8 @@ class MatchDetails extends StatefulWidget {
 }
 
 class MatchDetailsState extends State<MatchDetails> {
+  static var dayDateFormat = DateFormat("EEEE, MMM dd");
+
   Future<void> myInitState() async {
     await refreshState();
 
@@ -161,7 +163,7 @@ class MatchDetailsState extends State<MatchDetails> {
         MatchInfo(match, sportCenter),
         // stats
         if (status == MatchStatus.rated || status == MatchStatus.to_rate)
-          Stats(match: match),
+          Stats(match: match, sportCenter: sportCenter),
         // horizontal players list or teams
         match.hasTeams()
             ? TeamsWidget(matchId: widget.matchId)
@@ -178,7 +180,8 @@ class MatchDetailsState extends State<MatchDetails> {
 
             if (cancellationDate.isAfter(DateTime.now())) {
               cancellationText = "\n\nThe match will be automatically canceled "
-                  "${getFormattedDateLongWithHour(cancellationDate)} "
+                  "${dayDateFormat.format(match.getLocalizedTime(sportCenter.timezoneId))
+                  + " ${gmtSuffix(sportCenter.timezoneId)}"} "
                   "if less than ${match.minPlayers} players have joined.";
             }
           }
@@ -381,7 +384,8 @@ class AddressRow extends StatelessWidget {
 
 // info card
 class MatchInfo extends StatelessWidget {
-  static var dateFormat = DateFormat('MMMM dd \'at\' HH:mm');
+  static var dayDateFormat = DateFormat("EEEE, MMM dd");
+  static var hourDateFormat = DateFormat("HH:mm");
 
   final Match match;
   final SportCenter sportCenter;
@@ -483,10 +487,13 @@ class MatchInfo extends StatelessWidget {
             SizedBox(height: 16),
             IconList.fromIcon({
               Icons.calendar_month_outlined:
-                  getFormattedDateLong(match.dateTime),
+                  dayDateFormat.format(match.getLocalizedTime(sportCenter.timezoneId)),
               Icons.access_time_outlined:
-                  getStartAndEndHour(match.dateTime, match.duration)
-                      .join(" - "),
+                  "${hourDateFormat.format(match.getLocalizedTime(sportCenter.timezoneId))} - "
+                      "${hourDateFormat.format(match.getLocalizedTime(sportCenter.timezoneId)
+                      .add(match.duration))}"
+                      + " ("
+                      + gmtSuffix(sportCenter.timezoneId) + ")",
               Icons.local_offer_outlined:
                   formatCurrency(match.pricePerPersonInCents)
             }),
@@ -850,9 +857,13 @@ class MapCardImage extends StatelessWidget {
 }
 
 class Stats extends StatelessWidget {
-  final Match match;
+  static var dayDateFormat = DateFormat("EEEE, MMM dd");
 
-  Stats({Key? key, required this.match}) : super(key: key);
+  final Match match;
+  final SportCenter sportCenter;
+
+  Stats({Key? key, required this.match,
+    required this.sportCenter}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -878,8 +889,8 @@ class Stats extends StatelessWidget {
               SizedBox(height: 8),
               Text(
                 "Statistics for this match will be available\n" +
-                    getFormattedDate(match.dateTime.add(Duration(days: 1)))
-                        .toLowerCase(),
+                    dayDateFormat.format(match.getLocalizedTime(sportCenter.timezoneId))
+                    + " ${gmtSuffix(sportCenter.timezoneId)}",
                 style: TextPalette.bodyText,
                 textAlign: TextAlign.center,
               ),

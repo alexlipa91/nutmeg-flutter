@@ -168,7 +168,7 @@ class GenericAvailableMatchesListState
 }
 
 class GenericMatchInfo extends StatelessWidget {
-  static var monthDayFormat = DateFormat('HH:mm');
+  static var dateFormat = DateFormat("E, MMM dd 'at' HH:mm");
 
   final Match match;
   final SportCenter sportCenter;
@@ -215,7 +215,10 @@ class GenericMatchInfo extends StatelessWidget {
                               SizedBox(
                                 height: 8,
                               ),
-                              Text(getFormattedDateWithHour(match.dateTime),
+                              Text(dateFormat.format(match
+                                  .getLocalizedTime(sportCenter.timezoneId))
+                                  + " "
+                                  + gmtSuffix(sportCenter.timezoneId),
                                   style: TextPalette.getBodyText(Palette.grey_dark)),
                               SizedBox(
                                 height: 6,

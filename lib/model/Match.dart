@@ -54,7 +54,7 @@ class Match {
     going = Map();
 
   Match.fromJson(Map<String, dynamic> jsonInput, String documentId) :
-        dateTime = localizeDateTime(DateTime.parse(jsonInput['dateTime'])),
+        dateTime = DateTime.parse(jsonInput['dateTime']),
         duration = Duration(minutes: jsonInput['duration'] ?? 60),
         isTest = jsonInput["isTest"] ?? false,
         minPlayers = jsonInput['minPlayers'] ?? 0,
@@ -174,7 +174,7 @@ class Match {
 
   List<String>? getTeam(String teamName) => teams[teamName];
 
-  static DateTime localizeDateTime(DateTime d) =>
-      tz.TZDateTime.from(d, tz.getLocation("Europe/Amsterdam"));
+  DateTime getLocalizedTime(String timezoneId) =>
+      tz.TZDateTime.from(dateTime, tz.getLocation(timezoneId));
 }
 
