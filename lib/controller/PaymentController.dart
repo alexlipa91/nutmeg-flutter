@@ -26,7 +26,7 @@ class PaymentController {
       creditsUsed = 0;
     }
 
-    var result = PaymentRecap(m.pricePerPersonInCents, creditsUsed);
+    var result = PaymentRecap(m.pricePerPersonInCents, creditsUsed, m.userFee);
 
     return result;
   }

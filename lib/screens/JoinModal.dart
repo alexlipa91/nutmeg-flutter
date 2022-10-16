@@ -61,7 +61,8 @@ class JoinModal {
           textAlign: TextAlign.end,
         ))
       ]),
-      Row(
+      if (paymentRecap.fee > 0)
+        Row(
         children: [
           // adding this here as a trick to align the rows
           Container(height: 24, width: 24),

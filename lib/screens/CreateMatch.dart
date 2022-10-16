@@ -169,6 +169,9 @@ class CreateMatchState extends State<CreateMatch> {
 
   @override
   Widget build(BuildContext context) {
+    var organiserId = context.read<UserState>()
+        .getLoggedUserDetails()!.documentId;
+
     var widgets = [
       Text("${widget.existingMatch != null ? "Edit": "New"} Match",
           style: TextPalette.h1Default),
@@ -473,12 +476,23 @@ class CreateMatchState extends State<CreateMatch> {
                           fill: widget.existingMatch == null))),
             ],
           ),
+          if (ConfigsUtils.feesOnOrganiser(organiserId))
+            Padding(
+              padding: EdgeInsets.only(top: 16),
+              child: Row(children: [
+                Text("Nutmeg will withhold a service fee of "
+                    "${formatCurrency(50)} per player",
+                    style: TextPalette.bodyText),
+              ]),
+            ),
           SizedBox(height: 16),
           Row(children: [
             Text("You will get", style: TextPalette.h3),
             Spacer(),
             Builder(builder: (BuildContext buildContext) {
               var price = double.tryParse(priceController.text);
+              if (price != null && ConfigsUtils.feesOnOrganiser(organiserId))
+                price = price - 0.5;
               return Text(
                   (price == null)
                       ? "€ --"
@@ -496,28 +510,29 @@ class CreateMatchState extends State<CreateMatch> {
           Divider(),
           SizedBox(height: 16),
           RichText(
-              text: TextSpan(
-            children: [
-              TextSpan(
-                  text: "Nutmeg releases the money 24h after the match end time. " +
-                      "You will get paid 3 to 5 business days after that with ",
-                  style: TextPalette.bodyText),
-              TextSpan(
-                  text: "Stripe",
-                  recognizer: TapGestureRecognizer()
-                    ..onTap = () async {
-                      final url = 'https://stripe.com';
-                      if (await canLaunch(url)) {
-                        await launch(
-                          url,
-                          forceSafariVC: false,
-                        );
-                      }
-                    },
-                  style: TextPalette.bodyText.copyWith(
-                      color: Palette.primary,
-                      decoration: TextDecoration.underline))
-            ],
+            textAlign: TextAlign.start,
+            text: TextSpan(
+          children: [
+            TextSpan(
+                text: "Nutmeg releases the money 24 hours after the match end time. "
+                    + "You will get paid in 3 to 5 business days after that through ",
+                style: TextPalette.bodyText),
+            TextSpan(
+                text: "Stripe",
+                recognizer: TapGestureRecognizer()
+                  ..onTap = () async {
+                    final url = 'https://stripe.com';
+                    if (await canLaunch(url)) {
+                      await launch(
+                        url,
+                        forceSafariVC: false,
+                      );
+                    }
+                  },
+                style: TextPalette.bodyText.copyWith(
+                    color: Palette.primary,
+                    decoration: TextDecoration.underline))
+          ],
           ))
         ]),
       ),
@@ -698,7 +713,10 @@ class CreateMatchState extends State<CreateMatch> {
                                 .read<UserState>()
                                 .getLoggedUserDetails()!
                                 .documentId,
-                            cancelBefore);
+                            ConfigsUtils.feesOnOrganiser(organiserId) ? 0 : 50,
+                            ConfigsUtils.feesOnOrganiser(organiserId) ? 50 : 0,
+                            cancelBefore
+                        );
 
                         var id;
                         if (widget.existingMatch == null) {

@@ -45,11 +45,15 @@ class Match {
   String? organizerId;
   Duration? cancelBefore;
 
+  int userFee;
+  int organiserFee;
+
   bool isTest;
 
   Match(this.dateTime, this.sportCenterId, this.sportCenter, this.sportCenterSubLocation,
       this.maxPlayers, this.pricePerPersonInCents, this.duration,
-      this.isTest, this.minPlayers, this.organizerId, [this.cancelBefore]) :
+      this.isTest, this.minPlayers, this.organizerId, this.userFee,
+      this.organiserFee, [this.cancelBefore]) :
     teams = Map(),
     going = Map();
 
@@ -63,8 +67,10 @@ class Match {
         teams = _readTeams(jsonInput),
         pricePerPersonInCents = jsonInput['pricePerPerson'],
         _manOfTheMatch = _readManOfTheMatch(jsonInput),
-        sportCenterId = jsonInput['sportCenterId'] {
-        sportCenterSubLocation = jsonInput['sportCenterSubLocation'];
+        sportCenterId = jsonInput['sportCenterId'],
+        userFee = jsonInput["userFee"] ?? 0,
+        organiserFee = jsonInput["organiserFee"] ?? 0 {
+      sportCenterSubLocation = jsonInput['sportCenterSubLocation'];
 
       if (jsonInput.containsKey("cancelledAt") && jsonInput["cancelledAt"] != null)
         cancelledAt = DateTime.parse(jsonInput['cancelledAt']).toLocal();
@@ -144,6 +150,10 @@ class Match {
         'organizerId': organizerId,
         if (cancelBefore != null)
           'cancelHoursBefore': cancelBefore?.inHours,
+        if (userFee > 0)
+          'userFee': userFee,
+        if (organiserFee > 0)
+          'organiserFee': organiserFee,
         'isTest': isTest
       };
 

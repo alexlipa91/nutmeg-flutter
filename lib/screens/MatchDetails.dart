@@ -185,10 +185,13 @@ class MatchDetailsState extends State<MatchDetails> {
                   "if less than ${match.minPlayers} players have joined.";
             }
           }
+          var refundString = (match.userFee == 0)
+              ? "a full refund"
+              : "a refund (excluding Nutmeg service fee)";
 
           return RuleCard(
               "Payment Policy",
-              "If you leave the match you will get a refund (excluding Nutmeg service fee).\n"
+              "If you leave the match you will get $refundString.\n"
                       "If the match is cancelled you will get a full refund.\n\n"
                       "If you don’t show up you won’t get a refund." +
                   cancellationText);
