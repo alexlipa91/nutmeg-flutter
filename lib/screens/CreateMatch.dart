@@ -138,7 +138,8 @@ class CreateMatchState extends State<CreateMatch> {
       courtNumberEditingController = TextEditingController(
           text: widget.existingMatch!.sportCenterSubLocation);
       priceController = TextEditingController(
-          text: (widget.existingMatch!.pricePerPersonInCents / 100).toString());
+          text: ((widget.existingMatch!.pricePerPersonInCents
+              - widget.existingMatch!.userFee) / 100).toString());
       numberOfPeopleRangeValues = RangeValues(widget.existingMatch!.minPlayers.toDouble(), 
           widget.existingMatch!.maxPlayers.toDouble());
       isTest = widget.existingMatch!.isTest;
@@ -715,6 +716,8 @@ class CreateMatchState extends State<CreateMatch> {
                                 .documentId,
                             ConfigsUtils.feesOnOrganiser(organiserId) ? 0 : 50,
                             ConfigsUtils.feesOnOrganiser(organiserId) ? 50 : 0,
+                            widget.existingMatch != null ? widget.existingMatch!.going : Map(),
+                            widget.existingMatch != null ? widget.existingMatch!.teams : Map(),
                             cancelBefore
                         );
 
