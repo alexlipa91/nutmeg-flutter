@@ -23,6 +23,7 @@ import 'package:nutmeg/widgets/Skeletons.dart';
 import 'package:provider/provider.dart';
 import 'package:time_picker_widget/time_picker_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:timezone/timezone.dart' as tz;
 
 import '../../state/LoadOnceState.dart';
 import '../widgets/GenericAvailableMatches.dart';
@@ -123,16 +124,20 @@ class CreateMatchState extends State<CreateMatch> {
       repeatsForWeeks = 1;
       cancelTimeEditingController = TextEditingController(text: "24");
     } else {
+      sportCenter = SportCentersController
+          .getSportCenter(context, widget.existingMatch)!;
+      var localizedDateTime = widget.existingMatch!.getLocalizedTime(sportCenter.timezoneId);
+
       dateEditingController = TextEditingController(text: dateFormat
-          .format(widget.existingMatch!.dateTime));
+          .format(localizedDateTime));
       startTimeEditingController = TextEditingController(
-          text: getFormattedTime(TimeOfDay.fromDateTime(widget.existingMatch!.dateTime)));
+          text: getFormattedTime(TimeOfDay.fromDateTime(localizedDateTime)));
       endTimeEditingController = TextEditingController(
-          text: getFormattedTime(TimeOfDay.fromDateTime(
-              widget.existingMatch!.dateTime.add(widget.existingMatch!.duration)))
+          text: getFormattedTime(TimeOfDay.fromDateTime(localizedDateTime
+              .add(widget.existingMatch!.duration)))
       );
       sportCenterEditingController = TextEditingController(
-        text: SportCentersController.getSportCenter(context, widget.existingMatch)!.name
+        text: sportCenter.name
       );
       repeatWeeklyEditingController = TextEditingController(text: NO_REPEAT);
       courtNumberEditingController = TextEditingController(
@@ -147,9 +152,6 @@ class CreateMatchState extends State<CreateMatch> {
       repeatsForWeeks = 1;
       cancelTimeEditingController = TextEditingController(
           text: widget.existingMatch!.cancelBefore?.inHours.toString());
-
-      sportCenter = SportCentersController.getSportCenter(context,
-          widget.existingMatch!)!;
     }
 
 
@@ -573,11 +575,11 @@ class CreateMatchState extends State<CreateMatch> {
                           if (durationSize == null) return "Invalid duration";
                           Duration duration = Duration(hours: durationSize);
 
-                          var d = getDateTime();
+                          DateTime? d = getDateTime(startTimeEditingController,
+                              sportCenter.timezoneId);
                           if (d != null &&
-                              getDateTime()!
-                                  .subtract(duration)
-                                  .isBefore(DateTime.now())) {
+                                  d.subtract(duration)
+                                      .isBefore(DateTime.now())) {
                             return "The interval is in the past";
                           }
 
@@ -676,20 +678,18 @@ class CreateMatchState extends State<CreateMatch> {
             child: Row(children: [
               Expanded(
                 child: GenericButtonWithLoader(
-                    widget.existingMatch == null ? "CREATE": "EDIT",
+                    widget.existingMatch == null ? "CREATE": "CONFIRM",
                     (BuildContext context) async {
                   context.read<GenericButtonWithLoaderState>().change(true);
 
                   bool? v = _formKey.currentState?.validate();
                   if (v != null && v) {
                     try {
-                      var etod = toTimeOfTheDay(endTimeEditingController.text);
-                      var day = dateFormat.parse(dateEditingController.text);
-                      var dateTime = getDateTime();
-                      var endTime = DateTime(day.year, day.month, day.day,
-                              etod.hour, etod.minute)
-                          .toUtc();
-                      var duration = endTime.difference(dateTime!);
+                      var dateTime = getDateTime(startTimeEditingController,
+                          sportCenter.timezoneId);
+                      var endTime = getDateTime(endTimeEditingController,
+                          sportCenter.timezoneId);
+                      var duration = endTime!.difference(dateTime!);
                       var cancelBefore = withAutomaticCancellation
                           ? Duration(
                               hours:
@@ -710,7 +710,9 @@ class CreateMatchState extends State<CreateMatch> {
                             duration,
                             isTest,
                             numberOfPeopleRangeValues.start.toInt(),
-                            context
+                            widget.existingMatch != null ?
+                              widget.existingMatch!.organizerId :
+                              context
                                 .read<UserState>()
                                 .getLoggedUserDetails()!
                                 .documentId,
@@ -757,12 +759,13 @@ class CreateMatchState extends State<CreateMatch> {
     );
   }
 
-  DateTime? getDateTime() {
+  DateTime? getDateTime(TextEditingController controller, String timezoneId) {
     if (dateEditingController.text.isEmpty ||
-        startTimeEditingController.text.isEmpty) return null;
+        controller.text.isEmpty) return null;
     var day = dateFormat.parse(dateEditingController.text);
-    var stod = toTimeOfTheDay(startTimeEditingController.text);
-    return DateTime(day.year, day.month, day.day, stod.hour, stod.minute);
+    var stod = toTimeOfTheDay(controller.text);
+    return tz.TZDateTime(tz.getLocation(timezoneId), day.year, day.month,
+        day.day, stod.hour, stod.minute);
   }
 
   TimeOfDay toTimeOfTheDay(String v) {

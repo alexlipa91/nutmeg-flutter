@@ -59,7 +59,7 @@ class SportCentersController {
     return (match == null)
         ? null
         : match.sportCenter ??
-        context.watch<LoadOnceState>().getSportCenter(match.sportCenterId!);
+        context.read<LoadOnceState>().getSportCenter(match.sportCenterId!);
   }
 
   static Future<void> addSportCenterFromPlace(
