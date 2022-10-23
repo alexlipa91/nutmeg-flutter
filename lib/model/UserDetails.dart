@@ -11,6 +11,7 @@ class UserDetails {
   int? numJoinedMatches;
   double? averageScore;
   List<double>? lastScores;
+  Map<String, int>? skillsCount;
 
   List<String>? createdMatches;
   List<String>? createdTestMatches;
@@ -46,6 +47,7 @@ class UserDetails {
         potmCount = json["potm_count"] ?? 0,
         lastScores = (json["last_date_scores"] == null) ? []
             : _readLastScores(Map<String, double>.from(json["last_date_scores"])),
+        skillsCount = Map<String, int>.from((json["skills_count"] ?? {})),
         chargesEnabledOnStripe = json["chargesEnabledOnStripe"] ?? false,
         chargesEnabledOnStripeTest = json["chargesEnabledOnStripeTest"] ?? false,
         createdMatches = Map<String, dynamic>.from(json["created_matches"] ?? {}).keys.toList(),

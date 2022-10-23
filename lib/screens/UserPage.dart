@@ -1,6 +1,7 @@
 import 'package:badges/badges.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
@@ -239,6 +240,59 @@ class UserPageState extends State<UserPage> {
                   child: InfoContainer(child:
                   PerformanceGraph(userId: userDetails.documentId)))
           ),
+        if ((userDetails.skillsCount ?? {}).isNotEmpty)
+          Builder(
+            builder: (BuildContext context) {
+              var sorted = userDetails.skillsCount!.entries.toList()
+                ..sort((a, b) => b.value.compareTo(a.value));
+
+              return Section(
+                  title: "TOP SKILLS",
+                  body: InfoContainer(
+                    child: Column(children:
+                      interleave(
+                        sorted.asMap().entries.map((e) => Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                  Container(
+                                    width: 20,
+                                    child: Text(e.key.toString(),
+                                        style: GoogleFonts.roboto(color:
+                                        Palette.grey_dark, fontSize: 14,
+                                            fontWeight: FontWeight.w400)),
+                                  ),
+                                  Container(
+                                    width: 80,
+                                    child: Text(e.value.key,
+                                        style: GoogleFonts.roboto(
+                                            color: Palette.black,
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w500)),
+                                  ),
+                                  Container(
+                                height: 8,
+                                width: 80,
+                                child: ClipRRect(
+                                  borderRadius:
+                                  BorderRadius.all(Radius.circular(10)),
+                                    child: LinearProgressIndicator(
+                                    value: e.value.value / sorted.first.value,
+                                    color: Palette.primary,
+                                    backgroundColor: Palette.grey_lighter,
+                                  ),
+                                ),
+                              ),
+                                  Text(e.value.value == 0
+                                      ? "-" : e.value.value.toString(),
+                                    style: TextPalette.h3,)
+                            ])).toList(),
+                        SizedBox(height: 12)
+                      )
+                    ),
+                  )
+              );
+            },
+          ),
         if (showOrganizerView)
           Section(
             title: "ORGANISER",
@@ -335,6 +389,42 @@ class UserPageState extends State<UserPage> {
                 }),
             SizedBox(height: 16),
             Row(
+                  children: [
+                    Expanded(
+                      child: InkWell(
+                          child: Text("Delete Profile", style: TextPalette.h3),
+                          onTap:() async {
+                            var shouldCancel = await GenericInfoModal(
+                                title: "Are you sure you want to delete your profile?",
+                                description: "This is going to permanently delete all your data stored in Nutmeg and cannot be undone.",
+                                action: Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    GenericButtonWithLoader("CANCEL", (_) async {
+                                      Navigator.pop(context, false);
+                                    }, Secondary()),
+                                    SizedBox(width: 8),
+                                    GenericButtonWithLoader("YES", (_) async {
+                                      Navigator.pop(context, true);
+                                    }, Primary()),
+                                  ],
+                                )).show(context);
+
+                            if (shouldCancel) {
+                              await Future.delayed(
+                                  Duration(milliseconds: 500),
+                                      () => UserController.logout(
+                                      context.read<UserState>()));
+                              Navigator.of(context).pop();
+                            }
+                          }
+                      ),
+                    )
+                  ],
+        ),
+            Divider(),
+            SizedBox(height: 14),
+            Row(
               children: [
                 Expanded(
                   child: GenericButtonWithLoader(
@@ -358,41 +448,6 @@ class UserPageState extends State<UserPage> {
                 )
               ],
             ),
-            SizedBox(height: 16),
-            Row(
-                  children: [
-                    Expanded(
-                      child: InkWell(
-                        child: Text("Delete Profile", style: TextPalette.h3),
-                        onTap:() async {
-                          var shouldCancel = await GenericInfoModal(
-                              title: "Are you sure you want to delete your profile?",
-                              description: "This is going to permanently delete all your data stored in Nutmeg and cannot be undone.",
-                              action: Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  GenericButtonWithLoader("CANCEL", (_) async {
-                                    Navigator.pop(context, false);
-                                  }, Secondary()),
-                                  SizedBox(width: 8),
-                                  GenericButtonWithLoader("YES", (_) async {
-                                    Navigator.pop(context, true);
-                                  }, Primary()),
-                                ],
-                              )).show(context);
-
-                          if (shouldCancel) {
-                            await Future.delayed(
-                                Duration(milliseconds: 500),
-                                    () => UserController.logout(
-                                    context.read<UserState>()));
-                            Navigator.of(context).pop();
-                          }
-                        }
-                      ),
-                    )
-                  ],
-                ),
           ])),
         ),
         if (userDetails.getIsAdmin())
