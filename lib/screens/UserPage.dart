@@ -256,17 +256,17 @@ class UserPageState extends State<UserPage> {
                                     children: [
                                   Container(
                                     width: 20,
-                                    child: Text(e.key.toString(),
+                                    child: Text((e.key + 1).toString(),
                                         style: GoogleFonts.roboto(color:
-                                        Palette.grey_dark, fontSize: 14,
+                                        Palette.grey_dark, fontSize: 16,
                                             fontWeight: FontWeight.w400)),
                                   ),
                                   Container(
-                                    width: 80,
+                                    width: 180,
                                     child: Text(e.value.key,
                                         style: GoogleFonts.roboto(
                                             color: Palette.black,
-                                            fontSize: 14,
+                                            fontSize: 16,
                                             fontWeight: FontWeight.w500)),
                                   ),
                                   Container(
@@ -284,7 +284,10 @@ class UserPageState extends State<UserPage> {
                               ),
                                   Text(e.value.value == 0
                                       ? "-" : e.value.value.toString(),
-                                    style: TextPalette.h3,)
+                                    style: GoogleFonts.roboto(
+                                        color: Palette.black,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w400),)
                             ])).toList(),
                         SizedBox(height: 12)
                       )
