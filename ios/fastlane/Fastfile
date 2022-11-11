@@ -55,6 +55,7 @@ platform :ios do
       distribute_external: false,
       notify_external_testers: false,
       ipa: "./Runner.ipa"
+      itc_provider: "CN7XB83K76"
     )
     delete_temp_keychain(keychain_name)
   end
