@@ -1,3 +1,4 @@
+import 'package:decimal/decimal.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -493,18 +494,18 @@ class CreateMatchState extends State<CreateMatch> {
             Text("You will get", style: TextPalette.h3),
             Spacer(),
             Builder(builder: (BuildContext buildContext) {
-              var price = double.tryParse(priceController.text);
+              var price = Decimal.tryParse(priceController.text);
               if (price != null && ConfigsUtils.feesOnOrganiser(organiserId))
-                price = price - 0.5;
+                price = price - Decimal.parse("0.5");
               return Text(
                   (price == null)
                       ? "€ --"
                       : "€ " +
-                          (price * numberOfPeopleRangeValues.start)
+                          (price.toDouble() * numberOfPeopleRangeValues.start)
                               .toStringAsFixed(2) +
                           " - " +
                           "€ " +
-                          (price * numberOfPeopleRangeValues.end)
+                          (price.toDouble() * numberOfPeopleRangeValues.end)
                               .toStringAsFixed(2),
                   style: TextPalette.h3);
             }),
@@ -680,10 +681,13 @@ class CreateMatchState extends State<CreateMatch> {
                 child: GenericButtonWithLoader(
                     widget.existingMatch == null ? "CREATE": "CONFIRM",
                     (BuildContext context) async {
-                  context.read<GenericButtonWithLoaderState>().change(true);
 
-                  bool? v = _formKey.currentState?.validate();
-                  if (v != null && v) {
+                  print((Decimal.parse(priceController.text) * Decimal.parse("100")).toDouble().toInt());
+                  return;
+
+                  context.read<GenericButtonWithLoaderState>().change(true);
+                  bool ? v = _formKey.currentState?.validate();
+                  if ( v != null && v) {
                     try {
                       var dateTime = getDateTime(startTimeEditingController,
                           sportCenter.timezoneId);
@@ -706,7 +710,7 @@ class CreateMatchState extends State<CreateMatch> {
                             (sportCenter is SavedSportCenter) ? null : sportCenter,
                             courtNumberEditingController.text,
                             numberOfPeopleRangeValues.end.toInt(),
-                            (double.parse(priceController.text) * 100).toInt(),
+                            (Decimal.parse(priceController.text) * Decimal.parse("100")).toDouble().toInt(),
                             duration,
                             isTest,
                             numberOfPeopleRangeValues.start.toInt(),
