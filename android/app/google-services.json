@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "956073807168",
+    "firebase_url": "https://nutmeg-9099c-default-rtdb.europe-west1.firebasedatabase.app",
     "project_id": "nutmeg-9099c",
     "storage_bucket": "nutmeg-9099c.appspot.com"
   },
@@ -13,6 +14,54 @@
         }
       },
       "oauth_client": [
+        {
+          "client_id": "956073807168-0k19bq5mee448tc61qvfk6e1e9psjke4.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.nutmeg.nutmeg",
+            "certificate_hash": "dc4180457965c9d7665a35896b40a9142e7a9987"
+          }
+        },
+        {
+          "client_id": "956073807168-546mkcvu158br2fnfmhttiuh7q1j1sel.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.nutmeg.nutmeg",
+            "certificate_hash": "ddbe7f571930f6cabf8af20eb9ac9aa933a06521"
+          }
+        },
+        {
+          "client_id": "956073807168-6b9ch7en9nj1pa63djreuq19jl1be3lr.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.nutmeg.nutmeg",
+            "certificate_hash": "400fb29954f01d31a63bcbc5736dccc6d4767122"
+          }
+        },
+        {
+          "client_id": "956073807168-gej05j0cbo6rjjbapvvqkavcqqqgm6t6.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.nutmeg.nutmeg",
+            "certificate_hash": "a6559a64f465833f5e77f069f6f7fc82f3a83b72"
+          }
+        },
+        {
+          "client_id": "956073807168-k87ndh4t0rkiqvsb0pnjbhfm0gq7i1ut.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.nutmeg.nutmeg",
+            "certificate_hash": "74b2eb8ca41b948c64d13dad05132c0f54d7fafa"
+          }
+        },
+        {
+          "client_id": "956073807168-mgd9m9943ebfr079rj5j0m703p8keud1.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.nutmeg.nutmeg",
+            "certificate_hash": "08a9dd26722690678957f6bd6e1177b1185a5e72"
+          }
+        },
         {
           "client_id": "956073807168-euf217h4v80mojcfeb890366jf1119es.apps.googleusercontent.com",
           "client_type": 3
@@ -27,8 +76,16 @@
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "956073807168-euf217h4v80mojcfeb890366jf1119es.apps.googleusercontent.com",
+              "client_id": "956073807168-8re8m699adu47st1fs94t08qil3m5bv2.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "956073807168-4gia0lo6ggju7f1kiin9j2ibn3q5b9qd.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.nutmeg.app",
+                "app_store_id": "1592985083"
+              }
             }
           ]
         }

@@ -14,6 +14,7 @@ import 'package:provider/provider.dart';
 import 'package:tuple/tuple.dart';
 import 'package:version/version.dart';
 import 'package:timezone/data/latest.dart' as tz;
+import 'package:nutmeg/firebase_options.dart';
 
 import '../Exceptions.dart';
 import '../screens/Launch.dart';
@@ -79,7 +80,9 @@ class LaunchController {
   static Future<void> loadData(BuildContext context,
       String? from) async {
     print("start loading data function");
-    await Firebase.initializeApp();
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
 
     var trace = FirebasePerformance.instance.newTrace("launch_app");
     trace.start();
