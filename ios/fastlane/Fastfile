@@ -1,55 +1,31 @@
 # Replace evverything in Fastfile with below code
 default_platform(:ios)
-APPLICATON_ID = ENV["APPLICATON_ID"]
-BUNDLE_IDENTIFIER = ENV["BUNDLE_IDENTIFIER"]
-PROVISIONING_PROFILE_SPECIFIER = ENV["PROVISIONING_PROFILE_SPECIFIER"]
-TEMP_KEYCHAIN_USER = ENV["TEMP_KEYCHAIN_USER"]
-TEMP_KEYCHAIN_PASSWORD = ENV["TEMP_KEYCHAIN_PASSWORD"]
 
-def delete_temp_keychain(name)
-  delete_keychain(
-    name: name
-  ) if File.exist? File.expand_path("~/Library/Keychains/#{name}-db")
-end
-def create_temp_keychain(name, password)
-  create_keychain(
-    name: name,
-    password: password,
-    unlock: false,
-    timeout: 0
-  )
-end
-def ensure_temp_keychain(name, password)
-  delete_temp_keychain(name)
-  create_temp_keychain(name, password)
-end
 platform :ios do
   lane :closed_beta do
-    keychain_name = TEMP_KEYCHAIN_USER
-    keychain_password = TEMP_KEYCHAIN_PASSWORD
-    ensure_temp_keychain(keychain_name, keychain_password)
+
+    setup_ci(verbose: true)
+
     match(
       type: 'appstore',
-      app_identifier: "#{BUNDLE_IDENTIFIER}",
+      app_identifier: ENV["BUNDLE_IDENTIFIER"],
       git_basic_authorization: Base64.strict_encode64(ENV["GIT_AUTH_TOKEN"]),
       readonly: true,
-      keychain_name: keychain_name,
-      keychain_password: keychain_password
+      verbose: true,
     )
+
     gym(
-      configuration: "Release",
-      workspace: "Runner.xcworkspace",
       scheme: "Runner",
       export_method: "app-store",
-      export_options: {
-        provisioningProfiles: {
-            APPLICATON_ID => PROVISIONING_PROFILE_SPECIFIER
-        }
-      }
+      export_team_id: ENV["DEVELOPER_PORTAL_TEAM_ID"],
+      skip_build_archive: true,
+      archive_path: "../build/ios/archive/Runner.xcarchive",
+      verbose: true
     )
+
     pilot(
-      apple_id: "#{APPLICATON_ID}",
-      app_identifier: "#{BUNDLE_IDENTIFIER}",
+      apple_id: ENV["APPLICATION_ID"],
+      app_identifier: ENV["BUNDLE_IDENTIFIER"],
       skip_waiting_for_build_processing: true,
       skip_submission: true,
       distribute_external: false,
@@ -57,7 +33,6 @@ platform :ios do
       ipa: "./Runner.ipa",
       itc_provider: "CN7XB83K76"
     )
-    delete_temp_keychain(keychain_name)
   end
 
   lane :submit_for_review do |options|
@@ -72,8 +47,8 @@ platform :ios do
         skip_screenshots: true,
         skip_binary_upload: true,
         run_precheck_before_submit: false,
-        username: "alessandroliparoti@live.it",
-        app_identifier: "com.nutmeg.app",
+        username: ENV["FASTLANE_APPLE_ID"],
+        app_identifier: ENV["BUNDLE_IDENTIFIER"],
         submission_information: { add_id_info_uses_idfa: false }
     )
   end

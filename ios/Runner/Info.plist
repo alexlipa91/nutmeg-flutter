@@ -98,5 +98,7 @@
     <string>Allow users to select profile picture</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+	<key>UIApplicationSupportsIndirectInputEvents</key>
+	<true/>
 </dict>
 </plist>

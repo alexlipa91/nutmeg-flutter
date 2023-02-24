@@ -209,10 +209,10 @@ class LaunchWidgetState extends State<LaunchWidget> {
       }
     };
 
-    FirebaseDynamicLinks.instance.onLink(
-        onSuccess: onSuccess,
-        onError: (OnLinkErrorException e) async {
-      print(e.message);
+    FirebaseDynamicLinks.instance.onLink.listen((dynamicLinkData) {
+      onSuccess(dynamicLinkData);
+    }).onError((error) {
+      print(error);
     });
   }
 

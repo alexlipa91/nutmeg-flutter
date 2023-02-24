@@ -69,9 +69,10 @@ class LaunchController {
         }
       };
 
-      FirebaseDynamicLinks.instance.onLink(onSuccess: future,
-          onError: (OnLinkErrorException e) async {
-        print(e.message);
+      FirebaseDynamicLinks.instance.onLink.listen((dynamicLinkData) {
+        future(dynamicLinkData);
+      }).onError((error) {
+        print(error);
       });
     }
   }

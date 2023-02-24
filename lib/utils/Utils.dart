@@ -43,7 +43,7 @@ class DynamicLinks {
         minimumVersion: 0,
         fallbackUrl: deepLinkUrl
       ),
-      iosParameters: IosParameters(
+      iosParameters: IOSParameters(
         bundleId: 'com.nutmeg.app',
         minimumVersion: '1',
         appStoreId: '1592985083',
@@ -56,7 +56,7 @@ class DynamicLinks {
         description: "Location: ${sportCenter.name}",
       )
     );
-    var url = await parameters.buildShortLink();
+    var url = await FirebaseDynamicLinks.instance.buildShortLink(parameters);
 
     // fixme this doesn't wait
     await Share.share(

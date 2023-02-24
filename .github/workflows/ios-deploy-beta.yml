@@ -20,24 +20,36 @@ jobs:
       - name: Run Flutter tasks
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.0.2'
+          flutter-version: '3.7.1'
       - run: flutter clean
       - run: flutter pub get
-      - run: flutter build ios --release --no-codesign -t lib/screens/Launch.dart
-      - name: Deploy iOS Beta to TestFlight via Fastlane
-        uses: maierj/fastlane-action@v1.4.0
+      - run: flutter build ipa --no-codesign -t lib/screens/Launch.dart
+      - uses: ruby/setup-ruby@v1
         with:
-          lane: closed_beta
-          subdirectory: ios
+          ruby-version: '3.0'
+          bundler-cache: true
+          working-directory: 'ios'
+      - uses: maierj/fastlane-action@v3.0.0
+        with:
+          lane: 'closed_beta'
+          subdirectory: 'ios'
         env:
-          ITC_TEAM_ID: "123691355"
-          APPLICATON_ID: "1592985083"
+          APPLICATION_ID: "1592985083"
           BUNDLE_IDENTIFIER: "com.nutmeg.app"
           DEVELOPER_PORTAL_TEAM_ID: "CN7XB83K76"
           FASTLANE_APPLE_ID: "alessandroliparoti@live.it"
           FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD: "odnv-ruvg-mzoo-enld"
           MATCH_PASSWORD: "nutmeg"
-          PROVISIONING_PROFILE_SPECIFIER: "match AppStore com.nutmeg.app"
-          TEMP_KEYCHAIN_PASSWORD: "tmp_keychain_pass"
-          TEMP_KEYCHAIN_USER: "tmp_keychain_user"
           GIT_AUTH_TOKEN: ${{ secrets.GIT_AUTH_TOKEN }}
+      - name: save artifacts
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: save-log-file
+          path: /Users/runner/Library/Logs/gym/Runner-Runner.log
+      - name: log certificates after
+        if: always()
+        run: security find-certificate
+      - name: log identities after
+        if: always()
+        run: security find-identity
