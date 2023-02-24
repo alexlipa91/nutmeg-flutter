@@ -12,7 +12,6 @@ class EnterDetails extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Firebase.initializeApp();
     var images = Row(children: [
       Expanded(
           child: Column(

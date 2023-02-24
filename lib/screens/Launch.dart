@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/foundation.dart';
@@ -19,6 +20,7 @@ import 'package:provider/provider.dart';
 import 'package:skeletons/skeletons.dart';
 
 import '../Exceptions.dart';
+import '../firebase_options.dart';
 import '../state/LoadOnceState.dart';
 import '../state/MatchesState.dart';
 import '../state/UserState.dart';
@@ -113,9 +115,10 @@ final appRouter = GoRouter(
 );
 
 
-void main() {
+void main() async {
   Logger.level = Level.error;
   WidgetsFlutterBinding.ensureInitialized(); //imp line need to be added first
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   if (!kIsWeb) {
     FlutterError.onError = (FlutterErrorDetails details) async {

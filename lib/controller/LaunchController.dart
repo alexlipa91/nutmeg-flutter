@@ -80,7 +80,6 @@ class LaunchController {
   static Future<void> loadData(BuildContext context,
       String? from) async {
     print("start loading data function");
-    await Firebase.initializeApp();
 
     var trace = FirebasePerformance.instance.newTrace("launch_app");
     trace.start();
