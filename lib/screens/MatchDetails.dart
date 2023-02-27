@@ -144,7 +144,8 @@ class MatchDetailsState extends State<MatchDetails> {
           SkeletonMatchDetails.skeletonRepeatedElement(),
         ])
       ];
-    } else {
+    }
+    else {
       widgets = [
         // title
         if (organizerView &&
