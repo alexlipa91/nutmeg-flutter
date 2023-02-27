@@ -41,13 +41,13 @@ class DynamicLinks {
       androidParameters: AndroidParameters(
         packageName: 'com.nutmeg.nutmeg',
         minimumVersion: 0,
-        fallbackUrl: deepLinkUrl
+        // fallbackUrl: deepLinkUrl
       ),
       iosParameters: IOSParameters(
         bundleId: 'com.nutmeg.app',
         minimumVersion: '1',
         appStoreId: '1592985083',
-        fallbackUrl: deepLinkUrl
+        // fallbackUrl: deepLinkUrl
       ),
       socialMetaTagParameters: SocialMetaTagParameters(
         title: "Match on ${dayDateFormat
