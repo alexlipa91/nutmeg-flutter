@@ -34,7 +34,8 @@ final appRouter = GoRouter(
   routes: [
     GoRoute(
       path: '/launch',
-      builder: (context, state) => LaunchWidget(from: state.queryParams["from"]),
+      builder: (context, state) =>
+          LaunchWidget(from: state.queryParams["from"]),
     ),
     GoRoute(
         path: '/',
@@ -46,51 +47,42 @@ final appRouter = GoRouter(
               builder: (context, state) => UserPage(),
               routes: [
                 GoRoute(path: 'login', builder: (context, state) => Login())
-              ]
-          ),
+              ]),
           GoRoute(
             path: 'createMatch',
             builder: (context, state) => CreateMatch(),
           ),
           GoRoute(
-            path: 'match/:id',
-            builder: (context, state) {
-              var keyString = "MatchDetails-${state.params["id"]}-"
-                  "${state.queryParams.entries
-                  .map((e) => "${e.key}-${e.value}").join("-")}";
-              return MatchDetails(
-                key: ValueKey(keyString),
-                matchId: state.params["id"]!,
-                paymentOutcome: state.queryParams["payment_outcome"]);
-            },
-            routes: [
-              GoRoute(
-                path: 'edit',
-                builder: (context, state) => CreateMatch.edit(
-                    context.read<MatchesState>().getMatch(state.params["id"]!)
-                )
-              )
-            ]
-          ),
-        ]
-    ),
+              path: 'match/:id',
+              builder: (context, state) {
+                var keyString = "MatchDetails-${state.params["id"]}-"
+                    "${state.queryParams.entries.map((e) => "${e.key}-${e.value}").join("-")}";
+                return MatchDetails(
+                    key: ValueKey(keyString),
+                    matchId: state.params["id"]!,
+                    paymentOutcome: state.queryParams["payment_outcome"]);
+              },
+              routes: [
+                GoRoute(
+                    path: 'edit',
+                    builder: (context, state) => CreateMatch.edit(context
+                        .read<MatchesState>()
+                        .getMatch(state.params["id"]!)))
+              ]),
+        ]),
     GoRoute(
-      path: '/admin',
-      builder: (context, state) => AdminAvailableMatches(),
-      routes: [
-        GoRoute(
-            path: 'match/:id',
-            builder: (context, state) {
-              var keyString = "AdminMatchDetails-${state.params["id"]}-"
-                  "${state.queryParams.entries
-                  .map((e) => "${e.key}-${e.value}").join("-")}";
-              return AdminMatchDetails(
-                  key: ValueKey(keyString),
-                  matchId: state.params["id"]!);
-            }
-        ),
-      ]
-    )
+        path: '/admin',
+        builder: (context, state) => AdminAvailableMatches(),
+        routes: [
+          GoRoute(
+              path: 'match/:id',
+              builder: (context, state) {
+                var keyString = "AdminMatchDetails-${state.params["id"]}-"
+                    "${state.queryParams.entries.map((e) => "${e.key}-${e.value}").join("-")}";
+                return AdminMatchDetails(
+                    key: ValueKey(keyString), matchId: state.params["id"]!);
+              }),
+        ])
   ],
   // redirect to the launch page
   redirect: (state) {
@@ -105,8 +97,8 @@ final appRouter = GoRouter(
       // the pages that need login
       if ({"/createMatch", "/user", "/admin"}.contains(state.subloc))
         redirectUrl = "/login?from=${state.location}";
-    } else if (!(userState.getLoggedUserDetails()!.isAdmin ?? false)
-        && state.subloc == "/admin") {
+    } else if (!(userState.getLoggedUserDetails()!.isAdmin ?? false) &&
+        state.subloc == "/admin") {
       redirectUrl = "/";
     }
 
@@ -114,11 +106,11 @@ final appRouter = GoRouter(
   },
 );
 
-
 void main() async {
   Logger.level = Level.error;
   WidgetsFlutterBinding.ensureInitialized(); //imp line need to be added first
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await Firebase.initializeApp(
+      name: "nutmeg", options: DefaultFirebaseOptions.currentPlatform);
 
   if (!kIsWeb) {
     FlutterError.onError = (FlutterErrorDetails details) async {
@@ -151,21 +143,21 @@ void main() async {
         ),
         child: FlutterWebFrame(
           builder: (context) => MaterialApp.router(
-              key: navigatorKey,
-              routeInformationParser: appRouter.routeInformationParser,
-              routerDelegate: appRouter.routerDelegate,
-              routeInformationProvider: appRouter.routeInformationProvider,
-              debugShowCheckedModeBanner: false,
-              backButtonDispatcher: RootBackButtonDispatcher(),
-              theme: ThemeData(
-                colorScheme: ColorScheme.light().copyWith(
-                  primary: Palette.primary,
-                ),
-                hoverColor: Colors.transparent,
-                splashColor: Colors.transparent,
-                highlightColor: Colors.transparent,
+            key: navigatorKey,
+            routeInformationParser: appRouter.routeInformationParser,
+            routerDelegate: appRouter.routerDelegate,
+            routeInformationProvider: appRouter.routeInformationProvider,
+            debugShowCheckedModeBanner: false,
+            backButtonDispatcher: RootBackButtonDispatcher(),
+            theme: ThemeData(
+              colorScheme: ColorScheme.light().copyWith(
+                primary: Palette.primary,
               ),
+              hoverColor: Colors.transparent,
+              splashColor: Colors.transparent,
+              highlightColor: Colors.transparent,
             ),
+          ),
           maximumSize: Size(812.0, 812.0), // Maximum size
           enabled: kIsWeb,
           backgroundColor: Palette.grey_light,
@@ -183,7 +175,6 @@ void main() async {
 }
 
 class LaunchWidget extends StatefulWidget {
-
   final String? from;
   final Map<String, String>? queryParams;
 
@@ -194,7 +185,6 @@ class LaunchWidget extends StatefulWidget {
 }
 
 class LaunchWidgetState extends State<LaunchWidget> {
-
   @override
   void initState() {
     super.initState();
@@ -222,21 +212,22 @@ class LaunchWidgetState extends State<LaunchWidget> {
   @override
   Widget build(BuildContext context) {
     var mainWidgets =
-      Column(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-        Expanded(child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Image.asset("assets/nutmeg_white.png", width: 116, height: 46),
-                SizedBox(height: 30),
-                CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
-              ],
-            )
-          ],
-        ))
+        Column(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+      Expanded(
+          child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Image.asset("assets/nutmeg_white.png", width: 116, height: 46),
+              SizedBox(height: 30),
+              CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
+            ],
+          )
+        ],
+      ))
     ]);
 
     return Scaffold(
@@ -244,27 +235,32 @@ class LaunchWidgetState extends State<LaunchWidget> {
             decoration: BoxDecoration(
               color: Palette.primary,
             ),
-            child: Stack(children: [getBackgoundImages(context), mainWidgets])));
+            child:
+                Stack(children: [getBackgoundImages(context), mainWidgets])));
   }
 
   static Widget getBackgoundImages(BuildContext context) => Row(children: [
-    Expanded(child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Align(
-              alignment: Alignment.topLeft,
-              child: SvgPicture.asset('assets/launch/blob_top_left.svg')),
-          Expanded(
-            child: SizedBox(
-                width: MediaQuery.of(context).size.width,
-                child: SvgPicture.asset('assets/launch/blob_middle_middle.svg',
-                  fit: BoxFit.fill,)),
-          ),
-          Align(
-              alignment: Alignment.bottomRight,
-              child: SvgPicture.asset('assets/launch/blob_bottom_right.svg'))
-        ]))
-  ]);
+        Expanded(
+            child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+              Align(
+                  alignment: Alignment.topLeft,
+                  child: SvgPicture.asset('assets/launch/blob_top_left.svg')),
+              Expanded(
+                child: SizedBox(
+                    width: MediaQuery.of(context).size.width,
+                    child: SvgPicture.asset(
+                      'assets/launch/blob_middle_middle.svg',
+                      fit: BoxFit.fill,
+                    )),
+              ),
+              Align(
+                  alignment: Alignment.bottomRight,
+                  child:
+                      SvgPicture.asset('assets/launch/blob_bottom_right.svg'))
+            ]))
+      ]);
 }
 
 // Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
