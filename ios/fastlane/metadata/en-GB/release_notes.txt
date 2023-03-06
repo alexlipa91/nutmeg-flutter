@@ -1,1 +1,1 @@
-Add performance stats
+Update firebase core libraries
