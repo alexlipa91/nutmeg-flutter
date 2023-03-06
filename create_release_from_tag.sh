@@ -11,8 +11,9 @@ then
   exit -1
 fi
 
-# populate ios release notes
+# populate ios and android release notes
 echo $NOTES > ios/fastlane/metadata/en-GB/release_notes.txt
+echo $NOTES > android/fastlane/metadata/en-GB/changelogs/$BUILD.txt
 
 # promote android build
 (cd android; fastlane run upload_to_play_store track_promote_to:production version_code:$BUILD track:internal)
