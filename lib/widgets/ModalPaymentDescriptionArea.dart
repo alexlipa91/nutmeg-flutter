@@ -6,10 +6,9 @@ class ModalPaymentDescriptionArea extends StatelessWidget {
   static var divider = Divider(color: Palette.grey_light, height: 0);
 
   final List<Widget> rows;
-  final Widget finalRow;
+  final Widget? finalRow;
 
-  const ModalPaymentDescriptionArea({Key? key, required this.rows,
-    required this.finalRow})
+  const ModalPaymentDescriptionArea({Key? key, required this.rows, this.finalRow})
       : super(key: key);
 
   @override
@@ -25,9 +24,11 @@ class ModalPaymentDescriptionArea extends StatelessWidget {
       rowWidgets.add(SizedBox(height: 16));
     }
     rowWidgets.add(divider);
-    rowWidgets.add(SizedBox(height: 16));
-    rowWidgets.add(finalRow);
-    rowWidgets.add(SizedBox(height: 16));
+    if (finalRow != null) {
+      rowWidgets.add(SizedBox(height: 16));
+      rowWidgets.add(finalRow);
+      rowWidgets.add(SizedBox(height: 16));
+    }
 
     return Container(
       child: Column(

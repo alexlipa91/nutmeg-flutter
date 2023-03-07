@@ -1,7 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:nutmeg/controller/SportCentersController.dart';
 import 'package:nutmeg/model/Match.dart';
-import 'package:nutmeg/model/SportCenter.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/Buttons.dart';
@@ -11,8 +11,10 @@ import 'package:provider/provider.dart';
 import '../state/LoadOnceState.dart';
 
 class PaymentDetailsDescription {
-  static Future<void> communicateSuccessToUser(
-      BuildContext? context, Match match, SportCenter sportCenter) async {
+  static Future<void> communicateSuccessToUser(BuildContext? context,
+      Match match) async {
+    var sportCenter = SportCentersController.getSportCenterRead(context!, match)!;
+
     await ModalBottomSheet.showNutmegModalBottomSheet(
         context,
         Container(

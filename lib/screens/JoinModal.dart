@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 import 'package:nutmeg/controller/PaymentController.dart';
 import 'package:nutmeg/screens/Login.dart';
+import 'package:nutmeg/screens/PaymentDetailsDescription.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
@@ -9,6 +11,8 @@ import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:nutmeg/widgets/ModalPaymentDescriptionArea.dart';
 import 'package:provider/provider.dart';
 
+import '../controller/MatchesController.dart';
+import '../controller/SportCentersController.dart';
 import '../model/PaymentRecap.dart';
 import '../state/MatchesState.dart';
 import '../state/UserState.dart';
@@ -118,6 +122,17 @@ class JoinModal {
     if (userState.isLoggedIn()) {
       var paymentRecap = await PaymentController.generatePaymentRecap(
           context, match!.documentId);
+
+      if (!match.managePayments) {
+        await CloudFunctionsClient().callFunction("add_user_to_match", {
+          "match_id": matchId,
+          "user_id": userState.currentUserId!
+        });
+        await MatchesController.refresh(context, matchId);
+        await PaymentDetailsDescription.communicateSuccessToUser(context, match);
+
+        return;
+      }
 
       await GenericInfoModal(
           title: "Join this match",

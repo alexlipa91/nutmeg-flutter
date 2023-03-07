@@ -31,8 +31,7 @@ class PayWithCreditsButton extends StatelessWidget {
 
           GoRouter.of(context).pop();
           await PaymentDetailsDescription.communicateSuccessToUser(context,
-              match,
-              SportCentersController.getSportCenter(context, match)!);
+              match);
         },
         Primary(),
       );

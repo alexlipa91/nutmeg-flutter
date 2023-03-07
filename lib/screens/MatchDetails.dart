@@ -65,8 +65,7 @@ class MatchDetailsState extends State<MatchDetails> {
     if (widget.paymentOutcome != null) {
       if (ModalBottomSheet.isOpen) Navigator.of(context).pop();
       if (widget.paymentOutcome! == "success") {
-        PaymentDetailsDescription.communicateSuccessToUser(
-            context, match, SportCentersController.getSportCenter(context, match)!);
+        PaymentDetailsDescription.communicateSuccessToUser(context, match);
       } else
         GenericInfoModal(
                 title: "Payment Failed!", description: "Please try again")
@@ -498,7 +497,8 @@ class MatchInfo extends StatelessWidget {
                       .add(match.duration))}"
                       + " ("
                       + gmtSuffix(sportCenter.timezoneId) + ")",
-              Icons.local_offer_outlined:
+              if (match.managePayments)
+                Icons.local_offer_outlined:
                   formatCurrency(match.pricePerPersonInCents)
             }),
             if (matchWidget != null)

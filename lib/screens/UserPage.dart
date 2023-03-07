@@ -424,9 +424,20 @@ class UserPageState extends State<UserPage> {
                       ),
                     )
                   ],
-        ),
+            ),
             Divider(),
             SizedBox(height: 14),
+            Row(
+                  children: [
+                    Expanded(
+                      child: InkWell(
+                          child: Text("Privacy Policy", style: TextPalette.h3),
+                          onTap:() => launch("https://nutmeg.flycricket.io/privacy.html", forceSafariVC: false)
+                      ),
+                    )
+                  ],
+            ),
+            Divider(),
             Row(
               children: [
                 Expanded(

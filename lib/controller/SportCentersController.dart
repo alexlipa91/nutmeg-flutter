@@ -55,11 +55,19 @@ class SportCentersController {
         .toList();
   }
 
+  // todo figure out how to merge these
   static SportCenter? getSportCenter(BuildContext context, Match? match) {
     return (match == null)
         ? null
         : match.sportCenter ??
         context.watch<LoadOnceState>().getSportCenter(match.sportCenterId!);
+  }
+
+  static SportCenter? getSportCenterRead(BuildContext context, Match? match) {
+    return (match == null)
+        ? null
+        : match.sportCenter ??
+        context.read<LoadOnceState>().getSportCenter(match.sportCenterId!);
   }
 
   static Future<void> addSportCenterFromPlace(

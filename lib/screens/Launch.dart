@@ -110,7 +110,9 @@ void main() async {
   Logger.level = Level.error;
   WidgetsFlutterBinding.ensureInitialized(); //imp line need to be added first
   await Firebase.initializeApp(
-      name: "nutmeg", options: DefaultFirebaseOptions.currentPlatform);
+      // https://github.com/firebase/flutterfire/issues/10228
+      name: kIsWeb ? null : "nutmeg",
+      options: DefaultFirebaseOptions.currentPlatform);
 
   if (!kIsWeb) {
     FlutterError.onError = (FlutterErrorDetails details) async {

@@ -48,12 +48,15 @@ class Match {
   int userFee;
   int organiserFee;
 
+  bool managePayments;
+
   bool isTest;
 
   Match(this.dateTime, this.sportCenterId, this.sportCenter, this.sportCenterSubLocation,
       this.maxPlayers, this.pricePerPersonInCents, this.duration,
       this.isTest, this.minPlayers, this.organizerId, this.userFee,
-      this.organiserFee, this.going, this.teams, this.cancelBefore);
+      this.organiserFee, this.going, this.teams, this.cancelBefore,
+      this.managePayments);
 
   Match.fromJson(Map<String, dynamic> jsonInput, String documentId) :
         dateTime = DateTime.parse(jsonInput['dateTime']),
@@ -67,7 +70,9 @@ class Match {
         _manOfTheMatch = _readManOfTheMatch(jsonInput),
         sportCenterId = jsonInput['sportCenterId'],
         userFee = jsonInput["userFee"] ?? 0,
-        organiserFee = jsonInput["organiserFee"] ?? 0 {
+        organiserFee = jsonInput["organiserFee"] ?? 0,
+        managePayments = jsonInput["managePayments"] ?? true {
+      print(jsonInput);
       sportCenterSubLocation = jsonInput['sportCenterSubLocation'];
 
       if (jsonInput.containsKey("cancelledAt") && jsonInput["cancelledAt"] != null)
@@ -152,6 +157,7 @@ class Match {
           'userFee': userFee,
         if (organiserFee > 0)
           'organiserFee': organiserFee,
+        'managePayments': managePayments,
         'isTest': isTest
       };
 

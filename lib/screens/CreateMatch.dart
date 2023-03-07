@@ -32,13 +32,12 @@ import '../widgets/ModalBottomSheet.dart';
 
 // main widget
 class CreateMatch extends StatefulWidget {
-  
   final Match? existingMatch;
 
   CreateMatch() : existingMatch = null;
-  
+
   CreateMatch.edit(this.existingMatch);
-  
+
   @override
   State<StatefulWidget> createState() => CreateMatchState();
 }
@@ -72,7 +71,7 @@ class CreateMatchState extends State<CreateMatch> {
     );
   }
 
-  late SportCenter sportCenter;
+  SportCenter? sportCenter;
 
   final _formKey = GlobalKey<FormState>();
 
@@ -85,6 +84,7 @@ class CreateMatchState extends State<CreateMatch> {
   late TextEditingController priceController;
   late RangeValues numberOfPeopleRangeValues;
   late bool isTest;
+  late bool managePayments;
   late bool withAutomaticCancellation;
   late int repeatsForWeeks;
   late TextEditingController cancelTimeEditingController;
@@ -110,8 +110,9 @@ class CreateMatchState extends State<CreateMatch> {
   @override
   void initState() {
     super.initState();
-    
+
     if (widget.existingMatch == null) {
+      sportCenter = null;
       dateEditingController = TextEditingController();
       startTimeEditingController = TextEditingController();
       endTimeEditingController = TextEditingController();
@@ -124,37 +125,40 @@ class CreateMatchState extends State<CreateMatch> {
       withAutomaticCancellation = false;
       repeatsForWeeks = 1;
       cancelTimeEditingController = TextEditingController(text: "24");
+      managePayments = true;
     } else {
-      sportCenter = SportCentersController
-          .getSportCenter(context, widget.existingMatch)!;
-      var localizedDateTime = widget.existingMatch!.getLocalizedTime(sportCenter.timezoneId);
+      sportCenter =
+          SportCentersController.getSportCenter(context, widget.existingMatch)!;
+      var localizedDateTime =
+          widget.existingMatch!.getLocalizedTime(sportCenter!.timezoneId);
 
-      dateEditingController = TextEditingController(text: dateFormat
-          .format(localizedDateTime));
+      dateEditingController =
+          TextEditingController(text: dateFormat.format(localizedDateTime));
       startTimeEditingController = TextEditingController(
           text: getFormattedTime(TimeOfDay.fromDateTime(localizedDateTime)));
       endTimeEditingController = TextEditingController(
-          text: getFormattedTime(TimeOfDay.fromDateTime(localizedDateTime
-              .add(widget.existingMatch!.duration)))
-      );
-      sportCenterEditingController = TextEditingController(
-        text: sportCenter.name
-      );
+          text: getFormattedTime(TimeOfDay.fromDateTime(
+              localizedDateTime.add(widget.existingMatch!.duration))));
+      sportCenterEditingController =
+          TextEditingController(text: sportCenter!.name);
       repeatWeeklyEditingController = TextEditingController(text: NO_REPEAT);
       courtNumberEditingController = TextEditingController(
           text: widget.existingMatch!.sportCenterSubLocation);
       priceController = TextEditingController(
-          text: ((widget.existingMatch!.pricePerPersonInCents
-              - widget.existingMatch!.userFee) / 100).toString());
-      numberOfPeopleRangeValues = RangeValues(widget.existingMatch!.minPlayers.toDouble(), 
+          text: ((widget.existingMatch!.pricePerPersonInCents -
+                      widget.existingMatch!.userFee) /
+                  100)
+              .toString());
+      numberOfPeopleRangeValues = RangeValues(
+          widget.existingMatch!.minPlayers.toDouble(),
           widget.existingMatch!.maxPlayers.toDouble());
       isTest = widget.existingMatch!.isTest;
       withAutomaticCancellation = widget.existingMatch!.cancelBefore != null;
       repeatsForWeeks = 1;
       cancelTimeEditingController = TextEditingController(
           text: widget.existingMatch!.cancelBefore?.inHours.toString());
+      managePayments = widget.existingMatch!.managePayments;
     }
-
 
     sportCenterfocusNode = FocusNode();
     datefocusNode = FocusNode();
@@ -173,11 +177,11 @@ class CreateMatchState extends State<CreateMatch> {
 
   @override
   Widget build(BuildContext context) {
-    var organiserId = context.read<UserState>()
-        .getLoggedUserDetails()!.documentId;
+    var organiserId =
+        context.read<UserState>().getLoggedUserDetails()!.documentId;
 
     var widgets = [
-      Text("${widget.existingMatch != null ? "Edit": "New"} Match",
+      Text("${widget.existingMatch != null ? "Edit" : "New"} Match",
           style: TextPalette.h1Default),
       Section(
         titleType: "big",
@@ -293,36 +297,36 @@ class CreateMatchState extends State<CreateMatch> {
             ),
             if (widget.existingMatch == null)
               Row(
-              children: [
-                Expanded(
-                    child: TextFormField(
-                        enabled: widget.existingMatch == null,
-                        readOnly: true,
-                        controller: repeatWeeklyEditingController,
-                        decoration:
-                            getTextFormDecoration("Repeat", isDropdown: true),
-                        onTap: () async {
-                          var weeks = [1, 2, 4, 6, 8, 10];
-                          var choices = weeks.map((e) {
-                            if (e == 1)
-                              return NO_REPEAT;
-                            else
-                              return "Weekly for " + e.toString() + " weeks";
-                          }).toList();
+                children: [
+                  Expanded(
+                      child: TextFormField(
+                          enabled: widget.existingMatch == null,
+                          readOnly: true,
+                          controller: repeatWeeklyEditingController,
+                          decoration:
+                              getTextFormDecoration("Repeat", isDropdown: true),
+                          onTap: () async {
+                            var weeks = [1, 2, 4, 6, 8, 10];
+                            var choices = weeks.map((e) {
+                              if (e == 1)
+                                return NO_REPEAT;
+                              else
+                                return "Weekly for " + e.toString() + " weeks";
+                            }).toList();
 
-                          int? i = await showMultipleChoiceSheetWithText(
-                            context, "Repeat", choices);
+                            int? i = await showMultipleChoiceSheetWithText(
+                                context, "Repeat", choices);
 
-                          if (i != null) {
-                            repeatWeeklyEditingController.text =
-                                choices[i].toString();
-                            setState(() {
-                              repeatsForWeeks = weeks[i];
-                            });
-                          }
-                        })),
-              ],
-            ),
+                            if (i != null) {
+                              repeatWeeklyEditingController.text =
+                                  choices[i].toString();
+                              setState(() {
+                                repeatsForWeeks = weeks[i];
+                              });
+                            }
+                          })),
+                ],
+              ),
             if (repeatsForWeeks != 1 && dateEditingController.text.isNotEmpty)
               Padding(
                 padding: EdgeInsets.only(top: 16),
@@ -355,14 +359,12 @@ class CreateMatchState extends State<CreateMatch> {
                     return null;
                   },
                   readOnly: true,
-                  decoration:
-                      getTextFormDecoration("Location", isDropdown: true,
-                          fill: widget.existingMatch == null),
+                  decoration: getTextFormDecoration("Location",
+                      isDropdown: true, fill: widget.existingMatch == null),
                   onTap: () async {
                     SportCenter? sp =
                         await ModalBottomSheet.showNutmegModalBottomSheet(
-                            context,
-                            LocationsBottomSheet());
+                            context, LocationsBottomSheet());
 
                     if (sp != null) {
                       sportCenterEditingController.text = sp.getName();
@@ -452,173 +454,210 @@ class CreateMatchState extends State<CreateMatch> {
         body: Column(children: [
           Row(
             children: [
-              Expanded(
-                  child: TextFormField(
-                      enabled: widget.existingMatch == null,
-                      validator: (v) {
-                        if (v == null || v.isEmpty) return "Required";
-                        var f = regexPrice.firstMatch(v);
-                        if (f == null || f.end - f.start != v.length)
-                          return "Invalid amount";
-                        if (double.parse(v) < 0.50)
-                          return "Minimum amount is € 0.50";
-                        return null;
-                      },
-                      onChanged: (v) {
-                        setState(() {});
-                      },
-                      controller: priceController,
-                      keyboardType: TextInputType.numberWithOptions(
-                          signed: true, decimal: true),
-                      autovalidateMode: AutovalidateMode.onUserInteraction,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(
-                            RegExp(r'^\d*\.?\d*$')),
-                      ],
-                      decoration: getTextFormDecoration("Price per player",
-                          prefixText: "€ ",
-                          fill: widget.existingMatch == null))),
+              Checkbox(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(5)),
+                  value: managePayments,
+                  activeColor: Palette.primary,
+                  onChanged: (v) {
+                    setState(() {
+                      managePayments = v!;
+                    });
+                  }),
+              Flexible(
+                  child: Text("Allow users to pay for the match through Nutmeg",
+                      style: TextPalette.bodyText,
+                      overflow: TextOverflow.visible)),
             ],
           ),
-          if (ConfigsUtils.feesOnOrganiser(organiserId))
-            Padding(
-              padding: EdgeInsets.only(top: 16),
-              child: Row(children: [
-                Text("Nutmeg will withhold a service fee of "
-                    "${formatCurrency(50)} per player",
-                    style: TextPalette.bodyText),
-              ]),
-            ),
-          SizedBox(height: 16),
-          Row(children: [
-            Text("You will get", style: TextPalette.h3),
-            Spacer(),
-            Builder(builder: (BuildContext buildContext) {
-              var price = Decimal.tryParse(priceController.text);
-              if (price != null && ConfigsUtils.feesOnOrganiser(organiserId))
-                price = price - Decimal.parse("0.5");
-              return Text(
-                  (price == null)
-                      ? "€ --"
-                      : "€ " +
-                          (price.toDouble() * numberOfPeopleRangeValues.start)
-                              .toStringAsFixed(2) +
-                          " - " +
-                          "€ " +
-                          (price.toDouble() * numberOfPeopleRangeValues.end)
-                              .toStringAsFixed(2),
-                  style: TextPalette.h3);
-            }),
-          ]),
-          SizedBox(height: 16),
-          Divider(),
-          SizedBox(height: 16),
-          RichText(
-            textAlign: TextAlign.start,
-            text: TextSpan(
-          children: [
-            TextSpan(
-                text: "Nutmeg releases the money 24 hours after the match end time. "
-                    + "You will get paid in 3 to 5 business days after that through ",
-                style: TextPalette.bodyText),
-            TextSpan(
-                text: "Stripe",
-                recognizer: TapGestureRecognizer()
-                  ..onTap = () async {
-                    final url = 'https://stripe.com';
-                    if (await canLaunch(url)) {
-                      await launch(
-                        url,
-                        forceSafariVC: false,
-                      );
-                    }
-                  },
-                style: TextPalette.bodyText.copyWith(
-                    color: Palette.primary,
-                    decoration: TextDecoration.underline))
-          ],
-          ))
+          SizedBox(
+            height: 16,
+          ),
+          if (managePayments)
+            Container(
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                          child: TextFormField(
+                              enabled: widget.existingMatch == null,
+                              validator: (v) {
+                                if (v == null || v.isEmpty) return "Required";
+                                var f = regexPrice.firstMatch(v);
+                                if (f == null || f.end - f.start != v.length)
+                                  return "Invalid amount";
+                                if (double.parse(v) < 0.50)
+                                  return "Minimum amount is € 0.50";
+                                return null;
+                              },
+                              onChanged: (v) {
+                                setState(() {});
+                              },
+                              controller: priceController,
+                              keyboardType: TextInputType.numberWithOptions(
+                                  signed: true, decimal: true),
+                              autovalidateMode:
+                                  AutovalidateMode.onUserInteraction,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.allow(
+                                    RegExp(r'^\d*\.?\d*$')),
+                              ],
+                              decoration: getTextFormDecoration(
+                                  "Price per player",
+                                  prefixText: "€ ",
+                                  fill: widget.existingMatch == null))),
+                    ],
+                  ),
+                  if (ConfigsUtils.feesOnOrganiser(organiserId))
+                    Padding(
+                      padding: EdgeInsets.only(top: 16),
+                      child: Row(children: [
+                        Text(
+                            "Nutmeg will withhold a service fee of "
+                            "${formatCurrency(50)} per player",
+                            style: TextPalette.bodyText),
+                      ]),
+                    ),
+                  SizedBox(height: 16),
+                  Row(children: [
+                    Text("You will get", style: TextPalette.h3),
+                    Spacer(),
+                    Builder(builder: (BuildContext buildContext) {
+                      var price = Decimal.tryParse(priceController.text);
+                      if (price != null &&
+                          ConfigsUtils.feesOnOrganiser(organiserId))
+                        price = price - Decimal.parse("0.5");
+                      return Text(
+                          (price == null)
+                              ? "€ --"
+                              : "€ " +
+                                  (price.toDouble() *
+                                          numberOfPeopleRangeValues.start)
+                                      .toStringAsFixed(2) +
+                                  " - " +
+                                  "€ " +
+                                  (price.toDouble() *
+                                          numberOfPeopleRangeValues.end)
+                                      .toStringAsFixed(2),
+                          style: TextPalette.h3);
+                    }),
+                  ]),
+                  SizedBox(height: 16),
+                  Divider(),
+                  RichText(
+                      textAlign: TextAlign.start,
+                      text: TextSpan(
+                        children: [
+                          TextSpan(
+                              text: "Users are charged ${formatCurrency(50)} Nutmeg fee.\n"
+                                      "Nutmeg releases the money 24 hours after the match end time. " +
+                                  "You will get paid in 3 to 5 business days after that through ",
+                              style: TextPalette.bodyText),
+                          TextSpan(
+                              text: "Stripe",
+                              recognizer: TapGestureRecognizer()
+                                ..onTap = () async {
+                                  final url = 'https://stripe.com';
+                                  if (await canLaunch(url)) {
+                                    await launch(
+                                      url,
+                                      forceSafariVC: false,
+                                    );
+                                  }
+                                },
+                              style: TextPalette.bodyText.copyWith(
+                                  color: Palette.primary,
+                                  decoration: TextDecoration.underline))
+                        ],
+                      ))
+                ],
+              ),
+            )
         ]),
       ),
       if (widget.existingMatch == null)
         Section(
           title: "Policies",
           titleType: "big",
-          body: Column(children: [
+          body: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Row(
-            children: [
-              Checkbox(
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(5)),
-                  value: withAutomaticCancellation,
-                  activeColor: Palette.primary,
-                  onChanged: (v) {
-                    setState(() {
-                      withAutomaticCancellation = v!;
-                    });
-                  }),
-              Flexible(
-                  child: Text(
-                      "Automatically cancel the match if minimum amount of players is not reached",
-                      style: TextPalette.bodyText,
-                      overflow: TextOverflow.visible)),
-            ],
-          ),
-            if (withAutomaticCancellation)
-              Padding(
-              padding: EdgeInsets.only(top: 16),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextFormField(
-                        validator: (v) {
-                          var durationSize = int.tryParse(v!);
-                          if (durationSize == null) return "Invalid duration";
-                          Duration duration = Duration(hours: durationSize);
-
-                          DateTime? d = getDateTime(startTimeEditingController,
-                              sportCenter.timezoneId);
-                          if (d != null &&
-                                  d.subtract(duration)
-                                      .isBefore(DateTime.now())) {
-                            return "The interval is in the past";
-                          }
-
-                          return null;
-                        },
-                        controller: cancelTimeEditingController,
-                        onChanged: (v) {
-                          setState(() {});
-                        },
-                        decoration: getTextFormDecoration(null),
-                        keyboardType: TextInputType.numberWithOptions(
-                            signed: false, decimal: false)),
-                  ),
-                  SizedBox(width: 16),
-                  Expanded(
-                    child: TextFormField(
-                      initialValue: "Hours",
-                      readOnly: true,
-                      decoration: getTextFormDecoration(null),
-                    ),
-                  ),
-                ],
-              ),
+              children: [
+                Checkbox(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5)),
+                    value: withAutomaticCancellation,
+                    activeColor: Palette.primary,
+                    onChanged: (v) {
+                      setState(() {
+                        withAutomaticCancellation = v!;
+                      });
+                    }),
+                Flexible(
+                    child: Text(
+                        "Automatically cancel the match if minimum amount of players is not reached",
+                        style: TextPalette.bodyText,
+                        overflow: TextOverflow.visible)),
+              ],
             ),
             if (withAutomaticCancellation)
               Padding(
                 padding: EdgeInsets.only(top: 16),
-                child: Text(
-                    "We will cancel the match if at least "
-                    "${numberOfPeopleRangeValues.start.toInt()} "
-                    "players haven't joined by "
-                    "${cancelTimeEditingController.text} hours",
-                    style: TextPalette.bodyText,
-                    overflow: TextOverflow.visible))
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                          validator: (v) {
+                            var durationSize = int.tryParse(v!);
+                            if (durationSize == null) return "Invalid duration";
+                            Duration duration = Duration(hours: durationSize);
+
+                            if (sportCenter == null) return "Select Location";
+
+                            DateTime? d = getDateTime(
+                                startTimeEditingController,
+                                sportCenter!.timezoneId);
+                            if (d != null &&
+                                d.subtract(duration).isBefore(DateTime.now())) {
+                              return "The interval is in the past";
+                            }
+
+                            return null;
+                          },
+                          controller: cancelTimeEditingController,
+                          onChanged: (v) {
+                            setState(() {});
+                          },
+                          decoration: getTextFormDecoration(null),
+                          keyboardType: TextInputType.numberWithOptions(
+                              signed: false, decimal: false)),
+                    ),
+                    SizedBox(width: 16),
+                    Expanded(
+                      child: TextFormField(
+                        initialValue: "Hours",
+                        readOnly: true,
+                        decoration: getTextFormDecoration(null),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            if (withAutomaticCancellation)
+              Padding(
+                  padding: EdgeInsets.only(top: 16),
+                  child: Text(
+                      "We will cancel the match if at least "
+                      "${numberOfPeopleRangeValues.start.toInt()} "
+                      "players haven't joined "
+                      "${cancelTimeEditingController.text} hours before the kick-off of the match.\n"
+                          "If players have paid through Nutmeg, they will get a full refund",
+                      style: TextPalette.bodyText,
+                      overflow: TextOverflow.visible))
           ]),
         ),
-      if (widget.existingMatch == null
-          && context.read<UserState>().getLoggedUserDetails()!.isAdmin!)
+      if (widget.existingMatch == null &&
+          context.read<UserState>().getLoggedUserDetails()!.isAdmin!)
         Section(
             title: "Admin",
             titleType: "big",
@@ -679,20 +718,16 @@ class CreateMatchState extends State<CreateMatch> {
             child: Row(children: [
               Expanded(
                 child: GenericButtonWithLoader(
-                    widget.existingMatch == null ? "CREATE": "CONFIRM",
+                    widget.existingMatch == null ? "CREATE" : "CONFIRM",
                     (BuildContext context) async {
-
-                  print((Decimal.parse(priceController.text) * Decimal.parse("100")).toDouble().toInt());
-                  return;
-
                   context.read<GenericButtonWithLoaderState>().change(true);
-                  bool ? v = _formKey.currentState?.validate();
-                  if ( v != null && v) {
+                  bool? v = _formKey.currentState?.validate();
+                  if (v != null && v) {
                     try {
-                      var dateTime = getDateTime(startTimeEditingController,
-                          sportCenter.timezoneId);
-                      var endTime = getDateTime(endTimeEditingController,
-                          sportCenter.timezoneId);
+                      var dateTime = getDateTime(
+                          startTimeEditingController, sportCenter!.timezoneId);
+                      var endTime = getDateTime(
+                          endTimeEditingController, sportCenter!.timezoneId);
                       var duration = endTime!.difference(dateTime!);
                       var cancelBefore = withAutomaticCancellation
                           ? Duration(
@@ -706,33 +741,41 @@ class CreateMatchState extends State<CreateMatch> {
                           Iterable<int>.generate(forWeeks).map((w) async {
                         var match = Match(
                             dateTime.add(Duration(days: 7 * w)),
-                            (sportCenter is SavedSportCenter) ? sportCenter.placeId : null,
-                            (sportCenter is SavedSportCenter) ? null : sportCenter,
+                            (sportCenter is SavedSportCenter)
+                                ? sportCenter!.placeId
+                                : null,
+                            (sportCenter is SavedSportCenter)
+                                ? null
+                                : sportCenter,
                             courtNumberEditingController.text,
                             numberOfPeopleRangeValues.end.toInt(),
-                            (Decimal.parse(priceController.text) * Decimal.parse("100")).toDouble().toInt(),
+                            managePayments ? (Decimal.parse(priceController.text) * Decimal.parse("100")).toDouble().toInt() : 0,
                             duration,
                             isTest,
                             numberOfPeopleRangeValues.start.toInt(),
-                            widget.existingMatch != null ?
-                              widget.existingMatch!.organizerId :
-                              context
-                                .read<UserState>()
-                                .getLoggedUserDetails()!
-                                .documentId,
+                            widget.existingMatch != null
+                                ? widget.existingMatch!.organizerId
+                                : context
+                                    .read<UserState>()
+                                    .getLoggedUserDetails()!
+                                    .documentId,
                             ConfigsUtils.feesOnOrganiser(organiserId) ? 0 : 50,
                             ConfigsUtils.feesOnOrganiser(organiserId) ? 50 : 0,
-                            widget.existingMatch != null ? widget.existingMatch!.going : Map(),
-                            widget.existingMatch != null ? widget.existingMatch!.teams : Map(),
-                            cancelBefore
-                        );
+                            widget.existingMatch != null
+                                ? widget.existingMatch!.going
+                                : Map(),
+                            widget.existingMatch != null
+                                ? widget.existingMatch!.teams
+                                : Map(),
+                            cancelBefore,
+                            managePayments);
 
                         var id;
                         if (widget.existingMatch == null) {
                           id = await MatchesController.addMatch(match);
                         } else {
-                          await MatchesController.editMatch(match,
-                              widget.existingMatch!.documentId);
+                          await MatchesController.editMatch(
+                              match, widget.existingMatch!.documentId);
                           id = widget.existingMatch!.documentId;
                         }
                         await MatchesController.refresh(context, id);
@@ -764,8 +807,8 @@ class CreateMatchState extends State<CreateMatch> {
   }
 
   DateTime? getDateTime(TextEditingController controller, String timezoneId) {
-    if (dateEditingController.text.isEmpty ||
-        controller.text.isEmpty) return null;
+    if (dateEditingController.text.isEmpty || controller.text.isEmpty)
+      return null;
     var day = dateFormat.parse(dateEditingController.text);
     var stod = toTimeOfTheDay(controller.text);
     return tz.TZDateTime(tz.getLocation(timezoneId), day.year, day.month,
@@ -783,8 +826,8 @@ class CreateMatchState extends State<CreateMatch> {
   bool isAfter(TimeOfDay a, TimeOfDay b) =>
       (a.hour * 60 + a.minute) > (b.hour * 60 + b.minute);
 
-  static Future<int?> showMultipleChoiceSheetWithText(BuildContext context,
-      String title, List<String> choices) async {
+  static Future<int?> showMultipleChoiceSheetWithText(
+      BuildContext context, String title, List<String> choices) async {
     int? i = await ModalBottomSheet.showNutmegModalBottomSheet(
         context,
         Column(
@@ -818,7 +861,6 @@ class CreateMatchState extends State<CreateMatch> {
 }
 
 class SportCenterRow extends StatelessWidget {
-
   final SportCenter sportCenter;
 
   const SportCenterRow({Key? key, required this.sportCenter}) : super(key: key);
@@ -842,8 +884,7 @@ class SportCenterRow extends StatelessWidget {
                     height: 8,
                   ),
                   Text(sportCenter.address,
-                      style: TextPalette.getBodyText(
-                          Palette.grey_dark)),
+                      style: TextPalette.getBodyText(Palette.grey_dark)),
                 ]),
           ),
         ],
@@ -853,7 +894,6 @@ class SportCenterRow extends StatelessWidget {
 }
 
 class LocationsBottomSheet extends StatelessWidget {
-
   @override
   Widget build(BuildContext context) {
     var userState = context.watch<UserState>();
@@ -866,11 +906,15 @@ class LocationsBottomSheet extends StatelessWidget {
         topSpace: 0,
         titleType: "big",
         belowTitleSpace: 16,
-        body: Column(children: interleave(context
-            .read<LoadOnceState>()
-            .getSportCenters()
-            .map((e) => SportCenterRow(sportCenter: e)).toList(),
-            SizedBox(height: 16)).toList()));
+        body: Column(
+            children: interleave(
+                    context
+                        .read<LoadOnceState>()
+                        .getSportCenters()
+                        .map((e) => SportCenterRow(sportCenter: e))
+                        .toList(),
+                    SizedBox(height: 16))
+                .toList()));
     var yourCourts = Section(
         title: "Your Courts",
         titleType: "big",
@@ -879,45 +923,50 @@ class LocationsBottomSheet extends StatelessWidget {
         body: Builder(
           builder: (context) {
             List<Widget> yourCourtsWidgets = [];
-            yourCourtsWidgets.addAll(interleave(userState
-                .getSportCenters()!
-                .map((e) => SportCenterRow(sportCenter: e))
-                .toList(),
+            yourCourtsWidgets.addAll(interleave(
+              userState
+                  .getSportCenters()!
+                  .map((e) => SportCenterRow(sportCenter: e))
+                  .toList(),
               SizedBox(height: 16),
             ));
 
             if (userState.getSportCenters()!.isNotEmpty) {
-              yourCourtsWidgets.add(SizedBox(height: 16,));
+              yourCourtsWidgets.add(SizedBox(
+                height: 16,
+              ));
             }
 
             yourCourtsWidgets.addAll([
               InkWell(
                 onTap: () async {
                   await Navigator.push(context,
-                      MaterialPageRoute(builder: (context) =>
-                          CreateCourt()));
+                      MaterialPageRoute(builder: (context) => CreateCourt()));
                 },
-                child: Row(children: [
-                  Container(
-                    height: 60,
-                    width: 60,
-                    child: DottedBorder(
-                      padding: EdgeInsets.zero,
-                      borderType: BorderType.RRect,
-                      radius: Radius.circular(10),
-                      color: Palette.grey_dark,
-                      strokeWidth: 1,
-                      dashPattern: [4],
-                      child: CircleAvatar(
-                        radius: 29,
-                        child: Icon(Icons.add, color: Palette.grey_dark, size: 24),
-                        backgroundColor: Colors.transparent,
+                child: Row(
+                  children: [
+                    Container(
+                      height: 60,
+                      width: 60,
+                      child: DottedBorder(
+                        padding: EdgeInsets.zero,
+                        borderType: BorderType.RRect,
+                        radius: Radius.circular(10),
+                        color: Palette.grey_dark,
+                        strokeWidth: 1,
+                        dashPattern: [4],
+                        child: CircleAvatar(
+                          radius: 29,
+                          child: Icon(Icons.add,
+                              color: Palette.grey_dark, size: 24),
+                          backgroundColor: Colors.transparent,
+                        ),
                       ),
                     ),
-                  ),
-                  SizedBox(width: 16),
-                  Text("CREATE NEW COURT", style: TextPalette.linkStyle),
-                ],),
+                    SizedBox(width: 16),
+                    Text("CREATE NEW COURT", style: TextPalette.linkStyle),
+                  ],
+                ),
               )
             ]);
 
