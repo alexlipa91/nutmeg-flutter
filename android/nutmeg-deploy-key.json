@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "nutmeg-9099c",
+  "private_key_id": "e8655cc226d659e54aca601bfddd39d11f5ddfa2",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDJDr/C36HuLrdu\nwJ7dshCPwx/mRymrJdQVMPSoRroldOFBHyTRjH7Abi9xXmp0S7m8BJEiZ4sfOxdz\nmKtPsdzQs0dpOKLTeYSqqh4o6Zf6N/oSjui1gDMYw740P32om9eiXb5I9eTFARfa\n00hw6iLNN2mmmEfeoU2H7NSbABzbf9hLMhUq/Vn39cjMHZt8GYW6TUPVhifZa4zw\nC4yiUgzkxN3KM7ViHPsJorzw69Afn/zlHeDwzoy7fPw7oQ5J4r3FnYg+ZRICrnqP\nYpC1gle1GZrvSnkThnuFP1rlPpK16A7Puyo/xrLqvFKFAP5/QMmzBiq+BKbMhVaa\nJ/dXbU6zAgMBAAECggEAD6PQEu6mgAquRjVBpmk1lJlPH/ClMyUMLGHUhkqKLGO9\nKf2sNYjCS2HG2wDHMyi42AFa8NwxHErSdjGIEfj5/loT0gGP2Pd49HWrRu903QgB\nsfPf8k54qxJ+9z2BHt6QlZbJOI+4LgL5whHxbqcn8eK/my/5Vz4g89PebfhCRmi2\nNK0CLSlSqsI8cjdiUi0OFexyebOl7bkE21zpzqvnuAoYZwMzqpWPcm88U41WinLf\nE4OYZPfKZOlSNjBLquwOrw4pooOQvln4dTq3FZytOxS2TkBt6sPZXkI7M/Z2odBp\nVe6KbSpmGFQ7B0Gj+vToJ7ydzRvlgujyfmjuI5Bj8QKBgQDjbEqVG4SQ1FjAcxNU\n41odV6y8ARui+dkOUNGybY20/OHk/EVX3RgWrieYDsuSaQxbOPaoFa6GK6pRju53\nR4I/Gl52UIjapivJcDlT/yrtGbSQ/O3ywb9UXST4l5BQwxhL5L+hyvJSxjpNHg6g\n8SYlhhyzkN7iA1sHpj5KFbzMNwKBgQDiUlbvu1XYGWyqHsxiCVzfC9PUwLmterD/\nJ7lXdxDz+q04BUnsvugRDLVbLV2zVEiiDgpNaog0hjIe5gTABk68+yW6BH9at6qf\nfGcwCp2TZPayBU5a+TWFQW6SmezL7W+w7GURj2cK8Ks69TmCYivCX32gENdM7jOT\n+0XyILirZQKBgGcUqYWGMIMYzJWGU0fRuQG9wJyCgA1R49E6TqHqSCW1zYnl0mRt\n4UI+c9HXOuxE0wXx/tLW6QEFf7Bx8aJ89gs2H4TPIgjA8u3eAQ4ShVlsokxpaEz1\nBoztnxlSUWZZ14RmzXk/LLDaCojzy7ulMh4l+JJnYq7cyIDiGC+qRKXnAoGAKwn7\njGV0wr67AnMO7QnYxnXqV8g6xznQ1QUJ4w86gxtFu6SN1V7MpQlkp60t5398vIys\n+uHqewqWF3goqRfJ+3hLSV+3lFnfMasnuGQcaT5HB72ok/ZWbjvuOiTZekJx/hRG\neBtsPhFcjr65rAjdR35/VmQ9fVzDJD4hpBUC6V0CgYBRu7EvPb922omRH8AJM0iU\n64eYqWQqpWLTgJXXx0Gy5cTwWMYpWBjyv2mmoqeNnbbR71hwDNHvVEkzunH5Coqt\nk3+AXdHU17QSiLzQVp173VcHIsiJO6ylV6/hzmS7eZlO/FYNoX7SguPyvbX/3uMj\nMuBSFYB0DhFOxW0/X7TNRg==\n-----END PRIVATE KEY-----\n",
+  "client_email": "nutmeg-deploy@nutmeg-9099c.iam.gserviceaccount.com",
+  "client_id": "111816602354882786416",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/nutmeg-deploy%40nutmeg-9099c.iam.gserviceaccount.com"
+}
