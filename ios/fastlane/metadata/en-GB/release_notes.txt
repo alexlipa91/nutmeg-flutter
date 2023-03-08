@@ -1,1 +1,1 @@
-Update firebase core libraries
+Add possibility to not manage payments through Nutmeg
