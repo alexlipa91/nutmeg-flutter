@@ -72,7 +72,6 @@ class Match {
         userFee = jsonInput["userFee"] ?? 0,
         organiserFee = jsonInput["organiserFee"] ?? 0,
         managePayments = jsonInput["managePayments"] ?? true {
-      print(jsonInput);
       sportCenterSubLocation = jsonInput['sportCenterSubLocation'];
 
       if (jsonInput.containsKey("cancelledAt") && jsonInput["cancelledAt"] != null)

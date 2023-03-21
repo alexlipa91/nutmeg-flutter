@@ -115,8 +115,8 @@ class MatchDetailsState extends State<MatchDetails> {
     var matchesState = context.watch<MatchesState>();
 
     Match? match = matchesState.getMatch(widget.matchId);
-    SportCenter? sportCenter = SportCentersController
-        .getSportCenter(context, match);
+    SportCenter? sportCenter =
+        SportCentersController.getSportCenter(context, match);
 
     var status = match?.status;
 
@@ -129,9 +129,8 @@ class MatchDetailsState extends State<MatchDetails> {
         BottomBarMatch.getBottomBar(context, widget.matchId, status);
 
     // add padding individually since because of shadow clipping some components need margin
-    var widgets;
     if (match == null || sportCenter == null) {
-      widgets = [
+      var widgets = [
         Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
             Expanded(child: SkeletonMatchDetails.imageSkeleton())
@@ -143,36 +142,70 @@ class MatchDetailsState extends State<MatchDetails> {
           SkeletonMatchDetails.skeletonRepeatedElement(),
         ])
       ];
+
+      return PageTemplate(
+        initState: () => myInitState(),
+        refreshState: () => refreshState(),
+        widgets: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                  width: 900,
+                  child: Column(
+                      children:
+                          interleave(widgets, SizedBox(height: 16)).toList()))
+            ],
+          )
+        ],
+        appBar: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            BackButton(color: Palette.black),
+            if (!DeviceInfo().name.contains("ipad") && !kIsWeb)
+              Align(
+                  alignment: Alignment.centerRight,
+                  child: buttons.ShareButton(() async {
+                    await DynamicLinks.shareMatchFunction(match!, sportCenter!);
+                  }, Palette.black, 25.0)),
+          ],
+        ),
+        bottomNavigationBar: bottomBar,
+      );
     }
-    else {
-      widgets = [
-        // title
-        if (organizerView &&
+
+    var completeOrganiserWidget = organizerView &&
             userState.getLoggedUserDetails()?.areChargesEnabled(isTest) !=
                 null &&
-            !userState.getLoggedUserDetails()!.areChargesEnabled(isTest))
-          CompleteOrganiserAccountWidget(isTest: isTest),
-        if (isTest)
-          InfoContainer(
-              backgroundColor: Palette.accent,
-              child: SelectableText(
-                "Test match: " + widget.matchId,
-                style: TextPalette.getBodyText(Palette.black),
-              )),
-        // info box
-        MatchInfo(match, sportCenter),
-        // stats
-        if (status == MatchStatus.rated || status == MatchStatus.to_rate)
-          Stats(match: match, sportCenter: sportCenter),
-        // horizontal players list or teams
-        match.hasTeams()
-            ? TeamsWidget(matchId: widget.matchId)
-            : PlayerList(
-                match: match,
-                withJoinButton:
-                    bottomBar is JoinMatchBottomBar && !match.isFull()),
-        SportCenterDetails(match: match, sportCenter: sportCenter),
-        Builder(builder: (context) {
+            !userState.getLoggedUserDetails()!.areChargesEnabled(isTest)
+        ? CompleteOrganiserAccountWidget(isTest: isTest)
+        : null;
+
+    var testInfo = isTest
+        ? InfoContainer(
+            backgroundColor: Palette.accent,
+            child: SelectableText(
+              "Test match: " + widget.matchId,
+              style: TextPalette.getBodyText(Palette.black),
+            ))
+        : null;
+
+    var matchInfo = MatchInfo(match, sportCenter);
+
+    var infoPlayersList = match.hasTeams()
+        ? TeamsWidget(matchId: widget.matchId)
+        : PlayerList(
+            match: match,
+            withJoinButton: bottomBar is JoinMatchBottomBar && !match.isFull());
+
+    var stats = status == MatchStatus.rated || status == MatchStatus.to_rate
+        ? Stats(match: match, sportCenter: sportCenter)
+        : null;
+
+    var sportCenterDetails =
+        SportCenterDetails(match: match, sportCenter: sportCenter);
+
+    var rules = (bool large) => Builder(builder: (context) {
           var cancellationText = "";
 
           if (match.cancelBefore != null) {
@@ -180,8 +213,7 @@ class MatchDetailsState extends State<MatchDetails> {
 
             if (cancellationDate.isAfter(DateTime.now())) {
               cancellationText = "\n\nThe match will be automatically canceled "
-                  "${dayDateFormat.format(match.getLocalizedTime(sportCenter.timezoneId))
-                  + " ${gmtSuffix(sportCenter.timezoneId)}"} "
+                  "${dayDateFormat.format(match.getLocalizedTime(sportCenter.timezoneId)) + " ${gmtSuffix(sportCenter.timezoneId)}"} "
                   "if less than ${match.minPlayers} players have joined.";
             }
           }
@@ -194,10 +226,12 @@ class MatchDetailsState extends State<MatchDetails> {
               "If you leave the match you will get $refundString.\n"
                       "If the match is cancelled you will get a full refund.\n\n"
                       "If you don’t show up you won’t get a refund." +
-                  cancellationText);
-        }),
-        if (match.organizerId != null)
-          Builder(builder: (context) {
+                  cancellationText,
+              large);
+        });
+
+    var organiserBadge = match.organizerId != null
+        ? Builder(builder: (context) {
             var ud =
                 context.watch<UserState>().getUserDetail(match.organizerId!);
 
@@ -219,28 +253,102 @@ class MatchDetailsState extends State<MatchDetails> {
                 ),
               ),
             ]));
-          }),
-      ];
-    }
+          })
+        : null;
 
-    return PageTemplate(
-      initState: () => myInitState(),
-      refreshState: () => refreshState(),
-      widgets: interleave(widgets, SizedBox(height: 16)),
-      appBar: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          BackButton(color: Palette.black),
-          if (!DeviceInfo().name.contains("ipad") && !kIsWeb)
-            Align(
-                alignment: Alignment.centerRight,
-                child: buttons.ShareButton(() async {
-                  await DynamicLinks.shareMatchFunction(match!, sportCenter!);
-                }, Palette.black, 25.0)),
+    return LayoutBuilder(builder: (context, constraints) {
+      if (constraints.maxWidth < 800) {
+        return PageTemplate(
+          initState: () => myInitState(),
+          refreshState: () => refreshState(),
+          widgets: interleave([
+            // title
+            if (completeOrganiserWidget != null) completeOrganiserWidget,
+            if (testInfo != null) testInfo,
+            // info box
+            matchInfo,
+            // stats
+            if (stats != null) stats,
+            // horizontal players list or teams
+            infoPlayersList,
+            sportCenterDetails,
+            rules(false),
+            if (organiserBadge != null) organiserBadge
+          ], SizedBox(height: 16)),
+          appBar: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              BackButton(color: Palette.black),
+              if (!DeviceInfo().name.contains("ipad") && !kIsWeb)
+                Align(
+                    alignment: Alignment.centerRight,
+                    child: buttons.ShareButton(() async {
+                      await DynamicLinks.shareMatchFunction(match, sportCenter);
+                    }, Palette.black, 25.0)),
+            ],
+          ),
+          bottomNavigationBar: bottomBar,
+        );
+      }
+      return PageTemplate(
+        initState: () => myInitState(),
+        refreshState: () => refreshState(),
+        widgets: [
+          if (testInfo != null) testInfo,
+          if (completeOrganiserWidget != null) completeOrganiserWidget,
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Flexible(
+                child: Container(
+                  constraints: BoxConstraints(maxWidth: 700),
+                  child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: interleave(
+                          [
+                            matchInfo,
+                            infoPlayersList,
+                            if (stats != null) stats
+                          ],
+                          SizedBox(
+                            height: 16,
+                          ))),
+                ),
+              ),
+              SizedBox(width: 20),
+              Flexible(
+                child: Container(
+                  constraints: BoxConstraints(maxWidth: 700),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: interleave([
+                      sportCenterDetails,
+                      rules(true),
+                      if (organiserBadge != null) organiserBadge
+                    ], SizedBox(height: 16)),
+                  ),
+                ),
+              )
+            ],
+          )
         ],
-      ),
-      bottomNavigationBar: bottomBar,
-    );
+        appBar: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            BackButton(color: Palette.black),
+            if (!DeviceInfo().name.contains("ipad") && !kIsWeb)
+              Align(
+                  alignment: Alignment.centerRight,
+                  child: buttons.ShareButton(() async {
+                    await DynamicLinks.shareMatchFunction(match, sportCenter);
+                  }, Palette.black, 25.0)),
+          ],
+        ),
+        bottomNavigationBar: bottomBar,
+      );
+    });
   }
 }
 
@@ -281,10 +389,20 @@ class PlayerList extends StatelessWidget {
               padding: EdgeInsets.symmetric(horizontal: 16),
               child: Text(getTitle(match), style: TextPalette.h2)),
           SizedBox(height: 24),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(children: widgets),
-          ),
+          LayoutBuilder(builder: (context, constraints) {
+            if (MediaQuery.of(context).size.width < 800)
+              return SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(children: widgets),
+              );
+            return Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: Row(children: [
+                Expanded(
+                    child: Wrap(spacing: 16, runSpacing: 16, children: cards))
+              ]),
+            );
+          })
         ],
       ),
       padding: EdgeInsets.symmetric(vertical: 16),
@@ -306,15 +424,17 @@ class TeamsWidget extends StatelessWidget {
 
     return InfoContainerWithTitle(
         title: PlayerList.getTitle(match),
-        body: IntrinsicHeight(
-          child: Row(children: [
-            getTeamColumn(context, teamA.key, teamA.value),
-            VerticalDivider(
-              thickness: 1,
-              color: Palette.grey_light,
-            ),
-            getTeamColumn(context, teamB.key, teamB.value),
-          ]),
+        body: Center(
+          child: IntrinsicHeight(
+            child: Row(children: [
+              getTeamColumn(context, teamA.key, teamA.value),
+              VerticalDivider(
+                thickness: 1,
+                color: Palette.grey_light,
+              ),
+              getTeamColumn(context, teamB.key, teamB.value),
+            ]),
+          ),
         ));
   }
 
@@ -433,8 +553,8 @@ class MatchInfo extends StatelessWidget {
                                   context.go("/match/${match.documentId}/edit");
                                   Navigator.of(context).pop();
                                 },
-                                child: Text("Edit",
-                                    style: TextPalette.listItem)),
+                                child:
+                                    Text("Edit", style: TextPalette.listItem)),
                             Padding(
                               padding: EdgeInsets.only(top: 16),
                               child: InkWell(
@@ -443,8 +563,8 @@ class MatchInfo extends StatelessWidget {
                                         match, sportCenter);
                                     Navigator.of(context).pop();
                                   },
-                                  child:
-                                      Text("Share", style: TextPalette.listItem)),
+                                  child: Text("Share",
+                                      style: TextPalette.listItem)),
                             ),
                             if (match.dateTime.isAfter(DateTime.now()))
                               Padding(
@@ -453,20 +573,20 @@ class MatchInfo extends StatelessWidget {
                                   onTap: () async {
                                     await GenericInfoModal(
                                         title:
-                                        "Are you sure you want to cancel the match?",
+                                            "Are you sure you want to cancel the match?",
                                         description:
-                                        "The players that joined will get a full refund.",
+                                            "The players that joined will get a full refund.",
                                         action: Row(
                                           mainAxisAlignment:
-                                          MainAxisAlignment.end,
+                                              MainAxisAlignment.end,
                                           children: [
                                             Expanded(
                                               child:
-                                              GenericButtonWithLoaderAndErrorHandling(
-                                                  "CONFIRM", (_) async {
+                                                  GenericButtonWithLoaderAndErrorHandling(
+                                                      "CONFIRM", (_) async {
                                                 await MatchesController
                                                     .cancelMatch(
-                                                    match.documentId);
+                                                        match.documentId);
                                                 await MatchesController.refresh(
                                                     context, match.documentId);
                                                 Navigator.pop(context);
@@ -489,17 +609,17 @@ class MatchInfo extends StatelessWidget {
               ),
             SizedBox(height: 16),
             IconList.fromIcon({
-              Icons.calendar_month_outlined:
-                  dayDateFormat.format(match.getLocalizedTime(sportCenter.timezoneId)),
+              Icons.calendar_month_outlined: dayDateFormat
+                  .format(match.getLocalizedTime(sportCenter.timezoneId)),
               Icons.access_time_outlined:
                   "${hourDateFormat.format(match.getLocalizedTime(sportCenter.timezoneId))} - "
-                      "${hourDateFormat.format(match.getLocalizedTime(sportCenter.timezoneId)
-                      .add(match.duration))}"
-                      + " ("
-                      + gmtSuffix(sportCenter.timezoneId) + ")",
+                          "${hourDateFormat.format(match.getLocalizedTime(sportCenter.timezoneId).add(match.duration))}" +
+                      " (" +
+                      gmtSuffix(sportCenter.timezoneId) +
+                      ")",
               if (match.managePayments)
                 Icons.local_offer_outlined:
-                  formatCurrency(match.pricePerPersonInCents)
+                    formatCurrency(match.pricePerPersonInCents)
             }),
             if (matchWidget != null)
               Column(children: [
@@ -745,29 +865,35 @@ class EmptyPlayerCard extends StatelessWidget {
 class RuleCard extends StatelessWidget {
   final String title;
   final String body;
+  final bool large;
 
-  const RuleCard(this.title, this.body);
+  const RuleCard(this.title, this.body, this.large);
 
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
-    return InfoContainerWithTitle(
-        title: title,
-        body: Column(children: [
-          ReadMoreText(
-            body,
-            style: TextPalette.bodyText,
-            trimLines: 4,
-            colorClickableText: Colors.blue,
-            delimiter: "\n\n",
-            trimMode: TrimMode.Line,
-            trimCollapsedText: 'SHOW MORE',
-            trimExpandedText: 'SHOW LESS',
-            moreStyle: TextPalette.linkStyle,
-            lessStyle: TextPalette.linkStyle,
-          ),
-          // Text("Rule" * 100, style: TextPalette.bodyText2Gray)
-        ]));
+    return Container(
+      width: double.infinity,
+      child: InfoContainerWithTitle(
+          title: title,
+          body: Column(children: [
+            large
+                ? Text(body, style: TextPalette.bodyText)
+                : ReadMoreText(
+                    body,
+                    style: TextPalette.bodyText,
+                    trimLines: 4,
+                    colorClickableText: Colors.blue,
+                    delimiter: "\n\n",
+                    trimMode: TrimMode.Line,
+                    trimCollapsedText: 'SHOW MORE',
+                    trimExpandedText: 'SHOW LESS',
+                    moreStyle: TextPalette.linkStyle,
+                    lessStyle: TextPalette.linkStyle,
+                  ),
+            // Text("Rule" * 100, style: TextPalette.bodyText2Gray)
+          ])),
+    );
   }
 }
 
@@ -866,8 +992,8 @@ class Stats extends StatelessWidget {
   final Match match;
   final SportCenter sportCenter;
 
-  Stats({Key? key, required this.match,
-    required this.sportCenter}) : super(key: key);
+  Stats({Key? key, required this.match, required this.sportCenter})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -893,8 +1019,9 @@ class Stats extends StatelessWidget {
               SizedBox(height: 8),
               Text(
                 "Statistics for this match will be available\n" +
-                    dayDateFormat.format(match.getLocalizedTime(sportCenter.timezoneId))
-                    + " ${gmtSuffix(sportCenter.timezoneId)}",
+                    dayDateFormat.format(
+                        match.getLocalizedTime(sportCenter.timezoneId)) +
+                    " ${gmtSuffix(sportCenter.timezoneId)}",
                 style: TextPalette.bodyText,
                 textAlign: TextAlign.center,
               ),

@@ -197,7 +197,8 @@ class UserPageState extends State<UserPage> {
                 children: [
                   Text(userDetails!.name ?? "N/A", style: TextPalette.h2),
                   SizedBox(height: 10),
-                  Text(formatEmail(userDetails.email), style: TextPalette.bodyText)
+                  Text(formatEmail(userDetails.email),
+                      style: TextPalette.bodyText)
                 ],
               ),
             )
@@ -221,7 +222,8 @@ class UserPageState extends State<UserPage> {
           Expanded(
             child: UserInfoBox(
                 content: (userDetails.getScoreMatches() == null)
-                    ? "-" : userDetails.getScoreMatches()!.toStringAsFixed(1),
+                    ? "-"
+                    : userDetails.getScoreMatches()!.toStringAsFixed(1),
                 description: "Avg. Score"),
           ),
           SizedBox(width: 20),
@@ -237,9 +239,9 @@ class UserPageState extends State<UserPage> {
               title: "PERFORMANCE",
               body: SizedBox(
                   height: 180,
-                  child: InfoContainer(child:
-                  PerformanceGraph(userId: userDetails.documentId)))
-          ),
+                  child: InfoContainer(
+                      child:
+                          PerformanceGraph(userId: userDetails.documentId)))),
         if ((userDetails.skillsCount ?? {}).isNotEmpty)
           Builder(
             builder: (BuildContext context) {
@@ -249,51 +251,61 @@ class UserPageState extends State<UserPage> {
               return Section(
                   title: "TOP SKILLS",
                   body: InfoContainer(
-                    child: Column(children:
-                      interleave(
-                        sorted.asMap().entries.map((e) => Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                  Container(
-                                    width: 20,
-                                    child: Text((e.key + 1).toString(),
-                                        style: GoogleFonts.roboto(color:
-                                        Palette.grey_dark, fontSize: 16,
-                                            fontWeight: FontWeight.w400)),
-                                  ),
-                                  Container(
-                                    width: 180,
-                                    child: Text(e.value.key,
-                                        style: GoogleFonts.roboto(
-                                            color: Palette.black,
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w500)),
-                                  ),
-                                  Container(
-                                height: 8,
-                                width: 80,
-                                child: ClipRRect(
-                                  borderRadius:
-                                  BorderRadius.all(Radius.circular(10)),
-                                    child: LinearProgressIndicator(
-                                    value: e.value.value / sorted.first.value,
-                                    color: Palette.primary,
-                                    backgroundColor: Palette.grey_lighter,
-                                  ),
-                                ),
-                              ),
-                                  Text(e.value.value == 0
-                                      ? "-" : e.value.value.toString(),
-                                    style: GoogleFonts.roboto(
-                                        color: Palette.black,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w400),)
-                            ])).toList(),
-                        SizedBox(height: 12)
-                      )
-                    ),
-                  )
-              );
+                    child: Column(
+                        children: interleave(
+                            sorted
+                                .asMap()
+                                .entries
+                                .map((e) => Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Container(
+                                            width: 20,
+                                            child: Text((e.key + 1).toString(),
+                                                style: GoogleFonts.roboto(
+                                                    color: Palette.grey_dark,
+                                                    fontSize: 16,
+                                                    fontWeight:
+                                                        FontWeight.w400)),
+                                          ),
+                                          Container(
+                                            width: 180,
+                                            child: Text(e.value.key,
+                                                style: GoogleFonts.roboto(
+                                                    color: Palette.black,
+                                                    fontSize: 16,
+                                                    fontWeight:
+                                                        FontWeight.w500)),
+                                          ),
+                                          Container(
+                                            height: 8,
+                                            width: 80,
+                                            child: ClipRRect(
+                                              borderRadius: BorderRadius.all(
+                                                  Radius.circular(10)),
+                                              child: LinearProgressIndicator(
+                                                value: e.value.value /
+                                                    sorted.first.value,
+                                                color: Palette.primary,
+                                                backgroundColor:
+                                                    Palette.grey_lighter,
+                                              ),
+                                            ),
+                                          ),
+                                          Text(
+                                            e.value.value == 0
+                                                ? "-"
+                                                : e.value.value.toString(),
+                                            style: GoogleFonts.roboto(
+                                                color: Palette.black,
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w400),
+                                          )
+                                        ]))
+                                .toList(),
+                            SizedBox(height: 12))),
+                  ));
             },
           ),
         if (showOrganizerView)
@@ -392,50 +404,52 @@ class UserPageState extends State<UserPage> {
                 }),
             SizedBox(height: 16),
             Row(
-                  children: [
-                    Expanded(
-                      child: InkWell(
-                          child: Text("Delete Profile", style: TextPalette.h3),
-                          onTap:() async {
-                            var shouldCancel = await GenericInfoModal(
-                                title: "Are you sure you want to delete your profile?",
-                                description: "This is going to permanently delete all your data stored in Nutmeg and cannot be undone.",
-                                action: Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: [
-                                    GenericButtonWithLoader("CANCEL", (_) async {
-                                      Navigator.pop(context, false);
-                                    }, Secondary()),
-                                    SizedBox(width: 8),
-                                    GenericButtonWithLoader("YES", (_) async {
-                                      Navigator.pop(context, true);
-                                    }, Primary()),
-                                  ],
-                                )).show(context);
+              children: [
+                Expanded(
+                  child: InkWell(
+                      child: Text("Delete Profile", style: TextPalette.h3),
+                      onTap: () async {
+                        var shouldCancel = await GenericInfoModal(
+                            title:
+                                "Are you sure you want to delete your profile?",
+                            description:
+                                "This is going to permanently delete all your data stored in Nutmeg and cannot be undone.",
+                            action: Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                GenericButtonWithLoader("CANCEL", (_) async {
+                                  Navigator.pop(context, false);
+                                }, Secondary()),
+                                SizedBox(width: 8),
+                                GenericButtonWithLoader("YES", (_) async {
+                                  Navigator.pop(context, true);
+                                }, Primary()),
+                              ],
+                            )).show(context);
 
-                            if (shouldCancel) {
-                              await Future.delayed(
-                                  Duration(milliseconds: 500),
-                                      () => UserController.logout(
-                                      context.read<UserState>()));
-                              Navigator.of(context).pop();
-                            }
-                          }
-                      ),
-                    )
-                  ],
+                        if (shouldCancel) {
+                          await Future.delayed(
+                              Duration(milliseconds: 500),
+                              () => UserController.logout(
+                                  context.read<UserState>()));
+                          Navigator.of(context).pop();
+                        }
+                      }),
+                )
+              ],
             ),
             Divider(),
             SizedBox(height: 14),
             Row(
-                  children: [
-                    Expanded(
-                      child: InkWell(
-                          child: Text("Privacy Policy", style: TextPalette.h3),
-                          onTap:() => launch("https://nutmeg.flycricket.io/privacy.html", forceSafariVC: false)
-                      ),
-                    )
-                  ],
+              children: [
+                Expanded(
+                  child: InkWell(
+                      child: Text("Privacy Policy", style: TextPalette.h3),
+                      onTap: () => launch(
+                          "https://nutmeg.flycricket.io/privacy.html",
+                          forceSafariVC: false)),
+                )
+              ],
             ),
             Divider(),
             Row(
@@ -522,7 +536,13 @@ class UserPageState extends State<UserPage> {
 
     return PageTemplate(
       refreshState: () => refreshPageState(),
-      widgets: widgets,
+      widgets: [Center(child: Container(
+        width: 700,
+        child: Column(
+            children: widgets),
+      ),)]
+        // widgets
+      ,
       appBar: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -620,7 +640,8 @@ class CompleteOrganiserAccountWidget extends StatelessWidget {
           "To start receiving payments, you need to create your Stripe account",
       textAction: "GO TO STRIPE",
       action: () async {
-        await launch(getStripeUrl(isTest, userState.currentUserId!), forceSafariVC: false);
+        await launch(getStripeUrl(isTest, userState.currentUserId!),
+            forceSafariVC: false);
       },
     );
   }

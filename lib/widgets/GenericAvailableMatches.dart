@@ -138,28 +138,39 @@ class GenericAvailableMatchesListState
         child: Scaffold(
           backgroundColor: Palette.grey_lightest,
           body: RefresherWithObserverWidget(
-            child: ListView.builder(
-                padding: EdgeInsets.zero,
-                physics: AlwaysScrollableScrollPhysics(parent: ClampingScrollPhysics()),
-                itemBuilder: (c, i) {
-                  var core = (widget.tabContent[selected] == null)
-                      ? waitingWidget()
-                      : widget.tabContent[selected];
+              child: ListView.builder(
+                  padding: EdgeInsets.zero,
+                  physics: AlwaysScrollableScrollPhysics(
+                      parent: ClampingScrollPhysics()),
+                  itemBuilder: (c, i) {
+                    var core = (widget.tabContent[selected] == null)
+                        ? waitingWidget()
+                        : widget.tabContent[selected];
 
-                  var list = List<Widget>.from([
-                    top,
-                    Padding(
-                        padding:
-                        EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0),
-                        child: core),
-                    SizedBox(
-                        height: max(16.0, MediaQuery.of(context).padding.bottom)
-                    )
-                  ]);
-                  return list[i];
-                },
-                itemCount: 3),
-            refreshState: () => refreshPageState(context), initState: null),
+                    var list = List<Widget>.from([
+                      top,
+                      Padding(
+                          padding: EdgeInsets.only(
+                              left: 16.0, right: 16.0, top: 16.0),
+                          child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Flexible(
+                                  child: Container(
+                                      constraints:
+                                          BoxConstraints(maxWidth: 1000),
+                                      child: core),
+                                )
+                              ])),
+                      SizedBox(
+                          height:
+                              max(16.0, MediaQuery.of(context).padding.bottom))
+                    ]);
+                    return list[i];
+                  },
+                  itemCount: 3),
+              refreshState: () => refreshPageState(context),
+              initState: null),
           floatingActionButton: widget.floatingActionButton,
         ),
       ),
@@ -176,8 +187,7 @@ class GenericMatchInfo extends StatelessWidget {
   final double topMargin;
   final Function onTap;
 
-  GenericMatchInfo(this.match, this.sportCenter, this.onTap)
-      : topMargin = 10;
+  GenericMatchInfo(this.match, this.sportCenter, this.onTap) : topMargin = 10;
 
   GenericMatchInfo.first(this.match, this.sportCenter, this.onTap)
       : topMargin = 0;
@@ -204,44 +214,48 @@ class GenericMatchInfo extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Row(
-                                      children: [
-                                        Text(
-                                            sportCenter.getName() +
-                                                " - " +
-                                                sportCenter.getCourtType(),
-                                            style: TextPalette.h2),
-                                      ],
-                                    ),
+                                children: [
+                                  Text(
+                                      sportCenter.getName() +
+                                          " - " +
+                                          sportCenter.getCourtType(),
+                                      style: TextPalette.h2),
+                                ],
+                              ),
                               SizedBox(
                                 height: 8,
                               ),
-                              Text(dateFormat.format(match
-                                  .getLocalizedTime(sportCenter.timezoneId))
-                                  + " "
-                                  + gmtSuffix(sportCenter.timezoneId),
-                                  style: TextPalette.getBodyText(Palette.grey_dark)),
+                              Text(
+                                  dateFormat.format(match.getLocalizedTime(
+                                          sportCenter.timezoneId)) +
+                                      " " +
+                                      gmtSuffix(sportCenter.timezoneId),
+                                  style: TextPalette.getBodyText(
+                                      Palette.grey_dark)),
                               SizedBox(
                                 height: 6,
                               ),
-                              (match.status == MatchStatus.unpublished) ?
-                                Text("Not Published",
-                                  style: TextPalette.getBodyText(
-                                      Palette.darkWarning)) :
-                              (match.status == MatchStatus.cancelled)
-                                  ? Text("Cancelled",
+                              (match.status == MatchStatus.unpublished)
+                                  ? Text("Not Published",
                                       style: TextPalette.getBodyText(
-                                          Palette.destructive))
-                                  : (match.isFull())
-                                      ? Text("Full",
-                                          style: TextPalette.bodyText,
-                                          textAlign: TextAlign.right)
-                                      : Text(
-                                          (match.maxPlayers -
-                                                      match.numPlayersGoing())
-                                                  .toString() +
-                                              " spots left",
-                                          style: TextPalette.bodyTextPrimary,
-                                          textAlign: TextAlign.right),
+                                          Palette.darkWarning))
+                                  : (match.status == MatchStatus.cancelled)
+                                      ? Text("Cancelled",
+                                          style: TextPalette.getBodyText(
+                                              Palette.destructive))
+                                      : (match.isFull())
+                                          ? Text("Full",
+                                              style: TextPalette.bodyText,
+                                              textAlign: TextAlign.right)
+                                          : Text(
+                                              (match.maxPlayers -
+                                                          match
+                                                              .numPlayersGoing())
+                                                      .toString() +
+                                                  " spots left",
+                                              style:
+                                                  TextPalette.bodyTextPrimary,
+                                              textAlign: TextAlign.right),
                             ]),
                       ),
                     ],
@@ -321,11 +335,9 @@ class GenericMatchInfoPast extends StatelessWidget {
   final double topMargin;
   final Function onTap;
 
-  GenericMatchInfoPast(this.matchId, this.onTap)
-      : topMargin = 10;
+  GenericMatchInfoPast(this.matchId, this.onTap) : topMargin = 10;
 
-  GenericMatchInfoPast.first(this.matchId, this.onTap)
-      : topMargin = 0;
+  GenericMatchInfoPast.first(this.matchId, this.onTap) : topMargin = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -333,10 +345,10 @@ class GenericMatchInfoPast extends StatelessWidget {
 
     var match = context.watch<MatchesState>().getMatch(matchId);
 
-    if (match == null)
-      return Container();
+    if (match == null) return Container();
 
-    var sportCenter = match.sportCenter ?? loadOnceState.getSportCenter(match.sportCenterId!)!;
+    var sportCenter = match.sportCenter ??
+        loadOnceState.getSportCenter(match.sportCenterId!)!;
 
     var child = InfoContainer(
       backgroundColor: Palette.white,
@@ -354,14 +366,20 @@ class GenericMatchInfoPast extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(sportCenter.getName() + " - " + sportCenter.getCourtType(),
+                        Text(
+                            sportCenter.getName() +
+                                " - " +
+                                sportCenter.getCourtType(),
                             style: TextPalette.h2),
                         SizedBox(height: 8),
-                        Text(sportCenter.getName(), style: TextPalette.bodyText),
+                        Text(sportCenter.getName(),
+                            style: TextPalette.bodyText),
                         if (match.status == MatchStatus.cancelled)
-                          Padding(padding: EdgeInsets.only(top: 8), child:
-                            Text("Canceled",
-                                style: TextPalette.getBodyText(Palette.destructive)))
+                          Padding(
+                              padding: EdgeInsets.only(top: 8),
+                              child: Text("Canceled",
+                                  style: TextPalette.getBodyText(
+                                      Palette.destructive)))
                       ],
                     ),
                   ),
@@ -399,10 +417,7 @@ class MatchThumbnail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-        width: 60,
-        height: height,
-        child: image);
+    return Container(width: 60, height: height, child: image);
   }
 }
 

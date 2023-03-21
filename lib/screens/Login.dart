@@ -69,21 +69,25 @@ class LoginArea extends StatelessWidget {
           Image.asset('assets/nutmeg_white.png', width: 106, height: 40),
           SizedBox(height: 30),
           Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Expanded(
-                child: InfoContainer(
-                    child: Column(
-                  children: [
-                    SignInButton(provider: Provider.google, from: from),
-                    SizedBox(height: 16),
-                    SignInButton(provider: Provider.facebook, from: from),
-                    if (!kIsWeb && Platform.isIOS)
-                      Padding(
-                          padding: EdgeInsets.only(top: 16),
-                          child: SignInButton(provider: Provider.apple,
-                              from: from)),
-                  ],
-                )),
+              Flexible(
+                child: Container(
+                  constraints: BoxConstraints(maxWidth: 700),
+                  child: InfoContainer(
+                      child: Column(
+                    children: [
+                      SignInButton(provider: Provider.google, from: from),
+                      SizedBox(height: 16),
+                      SignInButton(provider: Provider.facebook, from: from),
+                      if (!kIsWeb && Platform.isIOS)
+                        Padding(
+                            padding: EdgeInsets.only(top: 16),
+                            child: SignInButton(provider: Provider.apple,
+                                from: from)),
+                    ],
+                  )),
+                ),
               ),
             ],
           ),
