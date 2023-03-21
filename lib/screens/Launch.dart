@@ -27,6 +27,7 @@ import '../state/UserState.dart';
 import 'admin/AddOrEditMatch.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
+final scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
 
 final appRouter = GoRouter(
   debugLogDiagnostics: true,
@@ -146,6 +147,7 @@ void main() async {
         child: FlutterWebFrame(
           builder: (context) => MaterialApp.router(
             key: navigatorKey,
+            scaffoldMessengerKey: scaffoldMessengerKey,
             routeInformationParser: appRouter.routeInformationParser,
             routerDelegate: appRouter.routerDelegate,
             routeInformationProvider: appRouter.routeInformationProvider,

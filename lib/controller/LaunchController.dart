@@ -1,4 +1,3 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -12,6 +11,7 @@ import 'package:nutmeg/model/UserDetails.dart';
 import 'package:nutmeg/screens/EnterDetails.dart';
 import 'package:provider/provider.dart';
 import 'package:tuple/tuple.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:version/version.dart';
 import 'package:timezone/data/latest.dart' as tz;
 
@@ -185,6 +185,30 @@ class LaunchController {
 
     print("load data method is done");
     LaunchController.loadingDone = true;
+
+    if (kIsWeb &&
+        (defaultTargetPlatform == TargetPlatform.iOS
+            || defaultTargetPlatform == TargetPlatform.android)) {
+      ScaffoldMessenger.of(context).showMaterialBanner(
+        MaterialBanner(
+          elevation: 0,
+          padding: EdgeInsets.all(16),
+          content: Text('Download the native app for a better experience', style: TextPalette.h3),
+          backgroundColor: Colors.transparent,
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => launchUrl(Uri.parse("https://nutmegapp.page.link/store")),
+              child: Text('Download app'),
+            ),
+            SizedBox(width: 20),
+            TextButton(
+              onPressed: () => scaffoldMessengerKey.currentState!.hideCurrentMaterialBanner(),
+              child: Text('Continue on web'),
+            ),
+          ],
+        ),
+      );
+    }
 
     // navigate to next screen
     if (deepLink != null) {

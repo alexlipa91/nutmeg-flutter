@@ -47,7 +47,6 @@ class GenericAvailableMatchesListState
     extends State<GenericAvailableMatchesList> {
 
   Future<void> refreshPageState(BuildContext context) async {
-    print('refreshing page state');
     var matches = await context.read<MatchesState>().fetchMatches();
     Future.wait(matches
         .map((e) => e.sportCenterId)
