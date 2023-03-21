@@ -19,7 +19,8 @@ class ModalBottomSheet {
           minimum: EdgeInsets.only(bottom: 16),
           child: SingleChildScrollView(child: Padding(
               padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom, top: 16, right: 16, left: 16),
-              child: Wrap(children: [child]))))
+              child: Wrap(alignment: WrapAlignment.center,
+                  children: [child]))))
     );
     isOpen = false;
     return returnValue;

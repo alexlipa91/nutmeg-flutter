@@ -88,11 +88,14 @@ class PlayerBottomModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BottomModalWithTopImage(
-        title: title,
-        subtitle: subtitle,
-        content: content,
-        topImage: UserAvatar(34, userDetails));
+    return Container(
+      width: 700,
+      child: BottomModalWithTopImage(
+          title: title,
+          subtitle: subtitle,
+          content: content,
+          topImage: UserAvatar(34, userDetails)),
+    );
   }
 }
 

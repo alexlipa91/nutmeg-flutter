@@ -31,10 +31,13 @@ class Skeletons {
         borderRadius: BorderRadius.circular(20), width: 80, height: 12),
   );
 
-  static var sText = SkeletonLine(
-    style: SkeletonLineStyle(
-        alignment: AlignmentDirectional.center,
-        borderRadius: BorderRadius.circular(20), width: 40, height: 12),
+  static var sText = Container(
+    width: 40,
+    child: SkeletonLine(
+      style: SkeletonLineStyle(
+          alignment: AlignmentDirectional.center,
+          borderRadius: BorderRadius.circular(20), width: 40, height: 12),
+    ),
   );
 }
 
