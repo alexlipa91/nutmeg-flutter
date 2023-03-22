@@ -51,3 +51,5 @@ android/nutmeg-9099c-c70a0f6cba3d.json
 android/nutmeg-9099c-sa-credentials.json
 ios/AuthKey_CTJDHGWL48.p8
 ios/fastlane/report.xml
+
+hosting.*
