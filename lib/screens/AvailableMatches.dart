@@ -13,7 +13,6 @@ import '../state/AvailableMatchesState.dart';
 import '../state/MatchesState.dart';
 import '../state/UserState.dart';
 import '../utils/UiUtils.dart';
-import '../widgets/GenericAvailableMatches.dart';
 
 // main widget
 class AvailableMatches extends StatelessWidget {
@@ -257,6 +256,9 @@ class AvailableMatches extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var city = context.watch<UserState>().getCity();
+    var country = context.watch<UserState>().getCountry();
+
     return MultiProvider(
         providers: [
           ChangeNotifierProvider(
@@ -279,10 +281,11 @@ class AvailableMatches extends StatelessWidget {
                       onPressed: () => context.go("/createMatch"))
                   : null,
               Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Find football matches in",
+                  Text("Find football matches near",
                       style: TextPalette.bodyTextInverted),
-                  Text("Amsterdam", style: TextPalette.h1Inverted),
+                  Text("$city, $country", style: TextPalette.h1Inverted),
                 ],
               ),
             )
