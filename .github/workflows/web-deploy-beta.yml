@@ -21,7 +21,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.7.1'
-      - run: flutter build web -t lib/screens/Launch.dart --release
+      - run: flutter build web -t lib/screens/Launch.dart --release --no-sound-null-safety
       - name: Deploy to Firebase Master
         uses: w9jds/firebase-action@master
         with:
