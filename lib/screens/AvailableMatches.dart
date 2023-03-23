@@ -1,6 +1,7 @@
 import "package:collection/collection.dart";
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:nutmeg/controller/SportCentersController.dart';
 import 'package:nutmeg/model/Match.dart';
 import 'package:nutmeg/state/LoadOnceState.dart';
 import 'package:nutmeg/utils/Utils.dart';
@@ -19,37 +20,18 @@ class AvailableMatches extends StatelessWidget {
 
   Future<void> onTap(BuildContext context, String matchId) async => context.go("/match/$matchId");
 
-  bool _isLoading(BuildContext context) {
-    var state = context.read<MatchesState>();
-    var loadOnceState = context.read<LoadOnceState>();
-
-    if (state.getMatches() == null) {
-      return true;
-    }
-    if (state
-        .getMatches()!
-        .where((m) => m.sportCenterId != null && loadOnceState.getSportCenter(m.sportCenterId!) == null)
-        .isNotEmpty) return true;
-    return false;
-  }
-
   Widget? pastWidgets(BuildContext context) {
     var state = context.watch<MatchesState>();
     var userState = context.watch<UserState>();
-
-    if (_isLoading(context))
-      return null;
 
     if (!userState.isLoggedIn()) {
       return getEmptyStateWidget(context, false);
     }
 
-    var now = DateTime.now();
-    var matches = state
-        .getMatches()!
-        .where((e) => (!e.isTest || userState.isTestMode))
-        .where((m) => userState.isLoggedIn() && m.isUserGoing(userState.getLoggedUserDetails()!))
-        .where((m) => m.dateTime.isBefore(now));
+    var matches = state.getMatchesForTab("PAST");
+
+    if (matches == null)
+      return null;
 
     List<Widget> widgets = [];
 
@@ -72,35 +54,29 @@ class AvailableMatches extends StatelessWidget {
   Widget? goingWidgets(BuildContext context) {
     var state = context.watch<MatchesState>();
     var userState = context.watch<UserState>();
-    var loadOnceState = context.watch<LoadOnceState>();
-
-    if (_isLoading(context))
-      return null;
 
     if (!userState.isLoggedIn()) {
       return getEmptyStateWidget(context);
     }
 
-    var now = DateTime.now();
-    var matches = state
-        .getMatches()!
-        .where((e) => (!e.isTest || userState.isTestMode))
-        .where((m) => userState.isLoggedIn() && m.isUserGoing(userState.getLoggedUserDetails()!))
-        .where((m) => m.dateTime.isAfter(now));
+    var matches = state.getMatchesForTab("GOING");
+
+    if (matches == null)
+      return null;
 
     List<Widget> widgets = [];
 
     if (matches.isNotEmpty) {
-      matches.sortedBy((e) => e.dateTime).forEachIndexed((index, m) {
-        if (index == 0) {
-          widgets.add(
-              GenericMatchInfo.first(state.getMatch(m.documentId)!,
-                  m.sportCenter ?? loadOnceState.getSportCenter(m.sportCenterId!)!,
-                  onTap));
-        } else {
-          widgets.add(GenericMatchInfo(state.getMatch(m.documentId)!,
-              m.sportCenter ?? loadOnceState.getSportCenter(m.sportCenterId!)!,
-              onTap));
+      matches.sortedBy((e) => e.dateTime).forEachIndexed((index, match) {
+        var s = state.getMatchSportCenter(context, match);
+        var w;
+        if (s != null) {
+          if (index == 0) {
+            w = GenericMatchInfo.first(match, s, onTap);
+          } else {
+            w = GenericMatchInfo(match, s, onTap);
+          }
+          widgets.add(w);
         }
       });
     }
@@ -112,18 +88,12 @@ class AvailableMatches extends StatelessWidget {
 
   Widget? upcomingWidgets(BuildContext context) {
     var state = context.watch<MatchesState>();
-    var userState = context.watch<UserState>();
-    var loadOnceState = context.watch<LoadOnceState>();
+    // var loadOnceState = context.watch<LoadOnceState>();
 
-    if (_isLoading(context))
+    var matches = state.getMatchesForTab("UPCOMING");
+
+    if (matches == null)
       return null;
-
-    var hideStatuses = Set.of([MatchStatus.unpublished]);
-    var matches = state
-        .getMatchesInFuture()
-        .where((e) => !hideStatuses.contains(e.status))
-        .where((e) => (!e.isTest || userState.isTestMode))
-        .toList();
 
     var beginningOfCurrentWeek = getBeginningOfTheWeek(DateTime.now());
 
@@ -151,16 +121,17 @@ class AvailableMatches extends StatelessWidget {
     List<Widget> result = [];
     groupedByWeeksIntervals.entries.forEachIndexed((index, e) {
       if (e.value.isNotEmpty) {
-        var widgets =
+        Iterable<Widget> widgets =
             e.value.sortedBy((e) => e.dateTime).mapIndexed((index, match) {
-          if (index == 0) {
-            return GenericMatchInfo.first(state.getMatch(match.documentId)!,
-                match.sportCenter ?? loadOnceState.getSportCenter(match.sportCenterId!)!,
-                onTap);
-          }
-          return GenericMatchInfo(state.getMatch(match.documentId)!,
-              match.sportCenter ?? loadOnceState.getSportCenter(match.sportCenterId!)!,
-              onTap);
+              var s = state.getMatchSportCenter(context, match);
+              var w;
+              if (s != null) {
+                if (index == 0) {
+                  w = GenericMatchInfo.first(match, s, onTap);
+              } else
+                  w = GenericMatchInfo(match, s, onTap);
+              }
+              return w;
         });
 
         var section;
@@ -195,18 +166,14 @@ class AvailableMatches extends StatelessWidget {
     var userState = context.read<UserState>();
     var loadOnceState = context.watch<LoadOnceState>();
 
-    if (_isLoading(context))
-      return null;
-
     if (!userState.isLoggedIn()) {
       return getEmptyStateWidget(context);
     }
 
-    var matches = state
-        .getMatches()!
-        .where((e) => (!e.isTest || userState.isTestMode))
-        .where((m) =>
-            m.organizerId == userState.getLoggedUserDetails()!.documentId);
+    var matches = state.getMatchesForTab("MY MATCHES");
+
+    if (matches == null)
+      return null;
 
     List<Widget> widgets = [];
 
@@ -288,6 +255,15 @@ class AvailableMatches extends StatelessWidget {
                   Text("$city, $country", style: TextPalette.h1Inverted),
                 ],
               ),
+              () async {
+                var matchesState = context.read<MatchesState>();
+                await Future.wait(["UPCOMING", "PAST", "GOING", "MY MATCHES"]
+                    .map((tab) =>
+                    matchesState.fetchMatches(tab, context)
+                ));
+                await Future.wait(matchesState.getSportCenters()
+                    .map((s) => SportCentersController.refresh(context, s)));
+              }
             )
     );
   }

@@ -4,7 +4,6 @@ import 'package:badges/badges.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:nutmeg/controller/SportCentersController.dart';
 import 'package:nutmeg/model/Match.dart';
 import 'package:nutmeg/model/SportCenter.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
@@ -30,6 +29,7 @@ class GenericAvailableMatchesList extends StatefulWidget {
   final Widget? emptyStateWidget;
   final FloatingActionButton? floatingActionButton;
   final Widget? titleWidget;
+  final Function refreshState;
 
   const GenericAvailableMatchesList(
       this.appBarColor,
@@ -37,7 +37,8 @@ class GenericAvailableMatchesList extends StatefulWidget {
       this.tabContent,
       this.emptyStateWidget,
       this.floatingActionButton,
-      this.titleWidget);
+      this.titleWidget,
+      this.refreshState);
 
   @override
   State<StatefulWidget> createState() => GenericAvailableMatchesListState();
@@ -45,15 +46,6 @@ class GenericAvailableMatchesList extends StatefulWidget {
 
 class GenericAvailableMatchesListState
     extends State<GenericAvailableMatchesList> {
-
-  Future<void> refreshPageState(BuildContext context) async {
-    var matches = await context.read<MatchesState>().fetchMatches();
-    Future.wait(matches
-        .map((e) => e.sportCenterId)
-        .where((s) => s != null)
-        .toSet()
-        .map((s) => SportCentersController.refresh(context, s!)));
-  }
 
   Widget waitingWidget() => ListOfMatchesSkeleton(repeatFor: 3);
 
@@ -168,7 +160,7 @@ class GenericAvailableMatchesListState
                     return list[i];
                   },
                   itemCount: 3),
-              refreshState: () => refreshPageState(context),
+              refreshState: () => widget.refreshState(),
               initState: null),
           floatingActionButton: widget.floatingActionButton,
         ),

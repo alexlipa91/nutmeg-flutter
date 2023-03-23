@@ -69,13 +69,15 @@ class UserState extends ChangeNotifier {
 
   String getCountry() => _locationInfo?.country ?? "NL";
   String getCity() => _locationInfo?.city ?? "Amsterdam";
+  double getLat() => _locationInfo?.lat ?? 52.3676;
+  double getLng() => _locationInfo?.lng ?? 4.9041;
 }
 
 class LocationInfo {
 
-  // these are city coordinates
-  double lat;
-  double lng;
+  // these are city coordinates:
+  double? lat;
+  double? lng;
   String? country;
   String? city;
 

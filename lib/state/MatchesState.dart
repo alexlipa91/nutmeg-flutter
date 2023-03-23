@@ -2,13 +2,21 @@ import 'package:flutter/cupertino.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 import 'package:nutmeg/model/Match.dart';
 import 'package:nutmeg/model/MatchRatings.dart';
+import 'package:nutmeg/model/SportCenter.dart';
 import 'package:nutmeg/model/UserDetails.dart';
+import 'package:nutmeg/state/LoadOnceState.dart';
+import 'package:nutmeg/state/UserState.dart';
+import 'package:provider/provider.dart';
+
+import '../utils/LocationUtils.dart';
 
 
 class MatchesState extends ChangeNotifier {
 
   // match details (do not initialize this map so that we can differentiate when no data has been fetched, i.e. map is null)
-  Map<String, Match>? _matches;
+  Map<String, Match>? _matchesCache;
+
+  Map<String, List<Match>>? _matchesPerTab;
 
   // ratings per match
   Map<String, MatchRatings> _ratingsPerMatch = Map();
@@ -21,36 +29,63 @@ class MatchesState extends ChangeNotifier {
   }
 
   List<Match>? getMatches() {
-    if (_matches == null)
+    if (_matchesPerTab == null)
       return null;
-    return _matches!.values.toList()
+    return _matchesCache!.values.toList()
       ..sort((a, b) => b.dateTime.compareTo(a.dateTime));
   }
 
-  List<Match> getMatchesInFuture() {
-    var matches = getMatches() ?? List<Match>.empty();
-    var res = matches.where((m) {
-      return m.dateTime.isAfter(DateTime.now());
-    }).toList();
-    return res;
-  }
+  List<Match>? getMatchesForTab(String tab) =>
+      (_matchesPerTab == null) ? null :_matchesPerTab![tab];
 
   Match? getMatch(String matchId) =>
-      (_matches == null) ? null : _matches![matchId];
+      (_matchesCache == null) ? null : _matchesCache![matchId];
 
   void setMatch(Match m) {
-    if (_matches == null)
-      _matches = Map();
-    _matches![m.documentId] = m;
+    if (_matchesCache == null)
+      _matchesCache = Map();
+    _matchesCache![m.documentId] = m;
     notifyListeners();
   }
 
-  Future<List<Match>> fetchMatches() async {
-    var resp = await CloudFunctionsClient().callFunction("get_all_matches_v2", {});
-    Map<String, dynamic> data =
-    (resp == null) ? Map() : Map<String, dynamic>.from(resp);
+  Set<String> getSportCenters() => _matchesCache!
+      .values.where((m) => m.sportCenterId != null)
+      .map((e) => e.sportCenterId!).toSet();
 
-    List<Match> matches = data.entries
+  // depends on which tab
+  Future<void> fetchMatches(String tab, BuildContext context) async {
+    var userState = context.watch<UserState>();
+    var params;
+    switch (tab) {
+      case "UPCOMING":
+        params = {"when": "future"};
+        break;
+      case "GOING":
+        // we will filter later on
+        if (userState.currentUserId == null)
+          return;
+        params = {"with_user": userState.currentUserId!};
+        break;
+      case "PAST":
+        if (userState.currentUserId == null)
+          return;
+        params = {"with_user": userState.currentUserId!};
+        break;
+      case "MY MATCHES":
+        if (userState.currentUserId == null)
+          return;
+        params = {"organized_by": userState.currentUserId!};
+        break;
+    }
+
+    var resp = await CloudFunctionsClient().callFunction("get_all_matches_v2", params);
+    Map<String, dynamic> data = (resp == null) ? Map() : Map<String, dynamic>.from(resp);
+
+    if (_matchesCache == null)
+      _matchesCache = Map();
+
+    // filter tests and get sportcenters to download
+    Iterable<Match> matches = data.entries
         .map((element) {
       try {
         return Match.fromJson(Map<String, dynamic>.from(element.value),
@@ -61,12 +96,30 @@ class MatchesState extends ChangeNotifier {
         print(s);
         return null;
       }
-    }).where((e) => e != null).map((e) => e!).toList();
+    }).where((e) => e != null).map((e) {
+      _matchesCache![e!.documentId] = e;
+      return e;
+    }).where((e) => (!e.isTest || context.read<UserState>().isTestMode));
 
-    _matches = Map.fromEntries(matches.map((e) => MapEntry((e.documentId), e)));
+    // further filtering client side
+    if (tab == "UPCOMING") {
+      matches = matches.where((m) => m.status != MatchStatus.unpublished);
+      // regional filtering: 20km
+      matches = matches.where((m) {
+        var sp = getMatchSportCenter(context, m);
+        return isWithinRadius(sp.lat, sp.lng, userState.getLat(), userState.getLng());
+      });
+    }
+    if (tab == "GOING")
+      matches = matches.where((m) => m.dateTime.isAfter(DateTime.now()));
+    if (tab == "PAST")
+      matches = matches.where((m) => m.dateTime.isBefore(DateTime.now()));
+
+    if (_matchesPerTab == null)
+      _matchesPerTab = Map();
+    _matchesPerTab![tab] = matches.toList();
+
     notifyListeners();
-
-    return matches;
   }
 
   Future<MatchRatings?> fetchRatings(String matchId) async {
@@ -81,7 +134,7 @@ class MatchesState extends ChangeNotifier {
   }
 
   List<String>? stillToVote(String matchId, UserDetails ud) {
-    var match = _matches![matchId];
+    var match = _matchesCache![matchId];
     var matchRatings = _ratingsPerMatch[matchId];
 
     if (match == null)
@@ -99,4 +152,8 @@ class MatchesState extends ChangeNotifier {
     });
     return toVote.toList();
   }
+
+  SportCenter getMatchSportCenter(BuildContext context, Match m) =>
+      m.sportCenter ??
+          context.read<LoadOnceState>().getSportCenter(m.sportCenterId!)!;
 }

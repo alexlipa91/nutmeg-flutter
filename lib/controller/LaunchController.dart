@@ -234,7 +234,8 @@ class LaunchController {
   static Future<void> _loadOnceData(BuildContext context) async {
     print("loading static data");
     var futures = [
-      MiscController.getGifs(context.read<LoadOnceState>())
+      MiscController.getGifs(context.read<LoadOnceState>()),
+      context.read<LoadOnceState>().fetchSportCenters(),
     ];
     await Future.wait(futures);
     print("loading static done");

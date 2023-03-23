@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:nutmeg/state/UserState.dart';
@@ -89,5 +90,13 @@ Future<List<PredictionResult>> getPlacePrediction(String query, String userCount
 
   return results;
 }
+
+// check if lat/lng is within center and 20 km
+bool isWithinRadius(double lat, double lng, double centerLat, double centerLng) {
+  var d = Geolocator.distanceBetween(lat, lng, centerLat, centerLng);
+  return d < 20 * 1000;
+}
+
+
 
 var blacklistedCountriesForPayments = ["CH", "BR"];
