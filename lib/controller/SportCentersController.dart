@@ -21,22 +21,6 @@ class SportCentersController {
     return sportCenter;
   }
 
-  static Future<List<Map<String, dynamic>>> getPlacePrediction(String query) async {
-    Map<String, dynamic> data = await CloudFunctionsClient()
-        .callFunction("get_location_predictions_from_query", {"query" : query})
-        ?? {};
-
-    List predictions = data["predictions"] ?? [];
-
-    List<Map<String, dynamic>> results = [];
-
-    predictions.forEach((element) {
-      results.add(Map<String, dynamic>.from(element));
-    });
-
-    return results;
-  }
-
   static Future<Map<String, dynamic>> getPlaceDetails(String placeId) async {
     Map<String, dynamic> data = await CloudFunctionsClient()
         .callFunction("get_placeid_info", {"place_id" : placeId})
@@ -77,7 +61,7 @@ class SportCentersController {
     await CloudFunctionsClient().callFunction("add_user_sportcenter_from_place_id", {
       "place_id": placeId,
       "additional_info": info,
-      "user_id": userId,
+      "user_id": userId
     });
   }
 }

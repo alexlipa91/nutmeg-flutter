@@ -200,7 +200,7 @@ class LaunchController {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          duration: Duration(seconds: 20),
+          duration: Duration(seconds: 15),
           elevation: 0,
           padding: EdgeInsets.all(16),
           content: Text('Use the native app for a better experience',

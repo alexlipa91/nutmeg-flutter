@@ -9,6 +9,7 @@ import 'package:nutmeg/widgets/PageTemplate.dart';
 import 'package:nutmeg/widgets/Section.dart';
 import 'package:provider/provider.dart';
 
+import '../utils/LocationUtils.dart';
 import '../widgets/ModalBottomSheet.dart';
 import 'BottomBarMatch.dart';
 import 'CreateMatch.dart';
@@ -52,35 +53,34 @@ class CreateCourtState extends State<CreateCourt> {
                   Row(
                     children: [
                       Expanded(
-                          child: TypeAheadField<Map<String, dynamic>>(
+                          child: TypeAheadField<PredictionResult>(
                         textFieldConfiguration: TextFieldConfiguration(
                             style: TextPalette.getBodyText(Palette.black),
                             decoration: CreateMatchState.getTextFormDecoration(
                                 "Court Location"),
                             controller: textEditingController),
                         suggestionsCallback: (pattern) async {
-                          List<Map<String, dynamic>> predictions = [];
+                          List<PredictionResult> predictions = [];
                           if (pattern.isNotEmpty) {
-                            var result = await SportCentersController
-                                .getPlacePrediction(pattern);
+                            var result = await getPlacePrediction(pattern, "NL");
                             predictions = result;
                           }
                           return predictions;
                         },
                         itemBuilder: (context, suggestion) {
-                          String description = suggestion["description"];
-                          var matchedSubstrings = suggestion["matched_substrings"];
+                          String description = suggestion.description;
+                          var matchedSubstrings = suggestion.matches;
 
                           // todo check case of more matches
                           var firstMatch = matchedSubstrings[0];
                           String? boldText;
                           String normalText;
 
-                          if (firstMatch["offset"] == 0) {
+                          if (firstMatch.offset == 0) {
                             boldText = description.substring(0,
-                                firstMatch["length"]);
+                                firstMatch.length);
                             normalText = description
-                                .substring(firstMatch["length"]!);
+                                .substring(firstMatch.length);
                           } else {
                             normalText = description;
                           }
@@ -102,9 +102,9 @@ class CreateCourtState extends State<CreateCourt> {
                         noItemsFoundBuilder: (value) => Container(height: 10),
                         onSuggestionSelected: (suggestion) async {
                           textEditingController.text =
-                              suggestion["description"] ?? "";
+                              suggestion.description ?? "";
                           setState(() {
-                            placeId = suggestion["place_id"];
+                            placeId = suggestion.placeId;
                           });
                         },
                       ))

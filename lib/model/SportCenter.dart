@@ -13,6 +13,7 @@ class SportCenter {
   bool? hasChangingRooms;
   String courtType;
   String timezoneId;
+  String country;
 
   SportCenter.fromJson(Map<String, dynamic>? json, String documentId)
       : placeId = documentId,
@@ -20,6 +21,7 @@ class SportCenter {
         address = json['address'],
         lat = json['lat'],
         lng = json['lng'],
+        country = json['country'] ?? 'NL',
         surface = json["surface"],
         hasChangingRooms = json['hasChangingRooms'],
         timezoneId = json["timeZoneId"] ?? "Europe/Amsterdam",
@@ -32,6 +34,7 @@ class SportCenter {
         'lat': lat,
         'lng': lng,
         'surface': surface,
+        'country': country,
         'timeZoneId': timezoneId,
         if (hasChangingRooms != null)
           'hasChangingRooms': hasChangingRooms!,

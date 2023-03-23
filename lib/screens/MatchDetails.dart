@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nutmeg/controller/SportCentersController.dart';
+import 'package:nutmeg/utils/LocationUtils.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:map_launcher/map_launcher.dart';
@@ -940,18 +941,6 @@ class MapCardImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var lat = sportCenter.lat;
-    var lng = sportCenter.lng;
-
-    var url = "https://maps.googleapis.com/maps/api/staticmap?center=" +
-        lat.toString() +
-        "," +
-        lng.toString() +
-        "&key=AIzaSyDlU4z5DbXqoafB-T-t2mJ8rGv3Y4rAcWY&zoom=16&size=600x300&markers=color:red%7C" +
-        lat.toString() +
-        "," +
-        lng.toString();
-
     return InkWell(
       onTap: () async {
         if (kIsWeb) {
@@ -961,7 +950,7 @@ class MapCardImage extends StatelessWidget {
             false) {
           await MapLauncher.showMarker(
             mapType: m.MapType.google,
-            coords: Coords(lat, lng),
+            coords: Coords(sportCenter.lat, sportCenter.lng),
             title: "",
             extraParams: {
               "q": sportCenter.getName() + "," + sportCenter.address,
@@ -981,7 +970,8 @@ class MapCardImage extends StatelessWidget {
       },
       child: ClipRRect(
           borderRadius: InfoContainer.borderRadius,
-          child: CachedNetworkImage(imageUrl: url)),
+          child: CachedNetworkImage(imageUrl: buildMapUrl(sportCenter.lat,
+              sportCenter.lng))),
     );
   }
 }

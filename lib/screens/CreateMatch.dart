@@ -15,6 +15,7 @@ import 'package:nutmeg/screens/BottomBarMatch.dart';
 import 'package:nutmeg/screens/CreateCourt.dart';
 import 'package:nutmeg/state/UserState.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
+import 'package:nutmeg/utils/LocationUtils.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
@@ -84,6 +85,7 @@ class CreateMatchState extends State<CreateMatch> {
   late TextEditingController priceController;
   late RangeValues numberOfPeopleRangeValues;
   late bool isTest;
+  late bool paymentsPossible;
   late bool managePayments;
   late bool withAutomaticCancellation;
   late int repeatsForWeeks;
@@ -125,6 +127,7 @@ class CreateMatchState extends State<CreateMatch> {
       withAutomaticCancellation = false;
       repeatsForWeeks = 1;
       cancelTimeEditingController = TextEditingController(text: "24");
+      paymentsPossible = true;
       managePayments = true;
     } else {
       sportCenter =
@@ -158,6 +161,7 @@ class CreateMatchState extends State<CreateMatch> {
       cancelTimeEditingController = TextEditingController(
           text: widget.existingMatch!.cancelBefore?.inHours.toString());
       managePayments = widget.existingMatch!.managePayments;
+      paymentsPossible = !blacklistedCountriesForPayments.contains(sportCenter!.country);
     }
 
     sportCenterfocusNode = FocusNode();
@@ -370,6 +374,8 @@ class CreateMatchState extends State<CreateMatch> {
                       sportCenterEditingController.text = sp.getName();
                       setState(() {
                         sportCenter = sp;
+
+                        paymentsPossible = !blacklistedCountriesForPayments.contains(sp.country.toUpperCase());
                       });
                     }
                   },
@@ -454,7 +460,8 @@ class CreateMatchState extends State<CreateMatch> {
         body: Column(children: [
           Row(
             children: [
-              Checkbox(
+              if (paymentsPossible)
+                Checkbox(
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(5)),
                   value: managePayments,
@@ -464,16 +471,22 @@ class CreateMatchState extends State<CreateMatch> {
                       managePayments = v!;
                     });
                   }),
-              Flexible(
+              if (paymentsPossible)
+                Flexible(
                   child: Text("Allow users to pay for the match through Nutmeg",
                       style: TextPalette.bodyText,
                       overflow: TextOverflow.visible)),
+              if (!paymentsPossible)
+                Flexible(
+                    child: Text("We cannot process payments in this location yet",
+                        style: TextPalette.bodyText,
+                        overflow: TextOverflow.visible)),
             ],
           ),
           SizedBox(
             height: 16,
           ),
-          if (managePayments)
+          if (paymentsPossible && managePayments)
             Container(
               child: Column(
                 children: [
@@ -559,10 +572,9 @@ class CreateMatchState extends State<CreateMatch> {
                               recognizer: TapGestureRecognizer()
                                 ..onTap = () async {
                                   final url = 'https://stripe.com';
-                                  if (await canLaunch(url)) {
-                                    await launch(
-                                      url,
-                                      forceSafariVC: false,
+                                  if (await canLaunchUrl(Uri.parse(url))) {
+                                    await launchUrl(
+                                      Uri.parse(url),
                                     );
                                   }
                                 },
@@ -749,7 +761,7 @@ class CreateMatchState extends State<CreateMatch> {
                                 : sportCenter,
                             courtNumberEditingController.text,
                             numberOfPeopleRangeValues.end.toInt(),
-                            managePayments ? (Decimal.parse(priceController.text) * Decimal.parse("100")).toDouble().toInt() : 0,
+                            paymentsPossible && managePayments ? (Decimal.parse(priceController.text) * Decimal.parse("100")).toDouble().toInt() : 0,
                             duration,
                             isTest,
                             numberOfPeopleRangeValues.start.toInt(),
@@ -768,7 +780,7 @@ class CreateMatchState extends State<CreateMatch> {
                                 ? widget.existingMatch!.teams
                                 : Map(),
                             cancelBefore,
-                            managePayments);
+                            paymentsPossible && managePayments);
 
                         var id;
                         if (widget.existingMatch == null) {
