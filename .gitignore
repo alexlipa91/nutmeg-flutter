@@ -53,3 +53,4 @@ ios/AuthKey_CTJDHGWL48.p8
 ios/fastlane/report.xml
 
 hosting.*
+lib/utils/ApiKey.dart
