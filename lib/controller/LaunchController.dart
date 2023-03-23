@@ -192,27 +192,26 @@ class LaunchController {
     print("load data method is done");
     LaunchController.loadingDone = true;
 
-    if (kIsWeb &&
-        (defaultTargetPlatform == TargetPlatform.iOS
-            || defaultTargetPlatform == TargetPlatform.android)) {
-      ScaffoldMessenger.of(context).showMaterialBanner(
-        MaterialBanner(
+    // install/use app prompt
+    if (kIsWeb && (defaultTargetPlatform == TargetPlatform.iOS
+        || defaultTargetPlatform == TargetPlatform.android)) {
+      // todo check if app is installed or not
+      // print(GoRouter.of(context).location);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          duration: Duration(seconds: 20),
           elevation: 0,
           padding: EdgeInsets.all(16),
-          content: Text('Download the native app for a better experience', style: TextPalette.h3),
-          backgroundColor: Colors.transparent,
-          actions: <Widget>[
-            TextButton(
-              onPressed: () => launchUrl(Uri.parse("https://nutmegapp.page.link/store")),
-              child: Text('Download app'),
-            ),
-            SizedBox(width: 20),
-            TextButton(
-              onPressed: () => scaffoldMessengerKey.currentState!.hideCurrentMaterialBanner(),
-              child: Text('Continue on web'),
-            ),
-          ],
-        ),
+          content: Text('Use the native app for a better experience',
+              style: TextPalette.linkStyleInverted),
+          // backgroundColor: Colors.transparent,
+          action: SnackBarAction(
+            label: 'Download',
+            textColor: Colors.blueAccent,
+            onPressed: () => launchUrl(Uri.parse("https://nutmegapp.page.link/store")),
+          )
+        )
       );
     }
 
