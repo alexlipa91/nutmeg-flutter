@@ -9,6 +9,7 @@ import 'package:nutmeg/widgets/GenericAvailableMatches.dart';
 import 'package:nutmeg/widgets/Section.dart';
 import 'package:nutmeg/widgets/Texts.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../state/AvailableMatchesState.dart';
 import '../state/MatchesState.dart';
@@ -70,14 +71,12 @@ class AvailableMatches extends StatelessWidget {
       matches.sortedBy((e) => e.dateTime).forEachIndexed((index, match) {
         var s = state.getMatchSportCenter(context, match);
         var w;
-        if (s != null) {
-          if (index == 0) {
-            w = GenericMatchInfo.first(match, s, onTap);
-          } else {
-            w = GenericMatchInfo(match, s, onTap);
-          }
-          widgets.add(w);
+        if (index == 0) {
+          w = GenericMatchInfo.first(match, s, onTap);
+        } else {
+          w = GenericMatchInfo(match, s, onTap);
         }
+        widgets.add(w);
       });
     }
 
@@ -125,12 +124,10 @@ class AvailableMatches extends StatelessWidget {
             e.value.sortedBy((e) => e.dateTime).mapIndexed((index, match) {
               var s = state.getMatchSportCenter(context, match);
               var w;
-              if (s != null) {
-                if (index == 0) {
-                  w = GenericMatchInfo.first(match, s, onTap);
-              } else
-                  w = GenericMatchInfo(match, s, onTap);
-              }
+              if (index == 0)
+                w = GenericMatchInfo.first(match, s, onTap);
+              else
+                w = GenericMatchInfo(match, s, onTap);
               return w;
         });
 
@@ -233,7 +230,12 @@ class AvailableMatches extends StatelessWidget {
         ],
         builder: (context, _) => GenericAvailableMatchesList(
               Palette.primary,
-              ["UPCOMING", "GOING", "PAST", "MY MATCHES"].toList(),
+              [
+                AppLocalizations.of(context)!.upcoming.toUpperCase(),
+                AppLocalizations.of(context)!.going.toUpperCase(),
+                AppLocalizations.of(context)!.past.toUpperCase(),
+                AppLocalizations.of(context)!.myMatches.toUpperCase(),
+              ].toList(),
               [
                 upcomingWidgets(context),
                 goingWidgets(context),
@@ -250,19 +252,14 @@ class AvailableMatches extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Find football matches near",
+                  Text(AppLocalizations.of(context)!.topHeader,
                       style: TextPalette.bodyTextInverted),
                   Text("$city, $country", style: TextPalette.h1Inverted),
                 ],
               ),
               () async {
-                var matchesState = context.read<MatchesState>();
-                await Future.wait(["UPCOMING", "PAST", "GOING", "MY MATCHES"]
-                    .map((tab) =>
-                    matchesState.fetchMatches(tab, context)
-                ));
-                await Future.wait(matchesState.getSportCenters()
-                    .map((s) => SportCentersController.refresh(context, s)));
+                print("refreshing state for available matches");
+                await context.read<MatchesState>().refreshState(context);
               }
             )
     );

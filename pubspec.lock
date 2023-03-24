@@ -65,6 +65,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.2.1"
+  auto_translator:
+    dependency: "direct dev"
+    description:
+      name: auto_translator
+      sha256: "9f603f3fc9439d3bb2ffae0c3c750b3c2b09c8b0c465df15c55f77857ea2db92"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.0"
   badges:
     dependency: "direct main"
     description:
@@ -774,6 +782,11 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.9.3"
+  flutter_localizations:
+    dependency: "direct main"
+    description: flutter
+    source: sdk
+    version: "0.0.0"
   flutter_native_splash:
     dependency: "direct main"
     description:
@@ -1097,7 +1110,7 @@ packages:
     source: hosted
     version: "2.6.2"
   intl:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: intl
       sha256: "910f85bce16fb5c6f614e117efa303e85a1731bb0081edf3604a2ae6e9a3cc91"

@@ -14,6 +14,7 @@ import 'package:nutmeg/widgets/Containers.dart';
 import 'package:nutmeg/widgets/RefresherWithObserverWidget.dart';
 import 'package:nutmeg/widgets/Texts.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../state/AvailableMatchesState.dart';
 import '../state/LoadOnceState.dart';
@@ -170,8 +171,6 @@ class GenericAvailableMatchesListState
 }
 
 class GenericMatchInfo extends StatelessWidget {
-  static var dateFormat = DateFormat("E, MMM dd 'at' HH:mm");
-
   final Match match;
   final SportCenter sportCenter;
 
@@ -185,6 +184,9 @@ class GenericMatchInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var dateFormat = DateFormat("E, MMM dd 'at' HH:mm",
+        context.watch<LoadOnceState>().locale.languageCode);
+
     return InkWell(
         child: Padding(
           padding: EdgeInsets.only(top: topMargin),
@@ -238,12 +240,7 @@ class GenericMatchInfo extends StatelessWidget {
                                           ? Text("Full",
                                               style: TextPalette.bodyText,
                                               textAlign: TextAlign.right)
-                                          : Text(
-                                              (match.maxPlayers -
-                                                          match
-                                                              .numPlayersGoing())
-                                                      .toString() +
-                                                  " spots left",
+                                          : Text(" ${AppLocalizations.of(context)!.spotsLeft(match.maxPlayers - match.numPlayersGoing())}",
                                               style:
                                                   TextPalette.bodyTextPrimary,
                                               textAlign: TextAlign.right),
@@ -418,15 +415,15 @@ class WeekSeparatorWidget extends StatelessWidget {
   const WeekSeparatorWidget(this.weekDelta);
 
   @override
-  Widget build(BuildContext context) => TextSeparatorWidget(_getWeekDesc());
+  Widget build(BuildContext context) => TextSeparatorWidget(_getWeekDesc(context));
 
-  _getWeekDesc() {
+  _getWeekDesc(context) {
     if (weekDelta == 0) {
-      return "THIS WEEK";
+      return AppLocalizations.of(context)!.thisWeek.toUpperCase();
     }
     if (weekDelta == 1) {
-      return "NEXT WEEK";
+      return AppLocalizations.of(context)!.nextWeek.toUpperCase();
     }
-    return "IN MORE THAN TWO WEEKS";
+    return AppLocalizations.of(context)!.moreThanTwoWeeks.toUpperCase();
   }
 }

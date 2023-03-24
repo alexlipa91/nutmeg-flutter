@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:ui';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
@@ -26,6 +27,7 @@ import '../state/LoadOnceState.dart';
 import '../state/MatchesState.dart';
 import '../state/UserState.dart';
 import 'admin/AddOrEditMatch.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 final scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
@@ -146,23 +148,28 @@ void main() async {
           ],
         ),
         child: FlutterWebFrame(
-          builder: (context) => MaterialApp.router(
-            key: navigatorKey,
-            scaffoldMessengerKey: scaffoldMessengerKey,
-            routeInformationParser: appRouter.routeInformationParser,
-            routerDelegate: appRouter.routerDelegate,
-            routeInformationProvider: appRouter.routeInformationProvider,
-            debugShowCheckedModeBanner: false,
-            backButtonDispatcher: RootBackButtonDispatcher(),
-            theme: ThemeData(
-              colorScheme: ColorScheme.light().copyWith(
-                primary: Palette.primary,
+          builder: (context) {
+            return MaterialApp.router(
+              key: navigatorKey,
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              locale: context.watch<LoadOnceState>().locale,
+              scaffoldMessengerKey: scaffoldMessengerKey,
+              routeInformationParser: appRouter.routeInformationParser,
+              routerDelegate: appRouter.routerDelegate,
+              routeInformationProvider: appRouter.routeInformationProvider,
+              debugShowCheckedModeBanner: false,
+              backButtonDispatcher: RootBackButtonDispatcher(),
+              theme: ThemeData(
+                colorScheme: ColorScheme.light().copyWith(
+                  primary: Palette.primary,
+                ),
+                hoverColor: Colors.transparent,
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
               ),
-              hoverColor: Colors.transparent,
-              splashColor: Colors.transparent,
-              highlightColor: Colors.transparent,
-            ),
-          ),
+            );
+          },
           maximumSize: Size(812.0, 812.0), // Maximum size
           enabled: false,
           backgroundColor: Palette.grey_light,

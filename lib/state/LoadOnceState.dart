@@ -1,3 +1,5 @@
+import 'package:universal_io/io.dart';
+
 import 'package:flutter/cupertino.dart';
 import 'package:nutmeg/db/SportCentersFirestore.dart';
 
@@ -6,6 +8,8 @@ import '../model/SportCenter.dart';
 
 
 class LoadOnceState extends ChangeNotifier {
+  Locale locale = Locale(Platform.localeName);
+  
   Map<String, SavedSportCenter> _sportCenters = Map();
   List<Sport> _sports = [Sport("5v5"), Sport("6v6")];
   late List<String> joinedGifs;
@@ -32,5 +36,10 @@ class LoadOnceState extends ChangeNotifier {
   String getRandomGif() {
     joinedGifs..shuffle();
     return joinedGifs.first;
+  }
+
+  void setLocale(String locale) {
+    this.locale = Locale(locale);
+    notifyListeners();
   }
 }

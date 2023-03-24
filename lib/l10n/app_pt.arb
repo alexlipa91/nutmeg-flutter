@@ -1,0 +1,11 @@
+{
+    "topHeader": "Encontre jogos de futebol perto",
+    "upcoming": "Por vir",
+    "going": "Indo",
+    "past": "Passado",
+    "myMatches": "Minhas Partidas",
+    "spotsLeft": "{numSpots} vagas restantes",
+    "thisWeek": "essa semana",
+    "nextWeek": "semana que vem",
+    "moreThanTwoWeeks": "em mais de duas semanas"
+}

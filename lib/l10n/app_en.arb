@@ -1,0 +1,12 @@
+{
+  "topHeader": "Find football matches near",
+  "upcoming": "Upcoming",
+  "going": "Going",
+  "past": "Past",
+  "myMatches": "My Matches",
+  "spotsLeft": "{numSpots} spots left",
+
+  "thisWeek": "this week",
+  "nextWeek": "next week",
+  "moreThanTwoWeeks": "in more than two weeks"
+}

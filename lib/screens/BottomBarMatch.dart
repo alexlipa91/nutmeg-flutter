@@ -8,6 +8,7 @@ import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../state/MatchesState.dart';
 
@@ -158,7 +159,7 @@ class JoinMatchBottomBar extends StatelessWidget {
     var match = context.read<MatchesState>().getMatch(matchId);
 
     return BottomBarMatch(matchId: matchId,
-      text: "${match?.getSpotsLeft()} spots left",
+      text: AppLocalizations.of(context)!.spotsLeft(match?.getSpotsLeft() ?? 0),
       subText: match?.managePayments ?? true ?
         formatCurrency(match?.pricePerPersonInCents ?? 0) :
         "Payments are collected by the organiser",
@@ -218,7 +219,8 @@ class NotPublishedBottomBar extends StatelessWidget {
     return BottomBarMatch(matchId: matchId,text: "Not Published",
         subText: "Complete your Stripe account to receive payments and publish this match",
         button: InkWell(onTap: () =>
-            launch(getStripeUrl(userState.isTestMode, userState.currentUserId!), forceSafariVC: false),
+            launchUrl(Uri.parse(getStripeUrl(userState.isTestMode,
+                userState.currentUserId!))),
             child: Padding(
                 padding: EdgeInsets.only(top: 8),
                 child: Text("GO TO STRIPE", style: TextPalette.linkStyle)))

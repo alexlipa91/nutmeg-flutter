@@ -3,6 +3,8 @@ import 'package:flutter/material.dart' hide Badge;
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nutmeg/controller/UserController.dart';
+import 'package:nutmeg/screens/CreateMatch.dart';
+import 'package:nutmeg/state/LoadOnceState.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/Avatar.dart';
@@ -14,6 +16,7 @@ import 'package:nutmeg/widgets/PlayerBottomModal.dart';
 import 'package:nutmeg/widgets/Section.dart';
 import 'package:nutmeg/widgets/WarningWidget.dart';
 import 'package:provider/provider.dart';
+import 'package:screenshot/screenshot.dart';
 import 'package:skeletons/skeletons.dart';
 import 'package:tuple/tuple.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -21,6 +24,7 @@ import 'package:version/version.dart';
 
 import '../state/UserState.dart';
 import '../utils/InfoModals.dart';
+import '../widgets/ModalBottomSheet.dart';
 
 class UserPage extends StatefulWidget {
   @override
@@ -350,7 +354,7 @@ class UserPageState extends State<UserPage> {
                                     "https://europe-central2-nutmeg-9099c.cloudfunctions.net/go_to_account_login_link?"
                                     "is_test=$isTest&user_id=${userState.currentUserId}";
 
-                                await launch(url, forceSafariVC: false);
+                                await launchUrl(Uri.parse(url));
                               }, Primary()))
                             ]),
                           ]);
@@ -379,10 +383,9 @@ class UserPageState extends State<UserPage> {
               onTap: () async {
                 var url = 'https://www.instagram.com/nutmegapp/';
 
-                if (await canLaunch(url)) {
-                  await launch(
-                    url,
-                    universalLinksOnly: true,
+                if (await canLaunchUrl(Uri.parse(url))) {
+                  await launchUrl(
+                    Uri.parse(url),
                   );
                 } else {
                   throw 'There was a problem to open the url: $url';
@@ -397,11 +400,8 @@ class UserPageState extends State<UserPage> {
             ),
             LinkInfo(
                 text: "Email support",
-                onTap: () async {
-                  await launch(
-                      "mailto:support@nutmegapp.com?subject=Support request",
-                      forceSafariVC: false);
-                }),
+                onTap: () => launchUrl(Uri.parse(
+                    "mailto:support@nutmegapp.com?subject=Support request"))),
             SizedBox(height: 16),
             Row(
               children: [
@@ -445,9 +445,8 @@ class UserPageState extends State<UserPage> {
                 Expanded(
                   child: InkWell(
                       child: Text("Privacy Policy", style: TextPalette.h3),
-                      onTap: () => launch(
-                          "https://nutmeg.flycricket.io/privacy.html",
-                          forceSafariVC: false)),
+                      onTap: () => launchUrl(Uri.parse(
+                          "https://nutmeg.flycricket.io/privacy.html"))),
                 )
               ],
             ),
@@ -510,6 +509,49 @@ class UserPageState extends State<UserPage> {
                       child: Text("It allows to see in the UI test matches"))
                 ],
               ),
+              verticalSpace,
+              Row(
+                children: [
+                  Expanded(
+                      child: GenericButtonWithLoader(
+                    "CHANGE LANGUAGE",
+                    (BuildContext context) async {
+                      String? locale =
+                          await ModalBottomSheet.showNutmegModalBottomSheet(
+                              context,
+                              Row(children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        "Language",
+                                        style: TextPalette.h2,
+                                      ),
+                                      SizedBox(height: 16.0),
+                                      InkWell(
+                                        onTap: () => Navigator.pop(context, "en"),
+                                        child: Text("English"),
+                                      ),
+                                      SizedBox(height: 16.0),
+                                      InkWell(
+                                        onTap: () => Navigator.pop(context, "pt"),
+                                        child: Text("Portoguese"),
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              ],)
+                              );
+
+                      if (locale != null) {
+                        context.read<LoadOnceState>().setLocale(locale);
+                      }
+                    },
+                    Primary(),
+                  ))
+                ],
+              ),
             ])),
           ),
         Padding(
@@ -536,12 +578,15 @@ class UserPageState extends State<UserPage> {
 
     return PageTemplate(
       refreshState: () => refreshPageState(),
-      widgets: [Center(child: Container(
-        width: 700,
-        child: Column(
-            children: widgets),
-      ),)]
-        // widgets
+      widgets: [
+        Center(
+          child: Container(
+            width: 700,
+            child: Column(children: widgets),
+          ),
+        )
+      ]
+      // widgets
       ,
       appBar: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -640,8 +685,8 @@ class CompleteOrganiserAccountWidget extends StatelessWidget {
           "To start receiving payments, you need to create your Stripe account",
       textAction: "GO TO STRIPE",
       action: () async {
-        await launch(getStripeUrl(isTest, userState.currentUserId!),
-            forceSafariVC: false);
+        await launchUrl(
+            Uri.parse(getStripeUrl(isTest, userState.currentUserId!)));
       },
     );
   }

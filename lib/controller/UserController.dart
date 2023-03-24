@@ -17,6 +17,7 @@ import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import '../api/CloudFunctionsUtils.dart';
 import '../model/UserDetails.dart';
 import '../screens/PlayerOfTheMatch.dart';
+import '../state/MatchesState.dart';
 import '../state/UserState.dart';
 import '../utils/UiUtils.dart';
 
@@ -114,6 +115,8 @@ class UserController {
 
     userState.setCurrentUserDetails(userDetails);
     UserController.saveUserTokensToDb(userDetails);
+
+    await context.read<MatchesState>().refreshState(context);
   }
 
   static Future<void> _saveTokenToDatabase(UserDetails ud, String token) async {

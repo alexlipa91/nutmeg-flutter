@@ -8,6 +8,7 @@ import 'package:nutmeg/state/LoadOnceState.dart';
 import 'package:nutmeg/state/UserState.dart';
 import 'package:provider/provider.dart';
 
+import '../controller/SportCentersController.dart';
 import '../utils/LocationUtils.dart';
 
 
@@ -54,7 +55,7 @@ class MatchesState extends ChangeNotifier {
 
   // depends on which tab
   Future<void> fetchMatches(String tab, BuildContext context) async {
-    var userState = context.watch<UserState>();
+    var userState = context.read<UserState>();
     var params;
     switch (tab) {
       case "UPCOMING":
@@ -156,4 +157,12 @@ class MatchesState extends ChangeNotifier {
   SportCenter getMatchSportCenter(BuildContext context, Match m) =>
       m.sportCenter ??
           context.read<LoadOnceState>().getSportCenter(m.sportCenterId!)!;
+
+  Future<void> refreshState(BuildContext context) async {
+    await Future.wait(["UPCOMING", "PAST", "GOING", "MY MATCHES"]
+        .map((tab) => fetchMatches(tab, context)
+    ));
+    await Future.wait(getSportCenters()
+        .map((s) => SportCentersController.refresh(context, s)));
+  }
 }
