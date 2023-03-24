@@ -10,7 +10,7 @@ import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/Containers.dart';
 import 'package:provider/provider.dart';
 import '../state/LoginStatusChangeNotifier.dart';
-
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class Login extends StatelessWidget {
 
@@ -182,7 +182,7 @@ class SignInButton extends StatelessWidget {
                   child: Padding(
                     padding: const EdgeInsets.only(left: 10),
                     child: Text(
-                      'CONTINUE WITH ' + provider.toString().split(".").last.toUpperCase(),
+                      AppLocalizations.of(context)!.continueWithButton(provider.toString().split(".").last.toUpperCase()),
                       style: textStyle,
                       textAlign: TextAlign.center,
                     ),

@@ -201,15 +201,15 @@ class AvailableMatches extends StatelessWidget {
         child: Column(
           children: [
             Image.asset("assets/empty_state/illustration_01.png"),
-            Text("No matches here",
+            Text(AppLocalizations.of(context)!.noMatchesHere,
                 style: TextPalette.h1Default, textAlign: TextAlign.center),
             SizedBox(height: 4),
-            Text("Browse matches or create your own match",
+            Text(AppLocalizations.of(context)!.browseOrCreateText,
                 style: TextPalette.bodyText, textAlign: TextAlign.center),
             if (withAction) SizedBox(height: 4),
             if (withAction)
               TappableLinkText(
-                  text: "CREATE A NEW MATCH",
+                  text: AppLocalizations.of(context)!.createNewMatchActionText,
                   onTap: (BuildContext context) => context.go("/createMatch")
               ),
           ],

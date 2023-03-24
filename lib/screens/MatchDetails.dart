@@ -355,9 +355,12 @@ class MatchDetailsState extends State<MatchDetails> {
 }
 
 class PlayerList extends StatelessWidget {
-  static getTitle(Match? match) => (match == null)
+  static getTitle(BuildContext context, Match? match) => (match == null)
       ? ""
-      : "Players (${match.numPlayersGoing().toString()}/${match.maxPlayers.toString()})";
+      : AppLocalizations.of(context)!.listOfPlayersHeader(
+      match.numPlayersGoing(),
+      match.maxPlayers
+  );
 
   final Match match;
   final bool withJoinButton;
@@ -389,7 +392,7 @@ class PlayerList extends StatelessWidget {
         children: [
           Padding(
               padding: EdgeInsets.symmetric(horizontal: 16),
-              child: Text(getTitle(match), style: TextPalette.h2)),
+              child: Text(getTitle(context, match), style: TextPalette.h2)),
           SizedBox(height: 24),
           LayoutBuilder(builder: (context, constraints) {
             if (MediaQuery.of(context).size.width < 800)
@@ -425,7 +428,7 @@ class TeamsWidget extends StatelessWidget {
     var teamB = match.teams.entries.last;
 
     return InfoContainerWithTitle(
-        title: PlayerList.getTitle(match),
+        title: PlayerList.getTitle(context, match),
         body: Center(
           child: IntrinsicHeight(
             child: Row(children: [
@@ -638,7 +641,7 @@ class MatchInfo extends StatelessWidget {
     return InfoContainer(padding: EdgeInsets.zero, child: child);
   }
 
-  Row? getStatusWidget(Match? match) {
+  Row? getStatusWidget(BuildContext context, Match? match) {
     var color;
     var icon;
     var text;
@@ -648,28 +651,29 @@ class MatchInfo extends StatelessWidget {
     if (match.status == MatchStatus.playing) {
       icon = Icons.history_toggle_off_outlined;
       color = Palette.grey_dark;
-      text = "In Progress";
+      text = AppLocalizations.of(context)!.inProgressStatus;
     } else if (match.status == MatchStatus.cancelled) {
       icon = Icons.do_disturb_alt_outlined;
       color = Palette.destructive;
-      text = "Canceled";
+      text = AppLocalizations.of(context)!.cancelledStatus;
     } else if (match.status == MatchStatus.unpublished) {
       icon = Icons.warning_amber_outlined;
       color = Palette.darkWarning;
-      text = "Not published";
+      text = AppLocalizations.of(context)!.notPublishedStatus;
     } else if (match.status == MatchStatus.open &&
         match.cancelBefore != null &&
         match.getMissingPlayers() > 0) {
       icon = Icons.hourglass_empty_outlined;
       color = Palette.primary;
-      text = "Waiting for ${match.getMissingPlayers()} more players";
+      text = AppLocalizations.of(context)!
+          .waitingForPlayersStatus(match.getMissingPlayers());
     } else if (match.status == MatchStatus.open &&
             (match.getMissingPlayers() == 0 || match.cancelBefore == null) ||
         (match.status == MatchStatus.pre_playing &&
             match.getMissingPlayers() == 0)) {
       icon = Icons.check_circle_outline;
       color = Palette.green;
-      text = "Match is on";
+      text = AppLocalizations.of(context)!.matchOnStatus;
     } else {
       return null;
     }
@@ -910,7 +914,7 @@ class SportCenterDetails extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InfoContainerWithTitle(
-      title: "Location",
+      title: AppLocalizations.of(context)!.locationHeader,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

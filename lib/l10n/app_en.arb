@@ -63,5 +63,113 @@
             "x":  {"type": "String"}
         }
     },
-    "artificialGrass": "Artificial Grass"
+    "artificialGrass": "Artificial Grass",
+    "matchOnStatus": "Match is on",
+    "inProgressStatus": "In Progress",
+    "notPublishedStatus": "Not Published",
+    "waitingForPlayersStatus": "Waiting for {x} more players",
+    "@waitingForPlayers": {
+        "placeholders": {
+            "x":  {"type": "int"}
+        }
+    },
+    "locationHeader": "Location",
+    "listOfPlayersHeader": "Players ({x}/{y})",
+    "@listOfPlayersHeader": {
+        "placeholders": {
+            "x":  {"type": "int"},
+            "y":  {"type": "int"}
+        }
+    },
+
+    "joinButtonText": "JOIN MATCH",
+    "joinThisMatchTitle": "Join this match",
+    "joinMatchInfo": "If you leave the match you will get a refund",
+    "serviceFee": "Service Fee",
+    "subtotal": "Subtotal",
+    "continueToPayment": "CONTINUE TO PAYMENT",
+    "joinedMatchText": "You have joined the match.",
+
+    "continueWithButton": "CONTINUE WITH {p}",
+    "@continueWithButton": {
+        "placeholders": {
+            "p":  {"type": "String", "example": "FACEBOOK"}
+        }
+    },
+
+    "noMatchesHere": "No matches here",
+    "browseOrCreateText": "Browse matches or create your own match",
+    "createNewMatchActionText": "CREATE NEW MATCH",
+
+    "crudMatchTitle": "{t} Match",
+    "@crudMatchTitle": {
+        "placeholders": {
+            "t":  {"type": "String", "example": "NEW"}
+        }
+    },
+    "crudMatchGeneralTitle": "General",
+    "dateInputLabel": "Date",
+    "startTimeInputLabel": "Start Time",
+    "endTimeInputLabel": "End Time",
+    "repeatInputLabel": "Repeat",
+    "requiredError": "Required",
+    "repeatForWeeks": "Weekly for {n} weeks",
+    "@repeatForWeeks": {
+        "placeholders": {
+            "n":  {"type": "int"}
+        }
+    },
+    "lastMatchOn": "Last Match On {d}",
+    "@lastMatchOn": {
+        "placeholders": {
+            "d":  {"type": "String", "example": "22-10-2022"}
+        }
+    },
+    "courtSectionTitle": "Court",
+    "locationSectionTitle": "Location",
+    "courtNumberLabel": "Court number (optional)",
+    "numberOfPlayersSectionTitle": "Number of Players",
+    "numberOfPlayersInfo": "This is the minimum and maximum amount of player that can join the match.",
+    "paymentSectionTitle": "Payment",
+    "paymentEnableInfo": "Allow users to pay for the match through Nutmeg",
+    "paymentNotPossibleInfo": "We cannot process payments in this location yet",
+    "invalidAmountError": "Invalid Amount",
+    "minimumAmountError": "Minimum amount is € 0.50",
+    "pricePerPlayerLabel": "Price per Player",
+    "nutmegFeeInfo": "Nutmeg will withhold a service fee of {a} per player",
+    "@nutmegFeeInfo": {
+        "placeholders": {
+            "a":  {"type": "String", "example": "0.50"}
+        }
+    },
+    "youWillGetLabel": "You will get",
+    "paymentExplanationText": "Users are charged {amount} Nutmeg fee.\nNutmeg releases the money 24 hours after the match end time. You will get paid in 3 to 5 business days after that through ",
+    "@paymentExplanationText": {
+        "placeholders": {
+            "amount":  {"type": "String", "example": "0.50"}
+        }
+    },
+    "policiesSectionTitle": "Policies",
+    "automaticCancellationInfo": "Automatically cancel the match if minimum amount of players is not reached",
+    "automaticCancellationExplanation": "We will cancel the match if at least {x} players haven't joined {y} hours before the kick-off of the match.\nIf players have paid through Nutmeg, they will get a full refund",
+    "@automaticCancellationExplanation": {
+        "placeholders": {
+            "x":  {"type": "int"},
+            "y":  {"type": "String"}
+        }
+    },
+    "hoursLabel": "Hours",
+    "youWantToLeaveTitle": "Are you sure you want to leave?",
+    "youWantToLeaveSubtitle": "If you leave, all your unsaved changes will be lost.",
+
+    "yes": "Yes",
+    "cancel": "Cancel",
+
+    "createButtonText": "CREATE",
+    "confirmButtonText": "CONFIRM",
+
+    "popularCourtsTitle": "Popular Courts",
+    "yourCourtsTitle": "Your Courts",
+
+    "createNewCourtButtonText": "CREATE NEW COURT"
 }

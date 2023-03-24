@@ -1,3 +1,3 @@
-cp lib/l10n/forced_translations/app_pt.arb lib/l10n
+cp lib/l10n/forced_translations/* lib/
 
 flutter pub run auto_translator

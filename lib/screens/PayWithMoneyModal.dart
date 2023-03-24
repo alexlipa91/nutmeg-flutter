@@ -4,6 +4,7 @@ import 'package:nutmeg/state/MatchesState.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../model/PaymentRecap.dart';
 import '../state/UserState.dart';
@@ -19,7 +20,7 @@ class PayWithMoneyButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) =>
       GenericButtonWithLoader(
-        "CONTINUE TO PAYMENT",
+        AppLocalizations.of(context)!.continueToPayment,
         (BuildContext context) async {
           context.read<GenericButtonWithLoaderState>().change(true);
 

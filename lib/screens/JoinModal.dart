@@ -10,9 +10,9 @@ import 'package:nutmeg/widgets/Avatar.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:nutmeg/widgets/ModalPaymentDescriptionArea.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../controller/MatchesController.dart';
-import '../controller/SportCentersController.dart';
 import '../model/PaymentRecap.dart';
 import '../state/MatchesState.dart';
 import '../state/UserState.dart';
@@ -23,7 +23,8 @@ class JoinButtonDisabled extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => GenericButtonWithLoader(
-    "JOIN MATCH", null, Disabled(),
+    AppLocalizations.of(context)!.joinButtonText,
+    null, Disabled(),
   );
 }
 
@@ -34,7 +35,7 @@ class JoinButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => GenericButtonWithLoader(
-        "JOIN MATCH",
+        AppLocalizations.of(context)!.joinButtonText,
         (BuildContext context) async {
           context.read<GenericButtonWithLoaderState>().change(true);
           await JoinModal.onJoinGameAction(context, matchId);
@@ -57,7 +58,7 @@ class JoinModal {
               context.read<UserState>().getLoggedUserDetails()),
         ),
         SizedBox(width: 10),
-        Text("1x player", style: TextPalette.h3),
+        Text("1x ${AppLocalizations.of(context)!.player}", style: TextPalette.h3),
         Expanded(
             child: Text(
           formatCurrency(paymentRecap.matchPriceInCents - paymentRecap.fee),
@@ -71,7 +72,9 @@ class JoinModal {
           // adding this here as a trick to align the rows
           Container(height: 24, width: 24),
           SizedBox(width: 10),
-          Text('Service Fee', style: TextPalette.bodyText),
+          Text(
+              AppLocalizations.of(context)!.serviceFee,
+              style: TextPalette.bodyText),
           Expanded(
               child: Text(formatCurrency(paymentRecap.fee),
             style: TextPalette.bodyText,
@@ -99,7 +102,9 @@ class JoinModal {
     var finalRow = Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text("Subtotal", style: TextPalette.h3),
+        Text(
+            AppLocalizations.of(context)!subtotal,
+            style: TextPalette.h3),
         Text(
           formatCurrency(paymentRecap.finalPriceToPayInCents()),
           style: TextPalette.h3,
@@ -135,8 +140,8 @@ class JoinModal {
       }
 
       await GenericInfoModal(
-          title: "Join this match",
-          description: "If you leave the match you will get a refund",
+          title: AppLocalizations.of(context)!.joinThisMatchTitle,
+          description: AppLocalizations.of(context)!joinMatchInfo,
           content: getModalDescriptionArea(context, paymentRecap),
           action: Row(children: [
             Expanded(

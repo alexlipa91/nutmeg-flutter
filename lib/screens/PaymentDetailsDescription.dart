@@ -7,6 +7,7 @@ import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/Buttons.dart';
 import 'package:nutmeg/widgets/ModalBottomSheet.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../state/LoadOnceState.dart';
 
@@ -34,7 +35,7 @@ class PaymentDetailsDescription {
                   child: Text("You are in!", style: TextPalette.h1Default)),
               Padding(
                   padding: EdgeInsets.only(top: 10),
-                  child: Text("You have joined the match.",
+                  child: Text(AppLocalizations.of(context)!.joinedMatchText,
                       style: TextPalette.bodyText)),
               if (!DeviceInfo().name.contains("ipad"))
                 Padding(

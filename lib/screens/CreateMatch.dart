@@ -26,6 +26,7 @@ import 'package:provider/provider.dart';
 import 'package:time_picker_widget/time_picker_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:timezone/timezone.dart' as tz;
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../state/LoadOnceState.dart';
 import '../widgets/GenericAvailableMatches.dart';
@@ -91,7 +92,6 @@ class CreateMatchState extends State<CreateMatch> {
   late int repeatsForWeeks;
   late TextEditingController cancelTimeEditingController;
 
-  final dateFormat = DateFormat("dd-MM-yyyy");
   final regexPrice = new RegExp("\\d+(\\.\\d{1,2})?");
 
   late FocusNode sportCenterfocusNode;
@@ -112,6 +112,7 @@ class CreateMatchState extends State<CreateMatch> {
   @override
   void initState() {
     super.initState();
+    var dateFormat = DateFormat("dd-MM-yyyy", context.watch<LoadOnceState>().locale.countryCode);
 
     if (widget.existingMatch == null) {
       sportCenter = null;
@@ -181,15 +182,18 @@ class CreateMatchState extends State<CreateMatch> {
 
   @override
   Widget build(BuildContext context) {
+    var requiredError = AppLocalizations.of(context)!.requiredError;
     var organiserId =
         context.read<UserState>().getLoggedUserDetails()!.documentId;
+    var dateFormat = DateFormat("dd-MM-yyyy", context.watch<LoadOnceState>().locale.countryCode);
 
     var widgets = [
-      Text("${widget.existingMatch != null ? "Edit" : "New"} Match",
+      Text(
+          AppLocalizations.of(context)!.crudMatchTitle(widget.existingMatch != null ? "Edit" : "New"),
           style: TextPalette.h1Default),
       Section(
         titleType: "big",
-        title: "General",
+        title: AppLocalizations.of(context)!.crudMatchGeneralTitle,
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -200,9 +204,9 @@ class CreateMatchState extends State<CreateMatch> {
                         controller: dateEditingController,
                         focusNode: datefocusNode,
                         readOnly: true,
-                        decoration: getTextFormDecoration("Date"),
+                        decoration: getTextFormDecoration(AppLocalizations.of(context)!.dateInputLabel),
                         validator: (v) {
-                          if (v == null || v.isEmpty) return "Required";
+                          if (v == null || v.isEmpty) return requiredError;
                           return null;
                         },
                         onTap: () async {
@@ -229,11 +233,11 @@ class CreateMatchState extends State<CreateMatch> {
                   controller: startTimeEditingController,
                   focusNode: startTimefocusNode,
                   validator: (v) {
-                    if (v == null || v.isEmpty) return "Required";
+                    if (v == null || v.isEmpty) return requiredError;
                     return null;
                   },
                   readOnly: true,
-                  decoration: getTextFormDecoration("Start time"),
+                  decoration: getTextFormDecoration(AppLocalizations.of(context)!.startTimeInputLabel),
                   onTap: () async {
                     var d = await showCustomTimePicker(
                       builder: (BuildContext context, Widget? child) {
@@ -264,11 +268,12 @@ class CreateMatchState extends State<CreateMatch> {
                         enabled: startTimeEditingController.text.isNotEmpty,
                         controller: endTimeEditingController,
                         validator: (v) {
-                          if (v == null || v.isEmpty) return "Required";
+                          if (v == null || v.isEmpty) return requiredError;
                           return null;
                         },
                         readOnly: true,
-                        decoration: getTextFormDecoration("End Time",
+                        decoration: getTextFormDecoration(AppLocalizations.of(context)!
+                            .endTimeInputLabel,
                             focusColor:
                                 (startTimeEditingController.text.isEmpty)
                                     ? Palette.grey_lightest
@@ -308,18 +313,19 @@ class CreateMatchState extends State<CreateMatch> {
                           readOnly: true,
                           controller: repeatWeeklyEditingController,
                           decoration:
-                              getTextFormDecoration("Repeat", isDropdown: true),
+                              getTextFormDecoration(AppLocalizations.of(context)!.repeatInputLabel,
+                                  isDropdown: true),
                           onTap: () async {
                             var weeks = [1, 2, 4, 6, 8, 10];
                             var choices = weeks.map((e) {
                               if (e == 1)
                                 return NO_REPEAT;
                               else
-                                return "Weekly for " + e.toString() + " weeks";
+                                return AppLocalizations.of(context)!.repeatForWeeks(e);
                             }).toList();
 
                             int? i = await showMultipleChoiceSheetWithText(
-                                context, "Repeat", choices);
+                                context, AppLocalizations.of(context)!.repeatInputLabel, choices);
 
                             if (i != null) {
                               repeatWeeklyEditingController.text =
@@ -335,10 +341,10 @@ class CreateMatchState extends State<CreateMatch> {
               Padding(
                 padding: EdgeInsets.only(top: 16),
                 child: Text(
-                  "Last match on " +
-                      dateFormat.format(dateFormat
-                          .parse(dateEditingController.text)
-                          .add(Duration(days: 7 * repeatsForWeeks))),
+                  AppLocalizations.of(context)!.lastMatchOn(dateFormat.format(dateFormat
+                      .parse(dateEditingController.text)
+                      .add(Duration(days: 7 * repeatsForWeeks)))
+                  ),
                   style: TextPalette.bodyText,
                   textAlign: TextAlign.left,
                 ),
@@ -348,7 +354,7 @@ class CreateMatchState extends State<CreateMatch> {
       ),
       Section(
         titleType: "big",
-        title: "Court",
+        title: AppLocalizations.of(context)!.courtSectionTitle,
         body: Column(
           children: [
             Row(
@@ -359,11 +365,12 @@ class CreateMatchState extends State<CreateMatch> {
                   enabled: widget.existingMatch == null,
                   focusNode: sportCenterfocusNode,
                   validator: (v) {
-                    if (v == null || v.isEmpty) return "Required";
+                    if (v == null || v.isEmpty) return requiredError;
                     return null;
                   },
                   readOnly: true,
-                  decoration: getTextFormDecoration("Location",
+                  decoration: getTextFormDecoration(
+                      AppLocalizations.of(context)!.locationSectionTitle,
                       isDropdown: true, fill: widget.existingMatch == null),
                   onTap: () async {
                     SportCenter? sp =
@@ -392,7 +399,9 @@ class CreateMatchState extends State<CreateMatch> {
                   controller: courtNumberEditingController,
                   readOnly: false,
                   inputFormatters: [LengthLimitingTextInputFormatter(5)],
-                  decoration: getTextFormDecoration("Court number (optional)"),
+                  decoration: getTextFormDecoration(
+                      AppLocalizations.of(context)!.courtNumberLabel
+                  ),
                 )),
               ],
             ),
@@ -400,7 +409,7 @@ class CreateMatchState extends State<CreateMatch> {
         ),
       ),
       Section(
-        title: "Number of Players",
+        title: AppLocalizations.of(context)!.numberOfPlayersSectionTitle,
         titleType: "big",
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -446,7 +455,7 @@ class CreateMatchState extends State<CreateMatch> {
               height: 16.0,
             ),
             Text(
-                "This is the minimum and maximum amount of player that can join the match.",
+                AppLocalizations.of(context)!.numberOfPlayersInfo,
                 style: TextPalette.bodyText),
             SizedBox(
               height: 8.0,
@@ -455,7 +464,7 @@ class CreateMatchState extends State<CreateMatch> {
         ),
       ),
       Section(
-        title: "Payment",
+        title: AppLocalizations.of(context)!.paymentSectionTitle,
         titleType: "big",
         body: Column(children: [
           Row(
@@ -473,12 +482,12 @@ class CreateMatchState extends State<CreateMatch> {
                   }),
               if (paymentsPossible)
                 Flexible(
-                  child: Text("Allow users to pay for the match through Nutmeg",
+                  child: Text(AppLocalizations.of(context)!.paymentEnableInfo,
                       style: TextPalette.bodyText,
                       overflow: TextOverflow.visible)),
               if (!paymentsPossible)
                 Flexible(
-                    child: Text("We cannot process payments in this location yet",
+                    child: Text(AppLocalizations.of(context)!.paymentNotPossibleInfo,
                         style: TextPalette.bodyText,
                         overflow: TextOverflow.visible)),
             ],
@@ -496,12 +505,12 @@ class CreateMatchState extends State<CreateMatch> {
                           child: TextFormField(
                               enabled: widget.existingMatch == null,
                               validator: (v) {
-                                if (v == null || v.isEmpty) return "Required";
+                                if (v == null || v.isEmpty) return requiredError;
                                 var f = regexPrice.firstMatch(v);
                                 if (f == null || f.end - f.start != v.length)
-                                  return "Invalid amount";
+                                  return AppLocalizations.of(context)!.invalidAmountError;
                                 if (double.parse(v) < 0.50)
-                                  return "Minimum amount is € 0.50";
+                                  return AppLocalizations.of(context)!.minimumAmountError;
                                 return null;
                               },
                               onChanged: (v) {
@@ -517,7 +526,7 @@ class CreateMatchState extends State<CreateMatch> {
                                     RegExp(r'^\d*\.?\d*$')),
                               ],
                               decoration: getTextFormDecoration(
-                                  "Price per player",
+                                  AppLocalizations.of(context)!.pricePerPlayerLabel,
                                   prefixText: "€ ",
                                   fill: widget.existingMatch == null))),
                     ],
@@ -527,14 +536,13 @@ class CreateMatchState extends State<CreateMatch> {
                       padding: EdgeInsets.only(top: 16),
                       child: Row(children: [
                         Text(
-                            "Nutmeg will withhold a service fee of "
-                            "${formatCurrency(50)} per player",
+                            AppLocalizations.of(context)!.nutmegFeeInfo(formatCurrency(50)),
                             style: TextPalette.bodyText),
                       ]),
                     ),
                   SizedBox(height: 16),
                   Row(children: [
-                    Text("You will get", style: TextPalette.h3),
+                    Text(AppLocalizations.of(context)!.youWillGetLabel, style: TextPalette.h3),
                     Spacer(),
                     Builder(builder: (BuildContext buildContext) {
                       var price = Decimal.tryParse(priceController.text);
@@ -563,9 +571,7 @@ class CreateMatchState extends State<CreateMatch> {
                       text: TextSpan(
                         children: [
                           TextSpan(
-                              text: "Users are charged ${formatCurrency(50)} Nutmeg fee.\n"
-                                      "Nutmeg releases the money 24 hours after the match end time. " +
-                                  "You will get paid in 3 to 5 business days after that through ",
+                              text: AppLocalizations.of(context)!.paymentExplanationText(formatCurrency(50)),
                               style: TextPalette.bodyText),
                           TextSpan(
                               text: "Stripe",
@@ -590,7 +596,7 @@ class CreateMatchState extends State<CreateMatch> {
       ),
       if (widget.existingMatch == null)
         Section(
-          title: "Policies",
+          title: AppLocalizations.of(context)!.policiesSectionTitle,
           titleType: "big",
           body: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Row(
@@ -607,7 +613,7 @@ class CreateMatchState extends State<CreateMatch> {
                     }),
                 Flexible(
                     child: Text(
-                        "Automatically cancel the match if minimum amount of players is not reached",
+                        AppLocalizations.of(context)!.automaticCancellationInfo,
                         style: TextPalette.bodyText,
                         overflow: TextOverflow.visible)),
               ],
@@ -627,6 +633,7 @@ class CreateMatchState extends State<CreateMatch> {
                             if (sportCenter == null) return "Select Location";
 
                             DateTime? d = getDateTime(
+                                dateFormat,
                                 startTimeEditingController,
                                 sportCenter!.timezoneId);
                             if (d != null &&
@@ -647,7 +654,7 @@ class CreateMatchState extends State<CreateMatch> {
                     SizedBox(width: 16),
                     Expanded(
                       child: TextFormField(
-                        initialValue: "Hours",
+                        initialValue: AppLocalizations.of(context)!.hoursLabel,
                         readOnly: true,
                         decoration: getTextFormDecoration(null),
                       ),
@@ -659,11 +666,8 @@ class CreateMatchState extends State<CreateMatch> {
               Padding(
                   padding: EdgeInsets.only(top: 16),
                   child: Text(
-                      "We will cancel the match if at least "
-                      "${numberOfPeopleRangeValues.start.toInt()} "
-                      "players haven't joined "
-                      "${cancelTimeEditingController.text} hours before the kick-off of the match.\n"
-                          "If players have paid through Nutmeg, they will get a full refund",
+                      AppLocalizations.of(context)!
+                          .automaticCancellationExplanation(numberOfPeopleRangeValues.start.toInt(), cancelTimeEditingController.text),
                       style: TextPalette.bodyText,
                       overflow: TextOverflow.visible))
           ]),
@@ -698,16 +702,16 @@ class CreateMatchState extends State<CreateMatch> {
     return WillPopScope(
       onWillPop: () async {
         return await GenericInfoModal(
-            title: "Are you sure you want to leave?",
-            description: "If you leave, all your unsaved changes will be lost.",
+            title: AppLocalizations.of(context)!.youWantToLeaveTitle,
+            description: AppLocalizations.of(context)!.youWantToLeaveSubtitle,
             action: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                GenericButtonWithLoader("CANCEL", (_) async {
+                GenericButtonWithLoader(AppLocalizations.of(context)!.cancel, (_) async {
                   Navigator.pop(context, false);
                 }, Secondary()),
                 SizedBox(width: 8),
-                GenericButtonWithLoader("YES", (_) async {
+                GenericButtonWithLoader(AppLocalizations.of(context)!.yes, (_) async {
                   Navigator.pop(context, true);
                 }, Primary()),
               ],
@@ -730,15 +734,19 @@ class CreateMatchState extends State<CreateMatch> {
             child: Row(children: [
               Expanded(
                 child: GenericButtonWithLoader(
-                    widget.existingMatch == null ? "CREATE" : "CONFIRM",
+                    widget.existingMatch == null ?
+                    AppLocalizations.of(context)!.createButtonText :
+                    AppLocalizations.of(context)!.confirmButtonText,
                     (BuildContext context) async {
                   context.read<GenericButtonWithLoaderState>().change(true);
                   bool? v = _formKey.currentState?.validate();
                   if (v != null && v) {
                     try {
                       var dateTime = getDateTime(
+                          dateFormat,
                           startTimeEditingController, sportCenter!.timezoneId);
                       var endTime = getDateTime(
+                          dateFormat,
                           endTimeEditingController, sportCenter!.timezoneId);
                       var duration = endTime!.difference(dateTime!);
                       var cancelBefore = withAutomaticCancellation
@@ -818,7 +826,8 @@ class CreateMatchState extends State<CreateMatch> {
     );
   }
 
-  DateTime? getDateTime(TextEditingController controller, String timezoneId) {
+  DateTime? getDateTime(DateFormat dateFormat,
+      TextEditingController controller, String timezoneId) {
     if (dateEditingController.text.isEmpty || controller.text.isEmpty)
       return null;
     var day = dateFormat.parse(dateEditingController.text);
@@ -914,7 +923,7 @@ class LocationsBottomSheet extends StatelessWidget {
       return ListOfMatchesSkeleton.withoutContainer(repeatFor: 2);
 
     var popularCourts = Section(
-        title: "Popular courts",
+        title: AppLocalizations.of(context)!.popularCourtsTitle,
         topSpace: 0,
         titleType: "big",
         belowTitleSpace: 16,
@@ -928,7 +937,7 @@ class LocationsBottomSheet extends StatelessWidget {
                     SizedBox(height: 16))
                 .toList()));
     var yourCourts = Section(
-        title: "Your Courts",
+        title: AppLocalizations.of(context)!.yourCourtsTitle,
         titleType: "big",
         topSpace: 32,
         belowTitleSpace: 16,
@@ -976,7 +985,9 @@ class LocationsBottomSheet extends StatelessWidget {
                       ),
                     ),
                     SizedBox(width: 16),
-                    Text("CREATE NEW COURT", style: TextPalette.linkStyle),
+                    Text(
+                        AppLocalizations.of(context)!.createNewCourtButtonText,
+                        style: TextPalette.linkStyle),
                   ],
                 ),
               )
