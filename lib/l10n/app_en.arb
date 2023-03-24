@@ -109,6 +109,7 @@
     "endTimeInputLabel": "End Time",
     "repeatInputLabel": "Repeat",
     "requiredError": "Required",
+    "doesNotRepeatLabel": "Does not repeat",
     "repeatForWeeks": "Weekly for {n} weeks",
     "@repeatForWeeks": {
         "placeholders": {

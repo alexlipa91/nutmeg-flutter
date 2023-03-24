@@ -84,5 +84,6 @@
     "yourCourtsTitle": "Seus Tribunais",
     "createNewCourtButtonText": "CRIAR NOVO TRIBUNAL",
     "newMatchTitle": "Nova correspondência",
-    "editMatchTitle": "Editar correspondência"
+    "editMatchTitle": "Editar correspondência",
+    "doesNotRepeatLabel": "não repete"
 }

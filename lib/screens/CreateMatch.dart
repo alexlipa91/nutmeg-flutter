@@ -45,8 +45,6 @@ class CreateMatch extends StatefulWidget {
 }
 
 class CreateMatchState extends State<CreateMatch> {
-  static const String NO_REPEAT = "Does not repeat";
-
   static InputDecoration getTextFormDecoration(String? label,
       {bool isDropdown = false, bool fill = true, focusColor, prefixText}) {
     var border = UnderlineInputBorder(
@@ -113,6 +111,7 @@ class CreateMatchState extends State<CreateMatch> {
   void initState() {
     super.initState();
     var dateFormat = DateFormat("dd-MM-yyyy", context.watch<LoadOnceState>().locale.countryCode);
+    var noRepeat = AppLocalizations.of(context)!.doesNotRepeatLabel;
 
     if (widget.existingMatch == null) {
       sportCenter = null;
@@ -120,7 +119,7 @@ class CreateMatchState extends State<CreateMatch> {
       startTimeEditingController = TextEditingController();
       endTimeEditingController = TextEditingController();
       sportCenterEditingController = TextEditingController();
-      repeatWeeklyEditingController = TextEditingController(text: NO_REPEAT);
+      repeatWeeklyEditingController = TextEditingController(text: noRepeat);
       courtNumberEditingController = TextEditingController();
       priceController = TextEditingController();
       numberOfPeopleRangeValues = RangeValues(8, 10);
@@ -145,7 +144,7 @@ class CreateMatchState extends State<CreateMatch> {
               localizedDateTime.add(widget.existingMatch!.duration))));
       sportCenterEditingController =
           TextEditingController(text: sportCenter!.name);
-      repeatWeeklyEditingController = TextEditingController(text: NO_REPEAT);
+      repeatWeeklyEditingController = TextEditingController(text: noRepeat);
       courtNumberEditingController = TextEditingController(
           text: widget.existingMatch!.sportCenterSubLocation);
       priceController = TextEditingController(
@@ -186,6 +185,8 @@ class CreateMatchState extends State<CreateMatch> {
     var organiserId =
         context.read<UserState>().getLoggedUserDetails()!.documentId;
     var dateFormat = DateFormat("dd-MM-yyyy", context.watch<LoadOnceState>().locale.countryCode);
+
+    var noRepeat = AppLocalizations.of(context)!.doesNotRepeatLabel;
 
     var widgets = [
       Text(
@@ -320,7 +321,7 @@ class CreateMatchState extends State<CreateMatch> {
                             var weeks = [1, 2, 4, 6, 8, 10];
                             var choices = weeks.map((e) {
                               if (e == 1)
-                                return NO_REPEAT;
+                                return noRepeat;
                               else
                                 return AppLocalizations.of(context)!.repeatForWeeks(e);
                             }).toList();
