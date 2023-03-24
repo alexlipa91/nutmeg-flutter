@@ -7,3 +7,4 @@ output-localization-file: app_localizations.dart
 translator:
   targets:
     - pt
+    - it

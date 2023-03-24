@@ -103,7 +103,7 @@ class JoinModal {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
-            AppLocalizations.of(context)!subtotal,
+            AppLocalizations.of(context)!.subtotal,
             style: TextPalette.h3),
         Text(
           formatCurrency(paymentRecap.finalPriceToPayInCents()),
@@ -141,7 +141,7 @@ class JoinModal {
 
       await GenericInfoModal(
           title: AppLocalizations.of(context)!.joinThisMatchTitle,
-          description: AppLocalizations.of(context)!joinMatchInfo,
+          description: AppLocalizations.of(context)!.joinMatchInfo,
           content: getModalDescriptionArea(context, paymentRecap),
           action: Row(children: [
             Expanded(

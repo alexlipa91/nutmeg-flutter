@@ -524,7 +524,7 @@ class MatchInfo extends StatelessWidget {
 
     var child;
 
-    var matchWidget = getStatusWidget(match);
+    var matchWidget = getStatusWidget(context, match);
     var loggedUser = context.watch<UserState>().getLoggedUserDetails();
 
     child = Column(

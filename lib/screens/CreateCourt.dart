@@ -101,8 +101,7 @@ class CreateCourtState extends State<CreateCourt> {
                         },
                         noItemsFoundBuilder: (value) => Container(height: 10),
                         onSuggestionSelected: (suggestion) async {
-                          textEditingController.text =
-                              suggestion.description ?? "";
+                          textEditingController.text = suggestion.description;
                           setState(() {
                             placeId = suggestion.placeId;
                           });

@@ -101,12 +101,8 @@
     "browseOrCreateText": "Browse matches or create your own match",
     "createNewMatchActionText": "CREATE NEW MATCH",
 
-    "crudMatchTitle": "{t} Match",
-    "@crudMatchTitle": {
-        "placeholders": {
-            "t":  {"type": "String", "example": "NEW"}
-        }
-    },
+    "newMatchTitle": "New Match",
+    "editMatchTitle": "Edit Match",
     "crudMatchGeneralTitle": "General",
     "dateInputLabel": "Date",
     "startTimeInputLabel": "Start Time",

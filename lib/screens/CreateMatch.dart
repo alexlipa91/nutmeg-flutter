@@ -189,7 +189,8 @@ class CreateMatchState extends State<CreateMatch> {
 
     var widgets = [
       Text(
-          AppLocalizations.of(context)!.crudMatchTitle(widget.existingMatch != null ? "Edit" : "New"),
+          widget.existingMatch != null ? AppLocalizations.of(context)!.editMatchTitle
+              : AppLocalizations.of(context)!.newMatchTitle,
           style: TextPalette.h1Default),
       Section(
         titleType: "big",

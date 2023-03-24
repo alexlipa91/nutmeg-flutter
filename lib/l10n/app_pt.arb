@@ -82,5 +82,7 @@
     "confirmButtonText": "CONFIRME",
     "popularCourtsTitle": "Tribunais Populares",
     "yourCourtsTitle": "Seus Tribunais",
-    "createNewCourtButtonText": "CRIAR NOVO TRIBUNAL"
+    "createNewCourtButtonText": "CRIAR NOVO TRIBUNAL",
+    "newMatchTitle": "Nova correspondência",
+    "editMatchTitle": "Editar correspondência"
 }
