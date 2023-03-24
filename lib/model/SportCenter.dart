@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:skeletons/skeletons.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class SportCenter {
   String placeId;
@@ -9,7 +10,7 @@ class SportCenter {
   double lat;
   double lng;
 
-  String surface;
+  String _surface;
   bool? hasChangingRooms;
   String courtType;
   String timezoneId;
@@ -22,7 +23,7 @@ class SportCenter {
         lat = json['lat'],
         lng = json['lng'],
         country = json['country'] ?? 'NL',
-        surface = json["surface"],
+        _surface = json["surface"],
         hasChangingRooms = json['hasChangingRooms'],
         timezoneId = json["timeZoneId"] ?? "Europe/Amsterdam",
         courtType = json['courtType']!;
@@ -33,7 +34,7 @@ class SportCenter {
         'name': name,
         'lat': lat,
         'lng': lng,
-        'surface': surface,
+        'surface': _surface,
         'country': country,
         'timeZoneId': timezoneId,
         if (hasChangingRooms != null)
@@ -42,7 +43,7 @@ class SportCenter {
       };
 
   Widget getThumbnail() {
-    var surf = surface.toLowerCase() == "indoor" ? "indoor" : "grass";
+    var surf = _surface.toLowerCase() == "indoor" ? "indoor" : "grass";
     return Container(
         decoration: BoxDecoration(
           image: DecorationImage(
@@ -55,7 +56,7 @@ class SportCenter {
   }
 
   List<Widget> getCarouselImages() {
-    var surf = surface.toLowerCase() == "indoor" ? "indoor" : "grass";
+    var surf = _surface.toLowerCase() == "indoor" ? "indoor" : "grass";
     return [
       Container(
           decoration: BoxDecoration(
@@ -72,9 +73,14 @@ class SportCenter {
 
   String getCourtType() => courtType;
 
-  String getSurface() => surface;
-
   bool? getHasChangingRooms() => hasChangingRooms;
+
+  String getSurface(BuildContext context) {
+    Map<String, String> surfacesDescription = {
+      "Artificial Grass": AppLocalizations.of(context)!.artificialGrass,
+    };
+    return surfacesDescription[_surface]!;
+  }
 }
 
 class SavedSportCenter extends SportCenter {
@@ -150,8 +156,6 @@ class SavedSportCenter extends SportCenter {
       .toList();
 
   String getShortAddress() => address.split(",").first;
-
-  String getSurface() => surface;
 
   String getTimezoneId() => "Europe/Amsterdam";
 }

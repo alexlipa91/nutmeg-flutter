@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nutmeg/controller/SportCentersController.dart';
+import 'package:nutmeg/state/LoadOnceState.dart';
 import 'package:nutmeg/utils/LocationUtils.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -28,6 +29,7 @@ import 'package:nutmeg/widgets/Avatar.dart';
 import 'package:nutmeg/widgets/Containers.dart';
 import 'package:nutmeg/widgets/PageTemplate.dart';
 import 'package:readmore/readmore.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../state/MatchesState.dart';
 import '../state/UserState.dart';
@@ -213,20 +215,19 @@ class MatchDetailsState extends State<MatchDetails> {
             var cancellationDate = match.dateTime.subtract(match.cancelBefore!);
 
             if (cancellationDate.isAfter(DateTime.now())) {
-              cancellationText = "\n\nThe match will be automatically canceled "
-                  "${dayDateFormat.format(match.getLocalizedTime(sportCenter.timezoneId)) + " ${gmtSuffix(sportCenter.timezoneId)}"} "
-                  "if less than ${match.minPlayers} players have joined.";
+              cancellationText = AppLocalizations.of(context)!.cancellationInfo(
+                  dayDateFormat.format(match.getLocalizedTime(sportCenter.timezoneId)),
+                  match.minPlayers
+              );
             }
           }
           var refundString = (match.userFee == 0)
-              ? "a full refund"
-              : "a refund (excluding Nutmeg service fee)";
+              ? AppLocalizations.of(context)!.fullRefund
+              : AppLocalizations.of(context)!.refundWithoutFee;
 
           return RuleCard(
-              "Payment Policy",
-              "If you leave the match you will get $refundString.\n"
-                      "If the match is cancelled you will get a full refund.\n\n"
-                      "If you don’t show up you won’t get a refund." +
+              AppLocalizations.of(context)!.paymentPolicyHeader,
+              AppLocalizations.of(context)!.refundInfo(refundString) +
                   cancellationText,
               large);
         });
@@ -244,7 +245,7 @@ class MatchDetailsState extends State<MatchDetails> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("Organized by", style: TextPalette.bodyText),
+                    Text(AppLocalizations.of(context)!.organizedBy, style: TextPalette.bodyText),
                     SizedBox(height: 4),
                     (ud == null)
                         ? Skeletons.lText
@@ -508,9 +509,6 @@ class AddressRow extends StatelessWidget {
 
 // info card
 class MatchInfo extends StatelessWidget {
-  static var dayDateFormat = DateFormat("EEEE, MMM dd");
-  static var hourDateFormat = DateFormat("HH:mm");
-
   final Match match;
   final SportCenter sportCenter;
 
@@ -518,6 +516,9 @@ class MatchInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var dayDateFormat = DateFormat("EEEE, MMM dd", context.watch<LoadOnceState>().locale.languageCode);
+    var hourDateFormat = DateFormat("HH:mm", context.watch<LoadOnceState>().locale.languageCode);
+
     var child;
 
     var matchWidget = getStatusWidget(match);
@@ -555,7 +556,7 @@ class MatchInfo extends StatelessWidget {
                                   Navigator.of(context).pop();
                                 },
                                 child:
-                                    Text("Edit", style: TextPalette.listItem)),
+                                    Text(AppLocalizations.of(context)!.editAction, style: TextPalette.listItem)),
                             Padding(
                               padding: EdgeInsets.only(top: 16),
                               child: InkWell(
@@ -564,7 +565,7 @@ class MatchInfo extends StatelessWidget {
                                         match, sportCenter);
                                     Navigator.of(context).pop();
                                   },
-                                  child: Text("Share",
+                                  child: Text(AppLocalizations.of(context)!.shareAction,
                                       style: TextPalette.listItem)),
                             ),
                             if (match.dateTime.isAfter(DateTime.now()))
@@ -598,7 +599,7 @@ class MatchInfo extends StatelessWidget {
 
                                     Navigator.pop(context);
                                   },
-                                  child: Text("Cancel Match",
+                                  child: Text(AppLocalizations.of(context)!.cancelMatchAction,
                                       style: TextPalette.getListItem(
                                           Palette.destructive)),
                                 ),
@@ -854,7 +855,7 @@ class EmptyPlayerCard extends StatelessWidget {
           ),
         ),
         SizedBox(height: 10),
-        Text("Join",
+        Text(AppLocalizations.of(context)!.joinAction,
             overflow: TextOverflow.ellipsis,
             style: TextPalette.getBodyText(Palette.primary))
       ]),
@@ -887,8 +888,8 @@ class RuleCard extends StatelessWidget {
                     colorClickableText: Colors.blue,
                     delimiter: "\n\n",
                     trimMode: TrimMode.Line,
-                    trimCollapsedText: 'SHOW MORE',
-                    trimExpandedText: 'SHOW LESS',
+                    trimCollapsedText: AppLocalizations.of(context)!.showMore,
+                    trimExpandedText: AppLocalizations.of(context)!.showLess,
                     moreStyle: TextPalette.linkStyle,
                     lessStyle: TextPalette.linkStyle,
                   ),
@@ -919,14 +920,14 @@ class SportCenterDetails extends StatelessWidget {
           SizedBox(height: 16),
           IconList.fromSvg({
             "assets/icons/nutmeg_icon_court.svg":
-                sportCenter.getCourtType() + " court type",
-            "assets/icons/nutmeg_icon_shoe.svg": sportCenter.surface,
+                sportCenter.getCourtType() + " " + AppLocalizations.of(context)!.courtType,
+            "assets/icons/nutmeg_icon_shoe.svg": sportCenter.getSurface(context),
             if (sportCenter.getHasChangingRooms() ?? false)
               "assets/icons/nutmeg_icon_changing_rooms.svg":
-                  "Change rooms available",
+              AppLocalizations.of(context)!.changingRooms,
             if ((match.sportCenterSubLocation ?? "").isNotEmpty)
               "assets/icons/nutmeg_icon_court_number.svg":
-                  "Court number ${match.sportCenterSubLocation}"
+                  AppLocalizations.of(context)!.courtNumber(match.sportCenterSubLocation!),
           })
         ],
       ),
@@ -977,8 +978,6 @@ class MapCardImage extends StatelessWidget {
 }
 
 class Stats extends StatelessWidget {
-  static var dayDateFormat = DateFormat("EEEE, MMM dd");
-
   final Match match;
   final SportCenter sportCenter;
 
@@ -988,6 +987,7 @@ class Stats extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var child;
+    var dayDateFormat = DateFormat("EEEE, MMM dd", context.watch<LoadOnceState>().locale.languageCode);
 
     if (match.status == MatchStatus.to_rate) {
       child = Container(
@@ -1003,15 +1003,13 @@ class Stats extends StatelessWidget {
                   )),
               SizedBox(height: 16),
               Text(
-                "Stats available soon",
+                AppLocalizations.of(context)!.statsWaiting,
                 style: TextPalette.h2,
               ),
               SizedBox(height: 8),
               Text(
-                "Statistics for this match will be available\n" +
-                    dayDateFormat.format(
-                        match.getLocalizedTime(sportCenter.timezoneId)) +
-                    " ${gmtSuffix(sportCenter.timezoneId)}",
+                AppLocalizations.of(context)!.statsAvailableAt(
+                  dayDateFormat.format(match.getLocalizedTime(sportCenter.timezoneId)) + " ${gmtSuffix(sportCenter.timezoneId)}"),
                 style: TextPalette.bodyText,
                 textAlign: TextAlign.center,
               ),

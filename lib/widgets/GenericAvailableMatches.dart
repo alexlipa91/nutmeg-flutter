@@ -219,6 +219,7 @@ class GenericMatchInfo extends StatelessWidget {
                                 height: 8,
                               ),
                               Text(
+
                                   dateFormat.format(match.getLocalizedTime(
                                           sportCenter.timezoneId)) +
                                       " " +
@@ -229,18 +230,18 @@ class GenericMatchInfo extends StatelessWidget {
                                 height: 6,
                               ),
                               (match.status == MatchStatus.unpublished)
-                                  ? Text("Not Published",
+                                  ? Text(AppLocalizations.of(context)!.notPublishedStatus,
                                       style: TextPalette.getBodyText(
                                           Palette.darkWarning))
                                   : (match.status == MatchStatus.cancelled)
-                                      ? Text("Cancelled",
+                                      ? Text(AppLocalizations.of(context)!.cancelledStatus,
                                           style: TextPalette.getBodyText(
                                               Palette.destructive))
                                       : (match.isFull())
-                                          ? Text("Full",
+                                          ? Text(AppLocalizations.of(context)!.fullStatus,
                                               style: TextPalette.bodyText,
                                               textAlign: TextAlign.right)
-                                          : Text(" ${AppLocalizations.of(context)!.spotsLeft(match.maxPlayers - match.numPlayersGoing())}",
+                                          : Text(AppLocalizations.of(context)!.spotsLeft(match.maxPlayers - match.numPlayersGoing()),
                                               style:
                                                   TextPalette.bodyTextPrimary,
                                               textAlign: TextAlign.right),
@@ -365,7 +366,7 @@ class GenericMatchInfoPast extends StatelessWidget {
                         if (match.status == MatchStatus.cancelled)
                           Padding(
                               padding: EdgeInsets.only(top: 8),
-                              child: Text("Canceled",
+                              child: Text(AppLocalizations.of(context)!.cancelledStatus,
                                   style: TextPalette.getBodyText(
                                       Palette.destructive)))
                       ],

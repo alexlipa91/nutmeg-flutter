@@ -5,8 +5,63 @@
   "past": "Past",
   "myMatches": "My Matches",
   "spotsLeft": "{numSpots} spots left",
-
+  "@spotsLeft" : {
+      "placeholders": {
+        "numSpots":  {"type": "int"}
+      }
+  },
   "thisWeek": "this week",
   "nextWeek": "next week",
-  "moreThanTwoWeeks": "in more than two weeks"
+  "moreThanTwoWeeks": "in more than two weeks",
+  "notPublishedStatus": "Not Published",
+  "cancelledStatus": "Cancelled",
+  "fullStatus": "Full",
+
+
+
+
+
+    "matchDetailsScreen": "*****************************************************************************************************",
+    "cancellationInfo": "The match will be automatically canceled at {date} if less than {n} players have joined.",
+    "@cancellationInfo" : {
+        "placeholders": {
+            "date":  {"type": "String"},
+            "n": {"type": "int"}
+        }
+    },
+
+    "fullRefund": "a full refund",
+    "refundWithoutFee": "a refund (excluding Nutmeg service fee)",
+
+    "paymentPolicyHeader": "Payment Policy",
+    "refundInfo":  "If you leave the match you will get {info}.\nIf the match is cancelled you will get a full refund.\nIf you don’t show up you won’t get a refund.",
+    "@refundInfo" : {
+        "placeholders": {
+            "info":  {"type": "String"}
+        }
+    },
+    "organizedBy": "Organized By",
+    "editAction": "Edit",
+    "shareAction": "Share",
+    "cancelMatchAction": "Cancel Match",
+    "joinAction": "Join",
+    "player": "Player",
+    "showMore": "SHOW MORE",
+    "showLess": "SHOW LESS",
+    "statsWaiting": "Stats available soon",
+    "statsAvailableAt": "Statistics for this match will be available\n{date}",
+    "@statsAvailableAt": {
+        "placeholders": {
+            "date":  {"type": "String"}
+        }
+    },
+    "courtType": "Court Type",
+    "changingRooms": "Changing rooms available",
+    "courtNumber": "Court number {x}",
+    "@courtNumber": {
+        "placeholders": {
+            "x":  {"type": "String"}
+        }
+    },
+    "artificialGrass": "Artificial Grass"
 }

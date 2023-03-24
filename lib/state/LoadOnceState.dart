@@ -8,7 +8,9 @@ import '../model/SportCenter.dart';
 
 
 class LoadOnceState extends ChangeNotifier {
-  Locale locale = Locale(Platform.localeName);
+  static String localeStr = const String.fromEnvironment("LOCALE", defaultValue: "");
+
+  Locale locale = Locale((localeStr == "") ? Platform.localeName : localeStr);
   
   Map<String, SavedSportCenter> _sportCenters = Map();
   List<Sport> _sports = [Sport("5v5"), Sport("6v6")];
