@@ -924,7 +924,7 @@ class SportCenterDetails extends StatelessWidget {
           SizedBox(height: 16),
           IconList.fromSvg({
             "assets/icons/nutmeg_icon_court.svg":
-                sportCenter.getCourtType() + " " + AppLocalizations.of(context)!.courtType,
+                AppLocalizations.of(context)!.courtType(sportCenter.getCourtType()),
             "assets/icons/nutmeg_icon_shoe.svg": sportCenter.getSurface(context),
             if (sportCenter.getHasChangingRooms() ?? false)
               "assets/icons/nutmeg_icon_changing_rooms.svg":
