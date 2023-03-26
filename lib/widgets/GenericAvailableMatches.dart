@@ -184,7 +184,7 @@ class GenericMatchInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var dateFormat = DateFormat("E, MMM dd 'at' HH:mm",
+    var dateFormat = DateFormat("EEE, MMM dd HH:mm",
         context.watch<LoadOnceState>().locale.languageCode);
 
     return InkWell(

@@ -58,11 +58,6 @@
     "courtType": "{t} Court Type",
     "changingRooms": "Changing rooms available",
     "courtNumber": "Court number {x}",
-    "@courtNumber": {
-        "placeholders": {
-            "x":  {"type": "String"}
-        }
-    },
     "artificialGrass": "Artificial Grass",
     "matchOnStatus": "Match is on",
     "inProgressStatus": "In Progress",

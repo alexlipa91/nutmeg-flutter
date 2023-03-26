@@ -107,13 +107,14 @@ class AvailableMatches extends StatelessWidget {
 
     var groupedByWeeksIntervals = Map<String, List<Match>>();
     if (grouped.containsKey(0))
-      groupedByWeeksIntervals["THIS WEEK"] = grouped[0]!;
+      groupedByWeeksIntervals[AppLocalizations.of(context)!.thisWeek] = grouped[0]!;
     if (grouped.containsKey(1))
-      groupedByWeeksIntervals["NEXT WEEK"] = grouped[1]!;
-    groupedByWeeksIntervals["IN MORE THAN TWO WEEKS"] = List<Match>.from([]);
+      groupedByWeeksIntervals[AppLocalizations.of(context)!.nextWeek] = grouped[1]!;
+    groupedByWeeksIntervals[AppLocalizations.of(context)!.moreThanTwoWeeks] = List<Match>.from([]);
     sortedWeeks.forEach((w) {
       if (w > 1) {
-        groupedByWeeksIntervals["IN MORE THAN TWO WEEKS"]?.addAll(grouped[w]!);
+        groupedByWeeksIntervals[AppLocalizations.of(context)!.moreThanTwoWeeks]
+            ?.addAll(grouped[w]!);
       }
     });
 

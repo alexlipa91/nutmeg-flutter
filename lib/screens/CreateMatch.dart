@@ -107,9 +107,16 @@ class CreateMatchState extends State<CreateMatch> {
     if (controller.text.isEmpty && focusNode.hasFocus) focusNode.unfocus();
   }
 
+
   @override
   void initState() {
     super.initState();
+  }
+
+  // I cannot call context.watch in initState or it breaks
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
     var dateFormat = DateFormat("dd-MM-yyyy", context.watch<LoadOnceState>().locale.countryCode);
     var noRepeat = AppLocalizations.of(context)!.doesNotRepeatLabel;
 
@@ -131,9 +138,9 @@ class CreateMatchState extends State<CreateMatch> {
       managePayments = true;
     } else {
       sportCenter =
-          SportCentersController.getSportCenter(context, widget.existingMatch)!;
+      SportCentersController.getSportCenter(context, widget.existingMatch)!;
       var localizedDateTime =
-          widget.existingMatch!.getLocalizedTime(sportCenter!.timezoneId);
+      widget.existingMatch!.getLocalizedTime(sportCenter!.timezoneId);
 
       dateEditingController =
           TextEditingController(text: dateFormat.format(localizedDateTime));
@@ -149,8 +156,8 @@ class CreateMatchState extends State<CreateMatch> {
           text: widget.existingMatch!.sportCenterSubLocation);
       priceController = TextEditingController(
           text: ((widget.existingMatch!.pricePerPersonInCents -
-                      widget.existingMatch!.userFee) /
-                  100)
+              widget.existingMatch!.userFee) /
+              100)
               .toString());
       numberOfPeopleRangeValues = RangeValues(
           widget.existingMatch!.minPlayers.toDouble(),
@@ -172,9 +179,9 @@ class CreateMatchState extends State<CreateMatch> {
     sportCenterfocusNode.addListener(() =>
         unfocusIfNoValue(sportCenterfocusNode, sportCenterEditingController));
     datefocusNode.addListener(
-        () => unfocusIfNoValue(datefocusNode, dateEditingController));
+            () => unfocusIfNoValue(datefocusNode, dateEditingController));
     startTimefocusNode.addListener(
-        () => unfocusIfNoValue(startTimefocusNode, startTimeEditingController));
+            () => unfocusIfNoValue(startTimefocusNode, startTimeEditingController));
 
     refreshState();
   }

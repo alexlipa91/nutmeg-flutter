@@ -5,6 +5,6 @@
 
     "matchOnStatus": "La partita è aperta",
     "courtType": "Tipo di campo: {t}",
+
     "courtNumber": "Campo numero {x}"
 }
-
