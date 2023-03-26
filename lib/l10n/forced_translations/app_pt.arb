@@ -1,4 +1,4 @@
 {
     "topHeader": "Encontre jogos de futebol perto de",
-    "courtType": "Tipo"
+    "courtType": "Tipo {t}"
 }
