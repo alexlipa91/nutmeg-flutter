@@ -55,7 +55,7 @@
             "date":  {"type": "String"}
         }
     },
-    "courtType": "Court Type",
+    "courtType": "{t} Court Type",
     "changingRooms": "Changing rooms available",
     "courtNumber": "Court number {x}",
     "@courtNumber": {

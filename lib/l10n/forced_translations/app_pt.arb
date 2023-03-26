@@ -1,6 +1,6 @@
 {
     "topHeader": "Encontre jogos de futebol perto de",
-    "courtType": "Tipo",
+    "courtType": "Tipo {t}",
     "cancellationInfo": "A partida será cancelada automaticamente na {date} se menos de {n} jogadores entrarem.",
     "fullRefund": "Reembolso total",
     "joinAction": "Entrar no jogo",
