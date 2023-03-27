@@ -9,11 +9,13 @@ import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:nutmeg/widgets/FeedbackBottomModal.dart';
 import 'package:nutmeg/widgets/ModalBottomSheet.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../model/MatchRatings.dart';
 import '../rating_bar/RatingWidget.dart';
 import '../widgets/PlayerBottomModal.dart';
 import '../widgets/Texts.dart';
+import 'MatchDetails.dart';
 
 class RateButton extends StatelessWidget {
   final String matchId;
@@ -32,11 +34,9 @@ class RateButton extends StatelessWidget {
 }
 
 class RatePlayerBottomModal extends StatelessWidget {
-
   static Future<void> rateAction(BuildContext context, String matchId) async {
-    var toRate = context
-        .read<MatchesState>()
-        .stillToVote(matchId, context.read<UserState>().getLoggedUserDetails()!)!;
+    var toRate = context.read<MatchesState>().stillToVote(
+        matchId, context.read<UserState>().getLoggedUserDetails()!)!;
 
     toRate.map((e) => UserController.getUserDetails(context, e));
 
@@ -49,7 +49,7 @@ class RatePlayerBottomModal extends StatelessWidget {
           ],
           child: RatePlayerBottomModal(matchId),
         ));
-    if(completed != null && (completed as bool) == true)
+    if (completed != null && (completed as bool) == true)
       await FeedbackBottomModal.feedbackAction(context);
     // don't refresh the status here because the last rating might have not yet propagated; instead leave RatePlayerBottomModal modify it if necessary
   }
@@ -58,18 +58,21 @@ class RatePlayerBottomModal extends StatelessWidget {
 
   RatePlayerBottomModal(this.matchId);
 
-  List<Widget> _getSkillsButtons(BuildContext context) =>
-      Skills.values.map((s) =>
-      GenericButtonWithLoader(s.name, (BuildContext context) {
-        var ratingsState = context.read<RatingPlayersState>();
+  List<Widget> _getSkillsButtons(BuildContext context) => Skills.values
+      .map(
+        (s) => GenericButtonWithLoader(s.name, (BuildContext context) {
+          var ratingsState = context.read<RatingPlayersState>();
 
-        if (ratingsState.selectedSkills.contains(s))
-          ratingsState.unselectSkill(s);
-        else
-          ratingsState.selectSkill(s);
-      }, context.watch<RatingPlayersState>().selectedSkills.contains(s)
-          ? Primary() : Secondary()),
-  ).toList();
+          if (ratingsState.selectedSkills.contains(s))
+            ratingsState.unselectSkill(s);
+          else
+            ratingsState.selectSkill(s);
+        },
+            context.watch<RatingPlayersState>().selectedSkills.contains(s)
+                ? Primary()
+                : Secondary()),
+      )
+      .toList();
 
   @override
   Widget build(BuildContext context) {
@@ -81,13 +84,13 @@ class RatePlayerBottomModal extends StatelessWidget {
     var current = context.watch<UserState>().getUserDetail(state.getCurrent());
 
     // user data might still have to be loaded; in that case we wait
-    if (current == null)
-      return Container();
+    if (current == null) return Container();
 
     var nameParts = current.name?.split(" ");
     var name = (nameParts == null) ? null : nameParts.first;
 
-    bool showSkillsArea = context.watch<RatingPlayersState>().currentScore != -1;
+    bool showSkillsArea =
+        context.watch<RatingPlayersState>().currentScore != -1;
 
     return PlayerBottomModal(
         current,
@@ -98,18 +101,20 @@ class RatePlayerBottomModal extends StatelessWidget {
             curve: Curves.fastOutSlowIn,
             child: Container(
               height: showSkillsArea ? null : 0,
-              child: Column(children: [
-                SizedBox(height: 24),
-                Text("Select $name top skills",
-                    style: TextPalette.getBodyText(Palette.grey_dark)),
-                SizedBox(height: 18),
-                Wrap(
-                  alignment: WrapAlignment.center,
-                  spacing: 12,
-                  runSpacing: 12,
-                  children: _getSkillsButtons(context),
-                ),
-              ],),
+              child: Column(
+                children: [
+                  SizedBox(height: 24),
+                  Text("Select $name top skills",
+                      style: TextPalette.getBodyText(Palette.grey_dark)),
+                  SizedBox(height: 18),
+                  Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: 12,
+                    runSpacing: 12,
+                    children: _getSkillsButtons(context),
+                  ),
+                ],
+              ),
             ),
           ),
           SizedBox(height: 18),
@@ -131,7 +136,8 @@ class RatePlayerBottomModal extends StatelessWidget {
                 ),
               ),
               TappableLinkText(
-                  text: (state.currentScore > 0) ? "NEXT" : "SKIP",
+                  text: (state.currentScore > 0) ? AppLocalizations.of(context)!.nextText
+                      : AppLocalizations.of(context)!.skipText,
                   onTap: (BuildContext context) async {
                     store(context);
                   }),
@@ -149,8 +155,10 @@ class RatePlayerBottomModal extends StatelessWidget {
         state.getCurrentScore(), state.selectedSkills);
 
     // store also locally so UI changes fast
-    context.read<MatchesState>().addRating(matchId,
-        context.read<UserState>().currentUserId!, state.getCurrent(),
+    context.read<MatchesState>().addRating(
+        matchId,
+        context.read<UserState>().currentUserId!,
+        state.getCurrent(),
         state.getCurrentScore());
 
     if (state.isLast()) {
@@ -158,5 +166,33 @@ class RatePlayerBottomModal extends StatelessWidget {
     } else {
       state.next();
     }
+  }
+}
+
+class ScoreMatchBottomModal extends StatelessWidget {
+  static Future<void> scoreAction(BuildContext context, String matchId) async {
+    print("score action");
+    var completed = await ModalBottomSheet.showNutmegModalBottomSheet(
+        context, ScoreMatchBottomModal(matchId));
+    var score;
+    if (completed == "skipped")
+      score = [];
+    else
+      score = List<String>.from(completed).map((e) => int.parse(e)).toList();
+
+    await MatchesController.editMatchData({"score": score}, matchId);
+  }
+
+  final String matchId;
+
+  ScoreMatchBottomModal(this.matchId);
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(children: [
+      TeamsWidget(
+          matchId: matchId,
+          title: AppLocalizations.of(context)!.scoreModalTitle, withScoreInput: true),
+    ]);
   }
 }

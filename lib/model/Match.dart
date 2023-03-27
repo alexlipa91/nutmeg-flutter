@@ -50,13 +50,15 @@ class Match {
 
   bool managePayments;
 
+  List<int>? score;
+
   bool isTest;
 
   Match(this.dateTime, this.sportCenterId, this.sportCenter, this.sportCenterSubLocation,
       this.maxPlayers, this.pricePerPersonInCents, this.duration,
       this.isTest, this.minPlayers, this.organizerId, this.userFee,
       this.organiserFee, this.going, this.teams, this.cancelBefore,
-      this.managePayments);
+      this.managePayments, this.score);
 
   Match.fromJson(Map<String, dynamic> jsonInput, String documentId) :
         dateTime = DateTime.parse(jsonInput['dateTime']),
@@ -71,6 +73,7 @@ class Match {
         sportCenterId = jsonInput['sportCenterId'],
         userFee = jsonInput["userFee"] ?? 0,
         organiserFee = jsonInput["organiserFee"] ?? 0,
+        score = jsonInput["score"] ?? [],
         managePayments = jsonInput["managePayments"] ?? true {
       sportCenterSubLocation = jsonInput['sportCenterSubLocation'];
 
@@ -156,6 +159,8 @@ class Match {
           'userFee': userFee,
         if (organiserFee > 0)
           'organiserFee': organiserFee,
+        if (score != null)
+          'score': score,
         'managePayments': managePayments,
         'isTest': isTest
       };

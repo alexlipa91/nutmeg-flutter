@@ -797,7 +797,9 @@ class CreateMatchState extends State<CreateMatch> {
                                 ? widget.existingMatch!.teams
                                 : Map(),
                             cancelBefore,
-                            paymentsPossible && managePayments);
+                            paymentsPossible && managePayments,
+                            widget.existingMatch != null ? widget.existingMatch!.score : null
+                        );
 
                         var id;
                         if (widget.existingMatch == null) {

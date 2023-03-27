@@ -10,9 +10,9 @@
         "numSpots":  {"type": "int"}
       }
   },
-  "thisWeek": "this week",
-  "nextWeek": "next week",
-  "moreThanTwoWeeks": "in more than two weeks",
+  "thisWeek": "THIS WEEK",
+  "nextWeek": "NEXT WEEK",
+  "moreThanTwoWeeks": "IN MORE THAN TWO WEEKS",
   "notPublishedStatus": "Not Published",
   "cancelledStatus": "Cancelled",
   "fullStatus": "Full",
@@ -153,6 +153,11 @@
     "hoursLabel": "Hours",
     "youWantToLeaveTitle": "Are you sure you want to leave?",
     "youWantToLeaveSubtitle": "If you leave, all your unsaved changes will be lost.",
+
+    "scoreModalTitle": "What was the match score?",
+    "submitScoreButton": "SUBMIT SCORE",
+    "skipText": "SKIP",
+    "nextText": "NEXT",
 
     "yes": "Yes",
     "cancel": "Cancel",

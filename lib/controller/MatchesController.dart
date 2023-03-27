@@ -61,6 +61,11 @@ class MatchesController {
         {"id": documentId, "data": m.toJson()});
   }
 
+  static Future<void> editMatchData(Map<String, dynamic> data, String documentId) async {
+    await apiClient.callFunction("edit_match",
+        {"id": documentId, "data": data});
+  }
+
   // logged-in user voted 'score' for user 'userId' in match 'matchId'
   static Future<void> addRating(
       BuildContext context, String userId, String matchId, double score,

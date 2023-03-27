@@ -39,7 +39,9 @@ import '../widgets/ButtonsWithLoader.dart';
 import '../widgets/ModalBottomSheet.dart';
 import '../widgets/PlayerBottomModal.dart';
 import '../widgets/Skeletons.dart';
+import '../widgets/Texts.dart';
 import 'BottomBarMatch.dart';
+import 'CreateMatch.dart';
 import 'PaymentDetailsDescription.dart';
 
 class MatchDetails extends StatefulWidget {
@@ -60,6 +62,7 @@ class MatchDetailsState extends State<MatchDetails> {
   static var dayDateFormat = DateFormat("EEEE, MMM dd");
 
   Future<void> myInitState() async {
+    print("init state");
     await refreshState();
 
     Match match = context.read<MatchesState>().getMatch(widget.matchId)!;
@@ -86,6 +89,13 @@ class MatchDetailsState extends State<MatchDetails> {
         await RatePlayerBottomModal.rateAction(context, widget.matchId);
         setState(() {});
       }
+    }
+
+    // show enter score modal
+    if (match.hasTeams() && match.score == null &&
+        match.organizerId != null && match.organizerId! ==
+        loggedUser?.documentId) {
+      ScoreMatchBottomModal.scoreAction(context, widget.matchId);
     }
 
     if (loggedUser != null &&
@@ -216,9 +226,9 @@ class MatchDetailsState extends State<MatchDetails> {
 
             if (cancellationDate.isAfter(DateTime.now())) {
               cancellationText = AppLocalizations.of(context)!.cancellationInfo(
-                  dayDateFormat.format(match.getLocalizedTime(sportCenter.timezoneId)),
-                  match.minPlayers
-              );
+                  dayDateFormat
+                      .format(match.getLocalizedTime(sportCenter.timezoneId)),
+                  match.minPlayers);
             }
           }
           var refundString = (match.userFee == 0)
@@ -245,7 +255,8 @@ class MatchDetailsState extends State<MatchDetails> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(AppLocalizations.of(context)!.organizedBy, style: TextPalette.bodyText),
+                    Text(AppLocalizations.of(context)!.organizedBy,
+                        style: TextPalette.bodyText),
                     SizedBox(height: 4),
                     (ud == null)
                         ? Skeletons.lText
@@ -261,7 +272,6 @@ class MatchDetailsState extends State<MatchDetails> {
     return LayoutBuilder(builder: (context, constraints) {
       if (constraints.maxWidth < 800) {
         return PageTemplate(
-          initState: () => myInitState(),
           refreshState: () => refreshState(),
           widgets: interleave([
             // title
@@ -293,7 +303,6 @@ class MatchDetailsState extends State<MatchDetails> {
         );
       }
       return PageTemplate(
-        initState: () => myInitState(),
         refreshState: () => refreshState(),
         widgets: [
           if (testInfo != null) testInfo,
@@ -357,10 +366,8 @@ class MatchDetailsState extends State<MatchDetails> {
 class PlayerList extends StatelessWidget {
   static getTitle(BuildContext context, Match? match) => (match == null)
       ? ""
-      : AppLocalizations.of(context)!.listOfPlayersHeader(
-      match.numPlayersGoing(),
-      match.maxPlayers
-  );
+      : AppLocalizations.of(context)!
+          .listOfPlayersHeader(match.numPlayersGoing(), match.maxPlayers);
 
   final Match match;
   final bool withJoinButton;
@@ -417,8 +424,18 @@ class PlayerList extends StatelessWidget {
 
 class TeamsWidget extends StatelessWidget {
   final String matchId;
+  final String? title;
+  final bool withScoreInput;
 
-  const TeamsWidget({Key? key, required this.matchId}) : super(key: key);
+  TeamsWidget(
+      {Key? key,
+      required this.matchId,
+      String? title,
+      this.withScoreInput = false})
+      : title = title,
+        super(key: key);
+
+  final _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
@@ -427,23 +444,63 @@ class TeamsWidget extends StatelessWidget {
     var teamA = match!.teams.entries.first;
     var teamB = match.teams.entries.last;
 
-    return InfoContainerWithTitle(
-        title: PlayerList.getTitle(context, match),
-        body: Center(
-          child: IntrinsicHeight(
-            child: Row(children: [
-              getTeamColumn(context, teamA.key, teamA.value),
-              VerticalDivider(
-                thickness: 1,
-                color: Palette.grey_light,
-              ),
-              getTeamColumn(context, teamB.key, teamB.value),
-            ]),
-          ),
-        ));
+    var teamAController;
+    var teamBController;
+    if (withScoreInput) {
+      teamAController = TextEditingController();
+      teamBController = TextEditingController();
+    }
+
+    return Form(
+      key: _formKey,
+      child: InfoContainerWithTitle(
+          title: this.title == null
+              ? PlayerList.getTitle(context, match)
+              : this.title,
+          body: Center(
+            child: IntrinsicHeight(
+              child: Column(children: [
+                Row(children: [
+                  getTeamColumn(context, teamA.key, teamA.value, teamAController),
+                  VerticalDivider(
+                    thickness: 1,
+                    color: Palette.grey_light,
+                  ),
+                  getTeamColumn(context, teamB.key, teamB.value, teamBController),
+                ]),
+                if (withScoreInput)
+                  Padding(
+                    padding: EdgeInsets.only(top: 32),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text("ABCD", style: TextPalette.getLinkStyle(Palette.white)),
+                        GenericButtonWithLoader(
+                          AppLocalizations.of(context)!.submitScoreButton,
+                              (BuildContext context) {
+                        if (_formKey.currentState!.validate()) {
+                          Navigator.of(context).pop([
+                            teamAController.text,
+                            teamBController.text
+                          ]);
+                        }
+                      }, Primary()),
+                        TappableLinkText(
+                            text: AppLocalizations.of(context)!.skipText,
+                            onTap: (BuildContext context) async {
+                              Navigator.of(context).pop("skipped");
+                            }),
+                      ],
+                    ),
+                  )
+              ]),
+            ),
+          )),
+    );
   }
 
-  getTeamColumn(BuildContext context, String teamName, List<String> players) {
+  getTeamColumn(BuildContext context, String teamName, List<String> players,
+      TextEditingController? scoreInputController) {
     var playersWidgets = interleave(
         players.map((e) {
           var ud = context.watch<UserState>().getUserDetail(e);
@@ -465,6 +522,22 @@ class TeamsWidget extends StatelessWidget {
         SizedBox(height: 16));
 
     List<Widget> childrenWidgets = [];
+    if (scoreInputController != null) {
+      childrenWidgets.addAll([
+        Container(
+            width: 100,
+            child: TextFormField(
+              keyboardType: TextInputType.number,
+              controller: scoreInputController,
+              validator: (v) {
+                if (int.tryParse(v ?? "") == null) return "Invalid";
+                return null;
+              },
+              decoration: CreateMatchState.getTextFormDecoration(null),
+            )),
+        SizedBox(height: 24),
+      ]);
+    }
     childrenWidgets.addAll([
       Text("Team ${teamName.toUpperCase()}",
           style: TextPalette.getListItem(Palette.black)),
@@ -519,8 +592,10 @@ class MatchInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var dayDateFormat = DateFormat("EEEE, MMM dd", context.watch<LoadOnceState>().locale.languageCode);
-    var hourDateFormat = DateFormat("HH:mm", context.watch<LoadOnceState>().locale.languageCode);
+    var dayDateFormat = DateFormat(
+        "EEEE, MMM dd", context.watch<LoadOnceState>().locale.languageCode);
+    var hourDateFormat =
+        DateFormat("HH:mm", context.watch<LoadOnceState>().locale.languageCode);
 
     var child;
 
@@ -558,8 +633,9 @@ class MatchInfo extends StatelessWidget {
                                   context.go("/match/${match.documentId}/edit");
                                   Navigator.of(context).pop();
                                 },
-                                child:
-                                    Text(AppLocalizations.of(context)!.editAction, style: TextPalette.listItem)),
+                                child: Text(
+                                    AppLocalizations.of(context)!.editAction,
+                                    style: TextPalette.listItem)),
                             Padding(
                               padding: EdgeInsets.only(top: 16),
                               child: InkWell(
@@ -568,7 +644,8 @@ class MatchInfo extends StatelessWidget {
                                         match, sportCenter);
                                     Navigator.of(context).pop();
                                   },
-                                  child: Text(AppLocalizations.of(context)!.shareAction,
+                                  child: Text(
+                                      AppLocalizations.of(context)!.shareAction,
                                       style: TextPalette.listItem)),
                             ),
                             if (match.dateTime.isAfter(DateTime.now()))
@@ -602,7 +679,9 @@ class MatchInfo extends StatelessWidget {
 
                                     Navigator.pop(context);
                                   },
-                                  child: Text(AppLocalizations.of(context)!.cancelMatchAction,
+                                  child: Text(
+                                      AppLocalizations.of(context)!
+                                          .cancelMatchAction,
                                       style: TextPalette.getListItem(
                                           Palette.destructive)),
                                 ),
@@ -923,15 +1002,17 @@ class SportCenterDetails extends StatelessWidget {
           AddressRow(sportCenter: sportCenter),
           SizedBox(height: 16),
           IconList.fromSvg({
-            "assets/icons/nutmeg_icon_court.svg":
-                AppLocalizations.of(context)!.courtType(sportCenter.getCourtType()),
-            "assets/icons/nutmeg_icon_shoe.svg": sportCenter.getSurface(context),
+            "assets/icons/nutmeg_icon_court.svg": AppLocalizations.of(context)!
+                .courtType(sportCenter.getCourtType()),
+            "assets/icons/nutmeg_icon_shoe.svg":
+                sportCenter.getSurface(context),
             if (sportCenter.getHasChangingRooms() ?? false)
               "assets/icons/nutmeg_icon_changing_rooms.svg":
-              AppLocalizations.of(context)!.changingRooms,
+                  AppLocalizations.of(context)!.changingRooms,
             if ((match.sportCenterSubLocation ?? "").isNotEmpty)
               "assets/icons/nutmeg_icon_court_number.svg":
-                  AppLocalizations.of(context)!.courtNumber(match.sportCenterSubLocation!),
+                  AppLocalizations.of(context)!
+                      .courtNumber(match.sportCenterSubLocation!),
           })
         ],
       ),
@@ -975,8 +1056,8 @@ class MapCardImage extends StatelessWidget {
       },
       child: ClipRRect(
           borderRadius: InfoContainer.borderRadius,
-          child: CachedNetworkImage(imageUrl: buildMapUrl(sportCenter.lat,
-              sportCenter.lng))),
+          child: CachedNetworkImage(
+              imageUrl: buildMapUrl(sportCenter.lat, sportCenter.lng))),
     );
   }
 }
@@ -991,7 +1072,8 @@ class Stats extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var child;
-    var dayDateFormat = DateFormat("EEEE, MMM dd", context.watch<LoadOnceState>().locale.languageCode);
+    var dayDateFormat = DateFormat(
+        "EEEE, MMM dd", context.watch<LoadOnceState>().locale.languageCode);
 
     if (match.status == MatchStatus.to_rate) {
       child = Container(
@@ -1013,7 +1095,9 @@ class Stats extends StatelessWidget {
               SizedBox(height: 8),
               Text(
                 AppLocalizations.of(context)!.statsAvailableAt(
-                  dayDateFormat.format(match.getLocalizedTime(sportCenter.timezoneId)) + " ${gmtSuffix(sportCenter.timezoneId)}"),
+                    dayDateFormat.format(
+                            match.getLocalizedTime(sportCenter.timezoneId)) +
+                        " ${gmtSuffix(sportCenter.timezoneId)}"),
                 style: TextPalette.bodyText,
                 textAlign: TextAlign.center,
               ),
