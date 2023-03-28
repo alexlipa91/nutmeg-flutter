@@ -12,7 +12,7 @@ class MiscController {
     var urls = List<String>.from(gifs!["links"]);
     urls.shuffle();
 
-    var urlsSublist = urls.sublist(0, 3);
+    var urlsSublist = urls.sublist(0, 7);
 
     var urlsFuture = urlsSublist.map((u) =>
         DefaultCacheManager().downloadFile(u).then((u) {}));

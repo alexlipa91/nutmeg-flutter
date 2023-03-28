@@ -28,7 +28,7 @@ class PaymentDetailsDescription {
                 radius: 100,
                 backgroundColor: Palette.grey_lighter,
                 backgroundImage: CachedNetworkImageProvider(
-                    (context?.read<LoadOnceState>().getRandomGif())!),
+                    (context.read<LoadOnceState>().getRandomGif())),
               ),
               Padding(
                   padding: EdgeInsets.only(top: 30),

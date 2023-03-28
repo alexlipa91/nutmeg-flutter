@@ -58,7 +58,7 @@
     "courtType": "{t} Court Type",
     "changingRooms": "Changing rooms available",
     "courtNumber": "Court number {x}",
-    "artificialGrass": "Artificial Grass",
+    "artificialGrass": "Grass",
     "matchOnStatus": "Match is on",
     "inProgressStatus": "In Progress",
     "notPublishedStatus": "Not Published",

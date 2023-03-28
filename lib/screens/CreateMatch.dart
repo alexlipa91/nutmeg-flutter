@@ -749,95 +749,97 @@ class CreateMatchState extends State<CreateMatch> {
             child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-              Container(
-                width: 700,
-                child: GenericButtonWithLoader(
-                    widget.existingMatch == null ?
-                    AppLocalizations.of(context)!.createButtonText :
-                    AppLocalizations.of(context)!.confirmButtonText,
-                    (BuildContext context) async {
-                  context.read<GenericButtonWithLoaderState>().change(true);
-                  bool? v = _formKey.currentState?.validate();
-                  if (v != null && v) {
-                    try {
-                      var dateTime = getDateTime(
-                          dateFormat,
-                          startTimeEditingController, sportCenter!.timezoneId);
-                      var endTime = getDateTime(
-                          dateFormat,
-                          endTimeEditingController, sportCenter!.timezoneId);
-                      var duration = endTime!.difference(dateTime!);
-                      var cancelBefore = withAutomaticCancellation
-                          ? Duration(
-                              hours:
-                                  int.parse(cancelTimeEditingController.text))
-                          : null;
+              Expanded(
+                child: Container(
+                  width: 700,
+                  child: GenericButtonWithLoader(
+                      widget.existingMatch == null ?
+                      AppLocalizations.of(context)!.createButtonText :
+                      AppLocalizations.of(context)!.confirmButtonText,
+                      (BuildContext context) async {
+                    context.read<GenericButtonWithLoaderState>().change(true);
+                    bool? v = _formKey.currentState?.validate();
+                    if (v != null && v) {
+                      try {
+                        var dateTime = getDateTime(
+                            dateFormat,
+                            startTimeEditingController, sportCenter!.timezoneId);
+                        var endTime = getDateTime(
+                            dateFormat,
+                            endTimeEditingController, sportCenter!.timezoneId);
+                        var duration = endTime!.difference(dateTime!);
+                        var cancelBefore = withAutomaticCancellation
+                            ? Duration(
+                                hours:
+                                    int.parse(cancelTimeEditingController.text))
+                            : null;
 
-                      var forWeeks = repeatsForWeeks;
+                        var forWeeks = repeatsForWeeks;
 
-                      Iterable<Future<String>> idsFuture =
-                          Iterable<int>.generate(forWeeks).map((w) async {
-                        var match = Match(
-                            dateTime.add(Duration(days: 7 * w)),
-                            (sportCenter is SavedSportCenter)
-                                ? sportCenter!.placeId
-                                : null,
-                            (sportCenter is SavedSportCenter)
-                                ? null
-                                : sportCenter,
-                            courtNumberEditingController.text,
-                            numberOfPeopleRangeValues.end.toInt(),
-                            paymentsPossible && managePayments ? (Decimal.parse(priceController.text) * Decimal.parse("100")).toDouble().toInt() : 0,
-                            duration,
-                            isTest,
-                            numberOfPeopleRangeValues.start.toInt(),
-                            widget.existingMatch != null
-                                ? widget.existingMatch!.organizerId
-                                : context
-                                    .read<UserState>()
-                                    .getLoggedUserDetails()!
-                                    .documentId,
-                            ConfigsUtils.feesOnOrganiser(organiserId) ? 0 : 50,
-                            ConfigsUtils.feesOnOrganiser(organiserId) ? 50 : 0,
-                            widget.existingMatch != null
-                                ? widget.existingMatch!.going
-                                : Map(),
-                            widget.existingMatch != null
-                                ? widget.existingMatch!.teams
-                                : Map(),
-                            cancelBefore,
-                            paymentsPossible && managePayments,
-                            widget.existingMatch != null ? widget.existingMatch!.score : null
-                        );
+                        Iterable<Future<String>> idsFuture =
+                            Iterable<int>.generate(forWeeks).map((w) async {
+                          var match = Match(
+                              dateTime.add(Duration(days: 7 * w)),
+                              (sportCenter is SavedSportCenter)
+                                  ? sportCenter!.placeId
+                                  : null,
+                              (sportCenter is SavedSportCenter)
+                                  ? null
+                                  : sportCenter,
+                              courtNumberEditingController.text,
+                              numberOfPeopleRangeValues.end.toInt(),
+                              paymentsPossible && managePayments ? (Decimal.parse(priceController.text) * Decimal.parse("100")).toDouble().toInt() : 0,
+                              duration,
+                              isTest,
+                              numberOfPeopleRangeValues.start.toInt(),
+                              widget.existingMatch != null
+                                  ? widget.existingMatch!.organizerId
+                                  : context
+                                      .read<UserState>()
+                                      .getLoggedUserDetails()!
+                                      .documentId,
+                              ConfigsUtils.feesOnOrganiser(organiserId) ? 0 : 50,
+                              ConfigsUtils.feesOnOrganiser(organiserId) ? 50 : 0,
+                              widget.existingMatch != null
+                                  ? widget.existingMatch!.going
+                                  : Map(),
+                              widget.existingMatch != null
+                                  ? widget.existingMatch!.teams
+                                  : Map(),
+                              cancelBefore,
+                              paymentsPossible && managePayments,
+                              widget.existingMatch != null ? widget.existingMatch!.score : null
+                          );
 
-                        var id;
-                        if (widget.existingMatch == null) {
-                          id = await MatchesController.addMatch(match);
-                        } else {
-                          await MatchesController.editMatch(
-                              match, widget.existingMatch!.documentId);
-                          id = widget.existingMatch!.documentId;
-                        }
-                        await MatchesController.refresh(context, id);
-                        print("added match with id " + id);
-                        return id;
-                      });
+                          var id;
+                          if (widget.existingMatch == null) {
+                            id = await MatchesController.addMatch(match);
+                          } else {
+                            await MatchesController.editMatch(
+                                match, widget.existingMatch!.documentId);
+                            id = widget.existingMatch!.documentId;
+                          }
+                          await MatchesController.refresh(context, id);
+                          print("added match with id " + id);
+                          return id;
+                        });
 
-                      var ids = await Future.wait(idsFuture);
+                        var ids = await Future.wait(idsFuture);
 
-                      context.go("/match/${ids.first}");
-                    } on Exception catch (e, s) {
-                      print(e);
-                      print(s);
-                      ErrorHandlingUtils.handleError(e, s, context);
+                        context.go("/match/${ids.first}");
+                      } on Exception catch (e, s) {
+                        print(e);
+                        print(s);
+                        ErrorHandlingUtils.handleError(e, s, context);
+                      }
+                    } else {
+                      print("validation error");
+                      setState(() {});
                     }
-                  } else {
-                    print("validation error");
-                    setState(() {});
-                  }
 
-                  context.read<GenericButtonWithLoaderState>().change(false);
-                }, Primary()),
+                    context.read<GenericButtonWithLoaderState>().change(false);
+                  }, Primary()),
+                ),
               )
             ]),
           )),

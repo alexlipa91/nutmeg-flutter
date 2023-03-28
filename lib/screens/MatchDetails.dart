@@ -165,11 +165,13 @@ class MatchDetailsState extends State<MatchDetails> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(
-                  width: 900,
-                  child: Column(
-                      children:
-                          interleave(widgets, SizedBox(height: 16)).toList()))
+              Expanded(
+                child: Container(
+                    width: 900,
+                    child: Column(
+                        children:
+                            interleave(widgets, SizedBox(height: 16)).toList())),
+              )
             ],
           )
         ],

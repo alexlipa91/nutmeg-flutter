@@ -75,11 +75,12 @@ class SportCenter {
 
   bool? getHasChangingRooms() => hasChangingRooms;
 
-  String getSurface(BuildContext context) {
+  String? getSurface(BuildContext context) {
     Map<String, String> surfacesDescription = {
-      "Artificial Grass": AppLocalizations.of(context)!.artificialGrass,
+      "Grass": AppLocalizations.of(context)!.artificialGrass,
+      "Indoor": "Indoor"
     };
-    return surfacesDescription[_surface]!;
+    return surfacesDescription[_surface];
   }
 }
 
