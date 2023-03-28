@@ -44,173 +44,178 @@ class CreateCourtState extends State<CreateCourt> {
       child: PageTemplate(
         refreshState: null,
         widgets: [
-          Text("Create New Court", style: TextPalette.h1Default),
-          Section(
-              title: "Court Information",
-              titleType: "big",
-              body: Column(
-                children: [
-                  Row(
+          Center(child: Container(
+            width: 700,
+            child: Column(children: [
+              Text("Create New Court", style: TextPalette.h1Default),
+              Section(
+                  title: "Court Information",
+                  titleType: "big",
+                  body: Column(
                     children: [
-                      Expanded(
-                          child: TypeAheadField<PredictionResult>(
-                        textFieldConfiguration: TextFieldConfiguration(
-                            style: TextPalette.getBodyText(Palette.black),
-                            decoration: CreateMatchState.getTextFormDecoration(
-                                "Court Location"),
-                            controller: textEditingController),
-                        suggestionsCallback: (pattern) async {
-                          List<PredictionResult> predictions = [];
-                          if (pattern.isNotEmpty) {
-                            var result = await getPlacePrediction(pattern, "NL");
-                            predictions = result;
-                          }
-                          return predictions;
-                        },
-                        itemBuilder: (context, suggestion) {
-                          String description = suggestion.description;
-                          var matchedSubstrings = suggestion.matches;
+                      Row(
+                        children: [
+                          Expanded(
+                              child: TypeAheadField<PredictionResult>(
+                                textFieldConfiguration: TextFieldConfiguration(
+                                    style: TextPalette.getBodyText(Palette.black),
+                                    decoration: CreateMatchState.getTextFormDecoration(
+                                        "Court Location"),
+                                    controller: textEditingController),
+                                suggestionsCallback: (pattern) async {
+                                  List<PredictionResult> predictions = [];
+                                  if (pattern.isNotEmpty) {
+                                    var result = await getPlacePrediction(pattern, "NL");
+                                    predictions = result;
+                                  }
+                                  return predictions;
+                                },
+                                itemBuilder: (context, suggestion) {
+                                  String description = suggestion.description;
+                                  var matchedSubstrings = suggestion.matches;
 
-                          // todo check case of more matches
-                          var firstMatch = matchedSubstrings[0];
-                          String? boldText;
-                          String normalText;
+                                  // todo check case of more matches
+                                  var firstMatch = matchedSubstrings[0];
+                                  String? boldText;
+                                  String normalText;
 
-                          if (firstMatch.offset == 0) {
-                            boldText = description.substring(0,
-                                firstMatch.length);
-                            normalText = description
-                                .substring(firstMatch.length);
-                          } else {
-                            normalText = description;
-                          }
+                                  if (firstMatch.offset == 0) {
+                                    boldText = description.substring(0,
+                                        firstMatch.length);
+                                    normalText = description
+                                        .substring(firstMatch.length);
+                                  } else {
+                                    normalText = description;
+                                  }
 
-                          return ListTile(
-                            leading: Icon(Icons.place),
-                            title: RichText(
-                              text: TextSpan(
-                              style: TextPalette.bodyText,
-                              children: <TextSpan>[
-                                if (boldText != null)
-                                  TextSpan(text: boldText,
-                                      style: TextPalette.bodyText
-                                          .copyWith(fontWeight: FontWeight.bold)),
-                                TextSpan(text: normalText),
-                            ],)
-                          ));
-                        },
-                        noItemsFoundBuilder: (value) => Container(height: 10),
-                        onSuggestionSelected: (suggestion) async {
-                          textEditingController.text = suggestion.description;
-                          setState(() {
-                            placeId = suggestion.placeId;
-                          });
-                        },
-                      ))
+                                  return ListTile(
+                                      leading: Icon(Icons.place),
+                                      title: RichText(
+                                          text: TextSpan(
+                                            style: TextPalette.bodyText,
+                                            children: <TextSpan>[
+                                              if (boldText != null)
+                                                TextSpan(text: boldText,
+                                                    style: TextPalette.bodyText
+                                                        .copyWith(fontWeight: FontWeight.bold)),
+                                              TextSpan(text: normalText),
+                                            ],)
+                                      ));
+                                },
+                                noItemsFoundBuilder: (value) => Container(height: 10),
+                                onSuggestionSelected: (suggestion) async {
+                                  textEditingController.text = suggestion.description;
+                                  setState(() {
+                                    placeId = suggestion.placeId;
+                                  });
+                                },
+                              ))
+                        ],
+                      )
                     ],
-                  )
-                ],
-              )),
-          Section(
-              title: "Court Type",
-              titleType: "big",
-              body: Column(children: [
-                Row(
-                  children: [
-                    Expanded(
-                        child: TextFormField(
-                      readOnly: true,
-                      controller: surfaceController,
-                      decoration: CreateMatchState.getTextFormDecoration(
-                          "Surface",
-                          isDropdown: true),
-                      onTap: () async {
-                        String? surface = await ModalBottomSheet.showNutmegModalBottomSheet(
-                            context,
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
+                  )),
+              Section(
+                  title: "Court Type",
+                  titleType: "big",
+                  body: Column(children: [
+                    Row(
+                      children: [
+                        Expanded(
+                            child: TextFormField(
+                              readOnly: true,
+                              controller: surfaceController,
+                              decoration: CreateMatchState.getTextFormDecoration(
                                   "Surface",
-                                  style: TextPalette.h2,
-                                ),
-                                SizedBox(height: 16.0),
-                                SurfaceRow(title: "Indoor",
-                                    description: "Boots without studs",
-                                    imagePath: "assets/sportcenters/indoor_thumb.png"),
-                                SizedBox(height: 16.0),
-                                SurfaceRow(title: "Grass",
-                                    description: "For boots that require studs",
-                                    imagePath: "assets/sportcenters/grass_thumb.png"),
-                              ],
-                            ));
+                                  isDropdown: true),
+                              onTap: () async {
+                                String? surface = await ModalBottomSheet.showNutmegModalBottomSheet(
+                                    context,
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          "Surface",
+                                          style: TextPalette.h2,
+                                        ),
+                                        SizedBox(height: 16.0),
+                                        SurfaceRow(title: "Indoor",
+                                            description: "Boots without studs",
+                                            imagePath: "assets/sportcenters/indoor_thumb.png"),
+                                        SizedBox(height: 16.0),
+                                        SurfaceRow(title: "Grass",
+                                            description: "For boots that require studs",
+                                            imagePath: "assets/sportcenters/grass_thumb.png"),
+                                      ],
+                                    ));
 
-                        if (surface != null) {
-                          surfaceController.text = surface;
-                        }
-                      },
-                      validator: (v) {
-                        if (v == null || v.isEmpty) return "Required";
-                        return null;
-                      },
-                    )),
-                  ],
-                ),
-                SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                        child: TextFormField(
-                      readOnly: true,
-                      controller: courtTypeController,
-                      decoration: CreateMatchState.getTextFormDecoration("Size",
-                          isDropdown: true),
-                      onTap: () async {
-                        var sizes = ["5v5", "6v6", "7v7", "11v11"];
+                                if (surface != null) {
+                                  surfaceController.text = surface;
+                                }
+                              },
+                              validator: (v) {
+                                if (v == null || v.isEmpty) return "Required";
+                                return null;
+                              },
+                            )),
+                      ],
+                    ),
+                    SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                            child: TextFormField(
+                              readOnly: true,
+                              controller: courtTypeController,
+                              decoration: CreateMatchState.getTextFormDecoration("Size",
+                                  isDropdown: true),
+                              onTap: () async {
+                                var sizes = ["5v5", "6v6", "7v7", "11v11"];
 
-                        int? i = await CreateMatchState
-                            .showMultipleChoiceSheetWithText(
-                                context, "Size", sizes);
+                                int? i = await CreateMatchState
+                                    .showMultipleChoiceSheetWithText(
+                                    context, "Size", sizes);
 
-                        if (i != null) {
-                          courtTypeController.text = sizes[i];
-                        }
-                      },
-                      validator: (v) {
-                        if (v == null || v.isEmpty) return "Required";
-                        return null;
-                      },
-                    )),
-                  ],
-                ),
-              ])),
-          Section(
-              title: "Facilities",
-              titleType: "big",
-              body: Column(
-                children: [
-                  Row(
+                                if (i != null) {
+                                  courtTypeController.text = sizes[i];
+                                }
+                              },
+                              validator: (v) {
+                                if (v == null || v.isEmpty) return "Required";
+                                return null;
+                              },
+                            )),
+                      ],
+                    ),
+                  ])),
+              Section(
+                  title: "Facilities",
+                  titleType: "big",
+                  body: Column(
                     children: [
-                      Checkbox(
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(5)),
-                          value: changeRoomsAvailable,
-                          activeColor: Palette.primary,
-                          onChanged: (v) {
-                            if (v != null) {
-                              setState(() {
-                                changeRoomsAvailable = v;
-                              });
-                            }
-                          }),
-                      Flexible(
-                          child: Text("Change Rooms available",
-                              style: TextPalette.bodyText,
-                              overflow: TextOverflow.visible)),
+                      Row(
+                        children: [
+                          Checkbox(
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(5)),
+                              value: changeRoomsAvailable,
+                              activeColor: Palette.primary,
+                              onChanged: (v) {
+                                if (v != null) {
+                                  setState(() {
+                                    changeRoomsAvailable = v;
+                                  });
+                                }
+                              }),
+                          Flexible(
+                              child: Text("Change Rooms available",
+                                  style: TextPalette.bodyText,
+                                  overflow: TextOverflow.visible)),
+                        ],
+                      ),
                     ],
-                  ),
-                ],
-              )),
+                  )),
+            ],),
+          ),)
         ],
         appBar: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -221,8 +226,11 @@ class CreateCourtState extends State<CreateCourt> {
         bottomNavigationBar: GenericBottomBar(
             child: Padding(
           padding: EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0),
-          child: Row(children: [
-            Expanded(
+          child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+            Container(
+              width: 700,
               child: GenericButtonWithLoaderAndErrorHandling("CREATE NEW COURT",
                   (_) async {
                 bool? v = _formKey.currentState?.validate();

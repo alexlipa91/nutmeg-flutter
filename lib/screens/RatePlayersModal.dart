@@ -192,7 +192,8 @@ class ScoreMatchBottomModal extends StatelessWidget {
     return Column(children: [
       TeamsWidget(
           matchId: matchId,
-          title: AppLocalizations.of(context)!.scoreModalTitle, withScoreInput: true),
+          title: AppLocalizations.of(context)!.scoreModalTitle,
+          withScoreInput: true),
     ]);
   }
 }

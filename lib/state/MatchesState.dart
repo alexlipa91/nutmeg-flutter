@@ -17,7 +17,7 @@ class MatchesState extends ChangeNotifier {
   // match details (do not initialize this map so that we can differentiate when no data has been fetched, i.e. map is null)
   Map<String, Match>? _matchesCache;
 
-  Map<String, List<Match>>? _matchesPerTab;
+  Map<String, List<String>>? _matchesPerTab;
 
   // ratings per match
   Map<String, MatchRatings> _ratingsPerMatch = Map();
@@ -36,8 +36,12 @@ class MatchesState extends ChangeNotifier {
       ..sort((a, b) => b.dateTime.compareTo(a.dateTime));
   }
 
-  List<Match>? getMatchesForTab(String tab) =>
-      (_matchesPerTab == null) ? null :_matchesPerTab![tab];
+  List<Match>? getMatchesForTab(String tab) {
+    if (_matchesPerTab == null || _matchesCache == null
+        || _matchesPerTab![tab] == null)
+      return null;
+    return _matchesPerTab![tab]!.map((e) => _matchesCache![e]!).toList();
+  }
 
   Match? getMatch(String matchId) =>
       (_matchesCache == null) ? null : _matchesCache![matchId];
@@ -118,7 +122,7 @@ class MatchesState extends ChangeNotifier {
 
     if (_matchesPerTab == null)
       _matchesPerTab = Map();
-    _matchesPerTab![tab] = matches.toList();
+    _matchesPerTab![tab] = matches.map((m) => m.documentId).toList();
 
     notifyListeners();
   }

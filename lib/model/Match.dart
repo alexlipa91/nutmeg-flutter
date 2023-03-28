@@ -73,7 +73,7 @@ class Match {
         sportCenterId = jsonInput['sportCenterId'],
         userFee = jsonInput["userFee"] ?? 0,
         organiserFee = jsonInput["organiserFee"] ?? 0,
-        score = jsonInput["score"] ?? [],
+        score = jsonInput["score"],
         managePayments = jsonInput["managePayments"] ?? true {
       sportCenterSubLocation = jsonInput['sportCenterSubLocation'];
 

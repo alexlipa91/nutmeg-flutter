@@ -67,6 +67,7 @@ class MatchDetailsState extends State<MatchDetails> {
 
     Match match = context.read<MatchesState>().getMatch(widget.matchId)!;
 
+    print(widget.paymentOutcome);
     // check if payment outcome
     if (widget.paymentOutcome != null) {
       if (ModalBottomSheet.isOpen) Navigator.of(context).pop();
@@ -92,9 +93,10 @@ class MatchDetailsState extends State<MatchDetails> {
     }
 
     // show enter score modal
-    if (match.hasTeams() && match.score == null &&
-        match.organizerId != null && match.organizerId! ==
-        loggedUser?.documentId) {
+    if (match.hasTeams() &&
+        match.score == null &&
+        match.organizerId != null &&
+        match.organizerId! == loggedUser?.documentId) {
       ScoreMatchBottomModal.scoreAction(context, widget.matchId);
     }
 
@@ -280,9 +282,9 @@ class MatchDetailsState extends State<MatchDetails> {
             // info box
             matchInfo,
             // stats
+            infoPlayersList,
             if (stats != null) stats,
             // horizontal players list or teams
-            infoPlayersList,
             sportCenterDetails,
             rules(false),
             if (organiserBadge != null) organiserBadge
@@ -437,6 +439,23 @@ class TeamsWidget extends StatelessWidget {
 
   final _formKey = GlobalKey<FormState>();
 
+  Widget inputScore(TextEditingController controller) => Container(
+      width: 50,
+      child: Center(
+        child: TextFormField(
+          keyboardType: TextInputType.number,
+          controller: controller,
+          validator: (v) {
+            if (int.tryParse(v ?? "") == null)
+              return "Invalid";
+            return null;
+          },
+          decoration:
+          CreateMatchState.getTextFormDecoration(
+              null),
+        ),
+      ));
+
   @override
   Widget build(BuildContext context) {
     var match = context.watch<MatchesState>().getMatch(matchId);
@@ -451,40 +470,93 @@ class TeamsWidget extends StatelessWidget {
       teamBController = TextEditingController();
     }
 
-    return Form(
-      key: _formKey,
-      child: InfoContainerWithTitle(
-          title: this.title == null
-              ? PlayerList.getTitle(context, match)
-              : this.title,
-          body: Center(
-            child: IntrinsicHeight(
-              child: Column(children: [
-                Row(children: [
-                  getTeamColumn(context, teamA.key, teamA.value, teamAController),
-                  VerticalDivider(
-                    thickness: 1,
-                    color: Palette.grey_light,
+    var content = Padding(
+      padding: EdgeInsets.symmetric(horizontal: 8),
+      child: Center(
+          child: IntrinsicHeight(
+            child: Column(
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Flexible(
+                        flex: 3,
+                        child: Text(
+                          "Team A",
+                          style: TextPalette.h2,
+                        )),
+                    if (withScoreInput)
+                      Expanded(
+                          flex: 2,
+                          child: Row(
+                            children: [
+                              inputScore(teamAController),
+                              Spacer(),
+                              inputScore(teamBController)
+                            ],
+                          )),
+                    if (match.score != null)
+                      Expanded(
+                          flex: 2,
+                          child: Row(
+                            children: [
+                              Expanded(
+                                  child: Text(match.score![0].toString(),
+                                      textAlign: TextAlign.end,
+                                      style:
+                                      TextPalette.getStats(Palette.black))),
+                              Text("  vs  ", style: TextPalette.bodyText),
+                              Expanded(
+                                  child: Text(match.score![1].toString(),
+                                      style: TextPalette.getStats(Palette.black)))
+                            ],
+                          )),
+                    Flexible(
+                        flex: 3,
+                        child: Text(
+                          "Team B",
+                          style: TextPalette.h2,
+                        ))
+                  ],
+                ),
+                SizedBox(height: 16),
+                IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Flexible(
+                          flex: 3,
+                          child: getTeamColumn(context, MainAxisAlignment.start,
+                              teamA.value)),
+                      Flexible(
+                          flex: 2,
+                          child: VerticalDivider(
+                              thickness: 1, color: Palette.grey_light)),
+                      Flexible(
+                          flex: 3,
+                          child: getTeamColumn(context, MainAxisAlignment.end,
+                              teamB.value)),
+                    ],
                   ),
-                  getTeamColumn(context, teamB.key, teamB.value, teamBController),
-                ]),
+                ),
                 if (withScoreInput)
                   Padding(
-                    padding: EdgeInsets.only(top: 32),
+                    padding: EdgeInsets.only(top: 24),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text("ABCD", style: TextPalette.getLinkStyle(Palette.white)),
+                        Text("ABCD",
+                            style: TextPalette.getLinkStyle(Palette.white)),
                         GenericButtonWithLoader(
-                          AppLocalizations.of(context)!.submitScoreButton,
-                              (BuildContext context) {
-                        if (_formKey.currentState!.validate()) {
-                          Navigator.of(context).pop([
-                            teamAController.text,
-                            teamBController.text
-                          ]);
-                        }
-                      }, Primary()),
+                            AppLocalizations.of(context)!.submitScoreButton,
+                                (BuildContext context) {
+                              if (_formKey.currentState!.validate()) {
+                                Navigator.of(context).pop(
+                                    [teamAController.text, teamBController.text]);
+                              }
+                            }, Primary()),
                         TappableLinkText(
                             text: AppLocalizations.of(context)!.skipText,
                             onTap: (BuildContext context) async {
@@ -493,17 +565,74 @@ class TeamsWidget extends StatelessWidget {
                       ],
                     ),
                   )
-              ]),
+              ],
             ),
-          )),
+          )
+
+        // Column(children: [
+        //   Row(
+        //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        //     children: [
+        //     Text("Team A",
+        //         style: TextPalette.h3),
+        //     Text("Team B",
+        //         style: TextPalette.h3)
+        //   ],),
+        //   IntrinsicHeight(
+        //     child: Row(children: [
+        //       getTeamColumn(context, teamA.key, teamA.value, teamAController),
+        //       VerticalDivider(
+        //         thickness: 1,
+        //         color: Palette.grey_light,
+        //       ),
+        //       getTeamColumn(context, teamB.key, teamB.value, teamBController,
+        //         withScoreOutput),
+        //     ]),
+        //   ),
+        //   if (withScoreInput)
+        //     Padding(
+        //       padding: EdgeInsets.only(top: 32),
+        //       child: Row(
+        //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        //         children: [
+        //           Text("ABCD", style: TextPalette.getLinkStyle(Palette.white)),
+        //           GenericButtonWithLoader(
+        //             AppLocalizations.of(context)!.submitScoreButton,
+        //                 (BuildContext context) {
+        //           if (_formKey.currentState!.validate()) {
+        //             Navigator.of(context).pop([
+        //               teamAController.text,
+        //               teamBController.text
+        //             ]);
+        //           }
+        //         }, Primary()),
+        //           TappableLinkText(
+        //               text: AppLocalizations.of(context)!.skipText,
+        //               onTap: (BuildContext context) async {
+        //                 Navigator.of(context).pop("skipped");
+        //               }),
+        //         ],
+        //       ),
+        //     )
+        // ]),
+      ),
+    );
+
+    return Form(
+      key: _formKey,
+      child: this.title == null ? InfoContainer(child: content)
+          : InfoContainerWithTitle(title: this.title!, body: content)
     );
   }
 
-  getTeamColumn(BuildContext context, String teamName, List<String> players,
-      TextEditingController? scoreInputController) {
+  getTeamColumn(BuildContext context, MainAxisAlignment alignment,
+      List<String> players) {
     var playersWidgets = interleave(
         players.map((e) {
           var ud = context.watch<UserState>().getUserDetail(e);
+
+          var avatar = UserAvatar(16, ud);
+          var name = UserNameWidget(userDetails: ud);
 
           return InkWell(
               onTap: ud == null
@@ -512,47 +641,20 @@ class TeamsWidget extends StatelessWidget {
                       context, JoinedPlayerBottomModal(ud)),
               child: SizedBox(
                 height: 32,
-                child: Row(children: [
-                  UserAvatar(16, ud),
+                child: Row(mainAxisAlignment: alignment, children: [
+                  alignment == MainAxisAlignment.start ? avatar : name,
                   SizedBox(width: 16),
-                  UserNameWidget(userDetails: ud)
+                  alignment == MainAxisAlignment.start ? name : avatar,
                 ]),
               ));
         }).toList(),
         SizedBox(height: 16));
 
     List<Widget> childrenWidgets = [];
-    if (scoreInputController != null) {
-      childrenWidgets.addAll([
-        Container(
-            width: 100,
-            child: TextFormField(
-              keyboardType: TextInputType.number,
-              controller: scoreInputController,
-              validator: (v) {
-                if (int.tryParse(v ?? "") == null) return "Invalid";
-                return null;
-              },
-              decoration: CreateMatchState.getTextFormDecoration(null),
-            )),
-        SizedBox(height: 24),
-      ]);
-    }
-    childrenWidgets.addAll([
-      Text("Team ${teamName.toUpperCase()}",
-          style: TextPalette.getListItem(Palette.black)),
-      SizedBox(height: 24),
-    ]);
     childrenWidgets.addAll(playersWidgets);
 
-    return Expanded(
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 8),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: childrenWidgets,
-        ),
-      ),
+    return Column(
+      children: childrenWidgets,
     );
   }
 }

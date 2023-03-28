@@ -52,6 +52,10 @@ android/nutmeg-9099c-sa-credentials.json
 ios/AuthKey_CTJDHGWL48.p8
 ios/fastlane/report.xml
 
-hosting.*
+.firebase/hosting.*
 lib/utils/ApiKey.dart
 translator_key
+
+ios/fastlane/.env.local
+ios/fastlane/build/ios/Pods.build/*
+gc_keys.json

@@ -86,6 +86,7 @@ class ConfirmLeaveMatchButton extends StatelessWidget {
           context.read<GenericButtonWithLoaderState>().change(true);
 
           await MatchesController.leaveMatch(context, match.documentId);
+          await MatchesController.refresh(context, match.documentId);
           Navigator.of(context).pop(true);
 
           GenericInfoModal(
@@ -96,9 +97,10 @@ class ConfirmLeaveMatchButton extends StatelessWidget {
                           : formatCurrency(match.pricePerPersonInCents) +
                               " credits were added to your account"
                       : "You left the match",
-                  description: ConfigsUtils.removeCreditsFunctionality()
+                  description: match.managePayments ? (ConfigsUtils.removeCreditsFunctionality()
                       ? "You will receive the money in 3 to 5 business days on the payment method you used."
-                      : "You can find your credits in your account page. Next time you join a game they will be automatically used.",
+                      : "You can find your credits in your account page. Next time you join a game they will be automatically used.")
+                  : "",
                   action: match.managePayments
                       ? InkWell(
                           onTap: () async {

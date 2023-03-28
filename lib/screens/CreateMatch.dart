@@ -730,7 +730,13 @@ class CreateMatchState extends State<CreateMatch> {
         key: _formKey,
         child: PageTemplate(
           refreshState: null,
-          widgets: widgets,
+          widgets: [
+            Center(
+              child: Container(
+                  width: 700,
+                  child: Column(children: widgets)),
+            )
+          ],
           appBar: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -740,8 +746,11 @@ class CreateMatchState extends State<CreateMatch> {
           bottomNavigationBar: GenericBottomBar(
               child: Padding(
             padding: EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0),
-            child: Row(children: [
-              Expanded(
+            child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+              Container(
+                width: 700,
                 child: GenericButtonWithLoader(
                     widget.existingMatch == null ?
                     AppLocalizations.of(context)!.createButtonText :

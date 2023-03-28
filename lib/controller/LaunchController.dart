@@ -200,14 +200,17 @@ class LaunchController {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          duration: Duration(seconds: 15),
+          duration: Duration(seconds: 3),
           elevation: 0,
+          behavior: SnackBarBehavior.floating,
+          showCloseIcon: true,
+          closeIconColor: Palette.white,
           padding: EdgeInsets.all(16),
           content: Text('Use the native app for a better experience',
               style: TextPalette.linkStyleInverted),
           // backgroundColor: Colors.transparent,
           action: SnackBarAction(
-            label: 'Download',
+            label: 'Use app',
             textColor: Colors.blueAccent,
             onPressed: () => launchUrl(Uri.parse("https://nutmegapp.page.link/store")),
           )
