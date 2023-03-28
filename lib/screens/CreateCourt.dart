@@ -229,26 +229,28 @@ class CreateCourtState extends State<CreateCourt> {
           child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-            Container(
-              width: 700,
-              child: GenericButtonWithLoaderAndErrorHandling("CREATE NEW COURT",
-                  (_) async {
-                bool? v = _formKey.currentState?.validate();
-                if (v != null && v) {
-                  await SportCentersController.addSportCenterFromPlace(placeId!,
-                    context.read<UserState>().getLoggedUserDetails()!.documentId,
-                    {
-                      "surface": surfaceController.text,
-                      "hasChangingRooms": changeRoomsAvailable,
-                      "courtType": courtTypeController.text
-                    },
-                  );
+            Expanded(
+              child: Container(
+                width: 700,
+                child: GenericButtonWithLoaderAndErrorHandling("CREATE NEW COURT",
+                    (_) async {
+                  bool? v = _formKey.currentState?.validate();
+                  if (v != null && v) {
+                    await SportCentersController.addSportCenterFromPlace(placeId!,
+                      context.read<UserState>().getLoggedUserDetails()!.documentId,
+                      {
+                        "surface": surfaceController.text,
+                        "hasChangingRooms": changeRoomsAvailable,
+                        "courtType": courtTypeController.text
+                      },
+                    );
 
-                  await context.read<UserState>().fetchSportCenters();
+                    await context.read<UserState>().fetchSportCenters();
 
-                  Navigator.of(context).pop();
-                }
-              }, Primary()),
+                    Navigator.of(context).pop();
+                  }
+                }, Primary()),
+              ),
             )
           ]),
         )),

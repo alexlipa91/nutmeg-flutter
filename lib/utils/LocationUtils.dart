@@ -18,7 +18,8 @@ String buildMapUrl(double lat, double lng) => "https://maps.googleapis.com/maps/
     lng.toString();
 
 Future<LocationInfo> getLocationInfo(double lat, double lng) async {
-
+  // uncomment to get amsterdam
+  // lat = 52.3676; lng = 4.9041;
   var url = "https://maps.googleapis.com/maps/api/geocode/json?" +
       "latlng=${lat.toString()},${lng.toString()}" +
       "&key=$placesApiKey" +

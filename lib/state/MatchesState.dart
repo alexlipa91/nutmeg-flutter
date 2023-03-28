@@ -1,3 +1,4 @@
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 import 'package:nutmeg/model/Match.dart';
@@ -99,6 +100,9 @@ class MatchesState extends ChangeNotifier {
         print("Failed to deserialize match ${element.key.toString()}");
         print(e);
         print(s);
+        FirebaseCrashlytics.instance.recordError(e, s,
+            reason: 'failed to deserialize a match'
+        );
         return null;
       }
     }).where((e) => e != null).map((e) {

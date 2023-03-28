@@ -73,7 +73,7 @@ class Match {
         sportCenterId = jsonInput['sportCenterId'],
         userFee = jsonInput["userFee"] ?? 0,
         organiserFee = jsonInput["organiserFee"] ?? 0,
-        score = jsonInput["score"],
+        score = jsonInput["score"] == null ? null : List<int>.from(jsonInput["score"]),
         managePayments = jsonInput["managePayments"] ?? true {
       sportCenterSubLocation = jsonInput['sportCenterSubLocation'];
 
@@ -134,7 +134,7 @@ class Match {
     if (map.isEmpty) {
       return null;
     }
-    return map.map((key, value) => MapEntry(key, value));
+    return map.map((key, value) => MapEntry(key, (value as num).toDouble()));
   }
 
   Map<String, dynamic> toJson() =>
