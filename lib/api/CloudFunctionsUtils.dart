@@ -65,7 +65,7 @@ class CloudFunctionsClient {
     final Stopwatch stopwatch = Stopwatch();
 
     var r = await http.post(
-      Uri.parse("https://nutmeg-9099c.ew.r.appspot.com/$name"),
+      Uri.parse("https://nutmeg-9099c.ew.r.appspot.com/$name/"),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },

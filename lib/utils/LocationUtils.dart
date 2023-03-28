@@ -94,6 +94,8 @@ Future<List<PredictionResult>> getPlacePrediction(String query, String userCount
 
 // check if lat/lng is within center and 20 km
 bool isWithinRadius(double lat, double lng, double centerLat, double centerLng) {
+  return true;
+
   var d = Geolocator.distanceBetween(lat, lng, centerLat, centerLng);
   return d < 20 * 1000;
 }
