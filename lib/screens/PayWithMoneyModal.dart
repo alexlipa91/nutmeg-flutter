@@ -10,7 +10,6 @@ import 'package:webview_flutter/webview_flutter.dart';
 import '../controller/MatchesController.dart';
 import '../model/PaymentRecap.dart';
 import '../state/UserState.dart';
-import 'package:auto_route/auto_route.dart';
 
 import '../utils/InfoModals.dart';
 import 'PaymentDetailsDescription.dart';
@@ -32,18 +31,16 @@ class PayWithMoneyButton extends StatelessWidget {
 
           var userState = context.read<UserState>();
           var match = context.read<MatchesState>().getMatch(matchId);
-          var url =
-              "https://europe-central2-nutmeg-9099c.cloudfunctions.net/go_to_stripe_checkout_v2?"
-              "is_test=${match?.isTest}&user_id=${userState.currentUserId}&match_id=$matchId";
 
-          if (kIsWeb) url = "$url&is_web=true";
+          var url = "https://nutmeg-9099c.ew.r.appspot.com/payments/checkout?"
+              "user_id=${userState.currentUserId}&match_id=$matchId";
 
           if (kIsWeb)
             await launchUrl(Uri.parse(url), webOnlyWindowName: "_self");
           else {
             bool? success = await Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => Payment(matchId: matchId)),
+              MaterialPageRoute(builder: (context) => Payment(matchId: matchId, url: url)),
             );
             if (success != null && success) {
               Navigator.pop(context);
@@ -62,17 +59,13 @@ class PayWithMoneyButton extends StatelessWidget {
 
 class Payment extends StatelessWidget {
   final String matchId;
+  final String url;
 
-  const Payment({Key? key, @PathParam('id') required this.matchId})
+  const Payment({Key? key, required this.matchId, required this.url})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    var userState = context.read<UserState>();
-    var match = context.read<MatchesState>().getMatch(matchId);
-    var url = "https://nutmeg-9099c.ew.r.appspot.com/payments/checkout?"
-        "is_test=${match?.isTest}&user_id=${userState.currentUserId}&match_id=$matchId";
-
     return SafeArea(
       child: Scaffold(
         body: WebViewWidget(
@@ -82,9 +75,9 @@ class Payment extends StatelessWidget {
             ..setNavigationDelegate(
               NavigationDelegate(
                 onNavigationRequest: (NavigationRequest request) {
-                  if (request.url == "https://www.success.com/")
+                  if (request.url == "https://web.nutmegapp.com/match/$matchId?payment_outcome=success")
                     Navigator.pop(context, true);
-                  else if (request.url == "https://www.cancel.com/")
+                  else if (request.url == "https://web.nutmegapp.com/match/$matchId?payment_outcome=cancel")
                     Navigator.pop(context, false);
                   return NavigationDecision.navigate;
                 },
