@@ -1,1 +1,1 @@
-Add possibility to not manage payments through Nutmeg
+Add scores to matches/nFix payment flow
