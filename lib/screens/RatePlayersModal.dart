@@ -175,12 +175,13 @@ class ScoreMatchBottomModal extends StatelessWidget {
     var completed = await ModalBottomSheet.showNutmegModalBottomSheet(
         context, ScoreMatchBottomModal(matchId));
     var score;
-    if (completed == "skipped")
-      score = [];
-    else
-      score = List<String>.from(completed).map((e) => int.parse(e)).toList();
-
-    await MatchesController.editMatchData({"score": score}, matchId);
+    if (completed != null) {
+      if (completed == "skipped")
+        score = [];
+      else
+        score = List<String>.from(completed).map((e) => int.parse(e)).toList();
+      await MatchesController.editMatchData({"score": score}, matchId);
+    }
   }
 
   final String matchId;

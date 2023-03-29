@@ -67,7 +67,6 @@ class MatchDetailsState extends State<MatchDetails> {
 
     Match match = context.read<MatchesState>().getMatch(widget.matchId)!;
 
-    print(widget.paymentOutcome);
     // check if payment outcome
     if (widget.paymentOutcome != null) {
       if (widget.paymentOutcome! == "success") {
