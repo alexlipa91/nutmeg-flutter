@@ -11,7 +11,7 @@ import '../controller/MatchesController.dart';
 import '../model/PaymentRecap.dart';
 import '../state/UserState.dart';
 
-import '../utils/InfoModals.dart';
+import '../utils/UiUtils.dart';
 import 'PaymentDetailsDescription.dart';
 
 class PayWithMoneyButton extends StatelessWidget {
@@ -42,14 +42,17 @@ class PayWithMoneyButton extends StatelessWidget {
               context,
               MaterialPageRoute(builder: (context) => Payment(matchId: matchId, url: url)),
             );
-            if (success != null && success) {
-              Navigator.pop(context);
-              PaymentDetailsDescription.communicateSuccessToUser(context, match!);
-              MatchesController.refresh(context, match.documentId);
-            } else {
-              GenericInfoModal(
-                  title: "Payment Failed!", description: "Please try again")
-                  .show(context);
+            Navigator.pop(context);
+            if (success != null) {
+              if (success) {
+                PaymentDetailsDescription.communicateSuccessToUser(context, match!);
+                MatchesController.refresh(context, match.documentId);
+              }
+              // else {
+              //   GenericInfoModal(
+              //       title: "Payment Failed!", description: "Please try again")
+              //       .show(context);
+              // }
             }
           }
         },
@@ -66,9 +69,11 @@ class Payment extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        body: WebViewWidget(
+    return Scaffold(
+      backgroundColor: Palette.primary,
+      body: SafeArea(
+        bottom: false,
+        child: WebViewWidget(
           controller: WebViewController()
             ..setJavaScriptMode(JavaScriptMode.unrestricted)
             ..setBackgroundColor(const Color(0x00000000))
