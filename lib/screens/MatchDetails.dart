@@ -141,9 +141,9 @@ class MatchDetailsState extends State<MatchDetails> {
     var bottomBar =
         BottomBarMatch.getBottomBar(context, widget.matchId, status);
 
-    // add padding individually since because of shadow clipping some components need margin
+    var skeletons;
     if (match == null || sportCenter == null) {
-      var widgets = [
+      skeletons = [
         Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
             Expanded(child: SkeletonMatchDetails.imageSkeleton())
@@ -155,81 +155,55 @@ class MatchDetailsState extends State<MatchDetails> {
           SkeletonMatchDetails.skeletonRepeatedElement(),
         ])
       ];
-
-      return PageTemplate(
-        initState: () => myInitState(),
-        refreshState: () => refreshState(),
-        widgets: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Expanded(
-                child: Container(
-                    width: 900,
-                    child: Column(
-                        children:
-                            interleave(widgets, SizedBox(height: 16)).toList())),
-              )
-            ],
-          )
-        ],
-        appBar: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            BackButton(color: Palette.black),
-            if (!DeviceInfo().name.contains("ipad") && !kIsWeb)
-              Align(
-                  alignment: Alignment.centerRight,
-                  child: buttons.ShareButton(() async {
-                    await DynamicLinks.shareMatchFunction(match!, sportCenter!);
-                  }, Palette.black, 25.0)),
-          ],
-        ),
-        bottomNavigationBar: bottomBar,
-      );
     }
 
-    var completeOrganiserWidget = organizerView &&
+    return LayoutBuilder(builder: (context, constraints) {
+      var widgets;
+      if (skeletons == null) {
+        var completeOrganiserWidget = organizerView &&
             userState.getLoggedUserDetails()?.areChargesEnabled(isTest) !=
                 null &&
             !userState.getLoggedUserDetails()!.areChargesEnabled(isTest)
-        ? CompleteOrganiserAccountWidget(isTest: isTest)
-        : null;
+            ? CompleteOrganiserAccountWidget(isTest: isTest)
+            : null;
 
-    var testInfo = isTest
-        ? InfoContainer(
+        var testInfo = isTest
+            ? InfoContainer(
             backgroundColor: Palette.accent,
             child: SelectableText(
               "Test match: " + widget.matchId,
               style: TextPalette.getBodyText(Palette.black),
             ))
-        : null;
+            : null;
 
-    var matchInfo = MatchInfo(match, sportCenter);
+        var matchInfo = MatchInfo(match!, sportCenter!);
 
-    var infoPlayersList = match.hasTeams()
-        ? TeamsWidget(matchId: widget.matchId)
-        : PlayerList(
+        var infoPlayersList = match.hasTeams()
+            ? TeamsWidget(matchId: widget.matchId)
+            : PlayerList(
             match: match,
-            withJoinButton: bottomBar is JoinMatchBottomBar && !match.isFull());
+            withJoinButton:
+            bottomBar is JoinMatchBottomBar && !match.isFull());
 
-    var stats = status == MatchStatus.rated || status == MatchStatus.to_rate
-        ? Stats(match: match, sportCenter: sportCenter)
-        : null;
+        var stats = status == MatchStatus.rated || status == MatchStatus.to_rate
+            ? Stats(match: match, sportCenter: sportCenter)
+            : null;
 
-    var sportCenterDetails =
+        var sportCenterDetails =
         SportCenterDetails(match: match, sportCenter: sportCenter);
 
-    var rules = (bool large) => Builder(builder: (context) {
+        var rules = (bool large) => Builder(builder: (context) {
           var cancellationText = "";
 
           if (match.cancelBefore != null) {
-            var cancellationDate = match.dateTime.subtract(match.cancelBefore!);
+            var cancellationDate =
+            match.dateTime.subtract(match.cancelBefore!);
 
             if (cancellationDate.isAfter(DateTime.now())) {
-              cancellationText = AppLocalizations.of(context)!.cancellationInfo(
-                  dayDateFormat
-                      .format(match.getLocalizedTime(sportCenter.timezoneId)),
+              cancellationText = AppLocalizations.of(context)!
+                  .cancellationInfo(
+                  dayDateFormat.format(
+                      match.getLocalizedTime(sportCenter.timezoneId)),
                   match.minPlayers);
             }
           }
@@ -244,38 +218,36 @@ class MatchDetailsState extends State<MatchDetails> {
               large);
         });
 
-    var organiserBadge = match.organizerId != null
-        ? Builder(builder: (context) {
-            var ud =
-                context.watch<UserState>().getUserDetail(match.organizerId!);
+        var organiserBadge = match.organizerId != null
+            ? Builder(builder: (context) {
+          var ud = context
+              .watch<UserState>()
+              .getUserDetail(match.organizerId!);
 
-            return InfoContainer(
-                child: Row(children: [
-              UserAvatarWithBottomModal(userData: ud),
-              SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(AppLocalizations.of(context)!.organizedBy,
-                        style: TextPalette.bodyText),
-                    SizedBox(height: 4),
-                    (ud == null)
-                        ? Skeletons.lText
-                        : Text(ud.name!.split(" ").first,
-                            style: TextPalette.h2),
-                  ],
+          return InfoContainer(
+              child: Row(children: [
+                UserAvatarWithBottomModal(userData: ud),
+                SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(AppLocalizations.of(context)!.organizedBy,
+                          style: TextPalette.bodyText),
+                      SizedBox(height: 4),
+                      (ud == null)
+                          ? Skeletons.lText
+                          : Text(ud.name!.split(" ").first,
+                          style: TextPalette.h2),
+                    ],
+                  ),
                 ),
-              ),
-            ]));
-          })
-        : null;
+              ]));
+        })
+            : null;
 
-    return LayoutBuilder(builder: (context, constraints) {
-      if (constraints.maxWidth < 800) {
-        return PageTemplate(
-          refreshState: () => refreshState(),
-          widgets: interleave([
+        if (constraints.maxWidth < 800) {
+          widgets = interleave([
             // title
             if (completeOrganiserWidget != null) completeOrganiserWidget,
             if (testInfo != null) testInfo,
@@ -288,65 +260,58 @@ class MatchDetailsState extends State<MatchDetails> {
             sportCenterDetails,
             rules(false),
             if (organiserBadge != null) organiserBadge
-          ], SizedBox(height: 16)),
-          appBar: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              BackButton(color: Palette.black),
-              if (!DeviceInfo().name.contains("ipad") && !kIsWeb)
-                Align(
-                    alignment: Alignment.centerRight,
-                    child: buttons.ShareButton(() async {
-                      await DynamicLinks.shareMatchFunction(match, sportCenter);
-                    }, Palette.black, 25.0)),
-            ],
-          ),
-          bottomNavigationBar: bottomBar,
-        );
-      }
-      return PageTemplate(
-        refreshState: () => refreshState(),
-        widgets: [
-          if (testInfo != null) testInfo,
-          if (completeOrganiserWidget != null) completeOrganiserWidget,
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Flexible(
-                child: Container(
-                  constraints: BoxConstraints(maxWidth: 700),
-                  child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: interleave(
-                          [
-                            matchInfo,
-                            infoPlayersList,
-                            if (stats != null) stats
-                          ],
-                          SizedBox(
-                            height: 16,
-                          ))),
-                ),
-              ),
-              SizedBox(width: 20),
-              Flexible(
-                child: Container(
-                  constraints: BoxConstraints(maxWidth: 700),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: interleave([
-                      sportCenterDetails,
-                      rules(true),
-                      if (organiserBadge != null) organiserBadge
-                    ], SizedBox(height: 16)),
+          ], SizedBox(height: 16));
+        } else {
+          widgets = [
+            if (testInfo != null) testInfo,
+            if (completeOrganiserWidget != null) completeOrganiserWidget,
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Flexible(
+                  child: Container(
+                    constraints: BoxConstraints(maxWidth: 700),
+                    child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: interleave(
+                            [
+                              matchInfo,
+                              infoPlayersList,
+                              if (stats != null) stats
+                            ],
+                            SizedBox(
+                              height: 16,
+                            ))),
                   ),
                 ),
-              )
-            ],
-          )
-        ],
+                SizedBox(width: 20),
+                Flexible(
+                  child: Container(
+                    constraints: BoxConstraints(maxWidth: 700),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: interleave([
+                        sportCenterDetails,
+                        rules(true),
+                        if (organiserBadge != null) organiserBadge
+                      ], SizedBox(height: 16)),
+                    ),
+                  ),
+                )
+              ],
+            )
+          ];
+        }
+      } else {
+        widgets = skeletons;
+      }
+
+      return PageTemplate(
+        initState: () => myInitState(),
+        refreshState: () => refreshState(),
+        widgets: widgets,
         appBar: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -355,7 +320,8 @@ class MatchDetailsState extends State<MatchDetails> {
               Align(
                   alignment: Alignment.centerRight,
                   child: buttons.ShareButton(() async {
-                    await DynamicLinks.shareMatchFunction(match, sportCenter);
+                    await DynamicLinks.shareMatchFunction(
+                        match!, sportCenter!);
                   }, Palette.black, 25.0)),
           ],
         ),
@@ -446,13 +412,10 @@ class TeamsWidget extends StatelessWidget {
           keyboardType: TextInputType.number,
           controller: controller,
           validator: (v) {
-            if (int.tryParse(v ?? "") == null)
-              return "Invalid";
+            if (int.tryParse(v ?? "") == null) return "Invalid";
             return null;
           },
-          decoration:
-          CreateMatchState.getTextFormDecoration(
-              null),
+          decoration: CreateMatchState.getTextFormDecoration(null),
         ),
       ));
 
@@ -474,159 +437,158 @@ class TeamsWidget extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: 8),
       child: Center(
           child: IntrinsicHeight(
-            child: Column(
+        child: Column(
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Flexible(
-                        flex: 3,
-                        child: Text(
-                          "Team A",
-                          style: TextPalette.h2,
-                        )),
-                    if (withScoreInput)
-                      Expanded(
-                          flex: 2,
-                          child: Row(
-                            children: [
-                              inputScore(teamAController),
-                              Spacer(),
-                              inputScore(teamBController)
-                            ],
-                          )),
-                    if (match.score != null)
-                      Expanded(
-                          flex: 2,
-                          child: Row(
-                            children: [
-                              Expanded(
-                                  child: Text(match.score![0].toString(),
-                                      textAlign: TextAlign.end,
-                                      style:
-                                      TextPalette.getStats(Palette.black))),
-                              Text("  vs  ", style: TextPalette.bodyText),
-                              Expanded(
-                                  child: Text(match.score![1].toString(),
-                                      style: TextPalette.getStats(Palette.black)))
-                            ],
-                          )),
-                    Flexible(
-                        flex: 3,
-                        child: Text(
-                          "Team B",
-                          style: TextPalette.h2,
-                        ))
-                  ],
-                ),
-                SizedBox(height: 16),
-                IntrinsicHeight(
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Flexible(
-                          flex: 3,
-                          child: getTeamColumn(context, MainAxisAlignment.start,
-                              teamA.value)),
-                      Flexible(
-                          flex: 2,
-                          child: VerticalDivider(
-                              thickness: 1, color: Palette.grey_light)),
-                      Flexible(
-                          flex: 3,
-                          child: getTeamColumn(context, MainAxisAlignment.end,
-                              teamB.value)),
-                    ],
-                  ),
-                ),
+                Flexible(
+                    flex: 3,
+                    child: Text(
+                      "Team A",
+                      style: TextPalette.h2,
+                    )),
                 if (withScoreInput)
-                  Padding(
-                    padding: EdgeInsets.only(top: 24),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text("ABCD",
-                            style: TextPalette.getLinkStyle(Palette.white)),
-                        GenericButtonWithLoader(
-                            AppLocalizations.of(context)!.submitScoreButton,
-                                (BuildContext context) {
-                              if (_formKey.currentState!.validate()) {
-                                Navigator.of(context).pop(
-                                    [teamAController.text, teamBController.text]);
-                              }
-                            }, Primary()),
-                        TappableLinkText(
-                            text: AppLocalizations.of(context)!.skipText,
-                            onTap: (BuildContext context) async {
-                              Navigator.of(context).pop("skipped");
-                            }),
-                      ],
-                    ),
-                  )
+                  Expanded(
+                      flex: 2,
+                      child: Row(
+                        children: [
+                          inputScore(teamAController),
+                          Spacer(),
+                          inputScore(teamBController)
+                        ],
+                      )),
+                if (match.score != null)
+                  Expanded(
+                      flex: 2,
+                      child: Row(
+                        children: [
+                          Expanded(
+                              child: Text(match.score![0].toString(),
+                                  textAlign: TextAlign.end,
+                                  style: TextPalette.getStats(Palette.black))),
+                          Text("  vs  ", style: TextPalette.bodyText),
+                          Expanded(
+                              child: Text(match.score![1].toString(),
+                                  style: TextPalette.getStats(Palette.black)))
+                        ],
+                      )),
+                Flexible(
+                    flex: 3,
+                    child: Text(
+                      "Team B",
+                      style: TextPalette.h2,
+                    ))
               ],
             ),
-          )
+            SizedBox(height: 16),
+            IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Flexible(
+                      flex: 3,
+                      child: getTeamColumn(
+                          context, MainAxisAlignment.start, teamA.value)),
+                  Flexible(
+                      flex: 2,
+                      child: VerticalDivider(
+                          thickness: 1, color: Palette.grey_light)),
+                  Flexible(
+                      flex: 3,
+                      child: getTeamColumn(
+                          context, MainAxisAlignment.end, teamB.value)),
+                ],
+              ),
+            ),
+            if (withScoreInput)
+              Padding(
+                padding: EdgeInsets.only(top: 24),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text("ABCD",
+                        style: TextPalette.getLinkStyle(Palette.white)),
+                    GenericButtonWithLoader(
+                        AppLocalizations.of(context)!.submitScoreButton,
+                        (BuildContext context) {
+                      if (_formKey.currentState!.validate()) {
+                        Navigator.of(context)
+                            .pop([teamAController.text, teamBController.text]);
+                      }
+                    }, Primary()),
+                    TappableLinkText(
+                        text: AppLocalizations.of(context)!.skipText,
+                        onTap: (BuildContext context) async {
+                          Navigator.of(context).pop("skipped");
+                        }),
+                  ],
+                ),
+              )
+          ],
+        ),
+      )
 
-        // Column(children: [
-        //   Row(
-        //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        //     children: [
-        //     Text("Team A",
-        //         style: TextPalette.h3),
-        //     Text("Team B",
-        //         style: TextPalette.h3)
-        //   ],),
-        //   IntrinsicHeight(
-        //     child: Row(children: [
-        //       getTeamColumn(context, teamA.key, teamA.value, teamAController),
-        //       VerticalDivider(
-        //         thickness: 1,
-        //         color: Palette.grey_light,
-        //       ),
-        //       getTeamColumn(context, teamB.key, teamB.value, teamBController,
-        //         withScoreOutput),
-        //     ]),
-        //   ),
-        //   if (withScoreInput)
-        //     Padding(
-        //       padding: EdgeInsets.only(top: 32),
-        //       child: Row(
-        //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        //         children: [
-        //           Text("ABCD", style: TextPalette.getLinkStyle(Palette.white)),
-        //           GenericButtonWithLoader(
-        //             AppLocalizations.of(context)!.submitScoreButton,
-        //                 (BuildContext context) {
-        //           if (_formKey.currentState!.validate()) {
-        //             Navigator.of(context).pop([
-        //               teamAController.text,
-        //               teamBController.text
-        //             ]);
-        //           }
-        //         }, Primary()),
-        //           TappableLinkText(
-        //               text: AppLocalizations.of(context)!.skipText,
-        //               onTap: (BuildContext context) async {
-        //                 Navigator.of(context).pop("skipped");
-        //               }),
-        //         ],
-        //       ),
-        //     )
-        // ]),
-      ),
+          // Column(children: [
+          //   Row(
+          //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          //     children: [
+          //     Text("Team A",
+          //         style: TextPalette.h3),
+          //     Text("Team B",
+          //         style: TextPalette.h3)
+          //   ],),
+          //   IntrinsicHeight(
+          //     child: Row(children: [
+          //       getTeamColumn(context, teamA.key, teamA.value, teamAController),
+          //       VerticalDivider(
+          //         thickness: 1,
+          //         color: Palette.grey_light,
+          //       ),
+          //       getTeamColumn(context, teamB.key, teamB.value, teamBController,
+          //         withScoreOutput),
+          //     ]),
+          //   ),
+          //   if (withScoreInput)
+          //     Padding(
+          //       padding: EdgeInsets.only(top: 32),
+          //       child: Row(
+          //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          //         children: [
+          //           Text("ABCD", style: TextPalette.getLinkStyle(Palette.white)),
+          //           GenericButtonWithLoader(
+          //             AppLocalizations.of(context)!.submitScoreButton,
+          //                 (BuildContext context) {
+          //           if (_formKey.currentState!.validate()) {
+          //             Navigator.of(context).pop([
+          //               teamAController.text,
+          //               teamBController.text
+          //             ]);
+          //           }
+          //         }, Primary()),
+          //           TappableLinkText(
+          //               text: AppLocalizations.of(context)!.skipText,
+          //               onTap: (BuildContext context) async {
+          //                 Navigator.of(context).pop("skipped");
+          //               }),
+          //         ],
+          //       ),
+          //     )
+          // ]),
+          ),
     );
 
     return Form(
-      key: _formKey,
-      child: this.title == null ? InfoContainer(child: content)
-          : InfoContainerWithTitle(title: this.title!, body: content)
-    );
+        key: _formKey,
+        child: this.title == null
+            ? InfoContainer(child: content)
+            : InfoContainerWithTitle(title: this.title!, body: content));
   }
 
-  getTeamColumn(BuildContext context, MainAxisAlignment alignment,
-      List<String> players) {
+  getTeamColumn(
+      BuildContext context, MainAxisAlignment alignment, List<String> players) {
     var playersWidgets = interleave(
         players.map((e) {
           var ud = context.watch<UserState>().getUserDetail(e);

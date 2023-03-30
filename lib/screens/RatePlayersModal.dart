@@ -171,7 +171,6 @@ class RatePlayerBottomModal extends StatelessWidget {
 
 class ScoreMatchBottomModal extends StatelessWidget {
   static Future<void> scoreAction(BuildContext context, String matchId) async {
-    print("score action");
     var completed = await ModalBottomSheet.showNutmegModalBottomSheet(
         context, ScoreMatchBottomModal(matchId));
     var score;
