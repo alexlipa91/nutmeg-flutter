@@ -276,11 +276,7 @@ class UserPageState extends State<UserPage> {
                                           Container(
                                             width: 180,
                                             child: Text(e.value.key,
-                                                style: GoogleFonts.roboto(
-                                                    color: Palette.black,
-                                                    fontSize: 16,
-                                                    fontWeight:
-                                                        FontWeight.w500)),
+                                                style: TextPalette.getBodyText(Palette.black)),
                                           ),
                                           Container(
                                             height: 8,
@@ -297,14 +293,14 @@ class UserPageState extends State<UserPage> {
                                               ),
                                             ),
                                           ),
-                                          Text(
-                                            e.value.value == 0
-                                                ? "-"
-                                                : e.value.value.toString(),
-                                            style: GoogleFonts.roboto(
-                                                color: Palette.black,
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w400),
+                                          Container(
+                                            width: 20,
+                                            child: Text(
+                                              e.value.value == 0
+                                                  ? "-"
+                                                  : e.value.value.toString(),
+                                              style: TextPalette.getBodyText(Palette.black),
+                                            ),
                                           )
                                         ]))
                                 .toList(),
