@@ -1,7 +1,6 @@
 import "package:collection/collection.dart";
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:nutmeg/controller/SportCentersController.dart';
 import 'package:nutmeg/model/Match.dart';
 import 'package:nutmeg/state/LoadOnceState.dart';
 import 'package:nutmeg/utils/Utils.dart';
@@ -10,6 +9,7 @@ import 'package:nutmeg/widgets/Section.dart';
 import 'package:nutmeg/widgets/Texts.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'dart:math';
 
 import '../state/AvailableMatchesState.dart';
 import '../state/MatchesState.dart';
@@ -18,6 +18,8 @@ import '../utils/UiUtils.dart';
 
 // main widget
 class AvailableMatches extends StatelessWidget {
+
+  static Random random = new Random();
 
   Future<void> onTap(BuildContext context, String matchId) async => context.go("/match/$matchId");
 
@@ -201,7 +203,7 @@ class AvailableMatches extends StatelessWidget {
       child: Container(
         child: Column(
           children: [
-            Image.asset("assets/empty_state/illustration_01.png"),
+            Image.asset("assets/empty_state/illustration_0${(random.nextInt(2) + 1).toString()}.png"),
             Text(AppLocalizations.of(context)!.noMatchesHere,
                 style: TextPalette.h1Default, textAlign: TextAlign.center),
             SizedBox(height: 4),

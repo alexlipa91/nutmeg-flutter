@@ -161,8 +161,7 @@ class JoinMatchBottomBar extends StatelessWidget {
     return BottomBarMatch(matchId: matchId,
       text: AppLocalizations.of(context)!.spotsLeft(match?.getSpotsLeft() ?? 0),
       subText: match?.managePayments ?? true ?
-        formatCurrency(match?.pricePerPersonInCents ?? 0) :
-        "Payments are collected by the organiser",
+        formatCurrency(match?.pricePerPersonInCents ?? 0) : null,
       button: enabled ? JoinButton(matchId: matchId) : JoinButtonDisabled()
     );
   }
