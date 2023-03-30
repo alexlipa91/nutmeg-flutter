@@ -181,6 +181,7 @@ class ScoreMatchBottomModal extends StatelessWidget {
       else
         score = List<String>.from(completed).map((e) => int.parse(e)).toList();
       await MatchesController.editMatchData({"score": score}, matchId);
+      await MatchesController.refresh(context, matchId);
     }
   }
 
