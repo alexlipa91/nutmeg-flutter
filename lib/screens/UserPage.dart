@@ -3,7 +3,6 @@ import 'package:flutter/material.dart' hide Badge;
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nutmeg/controller/UserController.dart';
-import 'package:nutmeg/screens/CreateMatch.dart';
 import 'package:nutmeg/state/LoadOnceState.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
@@ -16,7 +15,6 @@ import 'package:nutmeg/widgets/PlayerBottomModal.dart';
 import 'package:nutmeg/widgets/Section.dart';
 import 'package:nutmeg/widgets/WarningWidget.dart';
 import 'package:provider/provider.dart';
-import 'package:screenshot/screenshot.dart';
 import 'package:skeletons/skeletons.dart';
 import 'package:tuple/tuple.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -53,6 +51,8 @@ class UserPageState extends State<UserPage> {
     var showOrganizerView = userDetails != null &&
         (userDetails.isOrganiser(true) || userDetails.isOrganiser(false));
 
+    var title = Row(children: [Text("Account", style: TextPalette.h1Default)]);
+
     var widgets;
     if (loadSkeleton) {
       var userInfoBoxSkeleton = Expanded(
@@ -80,7 +80,7 @@ class UserPageState extends State<UserPage> {
           children: [userInfoBoxSkeleton, userInfoBoxSkeleton]);
 
       widgets = [
-        Text("Account", style: TextPalette.h1Default),
+        title,
         verticalSpace,
         InfoContainer(
             child: Row(
@@ -152,7 +152,7 @@ class UserPageState extends State<UserPage> {
       ];
     } else {
       widgets = [
-        Text("Account", style: TextPalette.h1Default),
+        title,
         verticalSpace,
         InfoContainer(
             child: Row(
