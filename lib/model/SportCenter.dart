@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:skeletons/skeletons.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+
+enum Surface {indoor, grass}
+
 class SportCenter {
   String placeId;
   String address;
@@ -10,7 +13,7 @@ class SportCenter {
   double lat;
   double lng;
 
-  String _surface;
+  Surface _surface;
   bool? hasChangingRooms;
   String courtType;
   String timezoneId;
@@ -23,7 +26,7 @@ class SportCenter {
         lat = json['lat'],
         lng = json['lng'],
         country = json['country'] ?? 'NL',
-        _surface = json["surface"],
+        _surface = Surface.values.where((e) => e.name == json["surface"].toString().toLowerCase()).first,
         hasChangingRooms = json['hasChangingRooms'],
         timezoneId = json["timeZoneId"] ?? "Europe/Amsterdam",
         courtType = json['courtType']!;
@@ -34,7 +37,7 @@ class SportCenter {
         'name': name,
         'lat': lat,
         'lng': lng,
-        'surface': _surface,
+        'surface': _surface.name,
         'country': country,
         'timeZoneId': timezoneId,
         if (hasChangingRooms != null)
@@ -43,11 +46,10 @@ class SportCenter {
       };
 
   Widget getThumbnail() {
-    var surf = _surface.toLowerCase() == "indoor" ? "indoor" : "grass";
     return Container(
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: Image.asset("assets/sportcenters/${surf}_thumb.png").image,
+            image: Image.asset("assets/sportcenters/${_surface.name}_thumb.png").image,
             fit: BoxFit.fill,
           ),
           borderRadius: BorderRadius.all(Radius.circular(10)),
@@ -56,12 +58,11 @@ class SportCenter {
   }
 
   List<Widget> getCarouselImages() {
-    var surf = _surface.toLowerCase() == "indoor" ? "indoor" : "grass";
     return [
       Container(
           decoration: BoxDecoration(
             image: DecorationImage(
-              image: Image.asset("assets/sportcenters/${surf}_carousel.png").image,
+              image: Image.asset("assets/sportcenters/${_surface.name}_carousel.png").image,
               fit: BoxFit.fill,
             ),
             borderRadius: BorderRadius.all(Radius.circular(10)),
@@ -76,10 +77,11 @@ class SportCenter {
   bool? getHasChangingRooms() => hasChangingRooms;
 
   String? getSurface(BuildContext context) {
-    Map<String, String> surfacesDescription = {
-      "Grass": AppLocalizations.of(context)!.artificialGrass,
-      "Indoor": "Indoor"
+    Map<Surface, String> surfacesDescription = {
+      Surface.grass: AppLocalizations.of(context)!.artificialGrass,
+      Surface.indoor: "Indoor"
     };
+
     return surfacesDescription[_surface];
   }
 }
