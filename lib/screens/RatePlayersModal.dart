@@ -171,17 +171,8 @@ class RatePlayerBottomModal extends StatelessWidget {
 
 class ScoreMatchBottomModal extends StatelessWidget {
   static Future<void> scoreAction(BuildContext context, String matchId) async {
-    var completed = await ModalBottomSheet.showNutmegModalBottomSheet(
+    await ModalBottomSheet.showNutmegModalBottomSheet(
         context, ScoreMatchBottomModal(matchId));
-    var score;
-    if (completed != null) {
-      if (completed == "skipped")
-        score = [];
-      else
-        score = List<String>.from(completed).map((e) => int.parse(e)).toList();
-      await MatchesController.editMatchData({"score": score}, matchId);
-      await MatchesController.refresh(context, matchId);
-    }
   }
 
   final String matchId;

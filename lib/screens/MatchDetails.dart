@@ -450,26 +450,28 @@ class TeamsWidget extends StatelessWidget {
                       style: TextPalette.h2,
                     )),
                 if (withScoreInput)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      inputScore(teamAController),
+                      Text("  vs  ", style: TextPalette.bodyText),
+                      inputScore(teamBController)
+                    ],
+                  ),
+                if (!withScoreInput)
                   Expanded(
                       flex: 2,
                       child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          inputScore(teamAController),
-                          Spacer(),
-                          inputScore(teamBController)
-                        ],
-                      )),
-                if (match.score != null)
-                  Expanded(
-                      flex: 2,
-                      child: Row(
-                        children: [
-                          Expanded(
+                          if (match.score != null)
+                            Expanded(
                               child: Text(match.score![0].toString(),
                                   textAlign: TextAlign.end,
                                   style: TextPalette.getStats(Palette.black))),
                           Text("  vs  ", style: TextPalette.bodyText),
-                          Expanded(
+                          if (match.score != null)
+                            Expanded(
                               child: Text(match.score![1].toString(),
                                   style: TextPalette.getStats(Palette.black)))
                         ],
@@ -511,12 +513,17 @@ class TeamsWidget extends StatelessWidget {
                   children: [
                     Text("ABCD",
                         style: TextPalette.getLinkStyle(Palette.white)),
-                    GenericButtonWithLoader(
+                    GenericButtonWithLoaderAndErrorHandling(
                         AppLocalizations.of(context)!.submitScoreButton,
-                        (BuildContext context) {
+                        (BuildContext context) async {
                       if (_formKey.currentState!.validate()) {
-                        Navigator.of(context)
-                            .pop([teamAController.text, teamBController.text]);
+                        var score = [
+                          int.parse(teamAController.text),
+                          int.parse(teamBController.text),
+                        ];
+                        await MatchesController.editMatchData({"score": score}, matchId);
+                        await MatchesController.refresh(context, matchId);
+                        Navigator.of(context).pop();
                       }
                     }, Primary()),
                     TappableLinkText(
