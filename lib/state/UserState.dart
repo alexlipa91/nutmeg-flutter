@@ -75,11 +75,16 @@ class UserState extends ChangeNotifier {
     return ud;
   }
 
+  Future<void> editUser(Map<String, dynamic> data) async {
+    await CloudFunctionsClient().post("users/${currentUserId!}", data);
+    await fetchLoggedUserDetails();
+  }
+
   Future<void> storeUserToken(String? token) async {
     if (token == null) {
       return;
     }
-    CloudFunctionsClient().post("users/${currentUserId!}", {
+    CloudFunctionsClient().post("users/${currentUserId!}/tokens", {
       "token": token
     });
   }

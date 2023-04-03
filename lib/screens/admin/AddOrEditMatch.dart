@@ -151,18 +151,18 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                       child: GenericButtonWithLoader("RESET RATINGS",
                           (BuildContext context) async {
                     context.read<GenericButtonWithLoaderState>().change(true);
-                    try {
-                      await MatchesController.resetRatings(widget.match.documentId);
-                      GenericInfoModal(
-                              title:
-                                  "Successfully deleted all ratings for the match")
-                          .show(context);
-                    } catch (e, stack) {
-                      print(e);
-                      print(stack);
-                      GenericInfoModal(title: "Something went wrong")
-                          .show(context);
-                    }
+                    // try {
+                    //   // await MatchesController.resetRatings(widget.match.documentId);
+                    //   // GenericInfoModal(
+                    //   //         title:
+                    //               "Successfully deleted all ratings for the match")
+                    //       .show(context);
+                    // } catch (e, stack) {
+                    //   print(e);
+                    //   print(stack);
+                    //   GenericInfoModal(title: "Something went wrong")
+                    //       .show(context);
+                    // }
                     context.read<GenericButtonWithLoaderState>().change(false);
                   }, Primary()))
                 ],
@@ -173,19 +173,19 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                       child: GenericButtonWithLoader("CLOSE RATING ROUND",
                           (BuildContext context) async {
                     context.read<GenericButtonWithLoaderState>().change(true);
-                    try {
-                      await MatchesController.closeRatingRound(
-                          widget.match.documentId);
-                      GenericInfoModal(
-                              title:
-                                  "Successfully closed rating round for the match")
-                          .show(context);
-                    } catch (e, stack) {
-                      print(e);
-                      print(stack);
-                      GenericInfoModal(title: "Something went wrong")
-                          .show(context);
-                    }
+                    // try {
+                    //   await MatchesController.closeRatingRound(
+                    //       widget.match.documentId);
+                    //   GenericInfoModal(
+                    //           title:
+                    //               "Successfully closed rating round for the match")
+                    //       .show(context);
+                    // } catch (e, stack) {
+                    //   print(e);
+                    //   print(stack);
+                    //   GenericInfoModal(title: "Something went wrong")
+                    //       .show(context);
+                    // }
                     context.read<GenericButtonWithLoaderState>().change(false);
                   }, Primary()))
                 ],

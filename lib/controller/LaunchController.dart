@@ -23,7 +23,6 @@ import '../state/UserState.dart';
 import '../utils/UiUtils.dart';
 import '../utils/Utils.dart';
 import 'MiscController.dart';
-import 'UserController.dart';
 
 
 class LaunchController {
@@ -146,8 +145,7 @@ class LaunchController {
         // SystemNavigator.pop();
         return null;
       } else {
-        userDetails.name = name;
-        UserController.editUser(context, userDetails);
+        await context.read<UserState>().editUser({"name": name});
       }
     }
 

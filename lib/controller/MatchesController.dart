@@ -51,16 +51,6 @@ class MatchesController {
     return m;
   }
 
-  static Future<void> editMatch(Match m, String documentId) async {
-    await apiClient.callFunction("edit_match",
-        {"id": documentId, "data": m.toJson()});
-  }
-
-  static Future<void> editMatchData(Map<String, dynamic> data, String documentId) async {
-    await apiClient.callFunction("edit_match",
-        {"id": documentId, "data": data});
-  }
-
   // logged-in user voted 'score' for user 'userId' in match 'matchId'
   static Future<void> addRating(
       BuildContext context, String userId, String matchId, double score,
@@ -77,15 +67,6 @@ class MatchesController {
       print("Failed to add rating: " + e.toString());
       print(s);
     }
-  }
-
-  static Future<void> resetRatings(String matchId) async {
-    await apiClient
-        .callFunction("reset_ratings_for_match", {"match_id": matchId});
-  }
-
-  static Future<void> closeRatingRound(String matchId) async {
-    await apiClient.callFunction("close_rating_round", {"match_id": matchId});
   }
 
   static Future<void> cancelMatch(String matchId) async {

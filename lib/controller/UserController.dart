@@ -203,9 +203,9 @@ class UserController {
     var uploaded = await FirebaseStorage.instance
         .ref("users/" + userDetails.documentId)
         .putFile(croppedFile);
-    print(await uploaded.ref.getDownloadURL());
-    userDetails.image = await uploaded.ref.getDownloadURL();
-    await UserController.editUser(context, userDetails);
+
+    await context.read<UserState>()
+        .editUser({"image": await uploaded.ref.getDownloadURL()});
   }
 
   static Future<void> showPotmIfNotSeen(BuildContext context,
