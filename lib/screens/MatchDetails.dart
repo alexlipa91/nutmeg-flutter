@@ -403,13 +403,17 @@ class TeamsWidgetState extends State<TeamsWidget> {
 
   late TeamsWidgetUserState userState;
 
+  List<FocusNode> focusNodes = [
+    FocusNode(),
+    FocusNode()
+  ];
+
   @override
   void initState() {
     super.initState();
     if (widget.organizer) {
       bool hasScore =
           context.read<MatchesState>().getMatch(widget.matchId)!.score != null;
-
       if (!hasScore) {
         userState = TeamsWidgetUserState.add;
       } else {
@@ -418,10 +422,12 @@ class TeamsWidgetState extends State<TeamsWidget> {
     }
   }
 
-  Widget inputScore(TextEditingController controller) => Container(
+  Widget inputScore(TextEditingController controller,
+      FocusNode focusNode) => Container(
       width: 50,
       child: Center(
         child: TextFormField(
+          focusNode: focusNode,
           keyboardType: TextInputType.number,
           controller: controller,
           validator: (v) {
@@ -440,20 +446,18 @@ class TeamsWidgetState extends State<TeamsWidget> {
     var teamA = match!.teams.entries.first;
     var teamB = match.teams.entries.last;
 
-    var teamAController;
-    var teamBController;
+    var controllers;
     if (widget.organizer) {
-      teamAController = TextEditingController();
-      teamBController = TextEditingController();
+      controllers = [TextEditingController(), TextEditingController()];
       if (match.score != null) {
-        teamAController.text = match.score![0].toString();
-        teamBController.text = match.score![1].toString();
+        controllers[0].text = match.score![0].toString();
+        controllers[1].text = match.score![1].toString();
       }
     }
 
     var teamAScoreWidget =
         widget.organizer && userState == TeamsWidgetUserState.submit
-            ? inputScore(teamAController)
+            ? inputScore(controllers[0], focusNodes[0])
             : match.score == null
                 ? Container()
                 : Text(match.score![0].toString(),
@@ -462,7 +466,7 @@ class TeamsWidgetState extends State<TeamsWidget> {
 
     var teamBScoreWidget =
         widget.organizer && userState == TeamsWidgetUserState.submit
-            ? inputScore(teamBController)
+            ? inputScore(controllers[1], focusNodes[1])
             : match.score == null
                 ? Container()
                 : Text(match.score![1].toString(),
@@ -541,8 +545,8 @@ class TeamsWidgetState extends State<TeamsWidget> {
                         var nextState;
                         if (userState == TeamsWidgetUserState.submit) {
                           var score = [
-                            int.parse(teamAController.text),
-                            int.parse(teamBController.text),
+                            int.parse(controllers[0].text),
+                            int.parse(controllers[1].text),
                           ];
                           await context
                               .read<MatchesState>()
@@ -551,6 +555,7 @@ class TeamsWidgetState extends State<TeamsWidget> {
                           nextState = TeamsWidgetUserState.edit;
                         } else {
                           nextState = TeamsWidgetUserState.submit;
+                          focusNodes[0].requestFocus();
                         }
                         setState(() {
                           userState = nextState;
