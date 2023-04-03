@@ -84,7 +84,7 @@ class MatchesState extends ChangeNotifier {
         break;
     }
 
-    var resp = await CloudFunctionsClient().callFunction("get_all_matches_v2", params);
+    var resp = await CloudFunctionsClient().get("matches", args: params);
     Map<String, dynamic> data = (resp == null) ? Map() : Map<String, dynamic>.from(resp);
 
     if (_matchesCache == null)

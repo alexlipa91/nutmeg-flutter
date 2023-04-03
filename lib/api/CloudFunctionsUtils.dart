@@ -20,10 +20,6 @@ class CloudFunctionsClient {
   // var appEngineBaseUrl = "localhost:8080";
 
   Future<Map<String, dynamic>?> callFunction(String name, Map<String, dynamic> data) async {
-    if (name == "get_all_matches_v2") {
-      return callAppEngine("matches", data);
-    }
-
     print("Calling " + name + " with data " + data.toString());
 
     var trace = FirebasePerformance.instance.newTrace("api-call");
