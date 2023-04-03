@@ -39,7 +39,7 @@ import '../widgets/ButtonsWithLoader.dart';
 import '../widgets/ModalBottomSheet.dart';
 import '../widgets/PlayerBottomModal.dart';
 import '../widgets/Skeletons.dart';
-import '../widgets/Texts.dart';
+
 import 'BottomBarMatch.dart';
 import 'CreateMatch.dart';
 import 'PaymentDetailsDescription.dart';
@@ -62,7 +62,7 @@ class MatchDetailsState extends State<MatchDetails> {
   static var dayDateFormat = DateFormat("EEEE, MMM dd");
 
   Future<void> myInitState() async {
-    print("init state");
+    print("MatchDetails init state");
     await refreshState();
 
     Match match = context.read<MatchesState>().getMatch(widget.matchId)!;
@@ -90,14 +90,6 @@ class MatchDetailsState extends State<MatchDetails> {
       }
     }
 
-    // show enter score modal
-    if (match.hasTeams() &&
-        match.score == null &&
-        match.organizerId != null &&
-        match.organizerId! == loggedUser?.documentId) {
-      ScoreMatchBottomModal.scoreAction(context, widget.matchId);
-    }
-
     if (loggedUser != null &&
         match.getPotms().contains(loggedUser.documentId)) {
       UserController.showPotmIfNotSeen(
@@ -108,7 +100,7 @@ class MatchDetailsState extends State<MatchDetails> {
   Future<void> refreshState() async {
     List<Future<dynamic>> futures = [
       context.read<MatchesState>().fetchRatings(widget.matchId),
-      MatchesController.refresh(context, widget.matchId)
+      context.read<MatchesState>().fetchMatch(widget.matchId)
     ];
 
     var res = await Future.wait(futures);
@@ -161,89 +153,91 @@ class MatchDetailsState extends State<MatchDetails> {
       var widgets;
       if (skeletons == null) {
         var completeOrganiserWidget = organizerView &&
-            userState.getLoggedUserDetails()?.areChargesEnabled(isTest) !=
-                null &&
-            !userState.getLoggedUserDetails()!.areChargesEnabled(isTest)
+                userState.getLoggedUserDetails()?.areChargesEnabled(isTest) !=
+                    null &&
+                !userState.getLoggedUserDetails()!.areChargesEnabled(isTest)
             ? CompleteOrganiserAccountWidget(isTest: isTest)
             : null;
 
         var testInfo = isTest
             ? InfoContainer(
-            backgroundColor: Palette.accent,
-            child: SelectableText(
-              "Test match: " + widget.matchId,
-              style: TextPalette.getBodyText(Palette.black),
-            ))
+                backgroundColor: Palette.accent,
+                child: SelectableText(
+                  "Test match: " + widget.matchId,
+                  style: TextPalette.getBodyText(Palette.black),
+                ))
             : null;
 
         var matchInfo = MatchInfo(match!, sportCenter!);
 
         var infoPlayersList = match.hasTeams()
-            ? TeamsWidget(matchId: widget.matchId)
+            ? TeamsWidget(
+                matchId: widget.matchId,
+                organizer: userState.currentUserId == match.organizerId)
             : PlayerList(
-            match: match,
-            withJoinButton:
-            bottomBar is JoinMatchBottomBar && !match.isFull());
+                match: match,
+                withJoinButton:
+                    bottomBar is JoinMatchBottomBar && !match.isFull());
 
         var stats = status == MatchStatus.rated || status == MatchStatus.to_rate
             ? Stats(match: match, sportCenter: sportCenter)
             : null;
 
         var sportCenterDetails =
-        SportCenterDetails(match: match, sportCenter: sportCenter);
+            SportCenterDetails(match: match, sportCenter: sportCenter);
 
         var rules = (bool large) => Builder(builder: (context) {
-          var cancellationText = "";
+              var cancellationText = "";
 
-          if (match.cancelBefore != null) {
-            var cancellationDate =
-            match.dateTime.subtract(match.cancelBefore!);
+              if (match.cancelBefore != null) {
+                var cancellationDate =
+                    match.dateTime.subtract(match.cancelBefore!);
 
-            if (cancellationDate.isAfter(DateTime.now())) {
-              cancellationText = AppLocalizations.of(context)!
-                  .cancellationInfo(
-                  dayDateFormat.format(
-                      match.getLocalizedTime(sportCenter.timezoneId)),
-                  match.minPlayers);
-            }
-          }
-          var refundString = (match.userFee == 0)
-              ? AppLocalizations.of(context)!.fullRefund
-              : AppLocalizations.of(context)!.refundWithoutFee;
+                if (cancellationDate.isAfter(DateTime.now())) {
+                  cancellationText = AppLocalizations.of(context)!
+                      .cancellationInfo(
+                          dayDateFormat.format(
+                              match.getLocalizedTime(sportCenter.timezoneId)),
+                          match.minPlayers);
+                }
+              }
+              var refundString = (match.userFee == 0)
+                  ? AppLocalizations.of(context)!.fullRefund
+                  : AppLocalizations.of(context)!.refundWithoutFee;
 
-          return RuleCard(
-              AppLocalizations.of(context)!.paymentPolicyHeader,
-              AppLocalizations.of(context)!.refundInfo(refundString) +
-                  cancellationText,
-              large);
-        });
+              return RuleCard(
+                  AppLocalizations.of(context)!.paymentPolicyHeader,
+                  AppLocalizations.of(context)!.refundInfo(refundString) +
+                      cancellationText,
+                  large);
+            });
 
         var organiserBadge = match.organizerId != null
             ? Builder(builder: (context) {
-          var ud = context
-              .watch<UserState>()
-              .getUserDetail(match.organizerId!);
+                var ud = context
+                    .watch<UserState>()
+                    .getUserDetail(match.organizerId!);
 
-          return InfoContainer(
-              child: Row(children: [
-                UserAvatarWithBottomModal(userData: ud),
-                SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(AppLocalizations.of(context)!.organizedBy,
-                          style: TextPalette.bodyText),
-                      SizedBox(height: 4),
-                      (ud == null)
-                          ? Skeletons.lText
-                          : Text(ud.name!.split(" ").first,
-                          style: TextPalette.h2),
-                    ],
+                return InfoContainer(
+                    child: Row(children: [
+                  UserAvatarWithBottomModal(userData: ud),
+                  SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(AppLocalizations.of(context)!.organizedBy,
+                            style: TextPalette.bodyText),
+                        SizedBox(height: 4),
+                        (ud == null)
+                            ? Skeletons.lText
+                            : Text(ud.name!.split(" ").first,
+                                style: TextPalette.h2),
+                      ],
+                    ),
                   ),
-                ),
-              ]));
-        })
+                ]));
+              })
             : null;
 
         if (constraints.maxWidth < 800) {
@@ -320,8 +314,7 @@ class MatchDetailsState extends State<MatchDetails> {
               Align(
                   alignment: Alignment.centerRight,
                   child: buttons.ShareButton(() async {
-                    await DynamicLinks.shareMatchFunction(
-                        match!, sportCenter!);
+                    await DynamicLinks.shareMatchFunction(match!, sportCenter!);
                   }, Palette.black, 25.0)),
           ],
         ),
@@ -390,20 +383,40 @@ class PlayerList extends StatelessWidget {
   }
 }
 
-class TeamsWidget extends StatelessWidget {
-  final String matchId;
+class TeamsWidget extends StatefulWidget {
   final String? title;
-  final bool withScoreInput;
+  final bool organizer;
+  final String matchId;
 
-  TeamsWidget(
-      {Key? key,
-      required this.matchId,
-      String? title,
-      this.withScoreInput = false})
-      : title = title,
-        super(key: key);
+  const TeamsWidget(
+      {Key? key, this.title, required this.matchId, required this.organizer})
+      : super(key: key);
 
+  @override
+  State<StatefulWidget> createState() => TeamsWidgetState();
+}
+
+enum TeamsWidgetUserState { add, edit, submit }
+
+class TeamsWidgetState extends State<TeamsWidget> {
   final _formKey = GlobalKey<FormState>();
+
+  late TeamsWidgetUserState userState;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.organizer) {
+      bool hasScore =
+          context.read<MatchesState>().getMatch(widget.matchId)!.score != null;
+
+      if (!hasScore) {
+        userState = TeamsWidgetUserState.add;
+      } else {
+        userState = TeamsWidgetUserState.edit;
+      }
+    }
+  }
 
   Widget inputScore(TextEditingController controller) => Container(
       width: 50,
@@ -415,23 +428,46 @@ class TeamsWidget extends StatelessWidget {
             if (int.tryParse(v ?? "") == null) return "Invalid";
             return null;
           },
+          textAlign: TextAlign.center,
           decoration: CreateMatchState.getTextFormDecoration(null),
         ),
       ));
 
   @override
   Widget build(BuildContext context) {
-    var match = context.watch<MatchesState>().getMatch(matchId);
+    var match = context.watch<MatchesState>().getMatch(widget.matchId);
 
     var teamA = match!.teams.entries.first;
     var teamB = match.teams.entries.last;
 
     var teamAController;
     var teamBController;
-    if (withScoreInput) {
+    if (widget.organizer) {
       teamAController = TextEditingController();
       teamBController = TextEditingController();
+      if (match.score != null) {
+        teamAController.text = match.score![0].toString();
+        teamBController.text = match.score![1].toString();
+      }
     }
+
+    var teamAScoreWidget =
+        widget.organizer && userState == TeamsWidgetUserState.submit
+            ? inputScore(teamAController)
+            : match.score == null
+                ? Container()
+                : Text(match.score![0].toString(),
+                    textAlign: TextAlign.end,
+                    style: TextPalette.getStats(Palette.black));
+
+    var teamBScoreWidget =
+        widget.organizer && userState == TeamsWidgetUserState.submit
+            ? inputScore(teamBController)
+            : match.score == null
+                ? Container()
+                : Text(match.score![1].toString(),
+                    textAlign: TextAlign.end,
+                    style: TextPalette.getStats(Palette.black));
 
     var content = Padding(
       padding: EdgeInsets.symmetric(horizontal: 8),
@@ -449,39 +485,20 @@ class TeamsWidget extends StatelessWidget {
                       "Team A",
                       style: TextPalette.h2,
                     )),
-                if (withScoreInput)
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      inputScore(teamAController),
-                      Text("  vs  ", style: TextPalette.bodyText),
-                      inputScore(teamBController)
-                    ],
-                  ),
-                if (!withScoreInput)
-                  Expanded(
-                      flex: 2,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          if (match.score != null)
-                            Expanded(
-                              child: Text(match.score![0].toString(),
-                                  textAlign: TextAlign.end,
-                                  style: TextPalette.getStats(Palette.black))),
-                          Text("  vs  ", style: TextPalette.bodyText),
-                          if (match.score != null)
-                            Expanded(
-                              child: Text(match.score![1].toString(),
-                                  style: TextPalette.getStats(Palette.black)))
-                        ],
-                      )),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    teamAScoreWidget,
+                    Text("  vs  ", style: TextPalette.bodyText),
+                    teamBScoreWidget
+                  ],
+                ),
                 Flexible(
                     flex: 3,
                     child: Text(
                       "Team B",
                       style: TextPalette.h2,
-                    ))
+                    )),
               ],
             ),
             SizedBox(height: 16),
@@ -505,93 +522,57 @@ class TeamsWidget extends StatelessWidget {
                 ],
               ),
             ),
-            if (withScoreInput)
+            if (widget.organizer)
               Padding(
                 padding: EdgeInsets.only(top: 24),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text("ABCD",
-                        style: TextPalette.getLinkStyle(Palette.white)),
-                    GenericButtonWithLoaderAndErrorHandling(
-                        AppLocalizations.of(context)!.submitScoreButton,
-                        (BuildContext context) async {
-                      if (_formKey.currentState!.validate()) {
-                        var score = [
-                          int.parse(teamAController.text),
-                          int.parse(teamBController.text),
-                        ];
-                        await MatchesController.editMatchData({"score": score}, matchId);
-                        await MatchesController.refresh(context, matchId);
-                        Navigator.of(context).pop();
-                      }
-                    }, Primary()),
-                    TappableLinkText(
-                        text: AppLocalizations.of(context)!.skipText,
-                        onTap: (BuildContext context) async {
-                          Navigator.of(context).pop("skipped");
-                        }),
+                    Expanded(
+                      child: GenericButtonWithLoaderAndErrorHandling(
+                          userState == TeamsWidgetUserState.add
+                              ? AppLocalizations.of(context)!.addScoreButton
+                              : userState == TeamsWidgetUserState.submit
+                                  ? AppLocalizations.of(context)!
+                                      .submitScoreButton
+                                  : AppLocalizations.of(context)!
+                                      .editScoreButton,
+                          (BuildContext context) async {
+                        var nextState;
+                        if (userState == TeamsWidgetUserState.submit) {
+                          var score = [
+                            int.parse(teamAController.text),
+                            int.parse(teamBController.text),
+                          ];
+                          await context
+                              .read<MatchesState>()
+                              .editMatch(match.documentId, {"score": score});
+
+                          nextState = TeamsWidgetUserState.edit;
+                        } else {
+                          nextState = TeamsWidgetUserState.submit;
+                        }
+                        setState(() {
+                          userState = nextState;
+                        });
+                      },
+                          userState == TeamsWidgetUserState.edit
+                              ? Secondary()
+                              : Primary()),
+                    )
                   ],
                 ),
               )
           ],
         ),
-      )
-
-          // Column(children: [
-          //   Row(
-          //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          //     children: [
-          //     Text("Team A",
-          //         style: TextPalette.h3),
-          //     Text("Team B",
-          //         style: TextPalette.h3)
-          //   ],),
-          //   IntrinsicHeight(
-          //     child: Row(children: [
-          //       getTeamColumn(context, teamA.key, teamA.value, teamAController),
-          //       VerticalDivider(
-          //         thickness: 1,
-          //         color: Palette.grey_light,
-          //       ),
-          //       getTeamColumn(context, teamB.key, teamB.value, teamBController,
-          //         withScoreOutput),
-          //     ]),
-          //   ),
-          //   if (withScoreInput)
-          //     Padding(
-          //       padding: EdgeInsets.only(top: 32),
-          //       child: Row(
-          //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          //         children: [
-          //           Text("ABCD", style: TextPalette.getLinkStyle(Palette.white)),
-          //           GenericButtonWithLoader(
-          //             AppLocalizations.of(context)!.submitScoreButton,
-          //                 (BuildContext context) {
-          //           if (_formKey.currentState!.validate()) {
-          //             Navigator.of(context).pop([
-          //               teamAController.text,
-          //               teamBController.text
-          //             ]);
-          //           }
-          //         }, Primary()),
-          //           TappableLinkText(
-          //               text: AppLocalizations.of(context)!.skipText,
-          //               onTap: (BuildContext context) async {
-          //                 Navigator.of(context).pop("skipped");
-          //               }),
-          //         ],
-          //       ),
-          //     )
-          // ]),
-          ),
+      )),
     );
 
     return Form(
         key: _formKey,
-        child: this.title == null
+        child: widget.title == null
             ? InfoContainer(child: content)
-            : InfoContainerWithTitle(title: this.title!, body: content));
+            : InfoContainerWithTitle(title: widget.title!, body: content));
   }
 
   getTeamColumn(

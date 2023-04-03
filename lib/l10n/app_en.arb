@@ -156,6 +156,9 @@
 
     "scoreModalTitle": "What was the match score?",
     "submitScoreButton": "SUBMIT SCORE",
+    "editScoreButton": "EDIT SCORE",
+    "addScoreButton": "ADD MATCH SCORE",
+
     "skipText": "SKIP",
     "nextText": "NEXT",
 

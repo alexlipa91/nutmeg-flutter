@@ -173,4 +173,24 @@ class MatchesState extends ChangeNotifier {
     await Future.wait(getSportCenters()
         .map((s) => SportCentersController.refresh(context, s)));
   }
+
+  Future<Match> fetchMatch(String matchId) async {
+    var resp = await CloudFunctionsClient().get("matches/$matchId");
+    var match = Match.fromJson(resp!, matchId);
+
+    setMatch(match);
+
+    return match;
+  }
+
+  Future<void> editMatch(String matchId, Map<String, dynamic> data) async {
+    await CloudFunctionsClient().callFunction("edit_match",
+        {"id": matchId, "data": data});
+
+    var resp = await CloudFunctionsClient().callFunction("get_match_v2",
+        {'id': matchId});
+    var match = Match.fromJson(resp!, matchId);
+
+    setMatch(match);
+  }
 }

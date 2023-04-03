@@ -168,24 +168,3 @@ class RatePlayerBottomModal extends StatelessWidget {
     }
   }
 }
-
-class ScoreMatchBottomModal extends StatelessWidget {
-  static Future<void> scoreAction(BuildContext context, String matchId) async {
-    await ModalBottomSheet.showNutmegModalBottomSheet(
-        context, ScoreMatchBottomModal(matchId));
-  }
-
-  final String matchId;
-
-  ScoreMatchBottomModal(this.matchId);
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(children: [
-      TeamsWidget(
-          matchId: matchId,
-          title: AppLocalizations.of(context)!.scoreModalTitle,
-          withScoreInput: true),
-    ]);
-  }
-}

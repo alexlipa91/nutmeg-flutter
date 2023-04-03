@@ -6,7 +6,6 @@ import 'package:nutmeg/controller/UserController.dart';
 
 import '../api/CloudFunctionsUtils.dart';
 import '../model/PaymentRecap.dart';
-import 'UserController.dart';
 
 class PaymentController {
 

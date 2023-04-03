@@ -57,7 +57,6 @@ final appRouter = GoRouter(
           GoRoute(
               path: 'match/:id',
               builder: (context, state) {
-                print("path match/id ${state.params} ${state.queryParams}");
                 var keyString = "MatchDetails-${state.params["id"]}-"
                     "${state.queryParams.entries.map((e) => "${e.key}-${e.value}").join("-")}";
                 return MatchDetails(

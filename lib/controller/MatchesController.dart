@@ -16,7 +16,7 @@ class MatchesController {
   static Future<Match> refresh(BuildContext context, String matchId) async {
     var matchesState = context.read<MatchesState>();
 
-    var resp = await apiClient.callFunction("get_match_v2", {'id': matchId});
+    var resp = await apiClient.get("matches/$matchId");
     var match = Match.fromJson(resp!, matchId);
 
     matchesState.setMatch(match);
