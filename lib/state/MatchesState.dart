@@ -193,4 +193,12 @@ class MatchesState extends ChangeNotifier {
 
     setMatch(match);
   }
+
+  Future<String> createMatch(Match m) async {
+    var resp = await CloudFunctionsClient().post("matches", m.toJson());
+    var id = resp!["id"];
+
+    await fetchMatch(id);
+    return id;
+  }
 }

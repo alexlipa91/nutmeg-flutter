@@ -51,11 +51,6 @@ class MatchesController {
     return m;
   }
 
-  static Future<String> addMatch(Match m) async {
-    var resp = await apiClient.callFunction("add_match", m.toJson());
-    return resp!["id"];
-  }
-
   static Future<void> editMatch(Match m, String documentId) async {
     await apiClient.callFunction("edit_match",
         {"id": documentId, "data": m.toJson()});

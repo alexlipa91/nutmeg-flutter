@@ -29,6 +29,7 @@ import 'package:timezone/timezone.dart' as tz;
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../state/LoadOnceState.dart';
+import '../state/MatchesState.dart';
 import '../widgets/GenericAvailableMatches.dart';
 import '../widgets/ModalBottomSheet.dart';
 
@@ -813,10 +814,11 @@ class CreateMatchState extends State<CreateMatch> {
 
                           var id;
                           if (widget.existingMatch == null) {
-                            id = await MatchesController.addMatch(match);
+                            id = await context.read<MatchesState>().createMatch(match);
                           } else {
-                            await MatchesController.editMatch(
-                                match, widget.existingMatch!.documentId);
+                            await context.read<MatchesState>()
+                                .editMatch(match.documentId, match.toJson());
+
                             id = widget.existingMatch!.documentId;
                           }
                           await MatchesController.refresh(context, id);
