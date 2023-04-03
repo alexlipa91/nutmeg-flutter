@@ -52,6 +52,8 @@ class Match {
 
   List<int>? score;
 
+  String? dynamicLink;
+
   bool isTest;
 
   Match(this.dateTime, this.sportCenterId, this.sportCenter, this.sportCenterSubLocation,
@@ -74,6 +76,7 @@ class Match {
         userFee = jsonInput["userFee"] ?? 0,
         organiserFee = jsonInput["organiserFee"] ?? 0,
         score = jsonInput["score"] == null ? null : List<int>.from(jsonInput["score"]),
+        dynamicLink = jsonInput["dynamicLink"],
         managePayments = jsonInput["managePayments"] ?? true {
       sportCenterSubLocation = jsonInput['sportCenterSubLocation'];
 
@@ -162,6 +165,7 @@ class Match {
         if (score != null)
           'score': score,
         'managePayments': managePayments,
+        "dynamicLink": dynamicLink,
         'isTest': isTest
       };
 

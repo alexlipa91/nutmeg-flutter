@@ -33,34 +33,39 @@ class DynamicLinks {
   static var dayDateFormat = DateFormat("EEEE, MMM dd");
 
   static shareMatchFunction(Match match, SportCenter sportCenter) async {
-    var deepLinkUrl = Uri.parse('https://web.nutmegapp.com/match/' + match.documentId);
+    String link;
+    if (match.dynamicLink != null)
+      link = match.dynamicLink!;
+    else {
+      var deepLinkUrl = Uri.parse('https://web.nutmegapp.com/match/' + match.documentId);
 
-    final DynamicLinkParameters parameters = DynamicLinkParameters(
-      uriPrefix: 'https://nutmegapp.page.link',
-      link: deepLinkUrl,
-      androidParameters: AndroidParameters(
-        packageName: 'com.nutmeg.nutmeg',
-        minimumVersion: 0,
-        // fallbackUrl: deepLinkUrl
-      ),
-      iosParameters: IOSParameters(
-        bundleId: 'com.nutmeg.app',
-        minimumVersion: '1',
-        appStoreId: '1592985083',
-        // fallbackUrl: deepLinkUrl
-      ),
-      socialMetaTagParameters: SocialMetaTagParameters(
-        title: "Match on ${dayDateFormat
-            .format(match.getLocalizedTime(sportCenter.timezoneId))} "
-            "${gmtSuffix(sportCenter.timezoneId)}",
-        description: "Location: ${sportCenter.name}",
-      )
-    );
-    var url = await FirebaseDynamicLinks.instance.buildShortLink(parameters);
+      final DynamicLinkParameters parameters = DynamicLinkParameters(
+          uriPrefix: 'https://nutmegapp.page.link',
+          link: deepLinkUrl,
+          androidParameters: AndroidParameters(
+            packageName: 'com.nutmeg.nutmeg',
+            minimumVersion: 0,
+            // fallbackUrl: deepLinkUrl
+          ),
+          iosParameters: IOSParameters(
+            bundleId: 'com.nutmeg.app',
+            minimumVersion: '1',
+            appStoreId: '1592985083',
+            // fallbackUrl: deepLinkUrl
+          ),
+          socialMetaTagParameters: SocialMetaTagParameters(
+            title: "Match on ${dayDateFormat
+                .format(match.getLocalizedTime(sportCenter.timezoneId))} "
+                "${gmtSuffix(sportCenter.timezoneId)}",
+            description: "Location: ${sportCenter.name}",
+          )
+      );
+      var url = await FirebaseDynamicLinks.instance.buildShortLink(parameters);
+      link = url.shortUrl.toString();
+    }
 
     // fixme this doesn't wait
-    await Share.share(
-        "Checkout this match on Nutmeg!\n" + url.shortUrl.toString());
+    await Share.share("Checkout this match on Nutmeg!\n" + link);
   }
 }
 
