@@ -1,1 +1,1 @@
-Add scores to matches/nFix payment flow
+Fix payment flow
