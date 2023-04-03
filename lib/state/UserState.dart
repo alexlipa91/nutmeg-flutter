@@ -1,6 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 import 'package:nutmeg/utils/LocationUtils.dart';
 
 import '../controller/SportCentersController.dart';
@@ -50,6 +52,37 @@ class UserState extends ChangeNotifier {
 
   // user sport centers
   List<SportCenter>? _sportCenters;
+
+  Future<UserDetails?> fetchLoggedUserDetails() async {
+    User? u = await FirebaseAuth.instance.authStateChanges().first;
+
+    if (u == null) {
+      return null;
+    }
+
+    // use this to navigate as another user for testing
+    // return await getUserDetails(context, "bQHD0EM265V6GuSZuy1uQPHzb602");
+    return fetchUserDetails(u.uid);
+  }
+
+  Future<UserDetails?> fetchUserDetails(String uid) async {
+    var resp = await CloudFunctionsClient().get("users/$uid");
+
+    var ud = (resp == null) ? null : UserDetails.fromJson(resp, uid);
+    if (ud != null)
+      setUserDetail(ud);
+
+    return ud;
+  }
+
+  Future<void> storeUserToken(String? token) async {
+    if (token == null) {
+      return;
+    }
+    CloudFunctionsClient().post("users/${currentUserId!}", {
+      "token": token
+    });
+  }
 
   Future<void> fetchSportCenters() async {
     _sportCenters = await SportCentersController

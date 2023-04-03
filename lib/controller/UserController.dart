@@ -24,40 +24,6 @@ import '../utils/UiUtils.dart';
 class UserController {
   static var apiClient = CloudFunctionsClient();
 
-  static Future<UserDetails?> initLoggedUser(BuildContext context, String uid) async {
-    var userState = context.read<UserState>();
-    userState.currentUserId = uid;
-    return await refreshLoggedUser(context);
-  }
-
-  // this should be called for logged in user only
-  static Future<UserDetails> refreshLoggedUser(BuildContext? context) async {
-    var userState = context?.read<UserState>();
-    var userDetails = await getUserDetails(context!, userState?.currentUserId);
-    return userDetails!;
-  }
-
-  static Future<UserDetails?> getUserIfAvailable(BuildContext context) async {
-    User? u = await FirebaseAuth.instance.authStateChanges().first;
-
-    // use this to navigate as another user for testing
-    // return await getUserDetails(context, "bQHD0EM265V6GuSZuy1uQPHzb602");
-
-    UserDetails? ud;
-
-    if (u != null) {
-      var uid = u.uid;
-      try {
-        ud = await getUserDetails(context, uid);
-      } catch (e, stack) {
-        print("Found firebase user but couldn't load details: " + e.toString());
-        print(stack);
-      }
-    }
-
-    return ud;
-  }
-
   static Future<void> editUser(BuildContext context, UserDetails u) async {
     await apiClient
         .callFunction("edit_user", {"id": u.documentId, "data": u.toJson()});
@@ -67,33 +33,19 @@ class UserController {
   static Future<void> addUser(UserDetails u) async => await apiClient
       .callFunction("add_user", {"id": u.documentId, "data": u.toJson()});
 
-  static Future<void> saveUserTokensToDb(UserDetails userDetails) async {
-    // Save the initial token to the database
-    try {
-      var token = await FirebaseMessaging.instance.getToken();
-      await apiClient.callFunction(
-          "store_user_token", {"id": userDetails.getUid(), "token": token});
-    } on Exception catch (e, s) {
-      print(e);
-      print(s);
-    }
-    // Any time the token refreshes, store this in the database too.
-    FirebaseMessaging.instance.onTokenRefresh.listen((t) =>
-        _saveTokenToDatabase(userDetails, t));
-  }
-
   static Future<void> _login(
       BuildContext context, UserCredential userCredential) async {
     var userState = context.read<UserState>();
 
     var uid = userCredential.user?.uid;
 
-    UserDetails? userDetails = await getUserDetails(context, uid);
+    UserDetails? userDetails = await context.read<UserState>()
+        .fetchUserDetails(uid!);
 
     // check if first time
     if (userDetails == null) {
       userDetails = new UserDetails(
-          uid!,
+          uid,
           false,
           userCredential.user?.photoURL,
           userCredential.user?.displayName,
@@ -114,18 +66,11 @@ class UserController {
     }
 
     userState.setCurrentUserDetails(userDetails);
-    UserController.saveUserTokensToDb(userDetails);
+    userState.storeUserToken(await FirebaseMessaging.instance.getToken());
+    FirebaseMessaging.instance.onTokenRefresh.listen((t) =>
+        userState.storeUserToken(t));
 
     await context.read<MatchesState>().refreshState(context);
-  }
-
-  static Future<void> _saveTokenToDatabase(UserDetails ud, String token) async {
-    String? userId = FirebaseAuth.instance.currentUser?.uid;
-    if (userId == null) {
-      return;
-    }
-
-    UserController.saveUserTokensToDb(ud);
   }
 
   static Future<void> continueWithGoogle(
@@ -212,24 +157,6 @@ class UserController {
         await FirebaseAuth.instance.signInWithCredential(oauthCredential);
 
     return _login(context, userCredential);
-  }
-
-  static Future<List<UserDetails?>> getBatchUserDetails(
-      BuildContext context, List<String> uids) async {
-    return await Future.wait(uids.map((e) => getUserDetails(context, e)));
-  }
-
-  static Future<UserDetails?> getUserDetails(
-      BuildContext context, String? uid) async {
-    var userState = context.read<UserState>();
-
-    var resp = await apiClient.callFunction("get_user", {"id": uid});
-
-    var ud = (resp == null) ? null : UserDetails.fromJson(resp, uid!);
-    if (ud != null)
-      userState.setUserDetail(ud);
-
-    return ud;
   }
 
   static Future<void> logout(UserState userState) async {

@@ -12,7 +12,6 @@ import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:provider/provider.dart';
 
-import '../../controller/UserController.dart';
 import '../../model/Match.dart';
 import '../../model/UserDetails.dart';
 import '../../state/MatchesState.dart';
@@ -49,8 +48,7 @@ class AdminMatchDetailsState extends State<AdminMatchDetails> {
     var m = result[0] as Match;
 
     // get users details
-    Future.wait(m.getGoingUsersByTime().map((e) =>
-        UserController.getUserDetails(context, e)));
+    m.getGoingUsersByTime().map((e) => context.read<UserState>().fetchUserDetails(e));
   }
 
   @override

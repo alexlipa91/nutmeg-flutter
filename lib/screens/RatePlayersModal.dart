@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
-import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/state/MatchesState.dart';
 import 'package:nutmeg/state/RatingPlayersState.dart';
 import 'package:nutmeg/state/UserState.dart';
@@ -15,7 +14,7 @@ import '../model/MatchRatings.dart';
 import '../rating_bar/RatingWidget.dart';
 import '../widgets/PlayerBottomModal.dart';
 import '../widgets/Texts.dart';
-import 'MatchDetails.dart';
+
 
 class RateButton extends StatelessWidget {
   final String matchId;
@@ -38,7 +37,7 @@ class RatePlayerBottomModal extends StatelessWidget {
     var toRate = context.read<MatchesState>().stillToVote(
         matchId, context.read<UserState>().getLoggedUserDetails()!)!;
 
-    toRate.map((e) => UserController.getUserDetails(context, e));
+    toRate.forEach((e) => context.read<UserState>().fetchUserDetails(e));
 
     var completed = await ModalBottomSheet.showNutmegModalBottomSheet(
         context,

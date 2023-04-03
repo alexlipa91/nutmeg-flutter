@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
-import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/model/Match.dart';
+import 'package:nutmeg/state/UserState.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
@@ -10,8 +10,7 @@ import 'package:nutmeg/widgets/ModalPaymentDescriptionArea.dart';
 import 'package:provider/provider.dart';
 
 import '../state/MatchesState.dart';
-import 'Launch.dart';
-import 'UserPage.dart';
+
 
 class LeaveButton extends StatelessWidget {
   final String matchId;
@@ -104,8 +103,7 @@ class ConfirmLeaveMatchButton extends StatelessWidget {
                   action: match.managePayments
                       ? InkWell(
                           onTap: () async {
-                            await UserController.refreshLoggedUser(
-                                navigatorKey.currentContext);
+                            context.read<UserState>().fetchLoggedUserDetails();
                             // Navigator.pushReplacement(navigatorKey.currentContext,
                             //     MaterialPageRoute(builder: (context) => UserPage()));
                           },

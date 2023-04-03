@@ -37,7 +37,7 @@ class UserPageState extends State<UserPage> {
   bool loadingPicture = false;
 
   Future<void> refreshPageState() async =>
-      UserController.refreshLoggedUser(context);
+      context.read<UserState>().fetchLoggedUserDetails();
 
   @override
   Widget build(BuildContext context) {

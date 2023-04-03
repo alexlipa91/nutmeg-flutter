@@ -109,10 +109,12 @@ class MatchDetailsState extends State<MatchDetails> {
     Match match = res[1];
 
     // get users details
-    UserController.getBatchUserDetails(context, match.getGoingUsersByTime());
-
-    // get organizer details
-    UserController.getUserDetails(context, match.organizerId);
+    var users = Set();
+    users.addAll(match.getGoingUsersByTime());
+    if (match.organizerId != null) {
+      users.add(match.organizerId);
+    }
+    users.forEach((u) => context.read<UserState>().fetchUserDetails(u));
   }
 
   @override

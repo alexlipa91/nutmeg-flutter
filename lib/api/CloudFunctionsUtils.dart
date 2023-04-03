@@ -120,7 +120,6 @@ class CloudFunctionsClient {
     var url = "$appEngineBaseUrl/$name";
     if (argsString.isNotEmpty)
       url = "$url?$argsString";
-    print(url);
 
     var r = await http.get(
       Uri.parse(url),

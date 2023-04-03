@@ -91,7 +91,7 @@ class LaunchController {
 
     List<Future<dynamic>> futures = [
       getVersion(),
-      UserController.getUserIfAvailable(context),
+      context.read<UserState>().fetchLoggedUserDetails(),
       _loadOnceData(context),
       _determinePosition()
     ];

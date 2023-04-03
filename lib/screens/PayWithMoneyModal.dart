@@ -41,38 +41,3 @@ class PayWithMoneyButton extends StatelessWidget {
         Primary(),
       );
 }
-
-// class Payment extends StatelessWidget {
-//   final String matchId;
-//   final String url;
-//
-//   const Payment({Key? key, required this.matchId, required this.url})
-//       : super(key: key);
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       backgroundColor: Palette.primary,
-//       body: SafeArea(
-//         bottom: false,
-//         child: WebViewWidget(
-//           controller: WebViewController()
-//             ..setJavaScriptMode(JavaScriptMode.unrestricted)
-//             ..setBackgroundColor(const Color(0x00000000))
-//             ..setNavigationDelegate(
-//               NavigationDelegate(
-//                 onNavigationRequest: (NavigationRequest request) {
-//                   if (request.url == "https://web.nutmegapp.com/match/$matchId?payment_outcome=success")
-//                     Navigator.pop(context, true);
-//                   else if (request.url == "https://web.nutmegapp.com/match/$matchId?payment_outcome=cancel")
-//                     Navigator.pop(context, false);
-//                   return NavigationDecision.navigate;
-//                 },
-//               ),
-//             )
-//             ..loadRequest(Uri.parse(url)),
-//         ),
-//       ),
-//     );
-//   }
-// }
