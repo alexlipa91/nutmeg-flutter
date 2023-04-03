@@ -69,6 +69,7 @@ class MatchDetailsState extends State<MatchDetails> {
 
     // check if payment outcome
     if (widget.paymentOutcome != null) {
+      if (ModalBottomSheet.isOpen) Navigator.of(context).pop();
       if (widget.paymentOutcome! == "success") {
         PaymentDetailsDescription.communicateSuccessToUser(context, match);
       } else

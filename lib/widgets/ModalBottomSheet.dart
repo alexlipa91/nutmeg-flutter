@@ -4,7 +4,11 @@ import 'package:nutmeg/utils/UiUtils.dart';
 
 class ModalBottomSheet {
 
+  static bool isOpen = false;
+
   static Future<T?> showNutmegModalBottomSheet<T>(BuildContext? context, Widget child) async {
+    isOpen = true;
+
     var returnValue = await showModalBottomSheet<T?>(
       isScrollControlled: true,
       backgroundColor: Palette.white,
@@ -21,6 +25,9 @@ class ModalBottomSheet {
                       width: 1000,
                       child: child)]))))
     );
+
+    isOpen = false;
+
     return returnValue;
   }
  }
