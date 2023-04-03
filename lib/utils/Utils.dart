@@ -1,8 +1,8 @@
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:nutmeg/controller/SportCentersController.dart';
 import 'package:nutmeg/model/Match.dart';
-import 'package:nutmeg/model/SportCenter.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:tuple/tuple.dart';
@@ -32,12 +32,15 @@ String formatEmail(String? email) {
 class DynamicLinks {
   static var dayDateFormat = DateFormat("EEEE, MMM dd");
 
-  static shareMatchFunction(Match match, SportCenter sportCenter) async {
+  static shareMatchFunction(BuildContext context, Match match) async {
     String link;
     if (match.dynamicLink != null)
       link = match.dynamicLink!;
     else {
+      // todo slowly deprecate
       var deepLinkUrl = Uri.parse('https://web.nutmegapp.com/match/' + match.documentId);
+
+      var sportCenter = SportCentersController.getSportCenter(context, match)!;
 
       final DynamicLinkParameters parameters = DynamicLinkParameters(
           uriPrefix: 'https://nutmegapp.page.link',

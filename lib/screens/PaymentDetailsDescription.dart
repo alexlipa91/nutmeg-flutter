@@ -1,7 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:nutmeg/controller/SportCentersController.dart';
-import 'package:nutmeg/model/Match.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/Buttons.dart';
@@ -13,9 +11,7 @@ import '../state/LoadOnceState.dart';
 
 class PaymentDetailsDescription {
   static Future<void> communicateSuccessToUser(BuildContext? context,
-      Match match) async {
-    var sportCenter = SportCentersController.getSportCenterRead(context!, match)!;
-
+      String matchId) async {
     await ModalBottomSheet.showNutmegModalBottomSheet(
         context,
         Container(
@@ -28,7 +24,7 @@ class PaymentDetailsDescription {
                 radius: 100,
                 backgroundColor: Palette.grey_lighter,
                 backgroundImage: CachedNetworkImageProvider(
-                    (context.read<LoadOnceState>().getRandomGif())),
+                    (context!.read<LoadOnceState>().getRandomGif())),
               ),
               Padding(
                   padding: EdgeInsets.only(top: 30),
@@ -40,8 +36,7 @@ class PaymentDetailsDescription {
               if (!DeviceInfo().name.contains("ipad"))
                 Padding(
                     padding: EdgeInsets.only(top: 20),
-                    child: ShareButtonWithText(match,
-                        sportCenter, Palette.primary))
+                    child: ShareButtonWithText(matchId, Palette.primary))
             ],
           ),
         )));

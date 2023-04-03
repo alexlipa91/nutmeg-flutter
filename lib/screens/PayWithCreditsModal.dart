@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:nutmeg/controller/SportCentersController.dart';
 import 'package:nutmeg/model/Match.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/screens/PaymentDetailsDescription.dart';
@@ -31,7 +30,7 @@ class PayWithCreditsButton extends StatelessWidget {
 
           GoRouter.of(context).pop();
           await PaymentDetailsDescription.communicateSuccessToUser(context,
-              match);
+              match.documentId);
         },
         Primary(),
       );

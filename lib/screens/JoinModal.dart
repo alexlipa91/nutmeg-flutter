@@ -126,15 +126,15 @@ class JoinModal {
 
     if (userState.isLoggedIn()) {
       var paymentRecap = await PaymentController.generatePaymentRecap(
-          context, match!.documentId);
+          context, matchId);
 
-      if (!match.managePayments) {
+      if (!match!.managePayments) {
         await CloudFunctionsClient().callFunction("add_user_to_match", {
           "match_id": matchId,
           "user_id": userState.currentUserId!
         });
         await MatchesController.refresh(context, matchId);
-        await PaymentDetailsDescription.communicateSuccessToUser(context, match);
+        await PaymentDetailsDescription.communicateSuccessToUser(context, matchId);
 
         return;
       }

@@ -63,20 +63,20 @@ class MatchDetailsState extends State<MatchDetails> {
 
   Future<void> myInitState() async {
     print("MatchDetails init state");
-    await refreshState();
-
-    Match match = context.read<MatchesState>().getMatch(widget.matchId)!;
-
     // check if payment outcome
     if (widget.paymentOutcome != null) {
       if (ModalBottomSheet.isOpen) Navigator.of(context).pop();
       if (widget.paymentOutcome! == "success") {
-        PaymentDetailsDescription.communicateSuccessToUser(context, match);
+        PaymentDetailsDescription.communicateSuccessToUser(context, widget.matchId);
       } else
         GenericInfoModal(
-                title: "Payment Failed!", description: "Please try again")
+            title: "Payment Failed!", description: "Please try again")
             .show(context);
     }
+
+    await refreshState();
+
+    Match match = context.read<MatchesState>().getMatch(widget.matchId)!;
 
     // show rating modal
     var loggedUser = context.read<UserState>().getLoggedUserDetails();
@@ -314,11 +314,13 @@ class MatchDetailsState extends State<MatchDetails> {
           children: [
             BackButton(color: Palette.black),
             if (!DeviceInfo().name.contains("ipad") && !kIsWeb)
-              Align(
+              if (match != null)
+                Align(
                   alignment: Alignment.centerRight,
                   child: buttons.ShareButton(() async {
-                    await DynamicLinks.shareMatchFunction(match!, sportCenter!);
-                  }, Palette.black, 25.0)),
+                    await DynamicLinks.shareMatchFunction(context, match);
+                  }, Palette.black, 25.0)
+                ),
           ],
         ),
         bottomNavigationBar: bottomBar,
@@ -700,8 +702,8 @@ class MatchInfo extends StatelessWidget {
                               padding: EdgeInsets.only(top: 16),
                               child: InkWell(
                                   onTap: () async {
-                                    DynamicLinks.shareMatchFunction(
-                                        match, sportCenter);
+                                    DynamicLinks.shareMatchFunction(context,
+                                        match);
                                     Navigator.of(context).pop();
                                   },
                                   child: Text(

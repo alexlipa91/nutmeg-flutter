@@ -4,12 +4,10 @@ import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 
 import '../model/PaymentRecap.dart';
 import '../state/UserState.dart';
 
-import '../utils/UiUtils.dart';
 
 class PayWithMoneyButton extends StatelessWidget {
 
@@ -36,7 +34,7 @@ class PayWithMoneyButton extends StatelessWidget {
           if (kIsWeb)
             await launchUrl(uri, webOnlyWindowName: "_self");
           else
-            await launchUrl(uri);
+            await launchUrl(uri, mode: LaunchMode.externalApplication);
         },
         Primary(),
       );
