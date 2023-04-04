@@ -10,7 +10,6 @@ import 'package:nutmeg/state/UserState.dart';
 import 'package:provider/provider.dart';
 
 import '../controller/SportCentersController.dart';
-import '../utils/LocationUtils.dart';
 
 
 class MatchesState extends ChangeNotifier {
@@ -61,28 +60,32 @@ class MatchesState extends ChangeNotifier {
   // depends on which tab
   Future<void> fetchMatches(String tab, BuildContext context) async {
     var userState = context.read<UserState>();
-    var params;
+    Map<String, dynamic> params = {};
     switch (tab) {
       case "UPCOMING":
-        params = {"when": "future"};
+        params["when"] = "future";
         break;
       case "GOING":
         // we will filter later on
         if (userState.currentUserId == null)
           return;
-        params = {"with_user": userState.currentUserId!};
+        params["when"] = "future";
+        params["with_user"] = userState.currentUserId!;
         break;
       case "PAST":
         if (userState.currentUserId == null)
           return;
-        params = {"with_user": userState.currentUserId!};
+        params["when"] = "past";
+        params["with_user"] = userState.currentUserId!;
         break;
       case "MY MATCHES":
         if (userState.currentUserId == null)
           return;
-        params = {"organized_by": userState.currentUserId!};
+        params["organized_by"] = userState.currentUserId!;
         break;
     }
+    params["lat"] = userState.getLat();
+    params["lng"] = userState.getLng();
 
     var resp = await CloudFunctionsClient().get("matches", args: params);
     Map<String, dynamic> data = (resp == null) ? Map() : Map<String, dynamic>.from(resp);
@@ -109,20 +112,6 @@ class MatchesState extends ChangeNotifier {
       _matchesCache![e!.documentId] = e;
       return e;
     }).where((e) => (!e.isTest || context.read<UserState>().isTestMode));
-
-    // further filtering client side
-    if (tab == "UPCOMING") {
-      matches = matches.where((m) => m.status != MatchStatus.unpublished);
-      // regional filtering: 20km
-      matches = matches.where((m) {
-        var sp = getMatchSportCenter(context, m);
-        return isWithinRadius(sp.lat, sp.lng, userState.getLat(), userState.getLng());
-      });
-    }
-    if (tab == "GOING")
-      matches = matches.where((m) => m.dateTime.isAfter(DateTime.now()));
-    if (tab == "PAST")
-      matches = matches.where((m) => m.dateTime.isBefore(DateTime.now()));
 
     if (_matchesPerTab == null)
       _matchesPerTab = Map();
