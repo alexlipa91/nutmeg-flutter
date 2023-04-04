@@ -1,0 +1,11 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.nutmeg.nutmeg",
+      "sha256_cert_fingerprints":
+      ["02:70:4F:95:68:2E:4A:EB:BA:4C:80:F8:64:AB:45:C4:11:37:DE:A9:0C:B0:29:AD:CD:F2:34:64:D4:94:F8:AA"]
+    }
+  }
+]
