@@ -17,7 +17,7 @@ class CloudFunctionsClient {
   CloudFunctionsClient._internal();
 
   var appEngineBaseUrl = "https://nutmeg-9099c.ew.r.appspot.com";
-  // var appEngineBaseUrl = "localhost:8080";
+  // var appEngineBaseUrl = "http://localhost:8080";
 
   Future<Map<String, dynamic>?> callFunction(String name, Map<String, dynamic> data) async {
     print("Calling " + name + " with data " + data.toString());
