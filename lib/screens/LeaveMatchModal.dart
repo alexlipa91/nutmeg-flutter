@@ -85,7 +85,7 @@ class ConfirmLeaveMatchButton extends StatelessWidget {
           context.read<GenericButtonWithLoaderState>().change(true);
 
           await MatchesController.leaveMatch(context, match.documentId);
-          await MatchesController.refresh(context, match.documentId);
+          await context.read<MatchesState>().fetchMatch(match.documentId);
           Navigator.of(context).pop(true);
 
           GenericInfoModal(

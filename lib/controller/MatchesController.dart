@@ -13,17 +13,6 @@ class MatchesController {
 
   static var apiClient = CloudFunctionsClient();
 
-  static Future<Match> refresh(BuildContext context, String matchId) async {
-    var matchesState = context.read<MatchesState>();
-
-    var resp = await apiClient.get("matches/$matchId");
-    var match = Match.fromJson(resp!, matchId);
-
-    matchesState.setMatch(match);
-
-    return match;
-  }
-
   // current logged in user joins a match
   static Future<Match> joinMatch(
       BuildContext context, String matchId, PaymentRecap paymentStatus) async {
@@ -35,7 +24,7 @@ class MatchesController {
       'credits_used': paymentStatus.creditsInCentsUsed,
       'money_paid': paymentStatus.finalPriceToPayInCents()
     });
-    var  m = await refresh(context, matchId);
+    var  m = await context.read<MatchesState>().fetchMatch(matchId);
     return m;
   }
 
@@ -47,7 +36,7 @@ class MatchesController {
       'user_id': userState.getLoggedUserDetails()?.documentId,
       'match_id': matchId
     });
-    var m = await refresh(context, matchId);
+    var m = await context.read<MatchesState>().fetchMatch(matchId);
     return m;
   }
 

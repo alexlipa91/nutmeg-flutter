@@ -12,7 +12,6 @@ import 'package:nutmeg/widgets/ModalPaymentDescriptionArea.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-import '../controller/MatchesController.dart';
 import '../model/PaymentRecap.dart';
 import '../state/MatchesState.dart';
 import '../state/UserState.dart';
@@ -133,7 +132,7 @@ class JoinModal {
           "match_id": matchId,
           "user_id": userState.currentUserId!
         });
-        await MatchesController.refresh(context, matchId);
+        await context.read<MatchesState>().fetchMatch(matchId);
         await PaymentDetailsDescription.communicateSuccessToUser(context, matchId);
 
         return;

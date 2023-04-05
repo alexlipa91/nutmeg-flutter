@@ -39,7 +39,7 @@ class AdminMatchDetailsState extends State<AdminMatchDetails> {
   Future<void> refreshState() async {
     // get details
     var futures = [
-      MatchesController.refresh(context, widget.matchId),
+      context.read<MatchesState>().fetchMatch(widget.matchId),
       context.read<MatchesState>().fetchRatings(widget.matchId)
     ];
 

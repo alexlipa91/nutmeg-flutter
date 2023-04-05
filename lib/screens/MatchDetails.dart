@@ -731,8 +731,8 @@ class MatchInfo extends StatelessWidget {
                                                 await MatchesController
                                                     .cancelMatch(
                                                         match.documentId);
-                                                await MatchesController.refresh(
-                                                    context, match.documentId);
+                                                await context.read<MatchesState>()
+                                                    .fetchMatch(match.documentId);
                                                 Navigator.pop(context);
                                               }, Primary()),
                                             )

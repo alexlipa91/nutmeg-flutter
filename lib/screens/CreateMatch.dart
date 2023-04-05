@@ -821,7 +821,7 @@ class CreateMatchState extends State<CreateMatch> {
 
                             id = widget.existingMatch!.documentId;
                           }
-                          await MatchesController.refresh(context, id);
+                          await context.read<MatchesState>().fetchMatch(id);
                           print("added match with id " + id);
                           return id;
                         });

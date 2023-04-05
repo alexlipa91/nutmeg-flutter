@@ -2,7 +2,6 @@ import "package:collection/collection.dart";
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_place/google_place.dart';
-import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/model/Match.dart';
 import 'package:nutmeg/state/AvailableMatchesState.dart';
 import 'package:nutmeg/state/LoadOnceState.dart';
@@ -21,7 +20,7 @@ class AdminAvailableMatches extends StatelessWidget {
 
   Future<void> onTap(BuildContext context, String matchId) async {
     context.go("/admin/match/$matchId");
-    await MatchesController.refresh(context, matchId);
+    await context.read<MatchesState>().fetchMatch(matchId);
   }
 
   Widget? getMatchWidgets(BuildContext context, bool future) {

@@ -1,11 +1,11 @@
 import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
-import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:provider/provider.dart';
 
 import '../api/CloudFunctionsUtils.dart';
 import '../model/PaymentRecap.dart';
+import '../state/MatchesState.dart';
 import '../state/UserState.dart';
 
 class PaymentController {
@@ -14,7 +14,7 @@ class PaymentController {
 
   static Future<PaymentRecap> generatePaymentRecap(BuildContext context,
       String matchId) async {
-    var m = await MatchesController.refresh(context, matchId);
+    var m = await context.read<MatchesState>().fetchMatch(matchId);
     var u = (await context.read<UserState>().fetchLoggedUserDetails())!;
 
     int creditsUsed;

@@ -53,30 +53,6 @@ class CloudFunctionsClient {
     return resp.data;
   }
 
-  Future<Map<String, dynamic>?> callAppEngine(String name, Map<String, dynamic> data) async {
-    print("Calling AppEngine " + name + " with data " + data.toString());
-
-    var trace = FirebasePerformance.instance.newTrace("api-call");
-    trace.start();
-    trace.putAttribute("path_name", name);
-    trace.putAttribute("source", "app_engine");
-
-    final Stopwatch stopwatch = Stopwatch();
-
-    var r = await http.post(
-      Uri.parse("https://nutmeg-9099c.ew.r.appspot.com/$name/"),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: jsonEncode(data),
-    );
-
-    trace.setMetric("duration_ms", stopwatch.elapsed.inMilliseconds);
-    trace.stop();
-
-    return jsonDecode(r.body)["data"];
-  }
-
   Future<Map<String, dynamic>?> post(String name, Map<String, dynamic> data) async {
     print("POST AppEngine " + name + " with data " + data.toString());
 
