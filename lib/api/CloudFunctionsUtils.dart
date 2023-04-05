@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_performance/firebase_performance.dart';
 import 'package:http/http.dart' as http;
 
@@ -38,19 +39,13 @@ class CloudFunctionsClient {
     return resp.data;
   }
 
-  Future<Map<String, dynamic>?> callLocal(String name, Map<String, dynamic> data) async {
-    print("Calling local " + name + " with data " + data.toString());
-
-    var client = FirebaseFunctions.instanceFor(region: "europe-central2");
-    client.useFunctionsEmulator("localhost", 8080);
-
-    HttpsCallable callable = client.httpsCallable(name);
-    var resp = await callable(data);
-
-    // trace.setMetric("duration_ms", stopwatch.elapsed.inMilliseconds);
-    // trace.stop();
-
-    return resp.data;
+  Future<Map<String, String>> _headers() async {
+    String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
+    return {
+      'Content-Type': 'application/json; charset=UTF-8',
+      if (token != null)
+        'Authorization': 'Bearer ' + token
+    };
   }
 
   Future<Map<String, dynamic>?> post(String name, Map<String, dynamic> data) async {
@@ -65,9 +60,7 @@ class CloudFunctionsClient {
 
     var r = await http.post(
       Uri.parse("$appEngineBaseUrl/$name"),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
+      headers: await _headers(),
       body: jsonEncode(data),
     );
 
@@ -95,9 +88,7 @@ class CloudFunctionsClient {
 
     var r = await http.get(
       Uri.parse(url),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      }
+      headers: await _headers()
     );
 
     trace.setMetric("duration_ms", stopwatch.elapsed.inMilliseconds);

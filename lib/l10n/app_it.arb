@@ -80,6 +80,8 @@
     "youWantToLeaveSubtitle": "Se esci, tutte le modifiche non salvate andranno perse.",
     "scoreModalTitle": "Qual è stato il punteggio della partita?",
     "submitScoreButton": "INSERISCI IL PUNTEGGIO",
+    "editScoreButton": "MODIFICA PUNTEGGIO",
+    "addScoreButton": "AGGIUNGI PUNTEGGIO",
     "skipText": "SALTARE",
     "nextText": "PROSSIMO",
     "yes": "SÌ",

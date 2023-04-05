@@ -86,8 +86,6 @@ class MatchesState extends ChangeNotifier {
     }
     params["lat"] = userState.getLat();
     params["lng"] = userState.getLng();
-    if (userState.isLoggedIn())
-      params["user_id"] = userState.currentUserId!;
 
     var resp = await CloudFunctionsClient().get("matches", args: params);
     Map<String, dynamic> data = (resp == null) ? Map() : Map<String, dynamic>.from(resp);
