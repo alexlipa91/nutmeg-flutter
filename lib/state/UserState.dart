@@ -54,14 +54,15 @@ class UserState extends ChangeNotifier {
   List<SportCenter>? _sportCenters;
 
   Future<UserDetails?> fetchLoggedUserDetails() async {
+    // use this to navigate as another user for testing
+    // return fetchUserDetails("bQHD0EM265V6GuSZuy1uQPHzb602");
+
     User? u = await FirebaseAuth.instance.authStateChanges().first;
 
     if (u == null) {
       return null;
     }
 
-    // use this to navigate as another user for testing
-    // return await getUserDetails(context, "bQHD0EM265V6GuSZuy1uQPHzb602");
     return fetchUserDetails(u.uid);
   }
 

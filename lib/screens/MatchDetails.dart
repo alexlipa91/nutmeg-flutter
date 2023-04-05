@@ -531,7 +531,7 @@ class TeamsWidgetState extends State<TeamsWidget> {
                 ],
               ),
             ),
-            if (widget.organizer)
+            if (widget.organizer && match.isMatchFinished())
               Padding(
                 padding: EdgeInsets.only(top: 24),
                 child: Row(

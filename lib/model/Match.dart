@@ -198,5 +198,7 @@ class Match {
 
   DateTime getLocalizedTime(String timezoneId) =>
       tz.TZDateTime.from(dateTime, tz.getLocation(timezoneId));
+
+  bool isMatchFinished() => DateTime.now().isAfter(dateTime.add(duration));
 }
 
