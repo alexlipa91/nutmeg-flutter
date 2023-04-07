@@ -82,7 +82,8 @@ class MatchDetailsState extends State<MatchDetails> {
 
     if (match.status == MatchStatus.to_rate && match.isUserGoing(loggedUser)) {
       var stillToVote =
-          context.read<MatchesState>().stillToVote(widget.matchId, loggedUser!);
+          context.read<MatchesState>().getStillToVote(widget.matchId,
+              loggedUser!.documentId);
 
       if (stillToVote != null && stillToVote.isNotEmpty) {
         await RatePlayerBottomModal.rateAction(context, widget.matchId);
@@ -100,7 +101,10 @@ class MatchDetailsState extends State<MatchDetails> {
   Future<void> refreshState() async {
     List<Future<dynamic>> futures = [
       context.read<MatchesState>().fetchRatings(widget.matchId),
-      context.read<MatchesState>().fetchMatch(widget.matchId)
+      context.read<MatchesState>().fetchMatch(widget.matchId),
+      if (context.read<UserState>().isLoggedIn())
+        context.read<MatchesState>().fetchStillToVote(widget.matchId,
+            context.read<UserState>().currentUserId!),
     ];
 
     var res = await Future.wait(futures);
@@ -180,7 +184,10 @@ class MatchDetailsState extends State<MatchDetails> {
                 withJoinButton:
                     bottomBar is JoinMatchBottomBar && !match.isFull());
 
-        var stats = status == MatchStatus.rated || status == MatchStatus.to_rate
+        var stats = (
+            (status == MatchStatus.rated
+                && matchesState.getRatings(match.documentId) != null)
+                || status == MatchStatus.to_rate)
             ? Stats(match: match, sportCenter: sportCenter)
             : null;
 
@@ -1172,82 +1179,90 @@ class Stats extends StatelessWidget {
           ? StatsSkeleton()
           : Builder(
               builder: (context) {
-                var finalRatings = ratings!.getFinalRatings(
-                    match.getGoingUsersByTime(), match.getPotms());
-
                 int index = 1;
 
                 return Container(
                     child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Column(
-                      children: finalRatings.map((r) {
-                        var userDetails = userState.getUserDetail(r.user);
+                    Builder(
+                      builder: (context) {
+                        Map<String, double?> userAndRate = {};
+                        match.going.keys.forEach((u) => userAndRate[u] = (ratings ?? {})[u]);
+                        var entries = userAndRate.entries.toList();
+                        entries.sort((a, b) => (b.value ?? -1).compareTo((a.value ?? -1)));
 
-                        var widgets = [
-                          Container(
-                              width: 18,
-                              child: Text(index.toString(),
-                                  style: TextPalette.bodyText)),
-                          SizedBox(width: 8),
-                          UserAvatar(16, userDetails),
-                          Padding(
-                            padding: EdgeInsets.only(left: 16),
-                            child: Row(
-                              children: [
-                                UserNameWidget(userDetails: userDetails),
-                                SizedBox(width: 8),
-                                if (userDetails != null &&
-                                    r.isPotm &&
-                                    r.vote > 0)
-                                  Image.asset(
-                                    "assets/potm_badge.png",
-                                    width: 20,
-                                  )
-                              ],
-                            ),
-                          ),
-                          Spacer(),
-                          Container(
-                            height: 8,
-                            width: 72,
-                            child: ClipRRect(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(10)),
-                              child: LinearProgressIndicator(
-                                value: r.vote / 5,
-                                color: Palette.primary,
-                                backgroundColor: Palette.grey_lighter,
+                        return  Column(
+                          children: entries.map((e) {
+                            var userDetails = userState.getUserDetail(e.key);
+                            double? rate = e.value;
+                            bool isPotm = match.getPotms().contains(e.key);
+
+                            var widgets = [
+                              Container(
+                                  width: 18,
+                                  child: Text(index.toString(),
+                                      style: TextPalette.bodyText)),
+                              SizedBox(width: 8),
+                              UserAvatar(16, userDetails),
+                              Padding(
+                                padding: EdgeInsets.only(left: 16),
+                                child: Row(
+                                  children: [
+                                    UserNameWidget(userDetails: userDetails),
+                                    SizedBox(width: 8),
+                                    if (userDetails != null &&
+                                        isPotm &&
+                                        rate != null)
+                                      Image.asset(
+                                        "assets/potm_badge.png",
+                                        width: 20,
+                                      )
+                                  ],
+                                ),
                               ),
-                            ),
-                          ),
-                          SizedBox(width: 16),
-                          Container(
-                            width: 22,
-                            child: Text(
-                                (r.vote == 0)
-                                    ? "  -"
-                                    : r.vote.toStringAsFixed(1),
-                                style: TextPalette.getBodyText(Palette.black)),
-                          ),
-                        ];
+                              Spacer(),
+                              Container(
+                                height: 8,
+                                width: 72,
+                                child: ClipRRect(
+                                  borderRadius:
+                                  BorderRadius.all(Radius.circular(10)),
+                                  child: LinearProgressIndicator(
+                                    value: (rate ?? 0) / 5,
+                                    color: Palette.primary,
+                                    backgroundColor: Palette.grey_lighter,
+                                  ),
+                                ),
+                              ),
+                              SizedBox(width: 16),
+                              Container(
+                                width: 22,
+                                child: Text(
+                                    (rate == null)
+                                        ? "  -"
+                                        : rate.toStringAsFixed(1),
+                                    style: TextPalette.getBodyText(Palette.black)),
+                              ),
+                            ];
 
-                        index++;
-                        return Padding(
-                            padding: (index > 2)
-                                ? EdgeInsets.only(top: 16)
-                                : EdgeInsets.zero,
-                            child: InkWell(
-                                onTap: userDetails == null
-                                    ? null
-                                    : () => ModalBottomSheet
+                            index++;
+                            return Padding(
+                                padding: (index > 2)
+                                    ? EdgeInsets.only(top: 16)
+                                    : EdgeInsets.zero,
+                                child: InkWell(
+                                    onTap: userDetails == null
+                                        ? null
+                                        : () => ModalBottomSheet
                                         .showNutmegModalBottomSheet(
-                                            context,
-                                            JoinedPlayerBottomModal(
-                                                userDetails)),
-                                child: Row(children: widgets)));
-                      }).toList(),
+                                        context,
+                                        JoinedPlayerBottomModal(
+                                            userDetails)),
+                                    child: Row(children: widgets)));
+                          }).toList(),
+                        );
+                      },
                     )
                   ],
                 ));

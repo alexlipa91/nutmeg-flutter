@@ -41,7 +41,7 @@ class MatchesController {
   }
 
   // logged-in user voted 'score' for user 'userId' in match 'matchId'
-  static Future<void> addRating(
+  static Future<void> pushAddRating(
       BuildContext context, String userId, String matchId, double score,
       Set<Skills> skills) async {
     try {

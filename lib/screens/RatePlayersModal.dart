@@ -33,9 +33,10 @@ class RateButton extends StatelessWidget {
 }
 
 class RatePlayerBottomModal extends StatelessWidget {
+
   static Future<void> rateAction(BuildContext context, String matchId) async {
-    var toRate = context.read<MatchesState>().stillToVote(
-        matchId, context.read<UserState>().getLoggedUserDetails()!)!;
+    var toRate = context.read<MatchesState>().getStillToVote(
+        matchId, context.read<UserState>().currentUserId!)!;
 
     toRate.forEach((e) => context.read<UserState>().fetchUserDetails(e));
 
@@ -150,15 +151,15 @@ class RatePlayerBottomModal extends StatelessWidget {
   Future<void> store(BuildContext context) async {
     var state = context.read<RatingPlayersState>();
 
-    MatchesController.addRating(context, state.getCurrent(), matchId,
+    MatchesController.pushAddRating(context, state.getCurrent(), matchId,
         state.getCurrentScore(), state.selectedSkills);
 
     // store also locally so UI changes fast
-    context.read<MatchesState>().addRating(
-        matchId,
-        context.read<UserState>().currentUserId!,
-        state.getCurrent(),
-        state.getCurrentScore());
+    context.read<MatchesState>().hasVoted(
+      matchId,
+      context.read<UserState>().currentUserId!,
+      state.getCurrent()
+    );
 
     if (state.isLast()) {
       Navigator.of(context).pop(true);

@@ -2,8 +2,6 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 import 'package:nutmeg/model/Match.dart';
-import 'package:nutmeg/model/MatchRatings.dart';
-import 'package:nutmeg/model/UserDetails.dart';
 import 'package:nutmeg/state/UserState.dart';
 import 'package:provider/provider.dart';
 
@@ -16,14 +14,12 @@ class MatchesState extends ChangeNotifier {
   Map<String, List<String>>? _matchesPerTab;
 
   // ratings per match
-  Map<String, MatchRatings> _ratingsPerMatch = Map();
+  Map<String, Map<String, double>> _ratingsPerMatch = Map();
 
-  MatchRatings? getRatings(String matchId) => _ratingsPerMatch[matchId];
+  // still to vote per match
+  Map<String, Map<String, List<String>>> _stillToVote = Map();
 
-  void addRating(String matchId, String gives, String receives, double score) {
-    _ratingsPerMatch[matchId]?.add(receives, gives, score.toInt());
-    notifyListeners();
-  }
+  Map<String, double>? getRatings(String matchId) => _ratingsPerMatch[matchId];
 
   List<Match>? getMatches() {
     if (_matchesPerTab == null)
@@ -41,6 +37,20 @@ class MatchesState extends ChangeNotifier {
 
   Match? getMatch(String matchId) =>
       (_matchesCache == null) ? null : _matchesCache![matchId];
+
+  List<String>? getStillToVote(String matchId, String userId) => _stillToVote[matchId]?[userId];
+
+  void hasVoted(String matchId, String giver, String receiver) {
+    var current = _stillToVote[matchId]![giver] ?? [];
+    List<String> newList = [];
+    current.forEach((u) {
+      if (u != receiver) {
+        newList.add(u);
+      }
+    });
+    _stillToVote[matchId]![giver] = newList;
+    notifyListeners();
+  }
 
   void setMatch(Match m) {
     if (_matchesCache == null)
@@ -117,35 +127,33 @@ class MatchesState extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<MatchRatings?> fetchRatings(String matchId) async {
-    var r = await CloudFunctionsClient().callFunction("get_ratings_by_match_v3", {
-      "match_id": matchId
-    });
+  Future<Map<String, double>> fetchRatings(String matchId) async {
+    var r = await CloudFunctionsClient().get("matches/$matchId/ratings");
     if (r == null)
-      return null;
+      return {};
 
-    _ratingsPerMatch[matchId] = MatchRatings.fromJson(r, matchId);
-    return _ratingsPerMatch[matchId];
+    var ratings = Map<String, double>.from(r["scores"] ?? {});
+    this._ratingsPerMatch[matchId] = ratings;
+    notifyListeners();
+
+    return ratings;
   }
 
-  List<String>? stillToVote(String matchId, UserDetails ud) {
-    var match = _matchesCache![matchId];
-    var matchRatings = _ratingsPerMatch[matchId];
+  Future<List<String>> fetchStillToVote(String matchId, String userId) async {
+    var r = await CloudFunctionsClient().get("matches/$matchId/ratings/to_vote");
+    if (r == null)
+      return [];
 
-    if (match == null)
-      throw Exception("Match $matchId not found");
+    var stillToVote = List<String>.from(r["users"]);
+    var current = this._stillToVote[matchId];
+    if (current == null) {
+      this._stillToVote[matchId] = Map();
+    }
+    this._stillToVote[matchId]![userId] = stillToVote;
 
-    if (matchRatings == null)
-      return null;
+    notifyListeners();
 
-    var toVote = match.getGoingUsersByTime().toSet();
-    toVote.remove(ud.documentId);
-    matchRatings.ratingsReceived.forEach((receiver, given) {
-      if (given.keys.contains(ud.documentId)) {
-        toVote.remove(receiver);
-      }
-    });
-    return toVote.toList();
+    return stillToVote;
   }
 
   Future<void> refreshState(BuildContext context) async {
