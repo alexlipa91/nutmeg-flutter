@@ -103,8 +103,7 @@ class CreateMatchState extends State<CreateMatch> {
   Future<void> refreshState() async {
     var res = await Future.wait([
       SportCentersController.getSavedSportCenters(),
-      SportCentersController
-          .getUserSportCenters(context.read<UserState>().currentUserId!),
+      context.read<UserState>().fetchLoggedUserSportCenters()
     ]);
     popularCourts = res[0];
     userCourts = res[1];

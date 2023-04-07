@@ -245,7 +245,7 @@ class CreateCourtState extends State<CreateCourt> {
                           courtTypeController.text)
                     );
 
-                    await context.read<UserState>().fetchSportCenters();
+                    await context.read<UserState>().fetchLoggedUserSportCenters();
 
                     Navigator.of(context).pop();
                   }

@@ -4,14 +4,6 @@ import '../model/SportCenter.dart';
 
 class SportCentersController {
 
-  static Future<Map<String, dynamic>> getPlaceDetails(String placeId) async {
-    Map<String, dynamic> data = await CloudFunctionsClient()
-        .callFunction("get_placeid_info", {"place_id" : placeId})
-        ?? {};
-
-    return data;
-  }
-
   static Future<List<SportCenter>> getSavedSportCenters() async {
     Map<String, dynamic> data = await CloudFunctionsClient()
         .callFunction("get_sportcenters", {})

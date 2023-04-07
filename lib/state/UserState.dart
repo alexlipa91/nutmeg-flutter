@@ -5,7 +5,6 @@ import 'package:geolocator/geolocator.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 import 'package:nutmeg/utils/LocationUtils.dart';
 
-import '../controller/SportCentersController.dart';
 import '../model/SportCenter.dart';
 import '../model/UserDetails.dart';
 
@@ -90,10 +89,17 @@ class UserState extends ChangeNotifier {
     });
   }
 
-  Future<void> fetchSportCenters() async {
-    _sportCenters = await SportCentersController
-        .getUserSportCenters(currentUserId!);
+  Future<List<SportCenter>> fetchLoggedUserSportCenters() async {
+    Map<String, dynamic> data = await CloudFunctionsClient()
+        .callFunction("get_user_sportcenters", {"user_id" : currentUserId!})
+        ?? {};
+
+    _sportCenters = data.entries.map((e) => SportCenter
+        .fromJson(Map<String, dynamic>.from(e.value), e.key))
+        .toList();
+
     notifyListeners();
+    return _sportCenters!;
   }
 
   List<SportCenter>? getSportCenters() => _sportCenters;
