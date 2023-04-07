@@ -7,7 +7,6 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:nutmeg/Exceptions.dart';
-import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/controller/SportCentersController.dart';
 import 'package:nutmeg/model/Match.dart';
 import 'package:nutmeg/model/SportCenter.dart';
@@ -73,6 +72,7 @@ class CreateMatchState extends State<CreateMatch> {
   }
 
   SportCenter? sportCenter;
+  bool isSavedSportCenter = false;
 
   final _formKey = GlobalKey<FormState>();
 
@@ -97,11 +97,17 @@ class CreateMatchState extends State<CreateMatch> {
   late FocusNode datefocusNode;
   late FocusNode startTimefocusNode;
 
+  List<SportCenter> popularCourts = [];
+  List<SportCenter> userCourts = [];
+
   Future<void> refreshState() async {
-    await Future.wait([
-      context.read<LoadOnceState>().fetchSportCenters(),
-      context.read<UserState>().fetchSportCenters()
+    var res = await Future.wait([
+      SportCentersController.getSavedSportCenters(),
+      SportCentersController
+          .getUserSportCenters(context.read<UserState>().currentUserId!),
     ]);
+    popularCourts = res[0];
+    userCourts = res[1];
   }
 
   void unfocusIfNoValue(FocusNode focusNode, TextEditingController controller) {
@@ -138,8 +144,7 @@ class CreateMatchState extends State<CreateMatch> {
       paymentsPossible = true;
       managePayments = true;
     } else {
-      sportCenter =
-      SportCentersController.getSportCenter(context, widget.existingMatch)!;
+      sportCenter = widget.existingMatch!.sportCenter;
       var localizedDateTime =
       widget.existingMatch!.getLocalizedTime(sportCenter!.timezoneId);
 
@@ -385,7 +390,7 @@ class CreateMatchState extends State<CreateMatch> {
                   onTap: () async {
                     SportCenter? sp =
                         await ModalBottomSheet.showNutmegModalBottomSheet(
-                            context, LocationsBottomSheet());
+                            context, LocationsBottomSheet(popularCourts, userCourts));
 
                     if (sp != null) {
                       sportCenterEditingController.text = sp.getName();
@@ -781,12 +786,10 @@ class CreateMatchState extends State<CreateMatch> {
                             Iterable<int>.generate(forWeeks).map((w) async {
                           var match = Match(
                               dateTime.add(Duration(days: 7 * w)),
-                              (sportCenter is SavedSportCenter)
+                              (isSavedSportCenter)
                                   ? sportCenter!.placeId
                                   : null,
-                              (sportCenter is SavedSportCenter)
-                                  ? null
-                                  : sportCenter,
+                              sportCenter!,
                               courtNumberEditingController.text,
                               numberOfPeopleRangeValues.end.toInt(),
                               paymentsPossible && managePayments ? (Decimal.parse(priceController.text) * Decimal.parse("100")).toDouble().toInt() : 0,
@@ -939,6 +942,12 @@ class SportCenterRow extends StatelessWidget {
 }
 
 class LocationsBottomSheet extends StatelessWidget {
+
+  List<SportCenter> popularCourts;
+  List<SportCenter> userCourts;
+
+  LocationsBottomSheet(this.popularCourts, this.userCourts);
+
   @override
   Widget build(BuildContext context) {
     var userState = context.watch<UserState>();
@@ -946,16 +955,14 @@ class LocationsBottomSheet extends StatelessWidget {
     if (userState.getSportCenters() == null)
       return ListOfMatchesSkeleton.withoutContainer(repeatFor: 2);
 
-    var popularCourts = Section(
+    var popularCourtsSection = Section(
         title: AppLocalizations.of(context)!.popularCourtsTitle,
         topSpace: 0,
         titleType: "big",
         belowTitleSpace: 16,
         body: Column(
             children: interleave(
-                    context
-                        .read<LoadOnceState>()
-                        .getSportCenters()
+                    popularCourts
                         .map((e) => SportCenterRow(sportCenter: e))
                         .toList(),
                     SizedBox(height: 16))
@@ -969,8 +976,7 @@ class LocationsBottomSheet extends StatelessWidget {
           builder: (context) {
             List<Widget> yourCourtsWidgets = [];
             yourCourtsWidgets.addAll(interleave(
-              userState
-                  .getSportCenters()!
+              userCourts
                   .map((e) => SportCenterRow(sportCenter: e))
                   .toList(),
               SizedBox(height: 16),
@@ -1021,6 +1027,6 @@ class LocationsBottomSheet extends StatelessWidget {
           },
         ));
 
-    return Column(children: [popularCourts, yourCourts]);
+    return Column(children: [popularCourtsSection, yourCourts]);
   }
 }

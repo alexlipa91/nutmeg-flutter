@@ -2,7 +2,6 @@ import "package:collection/collection.dart";
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nutmeg/model/Match.dart';
-import 'package:nutmeg/state/LoadOnceState.dart';
 import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/GenericAvailableMatches.dart';
 import 'package:nutmeg/widgets/Section.dart';
@@ -71,7 +70,7 @@ class AvailableMatches extends StatelessWidget {
 
     if (matches.isNotEmpty) {
       matches.sortedBy((e) => e.dateTime).forEachIndexed((index, match) {
-        var s = state.getMatchSportCenter(context, match);
+        var s = match.sportCenter;
         var w;
         if (index == 0) {
           w = GenericMatchInfo.first(match, s, onTap);
@@ -125,7 +124,7 @@ class AvailableMatches extends StatelessWidget {
       if (e.value.isNotEmpty) {
         Iterable<Widget> widgets =
             e.value.sortedBy((e) => e.dateTime).mapIndexed((index, match) {
-              var s = state.getMatchSportCenter(context, match);
+              var s = match.sportCenter;
               var w;
               if (index == 0)
                 w = GenericMatchInfo.first(match, s, onTap);
@@ -164,7 +163,6 @@ class AvailableMatches extends StatelessWidget {
   Widget? getMyMatchesWidgets(BuildContext context) {
     var state = context.read<MatchesState>();
     var userState = context.read<UserState>();
-    var loadOnceState = context.watch<LoadOnceState>();
 
     if (!userState.isLoggedIn()) {
       return getEmptyStateWidget(context);
@@ -182,11 +180,11 @@ class AvailableMatches extends StatelessWidget {
         if (index == 0) {
           widgets.add(
               GenericMatchInfo.first(state.getMatch(m.documentId)!,
-                  m.sportCenter ?? loadOnceState.getSportCenter(m.sportCenterId!)!,
+                  m.sportCenter,
                   onTap));
         } else {
           widgets.add(GenericMatchInfo(state.getMatch(m.documentId)!,
-              m.sportCenter ?? loadOnceState.getSportCenter(m.sportCenterId!)!,
+              m.sportCenter,
               onTap));
         }
       });

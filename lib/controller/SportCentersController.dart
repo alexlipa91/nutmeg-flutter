@@ -1,25 +1,8 @@
-import 'package:flutter/cupertino.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
-import 'package:provider/provider.dart';
-
-import '../model/Match.dart';
 import '../model/SportCenter.dart';
-import '../state/LoadOnceState.dart';
 
 
 class SportCentersController {
-
-  static Future<SavedSportCenter> refresh(BuildContext context, String sportCenterId) async {
-    var sportCentersState = context.read<LoadOnceState>();
-
-    var data = await CloudFunctionsClient().callFunction("get_sportcenter",
-        {"id" : sportCenterId});
-
-    var sportCenter = SavedSportCenter.fromJson(data, sportCenterId);
-    sportCentersState.setSportCenter(sportCenterId, sportCenter);
-
-    return sportCenter;
-  }
 
   static Future<Map<String, dynamic>> getPlaceDetails(String placeId) async {
     Map<String, dynamic> data = await CloudFunctionsClient()
@@ -27,6 +10,16 @@ class SportCentersController {
         ?? {};
 
     return data;
+  }
+
+  static Future<List<SportCenter>> getSavedSportCenters() async {
+    Map<String, dynamic> data = await CloudFunctionsClient()
+        .callFunction("get_sportcenters", {})
+        ?? {};
+
+    return data.entries.map((e) => SportCenter
+        .fromJson(Map<String, dynamic>.from(e.value), e.key))
+        .toList();
   }
 
   static Future<List<SportCenter>> getUserSportCenters(String uid) async {
@@ -39,28 +32,12 @@ class SportCentersController {
         .toList();
   }
 
-  // todo figure out how to merge these
-  static SportCenter? getSportCenter(BuildContext context, Match? match) {
-    return (match == null)
-        ? null
-        : match.sportCenter ??
-        context.watch<LoadOnceState>().getSportCenter(match.sportCenterId!);
-  }
-
-  static SportCenter? getSportCenterRead(BuildContext context, Match? match) {
-    return (match == null)
-        ? null
-        : match.sportCenter ??
-        context.read<LoadOnceState>().getSportCenter(match.sportCenterId!);
-  }
-
   static Future<void> addSportCenterFromPlace(
-      String placeId,
       String userId,
-      Map<String, dynamic> info) async {
+      SportCenter sportCenter) async {
     await CloudFunctionsClient().callFunction("add_user_sportcenter_from_place_id", {
-      "place_id": placeId,
-      "additional_info": info,
+      "place_id": sportCenter.placeId,
+      "additional_info": sportCenter.toJson(),
       "user_id": userId
     });
   }

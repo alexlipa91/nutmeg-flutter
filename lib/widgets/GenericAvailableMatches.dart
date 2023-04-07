@@ -330,14 +330,11 @@ class GenericMatchInfoPast extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var loadOnceState = context.read<LoadOnceState>();
-
     var match = context.watch<MatchesState>().getMatch(matchId);
 
     if (match == null) return Container();
 
-    var sportCenter = match.sportCenter ??
-        loadOnceState.getSportCenter(match.sportCenterId!)!;
+    var sportCenter = match.sportCenter;
 
     var child = InfoContainer(
       backgroundColor: Palette.white,

@@ -3,13 +3,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 import 'package:nutmeg/model/Match.dart';
 import 'package:nutmeg/model/MatchRatings.dart';
-import 'package:nutmeg/model/SportCenter.dart';
 import 'package:nutmeg/model/UserDetails.dart';
-import 'package:nutmeg/state/LoadOnceState.dart';
 import 'package:nutmeg/state/UserState.dart';
 import 'package:provider/provider.dart';
-
-import '../controller/SportCentersController.dart';
 
 
 class MatchesState extends ChangeNotifier {
@@ -86,6 +82,7 @@ class MatchesState extends ChangeNotifier {
     }
     params["lat"] = userState.getLat();
     params["lng"] = userState.getLng();
+    params["version"] = 2;
 
     var resp = await CloudFunctionsClient().get("matches", args: params);
     Map<String, dynamic> data = (resp == null) ? Map() : Map<String, dynamic>.from(resp);
@@ -151,20 +148,15 @@ class MatchesState extends ChangeNotifier {
     return toVote.toList();
   }
 
-  SportCenter getMatchSportCenter(BuildContext context, Match m) =>
-      m.sportCenter ??
-          context.read<LoadOnceState>().getSportCenter(m.sportCenterId!)!;
-
   Future<void> refreshState(BuildContext context) async {
     await Future.wait(["UPCOMING", "PAST", "GOING", "MY MATCHES"]
         .map((tab) => fetchMatches(tab, context)
     ));
-    await Future.wait(getSportCenters()
-        .map((s) => SportCentersController.refresh(context, s)));
   }
 
   Future<Match> fetchMatch(String matchId) async {
-    var resp = await CloudFunctionsClient().get("matches/$matchId");
+    var resp = await CloudFunctionsClient().get("matches/$matchId",
+        args: {"version": 2});
     var match = Match.fromJson(resp!, matchId);
 
     setMatch(match);

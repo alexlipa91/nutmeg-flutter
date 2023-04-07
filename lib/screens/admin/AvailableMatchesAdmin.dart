@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:google_place/google_place.dart';
 import 'package:nutmeg/model/Match.dart';
 import 'package:nutmeg/state/AvailableMatchesState.dart';
-import 'package:nutmeg/state/LoadOnceState.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:provider/provider.dart';
@@ -25,15 +24,10 @@ class AdminAvailableMatches extends StatelessWidget {
 
   Widget? getMatchWidgets(BuildContext context, bool future) {
     var matchesState = context.watch<MatchesState>();
-    var loadOnceState = context.watch<LoadOnceState>();
 
     if (matchesState.getMatches() == null) {
       return null;
     }
-    if (matchesState
-        .getMatches()!
-        .where((m) => m.sportCenterId != null && loadOnceState.getSportCenter(m.sportCenterId!) == null)
-        .isNotEmpty) return null;
 
     List<Match> matches = matchesState
         .getMatches()!
@@ -52,12 +46,12 @@ class AdminAvailableMatches extends StatelessWidget {
       if (index == 0) {
         result.add(
             GenericMatchInfo.first(matchesState.getMatch(match.documentId)!,
-                match.sportCenter ?? loadOnceState.getSportCenter(match.sportCenterId!)!,
+                match.sportCenter,
                 onTap));
       } else {
         result
             .add(GenericMatchInfo(matchesState.getMatch(match.documentId)!,
-            match.sportCenter ?? loadOnceState.getSportCenter(match.sportCenterId!)!,
+            match.sportCenter,
             onTap));
       }
     });

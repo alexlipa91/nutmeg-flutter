@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:google_place/google_place.dart';
 import 'package:nutmeg/controller/SportCentersController.dart';
+import 'package:nutmeg/model/SportCenter.dart';
 import 'package:nutmeg/state/UserState.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
@@ -237,12 +238,11 @@ class CreateCourtState extends State<CreateCourt> {
                   bool? v = _formKey.currentState?.validate();
                   if (v != null && v) {
                     await SportCentersController.addSportCenterFromPlace(placeId!,
-                      context.read<UserState>().getLoggedUserDetails()!.documentId,
-                      {
-                        "surface": surfaceController.text,
-                        "hasChangingRooms": changeRoomsAvailable,
-                        "courtType": courtTypeController.text
-                      },
+                      SportCenter(placeId!,
+                          Surface.values.where((e) => e.name.toLowerCase()
+                              == surfaceController.text.toLowerCase()).first,
+                          changeRoomsAvailable,
+                          courtTypeController.text)
                     );
 
                     await context.read<UserState>().fetchSportCenters();

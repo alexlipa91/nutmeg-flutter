@@ -40,8 +40,6 @@ class DynamicLinks {
       // todo slowly deprecate
       var deepLinkUrl = Uri.parse('https://web.nutmegapp.com/match/' + match.documentId);
 
-      var sportCenter = SportCentersController.getSportCenter(context, match)!;
-
       final DynamicLinkParameters parameters = DynamicLinkParameters(
           uriPrefix: 'https://nutmegapp.page.link',
           link: deepLinkUrl,
@@ -58,9 +56,9 @@ class DynamicLinks {
           ),
           socialMetaTagParameters: SocialMetaTagParameters(
             title: "Match on ${dayDateFormat
-                .format(match.getLocalizedTime(sportCenter.timezoneId))} "
-                "${gmtSuffix(sportCenter.timezoneId)}",
-            description: "Location: ${sportCenter.name}",
+                .format(match.getLocalizedTime(match.sportCenter!.timezoneId))} "
+                "${gmtSuffix(match.sportCenter!.timezoneId)}",
+            description: "Location: ${match.sportCenter!.name}",
           )
       );
       var url = await FirebaseDynamicLinks.instance.buildShortLink(parameters);

@@ -236,7 +236,6 @@ class LaunchController {
     print("loading static data");
     var futures = [
       MiscController.getGifs(context.read<LoadOnceState>()),
-      context.read<LoadOnceState>().fetchSportCenters(),
     ];
     await Future.wait(futures);
     print("loading static done");

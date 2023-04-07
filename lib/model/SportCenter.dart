@@ -8,16 +8,27 @@ enum Surface {indoor, grass}
 
 class SportCenter {
   String placeId;
-  String address;
-  String name;
-  double lat;
-  double lng;
+  late String address;
+  late String name;
+  late double lat;
+  late double lng;
 
   Surface _surface;
   bool? hasChangingRooms;
   String courtType;
-  String timezoneId;
-  String country;
+  late String timezoneId;
+  late String country;
+
+  String? _thumbnailUrl;
+  List<String>? _imagesUrls;
+
+  bool? isSaved;
+
+  SportCenter(
+      this.placeId,
+      this._surface,
+      this.hasChangingRooms,
+      this.courtType);
 
   SportCenter.fromJson(Map<String, dynamic>? json, String documentId)
       : placeId = documentId,
@@ -29,7 +40,10 @@ class SportCenter {
         _surface = Surface.values.where((e) => e.name == json["surface"].toString().toLowerCase()).first,
         hasChangingRooms = json['hasChangingRooms'],
         timezoneId = json["timeZoneId"] ?? "Europe/Amsterdam",
-        courtType = json['courtType']!;
+        courtType = json['courtType']!,
+        _thumbnailUrl = json['thumbnailUrl'],
+        _imagesUrls = json["largeImageUrls"] == null
+            ? null : List<String>.from(json["largeImageUrls"]!);
 
   Map<String, dynamic> toJson() => {
         'address': address,
@@ -46,6 +60,24 @@ class SportCenter {
       };
 
   Widget getThumbnail() {
+    if (_thumbnailUrl != null)
+      return CachedNetworkImage(
+      imageUrl: _thumbnailUrl == null
+          ? "https://storage.googleapis.com/nutmeg-9099c.appspot.com/sportcenters/default/thumbnail.png"
+          : _thumbnailUrl!,
+      fadeInDuration: Duration(milliseconds: 0),
+      imageBuilder: (context, imageProvider) => Container(
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              image: imageProvider,
+              fit: BoxFit.fill,
+            ),
+            borderRadius: BorderRadius.all(Radius.circular(10)),
+          )),
+      // placeholder: (context, url) => placeHolder,
+      errorWidget: (context, url, error) => Icon(Icons.error),
+    );
+
     return Container(
         decoration: BoxDecoration(
           image: DecorationImage(
@@ -58,6 +90,30 @@ class SportCenter {
   }
 
   List<Widget> getCarouselImages() {
+    if (_imagesUrls != null) {
+      return _imagesUrls!
+          .map((i) => CachedNetworkImage(
+        imageUrl: i,
+        fadeInDuration: Duration(milliseconds: 0),
+        fadeOutDuration: Duration(milliseconds: 0),
+        imageBuilder: (context, imageProvider) => Container(
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: imageProvider,
+                fit: BoxFit.fill,
+              ),
+            )),
+        placeholder: (context, imageProvider) => SkeletonAvatar(
+          style: SkeletonAvatarStyle(
+              width: double.infinity,
+              height: 213,
+              borderRadius: BorderRadius.circular(10.0)),
+        ),
+        errorWidget: (context, url, error) => Icon(Icons.error),
+      ))
+          .toList();
+    }
+
     return [
       Container(
           decoration: BoxDecoration(
@@ -84,79 +140,6 @@ class SportCenter {
 
     return surfacesDescription[_surface];
   }
-}
-
-class SavedSportCenter extends SportCenter {
-  String? neighbourhood;
-  String? cid;
-
-  String? _thumbnailUrl;
-  List<String> _imagesUrls;
-
-  SavedSportCenter.fromJson(Map<String, dynamic>? json, String documentId)
-      : neighbourhood = json!['neighbourhood'],
-        cid = json['cid'],
-        _thumbnailUrl = json['thumbnailUrl'],
-        _imagesUrls = List<String>.from(json["largeImageUrls"] ?? []),
-        super.fromJson(json, documentId);
-
-  bool operator ==(dynamic other) =>
-      other != null &&
-      other is SavedSportCenter &&
-      this.placeId == other.placeId;
-
-  @override
-  int get hashCode => super.hashCode;
-
-  List<String> getImagesUrls() => _imagesUrls.isEmpty
-      ? [
-          "https://storage.googleapis.com/nutmeg-9099c.appspot.com/sportcenters/default/large/1.png"
-        ]
-      : _imagesUrls;
-
-  // images are 60x78
-  @override
-  Widget getThumbnail() {
-    return CachedNetworkImage(
-      imageUrl: _thumbnailUrl == null
-          ? "https://storage.googleapis.com/nutmeg-9099c.appspot.com/sportcenters/default/thumbnail.png"
-          : _thumbnailUrl!,
-      fadeInDuration: Duration(milliseconds: 0),
-      imageBuilder: (context, imageProvider) => Container(
-          decoration: BoxDecoration(
-        image: DecorationImage(
-          image: imageProvider,
-          fit: BoxFit.fill,
-        ),
-        borderRadius: BorderRadius.all(Radius.circular(10)),
-      )),
-      // placeholder: (context, url) => placeHolder,
-      errorWidget: (context, url, error) => Icon(Icons.error),
-    );
-  }
-
-  @override
-  List<Widget> getCarouselImages() => _imagesUrls
-      .map((i) => CachedNetworkImage(
-            imageUrl: i,
-            fadeInDuration: Duration(milliseconds: 0),
-            fadeOutDuration: Duration(milliseconds: 0),
-            imageBuilder: (context, imageProvider) => Container(
-                decoration: BoxDecoration(
-              image: DecorationImage(
-                image: imageProvider,
-                fit: BoxFit.fill,
-              ),
-            )),
-            placeholder: (context, imageProvider) => SkeletonAvatar(
-              style: SkeletonAvatarStyle(
-                  width: double.infinity,
-                  height: 213,
-                  borderRadius: BorderRadius.circular(10.0)),
-            ),
-            errorWidget: (context, url, error) => Icon(Icons.error),
-          ))
-      .toList();
 
   String getShortAddress() => address.split(",").first;
 

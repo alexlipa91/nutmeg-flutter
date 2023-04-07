@@ -24,7 +24,7 @@ class Match {
   DateTime dateTime;
 
   String? sportCenterId;
-  SportCenter? sportCenter;
+  SportCenter sportCenter;
 
   Duration duration;
   String? sportCenterSubLocation;
@@ -77,7 +77,10 @@ class Match {
         organiserFee = jsonInput["organiserFee"] ?? 0,
         score = jsonInput["score"] == null ? null : List<int>.from(jsonInput["score"]),
         dynamicLink = jsonInput["dynamicLink"],
-        managePayments = jsonInput["managePayments"] ?? true {
+        managePayments = jsonInput["managePayments"] ?? true,
+        sportCenter = SportCenter.fromJson(
+            Map<String, dynamic>.from(jsonInput["sportCenter"]),
+            jsonInput["sportCenter"]["placeId"]) {
       sportCenterSubLocation = jsonInput['sportCenterSubLocation'];
 
       if (jsonInput.containsKey("cancelledAt") && jsonInput["cancelledAt"] != null)
@@ -97,12 +100,6 @@ class Match {
 
       if (jsonInput.containsKey("paid_out_at"))
         paidOutAt = DateTime.parse(jsonInput['paid_out_at']).toLocal();
-
-      if (jsonInput.containsKey("sportCenter")) {
-        sportCenter = SportCenter.fromJson(
-            Map<String, dynamic>.from(jsonInput["sportCenter"]),
-            jsonInput["sportCenter"]["placeId"]);
-      }
 
       this.documentId = documentId;
   }
@@ -145,8 +142,7 @@ class Match {
         'dateTime': dateTime.toUtc().toIso8601String(),
         if (sportCenterId != null)
           'sportCenterId': sportCenterId,
-        if (sportCenter != null)
-          'sportCenter': sportCenter!.toJson(),
+        'sportCenter': sportCenter.toJson(),
         if (sportCenterSubLocation != null)
           'sportCenterSubLocation': sportCenterSubLocation,
         'pricePerPerson': pricePerPersonInCents,

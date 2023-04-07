@@ -8,7 +8,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
-import 'package:nutmeg/controller/SportCentersController.dart';
 import 'package:nutmeg/state/LoadOnceState.dart';
 import 'package:nutmeg/utils/LocationUtils.dart';
 import 'package:provider/provider.dart';
@@ -123,8 +122,7 @@ class MatchDetailsState extends State<MatchDetails> {
     var matchesState = context.watch<MatchesState>();
 
     Match? match = matchesState.getMatch(widget.matchId);
-    SportCenter? sportCenter =
-        SportCentersController.getSportCenter(context, match);
+    SportCenter? sportCenter = match?.sportCenter;
 
     var status = match?.status;
 
