@@ -1,7 +1,6 @@
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:nutmeg/controller/SportCentersController.dart';
 import 'package:nutmeg/model/Match.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:share_plus/share_plus.dart';
@@ -56,9 +55,9 @@ class DynamicLinks {
           ),
           socialMetaTagParameters: SocialMetaTagParameters(
             title: "Match on ${dayDateFormat
-                .format(match.getLocalizedTime(match.sportCenter!.timezoneId))} "
-                "${gmtSuffix(match.sportCenter!.timezoneId)}",
-            description: "Location: ${match.sportCenter!.name}",
+                .format(match.getLocalizedTime(match.sportCenter.timezoneId))} "
+                "${gmtSuffix(match.sportCenter.timezoneId)}",
+            description: "Location: ${match.sportCenter.name}",
           )
       );
       var url = await FirebaseDynamicLinks.instance.buildShortLink(parameters);

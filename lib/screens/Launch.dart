@@ -33,6 +33,7 @@ final scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
 final appRouter = GoRouter(
   debugLogDiagnostics: true,
   urlPathStrategy: UrlPathStrategy.path,
+  errorBuilder: (context, state) => AvailableMatches(),
   routes: [
     GoRoute(
       path: '/launch',
