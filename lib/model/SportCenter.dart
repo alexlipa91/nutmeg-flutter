@@ -8,27 +8,21 @@ enum Surface {indoor, grass}
 
 class SportCenter {
   String placeId;
-  late String address;
-  late String name;
-  late double lat;
-  late double lng;
+  String address;
+  String name;
+  double lat;
+  double lng;
 
   Surface _surface;
   bool? hasChangingRooms;
   String courtType;
-  late String timezoneId;
-  late String country;
+  String timezoneId;
+  String country;
 
   String? _thumbnailUrl;
   List<String>? _imagesUrls;
 
   bool? isSaved;
-
-  SportCenter(
-      this.placeId,
-      this._surface,
-      this.hasChangingRooms,
-      this.courtType);
 
   SportCenter.fromJson(Map<String, dynamic>? json, String documentId)
       : placeId = documentId,

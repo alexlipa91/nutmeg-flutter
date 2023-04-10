@@ -76,7 +76,6 @@ Future<List<PredictionResult>> getPlacePrediction(String query, String userCount
       ?? {};
 
   List predictions = data["predictions"] ?? [];
-  print(predictions);
 
   List<PredictionResult> results = [];
 

@@ -238,13 +238,11 @@ class CreateCourtState extends State<CreateCourt> {
                   bool? v = _formKey.currentState?.validate();
                   if (v != null && v) {
                     await SportCentersController.addSportCenterFromPlace(placeId!,
-                      SportCenter(placeId!,
-                          Surface.values.where((e) => e.name.toLowerCase()
+                        placeId!,
+                        Surface.values.where((e) => e.name.toLowerCase()
                               == surfaceController.text.toLowerCase()).first,
-                          changeRoomsAvailable,
-                          courtTypeController.text)
-                    );
-
+                        changeRoomsAvailable,
+                        courtTypeController.text);
                     await context.read<UserState>().fetchLoggedUserSportCenters();
 
                     Navigator.of(context).pop();

@@ -4,16 +4,6 @@ import '../model/SportCenter.dart';
 
 class SportCentersController {
 
-  static Future<List<SportCenter>> getSavedSportCenters() async {
-    Map<String, dynamic> data = await CloudFunctionsClient()
-        .callFunction("get_sportcenters", {})
-        ?? {};
-
-    return data.entries.map((e) => SportCenter
-        .fromJson(Map<String, dynamic>.from(e.value), e.key))
-        .toList();
-  }
-
   static Future<List<SportCenter>> getUserSportCenters(String uid) async {
     Map<String, dynamic> data = await CloudFunctionsClient()
         .callFunction("get_user_sportcenters", {"user_id" : uid})
@@ -26,10 +16,17 @@ class SportCentersController {
 
   static Future<void> addSportCenterFromPlace(
       String userId,
-      SportCenter sportCenter) async {
+      String placeId,
+      Surface surface,
+      bool changeRoomsAvailable,
+      String courtType) async {
     await CloudFunctionsClient().callFunction("add_user_sportcenter_from_place_id", {
-      "place_id": sportCenter.placeId,
-      "additional_info": sportCenter.toJson(),
+      "place_id": placeId,
+      "additional_info": {
+        "surface": surface.name.toLowerCase(),
+        "courtType": courtType,
+        "hasChangingRooms": changeRoomsAvailable
+      },
       "user_id": userId
     });
   }
