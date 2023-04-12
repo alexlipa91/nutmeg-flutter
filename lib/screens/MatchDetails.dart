@@ -63,15 +63,17 @@ class MatchDetailsState extends State<MatchDetails> {
   Future<void> myInitState() async {
     print("MatchDetails init state");
     // check if payment outcome
-    if (widget.paymentOutcome != null) {
-      if (ModalBottomSheet.isOpen) Navigator.of(context).pop();
-      if (widget.paymentOutcome! == "success") {
-        PaymentDetailsDescription.communicateSuccessToUser(context, widget.matchId);
-      } else
-        GenericInfoModal(
-            title: "Payment Failed!", description: "Please try again")
-            .show(context);
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (widget.paymentOutcome != null) {
+        if (ModalBottomSheet.isOpen) Navigator.of(context).pop();
+        if (widget.paymentOutcome! == "success") {
+          await PaymentDetailsDescription.communicateSuccessToUser(context, widget.matchId);
+        } else
+          GenericInfoModal(
+              title: "Payment Failed!", description: "Please try again")
+              .show(context);
+      }
+    });
 
     await refreshState();
 
@@ -164,15 +166,6 @@ class MatchDetailsState extends State<MatchDetails> {
             ? CompleteOrganiserAccountWidget(isTest: isTest)
             : null;
 
-        var testInfo = isTest
-            ? InfoContainer(
-                backgroundColor: Palette.accent,
-                child: SelectableText(
-                  "Test match: " + widget.matchId,
-                  style: TextPalette.getBodyText(Palette.black),
-                ))
-            : null;
-
         var matchInfo = MatchInfo(match!, sportCenter!);
 
         var infoPlayersList = match.hasTeams()
@@ -252,7 +245,6 @@ class MatchDetailsState extends State<MatchDetails> {
           widgets = interleave([
             // title
             if (completeOrganiserWidget != null) completeOrganiserWidget,
-            if (testInfo != null) testInfo,
             // info box
             matchInfo,
             // stats
@@ -265,7 +257,6 @@ class MatchDetailsState extends State<MatchDetails> {
           ], SizedBox(height: 16));
         } else {
           widgets = [
-            if (testInfo != null) testInfo,
             if (completeOrganiserWidget != null) completeOrganiserWidget,
             Row(
               mainAxisSize: MainAxisSize.min,
