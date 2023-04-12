@@ -186,7 +186,7 @@ class Match {
 
   int getMissingPlayers() => max(0, minPlayers - going.length);
 
-  bool hasTeams() => going.length > minPlayers
+  bool hasTeams() => going.length >= minPlayers
       && teams.values.map((e) => e.length).reduce((a, b) => a + b)
           == going.length;
 
