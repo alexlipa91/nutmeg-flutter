@@ -18,8 +18,8 @@ platform :ios do
       scheme: "Runner",
       export_method: "app-store",
       export_team_id: ENV["DEVELOPER_PORTAL_TEAM_ID"],
-      skip_build_archive: true,
-      archive_path: "../build/ios/archive/Runner.xcarchive",
+#       skip_build_archive: true,
+#       archive_path: "../build/ios/archive/Runner.xcarchive",
       verbose: true
     )
 
