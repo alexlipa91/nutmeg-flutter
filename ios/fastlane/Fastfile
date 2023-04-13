@@ -1,12 +1,16 @@
 default_platform(:ios)
 
+bundle_identifier = "com.nutmeg.app"
+app_id = "1592985083"
+team_id = "CN7XB83K76"
+
 platform :ios do
   lane :sign_ipa do
     setup_ci(verbose: true)
 
     match(
       type: 'appstore',
-      app_identifier: ENV["BUNDLE_IDENTIFIER"],
+      app_identifier: bundle_identifier,
       git_basic_authorization: Base64.strict_encode64(ENV["GIT_AUTH_TOKEN"]),
       readonly: true,
       verbose: true,
@@ -15,7 +19,7 @@ platform :ios do
     gym(
       scheme: "Runner",
       export_method: "app-store",
-      export_team_id: ENV["DEVELOPER_PORTAL_TEAM_ID"],
+      export_team_id: team_id,
       skip_build_archive: true,
       archive_path: "../build/ios/archive/Runner.xcarchive",
       verbose: true
@@ -26,14 +30,14 @@ platform :ios do
       sign_ipa
 
       pilot(
-        apple_id: ENV["APPLICATION_ID"],
-        app_identifier: ENV["BUNDLE_IDENTIFIER"],
+        apple_id: app_id,
+        app_identifier: bundle_identifier,
         skip_waiting_for_build_processing: true,
         skip_submission: true,
         distribute_external: false,
         notify_external_testers: false,
         ipa: "./Runner.ipa",
-        itc_provider: "CN7XB83K76"
+        itc_provider: team_id
       )
   end
 
@@ -49,8 +53,8 @@ platform :ios do
         skip_screenshots: true,
         skip_binary_upload: true,
         run_precheck_before_submit: false,
-        username: ENV["FASTLANE_APPLE_ID"],
-        app_identifier: ENV["BUNDLE_IDENTIFIER"],
+        username: "alessandroliparoti@live.it"
+        app_identifier: bundle_identifier,
         submission_information: { add_id_info_uses_idfa: false }
     )
   end
