@@ -36,11 +36,7 @@ jobs:
           lane: 'closed_beta'
           subdirectory: 'ios'
         env:
-          APPLICATION_ID: "1592985083"
-          BUNDLE_IDENTIFIER: "com.nutmeg.app"
-          DEVELOPER_PORTAL_TEAM_ID: "CN7XB83K76"
-          FASTLANE_APPLE_ID: "alessandroliparoti@live.it"
-          FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD: "odnv-ruvg-mzoo-enld"
+          FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD: ${{ secrets.FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD }}
           MATCH_PASSWORD: "nutmeg"
           GIT_AUTH_TOKEN: ${{ secrets.GIT_AUTH_TOKEN }}
       - name: save artifacts

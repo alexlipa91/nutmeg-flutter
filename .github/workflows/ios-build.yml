@@ -35,6 +35,10 @@ jobs:
         with:
           lane: 'sign_ipa'
           subdirectory: 'ios'
+        env:
+          FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD: ${{ secrets.FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD }}
+          MATCH_PASSWORD: "nutmeg"
+          GIT_AUTH_TOKEN: ${{ secrets.GIT_AUTH_TOKEN }}
       - name: Archive artifacts
         uses: actions/upload-artifact@v3
         with:
