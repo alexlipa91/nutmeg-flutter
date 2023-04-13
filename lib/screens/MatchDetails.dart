@@ -1131,7 +1131,7 @@ class Stats extends StatelessWidget {
   Widget build(BuildContext context) {
     var child;
     var dayDateFormat = DateFormat(
-        "EEEE, MMM dd", context.watch<LoadOnceState>().locale.languageCode);
+        "EEEE, MMM dd HH:mm", context.watch<LoadOnceState>().locale.languageCode);
 
     if (match.status == MatchStatus.to_rate) {
       child = Container(
@@ -1154,7 +1154,8 @@ class Stats extends StatelessWidget {
               Text(
                 AppLocalizations.of(context)!.statsAvailableAt(
                     dayDateFormat.format(
-                            match.getLocalizedTime(sportCenter.timezoneId)) +
+                            match.getLocalizedTime(sportCenter.timezoneId)
+                                .add(Duration(days: 1))) +
                         " ${gmtSuffix(sportCenter.timezoneId)}"),
                 style: TextPalette.bodyText,
                 textAlign: TextAlign.center,
