@@ -2,10 +2,8 @@ name: Appstore Deployment
 
 on:
   push:
-    branches:
-      - master
-    tags-ignore:
-      - "**"
+    tags:
+      - v*
 
 jobs:
   deploy_ios:
@@ -36,7 +34,7 @@ jobs:
           lane: 'closed_beta'
           subdirectory: 'ios'
         env:
-          FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD: ${{ secrets.FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD }}
+          FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD: "odnv-ruvg-mzoo-enld"
           MATCH_PASSWORD: "nutmeg"
           GIT_AUTH_TOKEN: ${{ secrets.GIT_AUTH_TOKEN }}
       - name: save artifacts

@@ -3,15 +3,11 @@ default_platform(:ios)
 bundle_identifier = "com.nutmeg.app"
 app_id = "1592985083"
 team_id = "CN7XB83K76"
+username = "alessandroliparoti@live.it"
 
 platform :ios do
-  lane :flutter_build do
-    sh(
-      "flutter clean; flutter pub get; flutter build ipa --release --no-codesign -t lib/screens/Launch.dart"
-    )
-  end
+  lane :closed_beta do
 
-  lane :sign_ipa do
     setup_ci(verbose: true)
 
     match(
@@ -30,31 +26,17 @@ platform :ios do
       archive_path: "../build/ios/archive/Runner.xcarchive",
       verbose: true
     )
-  end
 
-  lane :send_to_testflight do
-      # create the key file, the api_key and use it for pilot
-      sh(
-        "echo $P8_KEY | base64 -d > AuthKey_G99M43ZG3G.p8"
-      )
-
-      api_key = app_store_connect_api_key(
-        key_id: "G99M43ZG3G",
-        issuer_id: "549abdc6-6a6f-40f5-b041-c46daa9d6c91",
-        key_filepath: "./AuthKey_G99M43ZG3G.p8"
-      )
-
-      pilot(
-        api_key: api_key,
-        apple_id: app_id,
-        app_identifier: bundle_identifier,
-        skip_waiting_for_build_processing: true,
-        skip_submission: true,
-        distribute_external: false,
-        notify_external_testers: false,
-        ipa: "./Runner.ipa",
-        itc_provider: team_id
-      )
+    pilot(
+      apple_id: apple_id,
+      app_identifier: bundle_identifier,
+      skip_waiting_for_build_processing: true,
+      skip_submission: true,
+      distribute_external: false,
+      notify_external_testers: false,
+      ipa: "./Runner.ipa",
+      itc_provider: "CN7XB83K76"
+    )
   end
 
   lane :submit_for_review do |options|
@@ -69,19 +51,9 @@ platform :ios do
         skip_screenshots: true,
         skip_binary_upload: true,
         run_precheck_before_submit: false,
-        username: "alessandroliparoti@live.it",
+        username: username,
         app_identifier: bundle_identifier,
         submission_information: { add_id_info_uses_idfa: false }
     )
-  end
-
-  lane :build do
-    flutter_build
-  end
-
-  lane :build_and_deploy_beta do
-    flutter_build
-    sign_ipa
-    send_to_testflight
   end
 end
