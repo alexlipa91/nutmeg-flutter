@@ -26,7 +26,16 @@ jobs:
       - run: flutter clean
       - run: flutter pub get
       - run: flutter build ipa --release --no-codesign -t lib/screens/Launch.dart
-      - name: Archive production artifacts
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.0'
+          bundler-cache: true
+          working-directory: 'ios'
+      - uses: maierj/fastlane-action@v3.0.0
+        with:
+          lane: 'sign_ipa'
+          subdirectory: 'ios'
+      - name: Archive artifacts
         uses: actions/upload-artifact@v3
         with:
           name: save-ipa

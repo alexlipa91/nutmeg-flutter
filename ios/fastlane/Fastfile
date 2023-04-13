@@ -1,9 +1,7 @@
-# Replace evverything in Fastfile with below code
 default_platform(:ios)
 
 platform :ios do
-  lane :closed_beta do
-
+  lane :sign_ipa do
     setup_ci(verbose: true)
 
     match(
@@ -22,17 +20,21 @@ platform :ios do
       archive_path: "../build/ios/archive/Runner.xcarchive",
       verbose: true
     )
+  end
 
-    pilot(
-      apple_id: ENV["APPLICATION_ID"],
-      app_identifier: ENV["BUNDLE_IDENTIFIER"],
-      skip_waiting_for_build_processing: true,
-      skip_submission: true,
-      distribute_external: false,
-      notify_external_testers: false,
-      ipa: "./Runner.ipa",
-      itc_provider: "CN7XB83K76"
-    )
+  lane :closed_beta do
+      sign_ipa
+
+      pilot(
+        apple_id: ENV["APPLICATION_ID"],
+        app_identifier: ENV["BUNDLE_IDENTIFIER"],
+        skip_waiting_for_build_processing: true,
+        skip_submission: true,
+        distribute_external: false,
+        notify_external_testers: false,
+        ipa: "./Runner.ipa",
+        itc_provider: "CN7XB83K76"
+      )
   end
 
   lane :submit_for_review do |options|
