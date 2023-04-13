@@ -15,6 +15,14 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 
 ## iOS
 
+### ios build
+
+```sh
+[bundle exec] fastlane ios build
+```
+
+
+
 ### ios sign_ipa
 
 ```sh
@@ -23,10 +31,10 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 
 
 
-### ios closed_beta
+### ios send_to_testflight
 
 ```sh
-[bundle exec] fastlane ios closed_beta
+[bundle exec] fastlane ios send_to_testflight
 ```
 
 
@@ -35,6 +43,14 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 
 ```sh
 [bundle exec] fastlane ios submit_for_review
+```
+
+
+
+### ios build_and_deploy_beta
+
+```sh
+[bundle exec] fastlane ios build_and_deploy_beta
 ```
 
 
