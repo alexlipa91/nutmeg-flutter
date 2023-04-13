@@ -28,7 +28,7 @@ platform :ios do
     )
 
     pilot(
-      apple_id: apple_id,
+      apple_id: app_id,
       app_identifier: bundle_identifier,
       skip_waiting_for_build_processing: true,
       skip_submission: true,
