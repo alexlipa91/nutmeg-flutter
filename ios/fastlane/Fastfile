@@ -53,7 +53,7 @@ platform :ios do
         skip_screenshots: true,
         skip_binary_upload: true,
         run_precheck_before_submit: false,
-        username: "alessandroliparoti@live.it"
+        username: "alessandroliparoti@live.it",
         app_identifier: bundle_identifier,
         submission_information: { add_id_info_uses_idfa: false }
     )
