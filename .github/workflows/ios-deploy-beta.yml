@@ -37,6 +37,7 @@ jobs:
           FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD: "odnv-ruvg-mzoo-enld"
           MATCH_PASSWORD: "nutmeg"
           GIT_AUTH_TOKEN: ${{ secrets.GIT_AUTH_TOKEN }}
+          KEY_ID: "CTJDHGWL48"
       - name: save artifacts
         if: always()
         uses: actions/upload-artifact@v3

@@ -28,6 +28,11 @@ platform :ios do
     )
 
     pilot(
+      api_key = app_store_connect_api_key(
+        key_id: ENV["KEY_ID"],
+        issuer_id: "549abdc6-6a6f-40f5-b041-c46daa9d6c91",
+        key_filepath: "./AuthKey_" + ENV["KEY_ID"] + ".p8"
+      )
       apple_id: app_id,
       app_identifier: bundle_identifier,
       skip_waiting_for_build_processing: true,
