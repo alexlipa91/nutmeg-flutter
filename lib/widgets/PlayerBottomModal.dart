@@ -1,11 +1,13 @@
 import 'dart:math';
 
+import 'package:badges/badges.dart';
 import 'package:charts_flutter/flutter.dart' as charts;
 
 import 'package:charts_flutter/flutter.dart';
 import 'package:charts_flutter/src/text_element.dart' as ChartText;
 import 'package:charts_flutter/src/text_style.dart' as ChartStyle;
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Badge;
+import 'package:nutmeg/screens/UserPage.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/Skeletons.dart';
@@ -102,20 +104,30 @@ class PlayerBottomModal extends StatelessWidget {
 class StatEntry extends StatelessWidget {
   final String? stat;
   final String? description;
+  final Widget? rightBadge;
 
-  const StatEntry({Key? key, required this.stat, required this.description})
+  const StatEntry({Key? key, required this.stat, required this.description, this.rightBadge})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Column(
-        children: [
-          Text(stat!, style: TextPalette.getStats(Palette.black)),
-          SizedBox(height: 4),
-          Text(description!, style: TextPalette.bodyText)
-        ],
-      ),
+    return Column(
+      children: [
+        Text(stat!, style: TextPalette.getStats(Palette.black)),
+        SizedBox(height: 4),
+        (rightBadge != null) ? Badge(
+            badgeColor: Colors.transparent,
+            borderSide: BorderSide.none,
+            shape: BadgeShape.circle,
+            position: BadgePosition(end: 0, bottom: -5),
+            elevation: 0,
+            badgeContent: rightBadge,
+            child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 48),
+                child: Text(description!,
+                    style: TextPalette.bodyText))) :
+        Text(description!, style: TextPalette.bodyText)
+      ],
     );
   }
 }
@@ -144,6 +156,7 @@ class JoinedPlayerBottomModal extends StatelessWidget {
                   stat: (userDetails.getScoreMatches() == null)
                       ? "-" : userDetails.getScoreMatches()!.toStringAsFixed(2),
                   description: "Avg. score",
+                  rightBadge: UserScoreBox.deltaBadge(userDetails),
                 ),
               ),
               Expanded(

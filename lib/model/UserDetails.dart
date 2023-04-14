@@ -9,6 +9,8 @@ class UserDetails {
   int? creditsInCents;
 
   int? numJoinedMatches;
+  int numRatedMatches;
+  double sumTotalRates;
   double? averageScore;
   List<double>? lastScores;
   Map<String, int>? skillsCount;
@@ -21,19 +23,10 @@ class UserDetails {
   bool? chargesEnabledOnStripe;
   bool? chargesEnabledOnStripeTest;
 
-  UserDetails.empty(this.documentId);
-
   UserDetails(this.documentId, this.isAdmin, this.image, this.name, this.email)
-      : creditsInCents = 0;
-
-  UserDetails.from(String documentId, UserDetails u)
-      : this.documentId = documentId,
-        this.isAdmin = u.isAdmin,
-        this.image = u.image,
-        this.name = u.name,
-        this.email = u.email,
-        this.stripeId = u.stripeId,
-        this.creditsInCents = u.creditsInCents;
+      : numRatedMatches = 0,
+        sumTotalRates = 0,
+        creditsInCents = 0;
 
   UserDetails.fromJson(Map<String, dynamic> json, String documentId)
       : isAdmin = (json["isAdmin"] == null) ? false : json["isAdmin"],
@@ -44,6 +37,8 @@ class UserDetails {
         stripeId = json["stripeId"] ?? null,
         numJoinedMatches = json["num_matches_joined"] ?? 0,
         averageScore = json["avg_score"] ?? null,
+        numRatedMatches = json["scores"]["number_of_scored_games"],
+        sumTotalRates = json["scores"]["total_sum"],
         potmCount = json["potm_count"] ?? 0,
         lastScores = (json["last_date_scores"] == null) ? []
             : _readLastScores(Map<String, double>.from(json["last_date_scores"])),
@@ -94,6 +89,13 @@ class UserDetails {
 
   bool areChargesEnabled(bool isTest) {
     return isTest ? chargesEnabledOnStripeTest ?? false : chargesEnabledOnStripe ?? false;
+  }
+
+  double getDeltaFromLastScore() {
+    if (averageScore == null || (lastScores ?? []).length < 2 || numRatedMatches < 2)
+      return 0;
+    var previousScore = (sumTotalRates - lastScores![lastScores!.length - 2]) / (numRatedMatches - 1);
+    return averageScore! - previousScore;
   }
 
   static String getDisplayName(UserDetails? ud) {

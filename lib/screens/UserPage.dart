@@ -3,6 +3,7 @@ import 'package:flutter/material.dart' hide Badge;
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nutmeg/controller/UserController.dart';
+import 'package:nutmeg/model/UserDetails.dart';
 import 'package:nutmeg/state/LoadOnceState.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
@@ -224,11 +225,7 @@ class UserPageState extends State<UserPage> {
         verticalSpace,
         Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
           Expanded(
-            child: UserInfoBox(
-                content: (userDetails.getScoreMatches() == null)
-                    ? "-"
-                    : userDetails.getScoreMatches()!.toStringAsFixed(2),
-                description: "Avg. Score"),
+            child: UserScoreBox(userDetails: userDetails),
           ),
           SizedBox(width: 20),
           Expanded(
@@ -276,7 +273,8 @@ class UserPageState extends State<UserPage> {
                                           Container(
                                             width: 180,
                                             child: Text(e.value.key,
-                                                style: TextPalette.getBodyText(Palette.black)),
+                                                style: TextPalette.getBodyText(
+                                                    Palette.black)),
                                           ),
                                           Container(
                                             height: 8,
@@ -299,7 +297,8 @@ class UserPageState extends State<UserPage> {
                                               e.value.value == 0
                                                   ? "-"
                                                   : e.value.value.toString(),
-                                              style: TextPalette.getBodyText(Palette.black),
+                                              style: TextPalette.getBodyText(
+                                                  Palette.black),
                                             ),
                                           )
                                         ]))
@@ -515,30 +514,34 @@ class UserPageState extends State<UserPage> {
                       String? locale =
                           await ModalBottomSheet.showNutmegModalBottomSheet(
                               context,
-                              Row(children: [
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        "Language",
-                                        style: TextPalette.h2,
-                                      ),
-                                      SizedBox(height: 16.0),
-                                      InkWell(
-                                        onTap: () => Navigator.pop(context, "en"),
-                                        child: Text("English"),
-                                      ),
-                                      SizedBox(height: 16.0),
-                                      InkWell(
-                                        onTap: () => Navigator.pop(context, "pt"),
-                                        child: Text("Portoguese"),
-                                      ),
-                                    ],
-                                  ),
-                                )
-                              ],)
-                              );
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          "Language",
+                                          style: TextPalette.h2,
+                                        ),
+                                        SizedBox(height: 16.0),
+                                        InkWell(
+                                          onTap: () =>
+                                              Navigator.pop(context, "en"),
+                                          child: Text("English"),
+                                        ),
+                                        SizedBox(height: 16.0),
+                                        InkWell(
+                                          onTap: () =>
+                                              Navigator.pop(context, "pt"),
+                                          child: Text("Portoguese"),
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                ],
+                              ));
 
                       if (locale != null) {
                         context.read<LoadOnceState>().setLocale(locale);
@@ -624,10 +627,11 @@ class UserInfoBox extends StatelessWidget {
   final String? content;
   final String? description;
   final Widget? bottom;
+  final Widget? rightBadge;
 
   // final Widget badge;
-
-  const UserInfoBox({Key? key, this.content, this.description, this.bottom})
+  const UserInfoBox(
+      {Key? key, this.content, this.description, this.bottom, this.rightBadge})
       // this.badge
       : super(key: key);
 
@@ -636,32 +640,72 @@ class UserInfoBox extends StatelessWidget {
     Widget icContent = Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        (content == null)
-            ? SkeletonLine(
-                style: SkeletonLineStyle(
-                    alignment: AlignmentDirectional.center,
-                    width: 80,
-                    height: 12,
-                    borderRadius: BorderRadius.circular(8.0)))
-            : Text(content!, style: TextPalette.getStats(Palette.black)),
+        Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+          (content == null)
+              ? SkeletonLine(
+                  style: SkeletonLineStyle(
+                      alignment: AlignmentDirectional.center,
+                      width: 80,
+                      height: 12,
+                      borderRadius: BorderRadius.circular(8.0)))
+              : (rightBadge != null)
+                  ? Badge(
+                      badgeColor: Colors.transparent,
+                      borderSide: BorderSide.none,
+                      shape: BadgeShape.circle,
+                      position: BadgePosition(end: 0, bottom: 0),
+                      elevation: 0,
+                      badgeContent: rightBadge,
+                      child: Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 48),
+                          child: Text(content!,
+                              style: TextPalette.getStats(Palette.black))))
+                  : Text(
+                      content!,
+                      style: TextPalette.getStats(Palette.black),
+                    ),
+        ]),
         SizedBox(height: 4),
         Text(description!, style: TextPalette.bodyText),
         if (bottom != null) SizedBox(height: 4),
         if (bottom != null) bottom!
       ],
     );
-
-    // if (badge != null)
-    //   icContent = Badge(
-    //       badgeColor: Colors.transparent,
-    //       toAnimate: false,
-    //       elevation: 0,
-    //       borderRadius: BorderRadius.all(Radius.circular(1.0)),
-    //       borderSide: BorderSide(width: 0.5, color: Palette.grey_lighter),
-    //       // borderRadius: BorderRadius.all(Radius.circular(1.0)),
-    //       badgeContent: Icon(Icons.question_mark, size: 8, color: Palette.grey_dark),
-    //       child: icContent);
     return InfoContainer(child: icContent);
+  }
+}
+
+class UserScoreBox extends StatelessWidget {
+  final UserDetails userDetails;
+
+  const UserScoreBox({Key? key, required this.userDetails}) : super(key: key);
+
+  static Widget deltaBadge(UserDetails userDetails) => Row(
+    mainAxisSize: MainAxisSize.min,
+    crossAxisAlignment: CrossAxisAlignment.end,
+    children: [
+      Icon(
+        userDetails.getDeltaFromLastScore() > 0 ? Icons.arrow_drop_up_outlined :
+        Icons.arrow_drop_down_outlined,
+        size: 16,
+        color: userDetails.getDeltaFromLastScore() > 0 ? Colors.green : Colors.red,
+      ),
+      Text(userDetails.getDeltaFromLastScore().abs().toStringAsFixed(2),
+          style: GoogleFonts.roboto(
+              color: userDetails.getDeltaFromLastScore() > 0 ? Colors.green : Colors.red,
+              fontSize: 13,
+              fontWeight: FontWeight.w400))
+    ],
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    return UserInfoBox(
+        content: (userDetails.getScoreMatches() == null)
+            ? "-"
+            : userDetails.getScoreMatches()!.toStringAsFixed(2),
+        description: "Avg. Score",
+        rightBadge: deltaBadge(userDetails));
   }
 }
 
