@@ -40,8 +40,6 @@ class Match {
 
   Map<String, List<String>> teams;
 
-  Map<String, double>? _manOfTheMatch;
-
   String? organizerId;
   Duration? cancelBefore;
 
@@ -71,7 +69,6 @@ class Match {
         going = _readGoing(jsonInput),
         teams = _readTeams(jsonInput),
         pricePerPersonInCents = jsonInput['pricePerPerson'],
-        _manOfTheMatch = _readManOfTheMatch(jsonInput),
         sportCenterId = jsonInput['sportCenterId'],
         userFee = jsonInput["userFee"] ?? 0,
         organiserFee = jsonInput["organiserFee"] ?? 0,
@@ -104,9 +101,6 @@ class Match {
       this.documentId = documentId;
   }
 
-  Set<String> getPotms() => _manOfTheMatch == null
-      ? Set<String>.from([]) : _manOfTheMatch!.keys.toSet();
-
   static Map<String, DateTime> _readGoing(Map<String, dynamic> json) {
     var map = Map<String, dynamic>.from(json["going"] ?? {});
     return map.map((key, value) =>
@@ -127,14 +121,6 @@ class Match {
       }
     });
     return teams;
-  }
-
-  static Map<String, double>? _readManOfTheMatch(Map<String, dynamic> json) {
-    var map = Map<String, dynamic>.from(json["manOfTheMatch"] ?? {});
-    if (map.isEmpty) {
-      return null;
-    }
-    return map.map((key, value) => MapEntry(key, (value as num).toDouble()));
   }
 
   Map<String, dynamic> toJson() =>
@@ -196,5 +182,15 @@ class Match {
       tz.TZDateTime.from(dateTime, tz.getLocation(timezoneId));
 
   bool isMatchFinished() => DateTime.now().isAfter(dateTime.add(duration));
+}
+
+class Ratings {
+
+  Map<String, double> scores;
+  List<String>? potms;
+
+  Ratings.fromJson(Map<String, dynamic> jsonInput) :
+      scores = Map<String, double>.from(jsonInput["scores"]),
+      potms = List<String>.from(jsonInput["potms"] ?? []);
 }
 

@@ -78,6 +78,7 @@ class MatchDetailsState extends State<MatchDetails> {
     await refreshState();
 
     Match match = context.read<MatchesState>().getMatch(widget.matchId)!;
+    Ratings? ratings = context.read<MatchesState>().getRatings(widget.matchId);
 
     // show rating modal
     var loggedUser = context.read<UserState>().getLoggedUserDetails();
@@ -94,7 +95,7 @@ class MatchDetailsState extends State<MatchDetails> {
     }
 
     if (loggedUser != null &&
-        match.getPotms().contains(loggedUser.documentId)) {
+        (ratings?.potms ?? []).contains(loggedUser.documentId)) {
       UserController.showPotmIfNotSeen(
           context, widget.matchId, loggedUser.documentId);
     }
@@ -1180,7 +1181,7 @@ class Stats extends StatelessWidget {
                     Builder(
                       builder: (context) {
                         Map<String, double?> userAndRate = {};
-                        match.going.keys.forEach((u) => userAndRate[u] = (ratings ?? {})[u]);
+                        match.going.keys.forEach((u) => userAndRate[u] = (ratings?.scores ?? {})[u]);
                         var entries = userAndRate.entries.toList();
                         entries.sort((a, b) => (b.value ?? -1).compareTo((a.value ?? -1)));
 
@@ -1188,7 +1189,7 @@ class Stats extends StatelessWidget {
                           children: entries.map((e) {
                             var userDetails = userState.getUserDetail(e.key);
                             double? rate = e.value;
-                            bool isPotm = match.getPotms().contains(e.key);
+                            bool isPotm = (ratings?.potms ?? []).contains(e.key);
 
                             var widgets = [
                               Container(

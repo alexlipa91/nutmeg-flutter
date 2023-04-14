@@ -14,12 +14,12 @@ class MatchesState extends ChangeNotifier {
   Map<String, List<String>>? _matchesPerTab;
 
   // ratings per match
-  Map<String, Map<String, double>> _ratingsPerMatch = Map();
+  Map<String, Ratings> _ratingsPerMatch = Map();
 
   // still to vote per match
   Map<String, Map<String, List<String>>> _stillToVote = Map();
 
-  Map<String, double>? getRatings(String matchId) => _ratingsPerMatch[matchId];
+  Ratings? getRatings(String matchId) => _ratingsPerMatch[matchId];
 
   List<Match>? getMatches() {
     if (_matchesPerTab == null)
@@ -127,12 +127,12 @@ class MatchesState extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<Map<String, double>> fetchRatings(String matchId) async {
+  Future<Ratings?> fetchRatings(String matchId) async {
     var r = await CloudFunctionsClient().get("matches/$matchId/ratings");
     if (r == null)
-      return {};
+      return null;
 
-    var ratings = Map<String, double>.from(r["scores"] ?? {});
+    var ratings = Ratings.fromJson(Map<String, dynamic>.from(r));
     this._ratingsPerMatch[matchId] = ratings;
     notifyListeners();
 

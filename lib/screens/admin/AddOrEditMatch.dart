@@ -109,6 +109,8 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
 
   @override
   Widget build(BuildContext context) {
+    var ratings = context.watch<MatchesState>().getRatings(widget.match.documentId);
+
     // utility
     return Scaffold(
         backgroundColor: Colors.transparent,
@@ -157,8 +159,7 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
               ),
               if (widget.match.status == MatchStatus.rated)
                 Column(
-                    children: widget.match
-                        .getPotms()
+                    children: (ratings?.potms ?? [])
                         .map((e) => Row(children: [
                               Builder(builder: (BuildContext context) {
                                 var ud =
