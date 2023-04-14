@@ -227,7 +227,7 @@ class UserPageState extends State<UserPage> {
             child: UserInfoBox(
                 content: (userDetails.getScoreMatches() == null)
                     ? "-"
-                    : userDetails.getScoreMatches()!.toStringAsFixed(1),
+                    : userDetails.getScoreMatches()!.toStringAsFixed(2),
                 description: "Avg. Score"),
           ),
           SizedBox(width: 20),
