@@ -8,7 +8,7 @@ import '../model/SportCenter.dart';
 class LoadOnceState extends ChangeNotifier {
   static String localeStr = const String.fromEnvironment("LOCALE", defaultValue: "");
 
-  Locale locale = Locale((localeStr == "") ? Platform.localeName : localeStr);
+  Locale locale = Locale((localeStr == "") ? Platform.localeName.substring(0, 2) : localeStr);
   
   late List<String> joinedGifs;
   List<SportCenter>? savedSportCenters;

@@ -115,18 +115,23 @@ class StatEntry extends StatelessWidget {
       children: [
         Text(stat!, style: TextPalette.getStats(Palette.black)),
         SizedBox(height: 4),
-        (rightBadge != null) ? Badge(
-            badgeColor: Colors.transparent,
-            borderSide: BorderSide.none,
-            shape: BadgeShape.circle,
-            position: BadgePosition(end: 0, bottom: -5),
-            elevation: 0,
-            badgeContent: rightBadge,
-            child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 48),
-                child: Text(description!,
-                    style: TextPalette.bodyText))) :
-        Text(description!, style: TextPalette.bodyText)
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Expanded(child: (rightBadge != null) ? Badge(
+                badgeColor: Colors.transparent,
+                borderSide: BorderSide.none,
+                shape: BadgeShape.circle,
+                position: BadgePosition(end: 0, bottom: -2),
+                elevation: 0,
+                badgeContent: rightBadge,
+                child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 30),
+                    child: Text(description!,
+                        style: TextPalette.bodyText))) :
+            Text(description!, textAlign: TextAlign.center,
+                style: TextPalette.bodyText))
+        ],)
       ],
     );
   }
@@ -146,12 +151,14 @@ class JoinedPlayerBottomModal extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               Expanded(
+                flex: 2,
                 child: StatEntry(
                   stat: userDetails.getNumJoinedMatches().toString(),
                   description: "Matches",
                 ),
               ),
               Expanded(
+                flex: 3,
                 child: StatEntry(
                   stat: (userDetails.getScoreMatches() == null)
                       ? "-" : userDetails.getScoreMatches()!.toStringAsFixed(2),
@@ -160,6 +167,7 @@ class JoinedPlayerBottomModal extends StatelessWidget {
                 ),
               ),
               Expanded(
+                flex: 2,
                 child: StatEntry(
                   stat: userDetails.getNumManOfTheMatch().toString(),
                   description: "POTM",

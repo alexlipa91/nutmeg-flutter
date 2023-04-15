@@ -657,13 +657,13 @@ class UserInfoBox extends StatelessWidget {
                       elevation: 0,
                       badgeContent: rightBadge,
                       child: Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 48),
+                          padding: EdgeInsets.symmetric(horizontal: 40),
                           child: Text(content!,
                               style: TextPalette.getStats(Palette.black))))
                   : Text(
-                      content!,
-                      style: TextPalette.getStats(Palette.black),
-                    ),
+                            content!,
+                            style: TextPalette.getStats(Palette.black),
+                          ),
         ]),
         SizedBox(height: 4),
         Text(description!, style: TextPalette.bodyText),
@@ -687,13 +687,13 @@ class UserScoreBox extends StatelessWidget {
       Icon(
         userDetails.getDeltaFromLastScore() > 0 ? Icons.arrow_drop_up_outlined :
         Icons.arrow_drop_down_outlined,
-        size: 16,
+        size: 14,
         color: userDetails.getDeltaFromLastScore() > 0 ? Colors.green : Colors.red,
       ),
       Text(userDetails.getDeltaFromLastScore().abs().toStringAsFixed(2),
           style: GoogleFonts.roboto(
               color: userDetails.getDeltaFromLastScore() > 0 ? Colors.green : Colors.red,
-              fontSize: 13,
+              fontSize: 11,
               fontWeight: FontWeight.w400))
     ],
   );
