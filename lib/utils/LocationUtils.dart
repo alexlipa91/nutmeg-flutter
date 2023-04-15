@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:nutmeg/state/UserState.dart';
@@ -19,7 +18,7 @@ String buildMapUrl(double lat, double lng) => "https://maps.googleapis.com/maps/
 
 Future<LocationInfo> getLocationInfo(double lat, double lng) async {
   // uncomment to get amsterdam
-  lat = 52.3676; lng = 4.9041;
+  // lat = 52.3676; lng = 4.9041;
   var url = "https://maps.googleapis.com/maps/api/geocode/json?" +
       "latlng=${lat.toString()},${lng.toString()}" +
       "&key=$placesApiKey" +
@@ -70,9 +69,7 @@ class PredictionResult {
 // this needs to happen server side because placesApi doesn't work with CORS
 Future<List<PredictionResult>> getPlacePrediction(String query, String userCountry) async {
   Map<String, dynamic> data = await CloudFunctionsClient()
-      .callFunction(
-      "get_location_predictions_from_query",
-      {"query" : query, 'country': userCountry})
+      .get("locations/predictions", args: {"query" : query, 'country': userCountry})
       ?? {};
 
   List predictions = data["predictions"] ?? [];

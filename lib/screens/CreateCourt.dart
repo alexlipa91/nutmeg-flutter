@@ -65,7 +65,8 @@ class CreateCourtState extends State<CreateCourt> {
                                 suggestionsCallback: (pattern) async {
                                   List<PredictionResult> predictions = [];
                                   if (pattern.isNotEmpty) {
-                                    var result = await getPlacePrediction(pattern, "NL");
+                                    var result = await getPlacePrediction(pattern,
+                                        context.read<UserState>().getCountry());
                                     predictions = result;
                                   }
                                   return predictions;
