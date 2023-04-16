@@ -2,6 +2,7 @@ import "package:collection/collection.dart";
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nutmeg/model/Match.dart';
+import 'package:nutmeg/screens/ChangeCity.dart';
 import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/GenericAvailableMatches.dart';
 import 'package:nutmeg/widgets/Section.dart';
@@ -201,7 +202,8 @@ class AvailableMatches extends StatelessWidget {
       child: Container(
         child: Column(
           children: [
-            Image.asset("assets/empty_state/illustration_0${(random.nextInt(2) + 1).toString()}.png"),
+            Image.asset("assets/empty_state/illustration_0${(random.nextInt(2) + 1).toString()}.png",
+              gaplessPlayback: true,),
             Text(AppLocalizations.of(context)!.noMatchesHere,
                 style: TextPalette.h1Default, textAlign: TextAlign.center),
             SizedBox(height: 4),
@@ -221,9 +223,6 @@ class AvailableMatches extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var city = context.watch<UserState>().getCity();
-    var country = context.watch<UserState>().getCountry();
-
     return MultiProvider(
         providers: [
           ChangeNotifierProvider(
@@ -255,7 +254,22 @@ class AvailableMatches extends StatelessWidget {
                 children: [
                   Text(AppLocalizations.of(context)!.topHeader,
                       style: TextPalette.bodyTextInverted),
-                  Text("$city, $country", style: TextPalette.h1Inverted),
+                  InkWell(
+                    onTap: () async {
+                      await Navigator.push(context,
+                        MaterialPageRoute(builder: (context) => ChangeCity(
+                          context.read<UserState>().getLocationInfo()
+                        )));
+                      await context.read<MatchesState>()
+                          .refreshState(context, reset: true);
+                    },
+                    child: Row(children: [
+                      Text(context.watch<UserState>().getLocationInfo().getText(),
+                          style: TextPalette.h1Inverted),
+                      SizedBox(width: 4,),
+                      Icon(Icons.keyboard_arrow_down_outlined, size: 28, color: Palette.white)
+                    ]),
+                  ),
                 ],
               ),
               () async {

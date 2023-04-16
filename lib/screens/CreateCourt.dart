@@ -66,7 +66,7 @@ class CreateCourtState extends State<CreateCourt> {
                                   List<PredictionResult> predictions = [];
                                   if (pattern.isNotEmpty) {
                                     var result = await getPlacePrediction(pattern,
-                                        context.read<UserState>().getCountry());
+                                        context.read<UserState>().getLocationInfo().country);
                                     predictions = result;
                                   }
                                   return predictions;
@@ -103,7 +103,7 @@ class CreateCourtState extends State<CreateCourt> {
                                             ],)
                                       ));
                                 },
-                                noItemsFoundBuilder: (value) => Container(height: 10),
+                                noItemsFoundBuilder: (value) => Container(height: 0),
                                 onSuggestionSelected: (suggestion) async {
                                   textEditingController.text = suggestion.description;
                                   setState(() {

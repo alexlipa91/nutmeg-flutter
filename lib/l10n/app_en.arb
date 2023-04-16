@@ -171,5 +171,10 @@
     "popularCourtsTitle": "Popular Courts",
     "yourCourtsTitle": "Your Courts",
 
-    "createNewCourtButtonText": "CREATE NEW COURT"
+    "createNewCourtButtonText": "CREATE NEW COURT",
+
+    "searchLocationTitle": "Search Location",
+    "searchLocationInputFieldLabel": "Search",
+    "currentLocationLabel": "CURRENT LOCATION",
+    "currentLocationInfo": "Your location helps us improve your experience with approximate recommendations of matches."
 }

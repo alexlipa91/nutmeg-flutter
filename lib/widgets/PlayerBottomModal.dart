@@ -7,7 +7,6 @@ import 'package:charts_flutter/flutter.dart';
 import 'package:charts_flutter/src/text_element.dart' as ChartText;
 import 'package:charts_flutter/src/text_style.dart' as ChartStyle;
 import 'package:flutter/material.dart' hide Badge;
-import 'package:nutmeg/screens/UserPage.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/Skeletons.dart';
@@ -163,7 +162,7 @@ class JoinedPlayerBottomModal extends StatelessWidget {
                   stat: (userDetails.getScoreMatches() == null)
                       ? "-" : userDetails.getScoreMatches()!.toStringAsFixed(2),
                   description: "Avg. score",
-                  rightBadge: UserScoreBox.deltaBadge(userDetails),
+                  // rightBadge: UserScoreBox.deltaBadge(userDetails),
                 ),
               ),
               Expanded(

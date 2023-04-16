@@ -70,6 +70,7 @@ class MatchesState extends ChangeNotifier {
     switch (tab) {
       case "UPCOMING":
         params["when"] = "future";
+        params["radius_km"] = 20;
         break;
       case "GOING":
         // we will filter later on
@@ -90,8 +91,8 @@ class MatchesState extends ChangeNotifier {
         params["organized_by"] = userState.currentUserId!;
         break;
     }
-    params["lat"] = userState.getLat();
-    params["lng"] = userState.getLng();
+    params["lat"] = userState.getLocationInfo().lat;
+    params["lng"] = userState.getLocationInfo().lng;
     params["version"] = 2;
 
     var resp = await CloudFunctionsClient().get("matches", args: params);
@@ -156,7 +157,10 @@ class MatchesState extends ChangeNotifier {
     return stillToVote;
   }
 
-  Future<void> refreshState(BuildContext context) async {
+  Future<void> refreshState(BuildContext context, {reset = false}) async {
+    if (reset) {
+      _matchesPerTab = null;
+    }
     await Future.wait(["UPCOMING", "PAST", "GOING", "MY MATCHES"]
         .map((tab) => fetchMatches(tab, context)
     ));

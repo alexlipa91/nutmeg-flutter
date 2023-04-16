@@ -1,12 +1,12 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:geolocator/geolocator.dart';
 
 import 'package:nutmeg/state/UserState.dart';
 import 'package:nutmeg/utils/ApiKey.dart';
 
 import '../api/CloudFunctionsUtils.dart';
 
-String buildMapUrl(double lat, double lng) => "https://maps.googleapis.com/maps/api/staticmap?center=" +
+String buildMapUrl(double lat, double lng) =>
+    "https://maps.googleapis.com/maps/api/staticmap?center=" +
     lat.toString() +
     "," +
     lng.toString() +
@@ -16,38 +16,12 @@ String buildMapUrl(double lat, double lng) => "https://maps.googleapis.com/maps/
     "," +
     lng.toString();
 
-Future<LocationInfo> getLocationInfo(double lat, double lng) async {
+Future<LocationInfo> fetchLocationInfo(double lat, double lng) async {
   // uncomment to get amsterdam
   // lat = 52.3676; lng = 4.9041;
-  var url = "https://maps.googleapis.com/maps/api/geocode/json?" +
-      "latlng=${lat.toString()},${lng.toString()}" +
-      "&key=$placesApiKey" +
-      "&result_type=locality";
-
-  var response = await http.get(Uri.parse(url));
-
-  var resp = jsonDecode(response.body);
-
-  var addressComponents = resp["results"][0]["address_components"];
-
-  var city;
-  var country;
-
-  try {
-    addressComponents.forEach((a) {
-      if (a["types"].contains("locality"))
-        city = a["long_name"];
-      else if (a["types"].contains("country"))
-        country = a["short_name"];
-    });
-  } catch (e, st) {
-    print(e);
-    print(st);
-  }
-
-  var location = resp["results"][0]["geometry"]["location"];
-
-  return LocationInfo(country, city, location["lat"], location["lng"]);
+  var resp = await CloudFunctionsClient()
+      .get("locations/coordinates", args: {"lat": lat, "lng": lng});
+  return LocationInfo.fromJson(Map<String, dynamic>.from(resp!));
 }
 
 class PredictionMatch {
@@ -58,7 +32,6 @@ class PredictionMatch {
 }
 
 class PredictionResult {
-
   String description;
   List<PredictionMatch> matches;
   String placeId;
@@ -67,10 +40,12 @@ class PredictionResult {
 }
 
 // this needs to happen server side because placesApi doesn't work with CORS
-Future<List<PredictionResult>> getPlacePrediction(String query, String userCountry) async {
-  Map<String, dynamic> data = await CloudFunctionsClient()
-      .get("locations/predictions", args: {"query" : query, 'country': userCountry})
-      ?? {};
+Future<List<PredictionResult>> getPlacePrediction(
+    String query, String userCountry) async {
+  Map<String, dynamic> data = await CloudFunctionsClient().get(
+          "locations/predictions",
+          args: {"query": query, 'country': userCountry}) ??
+      {};
 
   List predictions = data["predictions"] ?? [];
 
@@ -78,14 +53,74 @@ Future<List<PredictionResult>> getPlacePrediction(String query, String userCount
 
   predictions.forEach((element) {
     var e = Map<String, dynamic>.from(element);
-    results.add(PredictionResult(e["description"],
-        List<PredictionMatch>.from(
-            e["matched_substrings"].map((m) =>
-                PredictionMatch(m["offset"], m["length"]))),
+    results.add(PredictionResult(
+        e["description"],
+        List<PredictionMatch>.from(e["matched_substrings"]
+            .map((m) => PredictionMatch(m["offset"], m["length"]))),
         e["place_id"]));
   });
 
   return results;
+}
+
+Future<List<PredictionResult>> getCitiesPrediction(String query) async {
+  Map<String, dynamic> data = await CloudFunctionsClient()
+          .get("locations/cities", args: {"query": query}) ??
+      {};
+  List predictions = data["predictions"] ?? [];
+
+  List<PredictionResult> results = [];
+
+  predictions.forEach((element) {
+    var e = Map<String, dynamic>.from(element);
+    results.add(PredictionResult(
+        e["description"],
+        List<PredictionMatch>.from(e["matched_substrings"]
+            .map((m) => PredictionMatch(m["offset"], m["length"]))),
+        e["place_id"]));
+  });
+
+  return results;
+}
+
+Future<Position?> determinePosition() async {
+  bool serviceEnabled;
+  LocationPermission permission;
+
+// Test if location services are enabled.
+  serviceEnabled = await Geolocator.isLocationServiceEnabled();
+  if (!serviceEnabled) {
+// Location services are not enabled don't continue
+// accessing the position and request users of the
+// App to enable the location services.
+    print('Location services are disabled.');
+    return null;
+  }
+
+  permission = await Geolocator.checkPermission();
+  if (permission == LocationPermission.denied) {
+    permission = await Geolocator.requestPermission();
+    if (permission == LocationPermission.denied) {
+// Permissions are denied, next time you could try
+// requesting permissions again (this is also where
+// Android's shouldShowRequestPermissionRationale
+// returned true. According to Android guidelines
+// your App should show an explanatory UI now.
+      print('Location permissions are denied');
+      return null;
+    }
+  }
+
+  if (permission == LocationPermission.deniedForever) {
+// Permissions are denied forever, handle appropriately.
+    print(
+        'Location permissions are permanently denied, we cannot request permissions.');
+    return null;
+  }
+
+// When we reach here, permissions are granted and we can
+// continue accessing the position of the device.
+  return await Geolocator.getCurrentPosition();
 }
 
 var blacklistedCountriesForPayments = ["CH", "BR"];
