@@ -256,12 +256,24 @@ class AvailableMatches extends StatelessWidget {
                       style: TextPalette.bodyTextInverted),
                   InkWell(
                     onTap: () async {
-                      await Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => ChangeCity(
-                          context.read<UserState>().getLocationInfo()
-                        )));
-                      await context.read<MatchesState>()
-                          .refreshState(context, reset: true);
+                      LocationInfo? newUserLocation = await Navigator.push(context,
+                        MaterialPageRoute(builder: (context) => ChangeCity()));
+
+                      if (newUserLocation != null
+                          && newUserLocation.placeId !=
+                          context.read<UserState>().getLocationInfo().placeId) {
+                        if (context.read<UserState>().isLoggedIn()) {
+                          await context
+                              .read<UserState>()
+                              .editUser({"location": newUserLocation.toJson()});
+                        } else {
+                          context.read<UserState>()
+                              .setCustomLocationInfo(newUserLocation);
+                        }
+
+                        await context.read<MatchesState>()
+                            .refreshState(context, reset: true);
+                      }
                     },
                     child: Row(children: [
                       Text(context.watch<UserState>().getLocationInfo().getText(),

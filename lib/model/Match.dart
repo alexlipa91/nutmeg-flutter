@@ -38,7 +38,7 @@ class Match {
 
   Map<String, DateTime> going;
 
-  Map<String, List<String>> teams;
+  List<MapEntry<String, List<String>>> teams;
 
   String? organizerId;
   Duration? cancelBefore;
@@ -54,13 +54,15 @@ class Match {
 
   bool isTest;
 
-  Match(this.dateTime, this.sportCenterId, this.sportCenter, this.sportCenterSubLocation,
+  Match(this.dateTime, this.sportCenterId, this.sportCenter,
+      this.sportCenterSubLocation,
       this.maxPlayers, this.pricePerPersonInCents, this.duration,
       this.isTest, this.minPlayers, this.organizerId, this.userFee,
       this.organiserFee, this.going, this.teams, this.cancelBefore,
       this.managePayments, this.score);
 
-  Match.fromJson(Map<String, dynamic> jsonInput, String documentId) :
+  Match.fromJson(Map<String, dynamic> jsonInput, String documentId)
+      :
         dateTime = DateTime.parse(jsonInput['dateTime']),
         duration = Duration(minutes: jsonInput['duration'] ?? 60),
         isTest = jsonInput["isTest"] ?? false,
@@ -72,33 +74,37 @@ class Match {
         sportCenterId = jsonInput['sportCenterId'],
         userFee = jsonInput["userFee"] ?? 0,
         organiserFee = jsonInput["organiserFee"] ?? 0,
-        score = jsonInput["score"] == null ? null : List<int>.from(jsonInput["score"]),
+        score = jsonInput["score"] == null ? null : List<int>.from(
+            jsonInput["score"]),
         dynamicLink = jsonInput["dynamicLink"],
         managePayments = jsonInput["managePayments"] ?? true,
         sportCenter = SportCenter.fromJson(
             Map<String, dynamic>.from(jsonInput["sportCenter"]),
             jsonInput["sportCenter"]["placeId"]) {
-      sportCenterSubLocation = jsonInput['sportCenterSubLocation'];
+    sportCenterSubLocation = jsonInput['sportCenterSubLocation'];
 
-      if (jsonInput.containsKey("cancelledAt") && jsonInput["cancelledAt"] != null)
-        cancelledAt = DateTime.parse(jsonInput['cancelledAt']).toLocal();
-      if (jsonInput.containsKey("scoresComputedAt") && jsonInput["scoresComputedAt"] != null)
-        scoresComputedAt = DateTime.parse(jsonInput['scoresComputedAt']).toLocal();
+    if (jsonInput.containsKey("cancelledAt") &&
+        jsonInput["cancelledAt"] != null)
+      cancelledAt = DateTime.parse(jsonInput['cancelledAt']).toLocal();
+    if (jsonInput.containsKey("scoresComputedAt") &&
+        jsonInput["scoresComputedAt"] != null)
+      scoresComputedAt =
+          DateTime.parse(jsonInput['scoresComputedAt']).toLocal();
 
-      if (jsonInput.containsKey("cancelHoursBefore"))
-        cancelBefore = Duration(hours: jsonInput['cancelHoursBefore']);
+    if (jsonInput.containsKey("cancelHoursBefore"))
+      cancelBefore = Duration(hours: jsonInput['cancelHoursBefore']);
 
-      organizerId = jsonInput["organizerId"];
-      cancelBefore = jsonInput.containsKey("cancelHoursBefore") ?
-        Duration(hours: jsonInput["cancelHoursBefore"]) : null;
+    organizerId = jsonInput["organizerId"];
+    cancelBefore = jsonInput.containsKey("cancelHoursBefore") ?
+    Duration(hours: jsonInput["cancelHoursBefore"]) : null;
 
-      status = MatchStatus.values
-          .firstWhere((e) => e.name == jsonInput["status"]);
+    status = MatchStatus.values
+        .firstWhere((e) => e.name == jsonInput["status"]);
 
-      if (jsonInput.containsKey("paid_out_at"))
-        paidOutAt = DateTime.parse(jsonInput['paid_out_at']).toLocal();
+    if (jsonInput.containsKey("paid_out_at"))
+      paidOutAt = DateTime.parse(jsonInput['paid_out_at']).toLocal();
 
-      this.documentId = documentId;
+    this.documentId = documentId;
   }
 
   static Map<String, DateTime> _readGoing(Map<String, dynamic> json) {
@@ -107,7 +113,7 @@ class Match {
         MapEntry(key, DateTime.parse(value["createdAt"])));
   }
 
-  static Map<String, List<String>> _readTeams(Map<String, dynamic> json) {
+  static List<MapEntry<String, List<String>>> _readTeams(Map<String, dynamic> json) {
     var goingMap = Map<String, dynamic>.from(json["going"] ?? {});
     Map<String, List<String>> teams = Map();
     teams["a"] = [];
@@ -120,7 +126,8 @@ class Match {
         teams[valueMap["team"]]?.add(key);
       }
     });
-    return teams;
+
+    return teams.entries.toList();
   }
 
   Map<String, dynamic> toJson() =>
@@ -164,7 +171,7 @@ class Match {
 
   List<String> getGoingUsersByTime() {
     var entries = going.entries.toList()
-      ..sort((e1,e2) => -e1.value.compareTo(e2.value));
+      ..sort((e1, e2) => -e1.value.compareTo(e2.value));
     return entries.map((e) => e.key).toList();
   }
 
@@ -172,16 +179,16 @@ class Match {
 
   int getMissingPlayers() => max(0, minPlayers - going.length);
 
-  bool hasTeams() => going.length >= minPlayers
-      && teams.values.map((e) => e.length).reduce((a, b) => a + b)
-          == going.length;
-
-  List<String>? getTeam(String teamName) => teams[teamName];
+  bool hasTeams() => teams.isNotEmpty;
 
   DateTime getLocalizedTime(String timezoneId) =>
       tz.TZDateTime.from(dateTime, tz.getLocation(timezoneId));
 
   bool isMatchFinished() => DateTime.now().isAfter(dateTime.add(duration));
+
+  bool canUserModifyTeams(String? userId) =>
+      userId != null && userId == organizerId &&
+          DateTime.now().isBefore(dateTime);
 }
 
 class Ratings {

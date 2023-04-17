@@ -139,7 +139,7 @@ class CreateMatchState extends State<CreateMatch> {
     } else {
       sportCenter = widget.existingMatch!.sportCenter;
       var localizedDateTime =
-      widget.existingMatch!.getLocalizedTime(sportCenter!.timezoneId!);
+      widget.existingMatch!.getLocalizedTime(sportCenter!.timezoneId);
 
       dateEditingController =
           TextEditingController(text: dateFormat.format(localizedDateTime));
@@ -802,7 +802,7 @@ class CreateMatchState extends State<CreateMatch> {
                                   : Map(),
                               widget.existingMatch != null
                                   ? widget.existingMatch!.teams
-                                  : Map(),
+                                  : [],
                               cancelBefore,
                               paymentsPossible && managePayments,
                               widget.existingMatch != null ? widget.existingMatch!.score : null

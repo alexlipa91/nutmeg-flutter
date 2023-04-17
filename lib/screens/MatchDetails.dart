@@ -39,8 +39,8 @@ import '../widgets/ModalBottomSheet.dart';
 import '../widgets/PlayerBottomModal.dart';
 import '../widgets/Skeletons.dart';
 
+import '../widgets/TeamsWidget.dart';
 import 'BottomBarMatch.dart';
-import 'CreateMatch.dart';
 import 'PaymentDetailsDescription.dart';
 
 class MatchDetails extends StatefulWidget {
@@ -67,10 +67,11 @@ class MatchDetailsState extends State<MatchDetails> {
       if (widget.paymentOutcome != null) {
         if (ModalBottomSheet.isOpen) Navigator.of(context).pop();
         if (widget.paymentOutcome! == "success") {
-          await PaymentDetailsDescription.communicateSuccessToUser(context, widget.matchId);
+          await PaymentDetailsDescription.communicateSuccessToUser(
+              context, widget.matchId);
         } else
           GenericInfoModal(
-              title: "Payment Failed!", description: "Please try again")
+                  title: "Payment Failed!", description: "Please try again")
               .show(context);
       }
     });
@@ -84,9 +85,9 @@ class MatchDetailsState extends State<MatchDetails> {
     var loggedUser = context.read<UserState>().getLoggedUserDetails();
 
     if (match.status == MatchStatus.to_rate && match.isUserGoing(loggedUser)) {
-      var stillToVote =
-          context.read<MatchesState>().getStillToVote(widget.matchId,
-              loggedUser!.documentId);
+      var stillToVote = context
+          .read<MatchesState>()
+          .getStillToVote(widget.matchId, loggedUser!.documentId);
 
       if (stillToVote != null && stillToVote.isNotEmpty) {
         await RatePlayerBottomModal.rateAction(context, widget.matchId);
@@ -106,8 +107,8 @@ class MatchDetailsState extends State<MatchDetails> {
       context.read<MatchesState>().fetchRatings(widget.matchId),
       context.read<MatchesState>().fetchMatch(widget.matchId),
       if (context.read<UserState>().isLoggedIn())
-        context.read<MatchesState>().fetchStillToVote(widget.matchId,
-            context.read<UserState>().currentUserId!),
+        context.read<MatchesState>().fetchStillToVote(
+            widget.matchId, context.read<UserState>().currentUserId!),
     ];
 
     var res = await Future.wait(futures);
@@ -167,21 +168,27 @@ class MatchDetailsState extends State<MatchDetails> {
             ? CompleteOrganiserAccountWidget(isTest: isTest)
             : null;
 
+        var testInfo = isTest ?
+        InfoContainer(
+            backgroundColor: Palette.accent,
+            child: SelectableText(
+              "Test match: " + widget.matchId,
+              style: TextPalette.getBodyText(Palette.black),
+            )) : null;
+
         var matchInfo = MatchInfo(match!, sportCenter!);
 
-        var infoPlayersList = match.hasTeams()
+        var infoPlayersList = match.going.length > 1 && match.hasTeams()
             ? TeamsWidget(
-                matchId: widget.matchId,
-                organizer: userState.currentUserId == match.organizerId)
+                matchId: widget.matchId)
             : PlayerList(
                 match: match,
                 withJoinButton:
                     bottomBar is JoinMatchBottomBar && !match.isFull());
 
-        var stats = (
-            (status == MatchStatus.rated
-                && matchesState.getRatings(match.documentId) != null)
-                || status == MatchStatus.to_rate)
+        var stats = ((status == MatchStatus.rated &&
+                    matchesState.getRatings(match.documentId) != null) ||
+                status == MatchStatus.to_rate)
             ? Stats(match: match, sportCenter: sportCenter)
             : null;
 
@@ -247,6 +254,8 @@ class MatchDetailsState extends State<MatchDetails> {
             // title
             if (completeOrganiserWidget != null) completeOrganiserWidget,
             // info box
+            if (testInfo != null)
+              testInfo,
             matchInfo,
             // stats
             infoPlayersList,
@@ -313,11 +322,10 @@ class MatchDetailsState extends State<MatchDetails> {
             if (!DeviceInfo().name.contains("ipad") && !kIsWeb)
               if (match != null)
                 Align(
-                  alignment: Alignment.centerRight,
-                  child: buttons.ShareButton(() async {
-                    await DynamicLinks.shareMatchFunction(context, match);
-                  }, Palette.black, 25.0)
-                ),
+                    alignment: Alignment.centerRight,
+                    child: buttons.ShareButton(() async {
+                      await DynamicLinks.shareMatchFunction(context, match);
+                    }, Palette.black, 25.0)),
           ],
         ),
         bottomNavigationBar: bottomBar,
@@ -381,237 +389,6 @@ class PlayerList extends StatelessWidget {
         ],
       ),
       padding: EdgeInsets.symmetric(vertical: 16),
-    );
-  }
-}
-
-class TeamsWidget extends StatefulWidget {
-  final String? title;
-  final bool organizer;
-  final String matchId;
-
-  const TeamsWidget(
-      {Key? key, this.title, required this.matchId, required this.organizer})
-      : super(key: key);
-
-  @override
-  State<StatefulWidget> createState() => TeamsWidgetState();
-}
-
-enum TeamsWidgetUserState { add, edit, submit }
-
-class TeamsWidgetState extends State<TeamsWidget> {
-  final _formKey = GlobalKey<FormState>();
-
-  late TeamsWidgetUserState userState;
-
-  List<FocusNode> focusNodes = [
-    FocusNode(),
-    FocusNode()
-  ];
-
-  @override
-  void initState() {
-    super.initState();
-    if (widget.organizer) {
-      bool hasScore =
-          context.read<MatchesState>().getMatch(widget.matchId)!.score != null;
-      if (!hasScore) {
-        userState = TeamsWidgetUserState.add;
-      } else {
-        userState = TeamsWidgetUserState.edit;
-      }
-    }
-  }
-
-  Widget inputScore(TextEditingController controller,
-      FocusNode focusNode) => Container(
-      width: 50,
-      child: Center(
-        child: TextFormField(
-          focusNode: focusNode,
-          keyboardType: TextInputType.number,
-          controller: controller,
-          validator: (v) {
-            if (int.tryParse(v ?? "") == null) return "Invalid";
-            return null;
-          },
-          textAlign: TextAlign.center,
-          decoration: CreateMatchState.getTextFormDecoration(null),
-        ),
-      ));
-
-  @override
-  Widget build(BuildContext context) {
-    var match = context.watch<MatchesState>().getMatch(widget.matchId);
-
-    var teamA = match!.teams.entries.first;
-    var teamB = match.teams.entries.last;
-
-    var controllers;
-    if (widget.organizer) {
-      controllers = [TextEditingController(), TextEditingController()];
-      if (match.score != null) {
-        controllers[0].text = match.score![0].toString();
-        controllers[1].text = match.score![1].toString();
-      }
-    }
-
-    var teamAScoreWidget =
-        widget.organizer && userState == TeamsWidgetUserState.submit
-            ? inputScore(controllers[0], focusNodes[0])
-            : match.score == null
-                ? Container()
-                : Text(match.score![0].toString(),
-                    textAlign: TextAlign.end,
-                    style: TextPalette.getStats(Palette.black));
-
-    var teamBScoreWidget =
-        widget.organizer && userState == TeamsWidgetUserState.submit
-            ? inputScore(controllers[1], focusNodes[1])
-            : match.score == null
-                ? Container()
-                : Text(match.score![1].toString(),
-                    textAlign: TextAlign.end,
-                    style: TextPalette.getStats(Palette.black));
-
-    var content = Padding(
-      padding: EdgeInsets.symmetric(horizontal: 8),
-      child: Center(
-          child: IntrinsicHeight(
-        child: Column(
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Flexible(
-                    flex: 3,
-                    child: Text(
-                      "Team A",
-                      style: TextPalette.h2,
-                    )),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    teamAScoreWidget,
-                    Text("  vs  ", style: TextPalette.bodyText),
-                    teamBScoreWidget
-                  ],
-                ),
-                Flexible(
-                    flex: 3,
-                    child: Text(
-                      "Team B",
-                      style: TextPalette.h2,
-                    )),
-              ],
-            ),
-            SizedBox(height: 16),
-            IntrinsicHeight(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Flexible(
-                      flex: 3,
-                      child: getTeamColumn(
-                          context, MainAxisAlignment.start, teamA.value)),
-                  Flexible(
-                      flex: 2,
-                      child: VerticalDivider(
-                          thickness: 1, color: Palette.grey_light)),
-                  Flexible(
-                      flex: 3,
-                      child: getTeamColumn(
-                          context, MainAxisAlignment.end, teamB.value)),
-                ],
-              ),
-            ),
-            if (widget.organizer && match.isMatchFinished())
-              Padding(
-                padding: EdgeInsets.only(top: 24),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: GenericButtonWithLoaderAndErrorHandling(
-                          userState == TeamsWidgetUserState.add
-                              ? AppLocalizations.of(context)!.addScoreButton
-                              : userState == TeamsWidgetUserState.submit
-                                  ? AppLocalizations.of(context)!
-                                      .submitScoreButton
-                                  : AppLocalizations.of(context)!
-                                      .editScoreButton,
-                          (BuildContext context) async {
-                        var nextState;
-                        if (userState == TeamsWidgetUserState.submit) {
-                          var score = [
-                            int.parse(controllers[0].text),
-                            int.parse(controllers[1].text),
-                          ];
-                          await context
-                              .read<MatchesState>()
-                              .editMatch(match.documentId, {"score": score});
-
-                          nextState = TeamsWidgetUserState.edit;
-                        } else {
-                          nextState = TeamsWidgetUserState.submit;
-                          focusNodes[0].requestFocus();
-                        }
-                        setState(() {
-                          userState = nextState;
-                        });
-                      },
-                          userState == TeamsWidgetUserState.edit
-                              ? Secondary()
-                              : Primary()),
-                    )
-                  ],
-                ),
-              )
-          ],
-        ),
-      )),
-    );
-
-    return Form(
-        key: _formKey,
-        child: widget.title == null
-            ? InfoContainer(child: content)
-            : InfoContainerWithTitle(title: widget.title!, body: content));
-  }
-
-  getTeamColumn(
-      BuildContext context, MainAxisAlignment alignment, List<String> players) {
-    var playersWidgets = interleave(
-        players.map((e) {
-          var ud = context.watch<UserState>().getUserDetail(e);
-
-          var avatar = UserAvatar(16, ud);
-          var name = UserNameWidget(userDetails: ud);
-
-          return InkWell(
-              onTap: ud == null
-                  ? null
-                  : () => ModalBottomSheet.showNutmegModalBottomSheet(
-                      context, JoinedPlayerBottomModal(ud)),
-              child: SizedBox(
-                height: 32,
-                child: Row(mainAxisAlignment: alignment, children: [
-                  alignment == MainAxisAlignment.start ? avatar : name,
-                  SizedBox(width: 16),
-                  alignment == MainAxisAlignment.start ? name : avatar,
-                ]),
-              ));
-        }).toList(),
-        SizedBox(height: 16));
-
-    List<Widget> childrenWidgets = [];
-    childrenWidgets.addAll(playersWidgets);
-
-    return Column(
-      children: childrenWidgets,
     );
   }
 }
@@ -699,8 +476,8 @@ class MatchInfo extends StatelessWidget {
                               padding: EdgeInsets.only(top: 16),
                               child: InkWell(
                                   onTap: () async {
-                                    DynamicLinks.shareMatchFunction(context,
-                                        match);
+                                    DynamicLinks.shareMatchFunction(
+                                        context, match);
                                     Navigator.of(context).pop();
                                   },
                                   child: Text(
@@ -728,8 +505,10 @@ class MatchInfo extends StatelessWidget {
                                                 await MatchesController
                                                     .cancelMatch(
                                                         match.documentId);
-                                                await context.read<MatchesState>()
-                                                    .fetchMatch(match.documentId);
+                                                await context
+                                                    .read<MatchesState>()
+                                                    .fetchMatch(
+                                                        match.documentId);
                                                 Navigator.pop(context);
                                               }, Primary()),
                                             )
@@ -762,7 +541,7 @@ class MatchInfo extends StatelessWidget {
                       ")",
               if (match.managePayments)
                 Icons.local_offer_outlined:
-                    formatCurrency(match.pricePerPersonInCents)
+                    formatCurrency(match.pricePerPersonInCents),
             }),
             if (matchWidget != null)
               Column(children: [
@@ -888,62 +667,6 @@ class SportCenterImageCarouselState extends State<SportCenterImageCarousel> {
         ),
       ],
     );
-  }
-}
-
-// single line with icon and texts in the info card
-class InfoWidget extends StatelessWidget {
-  final String title;
-  final IconData icon;
-  final String subTitle;
-
-  final Widget? rightWidget;
-
-  InfoWidget({required this.title, required this.icon, required this.subTitle})
-      : rightWidget = null;
-
-  InfoWidget.withRightWidget(
-      {required this.title,
-      required this.icon,
-      required this.subTitle,
-      required Widget rightWidget})
-      : rightWidget = rightWidget;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-        child: Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          child: Column(
-            // mainAxisSize: MainAxisSize.max,
-            children: [
-              Icon(icon, size: 20, color: UiUtils.fromHex("#999999")),
-            ],
-          ),
-        ),
-        SizedBox(
-          width: 20,
-        ),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(title, style: TextPalette.h2),
-            SizedBox(
-              height: 4,
-            ),
-            Padding(
-                padding: EdgeInsets.only(bottom: 2),
-                child: Text(subTitle, style: TextPalette.bodyText))
-          ],
-        ),
-        if (rightWidget != null)
-          Expanded(
-              child:
-                  Align(alignment: Alignment.centerRight, child: rightWidget))
-      ],
-    ));
   }
 }
 
@@ -1131,8 +854,8 @@ class Stats extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var child;
-    var dayDateFormat = DateFormat(
-        "EEEE, MMM dd HH:mm", context.watch<LoadOnceState>().locale.languageCode);
+    var dayDateFormat = DateFormat("EEEE, MMM dd HH:mm",
+        context.watch<LoadOnceState>().locale.languageCode);
 
     if (match.status == MatchStatus.to_rate) {
       child = Container(
@@ -1154,9 +877,9 @@ class Stats extends StatelessWidget {
               SizedBox(height: 8),
               Text(
                 AppLocalizations.of(context)!.statsAvailableAt(
-                    dayDateFormat.format(
-                            match.getLocalizedTime(sportCenter.timezoneId)
-                                .add(Duration(days: 1))) +
+                    dayDateFormat.format(match
+                            .getLocalizedTime(sportCenter.timezoneId)
+                            .add(Duration(days: 1))) +
                         " ${gmtSuffix(sportCenter.timezoneId)}"),
                 style: TextPalette.bodyText,
                 textAlign: TextAlign.center,
@@ -1181,15 +904,18 @@ class Stats extends StatelessWidget {
                     Builder(
                       builder: (context) {
                         Map<String, double?> userAndRate = {};
-                        match.going.keys.forEach((u) => userAndRate[u] = (ratings?.scores ?? {})[u]);
+                        match.going.keys.forEach(
+                            (u) => userAndRate[u] = (ratings?.scores ?? {})[u]);
                         var entries = userAndRate.entries.toList();
-                        entries.sort((a, b) => (b.value ?? -1).compareTo((a.value ?? -1)));
+                        entries.sort((a, b) =>
+                            (b.value ?? -1).compareTo((a.value ?? -1)));
 
-                        return  Column(
+                        return Column(
                           children: entries.map((e) {
                             var userDetails = userState.getUserDetail(e.key);
                             double? rate = e.value;
-                            bool isPotm = (ratings?.potms ?? []).contains(e.key);
+                            bool isPotm =
+                                (ratings?.potms ?? []).contains(e.key);
 
                             var widgets = [
                               Container(
@@ -1220,7 +946,7 @@ class Stats extends StatelessWidget {
                                 width: 72,
                                 child: ClipRRect(
                                   borderRadius:
-                                  BorderRadius.all(Radius.circular(10)),
+                                      BorderRadius.all(Radius.circular(10)),
                                   child: LinearProgressIndicator(
                                     value: (rate ?? 0) / 5,
                                     color: Palette.primary,
@@ -1235,7 +961,8 @@ class Stats extends StatelessWidget {
                                     (rate == null)
                                         ? "  -"
                                         : rate.toStringAsFixed(1),
-                                    style: TextPalette.getBodyText(Palette.black)),
+                                    style:
+                                        TextPalette.getBodyText(Palette.black)),
                               ),
                             ];
 
@@ -1248,10 +975,10 @@ class Stats extends StatelessWidget {
                                     onTap: userDetails == null
                                         ? null
                                         : () => ModalBottomSheet
-                                        .showNutmegModalBottomSheet(
-                                        context,
-                                        JoinedPlayerBottomModal(
-                                            userDetails)),
+                                            .showNutmegModalBottomSheet(
+                                                context,
+                                                JoinedPlayerBottomModal(
+                                                    userDetails)),
                                     child: Row(children: widgets)));
                           }).toList(),
                         );
@@ -1275,7 +1002,8 @@ class UserNameWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // fixme text overflow
-    if (userDetails == null) return Skeletons.mText;
+    if (userDetails == null)
+      return Skeletons.sText;
 
     var name = UserDetails.getDisplayName(userDetails).split(" ").first;
 

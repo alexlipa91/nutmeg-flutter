@@ -107,11 +107,17 @@ class UserState extends ChangeNotifier {
   // user location
   late LocationInfo _deviceLocationInfo;
 
+  void setCustomLocationInfo(LocationInfo l) {
+    _deviceLocationInfo = l;
+    notifyListeners();
+  }
+
   Future<void> setLocationInfo(Position? position) async {
     if (position != null)
       _deviceLocationInfo = await fetchLocationInfo(position.latitude, position.longitude);
     else
-      _deviceLocationInfo = LocationInfo("NL", "Amsterdam", 52.3676, 4.9041);
+      _deviceLocationInfo = LocationInfo("NL", "Amsterdam", 52.3676, 4.9041,
+          "ChIJVXealLU_xkcRja_At0z9AGY");
   }
 
   LocationInfo getLocationInfo() =>
@@ -125,20 +131,23 @@ class LocationInfo {
   double lng;
   String country;
   String city;
+  String placeId;
 
-  LocationInfo(this.country, this.city, this.lat, this.lng);
+  LocationInfo(this.country, this.city, this.lat, this.lng, this.placeId);
 
   LocationInfo.fromJson(Map<String, dynamic> json):
       country = json["country"],
       city = json["city"],
       lat = json["lat"],
-      lng = json["lng"];
+      lng = json["lng"],
+      placeId = json["place_id"];
 
   Map<String, dynamic> toJson() => {
     "country": country,
     "city": city,
     "lat": lat,
-    "lng": lng
+    "lng": lng,
+    "place_id": placeId
   };
 
   String getText() => "$city, $country";

@@ -1,6 +1,5 @@
 {
     "topHeader": "Trova partite di calcio vicino",
-    "courtType": "Tipo di campo: {t}",
     "upcoming": "Future",
     "going": "Iscritto",
     "past": "Passate",
@@ -13,7 +12,7 @@
     "cancelledStatus": "Annullato",
     "fullStatus": "Pieno",
     "matchDetailsScreen": "************************************************** ************************************************** *",
-    "cancellationInfo": "La partita verrà annullata automaticamente quando {date} if less than {n} giocatori si sono uniti.",
+    "cancellationInfo": "La partita verrà annullata automaticamente alle {date} se si sono uniti meno di {n} giocatori.",
     "fullRefund": "un rimborso completo",
     "refundWithoutFee": "un rimborso (esclusi i costi di servizio di Nutmeg)",
     "paymentPolicyHeader": "Politica di pagamento",
@@ -28,6 +27,7 @@
     "showLess": "MOSTRA MENO",
     "statsWaiting": "Statistiche presto disponibili",
     "statsAvailableAt": "Le statistiche per questa partita saranno disponibili\n{date}",
+    "courtType": "Tipo di campo: {t}",
     "changingRooms": "Disponibili spogliatoi",
     "courtNumber": "Campo numero {x}",
     "artificialGrass": "Erba",
@@ -74,7 +74,7 @@
     "paymentExplanationText": "Agli utenti viene addebitata una tassa di {amount} per la noce moscata.\nNutmeg rilascia i soldi 24 ore dopo l'ora di fine della partita. Verrai pagato in 3-5 giorni lavorativi successivi",
     "policiesSectionTitle": "Politiche",
     "automaticCancellationInfo": "Annulla automaticamente la partita se non viene raggiunto il numero minimo di giocatori",
-    "automaticCancellationExplanation": "Cancelleremo la partita se almeno {x} players haven't joined {y} ore prima del calcio d'inizio della partita.\nSe i giocatori hanno pagato tramite Nutmeg, riceveranno un rimborso completo",
+    "automaticCancellationExplanation": "Annulleremo la partita se almeno {x} giocatori non si sono uniti {y} ore prima dell'inizio della partita.\nSe i giocatori hanno pagato tramite Nutmeg, riceveranno un rimborso completo",
     "hoursLabel": "Ore",
     "youWantToLeaveTitle": "Sei sicuro di voler partire?",
     "youWantToLeaveSubtitle": "Se esci, tutte le modifiche non salvate andranno perse.",
@@ -90,5 +90,11 @@
     "confirmButtonText": "CONFERMARE",
     "popularCourtsTitle": "Tribunali popolari",
     "yourCourtsTitle": "I tuoi tribunali",
-    "createNewCourtButtonText": "CREA NUOVO TRIBUNALE"
+    "createNewCourtButtonText": "CREA NUOVO TRIBUNALE",
+    "searchLocationTitle": "Cerca posizione",
+    "searchLocationInputFieldLabel": "Ricerca",
+    "currentLocationLabel": "POSIZIONE ATTUALE",
+    "currentLocationInfo": "La tua posizione ci aiuta a migliorare la tua esperienza con consigli approssimativi sulle partite.",
+    "manualSplitTeamCheckBoxLabel": "Dividere manualmente le squadre",
+    "manualSplitTeamInfo": "Per impostazione predefinita, dividiamo le squadre in modo equo in base alle prestazioni dei giocatori e alla forza complessiva della squadra. Puoi dividere manualmente le squadre da solo."
 }

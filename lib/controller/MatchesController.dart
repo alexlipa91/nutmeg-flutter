@@ -30,12 +30,7 @@ class MatchesController {
 
   // current logged in user leaves a match
   static Future<Match> leaveMatch(BuildContext context, String matchId) async {
-    var userState = context.read<UserState>();
-
-    await apiClient.callFunction("remove_user_from_match", {
-      'user_id': userState.getLoggedUserDetails()?.documentId,
-      'match_id': matchId
-    });
+    await CloudFunctionsClient().post("matches/$matchId/users/remove", {});
     var m = await context.read<MatchesState>().fetchMatch(matchId);
     return m;
   }
