@@ -46,6 +46,7 @@ class CreateMatch extends StatefulWidget {
 class CreateMatchState extends State<CreateMatch> {
   static InputDecoration getTextFormDecoration(String? label,
       {bool isDropdown = false, bool fill = true, focusColor, prefixText,
+        hintStyle,
         hintText}) {
     var border = UnderlineInputBorder(
       borderSide: BorderSide.none,
@@ -57,7 +58,7 @@ class CreateMatchState extends State<CreateMatch> {
       floatingLabelBehavior: FloatingLabelBehavior.auto,
       floatingLabelStyle: TextPalette.bodyText,
       prefixText: prefixText,
-      hintStyle: TextPalette.getStats(Palette.grey_light),
+      hintStyle: hintStyle,
       hintText: hintText,
       // fixme why we need this?
       suffixIconConstraints: BoxConstraints.expand(width: 50.0, height: 30.0),
@@ -198,10 +199,13 @@ class CreateMatchState extends State<CreateMatch> {
     var noRepeat = AppLocalizations.of(context)!.doesNotRepeatLabel;
 
     var widgets = [
-      Text(
-          widget.existingMatch != null ? AppLocalizations.of(context)!.editMatchTitle
-              : AppLocalizations.of(context)!.newMatchTitle,
-          style: TextPalette.h1Default),
+      Align(
+        alignment: Alignment.centerLeft,
+        child: Text(
+            widget.existingMatch != null ? AppLocalizations.of(context)!.editMatchTitle
+                : AppLocalizations.of(context)!.newMatchTitle,
+            style: TextPalette.h1Default),
+      ),
       Section(
         titleType: "big",
         title: AppLocalizations.of(context)!.crudMatchGeneralTitle,
@@ -575,6 +579,25 @@ class CreateMatchState extends State<CreateMatch> {
                           style: TextPalette.h3);
                     }),
                   ]),
+                  SizedBox(height: 8),
+                  Row(children: [
+                    Text(AppLocalizations.of(context)!.usersWillPayLabel,
+                        style: TextPalette.bodyText),
+                    Spacer(),
+                    Builder(builder: (BuildContext buildContext) {
+                      var price = Decimal.tryParse(priceController.text);
+                      if (price != null)
+                        price = price + Decimal.parse("0.5");
+                      return Text(
+                          (price == null)
+                              ? "€ --"
+                              :
+                          AppLocalizations.of(context)!.usersWillPayText(
+                              price.toDouble().toStringAsFixed(2)
+                          ),
+                          style: TextPalette.bodyText);
+                    }),
+                  ]),
                   SizedBox(height: 16),
                   Divider(),
                   RichText(
@@ -585,7 +608,7 @@ class CreateMatchState extends State<CreateMatch> {
                               text: AppLocalizations.of(context)!.paymentExplanationText(formatCurrency(50)),
                               style: TextPalette.bodyText),
                           TextSpan(
-                              text: "Stripe",
+                              text: "Stripe.",
                               recognizer: TapGestureRecognizer()
                                 ..onTap = () async {
                                   final url = 'https://stripe.com';

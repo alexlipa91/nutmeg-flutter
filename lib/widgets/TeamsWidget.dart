@@ -324,7 +324,11 @@ class EditScoreWidgetState extends State<EditScoreWidget> {
         },
         style: TextPalette.getStats(Palette.black),
         textAlign: teamIndex == 0 ? TextAlign.end : TextAlign.start,
-        decoration: CreateMatchState.getTextFormDecoration(null, hintText: "0"),
+        decoration: CreateMatchState.getTextFormDecoration(
+            null,
+            hintText: "0",
+            hintStyle: TextPalette.getStats(Palette.grey_light)
+        ),
       );
 
   @override

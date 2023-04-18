@@ -135,7 +135,14 @@
         }
     },
     "youWillGetLabel": "You will get",
-    "paymentExplanationText": "Users are charged {amount} Nutmeg fee.\nNutmeg releases the money 24 hours after the match end time. You will get paid in 3 to 5 business days after that through ",
+    "usersWillPayLabel": "Users will pay",
+    "usersWillPayText": "€ {amount} (including Nutmeg fee)",
+    "@usersWillPayText": {
+        "placeholders": {
+            "amount":  {"type": "String", "example": "0.50"}
+        }
+    },
+    "paymentExplanationText": "Nutmeg releases the money 24 hours after the match. You will get paid in 3 to 5 business days after that through ",
     "@paymentExplanationText": {
         "placeholders": {
             "amount":  {"type": "String", "example": "0.50"}
