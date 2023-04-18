@@ -50,7 +50,11 @@ class SportCenter {
         'timeZoneId': timezoneId,
         if (hasChangingRooms != null)
           'hasChangingRooms': hasChangingRooms!,
-        'courtType': courtType
+        'courtType': courtType,
+        if (_thumbnailUrl != null)
+          'thumbnailUrl': _thumbnailUrl!,
+        if (_imagesUrls != null)
+          "largeImageUrls": _imagesUrls
       };
 
   Widget getThumbnail() {
