@@ -605,7 +605,7 @@ class CreateMatchState extends State<CreateMatch> {
                       text: TextSpan(
                         children: [
                           TextSpan(
-                              text: AppLocalizations.of(context)!.paymentExplanationText(formatCurrency(50)),
+                              text: AppLocalizations.of(context)!.paymentExplanationText,
                               style: TextPalette.bodyText),
                           TextSpan(
                               text: "Stripe.",
