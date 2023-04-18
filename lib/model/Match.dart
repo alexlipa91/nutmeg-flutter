@@ -38,7 +38,9 @@ class Match {
 
   Map<String, DateTime> going;
 
-  List<MapEntry<String, List<String>>> teams;
+  List<List<String>> computedTeams;
+  List<List<String>> manualTeams;
+  bool? hasManualTeams;
 
   String? organizerId;
   Duration? cancelBefore;
@@ -58,7 +60,8 @@ class Match {
       this.sportCenterSubLocation,
       this.maxPlayers, this.pricePerPersonInCents, this.duration,
       this.isTest, this.minPlayers, this.organizerId, this.userFee,
-      this.organiserFee, this.going, this.teams, this.cancelBefore,
+      this.organiserFee, this.going, this.computedTeams, this.manualTeams,
+      this.cancelBefore,
       this.managePayments, this.score);
 
   Match.fromJson(Map<String, dynamic> jsonInput, String documentId)
@@ -69,7 +72,9 @@ class Match {
         minPlayers = jsonInput['minPlayers'] ?? 0,
         maxPlayers = jsonInput['maxPlayers'],
         going = _readGoing(jsonInput),
-        teams = _readTeams(jsonInput),
+        computedTeams = _readComputedTeams(jsonInput),
+        manualTeams = _readManualTeams(jsonInput),
+        hasManualTeams = jsonInput["hasManualTeams"],
         pricePerPersonInCents = jsonInput['pricePerPerson'],
         sportCenterId = jsonInput['sportCenterId'],
         userFee = jsonInput["userFee"] ?? 0,
@@ -113,21 +118,22 @@ class Match {
         MapEntry(key, DateTime.parse(value["createdAt"])));
   }
 
-  static List<MapEntry<String, List<String>>> _readTeams(Map<String, dynamic> json) {
-    var goingMap = Map<String, dynamic>.from(json["going"] ?? {});
-    Map<String, List<String>> teams = Map();
-    teams["a"] = [];
-    teams["b"] = [];
+  static List<List<String>> _readComputedTeams(Map<String, dynamic> json) {
+    if (json.containsKey("teams"))
+      return [
+        List<String>.from(json["teams"]["balanced"]["players"]["a"]),
+        List<String>.from(json["teams"]["balanced"]["players"]["b"]),
+      ].toList();
+    return List.empty();
+  }
 
-    goingMap.forEach((key, value) {
-      Map valueMap = value as Map;
-
-      if (valueMap.containsKey("team")) {
-        teams[valueMap["team"]]?.add(key);
-      }
-    });
-
-    return teams.entries.toList();
+  static List<List<String>> _readManualTeams(Map<String, dynamic> json) {
+    if (json.containsKey("teams") && json["teams"].containsKey("manual"))
+      return [
+        List<String>.from(json["teams"]["manual"]["players"]["a"]),
+        List<String>.from(json["teams"]["manual"]["players"]["b"]),
+      ].toList();
+    return List.empty();
   }
 
   Map<String, dynamic> toJson() =>
@@ -143,6 +149,8 @@ class Match {
         'minPlayers': minPlayers,
         if (cancelledAt != null)
           'cancelledAt': cancelledAt,
+        if (hasManualTeams != null)
+          "hasManualTeams": hasManualTeams,
         'duration': duration.inMinutes,
         'organizerId': organizerId,
         if (cancelBefore != null)
@@ -179,16 +187,17 @@ class Match {
 
   int getMissingPlayers() => max(0, minPlayers - going.length);
 
-  bool hasTeams() => teams.isNotEmpty;
+  bool hasTeams() => computedTeams.isNotEmpty;
 
   DateTime getLocalizedTime(String timezoneId) =>
       tz.TZDateTime.from(dateTime, tz.getLocation(timezoneId));
 
   bool isMatchFinished() => DateTime.now().isAfter(dateTime.add(duration));
 
-  bool canUserModifyTeams(String? userId) =>
-      userId != null && userId == organizerId &&
-          DateTime.now().isBefore(dateTime);
+  bool canUserModifyTeams(String? userId) {
+    return userId != null && userId == organizerId &&
+        DateTime.now().isBefore(dateTime);
+  }
 }
 
 class Ratings {

@@ -59,23 +59,23 @@ class MatchesState extends ChangeNotifier {
     notifyListeners();
   }
 
-  void movePlayerToTeam(String matchId, String userId, int teamTargetIndex) {
-    int oldTeamIndex = teamTargetIndex == 0 ? 1 : 0;
-    getMatch(matchId)!.teams[teamTargetIndex].value.add(userId);
-    getMatch(matchId)!.teams[oldTeamIndex].value.remove(userId);
+  void movePlayerToTeam(String matchId, String userId, int teamTargetIndex) async {
+    getMatch(matchId)!.manualTeams[teamTargetIndex].add(userId);
+    getMatch(matchId)!.manualTeams[(teamTargetIndex + 1) % 2].remove(userId);
+
     notifyListeners();
+
+    await storeManualTeams(matchId, getMatch(matchId)!.manualTeams);
   }
 
-  Future<void> shuffleTeams(String matchId) async {
-    var match = getMatch(matchId)!;
-    var users = match.going.keys.toList();
-    users.shuffle();
-    await Future.delayed(Duration(seconds: 2));
-    match.teams = [
-      MapEntry("a", users.sublist(0, (users.length / 2).floor())),
-      MapEntry("b", users.sublist((users.length / 2).floor(), users.length)),
-    ].toList();
+  Future<void> storeManualTeams(String matchId, List<List<String>> teams) async {
+    getMatch(matchId)!.manualTeams = teams;
     notifyListeners();
+
+    await editMatch(matchId, {
+      "teams.manual.players.a": teams[0],
+      "teams.manual.players.b": teams[1],
+    });
   }
 
   Set<String> getSportCenters() => _matchesCache!

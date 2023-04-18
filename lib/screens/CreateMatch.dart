@@ -45,7 +45,8 @@ class CreateMatch extends StatefulWidget {
 
 class CreateMatchState extends State<CreateMatch> {
   static InputDecoration getTextFormDecoration(String? label,
-      {bool isDropdown = false, bool fill = true, focusColor, prefixText}) {
+      {bool isDropdown = false, bool fill = true, focusColor, prefixText,
+        hintText}) {
     var border = UnderlineInputBorder(
       borderSide: BorderSide.none,
       borderRadius: BorderRadius.circular(8),
@@ -56,6 +57,8 @@ class CreateMatchState extends State<CreateMatch> {
       floatingLabelBehavior: FloatingLabelBehavior.auto,
       floatingLabelStyle: TextPalette.bodyText,
       prefixText: prefixText,
+      hintStyle: TextPalette.getStats(Palette.grey_light),
+      hintText: hintText,
       // fixme why we need this?
       suffixIconConstraints: BoxConstraints.expand(width: 50.0, height: 30.0),
       suffixIcon: isDropdown ? Icon(Icons.arrow_drop_down) : null,
@@ -801,8 +804,10 @@ class CreateMatchState extends State<CreateMatch> {
                                   ? widget.existingMatch!.going
                                   : Map(),
                               widget.existingMatch != null
-                                  ? widget.existingMatch!.teams
+                                  ? widget.existingMatch!.computedTeams
                                   : [],
+                              widget.existingMatch != null
+                                  ? widget.existingMatch!.manualTeams : [],
                               cancelBefore,
                               paymentsPossible && managePayments,
                               widget.existingMatch != null ? widget.existingMatch!.score : null
