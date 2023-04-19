@@ -1,1 +1,1 @@
-Fix payment flow
+Add manual team selection feature for organizers
