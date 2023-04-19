@@ -41,8 +41,8 @@ class UserDetails {
         stripeId = json["stripeId"] ?? null,
         numJoinedMatches = json["num_matches_joined"] ?? 0,
         averageScore = json["avg_score"] ?? null,
-        numRatedMatches = json["scores"]["number_of_scored_games"],
-        sumTotalRates = (json["scores"]["total_sum"] as num).toDouble(),
+        numRatedMatches = (json["scores"] ?? {})["number_of_scored_games"] ?? 0,
+        sumTotalRates = ((json["scores"] ?? {})["total_sum"] ?? 0 as num).toDouble(),
         potmCount = json["potm_count"] ?? 0,
         lastScores = (json["last_date_scores"] == null) ? []
             : _readLastScores(Map<String, double>.from(json["last_date_scores"])),
