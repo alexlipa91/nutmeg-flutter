@@ -220,6 +220,33 @@ class TeamsWidgetState extends State<TeamsWidget> {
               ],
             ),
           ),
+          if (isOrganizerView)
+            Padding(
+              padding: EdgeInsets.only(top: 24),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    teams[0].map((u) => context.watch<UserState>()
+                        .getUserDetail(u)?.averageScore ?? 3)
+                        .fold<double>(0, (a, b) => a + b).toStringAsFixed(2),
+                    style: TextPalette.bodyText,
+                  ),
+                  Expanded(
+                    child: Text("Team strength",
+                        textAlign: TextAlign.center,
+                        style: TextPalette.bodyText),
+                  ),
+                  Text(
+                    teams[1].map((u) => context.watch<UserState>()
+                        .getUserDetail(u)?.averageScore ?? 3)
+                        .fold<double>(0, (a, b) => a + b).toStringAsFixed(2),
+                    style: TextPalette.bodyText,
+                  ),
+                ],
+              ),
+            ),
           if (isOrganizerView && match.status != MatchStatus.rated)
             Padding(
               padding: EdgeInsets.only(top: 24),
