@@ -72,7 +72,7 @@
     "nutmegFeeInfo": "Nutmeg tratterrà una commissione di servizio di {a} per giocatore",
     "youWillGetLabel": "Otterrete",
     "usersWillPayLabel": "Gli utenti pagheranno",
-    "usersWillPayText": "€ {amount} (inclusa quota Noce Moscata)",
+    "usersWillPayText": "(inclusa tassa di noce moscata)",
     "paymentExplanationText": "Nutmeg rilascia i soldi 24 ore dopo la partita. Verrai pagato in 3-5 giorni lavorativi successivi",
     "policiesSectionTitle": "Politiche",
     "automaticCancellationInfo": "Annulla automaticamente la partita se non viene raggiunto il numero minimo di giocatori",

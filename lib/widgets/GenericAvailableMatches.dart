@@ -128,7 +128,7 @@ class GenericAvailableMatchesListState
       child: SafeArea(
         bottom: false,
         child: Scaffold(
-          backgroundColor: Palette.grey_lightest,
+          backgroundColor: Palette.greyLightest,
           body: RefresherWithObserverWidget(
               child: ListView.builder(
                   padding: EdgeInsets.zero,
@@ -225,7 +225,7 @@ class GenericMatchInfo extends StatelessWidget {
                                       " " +
                                       gmtSuffix(sportCenter.timezoneId),
                                   style: TextPalette.getBodyText(
-                                      Palette.grey_dark)),
+                                      Palette.greyDark)),
                               SizedBox(
                                 height: 6,
                               ),

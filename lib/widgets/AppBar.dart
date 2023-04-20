@@ -35,7 +35,7 @@ class NutmegAppBar extends StatelessWidget with PreferredSizeWidget {
 }
 
 class MainAppBar extends StatelessWidget with PreferredSizeWidget {
-  Color color;
+  final Color color;
 
   MainAppBar(this.color) : super();
 

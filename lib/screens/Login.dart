@@ -130,7 +130,7 @@ class SignInButton extends StatelessWidget {
       case Provider.google :
         loginFuture = () => UserController.continueWithGoogle(context);
         backgroundColor = Colors.transparent;
-        textStyle = GoogleFonts.roboto(color: Palette.grey_dark, fontSize: 14, fontWeight: FontWeight.w700);
+        textStyle = GoogleFonts.roboto(color: Palette.greyDark, fontSize: 14, fontWeight: FontWeight.w700);
         logoPath = "assets/login/google_logo.png";
         break;
       case Provider.apple :
@@ -150,7 +150,7 @@ class SignInButton extends StatelessWidget {
             style: OutlinedButton.styleFrom(
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 backgroundColor: backgroundColor,
-                side: BorderSide(width: 1.0, color: Palette.grey_light),
+                side: BorderSide(width: 1.0, color: Palette.greyLight),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(40))
             ),

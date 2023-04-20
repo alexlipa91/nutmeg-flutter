@@ -28,7 +28,7 @@ class UserAvatar extends StatelessWidget {
 
     var photoUrl = userDetails?.getPhotoUrl();
 
-    var backgroundColor = Palette.grey_lighter;
+    var backgroundColor = Palette.greyLighter;
     var backgroundImage = (photoUrl == null || photoUrl == "")
         ? null : NetworkImage(photoUrl);
 
@@ -40,7 +40,7 @@ class UserAvatar extends StatelessWidget {
         ? Text(displayName[0],
             textAlign: TextAlign.center,
             style: GoogleFonts.roboto(
-                color: Palette.grey_dark,
+                color: Palette.greyDark,
                 fontSize: fontSize,
                 fontWeight: FontWeight.w600))
         : null;

@@ -136,12 +136,7 @@
     },
     "youWillGetLabel": "You will get",
     "usersWillPayLabel": "Users will pay",
-    "usersWillPayText": "€ {amount} (including Nutmeg fee)",
-    "@usersWillPayText": {
-        "placeholders": {
-            "amount":  {"type": "String", "example": "0.50"}
-        }
-    },
+    "usersWillPayText": "(including Nutmeg fee)",
     "paymentExplanationText": "Nutmeg releases the money 24 hours after the match. You will get paid in 3 to 5 business days after that through ",
     "policiesSectionTitle": "Policies",
     "automaticCancellationInfo": "Automatically cancel the match if minimum amount of players is not reached",

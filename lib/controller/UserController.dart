@@ -65,10 +65,12 @@ class UserController {
       await addUser(userDetails);
     }
 
+    print("stting");
     userState.setCurrentUserDetails(userDetails);
     userState.storeUserToken(await FirebaseMessaging.instance.getToken());
     FirebaseMessaging.instance.onTokenRefresh.listen((t) =>
         userState.storeUserToken(t));
+    print("token stored");
 
     await context.read<MatchesState>().refreshState(context);
   }
@@ -192,7 +194,7 @@ class UserController {
         aspectRatioPresets: [CropAspectRatioPreset.square],
         androidUiSettings: AndroidUiSettings(
             toolbarColor: Palette.primary,
-            toolbarWidgetColor: Palette.grey_light,
+            toolbarWidgetColor: Palette.greyLight,
             initAspectRatio: CropAspectRatioPreset.original,
             activeControlsWidgetColor: Palette.primary,
             lockAspectRatio: true),

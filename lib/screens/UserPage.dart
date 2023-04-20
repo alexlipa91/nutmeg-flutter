@@ -88,13 +88,13 @@ class UserPageState extends State<UserPage> {
           children: [
             (loadingPicture)
                 ? CircleAvatar(
-                    backgroundColor: Palette.grey_lightest,
+                    backgroundColor: Palette.greyLightest,
                     radius: 30,
                     child: Container(
                       height: 20.0,
                       width: 20.0,
                       child: CircularProgressIndicator(
-                        color: Palette.grey_light,
+                        color: Palette.greyLight,
                         strokeWidth: 2.0,
                       ),
                     ))
@@ -160,13 +160,13 @@ class UserPageState extends State<UserPage> {
           children: [
             (loadingPicture)
                 ? CircleAvatar(
-                    backgroundColor: Palette.grey_lightest,
+                    backgroundColor: Palette.greyLightest,
                     radius: 30,
                     child: Container(
                       height: 20.0,
                       width: 20.0,
                       child: CircularProgressIndicator(
-                        color: Palette.grey_light,
+                        color: Palette.greyLight,
                         strokeWidth: 2.0,
                       ),
                     ))
@@ -265,7 +265,7 @@ class UserPageState extends State<UserPage> {
                                             width: 20,
                                             child: Text((e.key + 1).toString(),
                                                 style: GoogleFonts.roboto(
-                                                    color: Palette.grey_dark,
+                                                    color: Palette.greyDark,
                                                     fontSize: 16,
                                                     fontWeight:
                                                         FontWeight.w400)),
@@ -287,7 +287,7 @@ class UserPageState extends State<UserPage> {
                                                     sorted.first.value,
                                                 color: Palette.primary,
                                                 backgroundColor:
-                                                    Palette.grey_lighter,
+                                                    Palette.greyLighter,
                                               ),
                                             ),
                                           ),

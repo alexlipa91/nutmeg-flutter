@@ -72,7 +72,7 @@ class TeamsWidgetState extends State<TeamsWidget> {
                             Padding(
                                 padding: EdgeInsets.only(right: 4),
                                 child: Icon(Icons.drag_indicator_outlined,
-                                    color: Palette.grey_lighter)),
+                                    color: Palette.greyLighter)),
                           avatar,
                           SizedBox(width: 12),
                           name,
@@ -85,7 +85,7 @@ class TeamsWidgetState extends State<TeamsWidget> {
                         Padding(
                             padding: EdgeInsets.only(left: 4),
                             child: Icon(Icons.drag_indicator_outlined,
-                                color: Palette.grey_lighter)),
+                                color: Palette.greyLighter)),
                     ]);
             }),
           );
@@ -137,7 +137,7 @@ class TeamsWidgetState extends State<TeamsWidget> {
         return Container(
           decoration: BoxDecoration(
             borderRadius: InfoContainer.borderRadius,
-            color: isHighlighted ? Palette.grey_lighter : Colors.transparent,
+            color: isHighlighted ? Palette.greyLighter : Colors.transparent,
           ),
           child: Padding(
             padding: EdgeInsets.symmetric(vertical: 4),
@@ -213,7 +213,7 @@ class TeamsWidgetState extends State<TeamsWidget> {
                 Expanded(
                     child: getTeamColumn(
                         context, MainAxisAlignment.start, teams, 0)),
-                VerticalDivider(thickness: 1, color: Palette.grey_light),
+                VerticalDivider(thickness: 1, color: Palette.greyLight),
                 Expanded(
                     child: getTeamColumn(
                         context, MainAxisAlignment.end, teams, 1)),
@@ -252,7 +252,7 @@ class TeamsWidgetState extends State<TeamsWidget> {
               padding: EdgeInsets.only(top: 24),
               child: Column(
                 children: [
-                  Divider(color: Palette.grey_light, height: 0),
+                  Divider(color: Palette.greyLight, height: 0),
                   Padding(
                     padding: EdgeInsets.only(top: 8),
                     child: Row(
@@ -300,7 +300,7 @@ class TeamsWidgetState extends State<TeamsWidget> {
           if (isOrganizerView && match.status == MatchStatus.to_rate)
             Padding(
                 padding: EdgeInsets.only(top: 8),
-                child: Divider(color: Palette.grey_light)),
+                child: Divider(color: Palette.greyLight)),
           if (isOrganizerView && match.status == MatchStatus.to_rate)
             Padding(
                 padding: EdgeInsets.only(top: 8),
@@ -354,7 +354,7 @@ class EditScoreWidgetState extends State<EditScoreWidget> {
         decoration: CreateMatchState.getTextFormDecoration(
             null,
             hintText: "0",
-            hintStyle: TextPalette.getStats(Palette.grey_light)
+            hintStyle: TextPalette.getStats(Palette.greyLight)
         ),
       );
 

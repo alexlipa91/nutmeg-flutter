@@ -34,7 +34,7 @@ class PageTemplate extends StatelessWidget {
     );
 
     return Scaffold(
-      backgroundColor: Palette.grey_lightest,
+      backgroundColor: Palette.greyLightest,
       body: SafeArea(
         bottom: false,
         child: Center(

@@ -1,4 +1,3 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
@@ -90,7 +89,7 @@ class EnterNameAreaState extends State<EnterNameArea> {
                 ),
                 controller: _controller,
                 onChanged: (String v) {
-                  bool valid = v != null && v != "";
+                  bool valid = v != "";
                   setState(() {
                     isValid = valid;
                   });

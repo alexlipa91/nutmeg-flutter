@@ -57,7 +57,7 @@ class BottomModalWithTopImage extends StatelessWidget {
                                   padding: EdgeInsets.only(top: 4),
                                   child: Text(subtitle!,
                                       style: TextPalette.getBodyText(
-                                          Palette.grey_dark))),
+                                          Palette.greyDark))),
                             SizedBox(height: 24),
                             content!
                           ],
@@ -226,7 +226,7 @@ class PerformanceGraph extends StatelessWidget {
                               fontFamily: "Roboto",
                               fontSize: 16,
                               color: charts.ColorUtil.fromDartColor(
-                                  Palette.grey_dark))))
+                                  Palette.greyDark))))
                       .toList()),
                   renderSpec: new charts.GridlineRendererSpec(
                       labelOffsetFromAxisPx: 20,
@@ -235,7 +235,7 @@ class PerformanceGraph extends StatelessWidget {
                           color: charts.MaterialPalette.black),
                       lineStyle: new charts.LineStyleSpec(
                           color: charts.ColorUtil.fromDartColor(
-                              Palette.grey_lighter)))),
+                              Palette.greyLighter)))),
               behaviors: [
                 charts.LinePointHighlighter(
                   radiusPaddingPx: 3.0,

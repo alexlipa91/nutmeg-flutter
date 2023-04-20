@@ -546,7 +546,7 @@ class MatchInfo extends StatelessWidget {
             if (matchWidget != null)
               Column(children: [
                 SizedBox(height: 16),
-                Divider(color: Palette.grey_light),
+                Divider(color: Palette.greyLight),
                 SizedBox(height: 8),
                 matchWidget
               ])
@@ -567,7 +567,7 @@ class MatchInfo extends StatelessWidget {
 
     if (match.status == MatchStatus.playing) {
       icon = Icons.history_toggle_off_outlined;
-      color = Palette.grey_dark;
+      color = Palette.greyDark;
       text = AppLocalizations.of(context)!.inProgressStatus;
     } else if (match.status == MatchStatus.cancelled) {
       icon = Icons.do_disturb_alt_outlined;
@@ -710,12 +710,12 @@ class EmptyPlayerCard extends StatelessWidget {
         DottedBorder(
           padding: EdgeInsets.zero,
           borderType: BorderType.Circle,
-          color: Palette.grey_dark,
+          color: Palette.greyDark,
           strokeWidth: 1,
           dashPattern: [4],
           child: CircleAvatar(
             radius: 29,
-            child: Icon(Icons.add, color: Palette.grey_dark, size: 24),
+            child: Icon(Icons.add, color: Palette.greyDark, size: 24),
             backgroundColor: Colors.transparent,
           ),
         ),
@@ -864,7 +864,7 @@ class Stats extends StatelessWidget {
             children: [
               CircleAvatar(
                   radius: 36,
-                  backgroundColor: Palette.grey_lightest,
+                  backgroundColor: Palette.greyLightest,
                   child: Image.asset(
                     "assets/empty_state/stats.png",
                     height: 24,
@@ -950,7 +950,7 @@ class Stats extends StatelessWidget {
                                   child: LinearProgressIndicator(
                                     value: (rate ?? 0) / 5,
                                     color: Palette.primary,
-                                    backgroundColor: Palette.grey_lighter,
+                                    backgroundColor: Palette.greyLighter,
                                   ),
                                 ),
                               ),

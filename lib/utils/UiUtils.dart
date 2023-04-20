@@ -23,11 +23,11 @@ class Palette {
   static var black = UiUtils.fromHex("#1E1E24");
 
   // greys
-  static var grey_lightest = UiUtils.fromHex("#F7F7F7"); // previous “light”
-  static var grey_lighter = UiUtils.fromHex("#EEEEEE"); // previous “lighterGrey”
-  static var grey_light = UiUtils.fromHex("#C2C2C2"); // previous “lightGrey”
-  static var grey_dark = UiUtils.fromHex("#787878"); // previous “mediumgrey”
-  static var grey_darker = UiUtils.fromHex("#4444444"); // previous “darkgrey”
+  static var greyLightest = UiUtils.fromHex("#F7F7F7"); // previous “light”
+  static var greyLighter = UiUtils.fromHex("#EEEEEE"); // previous “lighterGrey”
+  static var greyLight = UiUtils.fromHex("#C2C2C2"); // previous “lightGrey”
+  static var greyDark = UiUtils.fromHex("#787878"); // previous “mediumgrey”
+  static var greyDarker = UiUtils.fromHex("#4444444"); // previous “darkgrey”
 
   // colors
   static var primary = UiUtils.fromHex("#394BBB");
@@ -54,10 +54,10 @@ class TextPalette {
   static TextStyle h4 = GoogleFonts.roboto(color: Palette.black, fontSize: 12, fontWeight: FontWeight.w500);
 
   static TextStyle getBodyText(Color color) => GoogleFonts.roboto(color: color, fontSize: 14, fontWeight: FontWeight.w400, height: 1.6);
-  static TextStyle bodyText = GoogleFonts.roboto(color: Palette.grey_dark, fontSize: 14, fontWeight: FontWeight.w400, height: 1.6);
+  static TextStyle bodyText = GoogleFonts.roboto(color: Palette.greyDark, fontSize: 14, fontWeight: FontWeight.w400, height: 1.6);
   static TextStyle bodyTextPrimary = GoogleFonts.roboto(color: Palette.primary, fontSize: 14, fontWeight: FontWeight.w400, height: 1.6);
 
-  static TextStyle bodyTextOneLine = GoogleFonts.roboto(color: Palette.grey_dark, fontSize: 14, fontWeight: FontWeight.w400);
+  static TextStyle bodyTextOneLine = GoogleFonts.roboto(color: Palette.greyDark, fontSize: 14, fontWeight: FontWeight.w400);
   static TextStyle bodyTextInverted = GoogleFonts.roboto(color: Palette.white, fontSize: 14, fontWeight: FontWeight.w400, height: 1.6);
 
   static TextStyle listItem = GoogleFonts.roboto(color: Palette.black, fontSize: 16, fontWeight: FontWeight.w400, height: 1.6);
@@ -68,7 +68,7 @@ class TextPalette {
 
   static TextStyle getLinkStyle(Color color) => GoogleFonts.roboto(color: color, fontSize: 14, fontWeight: FontWeight.w700);
 
-  static TextStyle buttonOff = GoogleFonts.roboto(color: Palette.grey_lighter, fontSize: 14, fontWeight: FontWeight.w700);
+  static TextStyle buttonOff = GoogleFonts.roboto(color: Palette.greyLighter, fontSize: 14, fontWeight: FontWeight.w700);
   static TextStyle getStats(Color color) => GoogleFonts.roboto(color: color, fontSize: 30, fontWeight: FontWeight.w400);
 }
 

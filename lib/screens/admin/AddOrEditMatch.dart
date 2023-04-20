@@ -63,7 +63,7 @@ class AdminMatchDetailsState extends State<AdminMatchDetails> {
             children: [
               // SizedBox(width: 16,), // we cannot pad outside
               InkWell(
-                  splashColor: Palette.grey_lighter,
+                  splashColor: Palette.greyLighter,
                   child: Container(
                     width: 50,
                     height: 50,
@@ -78,7 +78,7 @@ class AdminMatchDetailsState extends State<AdminMatchDetails> {
           ),
         ),
         body: (match == null) ? Container() : Container(
-          color: Palette.grey_lightest,
+          color: Palette.greyLightest,
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 30, vertical: 20),
             child: Column(children: [

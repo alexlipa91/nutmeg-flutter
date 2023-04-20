@@ -72,7 +72,7 @@
     "nutmegFeeInfo": "Nutmeg reterá uma taxa de serviço de {a} por jogador",
     "youWillGetLabel": "Você vai ter",
     "usersWillPayLabel": "Os usuários vão pagar",
-    "usersWillPayText": "€ {amount} (incluindo taxa de noz-moscada)",
+    "usersWillPayText": "(incluindo taxa de noz-moscada)",
     "paymentExplanationText": "Nutmeg libera o dinheiro 24 horas após a partida. Você será pago em 3 a 5 dias úteis depois disso através",
     "policiesSectionTitle": "Políticas",
     "automaticCancellationInfo": "Cancele automaticamente a partida se a quantidade mínima de jogadores não for atingida",

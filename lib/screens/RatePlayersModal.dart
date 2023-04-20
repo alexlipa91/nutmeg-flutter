@@ -105,7 +105,7 @@ class RatePlayerBottomModal extends StatelessWidget {
                 children: [
                   SizedBox(height: 24),
                   Text("Select $name top skills",
-                      style: TextPalette.getBodyText(Palette.grey_dark)),
+                      style: TextPalette.getBodyText(Palette.greyDark)),
                   SizedBox(height: 18),
                   Wrap(
                     alignment: WrapAlignment.center,

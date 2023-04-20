@@ -1,8 +1,6 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:provider/provider.dart';
-import 'package:provider/src/provider.dart';
 
 import '../utils/InfoModals.dart';
 
@@ -118,9 +116,9 @@ class Secondary extends ButtonType {
 
 class Disabled extends ButtonType {
   Color backgroundColor = Colors.transparent;
-  TextStyle textStyle = TextPalette.getLinkStyle(Palette.grey_lighter);
-  Color borderColor = Palette.grey_lighter;
-  Color loaderColor = Palette.grey_lighter;
+  TextStyle textStyle = TextPalette.getLinkStyle(Palette.greyLighter);
+  Color borderColor = Palette.greyLighter;
+  Color loaderColor = Palette.greyLighter;
 }
 
 class Destructive extends ButtonType {

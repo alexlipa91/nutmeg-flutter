@@ -21,7 +21,7 @@ class RatingBar extends StatelessWidget {
         isReadOnly: false,
         color: Palette.accent,
         defaultIconData: Icons.star,
-        borderColor: Palette.grey_light,
+        borderColor: Palette.greyLight,
         spacing: 8.0, onRated: (double rating) {  },
     );
   }
@@ -55,9 +55,8 @@ class SmoothStarRating extends StatefulWidget {
     this.filledIconData = Icons.star,
     this.halfFilledIconData = Icons.star_half,
     this.allowHalfRating = true,
-  }) {
-    assert(this.rating != null);
-  }
+  });
+
   @override
   _SmoothStarRatingState createState() => _SmoothStarRatingState();
 }
@@ -209,8 +208,7 @@ class _SmoothStarRatingState extends State<SmoothStarRating> {
         context.read<RatingPlayersState>().setCurrentScore(newRating);
       },
       onTapUp: (e) {
-        if (widget.onRated != null) widget.onRated(
-            context.read<RatingPlayersState>().currentScore);
+        widget.onRated(context.read<RatingPlayersState>().currentScore);
       },
       // onHorizontalDragUpdate: (dragDetails) {
       //   RenderBox box = context.findRenderObject();

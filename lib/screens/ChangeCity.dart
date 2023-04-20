@@ -143,7 +143,7 @@ class ChangeCityState extends State<ChangeCity> {
                 ),
                 SizedBox(height: 10),
                 Divider(
-                  color: Palette.grey_light,
+                  color: Palette.greyLight,
                 ),
                 SizedBox(height: 10),
                 Text(

@@ -171,7 +171,7 @@ void main() async {
           },
           maximumSize: Size(812.0, 812.0), // Maximum size
           enabled: false,
-          backgroundColor: Palette.grey_light,
+          backgroundColor: Palette.greyLight,
         ),
       ),
     ));

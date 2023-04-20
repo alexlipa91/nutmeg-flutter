@@ -23,7 +23,7 @@ class FeedbackBottomModal {
                 style: TextPalette.getBodyText(Palette.black),
                 controller: textEditingController,
                 decoration: InputDecoration(
-                    fillColor: Palette.grey_lighter,
+                    fillColor: Palette.greyLighter,
                     filled: true,
                     border: OutlineInputBorder(
                       borderSide: BorderSide.none,

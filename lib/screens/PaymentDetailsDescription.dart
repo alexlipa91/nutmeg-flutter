@@ -22,7 +22,7 @@ class PaymentDetailsDescription {
             children: [
               CircleAvatar(
                 radius: 100,
-                backgroundColor: Palette.grey_lighter,
+                backgroundColor: Palette.greyLighter,
                 backgroundImage: CachedNetworkImageProvider(
                     (context!.read<LoadOnceState>().getRandomGif())),
               ),

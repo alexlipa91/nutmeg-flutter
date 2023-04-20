@@ -45,9 +45,12 @@ class CreateMatch extends StatefulWidget {
 
 class CreateMatchState extends State<CreateMatch> {
   static InputDecoration getTextFormDecoration(String? label,
-      {bool isDropdown = false, bool fill = true, focusColor, prefixText,
-        hintStyle,
-        hintText}) {
+      {bool isDropdown = false,
+      bool fill = true,
+      focusColor,
+      prefixText,
+      hintStyle,
+      hintText}) {
     var border = UnderlineInputBorder(
       borderSide: BorderSide.none,
       borderRadius: BorderRadius.circular(8),
@@ -65,8 +68,8 @@ class CreateMatchState extends State<CreateMatch> {
       suffixIcon: isDropdown ? Icon(Icons.arrow_drop_down) : null,
       contentPadding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 4),
       filled: true,
-      focusColor: (focusColor == null) ? Palette.grey_lighter : focusColor,
-      fillColor: fill ? Palette.grey_lighter : Palette.grey_light,
+      focusColor: (focusColor == null) ? Palette.greyLighter : focusColor,
+      fillColor: fill ? Palette.greyLighter : Palette.greyLight,
       disabledBorder: border,
       focusedBorder: border,
       enabledBorder: border,
@@ -111,7 +114,6 @@ class CreateMatchState extends State<CreateMatch> {
     if (controller.text.isEmpty && focusNode.hasFocus) focusNode.unfocus();
   }
 
-
   @override
   void initState() {
     super.initState();
@@ -121,7 +123,8 @@ class CreateMatchState extends State<CreateMatch> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    var dateFormat = DateFormat("dd-MM-yyyy", context.watch<LoadOnceState>().locale.countryCode);
+    var dateFormat = DateFormat(
+        "dd-MM-yyyy", context.watch<LoadOnceState>().locale.countryCode);
     var noRepeat = AppLocalizations.of(context)!.doesNotRepeatLabel;
 
     if (widget.existingMatch == null) {
@@ -143,7 +146,7 @@ class CreateMatchState extends State<CreateMatch> {
     } else {
       sportCenter = widget.existingMatch!.sportCenter;
       var localizedDateTime =
-      widget.existingMatch!.getLocalizedTime(sportCenter!.timezoneId);
+          widget.existingMatch!.getLocalizedTime(sportCenter!.timezoneId);
 
       dateEditingController =
           TextEditingController(text: dateFormat.format(localizedDateTime));
@@ -159,8 +162,8 @@ class CreateMatchState extends State<CreateMatch> {
           text: widget.existingMatch!.sportCenterSubLocation);
       priceController = TextEditingController(
           text: ((widget.existingMatch!.pricePerPersonInCents -
-              widget.existingMatch!.userFee) /
-              100)
+                      widget.existingMatch!.userFee) /
+                  100)
               .toString());
       numberOfPeopleRangeValues = RangeValues(
           widget.existingMatch!.minPlayers.toDouble(),
@@ -171,7 +174,8 @@ class CreateMatchState extends State<CreateMatch> {
       cancelTimeEditingController = TextEditingController(
           text: widget.existingMatch!.cancelBefore?.inHours.toString());
       managePayments = widget.existingMatch!.managePayments;
-      paymentsPossible = !blacklistedCountriesForPayments.contains(sportCenter!.country);
+      paymentsPossible =
+          !blacklistedCountriesForPayments.contains(sportCenter!.country);
     }
 
     sportCenterfocusNode = FocusNode();
@@ -182,9 +186,9 @@ class CreateMatchState extends State<CreateMatch> {
     sportCenterfocusNode.addListener(() =>
         unfocusIfNoValue(sportCenterfocusNode, sportCenterEditingController));
     datefocusNode.addListener(
-            () => unfocusIfNoValue(datefocusNode, dateEditingController));
+        () => unfocusIfNoValue(datefocusNode, dateEditingController));
     startTimefocusNode.addListener(
-            () => unfocusIfNoValue(startTimefocusNode, startTimeEditingController));
+        () => unfocusIfNoValue(startTimefocusNode, startTimeEditingController));
 
     refreshState();
   }
@@ -194,7 +198,8 @@ class CreateMatchState extends State<CreateMatch> {
     var requiredError = AppLocalizations.of(context)!.requiredError;
     var organiserId =
         context.read<UserState>().getLoggedUserDetails()!.documentId;
-    var dateFormat = DateFormat("dd-MM-yyyy", context.watch<LoadOnceState>().locale.countryCode);
+    var dateFormat = DateFormat(
+        "dd-MM-yyyy", context.watch<LoadOnceState>().locale.countryCode);
 
     var noRepeat = AppLocalizations.of(context)!.doesNotRepeatLabel;
 
@@ -202,7 +207,8 @@ class CreateMatchState extends State<CreateMatch> {
       Align(
         alignment: Alignment.centerLeft,
         child: Text(
-            widget.existingMatch != null ? AppLocalizations.of(context)!.editMatchTitle
+            widget.existingMatch != null
+                ? AppLocalizations.of(context)!.editMatchTitle
                 : AppLocalizations.of(context)!.newMatchTitle,
             style: TextPalette.h1Default),
       ),
@@ -219,7 +225,8 @@ class CreateMatchState extends State<CreateMatch> {
                         controller: dateEditingController,
                         focusNode: datefocusNode,
                         readOnly: true,
-                        decoration: getTextFormDecoration(AppLocalizations.of(context)!.dateInputLabel),
+                        decoration: getTextFormDecoration(
+                            AppLocalizations.of(context)!.dateInputLabel),
                         validator: (v) {
                           if (v == null || v.isEmpty) return requiredError;
                           return null;
@@ -252,7 +259,8 @@ class CreateMatchState extends State<CreateMatch> {
                     return null;
                   },
                   readOnly: true,
-                  decoration: getTextFormDecoration(AppLocalizations.of(context)!.startTimeInputLabel),
+                  decoration: getTextFormDecoration(
+                      AppLocalizations.of(context)!.startTimeInputLabel),
                   onTap: () async {
                     var d = await showCustomTimePicker(
                       builder: (BuildContext context, Widget? child) {
@@ -287,12 +295,12 @@ class CreateMatchState extends State<CreateMatch> {
                           return null;
                         },
                         readOnly: true,
-                        decoration: getTextFormDecoration(AppLocalizations.of(context)!
-                            .endTimeInputLabel,
+                        decoration: getTextFormDecoration(
+                            AppLocalizations.of(context)!.endTimeInputLabel,
                             focusColor:
                                 (startTimeEditingController.text.isEmpty)
-                                    ? Palette.grey_lightest
-                                    : Palette.grey_lighter),
+                                    ? Palette.greyLightest
+                                    : Palette.greyLighter),
                         onTap: () async {
                           var currentStart =
                               toTimeOfTheDay(startTimeEditingController.text);
@@ -327,20 +335,23 @@ class CreateMatchState extends State<CreateMatch> {
                           enabled: widget.existingMatch == null,
                           readOnly: true,
                           controller: repeatWeeklyEditingController,
-                          decoration:
-                              getTextFormDecoration(AppLocalizations.of(context)!.repeatInputLabel,
-                                  isDropdown: true),
+                          decoration: getTextFormDecoration(
+                              AppLocalizations.of(context)!.repeatInputLabel,
+                              isDropdown: true),
                           onTap: () async {
                             var weeks = [1, 2, 4, 6, 8, 10];
                             var choices = weeks.map((e) {
                               if (e == 1)
                                 return noRepeat;
                               else
-                                return AppLocalizations.of(context)!.repeatForWeeks(e);
+                                return AppLocalizations.of(context)!
+                                    .repeatForWeeks(e);
                             }).toList();
 
                             int? i = await showMultipleChoiceSheetWithText(
-                                context, AppLocalizations.of(context)!.repeatInputLabel, choices);
+                                context,
+                                AppLocalizations.of(context)!.repeatInputLabel,
+                                choices);
 
                             if (i != null) {
                               repeatWeeklyEditingController.text =
@@ -356,10 +367,10 @@ class CreateMatchState extends State<CreateMatch> {
               Padding(
                 padding: EdgeInsets.only(top: 16),
                 child: Text(
-                  AppLocalizations.of(context)!.lastMatchOn(dateFormat.format(dateFormat
-                      .parse(dateEditingController.text)
-                      .add(Duration(days: 7 * repeatsForWeeks)))
-                  ),
+                  AppLocalizations.of(context)!.lastMatchOn(dateFormat.format(
+                      dateFormat
+                          .parse(dateEditingController.text)
+                          .add(Duration(days: 7 * repeatsForWeeks)))),
                   style: TextPalette.bodyText,
                   textAlign: TextAlign.left,
                 ),
@@ -386,7 +397,8 @@ class CreateMatchState extends State<CreateMatch> {
                   readOnly: true,
                   decoration: getTextFormDecoration(
                       AppLocalizations.of(context)!.locationSectionTitle,
-                      isDropdown: true, fill: widget.existingMatch == null),
+                      isDropdown: true,
+                      fill: widget.existingMatch == null),
                   onTap: () async {
                     SportCenter? sp =
                         await ModalBottomSheet.showNutmegModalBottomSheet(
@@ -397,7 +409,8 @@ class CreateMatchState extends State<CreateMatch> {
                       setState(() {
                         sportCenter = sp;
 
-                        paymentsPossible = !blacklistedCountriesForPayments.contains(sp.country.toUpperCase());
+                        paymentsPossible = !blacklistedCountriesForPayments
+                            .contains(sp.country.toUpperCase());
                       });
                     }
                   },
@@ -415,8 +428,7 @@ class CreateMatchState extends State<CreateMatch> {
                   readOnly: false,
                   inputFormatters: [LengthLimitingTextInputFormatter(5)],
                   decoration: getTextFormDecoration(
-                      AppLocalizations.of(context)!.courtNumberLabel
-                  ),
+                      AppLocalizations.of(context)!.courtNumberLabel),
                 )),
               ],
             ),
@@ -443,7 +455,7 @@ class CreateMatchState extends State<CreateMatch> {
                   child: SliderTheme(
                     data: SliderTheme.of(context).copyWith(
                       showValueIndicator: ShowValueIndicator.never,
-                      inactiveTrackColor: Palette.grey_lighter,
+                      inactiveTrackColor: Palette.greyLighter,
                     ),
                     child: RangeSlider(
                       values: numberOfPeopleRangeValues,
@@ -469,8 +481,7 @@ class CreateMatchState extends State<CreateMatch> {
             SizedBox(
               height: 16.0,
             ),
-            Text(
-                AppLocalizations.of(context)!.numberOfPlayersInfo,
+            Text(AppLocalizations.of(context)!.numberOfPlayersInfo,
                 style: TextPalette.bodyText),
             SizedBox(
               height: 8.0,
@@ -486,23 +497,24 @@ class CreateMatchState extends State<CreateMatch> {
             children: [
               if (paymentsPossible)
                 Checkbox(
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(5)),
-                  value: managePayments,
-                  activeColor: Palette.primary,
-                  onChanged: (v) {
-                    setState(() {
-                      managePayments = v!;
-                    });
-                  }),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5)),
+                    value: managePayments,
+                    activeColor: Palette.primary,
+                    onChanged: (v) {
+                      setState(() {
+                        managePayments = v!;
+                      });
+                    }),
               if (paymentsPossible)
                 Flexible(
-                  child: Text(AppLocalizations.of(context)!.paymentEnableInfo,
-                      style: TextPalette.bodyText,
-                      overflow: TextOverflow.visible)),
+                    child: Text(AppLocalizations.of(context)!.paymentEnableInfo,
+                        style: TextPalette.bodyText,
+                        overflow: TextOverflow.visible)),
               if (!paymentsPossible)
                 Flexible(
-                    child: Text(AppLocalizations.of(context)!.paymentNotPossibleInfo,
+                    child: Text(
+                        AppLocalizations.of(context)!.paymentNotPossibleInfo,
                         style: TextPalette.bodyText,
                         overflow: TextOverflow.visible)),
             ],
@@ -520,12 +532,15 @@ class CreateMatchState extends State<CreateMatch> {
                           child: TextFormField(
                               enabled: widget.existingMatch == null,
                               validator: (v) {
-                                if (v == null || v.isEmpty) return requiredError;
+                                if (v == null || v.isEmpty)
+                                  return requiredError;
                                 var f = regexPrice.firstMatch(v);
                                 if (f == null || f.end - f.start != v.length)
-                                  return AppLocalizations.of(context)!.invalidAmountError;
+                                  return AppLocalizations.of(context)!
+                                      .invalidAmountError;
                                 if (double.parse(v) < 0.50)
-                                  return AppLocalizations.of(context)!.minimumAmountError;
+                                  return AppLocalizations.of(context)!
+                                      .minimumAmountError;
                                 return null;
                               },
                               onChanged: (v) {
@@ -541,7 +556,8 @@ class CreateMatchState extends State<CreateMatch> {
                                     RegExp(r'^\d*\.?\d*$')),
                               ],
                               decoration: getTextFormDecoration(
-                                  AppLocalizations.of(context)!.pricePerPlayerLabel,
+                                  AppLocalizations.of(context)!
+                                      .pricePerPlayerLabel,
                                   prefixText: "€ ",
                                   fill: widget.existingMatch == null))),
                     ],
@@ -551,13 +567,15 @@ class CreateMatchState extends State<CreateMatch> {
                       padding: EdgeInsets.only(top: 16),
                       child: Row(children: [
                         Text(
-                            AppLocalizations.of(context)!.nutmegFeeInfo(formatCurrency(50)),
+                            AppLocalizations.of(context)!
+                                .nutmegFeeInfo(formatCurrency(50)),
                             style: TextPalette.bodyText),
                       ]),
                     ),
                   SizedBox(height: 16),
                   Row(children: [
-                    Text(AppLocalizations.of(context)!.youWillGetLabel, style: TextPalette.h3),
+                    Text(AppLocalizations.of(context)!.youWillGetLabel,
+                        style: TextPalette.h3),
                     Spacer(),
                     Builder(builder: (BuildContext buildContext) {
                       var price = Decimal.tryParse(priceController.text);
@@ -586,17 +604,21 @@ class CreateMatchState extends State<CreateMatch> {
                     Spacer(),
                     Builder(builder: (BuildContext buildContext) {
                       var price = Decimal.tryParse(priceController.text);
-                      if (price != null)
-                        price = price + Decimal.parse("0.5");
+                      if (price != null) price = price + Decimal.parse("0.5");
                       return Text(
                           (price == null)
                               ? "€ --"
-                              :
-                          AppLocalizations.of(context)!.usersWillPayText(
-                              price.toDouble().toStringAsFixed(2)
-                          ),
+                              : "€ ${price.toDouble().toStringAsFixed(2)}",
                           style: TextPalette.bodyText);
                     }),
+                  ]),
+                  Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+                    Text(AppLocalizations.of(context)!.usersWillPayText,
+                        style: GoogleFonts.roboto(
+                            color: Palette.greyDark,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w400,
+                            height: 1.6)),
                   ]),
                   SizedBox(height: 16),
                   Divider(),
@@ -605,7 +627,8 @@ class CreateMatchState extends State<CreateMatch> {
                       text: TextSpan(
                         children: [
                           TextSpan(
-                              text: AppLocalizations.of(context)!.paymentExplanationText,
+                              text: AppLocalizations.of(context)!
+                                  .paymentExplanationText,
                               style: TextPalette.bodyText),
                           TextSpan(
                               text: "Stripe.",
@@ -701,7 +724,9 @@ class CreateMatchState extends State<CreateMatch> {
                   padding: EdgeInsets.only(top: 16),
                   child: Text(
                       AppLocalizations.of(context)!
-                          .automaticCancellationExplanation(numberOfPeopleRangeValues.start.toInt(), cancelTimeEditingController.text),
+                          .automaticCancellationExplanation(
+                              numberOfPeopleRangeValues.start.toInt(),
+                              cancelTimeEditingController.text),
                       style: TextPalette.bodyText,
                       overflow: TextOverflow.visible))
           ]),
@@ -741,11 +766,13 @@ class CreateMatchState extends State<CreateMatch> {
             action: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                GenericButtonWithLoader(AppLocalizations.of(context)!.cancel, (_) async {
+                GenericButtonWithLoader(AppLocalizations.of(context)!.cancel,
+                    (_) async {
                   Navigator.pop(context, false);
                 }, Secondary()),
                 SizedBox(width: 8),
-                GenericButtonWithLoader(AppLocalizations.of(context)!.yes, (_) async {
+                GenericButtonWithLoader(AppLocalizations.of(context)!.yes,
+                    (_) async {
                   Navigator.pop(context, true);
                 }, Primary()),
               ],
@@ -757,9 +784,7 @@ class CreateMatchState extends State<CreateMatch> {
           refreshState: null,
           widgets: [
             Center(
-              child: Container(
-                  width: 700,
-                  child: Column(children: widgets)),
+              child: Container(width: 700, child: Column(children: widgets)),
             )
           ],
           appBar: Row(
@@ -771,16 +796,14 @@ class CreateMatchState extends State<CreateMatch> {
           bottomNavigationBar: GenericBottomBar(
               child: Padding(
             padding: EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0),
-            child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
+            child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
               Expanded(
                 child: Container(
                   width: 700,
                   child: GenericButtonWithLoader(
-                      widget.existingMatch == null ?
-                      AppLocalizations.of(context)!.createButtonText :
-                      AppLocalizations.of(context)!.confirmButtonText,
+                      widget.existingMatch == null
+                          ? AppLocalizations.of(context)!.createButtonText
+                          : AppLocalizations.of(context)!.confirmButtonText,
                       (BuildContext context) async {
                     context.read<GenericButtonWithLoaderState>().change(true);
                     bool? v = _formKey.currentState?.validate();
@@ -788,9 +811,9 @@ class CreateMatchState extends State<CreateMatch> {
                       try {
                         var dateTime = getDateTime(
                             dateFormat,
-                            startTimeEditingController, sportCenter!.timezoneId);
-                        var endTime = getDateTime(
-                            dateFormat,
+                            startTimeEditingController,
+                            sportCenter!.timezoneId);
+                        var endTime = getDateTime(dateFormat,
                             endTimeEditingController, sportCenter!.timezoneId);
                         var duration = endTime!.difference(dateTime!);
                         var cancelBefore = withAutomaticCancellation
@@ -811,7 +834,12 @@ class CreateMatchState extends State<CreateMatch> {
                               sportCenter!,
                               courtNumberEditingController.text,
                               numberOfPeopleRangeValues.end.toInt(),
-                              paymentsPossible && managePayments ? (Decimal.parse(priceController.text) * Decimal.parse("100")).toDouble().toInt() : 0,
+                              paymentsPossible && managePayments
+                                  ? (Decimal.parse(priceController.text) *
+                                          Decimal.parse("100"))
+                                      .toDouble()
+                                      .toInt()
+                                  : 0,
                               duration,
                               isTest,
                               numberOfPeopleRangeValues.start.toInt(),
@@ -821,8 +849,12 @@ class CreateMatchState extends State<CreateMatch> {
                                       .read<UserState>()
                                       .getLoggedUserDetails()!
                                       .documentId,
-                              ConfigsUtils.feesOnOrganiser(organiserId) ? 0 : 50,
-                              ConfigsUtils.feesOnOrganiser(organiserId) ? 50 : 0,
+                              ConfigsUtils.feesOnOrganiser(organiserId)
+                                  ? 0
+                                  : 50,
+                              ConfigsUtils.feesOnOrganiser(organiserId)
+                                  ? 50
+                                  : 0,
                               widget.existingMatch != null
                                   ? widget.existingMatch!.going
                                   : Map(),
@@ -830,17 +862,22 @@ class CreateMatchState extends State<CreateMatch> {
                                   ? widget.existingMatch!.computedTeams
                                   : [],
                               widget.existingMatch != null
-                                  ? widget.existingMatch!.manualTeams : [],
+                                  ? widget.existingMatch!.manualTeams
+                                  : [],
                               cancelBefore,
                               paymentsPossible && managePayments,
-                              widget.existingMatch != null ? widget.existingMatch!.score : null
-                          );
+                              widget.existingMatch != null
+                                  ? widget.existingMatch!.score
+                                  : null);
 
                           var id;
                           if (widget.existingMatch == null) {
-                            id = await context.read<MatchesState>().createMatch(match);
+                            id = await context
+                                .read<MatchesState>()
+                                .createMatch(match);
                           } else {
-                            await context.read<MatchesState>()
+                            await context
+                                .read<MatchesState>()
                                 .editMatch(match.documentId, match.toJson());
 
                             id = widget.existingMatch!.documentId;
@@ -874,8 +911,8 @@ class CreateMatchState extends State<CreateMatch> {
     );
   }
 
-  DateTime? getDateTime(DateFormat dateFormat,
-      TextEditingController controller, String timezoneId) {
+  DateTime? getDateTime(DateFormat dateFormat, TextEditingController controller,
+      String timezoneId) {
     if (dateEditingController.text.isEmpty || controller.text.isEmpty)
       return null;
     var day = dateFormat.parse(dateEditingController.text);
@@ -953,7 +990,7 @@ class SportCenterRow extends StatelessWidget {
                     height: 8,
                   ),
                   Text(sportCenter.address,
-                      style: TextPalette.getBodyText(Palette.grey_dark)),
+                      style: TextPalette.getBodyText(Palette.greyDark)),
                 ]),
           ),
         ],
@@ -963,7 +1000,6 @@ class SportCenterRow extends StatelessWidget {
 }
 
 class LocationsBottomSheet extends StatelessWidget {
-
   @override
   Widget build(BuildContext context) {
     var userState = context.watch<UserState>();
@@ -978,7 +1014,7 @@ class LocationsBottomSheet extends StatelessWidget {
         belowTitleSpace: 16,
         body: Column(
             children: interleave(
-                (context.watch<LoadOnceState>().savedSportCenters ?? [])
+                    (context.watch<LoadOnceState>().savedSportCenters ?? [])
                         .map((e) => SportCenterRow(sportCenter: e))
                         .toList(),
                     SizedBox(height: 16))
@@ -1019,20 +1055,19 @@ class LocationsBottomSheet extends StatelessWidget {
                         padding: EdgeInsets.zero,
                         borderType: BorderType.RRect,
                         radius: Radius.circular(10),
-                        color: Palette.grey_dark,
+                        color: Palette.greyDark,
                         strokeWidth: 1,
                         dashPattern: [4],
                         child: CircleAvatar(
                           radius: 29,
                           child: Icon(Icons.add,
-                              color: Palette.grey_dark, size: 24),
+                              color: Palette.greyDark, size: 24),
                           backgroundColor: Colors.transparent,
                         ),
                       ),
                     ),
                     SizedBox(width: 16),
-                    Text(
-                        AppLocalizations.of(context)!.createNewCourtButtonText,
+                    Text(AppLocalizations.of(context)!.createNewCourtButtonText,
                         style: TextPalette.linkStyle),
                   ],
                 ),
