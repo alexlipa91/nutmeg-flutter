@@ -14,6 +14,7 @@ class UserDetails {
   int numRatedMatches;
   double sumTotalRates;
   double? averageScore;
+  double? deltaFromLastScore;
   List<double>? lastScores;
   Map<String, int>? skillsCount;
 
@@ -46,6 +47,7 @@ class UserDetails {
         potmCount = json["potm_count"] ?? 0,
         lastScores = (json["last_date_scores"] == null) ? []
             : _readLastScores(Map<String, double>.from(json["last_date_scores"])),
+        deltaFromLastScore = json["delta_from_last_score"],
         skillsCount = Map<String, int>.from((json["skills_count"] ?? {})),
         chargesEnabledOnStripe = json["chargesEnabledOnStripe"] ?? false,
         chargesEnabledOnStripeTest = json["chargesEnabledOnStripeTest"] ?? false,
@@ -96,12 +98,7 @@ class UserDetails {
     return isTest ? chargesEnabledOnStripeTest ?? false : chargesEnabledOnStripe ?? false;
   }
 
-  double getDeltaFromLastScore() {
-    if (averageScore == null || (lastScores ?? []).length < 2 || numRatedMatches < 2)
-      return 0;
-    var previousScore = (sumTotalRates - lastScores![lastScores!.length - 2]) / (numRatedMatches - 1);
-    return averageScore! - previousScore;
-  }
+  double getDeltaFromLastScore() => deltaFromLastScore ?? 0;
 
   static String getDisplayName(UserDetails? ud) {
     if (ud == null) return "Player";
