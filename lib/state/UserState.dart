@@ -194,12 +194,10 @@ class UserState extends ChangeNotifier {
       await CloudFunctionsClient().post("users/$uid/add", userDetails.toJson());
     }
 
-    print("stting");
     userState.setCurrentUserDetails(userDetails);
     userState.storeUserToken(await FirebaseMessaging.instance.getToken());
     FirebaseMessaging.instance.onTokenRefresh.listen((t) =>
         userState.storeUserToken(t));
-    print("token stored");
 
     context.read<MatchesState>().refreshState(context);
   }
