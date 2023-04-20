@@ -1,4 +1,5 @@
 import 'package:badges/badges.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart' hide Badge;
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -36,6 +37,13 @@ class UserPageState extends State<UserPage> {
   final verticalSpace = SizedBox(height: 20);
 
   bool loadingPicture = false;
+
+  Future<void> myInitState() async {
+    await FirebaseAnalytics.instance.logEvent(
+      name: "open_user_page"
+    );
+    await refreshPageState();
+  }
 
   Future<void> refreshPageState() async =>
       context.read<UserState>().fetchLoggedUserDetails();
@@ -425,8 +433,7 @@ class UserPageState extends State<UserPage> {
                         if (shouldCancel) {
                           await Future.delayed(
                               Duration(milliseconds: 500),
-                              () => UserController.logout(
-                                  context.read<UserState>()));
+                              () => context.read<UserState>().logout());
                           Navigator.of(context).pop();
                         }
                       }),
@@ -455,10 +462,7 @@ class UserPageState extends State<UserPage> {
                       context.read<GenericButtonWithLoaderState>().change(true);
 
                       try {
-                        await Future.delayed(
-                            Duration(milliseconds: 500),
-                            () => UserController.logout(
-                                context.read<UserState>()));
+                        await context.read<UserState>().logout();
                       } catch (e, stackTrace) {
                         print(e);
                         print(stackTrace);
@@ -576,6 +580,7 @@ class UserPageState extends State<UserPage> {
     }
 
     return PageTemplate(
+      initState: () => myInitState(),
       refreshState: () => refreshPageState(),
       widgets: [
         Center(
@@ -705,7 +710,8 @@ class UserScoreBox extends StatelessWidget {
             ? "-"
             : userDetails.getScoreMatches()!.toStringAsFixed(2),
         description: "Avg. Score",
-        rightBadge: deltaBadge(userDetails));
+        rightBadge: userDetails.getDeltaFromLastScore() != 0
+            ? deltaBadge(userDetails) : null);
   }
 }
 

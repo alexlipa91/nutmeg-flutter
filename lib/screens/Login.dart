@@ -3,8 +3,8 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/screens/Launch.dart';
+import 'package:nutmeg/state/UserState.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/Containers.dart';
@@ -122,19 +122,19 @@ class SignInButton extends StatelessWidget {
 
     switch (provider) {
       case Provider.facebook :
-        loginFuture = () => UserController.continueWithFacebook(context);
+        loginFuture = () => context.read<UserState>().continueWithFacebook(context);
         backgroundColor = UiUtils.fromHex("#4267B2");
         textStyle = GoogleFonts.roboto(color: Palette.white, fontSize: 14, fontWeight: FontWeight.w700);
         logoPath = "assets/login/fb_logo.png";
         break;
       case Provider.google :
-        loginFuture = () => UserController.continueWithGoogle(context);
+        loginFuture = () => context.read<UserState>().continueWithGoogle(context);
         backgroundColor = Colors.transparent;
         textStyle = GoogleFonts.roboto(color: Palette.greyDark, fontSize: 14, fontWeight: FontWeight.w700);
         logoPath = "assets/login/google_logo.png";
         break;
       case Provider.apple :
-        loginFuture = () => UserController.continueWithApple(context);
+        loginFuture = () => context.read<UserState>().continueWithApple(context);
         backgroundColor = Colors.black;
         textStyle = GoogleFonts.roboto(color: Palette.white, fontSize: 14, fontWeight: FontWeight.w700);
         logoPath = "assets/login/apple_logo.png";
