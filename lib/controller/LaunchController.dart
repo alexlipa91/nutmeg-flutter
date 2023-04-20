@@ -83,7 +83,9 @@ class LaunchController {
     print("start loading data function");
 
     var trace = FirebasePerformance.instance.newTrace("launch_app");
-    trace.start();
+    await trace.start();
+    final Stopwatch stopwatch = Stopwatch();
+    stopwatch.start();
 
     // fetch device model name
     var d = DeviceInfo();
@@ -230,7 +232,9 @@ class LaunchController {
       print("normal navigation");
       context.go(from ?? "/");
     }
-    trace.stop();
+
+    trace.setMetric("duration_ms", stopwatch.elapsed.inMilliseconds);
+    await trace.stop();
   }
 
   static Future<void> _loadOnceData(BuildContext context) async {

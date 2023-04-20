@@ -75,11 +75,12 @@ class CloudFunctionsClient {
     print("GET AppEngine " + name + " with args " + args.toString());
 
     var trace = FirebasePerformance.instance.newTrace("api-call");
-    trace.start();
+    await trace.start();
     trace.putAttribute("path_name", name);
     trace.putAttribute("source", "app_engine");
 
     final Stopwatch stopwatch = Stopwatch();
+    stopwatch.start();
 
     var argsString = args.entries.map((e) => "${e.key}=${e.value}").join("&");
     var url = "$appEngineBaseUrl/$name";
@@ -92,7 +93,7 @@ class CloudFunctionsClient {
     );
 
     trace.setMetric("duration_ms", stopwatch.elapsed.inMilliseconds);
-    trace.stop();
+    await trace.stop();
 
     return jsonDecode(r.body)["data"];
   }
