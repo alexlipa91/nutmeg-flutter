@@ -96,7 +96,8 @@ class MatchDetailsState extends State<MatchDetails> {
     }
 
     if (loggedUser != null &&
-        (ratings?.potms ?? []).contains(loggedUser.documentId)) {
+        (ratings?.potms ?? []).contains(loggedUser.documentId) &&
+        match.status == MatchStatus.rated) {
       UserController.showPotmIfNotSeen(
           context, widget.matchId, loggedUser.documentId);
     }
