@@ -55,6 +55,8 @@ class CloudFunctionsClient {
     trace.start();
     trace.putAttribute("path_name", name);
     trace.putAttribute("source", "app_engine");
+    trace.putAttribute("path_wildcard_name", _getPathWildcardName(name));
+    trace.putAttribute("method", "post");
 
     final Stopwatch stopwatch = Stopwatch();
 
@@ -70,6 +72,17 @@ class CloudFunctionsClient {
     return jsonDecode(r.body)["data"];
   }
 
+  String _getPathWildcardName(String name) {
+    var parts = name.split("/");
+    if (parts.length < 2) {
+      return name;
+    }
+    if (parts[0] == "matches" || parts[0] == "users") {
+      parts[1] = "<id>";
+    }
+    return parts.join("/");
+  }
+
   Future<Map<String, dynamic>?> get(String name,
       {Map<String, dynamic> args = const {}}) async {
     print("GET AppEngine " + name + " with args " + args.toString());
@@ -77,6 +90,8 @@ class CloudFunctionsClient {
     var trace = FirebasePerformance.instance.newTrace("api-call");
     await trace.start();
     trace.putAttribute("path_name", name);
+    trace.putAttribute("path_wildcard_name", _getPathWildcardName(name));
+    trace.putAttribute("method", "get");
     trace.putAttribute("source", "app_engine");
 
     final Stopwatch stopwatch = Stopwatch();
