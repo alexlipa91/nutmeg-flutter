@@ -32,6 +32,7 @@ platform :ios do
       issuer_id: "549abdc6-6a6f-40f5-b041-c46daa9d6c91",
       key_filepath: "./AuthKey_" + ENV["KEY_ID"] + ".p8",
     )
+
     pilot(
       api_key: api_key,
       apple_id: app_id,
