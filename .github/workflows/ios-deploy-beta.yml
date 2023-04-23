@@ -28,6 +28,11 @@ jobs:
         with:
           lane: 'install_certificates'
           subdirectory: 'ios'
+        env:
+          FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD: "odnv-ruvg-mzoo-enld"
+          MATCH_PASSWORD: "nutmeg"
+          GIT_AUTH_TOKEN: ${{ secrets.GIT_AUTH_TOKEN }}
+          KEY_ID: "CTJDHGWL48"
       - name: Run Flutter tasks
         uses: subosito/flutter-action@v2
         with:
