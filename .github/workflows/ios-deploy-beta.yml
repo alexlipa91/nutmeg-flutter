@@ -19,6 +19,11 @@ jobs:
       - run: pwd; echo $P8_KEY | base64 -d > ios/AuthKey_CTJDHGWL48.p8
         env:
           P8_KEY: ${{ secrets.P8_KEY }}
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.0'
+          bundler-cache: true
+          working-directory: 'ios'
       - uses: maierj/fastlane-action@v3.0.0
         with:
           lane: 'install_certificates'
@@ -30,11 +35,6 @@ jobs:
       - run: flutter clean
       - run: flutter pub get
       - run: flutter build ipa --release -t lib/screens/Launch.dart
-      - uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '3.0'
-          bundler-cache: true
-          working-directory: 'ios'
       - uses: maierj/fastlane-action@v3.0.0
         with:
           lane: 'closed_beta'
