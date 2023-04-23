@@ -19,24 +19,24 @@ platform :ios do
   end
 
   lane :closed_beta do
-    setup_ci(verbose: true)
-
-    match(
-      type: 'appstore',
-      app_identifier: bundle_identifier,
-      git_basic_authorization: Base64.strict_encode64(ENV["GIT_AUTH_TOKEN"]),
-      readonly: true,
-      verbose: true,
-    )
-
-    gym(
-      scheme: "Runner",
-      export_method: "app-store",
-      export_team_id: team_id,
-      skip_build_archive: true,
-      archive_path: "../build/ios/archive/Runner.xcarchive",
-      verbose: true
-    )
+#     setup_ci(verbose: true)
+#
+#     match(
+#       type: 'appstore',
+#       app_identifier: bundle_identifier,
+#       git_basic_authorization: Base64.strict_encode64(ENV["GIT_AUTH_TOKEN"]),
+#       readonly: true,
+#       verbose: true,
+#     )
+#
+#     gym(
+#       scheme: "Runner",
+#       export_method: "app-store",
+#       export_team_id: team_id,
+#       skip_build_archive: true,
+#       archive_path: "../build/ios/archive/Runner.xcarchive",
+#       verbose: true
+#     )
 
     api_key = app_store_connect_api_key(
       key_id: ENV["KEY_ID"],
