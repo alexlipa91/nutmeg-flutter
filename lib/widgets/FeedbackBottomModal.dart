@@ -50,8 +50,8 @@ class FeedbackBottomModal {
     );
 
     if (textEditingController.text.isNotEmpty) {
-      CloudFunctionsClient().callFunction(
-          "send_feedback", {"text": textEditingController.text});
+      CloudFunctionsClient().post("feedback",
+          {"text": textEditingController.text});
 
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text("Thanks for your feedback!")));

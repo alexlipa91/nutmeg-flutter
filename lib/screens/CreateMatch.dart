@@ -501,7 +501,7 @@ class CreateMatchState extends State<CreateMatch> {
                         borderRadius: BorderRadius.circular(5)),
                     value: managePayments,
                     activeColor: Palette.primary,
-                    onChanged: (v) {
+                    onChanged: widget.existingMatch != null ? null : (v) {
                       setState(() {
                         managePayments = v!;
                       });
@@ -875,15 +875,15 @@ class CreateMatchState extends State<CreateMatch> {
                             id = await context
                                 .read<MatchesState>()
                                 .createMatch(match);
+                            print("added match with id " + id);
                           } else {
+                            match.documentId = widget.existingMatch!.documentId;
                             await context
                                 .read<MatchesState>()
                                 .editMatch(match.documentId, match.toJson());
 
                             id = widget.existingMatch!.documentId;
                           }
-                          await context.read<MatchesState>().fetchMatch(id);
-                          print("added match with id " + id);
                           return id;
                         });
 

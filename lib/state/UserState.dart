@@ -103,7 +103,7 @@ class UserState extends ChangeNotifier {
 
   Future<List<SportCenter>> fetchLoggedUserSportCenters() async {
     Map<String, dynamic> data = await CloudFunctionsClient()
-        .callFunction("get_user_sportcenters", {"user_id" : currentUserId!})
+        .get("sportcenters", args: {"user": currentUserId!})
         ?? {};
 
     _sportCenters = data.entries.map((e) => SportCenter

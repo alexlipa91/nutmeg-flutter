@@ -48,6 +48,6 @@ class MatchesController {
   }
 
   static Future<void> cancelMatch(String matchId) async {
-    await apiClient.callFunction("cancel_match", {"match_id": matchId});
+    await apiClient.get("matches/$matchId/cancel");
   }
 }

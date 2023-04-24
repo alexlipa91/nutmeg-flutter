@@ -20,25 +20,6 @@ class CloudFunctionsClient {
   var appEngineBaseUrl = "https://nutmeg-9099c.ew.r.appspot.com";
   // var appEngineBaseUrl = "http://localhost:8080";
 
-  Future<Map<String, dynamic>?> callFunction(String name, Map<String, dynamic> data) async {
-    print("Calling " + name + " with data " + data.toString());
-
-    var trace = FirebasePerformance.instance.newTrace("api-call");
-    trace.start();
-    trace.putAttribute("function_name", name);
-    trace.putAttribute("source", "functions");
-
-    final Stopwatch stopwatch = Stopwatch();
-
-    HttpsCallable callable = _client.httpsCallable(name);
-    var resp = await callable(data);
-
-    trace.setMetric("duration_ms", stopwatch.elapsed.inMilliseconds);
-    trace.stop();
-
-    return resp.data;
-  }
-
   Future<Map<String, String>> _headers() async {
     String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
     return {

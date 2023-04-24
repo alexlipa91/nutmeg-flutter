@@ -169,20 +169,24 @@ class MatchDetailsState extends State<MatchDetails> {
             ? CompleteOrganiserAccountWidget(isTest: isTest)
             : null;
 
-        var testInfo = isTest ?
-        InfoContainer(
-            backgroundColor: Palette.accent,
-            child: SelectableText(
-              "Test match: " + widget.matchId,
-              style: TextPalette.getBodyText(Palette.black),
-            )) : null;
+        var testInfo = isTest
+            ? InfoContainer(
+                backgroundColor: Palette.accent,
+                child: SelectableText(
+                  "Test match: " + widget.matchId,
+                  style: TextPalette.getBodyText(Palette.black),
+                ))
+            : null;
 
         var matchInfo = MatchInfo(match!, sportCenter!);
 
-        var teamsWidget = match.going.length > 1 && match.hasTeams() ?
-          TeamsWidget(matchId: widget.matchId) : null;
+        var teamsWidget = match.going.length > 1 && match.hasTeams()
+            ? TeamsWidget(matchId: widget.matchId)
+            : null;
 
-        var infoPlayersList = match.isMatchFinished() ? null : PlayerList(
+        var infoPlayersList = match.isMatchFinished()
+            ? null
+            : PlayerList(
                 match: match,
                 withJoinButton:
                     bottomBar is JoinMatchBottomBar && !match.isFull());
@@ -255,14 +259,11 @@ class MatchDetailsState extends State<MatchDetails> {
             // title
             if (completeOrganiserWidget != null) completeOrganiserWidget,
             // info box
-            if (testInfo != null)
-              testInfo,
+            if (testInfo != null) testInfo,
             matchInfo,
             // stats
-            if (infoPlayersList != null)
-              infoPlayersList,
-            if (teamsWidget != null)
-              teamsWidget,
+            if (infoPlayersList != null) infoPlayersList,
+            if (teamsWidget != null) teamsWidget,
             if (stats != null) stats,
             // horizontal players list or teams
             sportCenterDetails,
@@ -285,10 +286,8 @@ class MatchDetailsState extends State<MatchDetails> {
                         children: interleave(
                             [
                               matchInfo,
-                              if (infoPlayersList != null)
-                                infoPlayersList,
-                              if (teamsWidget != null)
-                                teamsWidget,
+                              if (infoPlayersList != null) infoPlayersList,
+                              if (teamsWidget != null) teamsWidget,
                               if (stats != null) stats
                             ],
                             SizedBox(
@@ -491,7 +490,8 @@ class MatchInfo extends StatelessWidget {
                                       AppLocalizations.of(context)!.shareAction,
                                       style: TextPalette.listItem)),
                             ),
-                            if (match.dateTime.isAfter(DateTime.now()))
+                            if (match.dateTime.isAfter(DateTime.now())
+                                && match.status != MatchStatus.cancelled)
                               Padding(
                                 padding: EdgeInsets.only(top: 16),
                                 child: InkWell(
@@ -1009,8 +1009,7 @@ class UserNameWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // fixme text overflow
-    if (userDetails == null)
-      return Skeletons.sText;
+    if (userDetails == null) return Skeletons.sText;
 
     var name = UserDetails.getDisplayName(userDetails).split(" ").first;
 

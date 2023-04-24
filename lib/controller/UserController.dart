@@ -16,12 +16,6 @@ import '../utils/UiUtils.dart';
 class UserController {
   static var apiClient = CloudFunctionsClient();
 
-  static Future<void> editUser(BuildContext context, UserDetails u) async {
-    await apiClient
-        .callFunction("edit_user", {"id": u.documentId, "data": u.toJson()});
-    context.read<UserState>().setUserDetail(u);
-  }
-
   static Future<void> updloadPicture(
       BuildContext context, UserDetails userDetails) async {
     var original = await ImagePicker().pickImage(source: ImageSource.gallery);

@@ -196,8 +196,7 @@ class MatchesState extends ChangeNotifier {
   }
 
   Future<void> editMatch(String matchId, Map<String, dynamic> data) async {
-    await CloudFunctionsClient().callFunction("edit_match",
-        {"id": matchId, "data": data});
+    await CloudFunctionsClient().post("matches/$matchId", data=data);
     await fetchMatch(matchId);
   }
 
