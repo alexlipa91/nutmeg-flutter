@@ -5,7 +5,7 @@
     <key>compileBitcode</key>
     <true/>
     <key>method</key>
-    <string>enterprise</string>
+    <string>app-store</string>
     <key>provisioningProfiles</key>
     <dict>
         <key>com.nutmeg.app</key>
