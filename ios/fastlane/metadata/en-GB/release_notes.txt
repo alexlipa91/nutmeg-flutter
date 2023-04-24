@@ -1,1 +1,1 @@
-Add manual team selection feature for organizers
+Fix apple sign-in problems
