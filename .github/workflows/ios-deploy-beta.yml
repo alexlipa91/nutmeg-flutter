@@ -40,7 +40,7 @@ jobs:
       - run: flutter clean
       - run: flutter pub get
       - run: flutter build ipa --release -t lib/screens/Launch.dart --export-options-plist ios/export.plist
-      - run: "ls -l -R build/ios"
+      - run: "ls -l /Users/runner/work/nutmeg-flutter/nutmeg-flutter/build/ios/ipa"
       - uses: maierj/fastlane-action@v3.0.0
         with:
           lane: 'closed_beta'
