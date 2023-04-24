@@ -128,8 +128,7 @@ class JoinModal {
           context, matchId);
 
       if (!match!.managePayments) {
-        await CloudFunctionsClient().callFunction("add_user_to_match", {
-          "match_id": matchId,
+        await CloudFunctionsClient().post("matches/$matchId/users/add", {
           "user_id": userState.currentUserId!
         });
         await context.read<MatchesState>().fetchMatch(matchId);

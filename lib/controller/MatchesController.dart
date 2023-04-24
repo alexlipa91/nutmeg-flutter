@@ -16,13 +16,8 @@ class MatchesController {
   // current logged in user joins a match
   static Future<Match> joinMatch(
       BuildContext context, String matchId, PaymentRecap paymentStatus) async {
-    var userState = context.read<UserState>();
-
-    await apiClient.callFunction("add_user_to_match", {
-      'user_id': userState.getLoggedUserDetails()?.documentId,
+    await apiClient.post("matches/$matchId/users/add", {
       'match_id': matchId,
-      'credits_used': paymentStatus.creditsInCentsUsed,
-      'money_paid': paymentStatus.finalPriceToPayInCents()
     });
     var  m = await context.read<MatchesState>().fetchMatch(matchId);
     return m;
@@ -40,10 +35,9 @@ class MatchesController {
       BuildContext context, String userId, String matchId, double score,
       Set<Skills> skills) async {
     try {
-      await apiClient.callFunction("add_rating", {
+      await apiClient.post("matches/$matchId/ratings.add", {
         "user_id": context.read<UserState>().getLoggedUserDetails()?.documentId,
         "user_rated_id": userId,
-        "match_id": matchId,
         "score": score,
         "skills": skills.map((e) => e.name).toList()
       });
