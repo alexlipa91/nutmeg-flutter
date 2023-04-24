@@ -179,10 +179,10 @@ class MatchDetailsState extends State<MatchDetails> {
 
         var matchInfo = MatchInfo(match!, sportCenter!);
 
-        var infoPlayersList = match.going.length > 1 && match.hasTeams()
-            ? TeamsWidget(
-                matchId: widget.matchId)
-            : PlayerList(
+        var teamsWidget = match.going.length > 1 && match.hasTeams() ?
+          TeamsWidget(matchId: widget.matchId) : null;
+
+        var infoPlayersList = match.isMatchFinished() ? null : PlayerList(
                 match: match,
                 withJoinButton:
                     bottomBar is JoinMatchBottomBar && !match.isFull());
@@ -259,7 +259,10 @@ class MatchDetailsState extends State<MatchDetails> {
               testInfo,
             matchInfo,
             // stats
-            infoPlayersList,
+            if (infoPlayersList != null)
+              infoPlayersList,
+            if (teamsWidget != null)
+              teamsWidget,
             if (stats != null) stats,
             // horizontal players list or teams
             sportCenterDetails,
@@ -282,7 +285,10 @@ class MatchDetailsState extends State<MatchDetails> {
                         children: interleave(
                             [
                               matchInfo,
-                              infoPlayersList,
+                              if (infoPlayersList != null)
+                                infoPlayersList,
+                              if (teamsWidget != null)
+                                teamsWidget,
                               if (stats != null) stats
                             ],
                             SizedBox(
