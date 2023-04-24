@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_performance/firebase_performance.dart';
 import 'package:http/http.dart' as http;
@@ -8,8 +7,6 @@ import 'package:http/http.dart' as http;
 
 class CloudFunctionsClient {
   static final CloudFunctionsClient _singleton = CloudFunctionsClient._internal();
-
-  FirebaseFunctions _client = FirebaseFunctions.instanceFor(region: "europe-central2");
 
   factory CloudFunctionsClient() {
     return _singleton;
@@ -93,4 +90,6 @@ class CloudFunctionsClient {
 
     return jsonDecode(r.body)["data"];
   }
+
+  String getUrl(String path) => "$appEngineBaseUrl/$path";
 }
