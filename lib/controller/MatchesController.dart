@@ -35,7 +35,7 @@ class MatchesController {
       BuildContext context, String userId, String matchId, double score,
       Set<Skills> skills) async {
     try {
-      await apiClient.post("matches/$matchId/ratings.add", {
+      await apiClient.post("matches/$matchId/ratings/add", {
         "user_id": context.read<UserState>().getLoggedUserDetails()?.documentId,
         "user_rated_id": userId,
         "score": score,
