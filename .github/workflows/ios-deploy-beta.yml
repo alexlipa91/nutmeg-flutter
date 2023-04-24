@@ -39,8 +39,8 @@ jobs:
           flutter-version: '3.7.1'
       - run: flutter clean
       - run: flutter pub get
-      - run: flutter build ipa --release -t lib/screens/Launch.dart
-      - run: "ls -l -R"
+      - run: flutter build ipa --release -t lib/screens/Launch.dart --export-options-plist ios/export.plist
+      - run: "ls -l -R build/ios"
       - uses: maierj/fastlane-action@v3.0.0
         with:
           lane: 'closed_beta'
