@@ -2,10 +2,8 @@ name: Appstore Deployment
 
 on:
   push:
-    branches:
-      - master
-    tags-ignore:
-      - "**"
+    tags:
+      - v*
 
 jobs:
   deploy_ios:
