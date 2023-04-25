@@ -26,6 +26,9 @@ class UserDetails {
   bool? chargesEnabledOnStripe;
   bool? chargesEnabledOnStripeTest;
 
+  int? numWin;
+  int? numLoss;
+
   LocationInfo? location;
 
   UserDetails(this.documentId, this.isAdmin, this.image, this.name, this.email)
@@ -54,6 +57,8 @@ class UserDetails {
         createdMatches = Map<String, dynamic>.from(json["created_matches"] ?? {}).keys.toList(),
         createdTestMatches = Map<String, dynamic>.from(json["created_test_matches"] ?? {}).keys.toList(),
         location = json.containsKey("location") ? LocationInfo.fromJson(json["location"]) : null,
+        numWin = (json["record"] ?? {})["num_win"],
+        numLoss = (json["record"] ?? {})["num_loss"],
         documentId = documentId;
 
   static List<double> _readLastScores(Map<String, double> lastDateScores) {

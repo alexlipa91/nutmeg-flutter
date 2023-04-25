@@ -243,6 +243,21 @@ class UserPageState extends State<UserPage> {
             ),
           )
         ]),
+        if (userDetails.numWin != null)
+          verticalSpace,
+        if (userDetails.numWin != null)
+          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+            Expanded(
+                child: UserInfoBox(
+                    content: (userDetails.numWin ?? 0).toString(),
+                    description: "Matches won")),
+            SizedBox(width: 20),
+            Expanded(
+              child: UserInfoBox(
+                  content: (userDetails.numLoss ?? 0).toString(),
+                  description: "Matches Lost"),
+            )
+          ]),
         if (userDetails.getLastScores().length > 0)
           Section(
               title: "PERFORMANCE",
