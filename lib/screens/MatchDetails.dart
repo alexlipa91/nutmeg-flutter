@@ -146,16 +146,25 @@ class MatchDetailsState extends State<MatchDetails> {
     var skeletons;
     if (match == null || sportCenter == null) {
       skeletons = [
-        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Row(children: [
-            Expanded(child: SkeletonMatchDetails.imageSkeleton())
-          ]),
-          SkeletonMatchDetails.skeletonRepeatedElement(),
-          SkeletonMatchDetails.skeletonRepeatedElement(),
-          SkeletonMatchDetails.skeletonRepeatedElement(),
-          SkeletonMatchDetails.skeletonRepeatedElement(),
-          SkeletonMatchDetails.skeletonRepeatedElement(),
-        ])
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Flexible(
+              child: Container(
+              constraints: BoxConstraints(maxWidth: 700),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Row(children: [
+                  Expanded(child: SkeletonMatchDetails.imageSkeleton())
+                ]),
+                SkeletonMatchDetails.skeletonRepeatedElement(),
+                SkeletonMatchDetails.skeletonRepeatedElement(),
+                SkeletonMatchDetails.skeletonRepeatedElement(),
+                SkeletonMatchDetails.skeletonRepeatedElement(),
+                SkeletonMatchDetails.skeletonRepeatedElement(),
+              ]),
+          ),
+            )],
+        )
       ];
     }
 
