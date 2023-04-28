@@ -174,6 +174,29 @@ class JoinedPlayerBottomModal extends StatelessWidget {
               ),
             ],
           ),
+          if (userDetails.numWin != null)
+            Padding(
+              padding: EdgeInsets.only(top: 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  Expanded(
+                    flex: 2,
+                    child: StatEntry(
+                      stat: (userDetails.numWin ?? 0).toString(),
+                      description: "Won",
+                    ),
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: StatEntry(
+                      stat: (userDetails.numLoss ?? 0).toString(),
+                      description: "Loss",
+                    ),
+                  ),
+                ],
+              ),
+            ),
           if (userDetails.getLastScores().length > 0)
             Padding(
                 padding: EdgeInsets.only(top: 24.0, left: 8, right: 8),
