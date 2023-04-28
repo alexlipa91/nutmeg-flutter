@@ -44,3 +44,27 @@ class RatingPlayersState extends ChangeNotifier {
     notifyListeners();
   }
 }
+
+class RatingPlayersMultiState extends ChangeNotifier {
+
+  final List<String> toRate;
+  final List<int> scores;
+
+  RatingPlayersMultiState(this.toRate) :
+    scores = List<int>.filled(toRate.length, -1);
+
+  int getCurrentScore(int i) => scores[i];
+
+  void setScore(int i, int score) {
+    scores[i] = score;
+    notifyListeners();
+  }
+
+  Map<String, int> getScored() {
+    var m = {};
+    toRate.asMap().keys.forEach((i) {
+      m[toRate[i]] = scores[i];
+    });
+    return Map<String, int>.from(m);
+  }
+}

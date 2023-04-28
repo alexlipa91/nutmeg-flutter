@@ -76,9 +76,9 @@ class MatchDetailsState extends State<MatchDetails> {
       }
     });
 
-    await refreshState();
+    Match match = await refreshMatch();
+    refreshUsers(match);
 
-    Match match = context.read<MatchesState>().getMatch(widget.matchId)!;
     Ratings? ratings = context.read<MatchesState>().getRatings(widget.matchId);
 
     // show rating modal
@@ -103,7 +103,7 @@ class MatchDetailsState extends State<MatchDetails> {
     }
   }
 
-  Future<void> refreshState() async {
+  Future<Match> refreshMatch() async {
     List<Future<dynamic>> futures = [
       context.read<MatchesState>().fetchRatings(widget.matchId),
       context.read<MatchesState>().fetchMatch(widget.matchId),
@@ -112,17 +112,21 @@ class MatchDetailsState extends State<MatchDetails> {
             widget.matchId, context.read<UserState>().currentUserId!),
     ];
 
-    var res = await Future.wait(futures);
+    return (await Future.wait(futures))[1];
+  }
 
-    Match match = res[1];
-
-    // get users details
+  Future<void> refreshUsers(Match match) async {
     var users = Set();
     users.addAll(match.getGoingUsersByTime());
     if (match.organizerId != null) {
       users.add(match.organizerId);
     }
     users.forEach((u) => context.read<UserState>().fetchUserDetails(u));
+  }
+
+  Future<void> refreshState() async {
+    Match match = await refreshMatch();
+    await refreshUsers(match);
   }
 
   @override

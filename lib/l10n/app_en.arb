@@ -176,5 +176,8 @@
     "currentLocationInfo": "Your location helps us improve your experience with approximate recommendations of matches.",
 
     "manualSplitTeamCheckBoxLabel": "Manually split teams",
-    "manualSplitTeamInfo": "By default, we split the teams fairly based on players performance and overall team strength. You can manually split the teams yourself."
+    "manualSplitTeamInfo": "By default, we split the teams fairly based on players performance and overall team strength. You can manually split the teams yourself.",
+
+    "ratePlayersTitle": "Rate Players",
+    "submitRatesButtonText": "SUBMIT"
 }

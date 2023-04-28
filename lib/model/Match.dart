@@ -189,6 +189,14 @@ class Match {
 
   bool hasTeams() => computedTeams.isNotEmpty;
 
+  List<String> getToRate(String currentUser) {
+    var all = going.keys.toSet();
+    all.remove(currentUser);
+    var l = all.toList();
+    l.sort();
+    return l;
+  }
+
   DateTime getLocalizedTime(String timezoneId) =>
       tz.TZDateTime.from(dateTime, tz.getLocation(timezoneId));
 

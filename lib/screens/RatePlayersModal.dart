@@ -1,20 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
+import 'package:nutmeg/rating_bar/RatingWidgetForMulti.dart';
 import 'package:nutmeg/state/MatchesState.dart';
 import 'package:nutmeg/state/RatingPlayersState.dart';
 import 'package:nutmeg/state/UserState.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
+import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:nutmeg/widgets/FeedbackBottomModal.dart';
 import 'package:nutmeg/widgets/ModalBottomSheet.dart';
+import 'package:nutmeg/widgets/Section.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../model/MatchRatings.dart';
 import '../rating_bar/RatingWidget.dart';
+import '../widgets/Avatar.dart';
 import '../widgets/PlayerBottomModal.dart';
 import '../widgets/Texts.dart';
-
+import 'MatchDetails.dart';
 
 class RateButton extends StatelessWidget {
   final String matchId;
@@ -33,25 +38,39 @@ class RateButton extends StatelessWidget {
 }
 
 class RatePlayerBottomModal extends StatelessWidget {
+  static bool multiPage = false;
 
   static Future<void> rateAction(BuildContext context, String matchId) async {
-    var toRate = context.read<MatchesState>().getStillToVote(
-        matchId, context.read<UserState>().currentUserId!)!;
+    if (multiPage) {
+      var toRate = context
+          .read<MatchesState>()
+          .getStillToVote(matchId, context.read<UserState>().currentUserId!)!;
 
-    toRate.forEach((e) => context.read<UserState>().fetchUserDetails(e));
+      toRate.forEach((e) => context.read<UserState>().fetchUserDetails(e));
 
-    var completed = await ModalBottomSheet.showNutmegModalBottomSheet(
-        context,
-        MultiProvider(
-          providers: [
+      var completed = await ModalBottomSheet.showNutmegModalBottomSheet(
+          context,
+          MultiProvider(
+            providers: [
+              ChangeNotifierProvider(
+                  create: (context) => RatingPlayersState(toRate)),
+            ],
+            child: RatePlayerBottomModal(matchId),
+          ));
+      if (completed != null && (completed as bool) == true)
+        await FeedbackBottomModal.feedbackAction(context);
+      // don't refresh the status here because the last rating might have not yet propagated; instead leave RatePlayerBottomModal modify it if necessary
+    } else {
+      await ModalBottomSheet.showNutmegModalBottomSheet(
+          context,
+          MultiProvider(providers: [
             ChangeNotifierProvider(
-                create: (context) => RatingPlayersState(toRate)),
-          ],
-          child: RatePlayerBottomModal(matchId),
-        ));
-    if (completed != null && (completed as bool) == true)
-      await FeedbackBottomModal.feedbackAction(context);
-    // don't refresh the status here because the last rating might have not yet propagated; instead leave RatePlayerBottomModal modify it if necessary
+                create: (context) => RatingPlayersMultiState(context
+                    .read<MatchesState>()
+                    .getMatch(matchId)!
+                    .getToRate(context.read<UserState>().currentUserId!))),
+          ], child: RatePlayerSingleSheet(matchId: matchId)));
+    }
   }
 
   final String matchId;
@@ -136,7 +155,8 @@ class RatePlayerBottomModal extends StatelessWidget {
                 ),
               ),
               TappableLinkText(
-                  text: (state.currentScore > 0) ? AppLocalizations.of(context)!.nextText
+                  text: (state.currentScore > 0)
+                      ? AppLocalizations.of(context)!.nextText
                       : AppLocalizations.of(context)!.skipText,
                   onTap: (BuildContext context) async {
                     store(context);
@@ -156,15 +176,81 @@ class RatePlayerBottomModal extends StatelessWidget {
 
     // store also locally so UI changes fast
     context.read<MatchesState>().hasVoted(
-      matchId,
-      context.read<UserState>().currentUserId!,
-      state.getCurrent()
-    );
+        matchId, context.read<UserState>().currentUserId!, state.getCurrent());
 
     if (state.isLast()) {
       Navigator.of(context).pop(true);
     } else {
       state.next();
     }
+  }
+}
+
+class RatePlayerSingleSheet extends StatelessWidget {
+  final String matchId;
+
+  const RatePlayerSingleSheet({Key? key, required this.matchId})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Section(
+        topSpace: 0,
+        titleType: "big",
+        title: AppLocalizations.of(context)!.ratePlayersTitle,
+        body: Column(
+          children: [
+            SizedBox(height: 16),
+            Column(
+                children: interleave(
+                    context
+                        .watch<RatingPlayersMultiState>()
+                        .toRate
+                        .asMap()
+                        .entries
+                        .map((e) => Row(
+                              children: [
+                                UserAvatar(
+                                    16,
+                                    context
+                                        .watch<UserState>()
+                                        .getUserDetail(e.value)),
+                                SizedBox(
+                                  width: 16,
+                                ),
+                                Container(
+                                  width: 150,
+                                  child: UserNameWidget(
+                                      userDetails: context
+                                          .watch<UserState>()
+                                          .getUserDetail(e.value)),
+                                ),
+                                Spacer(),
+                                RatingBarForMulti(i: e.key)
+                              ],
+                            ))
+                        .toList(),
+                    SizedBox(
+                      height: 18,
+                    ))),
+            SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: GenericButtonWithLoaderAndErrorHandling(
+                      AppLocalizations.of(context)!.submitRatesButtonText,
+                      (BuildContext context) async {
+                    await CloudFunctionsClient().post(
+                        "matches/$matchId/ratings/add_multi",
+                        context.read<RatingPlayersMultiState>().getScored());
+                    await context.read<MatchesState>().fetchStillToVote(matchId,
+                        context.read<UserState>().currentUserId!);
+                    Navigator.of(context).pop();
+                  }, Primary()),
+                )
+              ],
+            ),
+          ],
+        ));
   }
 }
