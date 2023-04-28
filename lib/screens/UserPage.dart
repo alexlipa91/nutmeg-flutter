@@ -39,9 +39,7 @@ class UserPageState extends State<UserPage> {
   bool loadingPicture = false;
 
   Future<void> myInitState() async {
-    await FirebaseAnalytics.instance.logEvent(
-      name: "open_user_page"
-    );
+    await FirebaseAnalytics.instance.logEvent(name: "open_user_page");
     await refreshPageState();
   }
 
@@ -243,8 +241,7 @@ class UserPageState extends State<UserPage> {
             ),
           )
         ]),
-        if (userDetails.numWin != null)
-          verticalSpace,
+        if (userDetails.numWin != null) verticalSpace,
         if (userDetails.numWin != null)
           Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
             Expanded(
@@ -446,8 +443,7 @@ class UserPageState extends State<UserPage> {
                             )).show(context);
 
                         if (shouldCancel) {
-                          await Future.delayed(
-                              Duration(milliseconds: 500),
+                          await Future.delayed(Duration(milliseconds: 500),
                               () => context.read<UserState>().logout());
                           Navigator.of(context).pop();
                         }
@@ -681,9 +677,9 @@ class UserInfoBox extends StatelessWidget {
                           child: Text(content!,
                               style: TextPalette.getStats(Palette.black))))
                   : Text(
-                            content!,
-                            style: TextPalette.getStats(Palette.black),
-                          ),
+                      content!,
+                      style: TextPalette.getStats(Palette.black),
+                    ),
         ]),
         SizedBox(height: 4),
         Text(description!, style: TextPalette.bodyText),
@@ -701,22 +697,27 @@ class UserScoreBox extends StatelessWidget {
   const UserScoreBox({Key? key, required this.userDetails}) : super(key: key);
 
   static Widget deltaBadge(UserDetails userDetails) => Row(
-    mainAxisSize: MainAxisSize.min,
-    crossAxisAlignment: CrossAxisAlignment.end,
-    children: [
-      Icon(
-        userDetails.getDeltaFromLastScore() > 0 ? Icons.arrow_drop_up_outlined :
-        Icons.arrow_drop_down_outlined,
-        size: 14,
-        color: userDetails.getDeltaFromLastScore() > 0 ? Colors.green : Colors.red,
-      ),
-      Text(userDetails.getDeltaFromLastScore().abs().toStringAsFixed(2),
-          style: GoogleFonts.roboto(
-              color: userDetails.getDeltaFromLastScore() > 0 ? Colors.green : Colors.red,
-              fontSize: 11,
-              fontWeight: FontWeight.w400))
-    ],
-  );
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Icon(
+            userDetails.getDeltaFromLastScore() > 0
+                ? Icons.arrow_drop_up_outlined
+                : Icons.arrow_drop_down_outlined,
+            size: 14,
+            color: userDetails.getDeltaFromLastScore() > 0
+                ? Colors.green
+                : Colors.red,
+          ),
+          Text(userDetails.getDeltaFromLastScore().abs().toStringAsFixed(2),
+              style: GoogleFonts.roboto(
+                  color: userDetails.getDeltaFromLastScore() > 0
+                      ? Colors.green
+                      : Colors.red,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w400))
+        ],
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -725,8 +726,9 @@ class UserScoreBox extends StatelessWidget {
             ? "-"
             : userDetails.getScoreMatches()!.toStringAsFixed(2),
         description: "Avg. Score",
-        rightBadge: userDetails.getDeltaFromLastScore() != 0
-            ? deltaBadge(userDetails) : null);
+        rightBadge: userDetails.getDeltaFromLastScore() < 0.01
+            ? null
+            : deltaBadge(userDetails));
   }
 }
 
