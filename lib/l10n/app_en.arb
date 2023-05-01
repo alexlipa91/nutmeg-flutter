@@ -88,6 +88,11 @@
             }
         },
    "leaveMatchNoMoneyInfo": "Please confirm if you want to be removed from the players list",
+   "paymentFailedTitle": "Payment Failed!",
+   "paymentFailedSubtitle": "Please try again",
+   "manageButton": "MANAGE",
+   "cancelMatchTitle": "Are you sure you want to cancel the match?",
+    "cancelMatchSubtitle": "The players that joined will get a full refund.",
 
     "serviceFee": "Service Fee",
     "subtotal": "Subtotal",
@@ -177,6 +182,8 @@
     "popularCourtsTitle": "Popular Courts",
     "yourCourtsTitle": "Your Courts",
 
+    "matchStatsTitle": "Match Stats",
+
     "createNewCourtButtonText": "CREATE NEW COURT",
 
     "searchLocationTitle": "Search Location",
@@ -188,5 +195,20 @@
     "manualSplitTeamInfo": "By default, we split the teams fairly based on players performance and overall team strength. You can manually split the teams yourself.",
 
     "ratePlayersTitle": "Rate Players",
-    "submitRatesButtonText": "SUBMIT"
+    "submitRatesButtonText": "SUBMIT",
+
+    "accountTitle": "Account",
+    "creditsBoxTitle": "Credits",
+    "numMatchesTitle": "Matches Played",
+    "numPlayersOfTheMatchBoxTitle": "Players of the Match",
+    "numMatchesWonBoxTitle": "Matches Won",
+    "numMatchesLostBoxTitle": "Matches Lost",
+    "averageScoreBoxTitle": "Avg. Score",
+
+    "organiserSectionTitle": "ORGANISER",
+    "goToStripeDashboardText": "GO TO MY STRIPE DASHBOARD",
+    "organizedMatchesBoxTitle": "Organized Matches",
+    "followOnIg": "Follow us on Instagram",
+    "feedback": "Give us feedback"
+
 }

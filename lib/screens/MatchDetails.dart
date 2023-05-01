@@ -71,7 +71,8 @@ class MatchDetailsState extends State<MatchDetails> {
               context, widget.matchId);
         } else
           GenericInfoModal(
-                  title: "Payment Failed!", description: "Please try again")
+                  title: AppLocalizations.of(context)!.paymentFailedTitle,
+              description: AppLocalizations.of(context)!.paymentFailedSubtitle)
               .show(context);
       }
     });
@@ -477,7 +478,9 @@ class MatchInfo extends StatelessWidget {
                 padding: EdgeInsets.only(top: 16),
                 child: Row(children: [
                   Expanded(
-                      child: GenericButtonWithLoader("MANAGE", (_) {
+                      child: GenericButtonWithLoader(AppLocalizations
+                          .of(context)!.manageButton,
+                              (_) {
                     ModalBottomSheet.showNutmegModalBottomSheet(
                         context,
                         Column(
@@ -511,9 +514,9 @@ class MatchInfo extends StatelessWidget {
                                   onTap: () async {
                                     await GenericInfoModal(
                                         title:
-                                            "Are you sure you want to cancel the match?",
+                                          AppLocalizations.of(context)!.cancelMatchTitle,
                                         description:
-                                            "The players that joined will get a full refund.",
+                                        AppLocalizations.of(context)!.cancelMatchSubtitle,
                                         action: Row(
                                           mainAxisAlignment:
                                               MainAxisAlignment.end,
@@ -521,7 +524,8 @@ class MatchInfo extends StatelessWidget {
                                             Expanded(
                                               child:
                                                   GenericButtonWithLoaderAndErrorHandling(
-                                                      "CONFIRM", (_) async {
+                                                      AppLocalizations.of(context)!.confirmButtonText,
+                                                          (_) async {
                                                 await MatchesController
                                                     .cancelMatch(
                                                         match.documentId);
@@ -1010,7 +1014,8 @@ class Stats extends StatelessWidget {
             );
     }
 
-    return InfoContainerWithTitle(title: "Match Stats", body: child);
+    return InfoContainerWithTitle(title: AppLocalizations.of(context)!.matchStatsTitle,
+        body: child);
   }
 }
 

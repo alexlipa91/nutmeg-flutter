@@ -21,6 +21,7 @@ import 'package:skeletons/skeletons.dart';
 import 'package:tuple/tuple.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:version/version.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../state/UserState.dart';
 import '../utils/InfoModals.dart';
@@ -58,7 +59,8 @@ class UserPageState extends State<UserPage> {
     var showOrganizerView = userDetails != null &&
         (userDetails.isOrganiser(true) || userDetails.isOrganiser(false));
 
-    var title = Row(children: [Text("Account", style: TextPalette.h1Default)]);
+    var title = Row(children: [Text(AppLocalizations.of(context)!.accountTitle,
+        style: TextPalette.h1Default)]);
 
     var widgets;
     if (loadSkeleton) {
@@ -220,12 +222,12 @@ class UserPageState extends State<UserPage> {
           Expanded(
               child: UserInfoBox(
                   content: formatCurrency(userDetails.creditsInCents ?? 0),
-                  description: "Credits")),
+                  description: AppLocalizations.of(context)!.creditsBoxTitle)),
           SizedBox(width: 20),
           Expanded(
             child: UserInfoBox(
                 content: userDetails.getNumJoinedMatches().toString(),
-                description: "Matches Played"),
+                description: AppLocalizations.of(context)!.numMatchesTitle),
           )
         ]),
         verticalSpace,
@@ -237,7 +239,7 @@ class UserPageState extends State<UserPage> {
           Expanded(
             child: UserInfoBox(
               content: userDetails.getNumManOfTheMatch().toString(),
-              description: "Player of the Match",
+              description: AppLocalizations.of(context)!.numPlayersOfTheMatchBoxTitle,
             ),
           )
         ]),
@@ -247,12 +249,12 @@ class UserPageState extends State<UserPage> {
             Expanded(
                 child: UserInfoBox(
                     content: (userDetails.numWin ?? 0).toString(),
-                    description: "Matches won")),
+                    description: AppLocalizations.of(context)!.numMatchesWonBoxTitle)),
             SizedBox(width: 20),
             Expanded(
               child: UserInfoBox(
                   content: (userDetails.numLoss ?? 0).toString(),
-                  description: "Matches Lost"),
+                  description: AppLocalizations.of(context)!.numMatchesLostBoxTitle),
             )
           ]),
         if (userDetails.getLastScores().length > 0)
@@ -329,7 +331,7 @@ class UserPageState extends State<UserPage> {
           ),
         if (showOrganizerView)
           Section(
-            title: "ORGANISER",
+            title: AppLocalizations.of(context)!.organiserSectionTitle,
             body: Container(child: Builder(builder: (context) {
               var widgets = List<Widget>.from([]);
 
@@ -363,7 +365,7 @@ class UserPageState extends State<UserPage> {
                             Row(children: [
                               Expanded(
                                   child: GenericButtonWithLoader(
-                                      "GO TO MY STRIPE DASHBOARD" +
+                                    AppLocalizations.of(context)!.goToStripeDashboardText +
                                           (isTest ? " TEST" : ""), (_) async {
                                 var url =
                                     "https://europe-central2-nutmeg-9099c.cloudfunctions.net/go_to_account_login_link?"
@@ -380,7 +382,7 @@ class UserPageState extends State<UserPage> {
 
                       return UserInfoBox(
                         content: (loadSkeleton) ? null : n.toString(),
-                        description: "Organized match" + ((n > 1) ? "es" : ""),
+                        description: AppLocalizations.of(context)!.organizedMatchesBoxTitle,
                         bottom: Column(children: widgets),
                       );
                     }))
@@ -394,7 +396,7 @@ class UserPageState extends State<UserPage> {
           body: InfoContainer(
               child: Column(children: [
             LinkInfo(
-              text: "Follow us on Instagram",
+              text: AppLocalizations.of(context)!.followOnIg,
               onTap: () async {
                 var url = 'https://www.instagram.com/nutmegapp/';
 
@@ -408,7 +410,7 @@ class UserPageState extends State<UserPage> {
               },
             ),
             LinkInfo(
-              text: "Give us feedback",
+              text: AppLocalizations.of(context)!.feedback,
               onTap: () async {
                 await FeedbackBottomModal.feedbackAction(context);
               },
@@ -551,6 +553,12 @@ class UserPageState extends State<UserPage> {
                                           onTap: () =>
                                               Navigator.pop(context, "pt"),
                                           child: Text("Portoguese"),
+                                        ),
+                                        SizedBox(height: 16.0),
+                                        InkWell(
+                                          onTap: () =>
+                                              Navigator.pop(context, "it"),
+                                          child: Text("Italiano"),
                                         ),
                                       ],
                                     ),
@@ -725,7 +733,7 @@ class UserScoreBox extends StatelessWidget {
         content: (userDetails.getScoreMatches() == null)
             ? "-"
             : userDetails.getScoreMatches()!.toStringAsFixed(2),
-        description: "Avg. Score",
+        description: AppLocalizations.of(context)!.averageScoreBoxTitle,
         rightBadge: userDetails.getDeltaFromLastScore() < 0.01
             ? null
             : deltaBadge(userDetails));
