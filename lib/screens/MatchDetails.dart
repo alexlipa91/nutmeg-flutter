@@ -72,7 +72,8 @@ class MatchDetailsState extends State<MatchDetails> {
         } else
           GenericInfoModal(
                   title: AppLocalizations.of(context)!.paymentFailedTitle,
-              description: AppLocalizations.of(context)!.paymentFailedSubtitle)
+                  description:
+                      AppLocalizations.of(context)!.paymentFailedSubtitle)
               .show(context);
       }
     });
@@ -156,19 +157,22 @@ class MatchDetailsState extends State<MatchDetails> {
           children: [
             Flexible(
               child: Container(
-              constraints: BoxConstraints(maxWidth: 700),
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Row(children: [
-                  Expanded(child: SkeletonMatchDetails.imageSkeleton())
-                ]),
-                SkeletonMatchDetails.skeletonRepeatedElement(),
-                SkeletonMatchDetails.skeletonRepeatedElement(),
-                SkeletonMatchDetails.skeletonRepeatedElement(),
-                SkeletonMatchDetails.skeletonRepeatedElement(),
-                SkeletonMatchDetails.skeletonRepeatedElement(),
-              ]),
-          ),
-            )],
+                constraints: BoxConstraints(maxWidth: 700),
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(children: [
+                        Expanded(child: SkeletonMatchDetails.imageSkeleton())
+                      ]),
+                      SkeletonMatchDetails.skeletonRepeatedElement(),
+                      SkeletonMatchDetails.skeletonRepeatedElement(),
+                      SkeletonMatchDetails.skeletonRepeatedElement(),
+                      SkeletonMatchDetails.skeletonRepeatedElement(),
+                      SkeletonMatchDetails.skeletonRepeatedElement(),
+                    ]),
+              ),
+            )
+          ],
         )
       ];
     }
@@ -457,6 +461,9 @@ class MatchInfo extends StatelessWidget {
 
     var matchWidget = getStatusWidget(context, match);
     var loggedUser = context.watch<UserState>().getLoggedUserDetails();
+    var isOrganizerView = match.organizerId != null &&
+        loggedUser != null &&
+        match.organizerId == loggedUser.documentId;
 
     child = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -471,16 +478,13 @@ class MatchInfo extends StatelessWidget {
             Title(match, sportCenter),
             SizedBox(height: 16),
             AddressRow(sportCenter: sportCenter),
-            if (match.organizerId != null &&
-                loggedUser != null &&
-                match.organizerId == loggedUser.documentId)
+            if (isOrganizerView)
               Padding(
                 padding: EdgeInsets.only(top: 16),
                 child: Row(children: [
                   Expanded(
-                      child: GenericButtonWithLoader(AppLocalizations
-                          .of(context)!.manageButton,
-                              (_) {
+                      child: GenericButtonWithLoader(
+                          AppLocalizations.of(context)!.manageButton, (_) {
                     ModalBottomSheet.showNutmegModalBottomSheet(
                         context,
                         Column(
@@ -506,17 +510,18 @@ class MatchInfo extends StatelessWidget {
                                       AppLocalizations.of(context)!.shareAction,
                                       style: TextPalette.listItem)),
                             ),
-                            if (match.dateTime.isAfter(DateTime.now())
-                                && match.status != MatchStatus.cancelled)
+                            if (match.dateTime.isAfter(DateTime.now()) &&
+                                match.status != MatchStatus.cancelled)
                               Padding(
                                 padding: EdgeInsets.only(top: 16),
                                 child: InkWell(
                                   onTap: () async {
                                     await GenericInfoModal(
-                                        title:
-                                          AppLocalizations.of(context)!.cancelMatchTitle,
+                                        title: AppLocalizations.of(context)!
+                                            .cancelMatchTitle,
                                         description:
-                                        AppLocalizations.of(context)!.cancelMatchSubtitle,
+                                            AppLocalizations.of(context)!
+                                                .cancelMatchSubtitle,
                                         action: Row(
                                           mainAxisAlignment:
                                               MainAxisAlignment.end,
@@ -524,8 +529,10 @@ class MatchInfo extends StatelessWidget {
                                             Expanded(
                                               child:
                                                   GenericButtonWithLoaderAndErrorHandling(
-                                                      AppLocalizations.of(context)!.confirmButtonText,
-                                                          (_) async {
+                                                      AppLocalizations.of(
+                                                              context)!
+                                                          .confirmButtonText,
+                                                      (_) async {
                                                 await MatchesController
                                                     .cancelMatch(
                                                         match.documentId);
@@ -567,6 +574,47 @@ class MatchInfo extends StatelessWidget {
                 Icons.local_offer_outlined:
                     formatCurrency(match.price!.getTotalPrice()),
             }),
+            if (isOrganizerView && match.isMatchFinished())
+              Builder(builder: (context) {
+                var date = match.payout != null
+                    ? match.payout!.arrivalDate
+                    : match.dateTime.add(Duration(days: 7));
+                var amount = formatCurrency(match.payout?.amount ??
+                    match.price!.basePrice * match.going.length);
+                var success =
+                    match.payout != null && match.payout!.status == "paid";
+                var color = success ? Palette.green : Palette.darkWarning;
+
+                return Column(
+                  children: [
+                    Divider(),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Container(
+                            child: Icon(Icons.monetization_on_outlined,
+                                color: color, size: 18)),
+                        SizedBox(width: 16),
+                        Expanded(
+                          child: Container(
+                            child: Text(
+                                success
+                                    ? AppLocalizations.of(context)!
+                                        .payoutInfoSuccessText(
+                                            amount, dayDateFormat.format(date))
+                                    : AppLocalizations.of(context)!
+                                        .payoutInfoOnItsWayText(
+                                            amount, dayDateFormat.format(date)),
+                                maxLines: 2,
+                                softWrap: true,
+                                style: TextPalette.getListItem(color)),
+                          ),
+                        )
+                      ],
+                    ),
+                  ],
+                );
+              }),
             if (matchWidget != null)
               Column(children: [
                 SizedBox(height: 16),
@@ -1014,8 +1062,8 @@ class Stats extends StatelessWidget {
             );
     }
 
-    return InfoContainerWithTitle(title: AppLocalizations.of(context)!.matchStatsTitle,
-        body: child);
+    return InfoContainerWithTitle(
+        title: AppLocalizations.of(context)!.matchStatsTitle, body: child);
   }
 }
 

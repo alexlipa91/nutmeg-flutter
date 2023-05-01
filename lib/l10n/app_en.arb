@@ -209,6 +209,22 @@
     "goToStripeDashboardText": "GO TO MY STRIPE DASHBOARD",
     "organizedMatchesBoxTitle": "Organized Matches",
     "followOnIg": "Follow us on Instagram",
-    "feedback": "Give us feedback"
+    "feedback": "Give us feedback",
 
+    "submitRatesButtonText": "SUBMIT",
+
+    "payoutInfoSuccessText": "Payment of {a} has been transferred on {d}",
+    "@payoutInfoSuccessText": {
+            "placeholders": {
+                "a":  {"type": "String"},
+                "d":  {"type": "String"}
+            }
+        },
+    "payoutInfoOnItsWayText": "Payment of {a} is on its way and should arrive on {d}",
+    "@payoutInfoOnItsWayText": {
+            "placeholders": {
+                "a":  {"type": "String"},
+                "d":  {"type": "String"}
+            }
+        }
 }

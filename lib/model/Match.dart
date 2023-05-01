@@ -7,13 +7,13 @@ import 'UserDetails.dart';
 
 
 enum MatchStatus {
-  open,                // match is on and can be joined
-  pre_playing,         // match is on and from now on no-one can leave
-  playing,             // mach is being played
-  to_rate,             // match is in the past and within rating window
-  rated,               // match is in the past and after rating window (man of the match is available)
-  cancelled,           // match is canceled
-  unpublished          // match is created but not joinable by others
+  open, // match is on and can be joined
+  pre_playing, // match is on and from now on no-one can leave
+  playing, // mach is being played
+  to_rate, // match is in the past and within rating window
+  rated, // match is in the past and after rating window (man of the match is available)
+  cancelled, // match is canceled
+  unpublished // match is created but not joinable by others
 }
 
 class Price {
@@ -72,9 +72,14 @@ class Match {
 
   String? dynamicLink;
 
+  Payout? payout;
+
   bool isTest;
 
-  Match(this.dateTime, this.sportCenterId, this.sportCenter,
+  Match(
+      this.dateTime,
+      this.sportCenterId,
+      this.sportCenter,
       this.sportCenterSubLocation,
       this.maxPlayers, this.price, this.duration,
       this.isTest, this.minPlayers, this.organizerId, this.userFee,
@@ -82,8 +87,7 @@ class Match {
       this.cancelBefore, this.score);
 
   Match.fromJson(Map<String, dynamic> jsonInput, String documentId)
-      :
-        dateTime = DateTime.parse(jsonInput['dateTime']),
+      : dateTime = DateTime.parse(jsonInput['dateTime']),
         duration = Duration(minutes: jsonInput['duration'] ?? 60),
         isTest = jsonInput["isTest"] ?? false,
         minPlayers = jsonInput['minPlayers'] ?? 0,
@@ -96,12 +100,16 @@ class Match {
         sportCenterId = jsonInput['sportCenterId'],
         userFee = jsonInput["userFee"] ?? 0,
         organiserFee = jsonInput["organiserFee"] ?? 0,
-        score = jsonInput["score"] == null ? null : List<int>.from(
-            jsonInput["score"]),
+        score = jsonInput["score"] == null
+            ? null
+            : List<int>.from(jsonInput["score"]),
         dynamicLink = jsonInput["dynamicLink"],
         sportCenter = SportCenter.fromJson(
             Map<String, dynamic>.from(jsonInput["sportCenter"]),
-            jsonInput["sportCenter"]["placeId"]) {
+            jsonInput["sportCenter"]["placeId"]),
+        payout = jsonInput["payout"] != null
+            ? Payout.fromJson(jsonInput["payout"])
+            : null {
     sportCenterSubLocation = jsonInput['sportCenterSubLocation'];
 
     if (jsonInput.containsKey("cancelledAt") &&
@@ -116,11 +124,12 @@ class Match {
       cancelBefore = Duration(hours: jsonInput['cancelHoursBefore']);
 
     organizerId = jsonInput["organizerId"];
-    cancelBefore = jsonInput.containsKey("cancelHoursBefore") ?
-    Duration(hours: jsonInput["cancelHoursBefore"]) : null;
+    cancelBefore = jsonInput.containsKey("cancelHoursBefore")
+        ? Duration(hours: jsonInput["cancelHoursBefore"])
+        : null;
 
-    status = MatchStatus.values
-        .firstWhere((e) => e.name == jsonInput["status"]);
+    status =
+        MatchStatus.values.firstWhere((e) => e.name == jsonInput["status"]);
 
     if (jsonInput.containsKey("paid_out_at"))
       paidOutAt = DateTime.parse(jsonInput['paid_out_at']).toLocal();
@@ -130,8 +139,8 @@ class Match {
 
   static Map<String, DateTime> _readGoing(Map<String, dynamic> json) {
     var map = Map<String, dynamic>.from(json["going"] ?? {});
-    return map.map((key, value) =>
-        MapEntry(key, DateTime.parse(value["createdAt"])));
+    return map
+        .map((key, value) => MapEntry(key, DateTime.parse(value["createdAt"])));
   }
 
   static List<List<String>> _readComputedTeams(Map<String, dynamic> json) {
@@ -152,11 +161,9 @@ class Match {
     return List.empty();
   }
 
-  Map<String, dynamic> toJson() =>
-      {
+  Map<String, dynamic> toJson() => {
         'dateTime': dateTime.toUtc().toIso8601String(),
-        if (sportCenterId != null)
-          'sportCenterId': sportCenterId,
+        if (sportCenterId != null) 'sportCenterId': sportCenterId,
         'sportCenter': sportCenter.toJson(),
         if (sportCenterSubLocation != null)
           'sportCenterSubLocation': sportCenterSubLocation,
@@ -164,10 +171,8 @@ class Match {
           'price': price!.toJson(),
         'maxPlayers': maxPlayers,
         'minPlayers': minPlayers,
-        if (cancelledAt != null)
-          'cancelledAt': cancelledAt,
-        if (hasManualTeams != null)
-          "hasManualTeams": hasManualTeams,
+        if (cancelledAt != null) 'cancelledAt': cancelledAt,
+        if (hasManualTeams != null) "hasManualTeams": hasManualTeams,
         'duration': duration.inMinutes,
         'organizerId': organizerId,
         if (cancelBefore != null)
@@ -179,7 +184,7 @@ class Match {
         if (score != null)
           'score': score,
         "dynamicLink": dynamicLink,
-        'isTest': isTest,
+        'isTest': isTest
       };
 
   int getSpotsLeft() => maxPlayers - numPlayersGoing();
@@ -224,12 +229,22 @@ class Match {
 }
 
 class Ratings {
-
   Map<String, double> scores;
   List<String>? potms;
 
-  Ratings.fromJson(Map<String, dynamic> jsonInput) :
-      scores = Map<String, double>.from(jsonInput["scores"]),
-      potms = List<String>.from(jsonInput["potms"] ?? []);
+  Ratings.fromJson(Map<String, dynamic> jsonInput)
+      : scores = Map<String, double>.from(jsonInput["scores"]),
+        potms = List<String>.from(jsonInput["potms"] ?? []);
 }
 
+class Payout {
+  String status;
+  int amount;
+  DateTime arrivalDate;
+
+  Payout.fromJson(Map<String, dynamic> json)
+      : status = json["status"],
+        arrivalDate = DateTime.fromMillisecondsSinceEpoch(json["arrival_date"]
+            * 1000),
+        amount = json["amount"];
+}
