@@ -158,10 +158,14 @@ class JoinMatchBottomBar extends StatelessWidget {
   Widget build(BuildContext context) {
     var match = context.read<MatchesState>().getMatch(matchId);
 
+    if (match == null) {
+      return Container();
+    }
+
     return BottomBarMatch(matchId: matchId,
-      text: AppLocalizations.of(context)!.spotsLeft(match?.getSpotsLeft() ?? 0),
-      subText: match?.managePayments ?? true ?
-        formatCurrency(match?.pricePerPersonInCents ?? 0) : null,
+      text: AppLocalizations.of(context)!.spotsLeft(match.getSpotsLeft()),
+      subText: match.price != null ?
+        formatCurrency(match.price!.getTotalPrice()) : null,
       button: enabled ? JoinButton(matchId: matchId) : JoinButtonDisabled()
     );
   }

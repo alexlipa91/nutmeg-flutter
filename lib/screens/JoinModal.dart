@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
-import 'package:nutmeg/controller/PaymentController.dart';
 import 'package:nutmeg/screens/Login.dart';
 import 'package:nutmeg/screens/PaymentDetailsDescription.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
@@ -12,10 +11,8 @@ import 'package:nutmeg/widgets/ModalPaymentDescriptionArea.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-import '../model/PaymentRecap.dart';
 import '../state/MatchesState.dart';
 import '../state/UserState.dart';
-import 'PayWithCreditsModal.dart';
 import 'PayWithMoneyModal.dart';
 
 class JoinButtonDisabled extends StatelessWidget {
@@ -47,7 +44,9 @@ class JoinButton extends StatelessWidget {
 class JoinModal {
 
   static Widget getModalDescriptionArea(
-      BuildContext context, PaymentRecap paymentRecap) {
+      BuildContext context, int basePrice, int userFee) {
+    int creditsUsed = 0;
+
     var widgets = [
       Row(children: [
         Container(
@@ -60,12 +59,12 @@ class JoinModal {
         Text("1x ${AppLocalizations.of(context)!.player}", style: TextPalette.h3),
         Expanded(
             child: Text(
-          formatCurrency(paymentRecap.matchPriceInCents - paymentRecap.fee),
+          formatCurrency(basePrice),
           style: TextPalette.h3,
           textAlign: TextAlign.end,
         ))
       ]),
-      if (paymentRecap.fee > 0)
+      if (userFee > 0)
         Row(
         children: [
           // adding this here as a trick to align the rows
@@ -75,13 +74,13 @@ class JoinModal {
               AppLocalizations.of(context)!.serviceFee,
               style: TextPalette.bodyText),
           Expanded(
-              child: Text(formatCurrency(paymentRecap.fee),
+              child: Text(formatCurrency(userFee),
             style: TextPalette.bodyText,
             textAlign: TextAlign.end,
           ))
         ],
       ),
-      if (paymentRecap.creditsInCentsUsed > 0)
+      if (creditsUsed > 0)
         Row(
           children: [
             // adding this here as a trick to align the rows
@@ -90,7 +89,7 @@ class JoinModal {
             Text('Credits', style: TextPalette.bodyText),
             Expanded(
                 child: Text(
-              "- " + formatCurrency(paymentRecap.creditsInCentsUsed),
+              "- " + formatCurrency(creditsUsed),
               style: TextPalette.bodyText,
               textAlign: TextAlign.end,
             ))
@@ -105,7 +104,7 @@ class JoinModal {
             AppLocalizations.of(context)!.subtotal,
             style: TextPalette.h3),
         Text(
-          formatCurrency(paymentRecap.finalPriceToPayInCents()),
+          formatCurrency(basePrice + userFee - creditsUsed),
           style: TextPalette.h3,
         )
       ],
@@ -124,15 +123,13 @@ class JoinModal {
           MaterialPageRoute(builder: (context) => Login()));
 
     if (userState.isLoggedIn()) {
-      var paymentRecap = await PaymentController.generatePaymentRecap(
-          context, matchId);
-
-      if (!match!.managePayments) {
+      if (match!.price == null) {
         await CloudFunctionsClient().post("matches/$matchId/users/add", {
           "user_id": userState.currentUserId!
         });
         await context.read<MatchesState>().fetchMatch(matchId);
         await PaymentDetailsDescription.communicateSuccessToUser(context, matchId);
+        await context.read<MatchesState>().fetchMatches("GOING", context);
 
         return;
       }
@@ -140,14 +137,17 @@ class JoinModal {
       await GenericInfoModal(
           title: AppLocalizations.of(context)!.joinThisMatchTitle,
           description: AppLocalizations.of(context)!.joinMatchInfo,
-          content: getModalDescriptionArea(context, paymentRecap),
+          content: getModalDescriptionArea(context,
+            match.price!.basePrice,
+            match.price!.userFee),
           action: Row(children: [
             Expanded(
-                child: (paymentRecap.finalPriceToPayInCents() == 0)
-                    ? PayWithCreditsButton(
-                        match: match, paymentRecap: paymentRecap)
-                    : PayWithMoneyButton(
-                        matchId: matchId, paymentRecap: paymentRecap))
+                child:
+                // (false)
+                //     ? PayWithCreditsButton(
+                //         match: match,)
+                //     :
+          PayWithMoneyButton(matchId: matchId))
           ])).show(context);
     }
   };

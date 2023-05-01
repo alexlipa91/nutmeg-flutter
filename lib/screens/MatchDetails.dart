@@ -559,9 +559,9 @@ class MatchInfo extends StatelessWidget {
                       " (" +
                       gmtSuffix(sportCenter.timezoneId) +
                       ")",
-              if (match.managePayments)
+              if (match.price != null)
                 Icons.local_offer_outlined:
-                    formatCurrency(match.pricePerPersonInCents),
+                    formatCurrency(match.price!.getTotalPrice()),
             }),
             if (matchWidget != null)
               Column(children: [

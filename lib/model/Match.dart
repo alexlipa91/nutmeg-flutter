@@ -16,6 +16,25 @@ enum MatchStatus {
   unpublished          // match is created but not joinable by others
 }
 
+class Price {
+  int basePrice;
+  int userFee;
+
+  Price(this.basePrice, this.userFee);
+
+  Price.fromJson(Map<String, dynamic> json):
+      basePrice = json["basePrice"],
+      userFee = json["userFee"];
+
+  Map<String, dynamic> toJson() => {
+    "basePrice": basePrice,
+    "userFee": userFee
+  };
+
+  int getBasePrice() => basePrice;
+  int getTotalPrice() => basePrice + userFee;
+}
+
 class Match {
   late String documentId;
 
@@ -29,7 +48,8 @@ class Match {
   Duration duration;
   String? sportCenterSubLocation;
 
-  int pricePerPersonInCents;
+  Price? price;
+
   int minPlayers;
   int maxPlayers;
   DateTime? cancelledAt;
@@ -48,8 +68,6 @@ class Match {
   int userFee;
   int organiserFee;
 
-  bool managePayments;
-
   List<int>? score;
 
   String? dynamicLink;
@@ -58,11 +76,10 @@ class Match {
 
   Match(this.dateTime, this.sportCenterId, this.sportCenter,
       this.sportCenterSubLocation,
-      this.maxPlayers, this.pricePerPersonInCents, this.duration,
+      this.maxPlayers, this.price, this.duration,
       this.isTest, this.minPlayers, this.organizerId, this.userFee,
       this.organiserFee, this.going, this.computedTeams, this.manualTeams,
-      this.cancelBefore,
-      this.managePayments, this.score);
+      this.cancelBefore, this.score);
 
   Match.fromJson(Map<String, dynamic> jsonInput, String documentId)
       :
@@ -75,14 +92,13 @@ class Match {
         computedTeams = _readComputedTeams(jsonInput),
         manualTeams = _readManualTeams(jsonInput),
         hasManualTeams = jsonInput["hasManualTeams"],
-        pricePerPersonInCents = jsonInput['pricePerPerson'],
+        price = jsonInput["price"] == null ? null : Price.fromJson(jsonInput['price']),
         sportCenterId = jsonInput['sportCenterId'],
         userFee = jsonInput["userFee"] ?? 0,
         organiserFee = jsonInput["organiserFee"] ?? 0,
         score = jsonInput["score"] == null ? null : List<int>.from(
             jsonInput["score"]),
         dynamicLink = jsonInput["dynamicLink"],
-        managePayments = jsonInput["managePayments"] ?? true,
         sportCenter = SportCenter.fromJson(
             Map<String, dynamic>.from(jsonInput["sportCenter"]),
             jsonInput["sportCenter"]["placeId"]) {
@@ -144,7 +160,8 @@ class Match {
         'sportCenter': sportCenter.toJson(),
         if (sportCenterSubLocation != null)
           'sportCenterSubLocation': sportCenterSubLocation,
-        'pricePerPerson': pricePerPersonInCents,
+        if (price != null)
+          'price': price!.toJson(),
         'maxPlayers': maxPlayers,
         'minPlayers': minPlayers,
         if (cancelledAt != null)
@@ -161,9 +178,8 @@ class Match {
           'organiserFee': organiserFee,
         if (score != null)
           'score': score,
-        'managePayments': managePayments,
         "dynamicLink": dynamicLink,
-        'isTest': isTest
+        'isTest': isTest,
       };
 
   int getSpotsLeft() => maxPlayers - numPlayersGoing();

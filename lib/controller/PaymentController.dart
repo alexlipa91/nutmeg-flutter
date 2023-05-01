@@ -21,12 +21,12 @@ class PaymentController {
 
     if ((u.creditsInCents ?? 0) > 0) {
       // can use
-      creditsUsed = min(m.pricePerPersonInCents, u.creditsInCents!);
+      creditsUsed = min(m.price!.getTotalPrice(), u.creditsInCents!);
     } else {
       creditsUsed = 0;
     }
 
-    var result = PaymentRecap(m.pricePerPersonInCents, creditsUsed, m.userFee);
+    var result = PaymentRecap(m.price!.getTotalPrice(), creditsUsed, m.userFee);
 
     return result;
   }

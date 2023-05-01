@@ -6,15 +6,13 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-import '../model/PaymentRecap.dart';
 import '../state/UserState.dart';
 
 class PayWithMoneyButton extends StatelessWidget {
   final String matchId;
-  final PaymentRecap paymentRecap;
 
   const PayWithMoneyButton(
-      {Key? key, required this.matchId, required this.paymentRecap})
+      {Key? key, required this.matchId})
       : super(key: key);
 
   @override
@@ -26,7 +24,7 @@ class PayWithMoneyButton extends StatelessWidget {
           var userState = context.read<UserState>();
 
           var uri =
-              Uri.parse(CloudFunctionsClient().getUrl("/payments/checkout?"
+              Uri.parse(CloudFunctionsClient().getUrl("payments/checkout?"
                   "user_id=${userState.currentUserId}&match_id=$matchId&v=2"));
 
           if (kIsWeb)

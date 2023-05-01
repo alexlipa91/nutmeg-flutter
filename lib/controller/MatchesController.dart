@@ -27,6 +27,7 @@ class MatchesController {
   static Future<Match> leaveMatch(BuildContext context, String matchId) async {
     await CloudFunctionsClient().post("matches/$matchId/users/remove", {});
     var m = await context.read<MatchesState>().fetchMatch(matchId);
+    await context.read<MatchesState>().fetchMatches("GOING", context);
     return m;
   }
 

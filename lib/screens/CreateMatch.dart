@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:nutmeg/Exceptions.dart';
+import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 import 'package:nutmeg/model/Match.dart';
 import 'package:nutmeg/model/SportCenter.dart';
 import 'package:nutmeg/screens/BottomBarMatch.dart';
@@ -103,11 +104,17 @@ class CreateMatchState extends State<CreateMatch> {
   late FocusNode datefocusNode;
   late FocusNode startTimefocusNode;
 
+  bool organiserWithFee = false;
+
   Future<void> refreshState() async {
-    await Future.wait([
+    var res = await Future.wait([
       context.read<LoadOnceState>().fetchSavedSportCenters(),
-      context.read<UserState>().fetchLoggedUserSportCenters()
+      context.read<UserState>().fetchLoggedUserSportCenters(),
+      CloudFunctionsClient().get("users/organisers_with_fee")
     ]);
+    if (res[2] != null)
+      organiserWithFee = ((res[2]! as Map)["users"] as List)
+          .contains(context.read<UserState>().currentUserId!);
   }
 
   void unfocusIfNoValue(FocusNode focusNode, TextEditingController controller) {
@@ -160,11 +167,9 @@ class CreateMatchState extends State<CreateMatch> {
       repeatWeeklyEditingController = TextEditingController(text: noRepeat);
       courtNumberEditingController = TextEditingController(
           text: widget.existingMatch!.sportCenterSubLocation);
-      priceController = TextEditingController(
-          text: ((widget.existingMatch!.pricePerPersonInCents -
-                      widget.existingMatch!.userFee) /
-                  100)
-              .toString());
+      if (widget.existingMatch!.price != null)
+        priceController = TextEditingController(
+            text: (widget.existingMatch!.price!.basePrice / 100).toString());
       numberOfPeopleRangeValues = RangeValues(
           widget.existingMatch!.minPlayers.toDouble(),
           widget.existingMatch!.maxPlayers.toDouble());
@@ -173,7 +178,7 @@ class CreateMatchState extends State<CreateMatch> {
       repeatsForWeeks = 1;
       cancelTimeEditingController = TextEditingController(
           text: widget.existingMatch!.cancelBefore?.inHours.toString());
-      managePayments = widget.existingMatch!.managePayments;
+      managePayments = widget.existingMatch!.price != null;
       paymentsPossible =
           !blacklistedCountriesForPayments.contains(sportCenter!.country);
     }
@@ -501,11 +506,13 @@ class CreateMatchState extends State<CreateMatch> {
                         borderRadius: BorderRadius.circular(5)),
                     value: managePayments,
                     activeColor: Palette.primary,
-                    onChanged: widget.existingMatch != null ? null : (v) {
-                      setState(() {
-                        managePayments = v!;
-                      });
-                    }),
+                    onChanged: widget.existingMatch != null
+                        ? null
+                        : (v) {
+                            setState(() {
+                              managePayments = v!;
+                            });
+                          }),
               if (paymentsPossible)
                 Flexible(
                     child: Text(AppLocalizations.of(context)!.paymentEnableInfo,
@@ -604,7 +611,8 @@ class CreateMatchState extends State<CreateMatch> {
                     Spacer(),
                     Builder(builder: (BuildContext buildContext) {
                       var price = Decimal.tryParse(priceController.text);
-                      if (price != null) price = price + Decimal.parse("0.5");
+                      if (price != null && organiserWithFee)
+                        price = price + Decimal.parse("0.5");
                       return Text(
                           (price == null)
                               ? "€ --"
@@ -612,14 +620,15 @@ class CreateMatchState extends State<CreateMatch> {
                           style: TextPalette.bodyText);
                     }),
                   ]),
-                  Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-                    Text(AppLocalizations.of(context)!.usersWillPayText,
-                        style: GoogleFonts.roboto(
-                            color: Palette.greyDark,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w400,
-                            height: 1.6)),
-                  ]),
+                  if (organiserWithFee)
+                    Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+                      Text(AppLocalizations.of(context)!.usersWillPayText,
+                          style: GoogleFonts.roboto(
+                              color: Palette.greyDark,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w400,
+                              height: 1.6)),
+                    ]),
                   SizedBox(height: 16),
                   Divider(),
                   RichText(
@@ -834,12 +843,14 @@ class CreateMatchState extends State<CreateMatch> {
                               sportCenter!,
                               courtNumberEditingController.text,
                               numberOfPeopleRangeValues.end.toInt(),
-                              paymentsPossible && managePayments
-                                  ? (Decimal.parse(priceController.text) *
-                                          Decimal.parse("100"))
-                                      .toDouble()
-                                      .toInt()
-                                  : 0,
+                              (paymentsPossible && managePayments)
+                                  ? Price(
+                                      (Decimal.parse(priceController.text) *
+                                              Decimal.parse("100"))
+                                          .toDouble()
+                                          .toInt(),
+                                      organiserWithFee ? 50 : 0)
+                                  : null,
                               duration,
                               isTest,
                               numberOfPeopleRangeValues.start.toInt(),
@@ -849,12 +860,8 @@ class CreateMatchState extends State<CreateMatch> {
                                       .read<UserState>()
                                       .getLoggedUserDetails()!
                                       .documentId,
-                              ConfigsUtils.feesOnOrganiser(organiserId)
-                                  ? 0
-                                  : 50,
-                              ConfigsUtils.feesOnOrganiser(organiserId)
-                                  ? 50
-                                  : 0,
+                              organiserWithFee ? 50 : 0,
+                              0,
                               widget.existingMatch != null
                                   ? widget.existingMatch!.going
                                   : Map(),
@@ -865,7 +872,6 @@ class CreateMatchState extends State<CreateMatch> {
                                   ? widget.existingMatch!.manualTeams
                                   : [],
                               cancelBefore,
-                              paymentsPossible && managePayments,
                               widget.existingMatch != null
                                   ? widget.existingMatch!.score
                                   : null);
