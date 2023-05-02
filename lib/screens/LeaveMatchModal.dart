@@ -38,7 +38,7 @@ class LeaveButton extends StatelessWidget {
           }
 
           await GenericInfoModal(
-              title: "Leave this match?",
+              title: AppLocalizations.of(context)!.leaveThisMatchTitle,
               description: leaveMatchText,
               content: match.price != null
                   ? ModalPaymentDescriptionArea(

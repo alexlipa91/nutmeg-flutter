@@ -39,6 +39,7 @@
     "joinButtonText": "PARTICIPAR",
     "joinThisMatchTitle": "Junte-se a esta partida",
     "joinMatchInfo": "Se você sair da partida, receberá um reembolso",
+    "leaveThisMatchTitle": "Sair desta partida?",
     "leaveMatchInfo": "Nós reembolsaremos você no método de pagamento que você usou para pagar.",
     "leaveMatchServiceFeeInfo": "A taxa de serviço de {f} não será reembolsada",
     "leaveMatchNoMoneyInfo": "Por favor, confirme se você deseja ser removido da lista de jogadores",
@@ -112,7 +113,7 @@
     "submitRatesButtonText": "ENVIAR",
     "accountTitle": "Conta",
     "creditsBoxTitle": "Créditos",
-    "numMatchesTitle": "partidas jogadas",
+    "numMatchesTitle": "partidas disputadas",
     "numPlayersOfTheMatchBoxTitle": "Jogadores da partida",
     "numMatchesWonBoxTitle": "Partidas ganhas",
     "numMatchesLostBoxTitle": "partidas perdidas",
@@ -123,5 +124,7 @@
     "followOnIg": "Siga-nos no Instagram",
     "feedback": "Dê-nos feedback",
     "payoutInfoSuccessText": "O pagamento de {a} foi transferido em {d}",
-    "payoutInfoOnItsWayText": "O pagamento de {a} está a caminho e deve chegar em {d}"
+    "payoutInfoOnItsWayText": "O pagamento de {a} está a caminho e deve chegar em {d}",
+    "changeLanguageButton": "MUDAR IDIOMA",
+    "languageModalTitle": "Linguagem"
 }

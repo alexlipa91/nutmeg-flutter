@@ -132,7 +132,7 @@ class CreateMatchState extends State<CreateMatch> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     var dateFormat = DateFormat(
-        "dd-MM-yyyy", context.watch<LoadOnceState>().locale.countryCode);
+        "dd-MM-yyyy", getLanguageLocale(context).countryCode);
     var noRepeat = AppLocalizations.of(context)!.doesNotRepeatLabel;
 
     if (widget.existingMatch == null) {
@@ -205,7 +205,7 @@ class CreateMatchState extends State<CreateMatch> {
     var organiserId =
         context.read<UserState>().getLoggedUserDetails()!.documentId;
     var dateFormat = DateFormat(
-        "dd-MM-yyyy", context.watch<LoadOnceState>().locale.countryCode);
+        "dd-MM-yyyy", getLanguageLocale(context).countryCode);
 
     var noRepeat = AppLocalizations.of(context)!.doesNotRepeatLabel;
 

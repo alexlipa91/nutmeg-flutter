@@ -31,7 +31,7 @@ class TeamsWidgetState extends State<TeamsWidget> {
   final _scoreFormKey = GlobalKey<FormState>();
 
   late bool isOrganizerView;
-  bool manualSplit = false;
+  late bool manualSplit;
   bool loader = false;
   bool? movingItemFromLeft;
 
@@ -40,6 +40,8 @@ class TeamsWidgetState extends State<TeamsWidget> {
   @override
   void initState() {
     super.initState();
+    var match = context.read<MatchesState>().getMatch(widget.matchId);
+    manualSplit = match?.hasManualTeams ?? false;
     isOrganizerView = context.read<UserState>().isLoggedIn() &&
         context.read<UserState>().currentUserId ==
             context.read<MatchesState>().getMatch(widget.matchId)?.organizerId;

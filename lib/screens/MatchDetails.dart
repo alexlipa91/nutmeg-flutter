@@ -8,7 +8,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
-import 'package:nutmeg/state/LoadOnceState.dart';
 import 'package:nutmeg/utils/LocationUtils.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -452,9 +451,9 @@ class MatchInfo extends StatelessWidget {
 
   static String formatDay(DateTime d, BuildContext context) {
     var dayDateFormatPastYear = DateFormat("EEEE, MMM dd yyyy",
-        context.watch<LoadOnceState>().locale.languageCode);
+        getLanguageLocale(context).languageCode);
     var dayDateFormat = DateFormat(
-        "EEEE, MMM dd", context.watch<LoadOnceState>().locale.languageCode);
+        "EEEE, MMM dd", getLanguageLocale(context).languageCode);
     return DateTime.now().year == d.year
         ? dayDateFormat.format(d)
         : dayDateFormatPastYear.format(d);
@@ -463,7 +462,7 @@ class MatchInfo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var hourDateFormat =
-        DateFormat("HH:mm", context.watch<LoadOnceState>().locale.languageCode);
+        DateFormat("HH:mm", getLanguageLocale(context).languageCode);
 
     var child;
 
@@ -937,7 +936,7 @@ class Stats extends StatelessWidget {
   Widget build(BuildContext context) {
     var child;
     var dayDateFormat = DateFormat("EEEE, MMM dd HH:mm",
-        context.watch<LoadOnceState>().locale.languageCode);
+        getLanguageLocale(context).languageCode);
 
     if (match.status == MatchStatus.to_rate) {
       child = Container(

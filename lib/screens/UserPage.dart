@@ -1,11 +1,12 @@
 import 'package:badges/badges.dart';
+import 'package:circle_flags/circle_flags.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart' hide Badge;
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/model/UserDetails.dart';
-import 'package:nutmeg/state/LoadOnceState.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/Avatar.dart';
@@ -59,8 +60,10 @@ class UserPageState extends State<UserPage> {
     var showOrganizerView = userDetails != null &&
         (userDetails.isOrganiser(true) || userDetails.isOrganiser(false));
 
-    var title = Row(children: [Text(AppLocalizations.of(context)!.accountTitle,
-        style: TextPalette.h1Default)]);
+    var title = Row(children: [
+      Text(AppLocalizations.of(context)!.accountTitle,
+          style: TextPalette.h1Default)
+    ]);
 
     var widgets;
     if (loadSkeleton) {
@@ -239,7 +242,8 @@ class UserPageState extends State<UserPage> {
           Expanded(
             child: UserInfoBox(
               content: userDetails.getNumManOfTheMatch().toString(),
-              description: AppLocalizations.of(context)!.numPlayersOfTheMatchBoxTitle,
+              description:
+                  AppLocalizations.of(context)!.numPlayersOfTheMatchBoxTitle,
             ),
           )
         ]),
@@ -249,12 +253,14 @@ class UserPageState extends State<UserPage> {
             Expanded(
                 child: UserInfoBox(
                     content: (userDetails.numWin ?? 0).toString(),
-                    description: AppLocalizations.of(context)!.numMatchesWonBoxTitle)),
+                    description:
+                        AppLocalizations.of(context)!.numMatchesWonBoxTitle)),
             SizedBox(width: 20),
             Expanded(
               child: UserInfoBox(
                   content: (userDetails.numLoss ?? 0).toString(),
-                  description: AppLocalizations.of(context)!.numMatchesLostBoxTitle),
+                  description:
+                      AppLocalizations.of(context)!.numMatchesLostBoxTitle),
             )
           ]),
         if (userDetails.getLastScores().length > 0)
@@ -365,11 +371,11 @@ class UserPageState extends State<UserPage> {
                             Row(children: [
                               Expanded(
                                   child: GenericButtonWithLoader(
-                                    AppLocalizations.of(context)!.goToStripeDashboardText +
+                                      AppLocalizations.of(context)!
+                                              .goToStripeDashboardText +
                                           (isTest ? " TEST" : ""), (_) async {
-                                var url =
-                                    "https://europe-central2-nutmeg-9099c.cloudfunctions.net/go_to_account_login_link?"
-                                    "is_test=$isTest&user_id=${userState.currentUserId}";
+                                var url = CloudFunctionsClient()
+                                    .getUrl("stripe/account?is_test?$isTest");
 
                                 await launchUrl(Uri.parse(url));
                               }, Primary()))
@@ -382,7 +388,8 @@ class UserPageState extends State<UserPage> {
 
                       return UserInfoBox(
                         content: (loadSkeleton) ? null : n.toString(),
-                        description: AppLocalizations.of(context)!.organizedMatchesBoxTitle,
+                        description: AppLocalizations.of(context)!
+                            .organizedMatchesBoxTitle,
                         bottom: Column(children: widgets),
                       );
                     }))
@@ -466,6 +473,7 @@ class UserPageState extends State<UserPage> {
               ],
             ),
             NutmegDivider(horizontal: true),
+            verticalSpace,
             Row(
               children: [
                 Expanded(
@@ -485,6 +493,81 @@ class UserPageState extends State<UserPage> {
                     Primary(),
                   ),
                 )
+              ],
+            ),
+            verticalSpace,
+            Row(
+              children: [
+                Expanded(
+                    child: GenericButtonWithLoader(
+                  AppLocalizations.of(context)!.changeLanguageButton,
+                  (BuildContext context) async {
+                    String? locale =
+                        await ModalBottomSheet.showNutmegModalBottomSheet(
+                            context,
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        AppLocalizations.of(context)!
+                                            .languageModalTitle,
+                                        style: TextPalette.h2,
+                                      ),
+                                      SizedBox(height: 24.0),
+                                      InkWell(
+                                        onTap: () =>
+                                            Navigator.pop(context, "en"),
+                                        child: Row(children: [
+                                          CircleFlag("us", size: 24),
+                                          SizedBox(width: 16),
+                                          Text("English")
+                                        ]),
+                                      ),
+                                      SizedBox(height: 24.0),
+                                      InkWell(
+                                        onTap: () =>
+                                            Navigator.pop(context, "pt"),
+                                        child: Row(children: [
+                                          CircleFlag("pt", size: 24),
+                                          SizedBox(width: 16),
+                                          Text("Português")
+                                        ]),
+                                      ),
+                                      SizedBox(height: 24.0),
+                                      InkWell(
+                                        onTap: () =>
+                                            Navigator.pop(context, "it"),
+                                        child: Row(children: [
+                                          CircleFlag("it", size: 24),
+                                          SizedBox(width: 16),
+                                          Text("Italiano")
+                                        ]),
+                                      ),
+                                      SizedBox(height: 24.0),
+                                      InkWell(
+                                        onTap: () =>
+                                            Navigator.pop(context, "es"),
+                                        child: Row(children: [
+                                          CircleFlag("es", size: 24),
+                                          SizedBox(width: 16),
+                                          Text("Español")
+                                        ]),
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              ],
+                            ));
+                    if (locale != null) {
+                      context.read<UserState>().editUser({"language": locale});
+                    }
+                  },
+                  Primary(),
+                ))
               ],
             ),
           ])),
@@ -519,59 +602,6 @@ class UserPageState extends State<UserPage> {
                   ),
                   Expanded(
                       child: Text("It allows to see in the UI test matches"))
-                ],
-              ),
-              verticalSpace,
-              Row(
-                children: [
-                  Expanded(
-                      child: GenericButtonWithLoader(
-                    "CHANGE LANGUAGE",
-                    (BuildContext context) async {
-                      String? locale =
-                          await ModalBottomSheet.showNutmegModalBottomSheet(
-                              context,
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          "Language",
-                                          style: TextPalette.h2,
-                                        ),
-                                        SizedBox(height: 16.0),
-                                        InkWell(
-                                          onTap: () =>
-                                              Navigator.pop(context, "en"),
-                                          child: Text("English"),
-                                        ),
-                                        SizedBox(height: 16.0),
-                                        InkWell(
-                                          onTap: () =>
-                                              Navigator.pop(context, "pt"),
-                                          child: Text("Portoguese"),
-                                        ),
-                                        SizedBox(height: 16.0),
-                                        InkWell(
-                                          onTap: () =>
-                                              Navigator.pop(context, "it"),
-                                          child: Text("Italiano"),
-                                        ),
-                                      ],
-                                    ),
-                                  )
-                                ],
-                              ));
-
-                      if (locale != null) {
-                        context.read<LoadOnceState>().setLocale(locale);
-                      }
-                    },
-                    Primary(),
-                  ))
                 ],
               ),
             ])),

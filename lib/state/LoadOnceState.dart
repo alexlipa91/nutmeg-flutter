@@ -6,6 +6,7 @@ import '../model/SportCenter.dart';
 
 
 class LoadOnceState extends ChangeNotifier {
+
   static String localeStr = const String.fromEnvironment("LOCALE", defaultValue: "");
 
   Locale locale = Locale((localeStr == "") ? Platform.localeName.substring(0, 2) : localeStr);
@@ -16,11 +17,6 @@ class LoadOnceState extends ChangeNotifier {
   String getRandomGif() {
     joinedGifs..shuffle();
     return joinedGifs.first;
-  }
-
-  void setLocale(String locale) {
-    this.locale = Locale(locale);
-    notifyListeners();
   }
 
   Future<List<SportCenter>> fetchSavedSportCenters() async {

@@ -30,6 +30,7 @@ class UserDetails {
   int? numLoss;
 
   LocationInfo? location;
+  String? language;
 
   UserDetails(this.documentId, this.isAdmin, this.image, this.name, this.email)
       : numRatedMatches = 0,
@@ -57,6 +58,7 @@ class UserDetails {
         createdMatches = Map<String, dynamic>.from(json["created_matches"] ?? {}).keys.toList(),
         createdTestMatches = Map<String, dynamic>.from(json["created_test_matches"] ?? {}).keys.toList(),
         location = json.containsKey("location") ? LocationInfo.fromJson(json["location"]) : null,
+        language = json["language"],
         numWin = (json["record"] ?? {})["num_win"],
         numLoss = (json["record"] ?? {})["num_loss"],
         documentId = documentId;

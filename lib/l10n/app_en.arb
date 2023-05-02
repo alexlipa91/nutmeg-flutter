@@ -80,6 +80,7 @@
     "joinButtonText": "JOIN MATCH",
     "joinThisMatchTitle": "Join this match",
     "joinMatchInfo": "If you leave the match you will get a refund",
+    "leaveThisMatchTitle": "Leave this match?",
     "leaveMatchInfo": "We will refund you on the payment method you used to pay.",
     "leaveMatchServiceFeeInfo": "The service fee of {f} will not be refunded",
     "@leaveMatchServiceFeeInfo": {
@@ -226,5 +227,8 @@
                 "a":  {"type": "String"},
                 "d":  {"type": "String"}
             }
-        }
+        },
+
+    "changeLanguageButton": "CHANGE LANGUAGE",
+    "languageModalTitle": "Language"
 }

@@ -24,6 +24,7 @@ import '../firebase_options.dart';
 import '../state/LoadOnceState.dart';
 import '../state/MatchesState.dart';
 import '../state/UserState.dart';
+import '../utils/LocationUtils.dart';
 import 'admin/AddOrEditMatch.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -152,7 +153,7 @@ void main() async {
               key: navigatorKey,
               localizationsDelegates: AppLocalizations.localizationsDelegates,
               supportedLocales: AppLocalizations.supportedLocales,
-              locale: context.watch<LoadOnceState>().locale,
+              locale: getLanguageLocale(context),
               scaffoldMessengerKey: scaffoldMessengerKey,
               routeInformationParser: appRouter.routeInformationParser,
               routerDelegate: appRouter.routerDelegate,

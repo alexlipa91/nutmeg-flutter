@@ -17,9 +17,9 @@ import 'package:provider/provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../state/AvailableMatchesState.dart';
-import '../state/LoadOnceState.dart';
 import '../state/MatchesState.dart';
 import '../state/UserState.dart';
+import '../utils/LocationUtils.dart';
 import 'Badges.dart';
 import 'Skeletons.dart';
 
@@ -183,9 +183,9 @@ class GenericMatchInfo extends StatelessWidget {
 
   static String formatDate(DateTime d, BuildContext context) {
     var dayDateFormatPastYear = DateFormat("EEE, MMM dd yyyy HH:mm",
-        context.watch<LoadOnceState>().locale.languageCode);
+        getLanguageLocale(context).languageCode);
     var dayDateFormat = DateFormat("EEE, MMM dd HH:mm",
-        context.watch<LoadOnceState>().locale.languageCode);
+        getLanguageLocale(context).languageCode);
     return DateTime.now().year == d.year
         ? dayDateFormat.format(d)
         : dayDateFormatPastYear.format(d);
@@ -336,9 +336,9 @@ class GenericMatchInfo extends StatelessWidget {
 class GenericMatchInfoPast extends StatelessWidget {
   static String formatDay(DateTime d, BuildContext context) {
     var dayDateFormatPastYear = DateFormat(
-        "dd MMM yyyy", context.watch<LoadOnceState>().locale.languageCode);
+        "dd MMM yyyy", getLanguageLocale(context).languageCode);
     var dayDateFormat = DateFormat(
-        "dd MMM", context.watch<LoadOnceState>().locale.languageCode);
+        "dd MMM", getLanguageLocale(context).languageCode);
     return DateTime.now().year == d.year
         ? dayDateFormat.format(d)
         : dayDateFormatPastYear.format(d);

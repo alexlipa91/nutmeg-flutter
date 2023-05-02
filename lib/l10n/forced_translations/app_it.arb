@@ -3,7 +3,14 @@
     "going": "Iscritto",
     "past": "Passate",
 
-    "matchOnStatus": "La partita è aperta",
+    "matchOnStatus": "Partita confermata",
+    "locationHeader": "Luogo",
+    "paymentPolicyHeader": "Regole per il pagamento",
+
+    "currentLocationInfo": "La tua posizione ci aiuta a migliorare la tua esperienza con consigli migliori sulle partite.",
+    "averageScoreBoxTitle": "Media Punti",
+    "numPlayersOfTheMatchBoxTitle": "Man of the Match",
+
     "courtType": "Tipo di campo: {t}",
 
     "courtNumber": "Campo numero {x}"

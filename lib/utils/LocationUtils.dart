@@ -1,9 +1,12 @@
+import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 
 import 'package:nutmeg/state/UserState.dart';
 import 'package:nutmeg/utils/ApiKey.dart';
+import 'package:provider/provider.dart';
 
 import '../api/CloudFunctionsUtils.dart';
+import '../state/LoadOnceState.dart';
 
 String buildMapUrl(double lat, double lng) =>
     "https://maps.googleapis.com/maps/api/staticmap?center=" +
@@ -124,3 +127,9 @@ Future<Position?> determinePosition() async {
 }
 
 var blacklistedCountriesForPayments = ["CH", "BR"];
+
+Locale getLanguageLocale(BuildContext context) {
+  var userSpecific = context.watch<UserState>().getLoggedUserDetails()?.language;
+  if (userSpecific != null) return Locale(userSpecific);
+  return context.watch<LoadOnceState>().locale;
+}

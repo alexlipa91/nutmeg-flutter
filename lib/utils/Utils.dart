@@ -1,6 +1,7 @@
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 import 'package:nutmeg/model/Match.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:share_plus/share_plus.dart';
@@ -107,4 +108,4 @@ class ConfigsUtils {
 }
 
 String getStripeUrl(bool isTest, String userId) =>
-    "https://europe-central2-nutmeg-9099c.cloudfunctions.net/go_to_onboard_connected_account?is_test=$isTest&id=$userId";
+    CloudFunctionsClient().getUrl("stripe/account/onboard?is_test=$isTest");
