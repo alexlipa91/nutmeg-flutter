@@ -1,1 +1,1 @@
-Add more user stats and a bunch of minor fixes
+Fix ratings modal and team arrangement widget
