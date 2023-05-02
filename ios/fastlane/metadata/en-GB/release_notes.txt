@@ -1,1 +1,1 @@
-Fix apple sign-in problems
+Add more user stats and a bunch of minor fixes
