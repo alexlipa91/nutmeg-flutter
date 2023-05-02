@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:nutmeg/utils/UiUtils.dart';
+import 'package:nutmeg/widgets/Containers.dart';
 
 
 class ModalPaymentDescriptionArea extends StatelessWidget {
-  static var divider = Divider(color: Palette.greyLight, height: 0);
-
   final List<Widget> rows;
   final Widget? finalRow;
 
@@ -15,7 +13,7 @@ class ModalPaymentDescriptionArea extends StatelessWidget {
   Widget build(BuildContext context) {
     var rowWidgets = [];
     if (rows.isNotEmpty) {
-      rowWidgets.add(divider);
+      rowWidgets.add(NutmegDivider(horizontal: true));
       rowWidgets.add(SizedBox(height: 16));
       rowWidgets.addAll(rows.map((r) => Padding(
             padding: EdgeInsets.only(top: 4, bottom: 4),
@@ -23,7 +21,7 @@ class ModalPaymentDescriptionArea extends StatelessWidget {
           )));
       rowWidgets.add(SizedBox(height: 16));
     }
-    rowWidgets.add(divider);
+    rowWidgets.add(NutmegDivider(horizontal: true));
     if (finalRow != null) {
       rowWidgets.add(SizedBox(height: 16));
       rowWidgets.add(finalRow);

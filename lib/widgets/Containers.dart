@@ -64,3 +64,16 @@ class InfoContainerWithTitle extends StatelessWidget {
     );
   }
 }
+
+class NutmegDivider extends StatelessWidget {
+
+  final bool horizontal;
+
+  const NutmegDivider({Key? key, required this.horizontal}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    var color = Palette.greyLight;
+    return horizontal ? Divider(color: color) : VerticalDivider(color: color);
+  }
+}

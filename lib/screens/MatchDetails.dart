@@ -450,10 +450,18 @@ class MatchInfo extends StatelessWidget {
 
   MatchInfo(this.match, this.sportCenter);
 
-  @override
-  Widget build(BuildContext context) {
+  static String formatDay(DateTime d, BuildContext context) {
+    var dayDateFormatPastYear = DateFormat("EEEE, MMM dd yyyy",
+        context.watch<LoadOnceState>().locale.languageCode);
     var dayDateFormat = DateFormat(
         "EEEE, MMM dd", context.watch<LoadOnceState>().locale.languageCode);
+    return DateTime.now().year == d.year
+        ? dayDateFormat.format(d)
+        : dayDateFormatPastYear.format(d);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     var hourDateFormat =
         DateFormat("HH:mm", context.watch<LoadOnceState>().locale.languageCode);
 
@@ -562,8 +570,8 @@ class MatchInfo extends StatelessWidget {
               ),
             SizedBox(height: 16),
             IconList.fromIcon({
-              Icons.calendar_month_outlined: dayDateFormat
-                  .format(match.getLocalizedTime(sportCenter.timezoneId)),
+              Icons.calendar_month_outlined: formatDay(
+                  match.getLocalizedTime(sportCenter.timezoneId), context),
               Icons.access_time_outlined:
                   "${hourDateFormat.format(match.getLocalizedTime(sportCenter.timezoneId))} - "
                           "${hourDateFormat.format(match.getLocalizedTime(sportCenter.timezoneId).add(match.duration))}" +
@@ -574,7 +582,9 @@ class MatchInfo extends StatelessWidget {
                 Icons.local_offer_outlined:
                     formatCurrency(match.price!.getTotalPrice()),
             }),
-            if (isOrganizerView && match.isMatchFinished())
+            if (isOrganizerView &&
+                match.isMatchFinished() &&
+                match.cancelledAt == null)
               Builder(builder: (context) {
                 var date = match.payout != null
                     ? match.payout!.arrivalDate
@@ -587,7 +597,7 @@ class MatchInfo extends StatelessWidget {
 
                 return Column(
                   children: [
-                    Divider(),
+                    NutmegDivider(horizontal: true),
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
@@ -601,10 +611,10 @@ class MatchInfo extends StatelessWidget {
                                 success
                                     ? AppLocalizations.of(context)!
                                         .payoutInfoSuccessText(
-                                            amount, dayDateFormat.format(date))
+                                            amount, formatDay(date, context))
                                     : AppLocalizations.of(context)!
                                         .payoutInfoOnItsWayText(
-                                            amount, dayDateFormat.format(date)),
+                                            amount, formatDay(date, context)),
                                 maxLines: 2,
                                 softWrap: true,
                                 style: TextPalette.getListItem(color)),
@@ -618,7 +628,7 @@ class MatchInfo extends StatelessWidget {
             if (matchWidget != null)
               Column(children: [
                 SizedBox(height: 16),
-                Divider(color: Palette.greyLight),
+                NutmegDivider(horizontal: true),
                 SizedBox(height: 8),
                 matchWidget
               ])

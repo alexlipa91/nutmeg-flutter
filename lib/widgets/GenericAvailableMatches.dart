@@ -47,7 +47,6 @@ class GenericAvailableMatchesList extends StatefulWidget {
 
 class GenericAvailableMatchesListState
     extends State<GenericAvailableMatchesList> {
-
   Widget waitingWidget() => ListOfMatchesSkeleton(repeatFor: 3);
 
   @override
@@ -182,11 +181,18 @@ class GenericMatchInfo extends StatelessWidget {
   GenericMatchInfo.first(this.match, this.sportCenter, this.onTap)
       : topMargin = 0;
 
+  static String formatDate(DateTime d, BuildContext context) {
+    var dayDateFormatPastYear = DateFormat("EEE, MMM dd yyyy HH:mm",
+        context.watch<LoadOnceState>().locale.languageCode);
+    var dayDateFormat = DateFormat("EEE, MMM dd HH:mm",
+        context.watch<LoadOnceState>().locale.languageCode);
+    return DateTime.now().year == d.year
+        ? dayDateFormat.format(d)
+        : dayDateFormatPastYear.format(d);
+  }
+
   @override
   Widget build(BuildContext context) {
-    var dateFormat = DateFormat("EEE, MMM dd HH:mm",
-        context.watch<LoadOnceState>().locale.languageCode);
-
     return InkWell(
         child: Padding(
           padding: EdgeInsets.only(top: topMargin),
@@ -219,9 +225,10 @@ class GenericMatchInfo extends StatelessWidget {
                                 height: 8,
                               ),
                               Text(
-
-                                  dateFormat.format(match.getLocalizedTime(
-                                          sportCenter.timezoneId)) +
+                                  formatDate(
+                                          match.getLocalizedTime(
+                                              sportCenter.timezoneId),
+                                          context) +
                                       " " +
                                       gmtSuffix(sportCenter.timezoneId),
                                   style: TextPalette.getBodyText(
@@ -230,18 +237,27 @@ class GenericMatchInfo extends StatelessWidget {
                                 height: 6,
                               ),
                               (match.status == MatchStatus.unpublished)
-                                  ? Text(AppLocalizations.of(context)!.notPublishedStatus,
+                                  ? Text(
+                                      AppLocalizations.of(context)!
+                                          .notPublishedStatus,
                                       style: TextPalette.getBodyText(
                                           Palette.darkWarning))
                                   : (match.status == MatchStatus.cancelled)
-                                      ? Text(AppLocalizations.of(context)!.cancelledStatus,
+                                      ? Text(
+                                          AppLocalizations.of(context)!
+                                              .cancelledStatus,
                                           style: TextPalette.getBodyText(
                                               Palette.destructive))
                                       : (match.isFull())
-                                          ? Text(AppLocalizations.of(context)!.fullStatus,
+                                          ? Text(
+                                              AppLocalizations.of(context)!
+                                                  .fullStatus,
                                               style: TextPalette.bodyText,
                                               textAlign: TextAlign.right)
-                                          : Text(AppLocalizations.of(context)!.spotsLeft(match.maxPlayers - match.numPlayersGoing()),
+                                          : Text(
+                                              AppLocalizations.of(context)!
+                                                  .spotsLeft(match.maxPlayers -
+                                                      match.numPlayersGoing()),
                                               style:
                                                   TextPalette.bodyTextPrimary,
                                               textAlign: TextAlign.right),
@@ -318,7 +334,15 @@ class GenericMatchInfo extends StatelessWidget {
 
 // variation of match info for past
 class GenericMatchInfoPast extends StatelessWidget {
-  static var dayFormat = DateFormat('dd MMM');
+  static String formatDay(DateTime d, BuildContext context) {
+    var dayDateFormatPastYear = DateFormat(
+        "dd MMM yyyy", context.watch<LoadOnceState>().locale.languageCode);
+    var dayDateFormat = DateFormat(
+        "dd MMM", context.watch<LoadOnceState>().locale.languageCode);
+    return DateTime.now().year == d.year
+        ? dayDateFormat.format(d)
+        : dayDateFormatPastYear.format(d);
+  }
 
   final String matchId;
   final double topMargin;
@@ -363,7 +387,8 @@ class GenericMatchInfoPast extends StatelessWidget {
                         if (match.status == MatchStatus.cancelled)
                           Padding(
                               padding: EdgeInsets.only(top: 8),
-                              child: Text(AppLocalizations.of(context)!.cancelledStatus,
+                              child: Text(
+                                  AppLocalizations.of(context)!.cancelledStatus,
                                   style: TextPalette.getBodyText(
                                       Palette.destructive)))
                       ],
@@ -375,7 +400,7 @@ class GenericMatchInfoPast extends StatelessWidget {
             Container(
                 child: Column(
               children: [
-                Text(dayFormat.format(match.dateTime), style: TextPalette.h4)
+                Text(formatDay(match.dateTime, context), style: TextPalette.h4)
               ],
             )),
           ],
@@ -413,7 +438,8 @@ class WeekSeparatorWidget extends StatelessWidget {
   const WeekSeparatorWidget(this.weekDelta);
 
   @override
-  Widget build(BuildContext context) => TextSeparatorWidget(_getWeekDesc(context));
+  Widget build(BuildContext context) =>
+      TextSeparatorWidget(_getWeekDesc(context));
 
   _getWeekDesc(context) {
     if (weekDelta == 0) {

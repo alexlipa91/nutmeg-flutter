@@ -213,7 +213,7 @@ class TeamsWidgetState extends State<TeamsWidget> {
                 Expanded(
                     child: getTeamColumn(
                         context, MainAxisAlignment.start, teams, 0)),
-                VerticalDivider(thickness: 1, color: Palette.greyLight),
+                NutmegDivider(horizontal: false),
                 Expanded(
                     child: getTeamColumn(
                         context, MainAxisAlignment.end, teams, 1)),
@@ -252,7 +252,7 @@ class TeamsWidgetState extends State<TeamsWidget> {
               padding: EdgeInsets.only(top: 24),
               child: Column(
                 children: [
-                  Divider(color: Palette.greyLight, height: 0),
+                  NutmegDivider(horizontal: true),
                   Padding(
                     padding: EdgeInsets.only(top: 8),
                     child: Row(
@@ -300,7 +300,8 @@ class TeamsWidgetState extends State<TeamsWidget> {
           if (isOrganizerView && match.status == MatchStatus.to_rate)
             Padding(
                 padding: EdgeInsets.only(top: 8),
-                child: Divider(color: Palette.greyLight)),
+                child: NutmegDivider(horizontal: true)
+            ),
           if (isOrganizerView && match.status == MatchStatus.to_rate)
             Padding(
                 padding: EdgeInsets.only(top: 8),

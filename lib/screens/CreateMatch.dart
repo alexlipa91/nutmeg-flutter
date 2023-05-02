@@ -18,6 +18,7 @@ import 'package:nutmeg/utils/LocationUtils.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
+import 'package:nutmeg/widgets/Containers.dart';
 import 'package:nutmeg/widgets/PageTemplate.dart';
 import 'package:nutmeg/widgets/Section.dart';
 import 'package:nutmeg/widgets/Skeletons.dart';
@@ -630,7 +631,7 @@ class CreateMatchState extends State<CreateMatch> {
                               height: 1.6)),
                     ]),
                   SizedBox(height: 16),
-                  Divider(),
+                  NutmegDivider(horizontal: true),
                   RichText(
                       textAlign: TextAlign.start,
                       text: TextSpan(

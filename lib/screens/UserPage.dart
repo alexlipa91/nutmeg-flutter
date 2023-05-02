@@ -453,7 +453,7 @@ class UserPageState extends State<UserPage> {
                 )
               ],
             ),
-            Divider(),
+            NutmegDivider(horizontal: true),
             SizedBox(height: 14),
             Row(
               children: [
@@ -465,7 +465,7 @@ class UserPageState extends State<UserPage> {
                 )
               ],
             ),
-            Divider(),
+            NutmegDivider(horizontal: true),
             Row(
               children: [
                 Expanded(
@@ -640,7 +640,7 @@ class LinkInfo extends StatelessWidget {
             SizedBox(height: 20),
             Icon(Icons.arrow_forward_ios_sharp, size: 14, color: Palette.black),
           ]),
-          Divider()
+          NutmegDivider(horizontal: true)
         ]),
       ),
     );

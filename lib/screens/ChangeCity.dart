@@ -4,6 +4,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 import 'package:nutmeg/state/UserState.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
+import 'package:nutmeg/widgets/Containers.dart';
 import 'package:nutmeg/widgets/PageTemplate.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -142,9 +143,7 @@ class ChangeCityState extends State<ChangeCity> {
                   ),
                 ),
                 SizedBox(height: 10),
-                Divider(
-                  color: Palette.greyLight,
-                ),
+                NutmegDivider(horizontal: true),
                 SizedBox(height: 10),
                 Text(
                   AppLocalizations.of(context)!.currentLocationInfo,

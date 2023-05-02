@@ -111,7 +111,6 @@ class Match {
             ? Payout.fromJson(jsonInput["payout"])
             : null {
     sportCenterSubLocation = jsonInput['sportCenterSubLocation'];
-
     if (jsonInput.containsKey("cancelledAt") &&
         jsonInput["cancelledAt"] != null)
       cancelledAt = DateTime.parse(jsonInput['cancelledAt']).toLocal();
