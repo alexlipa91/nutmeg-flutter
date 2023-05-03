@@ -1,5 +1,16 @@
 {
     "topHeader": "Encontre jogos de futebol perto de",
     "courtType": "Tipo {t}",
-    "matchOnStatus": "Partida confirmada"
+    "matchOnStatus": "Partida confirmada",
+    "numPlayersOfTheMatchBoxTitle": "Craque do jogo",
+     "accountTitle": "Perfil",
+     "myMatches": "Minhas partidas organizadas",
+     "fullStatus": "Cheio",
+     "matchOnStatus": "Confirmado",
+     "courtNumber": "Número do campo / quadra {x}",
+     "courtSectionTitle": "Campo / Quadra",
+     "courtNumberLabel": "Número do campo/quadra (opcional)",
+     "createNewCourtButtonText": "CRIAR NOVO CAMPO",
+     "averageScoreBoxTitle": "Pontuação média",
+     "numMatchesLostBoxTitle": "Partidas perdidas"
 }
