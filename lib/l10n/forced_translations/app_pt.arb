@@ -1,4 +1,5 @@
 {
     "topHeader": "Encontre jogos de futebol perto de",
-    "courtType": "Tipo {t}"
+    "courtType": "Tipo {t}",
+    "matchOnStatus": "Partida confirmada"
 }
