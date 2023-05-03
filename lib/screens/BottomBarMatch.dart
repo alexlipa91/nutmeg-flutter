@@ -136,17 +136,6 @@ class GenericBottomBar extends StatelessWidget {
   }
 }
 
-class MatchCanceledBottomBar extends StatelessWidget {
-
-  final String matchId;
-
-  const MatchCanceledBottomBar({Key? key, required this.matchId}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) =>
-      BottomBarMatch(matchId: matchId, text: "Cancelled",);
-}
-
 class JoinMatchBottomBar extends StatelessWidget {
 
   final String matchId;
