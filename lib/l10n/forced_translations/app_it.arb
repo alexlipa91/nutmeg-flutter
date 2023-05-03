@@ -13,5 +13,21 @@
 
     "courtType": "Tipo di campo: {t}",
 
-    "courtNumber": "Campo numero {x}"
+    "courtNumber": "Campo numero {x}",
+
+    "manageButton": "GESTISCI",
+
+    "courtSectionTitle": "Campo",
+    "startTimeInputLabel": "Dalle ore",
+    "endTimeInputLabel": "Alle ore",
+    "courtNumberLabel": "Numero del campo (facoltativo)",
+    "youWillGetLabel": "Riceverai",
+    "usersWillPayText": "(inclusa Nutmeg fee)",
+    "policiesSectionTitle": "Cancellazione",
+    "createButtonText": "CREA PARTITA",
+    "requiredError": "Obbligatorio",
+    "popularCourtsTitle": "Campi popolari",
+    "yourCourtsTitle": "I tuoi campi",
+    "createNewCourtButtonText": "CREA NUOVO CAMPO",
+    "youWantToLeaveTitle": "Sei sicuro di voler uscire?"
 }

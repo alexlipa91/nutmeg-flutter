@@ -108,6 +108,7 @@ class CreateMatchState extends State<CreateMatch> {
   bool organiserWithFee = false;
 
   Future<void> refreshState() async {
+    print("refresh state");
     var res = await Future.wait([
       context.read<LoadOnceState>().fetchSavedSportCenters(),
       context.read<UserState>().fetchLoggedUserSportCenters(),
@@ -125,6 +126,7 @@ class CreateMatchState extends State<CreateMatch> {
   @override
   void initState() {
     super.initState();
+    refreshState();
   }
 
   // I cannot call context.watch in initState or it breaks
@@ -195,8 +197,6 @@ class CreateMatchState extends State<CreateMatch> {
         () => unfocusIfNoValue(datefocusNode, dateEditingController));
     startTimefocusNode.addListener(
         () => unfocusIfNoValue(startTimefocusNode, startTimeEditingController));
-
-    refreshState();
   }
 
   @override
@@ -641,7 +641,7 @@ class CreateMatchState extends State<CreateMatch> {
                                   .paymentExplanationText,
                               style: TextPalette.bodyText),
                           TextSpan(
-                              text: "Stripe.",
+                              text: " Stripe.",
                               recognizer: TapGestureRecognizer()
                                 ..onTap = () async {
                                   final url = 'https://stripe.com';

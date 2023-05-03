@@ -81,6 +81,8 @@
     "joinThisMatchTitle": "Join this match",
     "joinMatchInfo": "If you leave the match you will get a refund",
     "leaveThisMatchTitle": "Leave this match?",
+    "leaveMatchRefundTitle": "Refund",
+    "leaveMatchCreditsRefundTitle": "Credits Refund",
     "leaveMatchInfo": "We will refund you on the payment method you used to pay.",
     "leaveMatchServiceFeeInfo": "The service fee of {f} will not be refunded",
     "@leaveMatchServiceFeeInfo": {
@@ -152,7 +154,7 @@
     "youWillGetLabel": "You will get",
     "usersWillPayLabel": "Users will pay",
     "usersWillPayText": "(including Nutmeg fee)",
-    "paymentExplanationText": "Nutmeg releases the money 24 hours after the match. You will get paid in 3 to 5 business days after that through ",
+    "paymentExplanationText": "Nutmeg releases the money 24 hours after the match. You will get paid in 3 to 5 business days after that through",
     "policiesSectionTitle": "Policies",
     "automaticCancellationInfo": "Automatically cancel the match if minimum amount of players is not reached",
     "automaticCancellationExplanation": "We will cancel the match if at least {x} players haven't joined {y} hours before the kick-off of the match.\nIf players have paid through Nutmeg, they will get a full refund",

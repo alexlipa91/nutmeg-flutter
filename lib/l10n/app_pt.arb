@@ -40,6 +40,8 @@
     "joinThisMatchTitle": "Junte-se a esta partida",
     "joinMatchInfo": "Se você sair da partida, receberá um reembolso",
     "leaveThisMatchTitle": "Sair desta partida?",
+    "leaveMatchRefundTitle": "Reembolso",
+    "leaveMatchCreditsRefundTitle": "Reembolso de Créditos",
     "leaveMatchInfo": "Nós reembolsaremos você no método de pagamento que você usou para pagar.",
     "leaveMatchServiceFeeInfo": "A taxa de serviço de {f} não será reembolsada",
     "leaveMatchNoMoneyInfo": "Por favor, confirme se você deseja ser removido da lista de jogadores",

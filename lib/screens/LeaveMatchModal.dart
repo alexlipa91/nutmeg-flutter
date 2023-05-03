@@ -47,8 +47,8 @@ class LeaveButton extends StatelessWidget {
                         children: [
                           Text(
                               ConfigsUtils.removeCreditsFunctionality()
-                                  ? "Refund"
-                                  : "Credits refund",
+                                  ? AppLocalizations.of(context)!.leaveMatchRefundTitle
+                                  : AppLocalizations.of(context)!.leaveMatchCreditsRefundTitle,
                               style: TextPalette.h3),
                           Expanded(
                               child: Text(
