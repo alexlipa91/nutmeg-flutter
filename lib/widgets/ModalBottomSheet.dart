@@ -11,6 +11,7 @@ class ModalBottomSheet {
     var returnValue;
     if (MediaQuery.of(context!).size.width <= 700) {
       returnValue = await showModalBottomSheet<T?>(
+          useSafeArea: true,
           isScrollControlled: true,
           backgroundColor: Palette.white,
           shape: RoundedRectangleBorder(

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_performance/firebase_performance.dart';
 import 'package:http/http.dart' as http;
+import 'package:nutmeg/controller/LaunchController.dart';
 
 
 class CloudFunctionsClient {
@@ -22,7 +23,9 @@ class CloudFunctionsClient {
     return {
       'Content-Type': 'application/json; charset=UTF-8',
       if (token != null)
-        'Authorization': 'Bearer ' + token
+        'Authorization': 'Bearer ' + token,
+      if (LaunchController.appVersion != null)
+        'app-version': LaunchController.appVersion
     };
   }
 

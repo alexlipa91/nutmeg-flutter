@@ -13,6 +13,9 @@
 
     "courtType": "Tipo di campo: {t}",
 
+    "noMatchesHere": "Nessuna partita",
+    "browseOrCreateText": "Cerca altre partite o organizza una tua partita",
+
     "courtNumber": "Campo numero {x}",
 
     "manageButton": "GESTISCI",

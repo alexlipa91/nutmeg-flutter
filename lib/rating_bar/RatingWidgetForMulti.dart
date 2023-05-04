@@ -26,8 +26,9 @@ class RatingBarForMulti extends StatelessWidget {
         size: 36.0,
         isReadOnly: false,
         color: Palette.accent,
-        defaultIconData: Icons.star,
+        defaultIconData: Icons.star_outline,
         borderColor: Palette.greyLight,
+        filledIconData: Icons.star_outlined,
         spacing: 8.0, onRated: (double rating) {  },
     );
   }
@@ -217,10 +218,11 @@ class _SmoothStarRatingState extends State<SmoothStarRating> {
           newRating = 0.0;
         }
         // newRating = normalizeRating(newRating);
-        context.read<RatingPlayersState>().setCurrentScore(newRating);
+        context.read<RatingPlayersMultiState>().setScore(this.i, newRating.toInt());
       },
       onTapUp: (e) {
-        widget.onRated(context.read<RatingPlayersState>().currentScore);
+        widget.onRated(context.read<RatingPlayersMultiState>()
+            .getCurrentScore(this.i).toDouble());
       },
       // onHorizontalDragUpdate: (dragDetails) {
       //   RenderBox box = context.findRenderObject();

@@ -40,7 +40,8 @@ class RateButton extends StatelessWidget {
 class RatePlayerBottomModal extends StatelessWidget {
   static bool multiPage = false;
 
-  static Future<void> rateAction(BuildContext context, String matchId) async {
+  static Future<bool?> rateAction(BuildContext context, String matchId) async {
+    var completed;
     if (multiPage) {
       var toRate = context
           .read<MatchesState>()
@@ -48,7 +49,7 @@ class RatePlayerBottomModal extends StatelessWidget {
 
       toRate.forEach((e) => context.read<UserState>().fetchUserDetails(e));
 
-      var completed = await ModalBottomSheet.showNutmegModalBottomSheet(
+      completed = await ModalBottomSheet.showNutmegModalBottomSheet(
           context,
           MultiProvider(
             providers: [
@@ -57,11 +58,11 @@ class RatePlayerBottomModal extends StatelessWidget {
             ],
             child: RatePlayerBottomModal(matchId),
           ));
-      if (completed != null && (completed as bool) == true)
-        await FeedbackBottomModal.feedbackAction(context);
+      // if (completed != null && (completed as bool) == true)
+      //   await FeedbackBottomModal.feedbackAction(context);
       // don't refresh the status here because the last rating might have not yet propagated; instead leave RatePlayerBottomModal modify it if necessary
     } else {
-      await ModalBottomSheet.showNutmegModalBottomSheet(
+      completed = await ModalBottomSheet.showNutmegModalBottomSheet(
           context,
           MultiProvider(providers: [
             ChangeNotifierProvider(
@@ -71,6 +72,7 @@ class RatePlayerBottomModal extends StatelessWidget {
                     .getToRate(context.read<UserState>().currentUserId!))),
           ], child: RatePlayerSingleSheet(matchId: matchId)));
     }
+    return completed;
   }
 
   final String matchId;
@@ -230,7 +232,7 @@ class RatePlayerSingleSheet extends StatelessWidget {
                     SizedBox(
                       height: 18,
                     ))),
-            SizedBox(height: 16),
+            SizedBox(height: 24),
             Row(
               children: [
                 Expanded(
@@ -242,7 +244,7 @@ class RatePlayerSingleSheet extends StatelessWidget {
                         context.read<RatingPlayersMultiState>().getScored());
                     await context.read<MatchesState>().fetchStillToVote(matchId,
                         context.read<UserState>().currentUserId!);
-                    Navigator.of(context).pop();
+                    Navigator.of(context).pop(true);
                   }, Primary()),
                 )
               ],

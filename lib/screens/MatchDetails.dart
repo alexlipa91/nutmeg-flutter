@@ -28,6 +28,7 @@ import 'package:nutmeg/widgets/Containers.dart';
 import 'package:nutmeg/widgets/PageTemplate.dart';
 import 'package:readmore/readmore.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../state/MatchesState.dart';
 import '../state/UserState.dart';
@@ -59,6 +60,26 @@ class MatchDetails extends StatefulWidget {
 class MatchDetailsState extends State<MatchDetails> {
   static var dayDateFormat = DateFormat("EEEE, MMM dd");
 
+  Future<void> showRatingModalIfNeverSeen(
+      Match match, UserDetails? loggedUser) async {
+    bool? shown = (await SharedPreferences.getInstance())
+        .getBool("${match.documentId}-rate-action-shown") ?? false;
+    if (!shown) {
+      if (match.status == MatchStatus.to_rate && match.isUserGoing(loggedUser)) {
+        var stillToVote = context
+            .read<MatchesState>()
+            .getStillToVote(widget.matchId, loggedUser!.documentId);
+
+        if (stillToVote != null && stillToVote.isNotEmpty) {
+          await RatePlayerBottomModal.rateAction(context, widget.matchId);
+          setState(() {});
+        }
+      }
+      (await SharedPreferences.getInstance())
+          .setBool("${match.documentId}-rate-action-shown", true);
+    }
+  }
+
   Future<void> myInitState() async {
     print("MatchDetails init state");
     // check if payment outcome
@@ -84,17 +105,7 @@ class MatchDetailsState extends State<MatchDetails> {
 
     // show rating modal
     var loggedUser = context.read<UserState>().getLoggedUserDetails();
-
-    if (match.status == MatchStatus.to_rate && match.isUserGoing(loggedUser)) {
-      var stillToVote = context
-          .read<MatchesState>()
-          .getStillToVote(widget.matchId, loggedUser!.documentId);
-
-      if (stillToVote != null && stillToVote.isNotEmpty) {
-        await RatePlayerBottomModal.rateAction(context, widget.matchId);
-        setState(() {});
-      }
-    }
+    await showRatingModalIfNeverSeen(match, loggedUser);
 
     if (loggedUser != null &&
         (ratings?.potms ?? []).contains(loggedUser.documentId) &&
@@ -127,6 +138,8 @@ class MatchDetailsState extends State<MatchDetails> {
 
   Future<void> refreshState() async {
     Match match = await refreshMatch();
+    var loggedUser = context.read<UserState>().getLoggedUserDetails();
+    await showRatingModalIfNeverSeen(match, loggedUser);
     await refreshUsers(match);
   }
 
@@ -450,10 +463,10 @@ class MatchInfo extends StatelessWidget {
   MatchInfo(this.match, this.sportCenter);
 
   static String formatDay(DateTime d, BuildContext context) {
-    var dayDateFormatPastYear = DateFormat("EEEE, MMM dd yyyy",
-        getLanguageLocale(context).languageCode);
-    var dayDateFormat = DateFormat(
-        "EEEE, MMM dd", getLanguageLocale(context).languageCode);
+    var dayDateFormatPastYear = DateFormat(
+        "EEEE, MMM dd yyyy", getLanguageLocale(context).languageCode);
+    var dayDateFormat =
+        DateFormat("EEEE, MMM dd", getLanguageLocale(context).languageCode);
     return DateTime.now().year == d.year
         ? dayDateFormat.format(d)
         : dayDateFormatPastYear.format(d);
@@ -935,8 +948,8 @@ class Stats extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var child;
-    var dayDateFormat = DateFormat("EEEE, MMM dd HH:mm",
-        getLanguageLocale(context).languageCode);
+    var dayDateFormat = DateFormat(
+        "EEEE, MMM dd HH:mm", getLanguageLocale(context).languageCode);
 
     if (match.status == MatchStatus.to_rate) {
       child = Container(

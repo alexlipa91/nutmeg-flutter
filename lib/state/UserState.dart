@@ -78,6 +78,10 @@ class UserState extends ChangeNotifier {
   }
 
   Future<UserDetails?> fetchUserDetails(String uid) async {
+    if (_usersDetails.containsKey(uid)) {
+      return _usersDetails[uid];
+    }
+
     var resp = await CloudFunctionsClient().get("users/$uid");
 
     var ud = (resp == null) ? null : UserDetails.fromJson(resp, uid);
@@ -145,7 +149,6 @@ class UserState extends ChangeNotifier {
     if (kIsWeb) {
       userCredentials = await auth.signInWithPopup(GoogleAuthProvider());
     } else {
-      await googleSignIn.disconnect();
       final GoogleSignInAccount? googleSignInAccount = await googleSignIn.signIn();
 
       final GoogleSignInAuthentication? googleSignInAuthentication =
