@@ -1,5 +1,26 @@
 {
     "topHeader": "Encontre jogos de futebol perto de",
     "courtType": "Tipo {t}",
-    "matchOnStatus": "Partida confirmada"
+    "matchOnStatus": "Partida confirmada",
+    "numPlayersOfTheMatchBoxTitle": "Craque do jogo",
+     "accountTitle": "Perfil",
+     "myMatches": "Organizadas por mim",
+     "upcoming": "Próximas",
+     "going": "Vou",
+     "past": "Fui",
+     "joinAction": "Participar",
+     "joinThisMatchTitle": "Participar da partida",
+     "noMatchesHere": "Nenhum jogo aqui",
+     "fullStatus": "Cheio",
+     "matchOnStatus": "Confirmado",
+     "courtNumber": "Número do campo / quadra {x}",
+     "courtSectionTitle": "Campo / Quadra",
+     "courtNumberLabel": "Número do campo / quadra (opcional)",
+     "createNewCourtButtonText": "CRIAR NOVO CAMPO / QUADRA",
+     "averageScoreBoxTitle": "Pontuação média",
+     "numMatchesLostBoxTitle": "Partidas perdidas",
+     "currentLocationLabel": "USAR MINHA LOCALIZAÇÃO",
+     "searchLocationTitle": "Procurar localização",
+     "searchLocationInputFieldLabel": "Procurar",
+     "usersWillPayText": "(incluindo taxa de Nutmeg)"
 }
