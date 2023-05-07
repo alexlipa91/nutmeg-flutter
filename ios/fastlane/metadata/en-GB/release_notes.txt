@@ -1,1 +1,1 @@
-Fix ratings modal and team arrangement widget
+Fix safe area issue in bottom sheet
