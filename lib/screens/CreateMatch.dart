@@ -81,31 +81,28 @@ class CreateMatchState extends State<CreateMatch> {
 
   SportCenter? sportCenter;
   bool isSavedSportCenter = false;
+  bool isTest = false;
+  bool paymentsPossible = true;
+  bool managePayments = true;
+  bool withAutomaticCancellation = false;
+  int repeatsForWeeks = 1;
+  bool organiserWithFee = false;
 
   final _formKey = GlobalKey<FormState>();
-
-  late TextEditingController dateEditingController;
-  late TextEditingController startTimeEditingController;
-  late TextEditingController endTimeEditingController;
-  late TextEditingController sportCenterEditingController;
-  late TextEditingController repeatWeeklyEditingController;
-  late TextEditingController courtNumberEditingController;
-  late TextEditingController priceController;
-  late RangeValues numberOfPeopleRangeValues;
-  late bool isTest;
-  late bool paymentsPossible;
-  late bool managePayments;
-  late bool withAutomaticCancellation;
-  late int repeatsForWeeks;
-  late TextEditingController cancelTimeEditingController;
-
   final regexPrice = new RegExp("\\d+(\\.\\d{1,2})?");
 
-  late FocusNode sportCenterfocusNode;
-  late FocusNode datefocusNode;
-  late FocusNode startTimefocusNode;
-
-  bool organiserWithFee = false;
+  TextEditingController dateEditingController = TextEditingController();
+  TextEditingController startTimeEditingController = TextEditingController();
+  TextEditingController endTimeEditingController = TextEditingController();
+  TextEditingController sportCenterEditingController = TextEditingController();
+  TextEditingController repeatWeeklyEditingController = TextEditingController();
+  TextEditingController courtNumberEditingController = TextEditingController();
+  TextEditingController priceController = TextEditingController();
+  RangeValues numberOfPeopleRangeValues = RangeValues(8, 10);
+  TextEditingController cancelTimeEditingController = TextEditingController();
+  FocusNode sportCenterfocusNode = FocusNode();
+  FocusNode datefocusNode = FocusNode();
+  FocusNode startTimefocusNode = FocusNode();
 
   Future<void> refreshState() async {
     print("refresh state");
@@ -126,69 +123,6 @@ class CreateMatchState extends State<CreateMatch> {
   @override
   void initState() {
     super.initState();
-    refreshState();
-  }
-
-  // I cannot call context.watch in initState or it breaks
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    var dateFormat = DateFormat(
-        "dd-MM-yyyy", getLanguageLocale(context).countryCode);
-    var noRepeat = AppLocalizations.of(context)!.doesNotRepeatLabel;
-
-    if (widget.existingMatch == null) {
-      sportCenter = null;
-      dateEditingController = TextEditingController();
-      startTimeEditingController = TextEditingController();
-      endTimeEditingController = TextEditingController();
-      sportCenterEditingController = TextEditingController();
-      repeatWeeklyEditingController = TextEditingController(text: noRepeat);
-      courtNumberEditingController = TextEditingController();
-      priceController = TextEditingController();
-      numberOfPeopleRangeValues = RangeValues(8, 10);
-      isTest = false;
-      withAutomaticCancellation = false;
-      repeatsForWeeks = 1;
-      cancelTimeEditingController = TextEditingController(text: "24");
-      paymentsPossible = true;
-      managePayments = true;
-    } else {
-      sportCenter = widget.existingMatch!.sportCenter;
-      var localizedDateTime =
-          widget.existingMatch!.getLocalizedTime(sportCenter!.timezoneId);
-
-      dateEditingController =
-          TextEditingController(text: dateFormat.format(localizedDateTime));
-      startTimeEditingController = TextEditingController(
-          text: getFormattedTime(TimeOfDay.fromDateTime(localizedDateTime)));
-      endTimeEditingController = TextEditingController(
-          text: getFormattedTime(TimeOfDay.fromDateTime(
-              localizedDateTime.add(widget.existingMatch!.duration))));
-      sportCenterEditingController =
-          TextEditingController(text: sportCenter!.name);
-      repeatWeeklyEditingController = TextEditingController(text: noRepeat);
-      courtNumberEditingController = TextEditingController(
-          text: widget.existingMatch!.sportCenterSubLocation);
-      if (widget.existingMatch!.price != null)
-        priceController = TextEditingController(
-            text: (widget.existingMatch!.price!.basePrice / 100).toString());
-      numberOfPeopleRangeValues = RangeValues(
-          widget.existingMatch!.minPlayers.toDouble(),
-          widget.existingMatch!.maxPlayers.toDouble());
-      isTest = widget.existingMatch!.isTest;
-      withAutomaticCancellation = widget.existingMatch!.cancelBefore != null;
-      repeatsForWeeks = 1;
-      cancelTimeEditingController = TextEditingController(
-          text: widget.existingMatch!.cancelBefore?.inHours.toString());
-      managePayments = widget.existingMatch!.price != null;
-      paymentsPossible =
-          !blacklistedCountriesForPayments.contains(sportCenter!.country);
-    }
-
-    sportCenterfocusNode = FocusNode();
-    datefocusNode = FocusNode();
-    startTimefocusNode = FocusNode();
 
     // avoid focus when no data
     sportCenterfocusNode.addListener(() =>
@@ -197,15 +131,59 @@ class CreateMatchState extends State<CreateMatch> {
         () => unfocusIfNoValue(datefocusNode, dateEditingController));
     startTimefocusNode.addListener(
         () => unfocusIfNoValue(startTimefocusNode, startTimeEditingController));
+
+    if (widget.existingMatch != null) {
+      sportCenter = widget.existingMatch!.sportCenter;
+      isTest = widget.existingMatch!.isTest;
+      withAutomaticCancellation = widget.existingMatch!.cancelBefore != null;
+      cancelTimeEditingController.text =
+          widget.existingMatch!.cancelBefore?.inHours.toString() ?? "";
+      managePayments = widget.existingMatch!.price != null;
+      paymentsPossible =
+          !blacklistedCountriesForPayments.contains(sportCenter!.country);
+    }
+
+    refreshState();
+  }
+
+  void initControllers(BuildContext context) {
+    var dateFormat =
+        DateFormat("dd-MM-yyyy", getLanguageLocaleWatch(context).countryCode);
+
+    if (widget.existingMatch != null) {
+      dateEditingController = TextEditingController(
+          text: dateFormat.format(
+              widget.existingMatch!.getLocalizedTime(sportCenter!.timezoneId)));
+      startTimeEditingController = TextEditingController(
+          text: getFormattedTime(TimeOfDay.fromDateTime(widget.existingMatch!
+              .getLocalizedTime(sportCenter!.timezoneId))));
+      endTimeEditingController = TextEditingController(
+          text: getFormattedTime(TimeOfDay.fromDateTime(widget.existingMatch!
+              .getLocalizedTime(sportCenter!.timezoneId)
+              .add(widget.existingMatch!.duration))));
+      sportCenterEditingController =
+          TextEditingController(text: sportCenter!.name);
+      repeatWeeklyEditingController = TextEditingController(
+          text: AppLocalizations.of(context)!.doesNotRepeatLabel);
+      courtNumberEditingController = TextEditingController(
+          text: widget.existingMatch!.sportCenterSubLocation);
+      if (widget.existingMatch!.price != null)
+        priceController = TextEditingController(
+            text: (widget.existingMatch!.price!.basePrice / 100).toString());
+      numberOfPeopleRangeValues = RangeValues(
+          widget.existingMatch!.minPlayers.toDouble(),
+          widget.existingMatch!.maxPlayers.toDouble());
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    initControllers(context);
     var requiredError = AppLocalizations.of(context)!.requiredError;
     var organiserId =
         context.read<UserState>().getLoggedUserDetails()!.documentId;
-    var dateFormat = DateFormat(
-        "dd-MM-yyyy", getLanguageLocale(context).countryCode);
+    var dateFormat =
+        DateFormat("dd-MM-yyyy", getLanguageLocaleWatch(context).countryCode);
 
     var noRepeat = AppLocalizations.of(context)!.doesNotRepeatLabel;
 
@@ -414,7 +392,6 @@ class CreateMatchState extends State<CreateMatch> {
                       sportCenterEditingController.text = sp.getName();
                       setState(() {
                         sportCenter = sp;
-
                         paymentsPossible = !blacklistedCountriesForPayments
                             .contains(sp.country.toUpperCase());
                       });

@@ -47,7 +47,7 @@ class RatePlayerBottomModal extends StatelessWidget {
           .read<MatchesState>()
           .getStillToVote(matchId, context.read<UserState>().currentUserId!)!;
 
-      toRate.forEach((e) => context.read<UserState>().fetchUserDetails(e));
+      toRate.forEach((e) => context.read<UserState>().getOrFetch(e));
 
       completed = await ModalBottomSheet.showNutmegModalBottomSheet(
           context,

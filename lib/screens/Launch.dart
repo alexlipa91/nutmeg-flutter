@@ -153,7 +153,7 @@ void main() async {
               key: navigatorKey,
               localizationsDelegates: AppLocalizations.localizationsDelegates,
               supportedLocales: AppLocalizations.supportedLocales,
-              locale: getLanguageLocale(context),
+              locale: getLanguageLocaleWatch(context),
               scaffoldMessengerKey: scaffoldMessengerKey,
               routeInformationParser: appRouter.routeInformationParser,
               routerDelegate: appRouter.routerDelegate,

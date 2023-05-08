@@ -133,7 +133,7 @@ class MatchDetailsState extends State<MatchDetails> {
     if (match.organizerId != null) {
       users.add(match.organizerId);
     }
-    users.forEach((u) => context.read<UserState>().fetchUserDetails(u));
+    users.forEach((u) => context.read<UserState>().getOrFetch(u));
   }
 
   Future<void> refreshState() async {
@@ -464,9 +464,9 @@ class MatchInfo extends StatelessWidget {
 
   static String formatDay(DateTime d, BuildContext context) {
     var dayDateFormatPastYear = DateFormat(
-        "EEEE, MMM dd yyyy", getLanguageLocale(context).languageCode);
+        "EEEE, MMM dd yyyy", getLanguageLocaleWatch(context).languageCode);
     var dayDateFormat =
-        DateFormat("EEEE, MMM dd", getLanguageLocale(context).languageCode);
+        DateFormat("EEEE, MMM dd", getLanguageLocaleWatch(context).languageCode);
     return DateTime.now().year == d.year
         ? dayDateFormat.format(d)
         : dayDateFormatPastYear.format(d);
@@ -475,7 +475,7 @@ class MatchInfo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var hourDateFormat =
-        DateFormat("HH:mm", getLanguageLocale(context).languageCode);
+        DateFormat("HH:mm", getLanguageLocaleWatch(context).languageCode);
 
     var child;
 
@@ -949,7 +949,7 @@ class Stats extends StatelessWidget {
   Widget build(BuildContext context) {
     var child;
     var dayDateFormat = DateFormat(
-        "EEEE, MMM dd HH:mm", getLanguageLocale(context).languageCode);
+        "EEEE, MMM dd HH:mm", getLanguageLocaleWatch(context).languageCode);
 
     if (match.status == MatchStatus.to_rate) {
       child = Container(

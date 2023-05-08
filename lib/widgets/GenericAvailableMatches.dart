@@ -183,9 +183,9 @@ class GenericMatchInfo extends StatelessWidget {
 
   static String formatDate(DateTime d, BuildContext context) {
     var dayDateFormatPastYear = DateFormat("EEE, MMM dd yyyy HH:mm",
-        getLanguageLocale(context).languageCode);
+        getLanguageLocaleWatch(context).languageCode);
     var dayDateFormat = DateFormat("EEE, MMM dd HH:mm",
-        getLanguageLocale(context).languageCode);
+        getLanguageLocaleWatch(context).languageCode);
     return DateTime.now().year == d.year
         ? dayDateFormat.format(d)
         : dayDateFormatPastYear.format(d);
@@ -336,9 +336,9 @@ class GenericMatchInfo extends StatelessWidget {
 class GenericMatchInfoPast extends StatelessWidget {
   static String formatDay(DateTime d, BuildContext context) {
     var dayDateFormatPastYear = DateFormat(
-        "dd MMM yyyy", getLanguageLocale(context).languageCode);
+        "dd MMM yyyy", getLanguageLocaleWatch(context).languageCode);
     var dayDateFormat = DateFormat(
-        "dd MMM", getLanguageLocale(context).languageCode);
+        "dd MMM", getLanguageLocaleWatch(context).languageCode);
     return DateTime.now().year == d.year
         ? dayDateFormat.format(d)
         : dayDateFormatPastYear.format(d);

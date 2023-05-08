@@ -77,11 +77,12 @@ class UserState extends ChangeNotifier {
     return fetchUserDetails(u.uid);
   }
 
-  Future<UserDetails?> fetchUserDetails(String uid) async {
-    if (_usersDetails.containsKey(uid)) {
-      return _usersDetails[uid];
-    }
+  Future<UserDetails> getOrFetch(String uid) async {
+    var u = _usersDetails[uid] ?? (await fetchUserDetails(uid));
+    return u!;
+  }
 
+  Future<UserDetails?> fetchUserDetails(String uid) async {
     var resp = await CloudFunctionsClient().get("users/$uid");
 
     var ud = (resp == null) ? null : UserDetails.fromJson(resp, uid);

@@ -44,10 +44,10 @@ class PredictionResult {
 
 // this needs to happen server side because placesApi doesn't work with CORS
 Future<List<PredictionResult>> getPlacePrediction(
-    String query, String userCountry) async {
+    String query) async {
   Map<String, dynamic> data = await CloudFunctionsClient().get(
           "locations/predictions",
-          args: {"query": query, 'country': userCountry}) ??
+          args: {"query": query}) ??
       {};
 
   List predictions = data["predictions"] ?? [];
@@ -128,8 +128,14 @@ Future<Position?> determinePosition() async {
 
 var blacklistedCountriesForPayments = ["CH", "BR"];
 
-Locale getLanguageLocale(BuildContext context) {
+Locale getLanguageLocaleWatch(BuildContext context) {
   var userSpecific = context.watch<UserState>().getLoggedUserDetails()?.language;
   if (userSpecific != null) return Locale(userSpecific);
   return context.watch<LoadOnceState>().locale;
+}
+
+Locale getLanguageLocaleRead(BuildContext context) {
+  var userSpecific = context.read<UserState>().getLoggedUserDetails()?.language;
+  if (userSpecific != null) return Locale(userSpecific);
+  return context.read<LoadOnceState>().locale;
 }
