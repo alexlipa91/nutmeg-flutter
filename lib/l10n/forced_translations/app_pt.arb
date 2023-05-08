@@ -23,5 +23,9 @@
      "searchLocationTitle": "Procurar localização",
      "searchLocationInputFieldLabel": "Procurar",
      "usersWillPayText": "(incluindo taxa de Nutmeg)",
-     "noMatchesHere": "Nenhuma partida aqui"
+     "noMatchesHere": "Nenhuma partida aqui",
+     "createNewMatchActionText": "CRIAR NOVA PARTIDA",
+     "newMatchTitle": "Nova partida",
+     "editMatchTitle": "Editar partida",
+     "currentLocationInfo": "Sua localização nos ajuda a melhorar sua experiência com recomendações aproximadas de partidas.",
 }
