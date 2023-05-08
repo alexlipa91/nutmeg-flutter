@@ -79,6 +79,7 @@ class CreateMatchState extends State<CreateMatch> {
     );
   }
 
+  // current match state
   SportCenter? sportCenter;
   bool isSavedSportCenter = false;
   bool isTest = false;
@@ -132,6 +133,7 @@ class CreateMatchState extends State<CreateMatch> {
     startTimefocusNode.addListener(
         () => unfocusIfNoValue(startTimefocusNode, startTimeEditingController));
 
+    // nothing that context.watch should be here
     if (widget.existingMatch != null) {
       sportCenter = widget.existingMatch!.sportCenter;
       isTest = widget.existingMatch!.isTest;
@@ -141,44 +143,41 @@ class CreateMatchState extends State<CreateMatch> {
       managePayments = widget.existingMatch!.price != null;
       paymentsPossible =
           !blacklistedCountriesForPayments.contains(sportCenter!.country);
+
+      var dateFormat =
+      DateFormat("dd-MM-yyyy", getLanguageLocaleRead(context).countryCode);
+
+      dateEditingController = TextEditingController(
+            text: dateFormat.format(
+                widget.existingMatch!.getLocalizedTime(sportCenter!.timezoneId)));
+      startTimeEditingController = TextEditingController(
+            text: getFormattedTime(TimeOfDay.fromDateTime(widget.existingMatch!
+                .getLocalizedTime(sportCenter!.timezoneId))));
+      endTimeEditingController = TextEditingController(
+            text: getFormattedTime(TimeOfDay.fromDateTime(widget.existingMatch!
+                .getLocalizedTime(sportCenter!.timezoneId)
+                .add(widget.existingMatch!.duration))));
+      sportCenterEditingController =
+          TextEditingController(text: sportCenter!.name);
+      courtNumberEditingController = TextEditingController(
+            text: widget.existingMatch!.sportCenterSubLocation);
+      if (widget.existingMatch!.price != null)
+        priceController = TextEditingController(
+              text: (widget.existingMatch!.price!.basePrice / 100).toString());
+      numberOfPeopleRangeValues = RangeValues(
+            widget.existingMatch!.minPlayers.toDouble(),
+            widget.existingMatch!.maxPlayers.toDouble());
     }
 
     refreshState();
   }
 
-  void initControllers(BuildContext context) {
-    var dateFormat =
-        DateFormat("dd-MM-yyyy", getLanguageLocaleWatch(context).countryCode);
-
-    if (widget.existingMatch != null) {
-      dateEditingController = TextEditingController(
-          text: dateFormat.format(
-              widget.existingMatch!.getLocalizedTime(sportCenter!.timezoneId)));
-      startTimeEditingController = TextEditingController(
-          text: getFormattedTime(TimeOfDay.fromDateTime(widget.existingMatch!
-              .getLocalizedTime(sportCenter!.timezoneId))));
-      endTimeEditingController = TextEditingController(
-          text: getFormattedTime(TimeOfDay.fromDateTime(widget.existingMatch!
-              .getLocalizedTime(sportCenter!.timezoneId)
-              .add(widget.existingMatch!.duration))));
-      sportCenterEditingController =
-          TextEditingController(text: sportCenter!.name);
-      repeatWeeklyEditingController = TextEditingController(
-          text: AppLocalizations.of(context)!.doesNotRepeatLabel);
-      courtNumberEditingController = TextEditingController(
-          text: widget.existingMatch!.sportCenterSubLocation);
-      if (widget.existingMatch!.price != null)
-        priceController = TextEditingController(
-            text: (widget.existingMatch!.price!.basePrice / 100).toString());
-      numberOfPeopleRangeValues = RangeValues(
-          widget.existingMatch!.minPlayers.toDouble(),
-          widget.existingMatch!.maxPlayers.toDouble());
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    initControllers(context);
+    if (repeatsForWeeks == 1) {
+      repeatWeeklyEditingController.text = AppLocalizations.of(context)!.doesNotRepeatLabel;
+    }
+
     var requiredError = AppLocalizations.of(context)!.requiredError;
     var organiserId =
         context.read<UserState>().getLoggedUserDetails()!.documentId;
