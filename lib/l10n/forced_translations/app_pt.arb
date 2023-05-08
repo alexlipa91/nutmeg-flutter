@@ -22,5 +22,6 @@
      "currentLocationLabel": "USAR MINHA LOCALIZAÇÃO",
      "searchLocationTitle": "Procurar localização",
      "searchLocationInputFieldLabel": "Procurar",
-     "usersWillPayText": "(incluindo taxa de Nutmeg)"
+     "usersWillPayText": "(incluindo taxa de Nutmeg)",
+     "noMatchesHere": "Nenhuma partida aqui"
 }
