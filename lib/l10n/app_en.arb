@@ -187,7 +187,19 @@
 
     "matchStatsTitle": "Match Stats",
 
-    "createNewCourtButtonText": "CREATE NEW COURT",
+    "createNewCourtText": "Create new Court",
+    "courtInfoText": "Court Information",
+    "courtLocationLabel": "Court Location",
+    "courtTypeTitleText": "Court Type",
+    "surfaceLabelText": "Surface",
+
+    "indoorTitle": "Indoor",
+    "indoorDesc": "Boots without studs",
+    "grassTitle": "Grass",
+    "grassDesc": "For boots that require studs",
+    "sizeTitle": "Size",
+    "facilitiesTitle": "Facilities",
+    "changeRoomsAvailableLabel": "Change Rooms Available",
 
     "searchLocationTitle": "Search Location",
     "searchLocationInputFieldLabel": "Search",

@@ -1074,7 +1074,7 @@ class LocationsBottomSheet extends StatelessWidget {
                       ),
                     ),
                     SizedBox(width: 16),
-                    Text(AppLocalizations.of(context)!.createNewCourtButtonText,
+                    Text(AppLocalizations.of(context)!.createNewCourtText.toString().toUpperCase(),
                         style: TextPalette.linkStyle),
                   ],
                 ),

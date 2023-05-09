@@ -19,12 +19,17 @@ String buildMapUrl(double lat, double lng) =>
     "," +
     lng.toString();
 
-Future<LocationInfo> fetchLocationInfo(double lat, double lng) async {
+Future<LocationInfo?> fetchLocationInfo(double lat, double lng) async {
   // uncomment to get amsterdam
   // lat = 52.3676; lng = 4.9041;
-  var resp = await CloudFunctionsClient()
+  try {
+    var resp = await CloudFunctionsClient()
       .get("locations/coordinates", args: {"lat": lat, "lng": lng});
-  return LocationInfo.fromJson(Map<String, dynamic>.from(resp!));
+    return LocationInfo.fromJson(Map<String, dynamic>.from(resp!));
+  } catch (e, s) {
+    print("failed to fetch location");
+    return null;
+  }
 }
 
 class PredictionMatch {

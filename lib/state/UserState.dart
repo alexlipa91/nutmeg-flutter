@@ -130,11 +130,18 @@ class UserState extends ChangeNotifier {
   }
 
   Future<void> setLocationInfo(Position? position) async {
-    if (position != null)
-      _deviceLocationInfo = await fetchLocationInfo(position.latitude, position.longitude);
-    else
-      _deviceLocationInfo = LocationInfo("NL", "Amsterdam", 52.3676, 4.9041,
-          "ChIJVXealLU_xkcRja_At0z9AGY");
+    var defaultFallback = LocationInfo("NL", "Amsterdam", 52.3676, 4.9041,
+        "ChIJVXealLU_xkcRja_At0z9AGY");
+    if (position != null) {
+      var detected = await fetchLocationInfo(position.latitude, position.longitude);
+      if (detected != null) {
+        _deviceLocationInfo = detected;
+      } else {
+        _deviceLocationInfo = defaultFallback;
+      }
+    } else {
+      _deviceLocationInfo = defaultFallback;
+    }
   }
 
   LocationInfo getLocationInfo() =>

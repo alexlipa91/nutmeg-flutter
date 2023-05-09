@@ -31,6 +31,17 @@
     "requiredError": "Obbligatorio",
     "popularCourtsTitle": "Campi popolari",
     "yourCourtsTitle": "I tuoi campi",
-    "createNewCourtButtonText": "CREA NUOVO CAMPO",
-    "youWantToLeaveTitle": "Sei sicuro di voler uscire?"
+    "createNewCourtText": "Crea nuovo campo",
+    "youWantToLeaveTitle": "Sei sicuro di voler uscire?",
+
+    "courtInfoText": "Informazioni sul campo",
+    "courtLocationLabel": "Posizione del campo",
+    "courtTypeTitleText": "Tipo di campo",
+    "indoorTitle": "Indoor",
+    "indoorDesc": "Scarpette senza tacchetti",
+    "grassTitle": "Erbetta",
+    "grassDesc": "Scarpette con tacchetti",
+    "sizeTitle": "Misura Campo",
+    "facilitiesTitle": "Strutture",
+    "changeRoomsAvailableLabel": "Spogliatoi disponibili"
 }

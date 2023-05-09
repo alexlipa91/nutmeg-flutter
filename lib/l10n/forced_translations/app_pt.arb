@@ -16,7 +16,7 @@
      "courtNumber": "Número do campo / quadra {x}",
      "courtSectionTitle": "Campo / Quadra",
      "courtNumberLabel": "Número do campo / quadra (opcional)",
-     "createNewCourtButtonText": "CRIAR NOVO CAMPO / QUADRA",
+     "createNewCourtText": "Criar novo campo / quadra",
      "averageScoreBoxTitle": "Pontuação média",
      "numMatchesLostBoxTitle": "Partidas perdidas",
      "currentLocationLabel": "USAR MINHA LOCALIZAÇÃO",
@@ -27,5 +27,5 @@
      "createNewMatchActionText": "CRIAR NOVA PARTIDA",
      "newMatchTitle": "Nova partida",
      "editMatchTitle": "Editar partida",
-     "currentLocationInfo": "Sua localização nos ajuda a melhorar sua experiência com recomendações aproximadas de partidas.",
+     "currentLocationInfo": "Sua localização nos ajuda a melhorar sua experiência com recomendações aproximadas de partidas."
 }

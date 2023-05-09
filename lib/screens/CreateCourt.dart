@@ -8,6 +8,7 @@ import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:nutmeg/widgets/PageTemplate.dart';
 import 'package:nutmeg/widgets/Section.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../utils/LocationUtils.dart';
 import '../widgets/ModalBottomSheet.dart';
@@ -47,9 +48,11 @@ class CreateCourtState extends State<CreateCourt> {
           Center(child: Container(
             width: 700,
             child: Column(children: [
-              Text("Create New Court", style: TextPalette.h1Default),
+              Text(
+                  AppLocalizations.of(context)!.createNewCourtText,
+                  style: TextPalette.h1Default),
               Section(
-                  title: "Court Information",
+                  title:  AppLocalizations.of(context)!.courtInfoText,
                   titleType: "big",
                   body: Column(
                     children: [
@@ -60,7 +63,7 @@ class CreateCourtState extends State<CreateCourt> {
                                 textFieldConfiguration: TextFieldConfiguration(
                                     style: TextPalette.getBodyText(Palette.black),
                                     decoration: CreateMatchState.getTextFormDecoration(
-                                        "Court Location"),
+                                        AppLocalizations.of(context)!.courtLocationLabel),
                                     controller: textEditingController),
                                 suggestionsCallback: (pattern) async {
                                   List<PredictionResult> predictions = [];
@@ -115,7 +118,7 @@ class CreateCourtState extends State<CreateCourt> {
                     ],
                   )),
               Section(
-                  title: "Court Type",
+                  title: AppLocalizations.of(context)!.courtTypeTitleText,
                   titleType: "big",
                   body: Column(children: [
                     Row(
@@ -125,7 +128,7 @@ class CreateCourtState extends State<CreateCourt> {
                               readOnly: true,
                               controller: surfaceController,
                               decoration: CreateMatchState.getTextFormDecoration(
-                                  "Surface",
+                                AppLocalizations.of(context)!.surfaceLabelText,
                                   isDropdown: true),
                               onTap: () async {
                                 String? surface = await ModalBottomSheet.showNutmegModalBottomSheet(
@@ -134,16 +137,16 @@ class CreateCourtState extends State<CreateCourt> {
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          "Surface",
+                                          AppLocalizations.of(context)!.surfaceLabelText,
                                           style: TextPalette.h2,
                                         ),
                                         SizedBox(height: 16.0),
-                                        SurfaceRow(title: "Indoor",
-                                            description: "Boots without studs",
+                                        SurfaceRow(title: AppLocalizations.of(context)!.indoorTitle,
+                                            description: AppLocalizations.of(context)!.indoorDesc,
                                             imagePath: "assets/sportcenters/indoor_thumb.png"),
                                         SizedBox(height: 16.0),
-                                        SurfaceRow(title: "Grass",
-                                            description: "For boots that require studs",
+                                        SurfaceRow(title: AppLocalizations.of(context)!.grassTitle,
+                                            description: AppLocalizations.of(context)!.grassDesc,
                                             imagePath: "assets/sportcenters/grass_thumb.png"),
                                       ],
                                     ));
@@ -153,7 +156,7 @@ class CreateCourtState extends State<CreateCourt> {
                                 }
                               },
                               validator: (v) {
-                                if (v == null || v.isEmpty) return "Required";
+                                if (v == null || v.isEmpty) return AppLocalizations.of(context)!.requiredError;
                                 return null;
                               },
                             )),
@@ -166,21 +169,25 @@ class CreateCourtState extends State<CreateCourt> {
                             child: TextFormField(
                               readOnly: true,
                               controller: courtTypeController,
-                              decoration: CreateMatchState.getTextFormDecoration("Size",
+                              decoration: CreateMatchState.getTextFormDecoration(
+                                  AppLocalizations.of(context)!.sizeTitle,
                                   isDropdown: true),
                               onTap: () async {
                                 var sizes = ["5v5", "6v6", "7v7", "11v11"];
 
                                 int? i = await CreateMatchState
                                     .showMultipleChoiceSheetWithText(
-                                    context, "Size", sizes);
+                                    context,
+                                    AppLocalizations.of(context)!.sizeTitle,
+                                    sizes);
 
                                 if (i != null) {
                                   courtTypeController.text = sizes[i];
                                 }
                               },
                               validator: (v) {
-                                if (v == null || v.isEmpty) return "Required";
+                                if (v == null || v.isEmpty)
+                                  return AppLocalizations.of(context)!.requiredError;
                                 return null;
                               },
                             )),
@@ -188,7 +195,7 @@ class CreateCourtState extends State<CreateCourt> {
                     ),
                   ])),
               Section(
-                  title: "Facilities",
+                  title: AppLocalizations.of(context)!.facilitiesTitle,
                   titleType: "big",
                   body: Column(
                     children: [
@@ -207,7 +214,8 @@ class CreateCourtState extends State<CreateCourt> {
                                 }
                               }),
                           Flexible(
-                              child: Text("Change Rooms available",
+                              child: Text(
+                                  AppLocalizations.of(context)!.changeRoomsAvailableLabel,
                                   style: TextPalette.bodyText,
                                   overflow: TextOverflow.visible)),
                         ],
@@ -232,7 +240,8 @@ class CreateCourtState extends State<CreateCourt> {
             Expanded(
               child: Container(
                 width: 700,
-                child: GenericButtonWithLoaderAndErrorHandling("CREATE NEW COURT",
+                child: GenericButtonWithLoaderAndErrorHandling(
+                    AppLocalizations.of(context)!.createNewCourtText.toUpperCase(),
                     (_) async {
                   bool? v = _formKey.currentState?.validate();
                   if (v != null && v) {
