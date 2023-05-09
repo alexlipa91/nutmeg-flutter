@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:flutter/material.dart';
 import 'package:nutmeg/model/SportCenter.dart';
 import 'package:timezone/timezone.dart' as tz;
 
@@ -208,6 +209,10 @@ class Match {
   int getMissingPlayers() => max(0, minPlayers - going.length);
 
   bool hasTeams() => computedTeams.isNotEmpty;
+
+  TimeOfDay getStart() => TimeOfDay(hour: dateTime.hour, minute: dateTime.minute);
+  TimeOfDay getEnd() => TimeOfDay(hour: dateTime.add(duration).hour,
+      minute: dateTime.add(duration).minute);
 
   List<String> getToRate(String currentUser) {
     var all = going.keys.toSet();

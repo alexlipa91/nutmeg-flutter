@@ -80,14 +80,20 @@ class CreateMatchState extends State<CreateMatch> {
   }
 
   // current match state
+  DateTime? start;
+  TimeOfDay? startTime, endTime;
   SportCenter? sportCenter;
   bool isSavedSportCenter = false;
   bool isTest = false;
   bool paymentsPossible = true;
   bool managePayments = true;
   bool withAutomaticCancellation = false;
+  Duration? cancelBefore;
   int repeatsForWeeks = 1;
   bool organiserWithFee = false;
+  String? courtNumber;
+  RangeValues numberOfPeopleRangeValues = RangeValues(8, 10);
+  String? price;
 
   final _formKey = GlobalKey<FormState>();
   final regexPrice = new RegExp("\\d+(\\.\\d{1,2})?");
@@ -99,7 +105,6 @@ class CreateMatchState extends State<CreateMatch> {
   TextEditingController repeatWeeklyEditingController = TextEditingController();
   TextEditingController courtNumberEditingController = TextEditingController();
   TextEditingController priceController = TextEditingController();
-  RangeValues numberOfPeopleRangeValues = RangeValues(8, 10);
   TextEditingController cancelTimeEditingController = TextEditingController();
   FocusNode sportCenterfocusNode = FocusNode();
   FocusNode datefocusNode = FocusNode();
@@ -143,40 +148,56 @@ class CreateMatchState extends State<CreateMatch> {
       managePayments = widget.existingMatch!.price != null;
       paymentsPossible =
           !blacklistedCountriesForPayments.contains(sportCenter!.country);
-
-      var dateFormat =
-      DateFormat("dd-MM-yyyy", getLanguageLocaleRead(context).countryCode);
-
-      dateEditingController = TextEditingController(
-            text: dateFormat.format(
-                widget.existingMatch!.getLocalizedTime(sportCenter!.timezoneId)));
-      startTimeEditingController = TextEditingController(
-            text: getFormattedTime(TimeOfDay.fromDateTime(widget.existingMatch!
-                .getLocalizedTime(sportCenter!.timezoneId))));
-      endTimeEditingController = TextEditingController(
-            text: getFormattedTime(TimeOfDay.fromDateTime(widget.existingMatch!
-                .getLocalizedTime(sportCenter!.timezoneId)
-                .add(widget.existingMatch!.duration))));
-      sportCenterEditingController =
-          TextEditingController(text: sportCenter!.name);
-      courtNumberEditingController = TextEditingController(
-            text: widget.existingMatch!.sportCenterSubLocation);
-      if (widget.existingMatch!.price != null)
-        priceController = TextEditingController(
-              text: (widget.existingMatch!.price!.basePrice / 100).toString());
+      start = widget.existingMatch!.dateTime;
+      startTime = widget.existingMatch!.getStart();
+      endTime = widget.existingMatch!.getEnd();
+      courtNumber = widget.existingMatch!.sportCenterSubLocation;
+      price = widget.existingMatch!.price!.basePrice.toString();
       numberOfPeopleRangeValues = RangeValues(
-            widget.existingMatch!.minPlayers.toDouble(),
-            widget.existingMatch!.maxPlayers.toDouble());
+          widget.existingMatch!.minPlayers.toDouble(),
+          widget.existingMatch!.maxPlayers.toDouble());
     }
 
     refreshState();
   }
 
+  void initControllers() {
+    var dateFormat = DateFormat("dd-MM-yyyy",
+        getLanguageLocaleRead(context).countryCode);
+
+    if (start != null) {
+      dateEditingController.text = dateFormat.format(start!);
+    }
+    if (startTime != null) {
+      startTimeEditingController.text = getFormattedTime(startTime!);
+    }
+    if (endTime != null) {
+      endTimeEditingController.text = getFormattedTime(endTime!);
+    }
+    if (sportCenter != null) {
+      sportCenterEditingController.text = sportCenter!.name;
+    }
+    repeatWeeklyEditingController.text = (repeatsForWeeks == 1) ? AppLocalizations.of(context)!.doesNotRepeatLabel : AppLocalizations.of(context)!
+        .repeatForWeeks(repeatsForWeeks);
+    if(courtNumber != null) {
+      courtNumberEditingController.text = courtNumber!;
+      courtNumberEditingController.selection = TextSelection
+          .fromPosition(TextPosition(offset: courtNumber!.length));
+    }
+    if (price != null) {
+      var priceString = price?.toString() ?? "";
+      priceController.text = priceString;
+      priceController.selection = TextSelection
+          .fromPosition(TextPosition(offset: priceString.length));
+    }
+    if (cancelBefore != null) {
+      cancelTimeEditingController.text = cancelBefore.toString();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    if (repeatsForWeeks == 1) {
-      repeatWeeklyEditingController.text = AppLocalizations.of(context)!.doesNotRepeatLabel;
-    }
+    initControllers();
 
     var requiredError = AppLocalizations.of(context)!.requiredError;
     var organiserId =
@@ -222,8 +243,9 @@ class CreateMatchState extends State<CreateMatch> {
                               lastDate: DateTime(2035),
                               context: context);
                           if (d != null) {
-                            dateEditingController.text = dateFormat.format(d);
-                            setState(() {});
+                            setState(() {
+                              start = d;
+                            });
                           }
                         }))
               ],
@@ -261,10 +283,10 @@ class CreateMatchState extends State<CreateMatch> {
                           (time?.minute)! % 5 == 0,
                     );
                     if (d != null) {
-                      startTimeEditingController.text = getFormattedTime(d);
-                      endTimeEditingController.text = getFormattedTime(
-                          TimeOfDay(hour: d.hour + 1, minute: d.minute));
-                      setState(() {});
+                      setState(() {
+                        startTime = TimeOfDay(hour: d.hour, minute: d.minute);
+                        endTime = TimeOfDay(hour: d.hour + 1, minute: d.minute);
+                      });
                     }
                   },
                 )),
@@ -302,9 +324,14 @@ class CreateMatchState extends State<CreateMatch> {
                                   toTimeOfTheDay(endTimeEditingController.text),
                               selectableTimePredicate: (time) =>
                                   time == null || isAfter(time, currentStart));
-                          if (d != null)
-                            endTimeEditingController.text = getFormattedTime(d);
-                        })),
+                          if (d != null) {
+                            setState(() {
+                              endTime = TimeOfDay(hour: d.hour, minute: d.minute);
+                            });
+                          }
+                        }
+                    )
+                ),
               ],
             ),
             SizedBox(
@@ -337,8 +364,6 @@ class CreateMatchState extends State<CreateMatch> {
                                 choices);
 
                             if (i != null) {
-                              repeatWeeklyEditingController.text =
-                                  choices[i].toString();
                               setState(() {
                                 repeatsForWeeks = weeks[i];
                               });
@@ -388,7 +413,6 @@ class CreateMatchState extends State<CreateMatch> {
                             context, LocationsBottomSheet());
 
                     if (sp != null) {
-                      sportCenterEditingController.text = sp.getName();
                       setState(() {
                         sportCenter = sp;
                         paymentsPossible = !blacklistedCountriesForPayments
@@ -411,6 +435,9 @@ class CreateMatchState extends State<CreateMatch> {
                   inputFormatters: [LengthLimitingTextInputFormatter(5)],
                   decoration: getTextFormDecoration(
                       AppLocalizations.of(context)!.courtNumberLabel),
+                  onChanged: (v) => setState(() {
+                    this.courtNumber = v;
+                  })
                 )),
               ],
             ),
@@ -528,7 +555,9 @@ class CreateMatchState extends State<CreateMatch> {
                                 return null;
                               },
                               onChanged: (v) {
-                                setState(() {});
+                                setState(() {
+                                  price = v;
+                                });
                               },
                               controller: priceController,
                               keyboardType: TextInputType.numberWithOptions(
@@ -688,7 +717,9 @@ class CreateMatchState extends State<CreateMatch> {
                           },
                           controller: cancelTimeEditingController,
                           onChanged: (v) {
-                            setState(() {});
+                            setState(() {
+                              cancelBefore = Duration(hours: int.parse(v));
+                            });
                           },
                           decoration: getTextFormDecoration(null),
                           keyboardType: TextInputType.numberWithOptions(
@@ -795,40 +826,33 @@ class CreateMatchState extends State<CreateMatch> {
                     bool? v = _formKey.currentState?.validate();
                     if (v != null && v) {
                       try {
-                        var dateTime = getDateTime(
-                            dateFormat,
-                            startTimeEditingController,
-                            sportCenter!.timezoneId);
-                        var endTime = getDateTime(dateFormat,
-                            endTimeEditingController, sportCenter!.timezoneId);
-                        var duration = endTime!.difference(dateTime!);
-                        var cancelBefore = withAutomaticCancellation
-                            ? Duration(
-                                hours:
-                                    int.parse(cancelTimeEditingController.text))
-                            : null;
-
+                        var dateTime = DateTime(
+                            start!.year, start!.month, start!.day,
+                            startTime!.hour, startTime!.minute);
+                        var endDateTime = DateTime(
+                            start!.year, start!.month, start!.day,
+                            endTime!.hour, endTime!.minute);
                         var forWeeks = repeatsForWeeks;
 
                         Iterable<Future<String>> idsFuture =
                             Iterable<int>.generate(forWeeks).map((w) async {
                           var match = Match(
-                              dateTime.add(Duration(days: 7 * w)),
+                              dateTime,
                               (isSavedSportCenter)
                                   ? sportCenter!.placeId
                                   : null,
                               sportCenter!,
-                              courtNumberEditingController.text,
+                              courtNumber,
                               numberOfPeopleRangeValues.end.toInt(),
                               (paymentsPossible && managePayments)
                                   ? Price(
-                                      (Decimal.parse(priceController.text) *
+                                      (Decimal.parse(price!) *
                                               Decimal.parse("100"))
                                           .toDouble()
                                           .toInt(),
                                       organiserWithFee ? 50 : 0)
                                   : null,
-                              duration,
+                              endDateTime.difference(dateTime),
                               isTest,
                               numberOfPeopleRangeValues.start.toInt(),
                               widget.existingMatch != null
