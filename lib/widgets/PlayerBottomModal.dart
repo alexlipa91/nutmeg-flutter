@@ -11,6 +11,7 @@ import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/Skeletons.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../model/UserDetails.dart';
 import '../state/UserState.dart';
@@ -153,7 +154,7 @@ class JoinedPlayerBottomModal extends StatelessWidget {
                 flex: 2,
                 child: StatEntry(
                   stat: userDetails.getNumJoinedMatches().toString(),
-                  description: "Matches",
+                  description: AppLocalizations.of(context)!.numMatchesShortTitle,
                 ),
               ),
               Expanded(
@@ -161,7 +162,7 @@ class JoinedPlayerBottomModal extends StatelessWidget {
                 child: StatEntry(
                   stat: (userDetails.getScoreMatches() == null)
                       ? "-" : userDetails.getScoreMatches()!.toStringAsFixed(2),
-                  description: "Avg. score",
+                  description: AppLocalizations.of(context)!.averageScoreBoxTitle,
                   // rightBadge: UserScoreBox.deltaBadge(userDetails),
                 ),
               ),

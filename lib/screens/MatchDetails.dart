@@ -58,7 +58,6 @@ class MatchDetails extends StatefulWidget {
 }
 
 class MatchDetailsState extends State<MatchDetails> {
-  static var dayDateFormat = DateFormat("EEEE, MMM dd");
 
   Future<void> showRatingModalIfNeverSeen(
       Match match, UserDetails? loggedUser) async {
@@ -231,28 +230,37 @@ class MatchDetailsState extends State<MatchDetails> {
             SportCenterDetails(match: match, sportCenter: sportCenter);
 
         var rules = (bool large) => Builder(builder: (context) {
-              var cancellationText = "";
+              var rules = [];
 
               if (match.cancelBefore != null) {
                 var cancellationDate =
                     match.dateTime.subtract(match.cancelBefore!);
 
                 if (cancellationDate.isAfter(DateTime.now())) {
-                  cancellationText = AppLocalizations.of(context)!
+                  rules.add(AppLocalizations.of(context)!
                       .cancellationInfo(
-                          dayDateFormat.format(
-                              match.getLocalizedTime(sportCenter.timezoneId)),
-                          match.minPlayers);
+                      MatchInfo.formatDay(
+                          match.getLocalizedTime(sportCenter.timezoneId),
+                          context),
+                      match.minPlayers));
                 }
               }
-              var refundString = (match.userFee == 0)
-                  ? AppLocalizations.of(context)!.fullRefund
-                  : AppLocalizations.of(context)!.refundWithoutFee;
+
+              if (match.price != null) {
+                var refundString = (match.userFee == 0)
+                    ? AppLocalizations.of(context)!.fullRefund
+                    : AppLocalizations.of(context)!.refundWithoutFee;
+
+                rules.add(refundString);
+              }
+
+              if (rules.length == 0) {
+                return Container();
+              }
 
               return RuleCard(
                   AppLocalizations.of(context)!.paymentPolicyHeader,
-                  AppLocalizations.of(context)!.refundInfo(refundString) +
-                      cancellationText,
+                  rules.join("\n"),
                   large);
             });
 

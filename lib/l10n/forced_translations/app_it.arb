@@ -5,7 +5,8 @@
 
     "matchOnStatus": "Partita confermata",
     "locationHeader": "Luogo",
-    "paymentPolicyHeader": "Regole per il pagamento",
+    "paymentPolicyHeader": "Regole",
+    "shareAction": "Condividi",
 
     "currentLocationInfo": "La tua posizione ci aiuta a migliorare la tua esperienza con consigli migliori sulle partite.",
     "averageScoreBoxTitle": "Media Punti",
@@ -17,6 +18,7 @@
     "browseOrCreateText": "Cerca altre partite o organizza una tua partita",
 
     "courtNumber": "Campo numero {x}",
+    "joinMatchBarSubtitle": "{x} giocatori nella partita",
 
     "manageButton": "GESTISCI",
 
@@ -43,5 +45,6 @@
     "grassDesc": "Scarpette con tacchetti",
     "sizeTitle": "Misura Campo",
     "facilitiesTitle": "Strutture",
-    "changeRoomsAvailableLabel": "Spogliatoi disponibili"
+    "changeRoomsAvailableLabel": "Spogliatoi disponibili",
+    "joinAction": "Unisciti"
 }

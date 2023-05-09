@@ -13,7 +13,7 @@ import 'package:timezone/timezone.dart' as tz;
 String gmtSuffix(String timeZoneId) {
   var hourOffset = tz.TZDateTime.from(DateTime.now(),
       tz.getLocation(timeZoneId)).timeZoneOffset.inHours;
-  var gmtString = ((hourOffset > 0) ? "+" : "-") + hourOffset.toString();
+  var gmtString = ((hourOffset > 0) ? "+" : "") + hourOffset.toString();
   return "GMT$gmtString";
 }
 

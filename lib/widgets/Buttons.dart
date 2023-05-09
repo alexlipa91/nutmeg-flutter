@@ -3,6 +3,7 @@ import 'package:nutmeg/state/MatchesState.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 
 // MAIN PAGE BUTTONS
@@ -170,7 +171,8 @@ class ShareButtonWithText extends StatelessWidget {
       children: [
         icon,
         SizedBox(width: 5),
-        Text("SHARE", style: TextPalette.linkStyle)
+        Text(AppLocalizations.of(context)!.shareAction,
+            style: TextPalette.linkStyle)
       ],
     );
 

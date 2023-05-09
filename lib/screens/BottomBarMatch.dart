@@ -172,8 +172,8 @@ class LeaveMatchBottomBar extends StatelessWidget {
     var match = context.read<MatchesState>().getMatch(matchId);
 
     return BottomBarMatch(matchId: matchId,
-        text: "You are in!",
-        subText: match!.getGoingPlayers().toString() + " players going",
+        text: AppLocalizations.of(context)!.joinMatchSuccessTitle,
+        subText: AppLocalizations.of(context)!.joinMatchBarSubtitle(match!.getGoingPlayers()),
         button: enabled ? LeaveButton(matchId: matchId) : LeaveButtonDisabled()
     );
   }

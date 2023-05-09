@@ -88,7 +88,7 @@ class CreateMatchState extends State<CreateMatch> {
   bool paymentsPossible = true;
   bool managePayments = true;
   bool withAutomaticCancellation = false;
-  Duration? cancelBefore;
+  Duration cancelBefore = Duration(hours: 24);
   int repeatsForWeeks = 1;
   bool organiserWithFee = false;
   String? courtNumber;
@@ -190,8 +190,11 @@ class CreateMatchState extends State<CreateMatch> {
       priceController.selection = TextSelection
           .fromPosition(TextPosition(offset: priceString.length));
     }
-    if (cancelBefore != null) {
-      cancelTimeEditingController.text = cancelBefore.toString();
+    if (withAutomaticCancellation) {
+      var hoursString = cancelBefore.inHours.toString();
+      cancelTimeEditingController.text = hoursString;
+      cancelTimeEditingController.selection = TextSelection
+          .fromPosition(TextPosition(offset: hoursString.length));
     }
   }
 
@@ -683,6 +686,7 @@ class CreateMatchState extends State<CreateMatch> {
                         withAutomaticCancellation = v!;
                       });
                     }),
+                SizedBox(width: 8,),
                 Flexible(
                     child: Text(
                         AppLocalizations.of(context)!.automaticCancellationInfo,

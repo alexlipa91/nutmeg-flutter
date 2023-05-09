@@ -28,7 +28,8 @@ class PaymentDetailsDescription {
               ),
               Padding(
                   padding: EdgeInsets.only(top: 30),
-                  child: Text("You are in!", style: TextPalette.h1Default)),
+                  child: Text(AppLocalizations.of(context)!.joinMatchSuccessTitle,
+                      style: TextPalette.h1Default)),
               Padding(
                   padding: EdgeInsets.only(top: 10),
                   child: Text(AppLocalizations.of(context)!.joinedMatchText,

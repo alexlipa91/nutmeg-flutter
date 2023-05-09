@@ -19,7 +19,7 @@ class LeaveButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => GenericButtonWithLoader(
-        "LEAVE MATCH",
+        AppLocalizations.of(context)!.leaveButtonText,
         (BuildContext context) async {
           var match = context.read<MatchesState>().getMatch(matchId);
           // fixme make it parametric
@@ -86,7 +86,7 @@ class ConfirmLeaveMatchButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => GenericButtonWithLoader(
-        "CONFIRM",
+        AppLocalizations.of(context)!.confirmButtonText,
         (BuildContext context) async {
           context.read<GenericButtonWithLoaderState>().change(true);
 
@@ -100,7 +100,7 @@ class ConfirmLeaveMatchButton extends StatelessWidget {
                               "was issued "
                           : formatCurrency(match.price!.basePrice) +
                               " credits were added to your account"
-                      : "You left the match",
+                      : AppLocalizations.of(context)!.leftMatchTitle,
                   description: match.price != null
                       ? (ConfigsUtils.removeCreditsFunctionality()
                           ? "You will receive the money in 3 to 5 business days on the payment method you used."

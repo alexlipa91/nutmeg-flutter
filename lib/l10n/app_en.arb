@@ -77,7 +77,15 @@
         }
     },
 
+    "joinMatchSuccessTitle": "You are in!",
+    "joinMatchBarSubtitle": "{x} players going",
+    "@joinMatchBarSubtitle": {
+        "placeholders": {
+            "x":  {"type": "int"}
+        }
+    },
     "joinButtonText": "JOIN MATCH",
+    "leaveButtonText": "LEAVE MATCH",
     "joinThisMatchTitle": "Join this match",
     "joinMatchInfo": "If you leave the match you will get a refund",
     "leaveThisMatchTitle": "Leave this match?",
@@ -167,6 +175,7 @@
     "hoursLabel": "Hours",
     "youWantToLeaveTitle": "Are you sure you want to leave?",
     "youWantToLeaveSubtitle": "If you leave, all your unsaved changes will be lost.",
+    "leftMatchTitle": "You left the match",
 
     "finalScoreSubmitText": "What was the final score?",
     "submitScoreButton": "SUBMIT SCORE",
@@ -214,6 +223,7 @@
 
     "accountTitle": "Account",
     "creditsBoxTitle": "Credits",
+    "numMatchesShortTitle": "Matches",
     "numMatchesTitle": "Matches Played",
     "numPlayersOfTheMatchBoxTitle": "Players of the Match",
     "numMatchesWonBoxTitle": "Matches Won",
