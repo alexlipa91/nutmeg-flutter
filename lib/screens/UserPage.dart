@@ -223,38 +223,39 @@ class UserPageState extends State<UserPage> {
         verticalSpace,
         Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
           Expanded(
-              child: UserInfoBox(
-                  content: formatCurrency(userDetails.creditsInCents ?? 0),
-                  description: AppLocalizations.of(context)!.creditsBoxTitle)),
-          SizedBox(width: 20),
-          Expanded(
             child: UserInfoBox(
                 content: userDetails.getNumJoinedMatches().toString(),
                 description: AppLocalizations.of(context)!.numMatchesTitle),
-          )
-        ]),
-        verticalSpace,
-        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+          ),
+          SizedBox(width: 20),
           Expanded(
             child: UserScoreBox(userDetails: userDetails),
           ),
-          SizedBox(width: 20),
+        ]),
+        verticalSpace,
+        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
           Expanded(
             child: UserInfoBox(
               content: userDetails.getNumManOfTheMatch().toString(),
               description:
                   AppLocalizations.of(context)!.numPlayersOfTheMatchBoxTitle,
             ),
-          )
+          ),
+          SizedBox(width: 20),
+          Expanded(
+              child: UserInfoBox(
+                  content: (userDetails.numWin ?? 0).toString(),
+                  description:
+                  AppLocalizations.of(context)!.numMatchesWonBoxTitle)),
         ]),
         if (userDetails.numWin != null) verticalSpace,
         if (userDetails.numWin != null)
           Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
             Expanded(
                 child: UserInfoBox(
-                    content: (userDetails.numWin ?? 0).toString(),
+                    content: (userDetails.numDraw ?? 0).toString(),
                     description:
-                        AppLocalizations.of(context)!.numMatchesWonBoxTitle)),
+                    AppLocalizations.of(context)!.numMatchesDrawBoxTitle)),
             SizedBox(width: 20),
             Expanded(
               child: UserInfoBox(
@@ -265,7 +266,7 @@ class UserPageState extends State<UserPage> {
           ]),
         if (userDetails.getLastScores().length > 0)
           Section(
-              title: "PERFORMANCE",
+              title: AppLocalizations.of(context)!.performanceTitle,
               body: SizedBox(
                   height: 180,
                   child: InfoContainer(

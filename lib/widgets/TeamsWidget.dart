@@ -236,7 +236,7 @@ class TeamsWidgetState extends State<TeamsWidget> {
                     style: TextPalette.bodyText,
                   ),
                   Expanded(
-                    child: Text("Team strength",
+                    child: Text(AppLocalizations.of(context)!.teamStrenghtLabel,
                         textAlign: TextAlign.center,
                         style: TextPalette.bodyText),
                   ),

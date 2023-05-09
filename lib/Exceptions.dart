@@ -2,6 +2,7 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 
 class ErrorHandlingUtils {
@@ -21,8 +22,8 @@ class ErrorHandlingUtils {
                 SystemChannels.platform.invokeMethod('SystemNavigator.pop'));
       default:
         return GenericInfoModal(
-                title: "Something went wrong!",
-                description: "Please contact us for support.")
+                title: AppLocalizations.of(context)!.genericErrorMessage,
+                description: AppLocalizations.of(context)!.genericErrorDesc)
             .show(context);
     }
   }

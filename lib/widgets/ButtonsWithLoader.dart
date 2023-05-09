@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../utils/InfoModals.dart';
 
@@ -86,7 +87,7 @@ class GenericButtonWithLoaderAndErrorHandling extends StatelessWidget {
       } catch (e, stack) {
         print(e);
         print(stack);
-        GenericInfoModal(title: "Something went wrong").show(context);
+        GenericInfoModal(title: AppLocalizations.of(context)!.genericErrorMessage).show(context);
       }
       context.read<GenericButtonWithLoaderState>().change(false);
     }, buttonType);

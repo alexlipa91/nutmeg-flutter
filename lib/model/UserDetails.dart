@@ -27,6 +27,7 @@ class UserDetails {
   bool? chargesEnabledOnStripeTest;
 
   int? numWin;
+  int? numDraw;
   int? numLoss;
 
   LocationInfo? location;
@@ -61,6 +62,7 @@ class UserDetails {
         language = json["language"],
         numWin = (json["record"] ?? {})["num_win"],
         numLoss = (json["record"] ?? {})["num_loss"],
+        numDraw = (json["record"] ?? {})["num_draw"],
         documentId = documentId;
 
   static List<double> _readLastScores(Map<String, double> lastDateScores) {

@@ -216,16 +216,22 @@
     "currentLocationInfo": "Your location helps us improve your experience with approximate recommendations of matches.",
 
     "manualSplitTeamCheckBoxLabel": "Manually split teams",
+    "teamStrenghtLabel": "Team strength",
     "manualSplitTeamInfo": "By default, we split the teams fairly based on players performance and overall team strength. You can manually split the teams yourself.",
+
+    "genericErrorMessage": "Something went wrong",
+    "genericErrorDesc": "Please contact us for support.",
 
     "ratePlayersTitle": "Rate Players",
     "submitRatesButtonText": "SUBMIT",
 
     "accountTitle": "Account",
+    "performanceTitle": "PERFORMANCE",
     "creditsBoxTitle": "Credits",
     "numMatchesShortTitle": "Matches",
     "numMatchesTitle": "Matches Played",
     "numPlayersOfTheMatchBoxTitle": "Players of the Match",
+    "numMatchesDrawBoxTitle": "Matches Draw",
     "numMatchesWonBoxTitle": "Matches Won",
     "numMatchesLostBoxTitle": "Matches Lost",
     "averageScoreBoxTitle": "Avg. Score",

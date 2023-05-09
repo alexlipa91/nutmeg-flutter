@@ -7,6 +7,7 @@ import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../model/Match.dart';
 import '../../state/MatchesState.dart';
@@ -149,7 +150,7 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                       } catch (e, stack) {
                         print(e);
                         print(stack);
-                        GenericInfoModal(title: "Something went wrong")
+                        GenericInfoModal(title: AppLocalizations.of(context)!.genericErrorMessage)
                             .show(context);
                       }
                     }

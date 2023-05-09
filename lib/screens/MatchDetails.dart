@@ -229,40 +229,40 @@ class MatchDetailsState extends State<MatchDetails> {
         var sportCenterDetails =
             SportCenterDetails(match: match, sportCenter: sportCenter);
 
-        var rules = (bool large) => Builder(builder: (context) {
-              var rules = [];
+        var rules = (bool large) {
+          var rules = [];
 
-              if (match.cancelBefore != null) {
-                var cancellationDate =
-                    match.dateTime.subtract(match.cancelBefore!);
+          if (match.cancelBefore != null) {
+            var cancellationDate =
+            match.dateTime.subtract(match.cancelBefore!);
 
-                if (cancellationDate.isAfter(DateTime.now())) {
-                  rules.add(AppLocalizations.of(context)!
-                      .cancellationInfo(
-                      MatchInfo.formatDay(
-                          match.getLocalizedTime(sportCenter.timezoneId),
-                          context),
-                      match.minPlayers));
-                }
-              }
+            if (cancellationDate.isAfter(DateTime.now())) {
+              rules.add(AppLocalizations.of(context)!
+                  .cancellationInfo(
+                  MatchInfo.formatDay(
+                      match.getLocalizedTime(sportCenter.timezoneId),
+                      context),
+                  match.minPlayers));
+            }
+          }
 
-              if (match.price != null) {
-                var refundString = (match.userFee == 0)
-                    ? AppLocalizations.of(context)!.fullRefund
-                    : AppLocalizations.of(context)!.refundWithoutFee;
+          if (match.price != null) {
+            var refundString = (match.userFee == 0)
+                ? AppLocalizations.of(context)!.fullRefund
+                : AppLocalizations.of(context)!.refundWithoutFee;
 
-                rules.add(refundString);
-              }
+            rules.add(AppLocalizations.of(context)!.refundInfo(refundString));
+          }
 
-              if (rules.length == 0) {
-                return Container();
-              }
+          if (rules.length == 0) {
+            return null;
+          }
 
-              return RuleCard(
-                  AppLocalizations.of(context)!.paymentPolicyHeader,
-                  rules.join("\n"),
-                  large);
-            });
+          return RuleCard(
+              AppLocalizations.of(context)!.paymentPolicyHeader,
+              rules.join("\n"),
+              large);
+        };
 
         var organiserBadge = match.organizerId != null
             ? Builder(builder: (context) {
@@ -305,7 +305,8 @@ class MatchDetailsState extends State<MatchDetails> {
             if (stats != null) stats,
             // horizontal players list or teams
             sportCenterDetails,
-            rules(false),
+            if (rules(false) != null)
+              rules(false)!,
             if (organiserBadge != null) organiserBadge
           ], SizedBox(height: 16));
         } else {
@@ -341,7 +342,8 @@ class MatchDetailsState extends State<MatchDetails> {
                       mainAxisSize: MainAxisSize.min,
                       children: interleave([
                         sportCenterDetails,
-                        rules(true),
+                        if (rules(true) != null)
+                          rules(true)!,
                         if (organiserBadge != null) organiserBadge
                       ], SizedBox(height: 16)),
                     ),
