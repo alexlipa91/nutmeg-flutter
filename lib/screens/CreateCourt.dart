@@ -47,7 +47,9 @@ class CreateCourtState extends State<CreateCourt> {
         widgets: [
           Center(child: Container(
             width: 700,
-            child: Column(children: [
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
               Text(
                   AppLocalizations.of(context)!.createNewCourtText,
                   style: TextPalette.h1Default),
