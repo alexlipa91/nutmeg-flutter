@@ -1089,6 +1089,8 @@ class LocationsBottomSheet extends StatelessWidget {
           },
         ));
 
-    return Column(children: [popularCourtsSection, yourCourts]);
+    return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [popularCourtsSection, yourCourts]);
   }
 }

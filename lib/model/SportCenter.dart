@@ -6,6 +6,37 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 enum Surface {indoor, grass}
 
+extension SurfaceExstension on Surface {
+
+  String getTitle(BuildContext context) {
+    switch (this) {
+      case Surface.indoor: return AppLocalizations.of(context)!.indoorTitle;
+      default: return AppLocalizations.of(context)!.grassTitle;
+    }
+  }
+
+  String getDbName() {
+    switch (this) {
+      case Surface.indoor: return "indoor";
+      default: return "grass";
+    }
+  }
+
+  String getDescription(BuildContext context) {
+    switch (this) {
+      case Surface.indoor: return AppLocalizations.of(context)!.indoorDesc;
+      default: return AppLocalizations.of(context)!.grassDesc;
+    }
+  }
+
+  String getImagePath() {
+    switch (this) {
+      case Surface.indoor: return "assets/sportcenters/indoor_thumb.png";
+      default: return "assets/sportcenters/grass_thumb.png";
+    }
+  }
+}
+
 class SportCenter {
   String placeId;
   String address;

@@ -10,6 +10,7 @@ import 'package:nutmeg/widgets/Section.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+import '../model/SportCenter.dart';
 import '../utils/LocationUtils.dart';
 import '../widgets/ModalBottomSheet.dart';
 import 'BottomBarMatch.dart';
@@ -37,6 +38,9 @@ class CreateCourtState extends State<CreateCourt> {
   String? placeId;
   double? lat;
   double? lng;
+
+  Surface? surface;
+  String? courtType;
 
   @override
   Widget build(BuildContext context) {
@@ -133,7 +137,7 @@ class CreateCourtState extends State<CreateCourt> {
                                 AppLocalizations.of(context)!.surfaceLabelText,
                                   isDropdown: true),
                               onTap: () async {
-                                String? surface = await ModalBottomSheet.showNutmegModalBottomSheet(
+                                Surface? surface = await ModalBottomSheet.showNutmegModalBottomSheet(
                                     context,
                                     Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -143,18 +147,21 @@ class CreateCourtState extends State<CreateCourt> {
                                           style: TextPalette.h2,
                                         ),
                                         SizedBox(height: 16.0),
-                                        SurfaceRow(title: AppLocalizations.of(context)!.indoorTitle,
-                                            description: AppLocalizations.of(context)!.indoorDesc,
-                                            imagePath: "assets/sportcenters/indoor_thumb.png"),
+                                        SurfaceRow(
+                                            surface: Surface.indoor,
+                                        ),
                                         SizedBox(height: 16.0),
-                                        SurfaceRow(title: AppLocalizations.of(context)!.grassTitle,
-                                            description: AppLocalizations.of(context)!.grassDesc,
-                                            imagePath: "assets/sportcenters/grass_thumb.png"),
+                                        SurfaceRow(
+                                            surface: Surface.grass
+                                        ),
                                       ],
                                     ));
 
                                 if (surface != null) {
-                                  surfaceController.text = surface;
+                                  surfaceController.text = surface.getTitle(context);
+                                  setState(() {
+                                    this.surface = surface;
+                                  });
                                 }
                               },
                               validator: (v) {
@@ -250,7 +257,7 @@ class CreateCourtState extends State<CreateCourt> {
                     await CloudFunctionsClient().post(
                       "/sportcenters/add", {
                         "place_id": placeId!,
-                        "surface": surfaceController.text.toLowerCase(),
+                        "surface": surface!.getDbName(),
                         "hasChangingRooms": changeRoomsAvailable,
                         "courtType": courtTypeController.text
                       }
@@ -271,17 +278,14 @@ class CreateCourtState extends State<CreateCourt> {
 
 class SurfaceRow extends StatelessWidget {
 
-  final String title;
-  final String description;
-  final String imagePath;
+  final Surface surface;
 
-  const SurfaceRow({Key? key, required this.title,
-    required this.description, required this.imagePath}) : super(key: key);
+  const SurfaceRow({Key? key, required this.surface}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () => Navigator.of(context).pop(title),
+      onTap: () => Navigator.of(context).pop(surface),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
@@ -289,16 +293,16 @@ class SurfaceRow extends StatelessWidget {
             borderRadius: BorderRadius.circular(10), // Image border
             child: SizedBox.fromSize(
               size: Size.fromRadius(30), // Image radius
-              child: Image.asset(imagePath),
+              child: Image.asset(surface.getImagePath()),
             ),
           ),
           SizedBox(width: 16),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: TextPalette.h3,),
+              Text(surface.getTitle(context), style: TextPalette.h3,),
               SizedBox(height: 8),
-              Text(description,
+              Text(surface.getDescription(context),
                 style: TextPalette.bodyText,)
             ],
           )
