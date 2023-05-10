@@ -29,7 +29,7 @@ import 'MiscController.dart';
 class LaunchController {
   static bool loadingDone = false;
   static var apiClient = CloudFunctionsClient();
-  static var appVersion;
+  static String? appVersion;
 
   static Future<void> handleLink(Uri deepLink) async {
     print("handling dynamic link " + deepLink.toString());
@@ -100,7 +100,7 @@ class LaunchController {
     ];
     var futuresData = await Future.wait(futures);
 
-    appVersion = futures[0].toString();
+    appVersion = futuresData[0].toString();
     UserDetails? availableUserDetails = futuresData[1];
 
     if (!kIsWeb) {

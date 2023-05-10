@@ -96,7 +96,7 @@ dependencies:
 dev_dependencies:
   auto_route_generator: ^4.2.1
   build_runner: 2.2.0
-  auto_translator: "^1.0.0"
+  auto_translator: ^1.0.0
   flutter_test:
     sdk: flutter
 

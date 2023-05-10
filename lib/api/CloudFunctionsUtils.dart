@@ -25,7 +25,7 @@ class CloudFunctionsClient {
       if (token != null)
         'Authorization': 'Bearer ' + token,
       if (LaunchController.appVersion != null)
-        'app-version': LaunchController.appVersion
+        'app-version': LaunchController.appVersion ?? "n/a"
     };
   }
 

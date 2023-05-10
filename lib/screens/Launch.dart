@@ -11,6 +11,7 @@ import 'package:logger/logger.dart';
 import 'package:nutmeg/controller/LaunchController.dart';
 import 'package:nutmeg/screens/AvailableMatches.dart';
 import 'package:nutmeg/screens/CreateMatch.dart';
+import 'package:nutmeg/screens/Leaderboard.dart';
 import 'package:nutmeg/screens/Login.dart';
 import 'package:nutmeg/screens/MatchDetails.dart';
 import 'package:nutmeg/screens/UserPage.dart';
@@ -73,6 +74,9 @@ final appRouter = GoRouter(
                         .read<MatchesState>()
                         .getMatch(state.params["id"]!)))
               ]),
+          GoRoute(
+              path: 'leaderboard',
+              builder: (context, state) => LeaderboardScreen()),
         ]),
     GoRoute(
         path: '/admin',
