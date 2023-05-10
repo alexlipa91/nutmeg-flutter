@@ -164,6 +164,8 @@
     "usersWillPayText": "(including Nutmeg fee)",
     "paymentExplanationText": "Nutmeg releases the money 24 hours after the match. You will get paid in 3 to 5 business days after that through",
     "policiesSectionTitle": "Policies",
+    "privateMatchInfo": "Match is private. Users can join the match only through the shared link",
+    "privateMatchDesc": "Private match",
     "automaticCancellationInfo": "Automatically cancel the match if minimum amount of players is not reached",
     "automaticCancellationExplanation": "We will cancel the match if at least {x} players haven't joined {y} hours before the kick-off of the match.\nIf players have paid through Nutmeg, they will get a full refund",
     "@automaticCancellationExplanation": {

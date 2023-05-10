@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
+import 'package:nutmeg/screens/Launch.dart';
 import 'package:nutmeg/screens/Login.dart';
 import 'package:nutmeg/screens/PaymentDetailsDescription.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
@@ -129,7 +130,8 @@ class JoinModal {
         });
         await context.read<MatchesState>().fetchMatch(matchId);
         await PaymentDetailsDescription.communicateSuccessToUser(context, matchId);
-        await context.read<MatchesState>().fetchMatches("GOING", context);
+        await navigatorKey.currentContext!
+            .read<MatchesState>().fetchMatches("GOING", context);
 
         return;
       }

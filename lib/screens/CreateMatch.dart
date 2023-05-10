@@ -88,6 +88,7 @@ class CreateMatchState extends State<CreateMatch> {
   bool paymentsPossible = true;
   bool managePayments = true;
   bool withAutomaticCancellation = false;
+  bool privateMatch = false;
   Duration cancelBefore = Duration(hours: 24);
   int repeatsForWeeks = 1;
   bool organiserWithFee = false;
@@ -749,7 +750,28 @@ class CreateMatchState extends State<CreateMatch> {
                               numberOfPeopleRangeValues.start.toInt(),
                               cancelTimeEditingController.text),
                       style: TextPalette.bodyText,
-                      overflow: TextOverflow.visible))
+                      overflow: TextOverflow.visible)),
+            SizedBox(height: 16),
+            Row(
+              children: [
+                Checkbox(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5)),
+                    value: privateMatch,
+                    activeColor: Palette.primary,
+                    onChanged: (v) {
+                      setState(() {
+                        privateMatch = v!;
+                      });
+                    }),
+                SizedBox(width: 8,),
+                Flexible(
+                    child: Text(
+                        AppLocalizations.of(context)!.privateMatchInfo,
+                        style: TextPalette.bodyText,
+                        overflow: TextOverflow.visible)),
+              ],
+            ),
           ]),
         ),
       if (widget.existingMatch == null &&
@@ -876,6 +898,9 @@ class CreateMatchState extends State<CreateMatch> {
                               widget.existingMatch != null
                                   ? widget.existingMatch!.manualTeams
                                   : [],
+                              widget.existingMatch != null
+                                  ? widget.existingMatch!.isPrivate
+                                  : privateMatch,
                               cancelBefore,
                               widget.existingMatch != null
                                   ? widget.existingMatch!.score

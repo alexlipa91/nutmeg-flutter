@@ -89,6 +89,8 @@
     "usersWillPayText": "(inclusa Nutmeg fee)",
     "paymentExplanationText": "Nutmeg rilascia i soldi 24 ore dopo la partita. Verrai pagato in 3-5 giorni lavorativi successivi",
     "policiesSectionTitle": "Cancellazione",
+    "privateMatchInfo": "La partita è privata. Gli utenti possono partecipare alla partita solo tramite il collegamento condiviso",
+    "privateMatchDesc": "Partita privata",
     "automaticCancellationInfo": "Annulla automaticamente la partita se non viene raggiunto il numero minimo di giocatori",
     "automaticCancellationExplanation": "Annulleremo la partita se almeno {x} giocatori non si sono uniti {y} ore prima dell'inizio della partita.\nSe i giocatori hanno pagato tramite Nutmeg, riceveranno un rimborso completo",
     "hoursLabel": "Ore",

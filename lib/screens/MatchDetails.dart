@@ -603,6 +603,9 @@ class MatchInfo extends StatelessWidget {
               if (match.price != null)
                 Icons.local_offer_outlined:
                     formatCurrency(match.price!.getTotalPrice()),
+              if (match.isPrivate)
+                Icons.lock_outline:
+                    AppLocalizations.of(context)!.privateMatchDesc,
             }),
             if (isOrganizerView &&
                 match.isMatchFinished() &&

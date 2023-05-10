@@ -198,137 +198,137 @@ class GenericMatchInfo extends StatelessWidget {
           padding: EdgeInsets.only(top: topMargin),
           child: InfoContainer(
               backgroundColor: Palette.white,
-              child: applyBadges(
-                  context,
-                  match,
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      MatchThumbnail(image: sportCenter.getThumbnail()),
-                      SizedBox(width: 15),
-                      Expanded(
-                        child: Column(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Text(
-                                      sportCenter.getName() +
-                                          " - " +
-                                          sportCenter.getCourtType(),
-                                      style: TextPalette.h2),
-                                ],
-                              ),
-                              SizedBox(
-                                height: 8,
-                              ),
-                              Text(
-                                  formatDate(
-                                          match.getLocalizedTime(
-                                              sportCenter.timezoneId),
-                                          context) +
-                                      " " +
-                                      gmtSuffix(sportCenter.timezoneId),
-                                  style: TextPalette.getBodyText(
-                                      Palette.greyDark)),
-                              SizedBox(
-                                height: 6,
-                              ),
-                              (match.status == MatchStatus.unpublished)
-                                  ? Text(
-                                      AppLocalizations.of(context)!
-                                          .notPublishedStatus,
-                                      style: TextPalette.getBodyText(
-                                          Palette.darkWarning))
-                                  : (match.status == MatchStatus.cancelled)
-                                      ? Text(
-                                          AppLocalizations.of(context)!
-                                              .cancelledStatus,
-                                          style: TextPalette.getBodyText(
-                                              Palette.destructive))
-                                      : (match.isFull())
-                                          ? Text(
-                                              AppLocalizations.of(context)!
-                                                  .fullStatus,
-                                              style: TextPalette.bodyText,
-                                              textAlign: TextAlign.right)
-                                          : Text(
-                                              AppLocalizations.of(context)!
-                                                  .spotsLeft(match.maxPlayers -
-                                                      match.numPlayersGoing()),
-                                              style:
-                                                  TextPalette.bodyTextPrimary,
-                                              textAlign: TextAlign.right),
-                            ]),
-                      ),
-                    ],
-                  ))),
+              child: IntrinsicHeight(
+                child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        MatchThumbnail(image: sportCenter.getThumbnail()),
+                        SizedBox(width: 15),
+                        Expanded(
+                          child: Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Text(
+                                        sportCenter.getName() +
+                                            " - " +
+                                            sportCenter.getCourtType(),
+                                        style: TextPalette.h2),
+                                  ],
+                                ),
+                                SizedBox(
+                                  height: 8,
+                                ),
+                                Text(
+                                    formatDate(
+                                            match.getLocalizedTime(
+                                                sportCenter.timezoneId),
+                                            context) +
+                                        " " +
+                                        gmtSuffix(sportCenter.timezoneId),
+                                    style: TextPalette.getBodyText(
+                                        Palette.greyDark)),
+                                SizedBox(
+                                  height: 6,
+                                ),
+                                (match.status == MatchStatus.unpublished)
+                                    ? Text(
+                                        AppLocalizations.of(context)!
+                                            .notPublishedStatus,
+                                        style: TextPalette.getBodyText(
+                                            Palette.darkWarning))
+                                    : (match.status == MatchStatus.cancelled)
+                                        ? Text(
+                                            AppLocalizations.of(context)!
+                                                .cancelledStatus,
+                                            style: TextPalette.getBodyText(
+                                                Palette.destructive))
+                                        : (match.isFull())
+                                            ? Text(
+                                                AppLocalizations.of(context)!
+                                                    .fullStatus,
+                                                style: TextPalette.bodyText,
+                                                textAlign: TextAlign.right)
+                                            : Text(
+                                                AppLocalizations.of(context)!
+                                                    .spotsLeft(match.maxPlayers -
+                                                        match.numPlayersGoing()),
+                                                style:
+                                                    TextPalette.bodyTextPrimary,
+                                                textAlign: TextAlign.right),
+                              ]),
+                        ),
+                        Column(children: [
+                          if (match.isPrivate)
+                            Icon(Icons.lock_outline),
+                          Spacer(),
+                          getBadges(context, match)
+                        ],)
+                      ],
+                    ),
+              )),
         ),
         onTap: () => onTap(context, match.documentId));
   }
 
-  Widget applyBadges(BuildContext context, Match match, Widget w) {
-    var userAvatar = Container(
-        width: 26,
-        height: 26,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.all(Radius.circular(50.0)),
-          border: Border.all(
-            color: Colors.white,
-            width: 2.0,
-          ),
-        ),
-        child:
-            UserAvatar(14, context.read<UserState>().getLoggedUserDetails()));
-    var plusPlayers = Container(
-      width: 26,
-      height: 26,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.all(Radius.circular(50.0)),
-        border: Border.all(
-          color: Colors.white,
-          width: 2.0,
-        ),
-      ),
-      child: CircleAvatar(
-          child: Center(
-              child: Text("+" + (match.numPlayersGoing() - 1).toString(),
-                  style: GoogleFonts.roboto(
-                      color: Palette.white,
-                      fontSize: 9,
-                      fontWeight: FontWeight.w500))),
-          radius: 14,
-          backgroundColor: Palette.primary),
-    );
-
-    var finalWidget = w;
-
+  Widget getBadges(BuildContext context, Match match) {
     var shouldShowUserBadge = context.watch<UserState>().isLoggedIn() &&
         match.isUserGoing(context.watch<UserState>().getLoggedUserDetails()!);
 
-    var badges = [];
+    var badges = [
+      if (shouldShowUserBadge)
+        Container(
+            width: 26,
+            height: 26,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.all(Radius.circular(50.0)),
+              border: Border.all(
+                color: Colors.white,
+                width: 2.0,
+              ),
+            ),
+            child:
+            UserAvatar(14, context.read<UserState>().getLoggedUserDetails())),
+      if (shouldShowUserBadge && match.numPlayersGoing() > 1)
+        Container(
+          width: 26,
+          height: 26,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.all(Radius.circular(50.0)),
+            border: Border.all(
+              color: Colors.white,
+              width: 2.0,
+            ),
+          ),
+          child: CircleAvatar(
+              child: Center(
+                  child: Text("+" + (match.numPlayersGoing() - 1).toString(),
+                      style: GoogleFonts.roboto(
+                          color: Palette.white,
+                          fontSize: 9,
+                          fontWeight: FontWeight.w500))),
+              radius: 14,
+              backgroundColor: Palette.primary),
+        ),
+      if (match.isTest)
+        TestBadge()
+    ];
 
-    if (shouldShowUserBadge) {
-      badges.add(userAvatar);
-    }
-    if (shouldShowUserBadge && match.numPlayersGoing() > 1) {
-      badges.add(plusPlayers);
-    }
-    if (match.isTest) {
-      badges.add(TestBadge());
-    }
-
-    var e = 18.0 * (badges.length - 1);
+    var p = 0.0;
+    List<Widget> positionedBadges = [];
     badges.forEach((b) {
-      // fixme not sure why we need to do -6 here
-      finalWidget =
-          badgeIt(finalWidget, b, BadgePosition.bottomEnd(bottom: -6, end: e));
-      e -= 18;
+      positionedBadges.add(Positioned(child: b, left: p));
+      p = p + 20.0;
     });
 
-    return finalWidget;
+    return Container(
+      height: 26,
+      width: 26 + 20 * (badges.length - 1),
+      child: Stack(children: positionedBadges.toList()),
+    );
   }
 }
 

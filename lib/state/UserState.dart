@@ -65,7 +65,7 @@ class UserState extends ChangeNotifier {
   List<SportCenter>? _sportCenters;
 
   Future<UserDetails?> fetchLoggedUserDetails() async {
-    // use this to navigate as another user for testing
+    // uncomment this to navigate as another user for testing
     // return fetchUserDetails("bQHD0EM265V6GuSZuy1uQPHzb602");
 
     User? u = await FirebaseAuth.instance.authStateChanges().first;
@@ -110,6 +110,8 @@ class UserState extends ChangeNotifier {
     Map<String, dynamic> data = await CloudFunctionsClient()
         .get("sportcenters", args: {"user": currentUserId!})
         ?? {};
+
+    print(data);
 
     _sportCenters = data.entries.map((e) => SportCenter
         .fromJson(Map<String, dynamic>.from(e.value), e.key))
