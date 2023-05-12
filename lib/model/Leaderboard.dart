@@ -24,6 +24,22 @@ class LeaderboardEntry {
       this.numWin = userJson["record"]["num_win"],
       this.averageScore = userJson["scores"]["number_of_scored_games"] == 0
           ? null : userJson["scores"]["total_sum"] / userJson["scores"]["number_of_scored_games"];
+
+  static int compareBy(LeaderboardEntry a, LeaderboardEntry b, int index) {
+    if (index == 0) {
+      return (b.averageScore ?? 0).compareTo(a.averageScore ?? 0);
+    }
+    if (index == 1) {
+      return b.potmCount.compareTo(a.potmCount);
+    }
+    if (index == 2) {
+      return b.numMatchesJoined.compareTo(a.numMatchesJoined);
+    }
+    if (index == 3) {
+      return (b.getWinLossRatio() ?? -1).compareTo(a.getWinLossRatio() ?? -1);
+    }
+    return 0;
+  }
 }
 
 class Leaderboard {
