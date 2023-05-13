@@ -12,13 +12,16 @@ class PageTemplate extends StatelessWidget {
   final List<Widget> widgets;
   final Row? appBar;
   final Widget? bottomNavigationBar;
+  final bool withBottomSafeArea;
 
   const PageTemplate({Key? key,
     this.refreshState,
     required this.widgets,
     this.appBar,
     this.bottomNavigationBar,
-    this.initState}) : super(key: key);
+    this.initState,
+    this.withBottomSafeArea = false
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

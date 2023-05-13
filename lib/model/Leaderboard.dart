@@ -26,19 +26,30 @@ class LeaderboardEntry {
           ? null : userJson["scores"]["total_sum"] / userJson["scores"]["number_of_scored_games"];
 
   static int compareBy(LeaderboardEntry a, LeaderboardEntry b, int index) {
+    var score = (b.averageScore ?? 0).compareTo(a.averageScore ?? 0);
+    var potm = b.potmCount.compareTo(a.potmCount);
+    var numMatches = b.numMatchesJoined.compareTo(a.numMatchesJoined);
+    var winLossRatio =  (b.getWinLossRatio() ?? -1).compareTo(a.getWinLossRatio() ?? -1);
+
+    List<int> ordered;
+
     if (index == 0) {
-      return (b.averageScore ?? 0).compareTo(a.averageScore ?? 0);
+      ordered = [score, potm, numMatches, winLossRatio];
     }
-    if (index == 1) {
-      return b.potmCount.compareTo(a.potmCount);
+    else if (index == 1) {
+      ordered = [potm, score, numMatches, winLossRatio];
+    } else if (index == 2) {
+      ordered = [numMatches, score, potm, winLossRatio];
+    } else {
+      ordered = [winLossRatio, score, potm, numMatches];
     }
-    if (index == 2) {
-      return b.numMatchesJoined.compareTo(a.numMatchesJoined);
+
+    var differences = ordered.where((e) => e != 0);
+
+    if (differences.length == 0) {
+      return 0;
     }
-    if (index == 3) {
-      return (b.getWinLossRatio() ?? -1).compareTo(a.getWinLossRatio() ?? -1);
-    }
-    return 0;
+    return differences.first;
   }
 }
 

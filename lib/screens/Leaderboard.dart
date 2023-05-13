@@ -57,7 +57,9 @@ class LeaderboardScreenState extends State<LeaderboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return PageTemplate(widgets: [
+    return PageTemplate(
+        withBottomSafeArea: true,
+        widgets: [
       Center(
         child: Container(
           width: 800,
@@ -140,7 +142,8 @@ class LeaderboardScreenState extends State<LeaderboardScreen> {
               SizedBox(height: 16),
               if (leaderboard != null)
                 InfoContainer(
-                    padding: EdgeInsets.all(8),
+                    padding: EdgeInsets.only(left: 8, right: 16,
+                        top: 16, bottom: 16),
                     child: Container(
                       height: MediaQuery.of(context).size.height,
                       child: DataTable2(
@@ -149,10 +152,9 @@ class LeaderboardScreenState extends State<LeaderboardScreen> {
                           dataRowHeight: 36,
                           headingRowHeight: 36,
                           columnSpacing: 4,
-                          smRatio: 0.8,
+                          smRatio: 0.55,
                           dividerThickness: 0,
                           horizontalMargin: 0,
-                          onSelectAll: (val) => print('s'),
                           columns: [
                             DataColumn2(
                               fixedWidth: 20,
