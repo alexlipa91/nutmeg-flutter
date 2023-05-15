@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
-import 'package:nutmeg/state/UserState.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/Avatar.dart';
 import 'package:nutmeg/widgets/Containers.dart';
-import 'package:provider/provider.dart';
 import 'package:data_table_2/data_table_2.dart';
 
 import '../model/Leaderboard.dart';
@@ -48,9 +46,6 @@ class LeaderboardScreenState extends State<LeaderboardScreen> {
       this.leaderboard!.entries.sort((a, b) {
         return LeaderboardEntry.compareBy(a, b, sortColumnIndex);
       });
-    });
-    leaderboard!.entries.forEach((e) {
-      context.read<UserState>().getOrFetch(e.userId);
     });
   }
 
@@ -216,12 +211,7 @@ class LeaderboardScreenState extends State<LeaderboardScreen> {
                                                     children: [
                                                       UserAvatar(
                                                           10.0,
-                                                          context
-                                                              .watch<
-                                                                  UserState>()
-                                                              .getUserDetail(
-                                                                  entry.value
-                                                                      .userId)),
+                                                          leaderboard!.userData[entry.value.userId]),
                                                       SizedBox(
                                                         width: 4,
                                                       ),
@@ -230,13 +220,8 @@ class LeaderboardScreenState extends State<LeaderboardScreen> {
                                                           alignment: Alignment
                                                               .centerLeft,
                                                           child: UserNameWidget(
-                                                              userDetails: context
-                                                                  .watch<
-                                                                      UserState>()
-                                                                  .getUserDetail(
-                                                                      entry
-                                                                          .value
-                                                                          .userId)),
+                                                              userDetails:
+                                                              leaderboard!.userData[entry.value.userId]),
                                                         ),
                                                       )
                                                     ],

@@ -1,3 +1,5 @@
+import 'package:nutmeg/model/UserDetails.dart';
+
 class LeaderboardEntry {
   String userId;
   int numMatchesJoined;
@@ -56,9 +58,13 @@ class LeaderboardEntry {
 class Leaderboard {
   String id;
   List<LeaderboardEntry> entries;
+  Map<String, UserDetails> userData;
 
   Leaderboard.fromJson(String id, Map<String, dynamic> json):
         this.id = id,
+        userData = (json["cache_user_data"] as Map<String, dynamic>)
+            .map((k, v) => MapEntry(k,
+            UserDetails.fromJson(json["cache_user_data"][k], k))),
         entries = List<LeaderboardEntry>.from(
             (json["entries"] as Map<String, dynamic>).entries.map((e) =>
                 LeaderboardEntry.fromJson(e.key, e.value))
