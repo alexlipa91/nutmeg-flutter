@@ -887,8 +887,6 @@ class CreateMatchState extends State<CreateMatch> {
                                       .read<UserState>()
                                       .getLoggedUserDetails()!
                                       .documentId,
-                              organiserWithFee ? 50 : 0,
-                              0,
                               widget.existingMatch != null
                                   ? widget.existingMatch!.going
                                   : Map(),

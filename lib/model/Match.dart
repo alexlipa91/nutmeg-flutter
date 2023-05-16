@@ -66,9 +66,6 @@ class Match {
   String? organizerId;
   Duration? cancelBefore;
 
-  int userFee;
-  int organiserFee;
-
   List<int>? score;
 
   String? dynamicLink;
@@ -84,8 +81,8 @@ class Match {
       this.sportCenter,
       this.sportCenterSubLocation,
       this.maxPlayers, this.price, this.duration,
-      this.isTest, this.minPlayers, this.organizerId, this.userFee,
-      this.organiserFee, this.going, this.computedTeams, this.manualTeams,
+      this.isTest, this.minPlayers, this.organizerId,
+      this.going, this.computedTeams, this.manualTeams,
       this.isPrivate, this.cancelBefore, this.score);
 
   Match.fromJson(Map<String, dynamic> jsonInput, String documentId)
@@ -100,8 +97,6 @@ class Match {
         hasManualTeams = jsonInput["hasManualTeams"],
         price = jsonInput["price"] == null ? null : Price.fromJson(jsonInput['price']),
         sportCenterId = jsonInput['sportCenterId'],
-        userFee = jsonInput["userFee"] ?? 0,
-        organiserFee = jsonInput["organiserFee"] ?? 0,
         score = jsonInput["score"] == null
             ? null
             : List<int>.from(jsonInput["score"]),
@@ -179,10 +174,6 @@ class Match {
         'organizerId': organizerId,
         if (cancelBefore != null)
           'cancelHoursBefore': cancelBefore?.inHours,
-        if (userFee > 0)
-          'userFee': userFee,
-        if (organiserFee > 0)
-          'organiserFee': organiserFee,
         if (score != null)
           'score': score,
         "isPrivate": isPrivate,

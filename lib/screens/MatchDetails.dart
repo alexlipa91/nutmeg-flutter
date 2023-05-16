@@ -247,7 +247,7 @@ class MatchDetailsState extends State<MatchDetails> {
           }
 
           if (match.price != null) {
-            var refundString = (match.userFee == 0)
+            var refundString = (match.price!.userFee == 0)
                 ? AppLocalizations.of(context)!.fullRefund
                 : AppLocalizations.of(context)!.refundWithoutFee;
 
