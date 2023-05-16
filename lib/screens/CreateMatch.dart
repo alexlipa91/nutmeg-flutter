@@ -901,7 +901,7 @@ class CreateMatchState extends State<CreateMatch> {
                               widget.existingMatch != null
                                   ? widget.existingMatch!.isPrivate
                                   : privateMatch,
-                              cancelBefore,
+                              withAutomaticCancellation ? cancelBefore : null,
                               widget.existingMatch != null
                                   ? widget.existingMatch!.score
                                   : null);
