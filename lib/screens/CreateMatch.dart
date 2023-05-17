@@ -153,7 +153,7 @@ class CreateMatchState extends State<CreateMatch> {
       startTime = widget.existingMatch!.getStart();
       endTime = widget.existingMatch!.getEnd();
       courtNumber = widget.existingMatch!.sportCenterSubLocation;
-      price = widget.existingMatch!.price!.basePrice.toString();
+      price = formatCurrency(widget.existingMatch!.price!.basePrice);
       numberOfPeopleRangeValues = RangeValues(
           widget.existingMatch!.minPlayers.toDouble(),
           widget.existingMatch!.maxPlayers.toDouble());

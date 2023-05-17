@@ -609,7 +609,8 @@ class MatchInfo extends StatelessWidget {
             }),
             if (isOrganizerView &&
                 match.isMatchFinished() &&
-                match.cancelledAt == null)
+                match.cancelledAt == null &&
+                match.going.length > 0)
               Builder(builder: (context) {
                 var date = match.payout != null
                     ? match.payout!.arrivalDate
