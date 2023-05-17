@@ -1,1 +1,1 @@
-Fix safe area issue in bottom sheet
+General stability improvements
