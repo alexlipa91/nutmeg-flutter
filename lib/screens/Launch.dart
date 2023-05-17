@@ -70,9 +70,7 @@ final appRouter = GoRouter(
               routes: [
                 GoRoute(
                     path: 'edit',
-                    builder: (context, state) => CreateMatch.edit(context
-                        .read<MatchesState>()
-                        .getMatch(state.params["id"]!)))
+                    builder: (context, state) => CreateMatch.edit(state.params["id"]!))
               ]),
           GoRoute(
               path: 'leaderboard',
@@ -130,6 +128,8 @@ void main() async {
       await FirebaseCrashlytics.instance.recordFlutterError(details);
     };
   }
+
+  ErrorWidget.builder = (errorDetails) => Container();
 
   runZonedGuarded(() {
     runApp(MultiProvider(

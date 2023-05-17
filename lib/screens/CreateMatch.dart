@@ -35,7 +35,7 @@ import '../widgets/ModalBottomSheet.dart';
 
 // main widget
 class CreateMatch extends StatefulWidget {
-  final Match? existingMatch;
+  final String? existingMatch;
 
   CreateMatch() : existingMatch = null;
 
@@ -139,24 +139,29 @@ class CreateMatchState extends State<CreateMatch> {
     startTimefocusNode.addListener(
         () => unfocusIfNoValue(startTimefocusNode, startTimeEditingController));
 
+    initAsync();
+  }
+
+  Future<void> initAsync() async {
     // nothing that context.watch should be here
     if (widget.existingMatch != null) {
-      sportCenter = widget.existingMatch!.sportCenter;
-      isTest = widget.existingMatch!.isTest;
-      withAutomaticCancellation = widget.existingMatch!.cancelBefore != null;
+      var match = await context.read<MatchesState>().fetchMatch(widget.existingMatch!);
+      sportCenter = match.sportCenter;
+      isTest = match.isTest;
+      withAutomaticCancellation = match.cancelBefore != null;
       cancelTimeEditingController.text =
-          widget.existingMatch!.cancelBefore?.inHours.toString() ?? "";
-      managePayments = widget.existingMatch!.price != null;
+          match.cancelBefore?.inHours.toString() ?? "";
+      managePayments = match.price != null;
       paymentsPossible =
-          !blacklistedCountriesForPayments.contains(sportCenter!.country);
-      start = widget.existingMatch!.dateTime;
-      startTime = widget.existingMatch!.getStart();
-      endTime = widget.existingMatch!.getEnd();
-      courtNumber = widget.existingMatch!.sportCenterSubLocation;
-      price = formatCurrency(widget.existingMatch!.price!.basePrice);
+      !blacklistedCountriesForPayments.contains(sportCenter!.country);
+      start = match.dateTime;
+      startTime = match.getStart();
+      endTime = match.getEnd();
+      courtNumber = match.sportCenterSubLocation;
+      price = formatCurrency(match.price!.basePrice);
       numberOfPeopleRangeValues = RangeValues(
-          widget.existingMatch!.minPlayers.toDouble(),
-          widget.existingMatch!.maxPlayers.toDouble());
+          match.minPlayers.toDouble(),
+          match.maxPlayers.toDouble());
     }
 
     refreshState();
@@ -201,6 +206,11 @@ class CreateMatchState extends State<CreateMatch> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.existingMatch != null
+        && context.watch<MatchesState>().getMatch(widget.existingMatch!) == null) {
+      return Container();
+    }
+
     initControllers();
 
     var requiredError = AppLocalizations.of(context)!.requiredError;
@@ -882,26 +892,26 @@ class CreateMatchState extends State<CreateMatch> {
                               isTest,
                               numberOfPeopleRangeValues.start.toInt(),
                               widget.existingMatch != null
-                                  ? widget.existingMatch!.organizerId
+                                  ? context.watch<MatchesState>().getMatch(widget.existingMatch!)!.organizerId
                                   : context
                                       .read<UserState>()
                                       .getLoggedUserDetails()!
                                       .documentId,
                               widget.existingMatch != null
-                                  ? widget.existingMatch!.going
+                                  ? context.watch<MatchesState>().getMatch(widget.existingMatch!)!.going
                                   : Map(),
                               widget.existingMatch != null
-                                  ? widget.existingMatch!.computedTeams
+                                  ? context.watch<MatchesState>().getMatch(widget.existingMatch!)!.computedTeams
                                   : [],
                               widget.existingMatch != null
-                                  ? widget.existingMatch!.manualTeams
+                                  ? context.watch<MatchesState>().getMatch(widget.existingMatch!)!.manualTeams
                                   : [],
                               widget.existingMatch != null
-                                  ? widget.existingMatch!.isPrivate
+                                  ? context.watch<MatchesState>().getMatch(widget.existingMatch!)!.isPrivate
                                   : privateMatch,
                               withAutomaticCancellation ? cancelBefore : null,
                               widget.existingMatch != null
-                                  ? widget.existingMatch!.score
+                                  ? context.watch<MatchesState>().getMatch(widget.existingMatch!)!.score
                                   : null);
 
                           var id;
@@ -911,12 +921,12 @@ class CreateMatchState extends State<CreateMatch> {
                                 .createMatch(match);
                             print("added match with id " + id);
                           } else {
-                            match.documentId = widget.existingMatch!.documentId;
+                            match.documentId = widget.existingMatch!;
                             await context
                                 .read<MatchesState>()
                                 .editMatch(match.documentId, match.toJson());
 
-                            id = widget.existingMatch!.documentId;
+                            id = widget.existingMatch!;
                           }
                           return id;
                         });

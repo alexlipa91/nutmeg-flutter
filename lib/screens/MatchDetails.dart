@@ -608,6 +608,7 @@ class MatchInfo extends StatelessWidget {
                     AppLocalizations.of(context)!.privateMatchDesc,
             }),
             if (isOrganizerView &&
+                match.price != null &&
                 match.isMatchFinished() &&
                 match.cancelledAt == null &&
                 match.going.length > 0)
