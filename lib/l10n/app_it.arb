@@ -93,6 +93,7 @@
     "privateMatchDesc": "Partita privata",
     "automaticCancellationInfo": "Annulla automaticamente la partita se non viene raggiunto il numero minimo di giocatori",
     "automaticCancellationExplanation": "Annulleremo la partita se almeno {x} giocatori non si sono uniti {y} ore prima dell'inizio della partita.\nSe i giocatori hanno pagato tramite Nutmeg, riceveranno un rimborso completo",
+    "teamNameLabelText": "SQUADRA {x}",
     "hoursLabel": "Ore",
     "youWantToLeaveTitle": "Sei sicuro di voler uscire?",
     "youWantToLeaveSubtitle": "Se esci, tutte le modifiche non salvate andranno perse.",

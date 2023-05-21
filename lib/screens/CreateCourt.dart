@@ -262,9 +262,11 @@ class CreateCourtState extends State<CreateCourt> {
                         "courtType": courtTypeController.text
                       }
                     );
-                    await context.read<UserState>().fetchLoggedUserSportCenters();
+                    List<SportCenter> sportCenters = await context.read<UserState>()
+                        .fetchLoggedUserSportCenters();
 
-                    Navigator.of(context).pop();
+                    Navigator.of(context).pop(sportCenters
+                        .firstWhere((s) => s.placeId == placeId!));
                   }
                 }, Primary()),
               ),

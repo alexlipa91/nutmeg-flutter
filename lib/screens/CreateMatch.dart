@@ -1087,8 +1087,9 @@ class LocationsBottomSheet extends StatelessWidget {
             yourCourtsWidgets.addAll([
               InkWell(
                 onTap: () async {
-                  await Navigator.push(context,
+                  SportCenter? sp = await Navigator.push(context,
                       MaterialPageRoute(builder: (context) => CreateCourt()));
+                  Navigator.of(context).pop(sp);
                 },
                 child: Row(
                   children: [

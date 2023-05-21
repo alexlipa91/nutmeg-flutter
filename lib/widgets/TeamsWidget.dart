@@ -179,7 +179,7 @@ class TeamsWidgetState extends State<TeamsWidget> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                "Team A",
+                AppLocalizations.of(context)!.teamNameLabelText("A"),
                 style: TextPalette.h2,
               ),
               Expanded(
@@ -201,7 +201,7 @@ class TeamsWidgetState extends State<TeamsWidget> {
                 ),
               ),
               Text(
-                "Team B",
+                AppLocalizations.of(context)!.teamNameLabelText("B"),
                 style: TextPalette.h2,
               ),
             ],

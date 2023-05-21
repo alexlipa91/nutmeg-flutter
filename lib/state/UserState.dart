@@ -111,8 +111,6 @@ class UserState extends ChangeNotifier {
         .get("sportcenters", args: {"user": currentUserId!})
         ?? {};
 
-    print(data);
-
     _sportCenters = data.entries.map((e) => SportCenter
         .fromJson(Map<String, dynamic>.from(e.value), e.key))
         .toList();
