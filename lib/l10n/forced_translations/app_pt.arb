@@ -27,5 +27,15 @@
      "createNewMatchActionText": "CRIAR NOVA PARTIDA",
      "newMatchTitle": "Nova partida",
      "editMatchTitle": "Editar partida",
-     "currentLocationInfo": "Sua localização nos ajuda a melhorar sua experiência com recomendações aproximadas de partidas."
+     "currentLocationInfo": "Sua localização nos ajuda a melhorar sua experiência com recomendações aproximadas de partidas.",
+     "courtInfoText": "Informações do campo / quadra",
+     "courtLocationLabel": "Localização",
+     "courtTypeTitleText": "Tipo",
+     "indoorTitle": "Quadra",
+     "changeRoomsAvailableLabel": "Vestiários disponíveis",
+     "privateMatchInfo": "A partida é privada. Os usuários podem entrar na partida apenas por meio do link compartilhado",
+     "popularCourtsTitle": "Campos / quadras Populares",
+     "yourCourtsTitle": "Seus campos / quadras",
+     "numMatchesDrawBoxTitle": "Partidas empatadas"
+     
 }
