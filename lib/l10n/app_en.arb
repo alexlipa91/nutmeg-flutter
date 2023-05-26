@@ -22,10 +22,11 @@
 
 
     "matchDetailsScreen": "*****************************************************************************************************",
-    "cancellationInfo": "The match will be automatically canceled at {date} if less than {n} players have joined.",
+    "cancellationInfo": "The match will be automatically canceled on {date} at {hour} if less than {n} players have joined.",
     "@cancellationInfo" : {
         "placeholders": {
             "date":  {"type": "String"},
+            "hour":  {"type": "String"},
             "n": {"type": "int"}
         }
     },
@@ -268,5 +269,14 @@
         },
 
     "changeLanguageButton": "CHANGE LANGUAGE",
-    "languageModalTitle": "Language"
+    "languageModalTitle": "Language",
+
+    "preMatchNotificationTitle": "Ready for the match? u\"\u26BD\uFE0F",
+    "preMatchNotificationBody": "Your match today is at {d} at {s}. Tap here to check your team!",
+    "@preMatchNotificationBody": {
+        "placeholders": {
+            "d":  {"type": "String", "example": "17:00"},
+            "d":  {"type": "String"}
+        }
+    }
 }

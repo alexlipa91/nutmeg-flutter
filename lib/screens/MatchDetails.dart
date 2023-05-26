@@ -62,9 +62,11 @@ class MatchDetailsState extends State<MatchDetails> {
   Future<void> showRatingModalIfNeverSeen(
       Match match, UserDetails? loggedUser) async {
     bool? shown = (await SharedPreferences.getInstance())
-        .getBool("${match.documentId}-rate-action-shown") ?? false;
+            .getBool("${match.documentId}-rate-action-shown") ??
+        false;
     if (!shown) {
-      if (match.status == MatchStatus.to_rate && match.isUserGoing(loggedUser)) {
+      if (match.status == MatchStatus.to_rate &&
+          match.isUserGoing(loggedUser)) {
         var stillToVote = context
             .read<MatchesState>()
             .getStillToVote(widget.matchId, loggedUser!.documentId);
@@ -233,15 +235,14 @@ class MatchDetailsState extends State<MatchDetails> {
           var rules = [];
 
           if (match.cancelBefore != null) {
-            var cancellationDate =
-            match.dateTime.subtract(match.cancelBefore!);
+            var cancellationDate = match.dateTime.subtract(match.cancelBefore!);
 
             if (cancellationDate.isAfter(DateTime.now())) {
-              rules.add(AppLocalizations.of(context)!
-                  .cancellationInfo(
+              rules.add(AppLocalizations.of(context)!.cancellationInfo(
                   MatchInfo.formatDay(
-                      match.getLocalizedTime(sportCenter.timezoneId),
-                      context),
+                      match.getLocalizedTimeCancellation(), context),
+                  MatchInfo.formatHour(
+                      match.getLocalizedTimeCancellation(), context),
                   match.minPlayers));
             }
           }
@@ -258,10 +259,8 @@ class MatchDetailsState extends State<MatchDetails> {
             return null;
           }
 
-          return RuleCard(
-              AppLocalizations.of(context)!.paymentPolicyHeader,
-              rules.join("\n"),
-              large);
+          return RuleCard(AppLocalizations.of(context)!.paymentPolicyHeader,
+              rules.join("\n"), large);
         };
 
         var organiserBadge = match.organizerId != null
@@ -305,8 +304,7 @@ class MatchDetailsState extends State<MatchDetails> {
             if (stats != null) stats,
             // horizontal players list or teams
             sportCenterDetails,
-            if (rules(false) != null)
-              rules(false)!,
+            if (rules(false) != null) rules(false)!,
             if (organiserBadge != null) organiserBadge
           ], SizedBox(height: 16));
         } else {
@@ -342,8 +340,7 @@ class MatchDetailsState extends State<MatchDetails> {
                       mainAxisSize: MainAxisSize.min,
                       children: interleave([
                         sportCenterDetails,
-                        if (rules(true) != null)
-                          rules(true)!,
+                        if (rules(true) != null) rules(true)!,
                         if (organiserBadge != null) organiserBadge
                       ], SizedBox(height: 16)),
                     ),
@@ -472,21 +469,30 @@ class MatchInfo extends StatelessWidget {
 
   MatchInfo(this.match, this.sportCenter);
 
+  static String formatDayHour(DateTime d, BuildContext context) {
+    var dayDateFormatPastYear = DateFormat(
+        "MMM dd HH:mm", getLanguageLocaleWatch(context).languageCode);
+    return dayDateFormatPastYear.format(d);
+  }
+
   static String formatDay(DateTime d, BuildContext context) {
     var dayDateFormatPastYear = DateFormat(
         "EEEE, MMM dd yyyy", getLanguageLocaleWatch(context).languageCode);
-    var dayDateFormat =
-        DateFormat("EEEE, MMM dd", getLanguageLocaleWatch(context).languageCode);
+    var dayDateFormat = DateFormat(
+        "EEEE, MMM dd", getLanguageLocaleWatch(context).languageCode);
     return DateTime.now().year == d.year
         ? dayDateFormat.format(d)
         : dayDateFormatPastYear.format(d);
   }
 
-  @override
-  Widget build(BuildContext context) {
+  static String formatHour(DateTime d, BuildContext context) {
     var hourDateFormat =
         DateFormat("HH:mm", getLanguageLocaleWatch(context).languageCode);
+    return hourDateFormat.format(d);
+  }
 
+  @override
+  Widget build(BuildContext context) {
     var child;
 
     var matchWidget = getStatusWidget(context, match);
@@ -592,11 +598,11 @@ class MatchInfo extends StatelessWidget {
               ),
             SizedBox(height: 16),
             IconList.fromIcon({
-              Icons.calendar_month_outlined: formatDay(
-                  match.getLocalizedTime(sportCenter.timezoneId), context),
+              Icons.calendar_month_outlined:
+                  formatDay(match.getLocalizedTime(), context),
               Icons.access_time_outlined:
-                  "${hourDateFormat.format(match.getLocalizedTime(sportCenter.timezoneId))} - "
-                          "${hourDateFormat.format(match.getLocalizedTime(sportCenter.timezoneId).add(match.duration))}" +
+                  "${MatchInfo.formatDayHour(match.getLocalizedTime(), context)} - "
+                          "${MatchInfo.formatDayHour(match.getLocalizedTime().add(match.duration), context)}" +
                       " (" +
                       gmtSuffix(sportCenter.timezoneId) +
                       ")",
@@ -986,9 +992,8 @@ class Stats extends StatelessWidget {
               SizedBox(height: 8),
               Text(
                 AppLocalizations.of(context)!.statsAvailableAt(
-                    dayDateFormat.format(match
-                            .getLocalizedTime(sportCenter.timezoneId)
-                            .add(Duration(days: 1))) +
+                    dayDateFormat.format(
+                            match.getLocalizedTime().add(Duration(days: 1))) +
                         " ${gmtSuffix(sportCenter.timezoneId)}"),
                 style: TextPalette.bodyText,
                 textAlign: TextAlign.center,

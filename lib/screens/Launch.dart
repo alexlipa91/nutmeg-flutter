@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -279,10 +280,7 @@ class LaunchWidgetState extends State<LaunchWidget> {
       ]);
 }
 
-// Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-//   print("Handling a background message");
-//   print('Message data: ${message.data}');
-// if (message.data.containsKey("match_id")) {
-//   LaunchController.goToMatchScreen(navigatorKey.currentContext, message.data["match_id"]);
-// }
-// }
+Future<void> firebaseMessagingMessageHandler(RemoteMessage message, String source) async {
+  print("Handling a message ($source)");
+  print('Message data: ${message.data}');
+}

@@ -56,7 +56,7 @@ class DynamicLinks {
           ),
           socialMetaTagParameters: SocialMetaTagParameters(
             title: "Match on ${dayDateFormat
-                .format(match.getLocalizedTime(match.sportCenter.timezoneId))} "
+                .format(match.getLocalizedTime())} "
                 "${gmtSuffix(match.sportCenter.timezoneId)}",
             description: "Location: ${match.sportCenter.name}",
           )

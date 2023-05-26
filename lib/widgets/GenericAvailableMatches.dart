@@ -224,8 +224,7 @@ class GenericMatchInfo extends StatelessWidget {
                                 ),
                                 Text(
                                     formatDate(
-                                            match.getLocalizedTime(
-                                                sportCenter.timezoneId),
+                                            match.getLocalizedTime(),
                                             context) +
                                         " " +
                                         gmtSuffix(sportCenter.timezoneId),

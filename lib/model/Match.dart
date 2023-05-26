@@ -216,8 +216,12 @@ class Match {
     return l;
   }
 
-  DateTime getLocalizedTime(String timezoneId) =>
-      tz.TZDateTime.from(dateTime, tz.getLocation(timezoneId));
+  DateTime getLocalizedTime() =>
+      tz.TZDateTime.from(dateTime, tz.getLocation(sportCenter.timezoneId));
+
+  DateTime getLocalizedTimeCancellation() =>
+      tz.TZDateTime.from(dateTime.subtract(cancelBefore!),
+          tz.getLocation(sportCenter.timezoneId));
 
   bool isMatchFinished() => DateTime.now().isAfter(dateTime.add(duration));
 

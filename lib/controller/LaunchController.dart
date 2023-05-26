@@ -47,19 +47,16 @@ class LaunchController {
   static void _setupNotifications(BuildContext context) {
     print("setting up notification handler");
 
-    FirebaseMessaging.onMessageOpenedApp.listen((m) {
-      print("called onMsgOpenedApp callback");
-      _handleMessageFromNotification(m);
-    });
+    // FirebaseMessaging.onMessageOpenedApp.listen((m) {
+    //   print("called onMsgOpenedApp callback");
+    //   _handleMessageFromNotification(m);
+    // });
 
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print('Got a message whilst in the foreground!');
-      print('Message data: ${message.data}');
+    FirebaseMessaging.onMessage.listen((RemoteMessage rm) =>
+        firebaseMessagingMessageHandler(rm, "foreground"));
 
-      if (message.notification != null) {
-        print('Message also contained a notification: ${message.notification}');
-      }
-    });
+    FirebaseMessaging.onBackgroundMessage((RemoteMessage rm) =>
+        firebaseMessagingMessageHandler(rm, "background"));
 
     if (!kIsWeb) {
       Future<Null> Function(PendingDynamicLinkData? dynamicLink) future =

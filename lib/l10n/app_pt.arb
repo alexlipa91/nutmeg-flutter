@@ -12,7 +12,7 @@
     "cancelledStatus": "Cancelado",
     "fullStatus": "Cheio",
     "matchDetailsScreen": "************************************************** ************************************************** *",
-    "cancellationInfo": "A partida será cancelada automaticamente em {date} se menos de {n} jogadores entrarem.",
+    "cancellationInfo": "A partida será cancelada automaticamente em {date} às {hour} se menos de {n} jogadores se juntarem.",
     "fullRefund": "um reembolso total",
     "refundWithoutFee": "um reembolso (excluindo a taxa de serviço Nutmeg)",
     "paymentPolicyHeader": "Política de pagamento",
@@ -82,7 +82,7 @@
     "paymentNotPossibleInfo": "Ainda não podemos processar pagamentos neste local",
     "invalidAmountError": "Montante inválido",
     "minimumAmountError": "O valor mínimo é de € 0,50",
-    "pricePerPlayerLabel": "Preço por Jogador",
+    "pricePerPlayerLabel": "Preço por jogador",
     "nutmegFeeInfo": "Nutmeg reterá uma taxa de serviço de {a} por jogador",
     "youWillGetLabel": "Você vai ter",
     "usersWillPayLabel": "Os usuários vão pagar",
@@ -152,5 +152,7 @@
     "payoutInfoSuccessText": "O pagamento de {a} foi transferido em {d}",
     "payoutInfoOnItsWayText": "O pagamento de {a} está a caminho e deve chegar em {d}",
     "changeLanguageButton": "MUDAR IDIOMA",
-    "languageModalTitle": "Linguagem"
+    "languageModalTitle": "Linguagem",
+    "preMatchNotificationTitle": "Pronto para a partida? você\"⚽️",
+    "preMatchNotificationBody": "Sua partida hoje é em {d} em {s}. Toque aqui para verificar sua equipe!"
 }

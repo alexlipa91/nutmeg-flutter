@@ -12,7 +12,7 @@
     "cancelledStatus": "Annullato",
     "fullStatus": "Pieno",
     "matchDetailsScreen": "************************************************** ************************************************** *",
-    "cancellationInfo": "La partita verrà annullata automaticamente alle {date} se si sono uniti meno di {n} giocatori.",
+    "cancellationInfo": "La partita verrà annullata automaticamente il {date} alle {hour} se si sono uniti meno di {n} giocatori.",
     "fullRefund": "un rimborso completo",
     "refundWithoutFee": "un rimborso (esclusi i costi di servizio di Nutmeg)",
     "paymentPolicyHeader": "Regole",
@@ -46,7 +46,7 @@
     "leaveMatchRefundTitle": "Rimborso",
     "leaveMatchCreditsRefundTitle": "Rimborso crediti",
     "leaveMatchInfo": "Ti rimborseremo sul metodo di pagamento che hai utilizzato per pagare.",
-    "leaveMatchServiceFeeInfo": "La commissione di servizio di {f} non verrà rimborsata",
+    "leaveMatchServiceFeeInfo": "La commissione di servizio di {f} non sarà rimborsata",
     "leaveMatchNoMoneyInfo": "Si prega di confermare se si desidera essere rimossi dall'elenco dei giocatori",
     "paymentFailedTitle": "Pagamento fallito!",
     "paymentFailedSubtitle": "Per favore riprova",
@@ -152,5 +152,7 @@
     "payoutInfoSuccessText": "Il pagamento di {a} è stato trasferito il {d}",
     "payoutInfoOnItsWayText": "Il pagamento di {a} è in arrivo e dovrebbe arrivare il {d}",
     "changeLanguageButton": "CAMBIA LINGUA",
-    "languageModalTitle": "Lingua"
+    "languageModalTitle": "Lingua",
+    "preMatchNotificationTitle": "Pronto per la partita? tu\"⚽️",
+    "preMatchNotificationBody": "La tua partita di oggi è alle {d} alle {s}. Tocca qui per controllare la tua squadra!"
 }
