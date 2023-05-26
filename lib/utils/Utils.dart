@@ -108,4 +108,4 @@ class ConfigsUtils {
 }
 
 String getStripeUrl(bool isTest, String userId) =>
-    CloudFunctionsClient().getUrl("stripe/account/onboard?is_test=$isTest");
+    CloudFunctionsClient().getUrl("stripe/account/onboard?is_test=$isTest&user_id=$userId");
