@@ -376,7 +376,7 @@ class UserPageState extends State<UserPage> {
                                               .goToStripeDashboardText +
                                           (isTest ? " TEST" : ""), (_) async {
                                 var url = CloudFunctionsClient()
-                                    .getUrl("stripe/account?is_test?$isTest");
+                                    .getUrl("stripe/account?is_test?$isTest&user_id=${userDetails.documentId}");
 
                                 await launchUrl(Uri.parse(url));
                               }, Primary()))
