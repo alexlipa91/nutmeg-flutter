@@ -1,1 +1,1 @@
-Fix create court flow
+Fix links to Stripe

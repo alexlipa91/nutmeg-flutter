@@ -15,8 +15,8 @@ class CloudFunctionsClient {
 
   CloudFunctionsClient._internal();
 
-  var appEngineBaseUrl = "https://nutmeg-9099c.ew.r.appspot.com";
-  // var appEngineBaseUrl = "http://localhost:8080";
+  // var appEngineBaseUrl = "https://nutmeg-9099c.ew.r.appspot.com";
+  var appEngineBaseUrl = "http://localhost:8080";
 
   Future<Map<String, String>> _headers() async {
     String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
@@ -25,7 +25,7 @@ class CloudFunctionsClient {
       if (token != null)
         'Authorization': 'Bearer ' + token,
       if (LaunchController.appVersion != null)
-        'app-version': LaunchController.appVersion ?? "n/a"
+        'App-Version': LaunchController.appVersion ?? "n/a"
     };
   }
 
