@@ -86,7 +86,7 @@ class CreateMatchState extends State<CreateMatch> {
   bool isSavedSportCenter = false;
   bool isTest = false;
   bool paymentsPossible = true;
-  bool managePayments = true;
+  bool managePayments = false;
   bool withAutomaticCancellation = false;
   bool privateMatch = false;
   Duration cancelBefore = Duration(hours: 24);
