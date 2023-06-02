@@ -249,7 +249,7 @@ class TeamsWidgetState extends State<TeamsWidget> {
                 ],
               ),
             ),
-          if (isOrganizerView && match.status != MatchStatus.rated)
+          if (match.canUserModifyTeams(context.read<UserState>().currentUserId))
             Padding(
               padding: EdgeInsets.only(top: 24),
               child: Column(

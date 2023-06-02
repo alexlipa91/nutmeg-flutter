@@ -226,7 +226,7 @@ class Match {
   bool isMatchFinished() => DateTime.now().isAfter(dateTime.add(duration));
 
   bool canUserModifyTeams(String? userId) {
-    return userId != null && userId == organizerId;
+    return userId != null && userId == organizerId && status != MatchStatus.rated;
   }
 }
 
