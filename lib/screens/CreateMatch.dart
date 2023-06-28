@@ -154,11 +154,12 @@ class CreateMatchState extends State<CreateMatch> {
       managePayments = match.price != null;
       paymentsPossible =
       !blacklistedCountriesForPayments.contains(sportCenter!.country);
-      start = match.dateTime;
-      startTime = match.getStart();
-      endTime = match.getEnd();
+      start = match.getLocalizedTime();
+      startTime = match.getLocalizedStart();
+      endTime = match.getLocalizedEnd();
       courtNumber = match.sportCenterSubLocation;
-      price = formatCurrency(match.price!.basePrice);
+      price = match.price == null
+          ? null : formatCurrency(match.price!.basePrice);
       numberOfPeopleRangeValues = RangeValues(
           match.minPlayers.toDouble(),
           match.maxPlayers.toDouble());
@@ -862,10 +863,12 @@ class CreateMatchState extends State<CreateMatch> {
                     bool? v = _formKey.currentState?.validate();
                     if (v != null && v) {
                       try {
-                        var dateTime = DateTime(
+                        var dateTime = tz.TZDateTime(
+                            tz.getLocation(sportCenter!.timezoneId),
                             start!.year, start!.month, start!.day,
                             startTime!.hour, startTime!.minute);
-                        var endDateTime = DateTime(
+                        var endDateTime = tz.TZDateTime(
+                            tz.getLocation(sportCenter!.timezoneId),
                             start!.year, start!.month, start!.day,
                             endTime!.hour, endTime!.minute);
                         var forWeeks = repeatsForWeeks;
@@ -892,26 +895,32 @@ class CreateMatchState extends State<CreateMatch> {
                               isTest,
                               numberOfPeopleRangeValues.start.toInt(),
                               widget.existingMatch != null
-                                  ? context.watch<MatchesState>().getMatch(widget.existingMatch!)!.organizerId
+                                  ? context.read<MatchesState>()
+                                  .getMatch(widget.existingMatch!)!.organizerId
                                   : context
                                       .read<UserState>()
                                       .getLoggedUserDetails()!
                                       .documentId,
                               widget.existingMatch != null
-                                  ? context.watch<MatchesState>().getMatch(widget.existingMatch!)!.going
+                                  ? context.read<MatchesState>()
+                                  .getMatch(widget.existingMatch!)!.going
                                   : Map(),
                               widget.existingMatch != null
-                                  ? context.watch<MatchesState>().getMatch(widget.existingMatch!)!.computedTeams
+                                  ? context.read<MatchesState>()
+                                  .getMatch(widget.existingMatch!)!.computedTeams
                                   : [],
                               widget.existingMatch != null
-                                  ? context.watch<MatchesState>().getMatch(widget.existingMatch!)!.manualTeams
+                                  ? context.read<MatchesState>()
+                                  .getMatch(widget.existingMatch!)!.manualTeams
                                   : [],
                               widget.existingMatch != null
-                                  ? context.watch<MatchesState>().getMatch(widget.existingMatch!)!.isPrivate
+                                  ? context.read<MatchesState>()
+                                  .getMatch(widget.existingMatch!)!.isPrivate
                                   : privateMatch,
                               withAutomaticCancellation ? cancelBefore : null,
                               widget.existingMatch != null
-                                  ? context.watch<MatchesState>().getMatch(widget.existingMatch!)!.score
+                                  ? context.read<MatchesState>()
+                                  .getMatch(widget.existingMatch!)!.score
                                   : null);
 
                           var id;

@@ -204,9 +204,11 @@ class Match {
 
   bool hasTeams() => computedTeams.isNotEmpty;
 
-  TimeOfDay getStart() => TimeOfDay(hour: dateTime.hour, minute: dateTime.minute);
-  TimeOfDay getEnd() => TimeOfDay(hour: dateTime.add(duration).hour,
-      minute: dateTime.add(duration).minute);
+  TimeOfDay getLocalizedStart() => TimeOfDay(hour: getLocalizedTime().hour,
+      minute: getLocalizedTime().minute);
+  TimeOfDay getLocalizedEnd() => TimeOfDay(hour: getLocalizedTime()
+      .add(duration).hour,
+      minute: getLocalizedTime().add(duration).minute);
 
   List<String> getToRate(String currentUser) {
     var all = going.keys.toSet();
