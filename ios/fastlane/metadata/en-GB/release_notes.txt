@@ -1,1 +1,1 @@
-Fix links to Stripe
+Fix timezone issue
