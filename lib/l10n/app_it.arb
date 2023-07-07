@@ -154,5 +154,6 @@
     "changeLanguageButton": "CAMBIA LINGUA",
     "languageModalTitle": "Lingua",
     "preMatchNotificationTitle": "Pronto per la partita? tu\"⚽️",
-    "preMatchNotificationBody": "La tua partita di oggi è alle {d} alle {s}. Tocca qui per controllare la tua squadra!"
+    "preMatchNotificationBody": "La tua partita di oggi è alle {d} alle {s}. Tocca qui per controllare la tua squadra!",
+    "leaderboardNoData": "Nessun dato disponibile"
 }

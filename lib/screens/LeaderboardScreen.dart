@@ -5,6 +5,7 @@ import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/Avatar.dart';
 import 'package:nutmeg/widgets/Containers.dart';
 import 'package:data_table_2/data_table_2.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../model/Leaderboard.dart';
 import 'MatchDetails.dart';
@@ -23,9 +24,11 @@ class LeaderboardScreenState extends State<LeaderboardScreen> {
   var leaderboardNameToId = {
     "All time": "abs",
     dateFormatDesc.format(now): dateFormat.format(now),
-    dateFormatDesc.format(nowMinusOneMonth): dateFormat.format(nowMinusOneMonth)
+    dateFormatDesc.format(nowMinusOneMonth):
+        dateFormat.format(nowMinusOneMonth),
   };
 
+  bool isLoading = false;
   Leaderboard? leaderboard;
   String selectedLeaderboard = "All time";
   List<String> sortableColumns = ["Score", "POTM", "Match", "Win %"];
@@ -39,13 +42,20 @@ class LeaderboardScreenState extends State<LeaderboardScreen> {
   }
 
   Future<void> load() async {
+    setState(() {
+      isLoading = true;
+    });
     var l = await CloudFunctionsClient()
         .get("leaderboard/${leaderboardNameToId[selectedLeaderboard]}");
     setState(() {
-      leaderboard = Leaderboard.fromJson(selectedLeaderboard, l!);
-      this.leaderboard!.entries.sort((a, b) {
-        return LeaderboardEntry.compareBy(a, b, sortColumnIndex);
-      });
+      this.leaderboard = null;
+      if (l != null) {
+        leaderboard = Leaderboard.fromJson(selectedLeaderboard, l);
+        this.leaderboard!.entries.sort((a, b) {
+          return LeaderboardEntry.compareBy(a, b, sortColumnIndex);
+        });
+      }
+      isLoading = false;
     });
   }
 
@@ -90,7 +100,6 @@ class LeaderboardScreenState extends State<LeaderboardScreen> {
                                 setState(() {
                                   if (v != selectedLeaderboard) {
                                     selectedLeaderboard = v!;
-                                    leaderboard = null;
                                     load();
                                   }
                                 });
@@ -137,7 +146,7 @@ class LeaderboardScreenState extends State<LeaderboardScreen> {
                     ],
                   ),
                   SizedBox(height: 16),
-                  if (leaderboard != null)
+                  if (!isLoading && leaderboard != null)
                     Expanded(
                       child: InfoContainer(
                           padding: EdgeInsets.only(
@@ -211,7 +220,9 @@ class LeaderboardScreenState extends State<LeaderboardScreen> {
                                                     children: [
                                                       UserAvatar(
                                                           10.0,
-                                                          leaderboard!.userData[entry.value.userId]),
+                                                          leaderboard!.userData[
+                                                              entry.value
+                                                                  .userId]),
                                                       SizedBox(
                                                         width: 4,
                                                       ),
@@ -220,8 +231,10 @@ class LeaderboardScreenState extends State<LeaderboardScreen> {
                                                           alignment: Alignment
                                                               .centerLeft,
                                                           child: UserNameWidget(
-                                                              userDetails:
-                                                              leaderboard!.userData[entry.value.userId]),
+                                                              userDetails: leaderboard!
+                                                                      .userData[
+                                                                  entry.value
+                                                                      .userId]),
                                                         ),
                                                       )
                                                     ],
@@ -261,7 +274,7 @@ class LeaderboardScreenState extends State<LeaderboardScreen> {
                             ],
                           )),
                     ),
-                  if (leaderboard == null)
+                  if (isLoading)
                     Padding(
                       padding: EdgeInsets.only(top: 36),
                       child: Center(
@@ -273,7 +286,16 @@ class LeaderboardScreenState extends State<LeaderboardScreen> {
                                 valueColor: AlwaysStoppedAnimation<Color>(
                                     Palette.primary))),
                       ),
-                    )
+                    ),
+                  if (!isLoading && leaderboard == null)
+                    Padding(
+                      padding: EdgeInsets.only(top: 36),
+                      child: Center(
+                          child: Text(
+                        AppLocalizations.of(context)!.searchLocationTitle,
+                        style: TextPalette.bodyText,
+                      )),
+                    ),
                 ],
               ),
             ),

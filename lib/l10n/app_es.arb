@@ -61,7 +61,7 @@
     "noMatchesHere": "No hay coincidencias aquí",
     "browseOrCreateText": "Busca coincidencias o crea tu propia coincidencia",
     "createNewMatchActionText": "CREAR NUEVA PARTIDA",
-    "newMatchTitle": "Nuevo partido",
+    "newMatchTitle": "Nuevo Partido",
     "editMatchTitle": "Editar coincidencia",
     "crudMatchGeneralTitle": "General",
     "dateInputLabel": "Fecha",
@@ -141,7 +141,7 @@
     "numMatchesTitle": "Partidos Jugados",
     "numPlayersOfTheMatchBoxTitle": "Jugadores del partido",
     "numMatchesDrawBoxTitle": "Partidos Sorteo",
-    "numMatchesWonBoxTitle": "Partidos ganados",
+    "numMatchesWonBoxTitle": "Partidos Ganados",
     "numMatchesLostBoxTitle": "Partidos perdidos",
     "averageScoreBoxTitle": "Promedio Puntaje",
     "organiserSectionTitle": "ORGANIZADOR",
@@ -154,5 +154,6 @@
     "changeLanguageButton": "CAMBIAR IDIOMA",
     "languageModalTitle": "Idioma",
     "preMatchNotificationTitle": "¿Listo para el partido? tu\"⚽️",
-    "preMatchNotificationBody": "Tu partido de hoy es a las {d} a las {s}. ¡Toca aquí para ver tu equipo!"
+    "preMatchNotificationBody": "Tu partido de hoy es a las {d} a las {s}. ¡Toca aquí para ver tu equipo!",
+    "leaderboardNoData": "Sin datos disponibles"
 }

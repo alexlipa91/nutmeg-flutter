@@ -278,5 +278,7 @@
             "d":  {"type": "String", "example": "17:00"},
             "d":  {"type": "String"}
         }
-    }
+    },
+
+    "leaderboardNoData": "No available data"
 }
