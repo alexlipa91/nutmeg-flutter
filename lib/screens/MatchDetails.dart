@@ -61,9 +61,10 @@ class MatchDetailsState extends State<MatchDetails> {
 
   Future<void> showRatingModalIfNeverSeen(
       Match match, UserDetails? loggedUser) async {
-    bool? shown = (await SharedPreferences.getInstance())
-            .getBool("${match.documentId}-rate-action-shown") ??
-        false;
+    // bool? shown = (await SharedPreferences.getInstance())
+    //         .getBool("${match.documentId}-rate-action-shown") ??
+    //     false;
+    bool shown = false;
     if (!shown) {
       if (match.status == MatchStatus.to_rate &&
           match.isUserGoing(loggedUser)) {
