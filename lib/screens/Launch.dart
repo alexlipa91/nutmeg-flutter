@@ -239,8 +239,7 @@ class LaunchWidgetState extends State<LaunchWidget> {
             children: [
               Image.asset("assets/nutmeg_white.png", width: 116, height: 46),
               SizedBox(height: 30),
-              CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
+              Image.asset("assets/loading.gif", width: 100)
             ],
           )
         ],
