@@ -23,7 +23,6 @@ import 'package:nutmeg/widgets/PageTemplate.dart';
 import 'package:nutmeg/widgets/Section.dart';
 import 'package:nutmeg/widgets/Skeletons.dart';
 import 'package:provider/provider.dart';
-import 'package:time_picker_widget/time_picker_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -145,7 +144,8 @@ class CreateMatchState extends State<CreateMatch> {
   Future<void> initAsync() async {
     // nothing that context.watch should be here
     if (widget.existingMatch != null) {
-      var match = await context.read<MatchesState>().fetchMatch(widget.existingMatch!);
+      var match =
+          await context.read<MatchesState>().fetchMatch(widget.existingMatch!);
       sportCenter = match.sportCenter;
       isTest = match.isTest;
       withAutomaticCancellation = match.cancelBefore != null;
@@ -153,24 +153,23 @@ class CreateMatchState extends State<CreateMatch> {
           match.cancelBefore?.inHours.toString() ?? "";
       managePayments = match.price != null;
       paymentsPossible =
-      !blacklistedCountriesForPayments.contains(sportCenter!.country);
+          !blacklistedCountriesForPayments.contains(sportCenter!.country);
       start = match.getLocalizedTime();
       startTime = match.getLocalizedStart();
       endTime = match.getLocalizedEnd();
       courtNumber = match.sportCenterSubLocation;
-      price = match.price == null
-          ? null : formatCurrency(match.price!.basePrice);
-      numberOfPeopleRangeValues = RangeValues(
-          match.minPlayers.toDouble(),
-          match.maxPlayers.toDouble());
+      price =
+          match.price == null ? null : formatCurrency(match.price!.basePrice);
+      numberOfPeopleRangeValues =
+          RangeValues(match.minPlayers.toDouble(), match.maxPlayers.toDouble());
     }
 
     refreshState();
   }
 
   void initControllers() {
-    var dateFormat = DateFormat("dd-MM-yyyy",
-        getLanguageLocaleRead(context).countryCode);
+    var dateFormat =
+        DateFormat("dd-MM-yyyy", getLanguageLocaleRead(context).countryCode);
 
     if (start != null) {
       dateEditingController.text = dateFormat.format(start!);
@@ -184,31 +183,32 @@ class CreateMatchState extends State<CreateMatch> {
     if (sportCenter != null) {
       sportCenterEditingController.text = sportCenter!.name;
     }
-    repeatWeeklyEditingController.text = (repeatsForWeeks == 1) ? AppLocalizations.of(context)!.doesNotRepeatLabel : AppLocalizations.of(context)!
-        .repeatForWeeks(repeatsForWeeks);
-    if(courtNumber != null) {
+    repeatWeeklyEditingController.text = (repeatsForWeeks == 1)
+        ? AppLocalizations.of(context)!.doesNotRepeatLabel
+        : AppLocalizations.of(context)!.repeatForWeeks(repeatsForWeeks);
+    if (courtNumber != null) {
       courtNumberEditingController.text = courtNumber!;
-      courtNumberEditingController.selection = TextSelection
-          .fromPosition(TextPosition(offset: courtNumber!.length));
+      courtNumberEditingController.selection =
+          TextSelection.fromPosition(TextPosition(offset: courtNumber!.length));
     }
     if (price != null) {
       var priceString = price?.toString() ?? "";
       priceController.text = priceString;
-      priceController.selection = TextSelection
-          .fromPosition(TextPosition(offset: priceString.length));
+      priceController.selection =
+          TextSelection.fromPosition(TextPosition(offset: priceString.length));
     }
     if (withAutomaticCancellation) {
       var hoursString = cancelBefore.inHours.toString();
       cancelTimeEditingController.text = hoursString;
-      cancelTimeEditingController.selection = TextSelection
-          .fromPosition(TextPosition(offset: hoursString.length));
+      cancelTimeEditingController.selection =
+          TextSelection.fromPosition(TextPosition(offset: hoursString.length));
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (widget.existingMatch != null
-        && context.watch<MatchesState>().getMatch(widget.existingMatch!) == null) {
+    if (widget.existingMatch != null &&
+        context.watch<MatchesState>().getMatch(widget.existingMatch!) == null) {
       return Container();
     }
 
@@ -282,20 +282,9 @@ class CreateMatchState extends State<CreateMatch> {
                   decoration: getTextFormDecoration(
                       AppLocalizations.of(context)!.startTimeInputLabel),
                   onTap: () async {
-                    var d = await showCustomTimePicker(
-                      builder: (BuildContext context, Widget? child) {
-                        return MediaQuery(
-                          data: MediaQuery.of(context)
-                              .copyWith(alwaysUse24HourFormat: false),
-                          child: child!,
-                        );
-                      },
+                    var d = await showTimePicker(
                       context: context,
-                      // It is a must if you provide selectableTimePredicate
-                      onFailValidation: (context) => print(""),
                       initialTime: TimeOfDay(hour: 18, minute: 0),
-                      selectableTimePredicate: (time) =>
-                          (time?.minute)! % 5 == 0,
                     );
                     if (d != null) {
                       setState(() {
@@ -324,29 +313,21 @@ class CreateMatchState extends State<CreateMatch> {
                         onTap: () async {
                           var currentStart =
                               toTimeOfTheDay(startTimeEditingController.text);
+                          TimeOfDay? d = await showTimePicker(
+                            context: context,
+                            initialTime:
+                                toTimeOfTheDay(endTimeEditingController.text),
+                          );
 
-                          var d = await showCustomTimePicker(
-                              builder: (BuildContext context, Widget? child) {
-                                return MediaQuery(
-                                  data: MediaQuery.of(context)
-                                      .copyWith(alwaysUse24HourFormat: false),
-                                  child: child!,
-                                );
-                              },
-                              context: context,
-                              onFailValidation: (context) => print(""),
-                              initialTime:
-                                  toTimeOfTheDay(endTimeEditingController.text),
-                              selectableTimePredicate: (time) =>
-                                  time == null || isAfter(time, currentStart));
-                          if (d != null) {
+                          if (d != null &&
+                              (d.minute > currentStart.minute ||
+                                  d.hour > currentStart.hour)) {
                             setState(() {
-                              endTime = TimeOfDay(hour: d.hour, minute: d.minute);
+                              endTime =
+                                  TimeOfDay(hour: d.hour, minute: d.minute);
                             });
                           }
-                        }
-                    )
-                ),
+                        })),
               ],
             ),
             SizedBox(
@@ -445,15 +426,14 @@ class CreateMatchState extends State<CreateMatch> {
               children: [
                 Expanded(
                     child: TextFormField(
-                  controller: courtNumberEditingController,
-                  readOnly: false,
-                  inputFormatters: [LengthLimitingTextInputFormatter(5)],
-                  decoration: getTextFormDecoration(
-                      AppLocalizations.of(context)!.courtNumberLabel),
-                  onChanged: (v) => setState(() {
-                    this.courtNumber = v;
-                  })
-                )),
+                        controller: courtNumberEditingController,
+                        readOnly: false,
+                        inputFormatters: [LengthLimitingTextInputFormatter(5)],
+                        decoration: getTextFormDecoration(
+                            AppLocalizations.of(context)!.courtNumberLabel),
+                        onChanged: (v) => setState(() {
+                              this.courtNumber = v;
+                            }))),
               ],
             ),
           ],
@@ -698,7 +678,9 @@ class CreateMatchState extends State<CreateMatch> {
                         withAutomaticCancellation = v!;
                       });
                     }),
-                SizedBox(width: 8,),
+                SizedBox(
+                  width: 8,
+                ),
                 Flexible(
                     child: Text(
                         AppLocalizations.of(context)!.automaticCancellationInfo,
@@ -775,10 +757,11 @@ class CreateMatchState extends State<CreateMatch> {
                         privateMatch = v!;
                       });
                     }),
-                SizedBox(width: 8,),
+                SizedBox(
+                  width: 8,
+                ),
                 Flexible(
-                    child: Text(
-                        AppLocalizations.of(context)!.privateMatchInfo,
+                    child: Text(AppLocalizations.of(context)!.privateMatchInfo,
                         style: TextPalette.bodyText,
                         overflow: TextOverflow.visible)),
               ],
@@ -865,12 +848,18 @@ class CreateMatchState extends State<CreateMatch> {
                       try {
                         var dateTime = tz.TZDateTime(
                             tz.getLocation(sportCenter!.timezoneId),
-                            start!.year, start!.month, start!.day,
-                            startTime!.hour, startTime!.minute);
+                            start!.year,
+                            start!.month,
+                            start!.day,
+                            startTime!.hour,
+                            startTime!.minute);
                         var endDateTime = tz.TZDateTime(
                             tz.getLocation(sportCenter!.timezoneId),
-                            start!.year, start!.month, start!.day,
-                            endTime!.hour, endTime!.minute);
+                            start!.year,
+                            start!.month,
+                            start!.day,
+                            endTime!.hour,
+                            endTime!.minute);
                         var forWeeks = repeatsForWeeks;
 
                         Iterable<Future<String>> idsFuture =
@@ -895,32 +884,44 @@ class CreateMatchState extends State<CreateMatch> {
                               isTest,
                               numberOfPeopleRangeValues.start.toInt(),
                               widget.existingMatch != null
-                                  ? context.read<MatchesState>()
-                                  .getMatch(widget.existingMatch!)!.organizerId
+                                  ? context
+                                      .read<MatchesState>()
+                                      .getMatch(widget.existingMatch!)!
+                                      .organizerId
                                   : context
                                       .read<UserState>()
                                       .getLoggedUserDetails()!
                                       .documentId,
                               widget.existingMatch != null
-                                  ? context.read<MatchesState>()
-                                  .getMatch(widget.existingMatch!)!.going
+                                  ? context
+                                      .read<MatchesState>()
+                                      .getMatch(widget.existingMatch!)!
+                                      .going
                                   : Map(),
                               widget.existingMatch != null
-                                  ? context.read<MatchesState>()
-                                  .getMatch(widget.existingMatch!)!.computedTeams
+                                  ? context
+                                      .read<MatchesState>()
+                                      .getMatch(widget.existingMatch!)!
+                                      .computedTeams
                                   : [],
                               widget.existingMatch != null
-                                  ? context.read<MatchesState>()
-                                  .getMatch(widget.existingMatch!)!.manualTeams
+                                  ? context
+                                      .read<MatchesState>()
+                                      .getMatch(widget.existingMatch!)!
+                                      .manualTeams
                                   : [],
                               widget.existingMatch != null
-                                  ? context.read<MatchesState>()
-                                  .getMatch(widget.existingMatch!)!.isPrivate
+                                  ? context
+                                      .read<MatchesState>()
+                                      .getMatch(widget.existingMatch!)!
+                                      .isPrivate
                                   : privateMatch,
                               withAutomaticCancellation ? cancelBefore : null,
                               widget.existingMatch != null
-                                  ? context.read<MatchesState>()
-                                  .getMatch(widget.existingMatch!)!.score
+                                  ? context
+                                      .read<MatchesState>()
+                                      .getMatch(widget.existingMatch!)!
+                                      .score
                                   : null);
 
                           var id;
@@ -1121,7 +1122,11 @@ class LocationsBottomSheet extends StatelessWidget {
                       ),
                     ),
                     SizedBox(width: 16),
-                    Text(AppLocalizations.of(context)!.createNewCourtText.toString().toUpperCase(),
+                    Text(
+                        AppLocalizations.of(context)!
+                            .createNewCourtText
+                            .toString()
+                            .toUpperCase(),
                         style: TextPalette.linkStyle),
                   ],
                 ),

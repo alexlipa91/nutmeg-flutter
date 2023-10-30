@@ -2,4 +2,5 @@
     <string name="facebook_app_id">876470106296837</string>
     <string name="fb_login_protocol_scheme">fb876470106296837</string>
     <string name="app_name">Nutmeg</string>
+    <string name="facebook_client_token">f0ddace6a9ece2c0e381c6223aebc1d8</string>
 </resources>

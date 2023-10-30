@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
-import 'package:google_place/google_place.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 import 'package:nutmeg/state/UserState.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
@@ -30,7 +29,6 @@ class CreateCourtState extends State<CreateCourt> {
 
   final _formKey = GlobalKey<FormState>();
 
-  List<AutocompletePrediction>? predictions;
   bool changeRoomsAvailable = false;
 
   String? address;

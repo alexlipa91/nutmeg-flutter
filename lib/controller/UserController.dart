@@ -11,7 +11,6 @@ import '../api/CloudFunctionsUtils.dart';
 import '../model/UserDetails.dart';
 import '../screens/PlayerOfTheMatch.dart';
 import '../state/UserState.dart';
-import '../utils/UiUtils.dart';
 
 class UserController {
   static var apiClient = CloudFunctionsClient();
@@ -20,41 +19,46 @@ class UserController {
       BuildContext context, UserDetails userDetails) async {
     var original = await ImagePicker().pickImage(source: ImageSource.gallery);
     if (original == null) return;
-    File? croppedFile = await ImageCropper().cropImage(
-        maxHeight: 512,
-        maxWidth: 512,
-        aspectRatio: CropAspectRatio(ratioX: 1, ratioY: 1),
-        sourcePath: original.path,
-        aspectRatioPresets: [CropAspectRatioPreset.square],
-        androidUiSettings: AndroidUiSettings(
-            toolbarColor: Palette.primary,
-            toolbarWidgetColor: Palette.greyLight,
+    CroppedFile? croppedFile = await ImageCropper().cropImage(
+      sourcePath: original.path,
+      aspectRatioPresets: [
+        CropAspectRatioPreset.square,
+      ],
+      uiSettings: [
+        AndroidUiSettings(
+            toolbarTitle: 'Cropper',
+            toolbarColor: Colors.deepOrange,
+            toolbarWidgetColor: Colors.white,
             initAspectRatio: CropAspectRatioPreset.original,
-            activeControlsWidgetColor: Palette.primary,
-            lockAspectRatio: true),
-        iosUiSettings: IOSUiSettings(
-          minimumAspectRatio: 1.0,
-        ));
+            lockAspectRatio: false),
+        IOSUiSettings(
+          title: 'Cropper',
+        ),
+        WebUiSettings(
+          context: context,
+        ),
+      ],
+    );
     if (croppedFile == null) return;
     var uploaded = await FirebaseStorage.instance
         .ref("users/" + userDetails.documentId)
-        .putFile(croppedFile);
+        .putFile(File(croppedFile.path));
 
-    await context.read<UserState>()
+    await context
+        .read<UserState>()
         .editUser({"image": await uploaded.ref.getDownloadURL()});
   }
 
-  static Future<void> showPotmIfNotSeen(BuildContext context,
-      String matchId, String userId) async {
+  static Future<void> showPotmIfNotSeen(
+      BuildContext context, String matchId, String userId) async {
     var prefs = await SharedPreferences.getInstance();
     var preferencePath = "potm_screen_showed_" + matchId + "_" + userId;
     var seen = prefs.getBool(preferencePath) ?? false;
 
     if (!seen) {
-      await Navigator.push(context,
-          MaterialPageRoute(builder: (context) => PlayerOfTheMatch()));
+      await Navigator.push(
+          context, MaterialPageRoute(builder: (context) => PlayerOfTheMatch()));
       prefs.setBool(preferencePath, true);
     }
   }
 }
-

@@ -25,7 +25,6 @@ import '../utils/UiUtils.dart';
 import '../utils/Utils.dart';
 import 'MiscController.dart';
 
-
 class LaunchController {
   static bool loadingDone = false;
   static var apiClient = CloudFunctionsClient();
@@ -33,15 +32,15 @@ class LaunchController {
 
   static Future<void> handleLink(Uri deepLink) async {
     print("handling dynamic link " + deepLink.toString());
-    var fullPath = "${deepLink.path}?${deepLink.queryParameters
-        .entries.map((e) => "${e.key}=${e.value}").join("&")}";
-    GoRouter.of(appRouter.navigator!.context).go(fullPath);
+    var fullPath =
+        "${deepLink.path}?${deepLink.queryParameters.entries.map((e) => "${e.key}=${e.value}").join("&")}";
+    GoRouter.of(navigatorKey.currentContext!).go(fullPath);
   }
 
   static void _handleMessageFromNotification(RemoteMessage message) async {
-    print('message ${message.messageId} opened from notification with data '
-        + message.data.toString());
-    GoRouter.of(appRouter.navigator!.context).go(message.data["route"]);
+    print('message ${message.messageId} opened from notification with data ' +
+        message.data.toString());
+    GoRouter.of(navigatorKey.currentContext!).go(message.data["route"]);
   }
 
   static void _setupNotifications(BuildContext context) {
@@ -52,11 +51,8 @@ class LaunchController {
     //   _handleMessageFromNotification(m);
     // });
 
-    FirebaseMessaging.onMessage.listen((RemoteMessage rm) =>
-        firebaseMessagingMessageHandler(rm, "foreground"));
-
-    FirebaseMessaging.onBackgroundMessage((RemoteMessage rm) =>
-        firebaseMessagingMessageHandler(rm, "background"));
+    FirebaseMessaging.onMessage.listen(_firebaseMessagingBackgroundHandler);
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
     if (!kIsWeb) {
       Future<Null> Function(PendingDynamicLinkData? dynamicLink) future =
@@ -76,8 +72,7 @@ class LaunchController {
     }
   }
 
-  static Future<void> loadData(BuildContext context,
-      String? from) async {
+  static Future<void> loadData(BuildContext context, String? from) async {
     print("start loading data function");
 
     var trace = FirebasePerformance.instance.newTrace("launch_app");
@@ -119,7 +114,7 @@ class LaunchController {
       var current = (minimumVersion).item1;
       trace.putAttribute("app_version", current.toString());
       var minimumVersionParts =
-      firebaseRemoteConfig.getString("minimum_app_version").split(".");
+          firebaseRemoteConfig.getString("minimum_app_version").split(".");
       var minimumRequired = Version(int.parse(minimumVersionParts[0]),
           int.parse(minimumVersionParts[1]), int.parse(minimumVersionParts[2]));
       if (current < minimumRequired) throw OutdatedAppException();
@@ -140,8 +135,8 @@ class LaunchController {
     // fixme force users without name
     if (userDetails != null &&
         (userDetails.name == null || userDetails.name == "")) {
-      var name = await Navigator.of(context).push(
-          MaterialPageRoute(builder: (context) => EnterDetails()));
+      var name = await Navigator.of(context)
+          .push(MaterialPageRoute(builder: (context) => EnterDetails()));
       if (name == null || name == "") {
         // Navigator.pop(context);
         // SystemNavigator.pop();
@@ -193,13 +188,13 @@ class LaunchController {
     LaunchController.loadingDone = true;
 
     // install/use app prompt
-    if (kIsWeb && (defaultTargetPlatform == TargetPlatform.iOS
-        || defaultTargetPlatform == TargetPlatform.android)) {
+    if (kIsWeb &&
+        (defaultTargetPlatform == TargetPlatform.iOS ||
+            defaultTargetPlatform == TargetPlatform.android)) {
       // todo check if app is installed or not
       // print(GoRouter.of(context).location);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           duration: Duration(seconds: 3),
           elevation: 0,
           behavior: SnackBarBehavior.floating,
@@ -212,10 +207,9 @@ class LaunchController {
           action: SnackBarAction(
             label: 'Use app',
             textColor: Colors.blueAccent,
-            onPressed: () => launchUrl(Uri.parse("https://nutmegapp.page.link/store")),
-          )
-        )
-      );
+            onPressed: () =>
+                launchUrl(Uri.parse("https://nutmegapp.page.link/store")),
+          )));
     }
 
     // navigate to next screen
@@ -243,5 +237,13 @@ class LaunchController {
     ];
     await Future.wait(futures);
     print("loading static done");
+  }
+}
+
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  print(
+      "Handling a background message: ${message.messageId} with data ${message.data.toString()}");
+  if (message.data.containsKey("route")) {
+    GoRouter.of(navigatorKey.currentContext!).go(message.data["route"]);
   }
 }

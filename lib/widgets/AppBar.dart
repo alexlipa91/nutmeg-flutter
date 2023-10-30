@@ -8,7 +8,7 @@ import '../state/UserState.dart';
 import 'Avatar.dart';
 
 
-class NutmegAppBar extends StatelessWidget with PreferredSizeWidget {
+class NutmegAppBar extends StatelessWidget {
   final Color backgroundColor;
   final Widget mainRow;
   final SystemUiOverlayStyle systemUiOverlayStyle;
@@ -29,12 +29,9 @@ class NutmegAppBar extends StatelessWidget with PreferredSizeWidget {
         elevation: 0,
         title: mainRow);
   }
-
-  @override
-  Size get preferredSize => Size.fromHeight(50.0);
 }
 
-class MainAppBar extends StatelessWidget with PreferredSizeWidget {
+class MainAppBar extends StatelessWidget {
   final Color color;
 
   MainAppBar(this.color) : super();
@@ -81,7 +78,4 @@ class MainAppBar extends StatelessWidget with PreferredSizeWidget {
       ),
     );
   }
-
-  @override
-  Size get preferredSize => Size.fromHeight(50.0);
 }

@@ -1,23 +1,17 @@
 import 'dart:math';
 
 import 'package:confetti/confetti.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:nutmeg/screens/Launch.dart';
 import 'package:nutmeg/state/UserState.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/Avatar.dart';
-import 'package:nutmeg/widgets/Buttons.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:provider/provider.dart';
-import 'package:screenshot/screenshot.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:share_plus/share_plus.dart';
 
 
 class PlayerOfTheMatch extends StatelessWidget {
   final GlobalKey previewContainer = new GlobalKey();
-  final screenshotController = ScreenshotController();
 
   final String? userId;
 
@@ -25,9 +19,7 @@ class PlayerOfTheMatch extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Screenshot(
-      controller: screenshotController,
-      child: Scaffold(
+    return Scaffold(
         extendBodyBehindAppBar: true,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
@@ -49,19 +41,16 @@ class PlayerOfTheMatch extends StatelessWidget {
               constraints: BoxConstraints.expand(),
               decoration: new BoxDecoration(color: Palette.primary)),
           LaunchWidgetState.getBackgoundImages(context),
-          MainArea(userId: userId ?? context.read<UserState>().currentUserId!,
-              screenshotController: screenshotController)
+          MainArea(userId: userId ?? context.read<UserState>().currentUserId!)
         ]),
-      ),
-    );
+      );
   }
 }
 
 class MainArea extends StatefulWidget {
   final String userId;
-  final ScreenshotController screenshotController;
 
-  const MainArea({Key? key, required this.userId, required this.screenshotController}) : super(key: key);
+  const MainArea({Key? key, required this.userId}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => MainAreaState();
@@ -135,13 +124,6 @@ class MainAreaState extends State<MainArea> {
                               (BuildContext context) async =>
                                   Navigator.of(context).pop(),
                           PrimaryInverted()),
-                      if (!kIsWeb)
-                        ShareButton(() async {
-                        var appDir = await getApplicationDocumentsDirectory();
-                        var filePath = await widget.screenshotController
-                            .captureAndSave(appDir.path);
-                        Share.shareFiles([filePath!]);
-                      }, Palette.white)
                     ],
                   ),
                 ),

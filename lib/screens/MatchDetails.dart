@@ -1020,7 +1020,7 @@ class Stats extends StatelessWidget {
                       builder: (context) {
                         Map<String, double?> userAndRate = {};
                         match.going.keys.forEach(
-                            (u) => userAndRate[u] = (ratings?.scores ?? {})[u]);
+                            (u) => userAndRate[u] = (ratings.scores ?? {})[u]);
                         var entries = userAndRate.entries.toList();
                         entries.sort((a, b) =>
                             (b.value ?? -1).compareTo((a.value ?? -1)));
@@ -1030,7 +1030,7 @@ class Stats extends StatelessWidget {
                             var userDetails = userState.getUserDetail(e.key);
                             double? rate = e.value;
                             bool isPotm =
-                                (ratings?.potms ?? []).contains(e.key);
+                                (ratings.potms ?? []).contains(e.key);
 
                             var widgets = [
                               Container(

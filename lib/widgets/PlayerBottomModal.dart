@@ -1,11 +1,6 @@
-import 'dart:math';
-
 import 'package:badges/badges.dart';
-import 'package:charts_flutter/flutter.dart' as charts;
+import 'package:fl_chart/fl_chart.dart';
 
-import 'package:charts_flutter/flutter.dart';
-import 'package:charts_flutter/src/text_element.dart' as ChartText;
-import 'package:charts_flutter/src/text_style.dart' as ChartStyle;
 import 'package:flutter/material.dart' hide Badge;
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
@@ -106,7 +101,11 @@ class StatEntry extends StatelessWidget {
   final String? description;
   final Widget? rightBadge;
 
-  const StatEntry({Key? key, required this.stat, required this.description, this.rightBadge})
+  const StatEntry(
+      {Key? key,
+      required this.stat,
+      required this.description,
+      this.rightBadge})
       : super(key: key);
 
   @override
@@ -118,20 +117,24 @@ class StatEntry extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Expanded(child: (rightBadge != null) ? Badge(
-                badgeColor: Colors.transparent,
-                borderSide: BorderSide.none,
-                shape: BadgeShape.circle,
-                position: BadgePosition(end: 0, bottom: -2),
-                elevation: 0,
-                badgeContent: rightBadge,
-                child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 30),
-                    child: Text(description!,
-                        style: TextPalette.bodyText))) :
-            Text(description!, textAlign: TextAlign.center,
-                style: TextPalette.bodyText))
-        ],)
+            Expanded(
+                child: (rightBadge != null)
+                    ? Badge(
+                        badgeColor: Colors.transparent,
+                        borderSide: BorderSide.none,
+                        shape: BadgeShape.circle,
+                        position: BadgePosition(end: 0, bottom: -2),
+                        elevation: 0,
+                        badgeContent: rightBadge,
+                        child: Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 30),
+                            child: Text(description!,
+                                style: TextPalette.bodyText)))
+                    : Text(description!,
+                        textAlign: TextAlign.center,
+                        style: TextPalette.bodyText))
+          ],
+        )
       ],
     );
   }
@@ -154,15 +157,18 @@ class JoinedPlayerBottomModal extends StatelessWidget {
                 flex: 2,
                 child: StatEntry(
                   stat: userDetails.getNumJoinedMatches().toString(),
-                  description: AppLocalizations.of(context)!.numMatchesShortTitle,
+                  description:
+                      AppLocalizations.of(context)!.numMatchesShortTitle,
                 ),
               ),
               Expanded(
                 flex: 3,
                 child: StatEntry(
                   stat: (userDetails.getScoreMatches() == null)
-                      ? "-" : userDetails.getScoreMatches()!.toStringAsFixed(2),
-                  description: AppLocalizations.of(context)!.averageScoreBoxTitle,
+                      ? "-"
+                      : userDetails.getScoreMatches()!.toStringAsFixed(2),
+                  description:
+                      AppLocalizations.of(context)!.averageScoreBoxTitle,
                   // rightBadge: UserScoreBox.deltaBadge(userDetails),
                 ),
               ),
@@ -175,29 +181,6 @@ class JoinedPlayerBottomModal extends StatelessWidget {
               ),
             ],
           ),
-          // if (userDetails.numWin != null)
-          //   Padding(
-          //     padding: EdgeInsets.only(top: 16),
-          //     child: Row(
-          //       mainAxisAlignment: MainAxisAlignment.spaceAround,
-          //       children: [
-          //         Expanded(
-          //           flex: 2,
-          //           child: StatEntry(
-          //             stat: (userDetails.numWin ?? 0).toString(),
-          //             description: "Won",
-          //           ),
-          //         ),
-          //         Expanded(
-          //           flex: 2,
-          //           child: StatEntry(
-          //             stat: (userDetails.numLoss ?? 0).toString(),
-          //             description: "Loss",
-          //           ),
-          //         ),
-          //       ],
-          //     ),
-          //   ),
           if (userDetails.getLastScores().length > 0)
             Padding(
                 padding: EdgeInsets.only(top: 24.0, left: 8, right: 8),
@@ -217,121 +200,82 @@ class PerformanceGraph extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    List<MapEntry> ratesWithIndex = (context.read<UserState>()
-        .getUserDetail(userId)!.lastScores ?? []).asMap().entries.toList();
+    List<MapEntry> ratesWithIndex =
+        (context.read<UserState>().getUserDetail(userId)!.lastScores ?? [])
+            .asMap()
+            .entries
+            .toList();
 
-    return new charts.LineChart(
-              [
-                new charts.Series<MapEntry, int>(
-                  id: 'Rates',
-                  colorFn: (_, __) =>
-                      charts.ColorUtil.fromDartColor(Palette.primary),
-                  domainFn: (MapEntry e, _) => e.key,
-                  measureFn: (MapEntry e, _) => e.value,
-                  strokeWidthPxFn: (MapEntry e, _) => 5,
-                  data: ratesWithIndex,
-                  fillColorFn: (_, __) =>
-                      charts.ColorUtil.fromDartColor(Palette.white),
-                )
-              ],
-              animate: false,
-              domainAxis: new charts.NumericAxisSpec(
-                  renderSpec: new charts.NoneRenderSpec()),
-              primaryMeasureAxis: new charts.NumericAxisSpec(
-                  tickProviderSpec: new charts.StaticNumericTickProviderSpec([
-                    1,
-                    2,
-                    3,
-                    4,
-                    5
-                  ]
-                      .map((e) => charts.TickSpec(e,
-                          style: new charts.TextStyleSpec(
-                              fontFamily: "Roboto",
-                              fontSize: 16,
-                              color: charts.ColorUtil.fromDartColor(
-                                  Palette.greyDark))))
-                      .toList()),
-                  renderSpec: new charts.GridlineRendererSpec(
-                      labelOffsetFromAxisPx: 20,
-                      labelStyle: new charts.TextStyleSpec(
-                          fontSize: 14, // size in Pts.
-                          color: charts.MaterialPalette.black),
-                      lineStyle: new charts.LineStyleSpec(
-                          color: charts.ColorUtil.fromDartColor(
-                              Palette.greyLighter)))),
-              behaviors: [
-                charts.LinePointHighlighter(
-                  radiusPaddingPx: 3.0,
-                  showVerticalFollowLine:
-                      charts.LinePointHighlighterFollowLineType.nearest,
-                  symbolRenderer: CustomCircleSymbolRenderer(),
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 4),
+      child: Row(children: [
+        Expanded(
+          child: LineChart(
+            LineChartData(
+              borderData: FlBorderData(
+                show: false,
+              ),
+              titlesData: FlTitlesData(
+                topTitles: AxisTitles(
+                  sideTitles: SideTitles(
+                    showTitles: false,
+                  ),
+                ),
+                rightTitles: AxisTitles(
+                  sideTitles: SideTitles(
+                    showTitles: false,
+                  ),
+                ),
+                bottomTitles: AxisTitles(
+                  sideTitles: SideTitles(
+                    showTitles: false,
+                  ),
+                ),
+                leftTitles: AxisTitles(
+                  sideTitles: SideTitles(
+                      showTitles: true,
+                      interval: 1,
+                      reservedSize: 24,
+                      getTitlesWidget: (double value, TitleMeta meta) {
+                        return Container(
+                          child: Text(value.toStringAsFixed(0),
+                              style: TextPalette.bodyText),
+                        );
+                      }),
+                ),
+              ),
+              maxY: 5,
+              minY: 1,
+              gridData: FlGridData(
+                show: true,
+                drawHorizontalLine: true,
+                drawVerticalLine: false,
+              ),
+              lineBarsData: [
+                LineChartBarData(
+                  spots: ratesWithIndex
+                      .map((t) => FlSpot(t.key.toDouble(), t.value))
+                      .toList(),
+                  isCurved: false,
+                  color: Palette.primary,
+                  barWidth: 5,
+                  isStrokeCapRound: true,
+                  dotData: const FlDotData(
+                    show: true,
+                  ),
+                  belowBarData: BarAreaData(
+                    show: false,
+                  ),
                 ),
               ],
-              selectionModels: [
-                charts.SelectionModelConfig(
-                  updatedListener: (charts.SelectionModel model) {
-                    if (model.hasDatumSelection) {
-                      String rate = (model.selectedSeries.first
-                                  .measureFn(model.selectedDatum.first.index) ??
-                              0)
-                          .toStringAsFixed(1);
-                      ToolTipMgr.setData(rate);
-                    }
-                  },
-                ),
-              ],
-              defaultRenderer: new charts.LineRendererConfig(
-                includePoints: true,
-                radiusPx: 6,
-              ));
+              // read about it in the LineChartData section
+            ),
+            // swapAnimationDuration: Duration(milliseconds: 150), // Optional
+            // swapAnimationCurve: Curves.linear, // Optional
+          ),
+        )
+      ]),
+    );
   }
 }
 
-class CustomCircleSymbolRenderer extends CircleSymbolRenderer {
-  @override
-  void paint(ChartCanvas canvas, Rectangle<num> bounds,
-      {List<int>? dashPattern,
-      Color? fillColor,
-      FillPatternType? fillPattern,
-      Color? strokeColor,
-      double? strokeWidthPx}) {
-    super.paint(canvas, bounds,
-        dashPattern: dashPattern,
-        fillColor: fillColor,
-        strokeColor: strokeColor,
-        strokeWidthPx: strokeWidthPx);
-    canvas.drawRRect(
-        Rectangle(bounds.left - 8, bounds.height - 32, bounds.width + 17,
-            bounds.height + 5),
-        fill: Color.fromOther(
-            color: charts.ColorUtil.fromDartColor(Palette.primary)),
-        roundBottomLeft: true,
-        roundBottomRight: true,
-        roundTopRight: true,
-        roundTopLeft: true,
-        radius: 30);
-
-    ChartStyle.TextStyle textStyle = ChartStyle.TextStyle();
-
-    textStyle.color = charts.ColorUtil.fromDartColor(Palette.white);
-    textStyle.fontSize = 14;
-    textStyle.fontFamily = "Roboto";
-    textStyle.fontWeight = "w700";
-
-    canvas.drawText(
-        ChartText.TextElement('${ToolTipMgr.data()}', style: textStyle),
-        (bounds.left).round(),
-        (bounds.height - 27).round());
-  }
-}
-
-String? _data;
-
-class ToolTipMgr {
-  static String data() => _data!;
-
-  static setData(String data) {
-    _data = data;
-  }
-}
