@@ -103,7 +103,6 @@ class ConfigsUtils {
   static bool removeCreditsFunctionality() =>
       true;
       // FirebaseRemoteConfig.instance.getBool("remove_credit_functionality");
-
   static bool feesOnOrganiser(String orgId) => false;
 }
 
