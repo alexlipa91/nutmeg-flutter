@@ -57,8 +57,8 @@ class BottomBarMatch extends StatelessWidget {
         break;
       case MatchStatus.unpublished:
         if (match.organizerId == context.read<UserState>().currentUserId)
-          bottomBar = NotPublishedBottomBar(matchId: matchId,
-              isTest: match.isTest);
+          bottomBar =
+              NotPublishedBottomBar(matchId: matchId, isTest: match.isTest);
     }
 
     return bottomBar;
@@ -213,7 +213,8 @@ class NotPublishedBottomBar extends StatelessWidget {
   final String matchId;
   final bool isTest;
 
-  const NotPublishedBottomBar({Key? key, required this.matchId, required this.isTest})
+  const NotPublishedBottomBar(
+      {Key? key, required this.matchId, required this.isTest})
       : super(key: key);
 
   @override
@@ -224,7 +225,8 @@ class NotPublishedBottomBar extends StatelessWidget {
         subText:
             "Complete your Stripe account to receive payments and publish this match",
         button: InkWell(
-            onTap: () => completeAccountAction(context, isTest, matchId: matchId),
+            onTap: () =>
+                completeAccountAction(context, isTest, matchId: matchId),
             child: Padding(
                 padding: EdgeInsets.only(top: 8),
                 child: Text("GO TO STRIPE", style: TextPalette.linkStyle))));

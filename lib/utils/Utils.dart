@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 import 'package:nutmeg/model/Match.dart';
-import 'package:nutmeg/state/MatchesState.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -107,17 +106,16 @@ class ConfigsUtils {
   static bool feesOnOrganiser(String orgId) => false;
 }
 
-String getStripeUrl(bool isTest, String userId) => CloudFunctionsClient()
-    .getUrl("stripe/account/onboard?is_test=$isTest&user_id=$userId");
+String getStripeUrl(bool isTest, String userId, String? matchId) {
+  var path = "stripe/account/onboard?is_test=$isTest&user_id=$userId";
+  if (matchId != null) {
+    path = path + "&match_id=$matchId";
+  }
+  return CloudFunctionsClient().getUrl(path);
+}
 
 Future<void> completeAccountAction(BuildContext context, bool isTest,
-    {String? matchId}) async {
-  await launchUrl(
+    {String? matchId}) => launchUrl(
       Uri.parse(getStripeUrl(isTest,
-          context.read<UserState>().getLoggedUserDetails()!.documentId)),
+          context.read<UserState>().getLoggedUserDetails()!.documentId, matchId)),
       mode: LaunchMode.externalApplication);
-  await context.read<UserState>().fetchLoggedUserDetails();
-  if (matchId != null) {
-    await context.read<MatchesState>().fetchMatch(matchId);
-  }
-}
