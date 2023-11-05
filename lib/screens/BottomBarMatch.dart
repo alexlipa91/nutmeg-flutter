@@ -13,18 +13,17 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../state/MatchesState.dart';
 
 class BottomBarMatch extends StatelessWidget {
-
-  static Widget? getBottomBar(BuildContext context, String matchId,
-      MatchStatus? matchStatus) {
+  static Widget? getBottomBar(
+      BuildContext context, String matchId, MatchStatus? matchStatus) {
     // https://docs.google.com/document/d/1PpHh-8blyMYH7ePtU-XIBU289guZX847eBfHz_yqPJ0/edit#
 
     var match = context.read<MatchesState>().getMatch(matchId);
 
-    if (match == null || matchStatus == null)
-      return null;
+    if (match == null || matchStatus == null) return null;
 
     var isFull = match.isFull();
-    var isGoing = match.isUserGoing(context.read<UserState>().getLoggedUserDetails());
+    var isGoing =
+        match.isUserGoing(context.read<UserState>().getLoggedUserDetails());
 
     var bottomBar;
 
@@ -47,8 +46,8 @@ class BottomBarMatch extends StatelessWidget {
         break;
       case MatchStatus.to_rate:
         if (isGoing) {
-          var stillToVote = context.read<MatchesState>()
-              .getStillToVote(matchId, context.read<UserState>().currentUserId!);
+          var stillToVote = context.read<MatchesState>().getStillToVote(
+              matchId, context.read<UserState>().currentUserId!);
           if (stillToVote != null && stillToVote.isNotEmpty)
             bottomBar = RatePlayersBottomBar(matchId: matchId);
         }
@@ -70,8 +69,13 @@ class BottomBarMatch extends StatelessWidget {
   final String? subText;
   final Widget? button;
 
-  const BottomBarMatch({Key? key, required this.matchId, required this.text,
-    this.subText, this.button}) : super(key: key);
+  const BottomBarMatch(
+      {Key? key,
+      required this.matchId,
+      required this.text,
+      this.subText,
+      this.button})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -96,8 +100,7 @@ class BottomBarMatch extends StatelessWidget {
               ],
             ),
           ),
-          if (button != null)
-            button!
+          if (button != null) button!
         ],
       ),
     ));
@@ -137,11 +140,12 @@ class GenericBottomBar extends StatelessWidget {
 }
 
 class JoinMatchBottomBar extends StatelessWidget {
-
   final String matchId;
   final bool enabled;
 
-  const JoinMatchBottomBar({Key? key, required this.matchId, required this.enabled}) : super(key: key);
+  const JoinMatchBottomBar(
+      {Key? key, required this.matchId, required this.enabled})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -151,71 +155,82 @@ class JoinMatchBottomBar extends StatelessWidget {
       return Container();
     }
 
-    return BottomBarMatch(matchId: matchId,
-      text: AppLocalizations.of(context)!.spotsLeft(match.getSpotsLeft()),
-      subText: match.price != null ?
-        formatCurrency(match.price!.getTotalPrice()) : null,
-      button: enabled ? JoinButton(matchId: matchId) : JoinButtonDisabled()
-    );
+    return BottomBarMatch(
+        matchId: matchId,
+        text: AppLocalizations.of(context)!.spotsLeft(match.getSpotsLeft()),
+        subText: match.price != null
+            ? formatCurrency(match.price!.getTotalPrice())
+            : null,
+        button: enabled ? JoinButton(matchId: matchId) : JoinButtonDisabled());
   }
 }
 
 class LeaveMatchBottomBar extends StatelessWidget {
-
   final String matchId;
   final bool enabled;
 
-  const LeaveMatchBottomBar({Key? key, required this.matchId, required this.enabled}) : super(key: key);
+  const LeaveMatchBottomBar(
+      {Key? key, required this.matchId, required this.enabled})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     var match = context.read<MatchesState>().getMatch(matchId);
 
-    return BottomBarMatch(matchId: matchId,
+    return BottomBarMatch(
+        matchId: matchId,
         text: AppLocalizations.of(context)!.joinMatchSuccessTitle,
-        subText: AppLocalizations.of(context)!.joinMatchBarSubtitle(match!.getGoingPlayers()),
-        button: enabled ? LeaveButton(matchId: matchId) : LeaveButtonDisabled()
-    );
+        subText: AppLocalizations.of(context)!
+            .joinMatchBarSubtitle(match!.getGoingPlayers()),
+        button:
+            enabled ? LeaveButton(matchId: matchId) : LeaveButtonDisabled());
   }
 }
 
 class RatePlayersBottomBar extends StatelessWidget {
-
   final String matchId;
 
-  const RatePlayersBottomBar({Key? key, required this.matchId}) : super(key: key);
+  const RatePlayersBottomBar({Key? key, required this.matchId})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return BottomBarMatch(matchId: matchId,
+    return BottomBarMatch(
+        matchId: matchId,
         text: "Rate players",
-        subText: context.watch<MatchesState>().getStillToVote(
-            matchId,
-            context.read<UserState>().currentUserId!)!.length.toString() +
-        " players left",
-        button: RateButton(matchId: matchId)
-    );
+        subText: context
+                .watch<MatchesState>()
+                .getStillToVote(
+                    matchId, context.read<UserState>().currentUserId!)!
+                .length
+                .toString() +
+            " players left",
+        button: RateButton(matchId: matchId));
   }
 }
 
 class NotPublishedBottomBar extends StatelessWidget {
-
   final String matchId;
 
-  const NotPublishedBottomBar({Key? key, required this.matchId}) : super(key: key);
+  const NotPublishedBottomBar({Key? key, required this.matchId})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     var userState = context.read<UserState>();
 
-    return BottomBarMatch(matchId: matchId,text: "Not Published",
-        subText: "Complete your Stripe account to receive payments and publish this match",
-        button: InkWell(onTap: () =>
-            launchUrl(Uri.parse(getStripeUrl(userState.isTestMode,
-                userState.currentUserId!))),
+    return BottomBarMatch(
+        matchId: matchId,
+        text: "Not Published",
+        subText:
+            "Complete your Stripe account to receive payments and publish this match",
+        button: InkWell(
+            onTap: () => launchUrl(
+                Uri.parse(getStripeUrl(
+                    userState.isTestMode, userState.currentUserId!)),
+                mode: LaunchMode.externalApplication),
             child: Padding(
                 padding: EdgeInsets.only(top: 8),
-                child: Text("GO TO STRIPE", style: TextPalette.linkStyle)))
-    );
+                child: Text("GO TO STRIPE", style: TextPalette.linkStyle))));
   }
 }

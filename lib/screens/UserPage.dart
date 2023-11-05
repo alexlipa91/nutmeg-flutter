@@ -118,7 +118,7 @@ class UserPageState extends State<UserPage> {
                             });
                             try {
                               await UserController.updloadPicture(
-                                  context, userDetails!);
+                                  context, userDetails);
                             } catch (e, s) {
                               print(e);
                               print(s);
@@ -188,7 +188,7 @@ class UserPageState extends State<UserPage> {
                       });
                       try {
                         await UserController.updloadPicture(
-                            context, userDetails!);
+                            context, userDetails);
                       } catch (e, s) {
                         print(e);
                         print(s);
@@ -211,7 +211,7 @@ class UserPageState extends State<UserPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(userDetails!.name ?? "N/A", style: TextPalette.h2),
+                  Text(userDetails.name ?? "N/A", style: TextPalette.h2),
                   SizedBox(height: 10),
                   Text(formatEmail(userDetails.email),
                       style: TextPalette.bodyText)
@@ -246,7 +246,7 @@ class UserPageState extends State<UserPage> {
               child: UserInfoBox(
                   content: (userDetails.numWin ?? 0).toString(),
                   description:
-                  AppLocalizations.of(context)!.numMatchesWonBoxTitle)),
+                      AppLocalizations.of(context)!.numMatchesWonBoxTitle)),
         ]),
         if (userDetails.numWin != null) verticalSpace,
         if (userDetails.numWin != null)
@@ -255,7 +255,7 @@ class UserPageState extends State<UserPage> {
                 child: UserInfoBox(
                     content: (userDetails.numDraw ?? 0).toString(),
                     description:
-                    AppLocalizations.of(context)!.numMatchesDrawBoxTitle)),
+                        AppLocalizations.of(context)!.numMatchesDrawBoxTitle)),
             SizedBox(width: 20),
             Expanded(
               child: UserInfoBox(
@@ -375,10 +375,11 @@ class UserPageState extends State<UserPage> {
                                       AppLocalizations.of(context)!
                                               .goToStripeDashboardText +
                                           (isTest ? " TEST" : ""), (_) async {
-                                var url = CloudFunctionsClient()
-                                    .getUrl("stripe/account?is_test?$isTest&user_id=${userDetails.documentId}");
+                                var url = CloudFunctionsClient().getUrl(
+                                    "stripe/account?is_test?$isTest&user_id=${userDetails.documentId}");
 
-                                await launchUrl(Uri.parse(url));
+                                await launchUrl(Uri.parse(url),
+                                    mode: LaunchMode.externalApplication);
                               }, Primary()))
                             ]),
                           ]);
@@ -788,7 +789,8 @@ class CompleteOrganiserAccountWidget extends StatelessWidget {
       textAction: "GO TO STRIPE",
       action: () async {
         await launchUrl(
-            Uri.parse(getStripeUrl(isTest, userState.currentUserId!)));
+            Uri.parse(getStripeUrl(isTest, userState.currentUserId!)),
+            mode: LaunchMode.externalApplication);
       },
     );
   }
