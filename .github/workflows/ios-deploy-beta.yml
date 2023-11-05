@@ -34,7 +34,7 @@ jobs:
       - name: Run Flutter tasks
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.7.1'
+          flutter-version: '3.13.9'
       - run: flutter clean
       - run: flutter pub get
       - run: flutter build ipa --release -t lib/screens/Launch.dart --export-options-plist ios/export.plist
