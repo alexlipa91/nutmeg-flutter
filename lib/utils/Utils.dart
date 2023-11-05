@@ -3,16 +3,22 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 import 'package:nutmeg/model/Match.dart';
+import 'package:nutmeg/state/MatchesState.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:tuple/tuple.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:version/version.dart';
 import 'package:timezone/timezone.dart' as tz;
 
+import '../state/UserState.dart';
 
 String gmtSuffix(String timeZoneId) {
-  var hourOffset = tz.TZDateTime.from(DateTime.now(),
-      tz.getLocation(timeZoneId)).timeZoneOffset.inHours;
+  var hourOffset =
+      tz.TZDateTime.from(DateTime.now(), tz.getLocation(timeZoneId))
+          .timeZoneOffset
+          .inHours;
   var gmtString = ((hourOffset > 0) ? "+" : "") + hourOffset.toString();
   return "GMT$gmtString";
 }
@@ -21,11 +27,9 @@ String formatCurrency(int cents) =>
     NumberFormat.simpleCurrency(name: "EUR").format(cents / 100);
 
 String formatEmail(String? email) {
-  if (email == null)
-    return "N/A";
+  if (email == null) return "N/A";
   var parts = email.split("@");
-  if (parts.length > 1 && parts[1] == "privaterelay.appleid.com")
-    return "N/A";
+  if (parts.length > 1 && parts[1] == "privaterelay.appleid.com") return "N/A";
   return email;
 }
 
@@ -38,7 +42,8 @@ class DynamicLinks {
       link = match.dynamicLink!;
     else {
       // todo slowly deprecate
-      var deepLinkUrl = Uri.parse('https://web.nutmegapp.com/match/' + match.documentId);
+      var deepLinkUrl =
+          Uri.parse('https://web.nutmegapp.com/match/' + match.documentId);
 
       final DynamicLinkParameters parameters = DynamicLinkParameters(
           uriPrefix: 'https://nutmegapp.page.link',
@@ -55,12 +60,10 @@ class DynamicLinks {
             // fallbackUrl: deepLinkUrl
           ),
           socialMetaTagParameters: SocialMetaTagParameters(
-            title: "Match on ${dayDateFormat
-                .format(match.getLocalizedTime())} "
+            title: "Match on ${dayDateFormat.format(match.getLocalizedTime())} "
                 "${gmtSuffix(match.sportCenter.timezoneId)}",
             description: "Location: ${match.sportCenter.name}",
-          )
-      );
+          ));
       var url = await FirebaseDynamicLinks.instance.buildShortLink(parameters);
       link = url.shortUrl.toString();
     }
@@ -75,10 +78,9 @@ DateTime getBeginningOfTheWeek(DateTime dateTime) {
   return DateUtils.dateOnly(dateTime.subtract(Duration(days: currentDay - 1)));
 }
 
-List<T> interleave<T>(List<T> elements, T e, [bool withTop=false]) {
+List<T> interleave<T>(List<T> elements, T e, [bool withTop = false]) {
   List<T> result = [];
-  if (withTop)
-    result.add(e);
+  if (withTop) result.add(e);
   elements.forEach((a) {
     result.add(a);
     result.add(e);
@@ -99,12 +101,23 @@ Future<Tuple2<Version, String>> getVersion() async {
 }
 
 class ConfigsUtils {
+  static bool removeCreditsFunctionality() => true;
 
-  static bool removeCreditsFunctionality() =>
-      true;
-      // FirebaseRemoteConfig.instance.getBool("remove_credit_functionality");
+  // FirebaseRemoteConfig.instance.getBool("remove_credit_functionality");
   static bool feesOnOrganiser(String orgId) => false;
 }
 
-String getStripeUrl(bool isTest, String userId) =>
-    CloudFunctionsClient().getUrl("stripe/account/onboard?is_test=$isTest&user_id=$userId");
+String getStripeUrl(bool isTest, String userId) => CloudFunctionsClient()
+    .getUrl("stripe/account/onboard?is_test=$isTest&user_id=$userId");
+
+Future<void> completeAccountAction(BuildContext context, bool isTest,
+    {String? matchId}) async {
+  await launchUrl(
+      Uri.parse(getStripeUrl(isTest,
+          context.read<UserState>().getLoggedUserDetails()!.documentId)),
+      mode: LaunchMode.externalApplication);
+  await context.read<UserState>().fetchLoggedUserDetails();
+  if (matchId != null) {
+    await context.read<MatchesState>().fetchMatch(matchId);
+  }
+}
