@@ -250,10 +250,10 @@ class LaunchWidgetState extends State<LaunchWidget> {
               color: Palette.primary,
             ),
             child:
-                Stack(children: [getBackgoundImages(context), mainWidgets])));
+                Stack(children: [getBackgroundImages(context), mainWidgets])));
   }
 
-  static Widget getBackgoundImages(BuildContext context) => Row(children: [
+  static Widget getBackgroundImages(BuildContext context) => Row(children: [
         Expanded(
             child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,

@@ -846,26 +846,31 @@ class CreateMatchState extends State<CreateMatch> {
                     bool? v = _formKey.currentState?.validate();
                     if (v != null && v) {
                       try {
-                        var dateTime = tz.TZDateTime(
-                            tz.getLocation(sportCenter!.timezoneId),
-                            start!.year,
-                            start!.month,
-                            start!.day,
-                            startTime!.hour,
-                            startTime!.minute);
-                        var endDateTime = tz.TZDateTime(
-                            tz.getLocation(sportCenter!.timezoneId),
-                            start!.year,
-                            start!.month,
-                            start!.day,
-                            endTime!.hour,
-                            endTime!.minute);
                         var forWeeks = repeatsForWeeks;
 
                         Iterable<Future<String>> idsFuture =
                             Iterable<int>.generate(forWeeks).map((w) async {
+                          var dToAdd = Duration(days: 7 * w);
+
+                          var startDateTime = tz.TZDateTime(
+                                  tz.getLocation(sportCenter!.timezoneId),
+                                  start!.year,
+                                  start!.month,
+                                  start!.day,
+                                  startTime!.hour,
+                                  startTime!.minute)
+                              .add(dToAdd);
+                          var endDateTime = tz.TZDateTime(
+                                  tz.getLocation(sportCenter!.timezoneId),
+                                  start!.year,
+                                  start!.month,
+                                  start!.day,
+                                  endTime!.hour,
+                                  endTime!.minute)
+                              .add(dToAdd);
+
                           var match = Match(
-                              dateTime,
+                              startDateTime,
                               (isSavedSportCenter)
                                   ? sportCenter!.placeId
                                   : null,
@@ -880,7 +885,7 @@ class CreateMatchState extends State<CreateMatch> {
                                           .toInt(),
                                       organiserWithFee ? 50 : 0)
                                   : null,
-                              endDateTime.difference(dateTime),
+                              endDateTime.difference(startDateTime),
                               isTest,
                               numberOfPeopleRangeValues.start.toInt(),
                               widget.existingMatch != null

@@ -348,7 +348,7 @@ class UserPageState extends State<UserPage> {
                   widgets.addAll([
                     Row(children: [
                       Expanded(
-                          child: CompleteOrganiserAccountWidget(isTest: true))
+                          child: CompleteOrganiserAccountWidget(isTest: isTest))
                     ]),
                     verticalSpace
                   ]);

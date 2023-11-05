@@ -195,6 +195,7 @@ class MatchDetailsState extends State<MatchDetails> {
       var widgets;
       if (skeletons == null) {
         var completeOrganiserWidget = organizerView &&
+                match.price != null &&
                 userState.getLoggedUserDetails()?.areChargesEnabled(isTest) !=
                     null &&
                 !userState.getLoggedUserDetails()!.areChargesEnabled(isTest)

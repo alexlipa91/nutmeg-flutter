@@ -45,7 +45,7 @@ class Login extends StatelessWidget {
           Container(
             constraints: BoxConstraints.expand(),
             decoration: new BoxDecoration(color: Palette.primary)),
-          LaunchWidgetState.getBackgoundImages(context),
+          LaunchWidgetState.getBackgroundImages(context),
           LoginArea(from: from)
         ])
       ),
