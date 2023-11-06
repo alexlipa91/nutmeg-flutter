@@ -345,7 +345,7 @@ class CreateMatchState extends State<CreateMatch> {
                               AppLocalizations.of(context)!.repeatInputLabel,
                               isDropdown: true),
                           onTap: () async {
-                            var weeks = [1, 2, 4, 6, 8, 10];
+                            var weeks = [1, 2, 3, 4];
                             var choices = weeks.map((e) {
                               if (e == 1)
                                 return noRepeat;
