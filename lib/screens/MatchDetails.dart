@@ -101,6 +101,8 @@ class MatchDetailsState extends State<MatchDetails> {
     });
 
     Match match = await refreshMatch();
+    // we need to wait to load all logged user info before building the UI
+    await context.read<UserState>().fetchLoggedUserDetails();
     refreshUsers(match);
 
     Ratings? ratings = context.read<MatchesState>().getRatings(widget.matchId);
@@ -1021,7 +1023,7 @@ class Stats extends StatelessWidget {
                       builder: (context) {
                         Map<String, double?> userAndRate = {};
                         match.going.keys.forEach(
-                            (u) => userAndRate[u] = (ratings.scores ?? {})[u]);
+                            (u) => userAndRate[u] = ratings.scores[u]);
                         var entries = userAndRate.entries.toList();
                         entries.sort((a, b) =>
                             (b.value ?? -1).compareTo((a.value ?? -1)));
