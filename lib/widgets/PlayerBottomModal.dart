@@ -204,6 +204,7 @@ class PerformanceGraph extends StatelessWidget {
         (context.read<UserState>().getUserDetail(userId)!.lastScores ?? [])
             .asMap()
             .entries
+            .map((e) => MapEntry(e.key, double.parse(e.value.toStringAsFixed(2))))
             .toList();
 
     return Padding(
@@ -213,7 +214,9 @@ class PerformanceGraph extends StatelessWidget {
           child: LineChart(
             LineChartData(
               borderData: FlBorderData(
-                show: false,
+                show: true,
+                border: Border.symmetric(
+                    horizontal: BorderSide(color: Palette.greyLightest)),
               ),
               titlesData: FlTitlesData(
                 topTitles: AxisTitles(
@@ -246,10 +249,23 @@ class PerformanceGraph extends StatelessWidget {
               ),
               maxY: 5,
               minY: 1,
+              lineTouchData: LineTouchData(
+                handleBuiltInTouches: true,
+                touchTooltipData: LineTouchTooltipData(
+                  tooltipBgColor: Palette.greyLighter,
+                ),
+                getTouchLineEnd: (a, b) => 0,
+              ),
               gridData: FlGridData(
                 show: true,
                 drawHorizontalLine: true,
                 drawVerticalLine: false,
+                getDrawingHorizontalLine: (value) {
+                  return FlLine(
+                    color: Palette.greyLightest,
+                    strokeWidth: 1,
+                  );
+                },
               ),
               lineBarsData: [
                 LineChartBarData(
