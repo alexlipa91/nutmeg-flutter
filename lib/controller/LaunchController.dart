@@ -34,7 +34,8 @@ class LaunchController {
     print("handling dynamic link " + deepLink.toString());
     var fullPath =
         "${deepLink.path}?${deepLink.queryParameters.entries.map((e) => "${e.key}=${e.value}").join("&")}";
-    GoRouter.of(navigatorKey.currentContext!).go(fullPath);
+    appRouter.go(fullPath);
+    // GoRouter.of(navigatorKey.currentContext!).go(fullPath);
   }
 
   static void _handleMessageFromNotification(RemoteMessage message) async {
