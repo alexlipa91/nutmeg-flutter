@@ -19,6 +19,7 @@ import 'package:nutmeg/screens/admin/AvailableMatchesAdmin.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:provider/provider.dart';
 import 'package:skeletons/skeletons.dart';
+import 'package:flutter_web_plugins/url_strategy.dart';
 
 import '../Exceptions.dart';
 import '../firebase_options.dart';
@@ -40,7 +41,7 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/launch',
       builder: (context, state) =>
-          LaunchWidget(from: state.pathParameters["from"]),
+          LaunchWidget(from: state.uri.queryParameters["from"]),
     ),
     GoRoute(
         path: '/',
@@ -112,6 +113,8 @@ final appRouter = GoRouter(
       redirectUrl = "/";
     }
 
+    print("redirecting from ${state.matchedLocation} to $redirectUrl");
+
     return redirectUrl;
   },
 );
@@ -139,6 +142,7 @@ void main() async {
 
   ErrorWidget.builder = (errorDetails) => Container();
 
+  usePathUrlStrategy();
   runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider(create: (context) => UserState()),
