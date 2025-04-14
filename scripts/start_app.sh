@@ -1,0 +1,1 @@
+flutter run -t lib/screens/Launch.dart -d chrome

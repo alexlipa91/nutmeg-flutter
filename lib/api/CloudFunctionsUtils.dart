@@ -66,7 +66,7 @@ class CloudFunctionsClient {
 
   Future<Map<String, dynamic>?> get(String name,
       {Map<String, dynamic> args = const {}}) async {
-    print("GET AppEngine " + name + " with args " + args.toString());
+    print("GET " + name + " with args " + args.toString());
 
     var trace = FirebasePerformance.instance.newTrace("api-call");
     await trace.start();
