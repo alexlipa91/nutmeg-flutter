@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_web_frame/flutter_web_frame.dart';
 import 'package:go_router/go_router.dart';
-import 'package:logger/logger.dart';
 import 'package:nutmeg/controller/LaunchController.dart';
 import 'package:nutmeg/screens/AvailableMatches.dart';
 import 'package:nutmeg/screens/CreateMatch.dart';
@@ -29,6 +28,7 @@ import '../state/UserState.dart';
 import '../utils/LocationUtils.dart';
 import 'admin/AddOrEditMatch.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:logging/logging.dart' as logging;
 
 final navigatorKey = GlobalKey<NavigatorState>();
 final scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
@@ -121,7 +121,13 @@ final appRouter = GoRouter(
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  Logger.level = Level.error;
+
+  logging.Logger.root.level =
+      logging.Level.ALL; // Set the default logging level
+  logging.Logger.root.onRecord.listen((record) {
+    print('${record.level.name}: ${record.time}: ${record.message}');
+  });
+
   await Firebase.initializeApp(
       // https://github.com/firebase/flutterfire/issues/10228
       // name: kIsWeb ? null : "nutmeg",

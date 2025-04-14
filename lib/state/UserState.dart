@@ -9,12 +9,14 @@ import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 import 'package:nutmeg/utils/LocationUtils.dart';
 import 'package:provider/provider.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import 'package:logging/logging.dart';
 
 import '../model/SportCenter.dart';
 import '../model/UserDetails.dart';
 import '../screens/EnterDetails.dart';
 import 'MatchesState.dart';
 
+final logger = Logger('UserState');
 
 class UserState extends ChangeNotifier {
   // hold current user id
@@ -51,8 +53,9 @@ class UserState extends ChangeNotifier {
   bool isLoggedIn() => currentUserId != null;
 
   Future<void> logout() async {
+    logger.info('logging out');
     await FirebaseAuth.instance.signOut();
-    if(await googleSignIn.isSignedIn()) {
+    if (await googleSignIn.isSignedIn()) {
       await googleSignIn.disconnect();
     }
     currentUserId = null;
@@ -83,11 +86,11 @@ class UserState extends ChangeNotifier {
   }
 
   Future<UserDetails?> fetchUserDetails(String uid) async {
+    logger.info('fetching user details for $uid');
     var resp = await CloudFunctionsClient().get("users/$uid");
-
+    
     var ud = (resp == null) ? null : UserDetails.fromJson(resp, uid);
-    if (ud != null)
-      setUserDetail(ud);
+    if (ud != null) setUserDetail(ud);
 
     return ud;
   }
@@ -101,18 +104,18 @@ class UserState extends ChangeNotifier {
     if (token == null) {
       return;
     }
-    CloudFunctionsClient().post("users/${currentUserId!}/tokens", {
-      "token": token
-    });
+    CloudFunctionsClient()
+        .post("users/${currentUserId!}/tokens", {"token": token});
   }
 
   Future<List<SportCenter>> fetchLoggedUserSportCenters() async {
     Map<String, dynamic> data = await CloudFunctionsClient()
-        .get("sportcenters", args: {"user": currentUserId!})
-        ?? {};
+            .get("sportcenters", args: {"user": currentUserId!}) ??
+        {};
 
-    _sportCenters = data.entries.map((e) => SportCenter
-        .fromJson(Map<String, dynamic>.from(e.value), e.key))
+    _sportCenters = data.entries
+        .map((e) =>
+            SportCenter.fromJson(Map<String, dynamic>.from(e.value), e.key))
         .toList();
 
     notifyListeners();
@@ -130,10 +133,11 @@ class UserState extends ChangeNotifier {
   }
 
   Future<void> setLocationInfo(Position? position) async {
-    var defaultFallback = LocationInfo("NL", "Amsterdam", 52.3676, 4.9041,
-        "ChIJVXealLU_xkcRja_At0z9AGY");
+    var defaultFallback = LocationInfo(
+        "NL", "Amsterdam", 52.3676, 4.9041, "ChIJVXealLU_xkcRja_At0z9AGY");
     if (position != null) {
-      var detected = await fetchLocationInfo(position.latitude, position.longitude);
+      var detected =
+          await fetchLocationInfo(position.latitude, position.longitude);
       if (detected != null) {
         _deviceLocationInfo = detected;
       } else {
@@ -149,18 +153,18 @@ class UserState extends ChangeNotifier {
 
   GoogleSignIn googleSignIn = GoogleSignIn();
 
-  Future<void> continueWithGoogle(
-      BuildContext context) async {
+  Future<void> continueWithGoogle(BuildContext context) async {
     FirebaseAuth auth = FirebaseAuth.instance;
     var userCredentials;
 
     if (kIsWeb) {
       userCredentials = await auth.signInWithPopup(GoogleAuthProvider());
     } else {
-      final GoogleSignInAccount? googleSignInAccount = await googleSignIn.signIn();
+      final GoogleSignInAccount? googleSignInAccount =
+          await googleSignIn.signIn();
 
       final GoogleSignInAuthentication? googleSignInAuthentication =
-      await googleSignInAccount?.authentication;
+          await googleSignInAccount?.authentication;
 
       final AuthCredential credential = GoogleAuthProvider.credential(
         accessToken: googleSignInAuthentication?.accessToken,
@@ -177,23 +181,19 @@ class UserState extends ChangeNotifier {
 
     var uid = userCredential.user?.uid;
 
-    UserDetails? userDetails = await context.read<UserState>()
-        .fetchUserDetails(uid!);
+    UserDetails? userDetails =
+        await context.read<UserState>().fetchUserDetails(uid!);
 
     // check if first time
     if (userDetails == null) {
-      userDetails = new UserDetails(
-          uid,
-          false,
-          userCredential.user?.photoURL,
-          userCredential.user?.displayName,
-          userCredential.user?.email);
+      userDetails = new UserDetails(uid, false, userCredential.user?.photoURL,
+          userCredential.user?.displayName, userCredential.user?.email);
 
       userDetails.name = "";
 
       if (userDetails.name == null || userDetails.name == "") {
-        var name = await Navigator.of(context).push(
-            MaterialPageRoute(builder: (context) => EnterDetails()));
+        var name = await Navigator.of(context)
+            .push(MaterialPageRoute(builder: (context) => EnterDetails()));
         if (name == null || name == "") {
           // Navigator.pop(context);
           return null;
@@ -207,14 +207,13 @@ class UserState extends ChangeNotifier {
 
     userState.setCurrentUserDetails(userDetails);
     userState.storeUserToken(await FirebaseMessaging.instance.getToken());
-    FirebaseMessaging.instance.onTokenRefresh.listen((t) =>
-        userState.storeUserToken(t));
+    FirebaseMessaging.instance.onTokenRefresh
+        .listen((t) => userState.storeUserToken(t));
 
     context.read<MatchesState>().refreshState(context);
   }
 
-  Future<void> continueWithFacebook(
-      BuildContext context) async {
+  Future<void> continueWithFacebook(BuildContext context) async {
     var userCred;
 
     if (kIsWeb) {
@@ -233,8 +232,8 @@ class UserState extends ChangeNotifier {
       final LoginResult loginResult = await FacebookAuth.instance.login();
 
       // Create a credential from the access token
-      final OAuthCredential facebookAuthCredential = FacebookAuthProvider
-          .credential(loginResult.accessToken?.token ?? "");
+      final OAuthCredential facebookAuthCredential =
+          FacebookAuthProvider.credential(loginResult.accessToken?.token ?? "");
 
       // Once signed in, return the UserCredential
       userCred = await FirebaseAuth.instance
@@ -243,8 +242,7 @@ class UserState extends ChangeNotifier {
     await _login(context, userCred);
   }
 
-  Future<void> continueWithApple(
-      BuildContext context) async {
+  Future<void> continueWithApple(BuildContext context) async {
     // To prevent replay attacks with the credential returned from Apple, we
     // include a nonce in the credential request. When signing in in with
     // Firebase, the nonce in the id token returned by Apple, is expected to
@@ -270,14 +268,13 @@ class UserState extends ChangeNotifier {
     // Sign in the user with Firebase. If the nonce we generated earlier does
     // not match the nonce in `appleCredential.identityToken`, sign in will fail.
     final userCredential =
-    await FirebaseAuth.instance.signInWithCredential(oauthCredential);
+        await FirebaseAuth.instance.signInWithCredential(oauthCredential);
 
     return _login(context, userCredential);
   }
 }
 
 class LocationInfo {
-
   // these are city coordinates:
   double lat;
   double lng;
@@ -287,20 +284,20 @@ class LocationInfo {
 
   LocationInfo(this.country, this.city, this.lat, this.lng, this.placeId);
 
-  LocationInfo.fromJson(Map<String, dynamic> json):
-      country = json["country"],
-      city = json["city"],
-      lat = json["lat"],
-      lng = json["lng"],
-      placeId = json["place_id"];
+  LocationInfo.fromJson(Map<String, dynamic> json)
+      : country = json["country"],
+        city = json["city"],
+        lat = json["lat"],
+        lng = json["lng"],
+        placeId = json["place_id"];
 
   Map<String, dynamic> toJson() => {
-    "country": country,
-    "city": city,
-    "lat": lat,
-    "lng": lng,
-    "place_id": placeId
-  };
+        "country": country,
+        "city": city,
+        "lat": lat,
+        "lng": lng,
+        "place_id": placeId
+      };
 
   String getText() => "$city, $country";
 }

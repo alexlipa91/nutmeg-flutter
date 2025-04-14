@@ -4,7 +4,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_performance/firebase_performance.dart';
 import 'package:http/http.dart' as http;
 import 'package:nutmeg/controller/LaunchController.dart';
+import 'package:logging/logging.dart';
 
+final logger = Logger('CloudFunctionsUtils');
 
 class CloudFunctionsClient {
   static final CloudFunctionsClient _singleton = CloudFunctionsClient._internal();
@@ -15,8 +17,7 @@ class CloudFunctionsClient {
 
   CloudFunctionsClient._internal();
 
-  var appEngineBaseUrl = "https://nutmeg-9099c.ew.r.appspot.com";
-  // var appEngineBaseUrl = "http://localhost:8080";
+  static const appEngineBaseUrl = String.fromEnvironment("BACKEND_URL", defaultValue: "https://nutmeg-9099c.ew.r.appspot.com");
 
   Future<Map<String, String>> _headers() async {
     String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
@@ -30,7 +31,7 @@ class CloudFunctionsClient {
   }
 
   Future<Map<String, dynamic>?> post(String name, Map<String, dynamic> data) async {
-    print("POST AppEngine " + name + " with data " + data.toString());
+    logger.info("POST AppEngine $name with data ${data.toString()}");
 
     var trace = FirebasePerformance.instance.newTrace("api-call");
     trace.start();
@@ -66,7 +67,7 @@ class CloudFunctionsClient {
 
   Future<Map<String, dynamic>?> get(String name,
       {Map<String, dynamic> args = const {}}) async {
-    print("GET " + name + " with args " + args.toString());
+    logger.info("GET $name with args ${args.toString()}");
 
     var trace = FirebasePerformance.instance.newTrace("api-call");
     await trace.start();
