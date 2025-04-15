@@ -51,7 +51,19 @@ class CloudFunctionsClient {
     trace.setMetric("duration_ms", stopwatch.elapsed.inMilliseconds);
     trace.stop();
 
-    return jsonDecode(r.body)["data"];
+    if (r.statusCode == 500) {
+      logger.severe("Server error (500): ${r.body}");
+      throw Exception(r.body);
+    }
+
+    var responseBody = r.body;
+    try {
+      return jsonDecode(responseBody)["data"];
+    } catch (e) {
+      var message = "Failed to decode response body: $responseBody";
+      logger.severe(message, e);
+      throw Exception(message);
+    }
   }
 
   String _getPathWildcardName(String name) {

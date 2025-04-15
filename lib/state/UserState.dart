@@ -157,8 +157,16 @@ class UserState extends ChangeNotifier {
     FirebaseAuth auth = FirebaseAuth.instance;
     var userCredentials;
 
+    await auth.signOut();
+    await googleSignIn.signOut();
+    await googleSignIn.disconnect();
+
     if (kIsWeb) {
-      userCredentials = await auth.signInWithPopup(GoogleAuthProvider());
+      var googleProvider = GoogleAuthProvider();
+      googleProvider.setCustomParameters({
+        'prompt': 'select_account'
+      });
+      userCredentials = await auth.signInWithPopup(googleProvider);
     } else {
       final GoogleSignInAccount? googleSignInAccount =
           await googleSignIn.signIn();
