@@ -48,31 +48,39 @@ class LaunchController {
   }
 
   static void _setupNotifications(BuildContext context) async {
-    print("setting up notification handler");
+    logger.info("setting up notification handler");
 
     if (kIsWeb) {
-      // Request permission and get token for web
       try {
-        NotificationSettings settings = await FirebaseMessaging.instance.requestPermission(
-          alert: true,
-          badge: true,
-          sound: true,
-        );
+        // Check current permission status first
+        NotificationSettings currentSettings = await FirebaseMessaging.instance.getNotificationSettings();
         
-        if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-          // Get token with VAPID key for web
+        logger.info('Current notification settings: ${currentSettings.authorizationStatus}');
+        if (currentSettings.authorizationStatus == AuthorizationStatus.notDetermined) {
+          // Only request if we haven't asked before
+          logger.info('Requesting notification permissions for the first time');
+          currentSettings = await FirebaseMessaging.instance.requestPermission(
+            alert: true,
+            badge: true,
+            sound: true,
+          );
+        }
+        
+        if (currentSettings.authorizationStatus == AuthorizationStatus.authorized) {
+          const vapidKey = String.fromEnvironment('FIREBASE_VAPID_KEY');
           String? token = await FirebaseMessaging.instance.getToken(
-            vapidKey: String.fromEnvironment("FIREBASE_VAPID_KEY")
+            vapidKey: vapidKey
           );
           
           if (token != null) {
-            print('FCM Web Token: $token');
-            // Store token using your existing storeUserToken method
+            logger.info('FCM Web Token obtained: ${token.substring(0, 5)}...');
             await context.read<UserState>().storeUserToken(token);
           }
+        } else {
+          logger.info('Notifications not authorized: ${currentSettings.authorizationStatus}');
         }
       } catch (e) {
-        print('Error setting up web notifications: $e');
+        logger.severe('Error setting up web notifications', e);
       }
     }
 
