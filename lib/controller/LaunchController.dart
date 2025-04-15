@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
+import 'package:logging/logging.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 import 'package:nutmeg/model/UserDetails.dart';
 import 'package:nutmeg/screens/EnterDetails.dart';
@@ -24,6 +25,8 @@ import '../utils/LocationUtils.dart';
 import '../utils/UiUtils.dart';
 import '../utils/Utils.dart';
 import 'MiscController.dart';
+
+final logger = Logger('LaunchController');
 
 class LaunchController {
   static bool loadingDone = false;
@@ -44,18 +47,41 @@ class LaunchController {
     GoRouter.of(navigatorKey.currentContext!).go(message.data["route"]);
   }
 
-  static void _setupNotifications(BuildContext context) {
+  static void _setupNotifications(BuildContext context) async {
     print("setting up notification handler");
 
-    // FirebaseMessaging.onMessageOpenedApp.listen((m) {
-    //   print("called onMsgOpenedApp callback");
-    //   _handleMessageFromNotification(m);
-    // });
+    if (kIsWeb) {
+      // Request permission and get token for web
+      try {
+        NotificationSettings settings = await FirebaseMessaging.instance.requestPermission(
+          alert: true,
+          badge: true,
+          sound: true,
+        );
+        
+        if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+          // Get token with VAPID key for web
+          String? token = await FirebaseMessaging.instance.getToken(
+            vapidKey: String.fromEnvironment("FIREBASE_VAPID_KEY")
+          );
+          
+          if (token != null) {
+            print('FCM Web Token: $token');
+            // Store token using your existing storeUserToken method
+            await context.read<UserState>().storeUserToken(token);
+          }
+        }
+      } catch (e) {
+        print('Error setting up web notifications: $e');
+      }
+    }
 
+    // Your existing notification setup
     FirebaseMessaging.onMessage.listen(_firebaseMessagingBackgroundHandler);
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
     if (!kIsWeb) {
+      // Your existing mobile dynamic links setup
       Future<Null> Function(PendingDynamicLinkData? dynamicLink) future =
           (PendingDynamicLinkData? dynamicLink) async {
         final Uri? deepLink = dynamicLink?.link;

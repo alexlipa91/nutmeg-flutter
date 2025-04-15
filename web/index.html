@@ -1,14 +1,16 @@
 <!DOCTYPE html>
 <html>
 <style>
-html, body {
-  margin:0px;
-  height:100%;
-  background-color: #394BBB;
-}
+  html,
+  body {
+    margin: 0px;
+    height: 100%;
+    background-color: #394BBB;
+  }
 </style>
+
 <head>
-    <!--
+  <!--
       If you are serving your web app in a path other than the root, change the
       href value below to reflect the base path you are serving from.
 
@@ -18,38 +20,44 @@ html, body {
       Fore more details:
       * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
     -->
-    <base href="/">
+  <base href="/">
 
-    <meta charset="UTF-8">
-    <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-    <meta name="description" content="A new Flutter project.">
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="A new Flutter project.">
 
-    <!-- iOS meta tags & icons -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
-    <meta name="apple-mobile-web-app-title" content="nutmeg">
+  <!-- iOS meta tags & icons -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="nutmeg">
 
-    <meta name="google-signin-client_id" content="956073807168-hiadijjqbhfssu8ou4d9fe2qv2dhhsus.apps.googleusercontent.com">
+  <meta name="google-signin-client_id"
+    content="956073807168-hiadijjqbhfssu8ou4d9fe2qv2dhhsus.apps.googleusercontent.com">
 
-    <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" href="favicon.png"/>
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png" />
 
-    <title>nutmeg</title>
-    <link rel="manifest" href="manifest.json">
+  <title>nutmeg</title>
+  <link rel="manifest" href="manifest.json">
 </head>
+
 <body>
-<!-- This script installs service_worker.js to provide PWA functionality to
+  <!-- This script installs service_worker.js to provide PWA functionality to
      application. For more information, see:
      https://developers.google.com/web/fundamentals/primers/service-workers -->
-<script>
+  <script>
     if ('serviceWorker' in navigator) {
-        window.addEventListener('flutter-first-frame', function () {
-            navigator.serviceWorker.register('flutter_service_worker.js');
-        });
+      window.addEventListener('flutter-first-frame', function () {
+        navigator.serviceWorker.register('flutter_service_worker.js');
+      });
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('/firebase-messaging-sw.js');
+      });
     }
-</script>
-<script src="main.dart.js" type="application/javascript"></script>
+  </script>
+  <script src="main.dart.js" type="application/javascript"></script>
 </body>
+
 </html>
