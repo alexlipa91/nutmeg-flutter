@@ -224,71 +224,76 @@ class AvailableMatches extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-        providers: [
-          ChangeNotifierProvider(
-              create: (context) => AvailableMatchesUiState()),
-        ],
-        builder: (context, _) => GenericAvailableMatchesList(
-              Palette.primary,
-              [
-                AppLocalizations.of(context)!.upcoming.toUpperCase(),
-                AppLocalizations.of(context)!.going.toUpperCase(),
-                AppLocalizations.of(context)!.past.toUpperCase(),
-                AppLocalizations.of(context)!.myMatches.toUpperCase(),
-              ].toList(),
-              [
-                upcomingWidgets(context),
-                goingWidgets(context),
-                pastWidgets(context),
-                getMyMatchesWidgets(context)
-              ].toList(),
-              getEmptyStateWidget(context),
-              context.watch<AvailableMatchesUiState>().current == 3
-                  ? FloatingActionButton(
-                      backgroundColor: Palette.primary,
-                      child: Icon(Icons.add, color: Palette.white),
-                      onPressed: () => context.go("/createMatch"))
-                  : null,
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(AppLocalizations.of(context)!.topHeader,
-                      style: TextPalette.bodyTextInverted),
-                  InkWell(
-                    onTap: () async {
-                      LocationInfo? newUserLocation = await Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => ChangeCity()));
+      providers: [
+        ChangeNotifierProvider(
+          create: (context) => AvailableMatchesUiState()
+        ),
+        ChangeNotifierProxyProvider<UserState, MatchesState>(
+          create: (context) => MatchesState(context.read<UserState>()),
+          update: (context, userState, previous) => 
+            previous ?? MatchesState(userState),
+        ),
+      ],
+      builder: (context, _) => GenericAvailableMatchesList(
+        Palette.primary,
+        [
+          AppLocalizations.of(context)!.upcoming.toUpperCase(),
+          AppLocalizations.of(context)!.going.toUpperCase(),
+          AppLocalizations.of(context)!.past.toUpperCase(),
+          AppLocalizations.of(context)!.myMatches.toUpperCase(),
+        ].toList(),
+        [
+          upcomingWidgets(context),
+          goingWidgets(context),
+          pastWidgets(context),
+          getMyMatchesWidgets(context)
+        ].toList(),
+        getEmptyStateWidget(context),
+        context.watch<AvailableMatchesUiState>().current == 3
+          ? FloatingActionButton(
+            backgroundColor: Palette.primary,
+            child: Icon(Icons.add, color: Palette.white),
+            onPressed: () => context.go("/createMatch"))
+          : null,
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(AppLocalizations.of(context)!.topHeader,
+                style: TextPalette.bodyTextInverted),
+            InkWell(
+              onTap: () async {
+                LocationInfo? newUserLocation = await Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => ChangeCity()));
 
-                      if (newUserLocation != null
-                          && newUserLocation.placeId !=
-                          context.read<UserState>().getLocationInfo().placeId) {
-                        if (context.read<UserState>().isLoggedIn()) {
-                          await context
-                              .read<UserState>()
-                              .editUser({"location": newUserLocation.toJson()});
-                        } else {
-                          context.read<UserState>()
-                              .setCustomLocationInfo(newUserLocation);
-                        }
-
-                        await context.read<MatchesState>()
-                            .refreshState(context, reset: true);
-                      }
-                    },
-                    child: Row(children: [
-                      Text(context.watch<UserState>().getLocationInfo().getText(),
-                          style: TextPalette.h1Inverted),
-                      SizedBox(width: 4,),
-                      Icon(Icons.keyboard_arrow_down_outlined, size: 28, color: Palette.white)
-                    ]),
-                  ),
-                ],
-              ),
-              () async {
-                print("refreshing state for available matches");
-                await context.read<MatchesState>().refreshState(context);
-              }
-            )
+                if (newUserLocation != null
+                    && newUserLocation.placeId !=
+                    context.read<UserState>().getLocationInfo().placeId) {
+                  if (context.read<UserState>().isLoggedIn()) {
+                    await context
+                        .read<UserState>()
+                        .editUser({"location": newUserLocation.toJson()});
+                  } else {
+                    context.read<UserState>()
+                        .setCustomLocationInfo(newUserLocation);
+                  }
+                  await context.read<MatchesState>()
+                      .refreshState(context, reset: true);
+                }
+              },
+              child: Row(children: [
+                Text(context.watch<UserState>().getLocationInfo().getText(),
+                    style: TextPalette.h1Inverted),
+                SizedBox(width: 4,),
+                Icon(Icons.keyboard_arrow_down_outlined, size: 28, color: Palette.white)
+              ]),
+            ),
+          ],
+        ),
+        () async {
+          print("refreshing state for available matches");
+          await context.read<MatchesState>().refreshState(context, reset: true);
+        }
+      )
     );
   }
 }

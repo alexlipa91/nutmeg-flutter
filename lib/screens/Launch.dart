@@ -152,7 +152,7 @@ void main() async {
   runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider(create: (context) => UserState()),
-      ChangeNotifierProvider(create: (context) => MatchesState()),
+      ChangeNotifierProvider(create: (context) => MatchesState(context.read<UserState>())),
       ChangeNotifierProvider(create: (context) => LoadOnceState()),
     ],
     child: SkeletonTheme(
