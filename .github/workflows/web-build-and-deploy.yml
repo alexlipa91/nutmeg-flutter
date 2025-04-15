@@ -6,19 +6,25 @@ on:
       - master
 
 jobs:
-  build_ios:
-    name: Build Web
+  deploy_web:
+    name: Deploy Web
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code from ref
         uses: actions/checkout@v2
         with:
           ref: ${{ github.ref }}
+      
+      - name: Create env file
+        run: |
+          echo "${{ secrets.ENV_PROD }}" > .env.prod
+      
       - name: Run Flutter tasks
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.13.9'
-      - run: flutter build web -t lib/screens/Launch.dart --release --web-renderer=canvaskit
+      - run: flutter build web -t lib/screens/Launch.dart --dart-define-from-file=.env.prod --release --web-renderer=canvaskit
+      
       - name: Deploy to Firebase
         uses: w9jds/firebase-action@master
         with:
