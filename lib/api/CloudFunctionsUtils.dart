@@ -9,28 +9,30 @@ import 'package:logging/logging.dart';
 final logger = Logger('CloudFunctionsUtils');
 
 class CloudFunctionsClient {
-  static final CloudFunctionsClient _singleton = CloudFunctionsClient._internal();
+  static final CloudFunctionsClient _singleton =
+      CloudFunctionsClient._internal();
+  static const appEngineBaseUrl = String.fromEnvironment("BACKEND_URL",
+      defaultValue: "https://nutmeg-9099c.ew.r.appspot.com");
 
   factory CloudFunctionsClient() {
+    print("appEngineBaseUrl: $appEngineBaseUrl");
     return _singleton;
   }
 
   CloudFunctionsClient._internal();
 
-  static const appEngineBaseUrl = String.fromEnvironment("BACKEND_URL", defaultValue: "https://nutmeg-9099c.ew.r.appspot.com");
-
   Future<Map<String, String>> _headers() async {
     String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
     return {
       'Content-Type': 'application/json; charset=UTF-8',
-      if (token != null)
-        'Authorization': 'Bearer ' + token,
+      if (token != null) 'Authorization': 'Bearer ' + token,
       if (LaunchController.appVersion != null)
         'App-Version': LaunchController.appVersion ?? "n/a"
     };
   }
 
-  Future<Map<String, dynamic>?> post(String name, Map<String, dynamic> data) async {
+  Future<Map<String, dynamic>?> post(
+      String name, Map<String, dynamic> data) async {
     logger.info("POST AppEngine $name with data ${data.toString()}");
 
     var trace = FirebasePerformance.instance.newTrace("api-call");
@@ -93,13 +95,9 @@ class CloudFunctionsClient {
 
     var argsString = args.entries.map((e) => "${e.key}=${e.value}").join("&");
     var url = "$appEngineBaseUrl/$name";
-    if (argsString.isNotEmpty)
-      url = "$url?$argsString";
+    if (argsString.isNotEmpty) url = "$url?$argsString";
 
-    var r = await http.get(
-      Uri.parse(url),
-      headers: await _headers()
-    );
+    var r = await http.get(Uri.parse(url), headers: await _headers());
 
     trace.setMetric("duration_ms", stopwatch.elapsed.inMilliseconds);
     await trace.stop();

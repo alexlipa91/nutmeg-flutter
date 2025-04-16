@@ -13,7 +13,6 @@ import '../state/LoginStatusChangeNotifier.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class Login extends StatelessWidget {
-
   final String? from;
 
   const Login({Key? key, this.from}) : super(key: key);
@@ -26,35 +25,31 @@ class Login extends StatelessWidget {
             create: (context) => LoginStatusChangeNotifier()),
       ],
       child: Scaffold(
-        extendBodyBehindAppBar: true,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          leading: Container(),
-          actions: [
-            Padding(
-                padding: EdgeInsets.only(right: 20),
-                child: InkWell(
-                  child: Icon(Icons.close),
-                  onTap: () => Navigator.of(context).pop()
-                )
-            )
-          ],
-        ),
-        body: Stack(children: [
-          Container(
-            constraints: BoxConstraints.expand(),
-            decoration: new BoxDecoration(color: Palette.primary)),
-          LaunchWidgetState.getBackgroundImages(context),
-          LoginArea(from: from)
-        ])
-      ),
+          extendBodyBehindAppBar: true,
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            leading: Container(),
+            actions: [
+              Padding(
+                  padding: EdgeInsets.only(right: 20),
+                  child: InkWell(
+                      child: Icon(Icons.close),
+                      onTap: () => Navigator.of(context).pop()))
+            ],
+          ),
+          body: Stack(children: [
+            Container(
+                constraints: BoxConstraints.expand(),
+                decoration: new BoxDecoration(color: Palette.primary)),
+            LaunchWidgetState.getBackgroundImages(context),
+            LoginArea(from: from)
+          ])),
     );
   }
 }
 
 class LoginArea extends StatelessWidget {
-
   final String? from;
 
   const LoginArea({Key? key, this.from}) : super(key: key);
@@ -83,8 +78,8 @@ class LoginArea extends StatelessWidget {
                       if (!kIsWeb && Platform.isIOS)
                         Padding(
                             padding: EdgeInsets.only(top: 16),
-                            child: SignInButton(provider: Provider.apple,
-                                from: from)),
+                            child: SignInButton(
+                                provider: Provider.apple, from: from)),
                     ],
                   )),
                 ),
@@ -106,7 +101,6 @@ class LoginArea extends StatelessWidget {
 enum Provider { facebook, google, apple }
 
 class SignInButton extends StatelessWidget {
-
   final Provider provider;
   final String? from;
 
@@ -121,25 +115,31 @@ class SignInButton extends StatelessWidget {
     var logoPath;
 
     switch (provider) {
-      case Provider.facebook :
-        loginFuture = () => context.read<UserState>().continueWithFacebook(context);
+      case Provider.facebook:
+        loginFuture =
+            () => context.read<UserState>().continueWithFacebook(context);
         backgroundColor = UiUtils.fromHex("#4267B2");
-        textStyle = GoogleFonts.roboto(color: Palette.white, fontSize: 14, fontWeight: FontWeight.w700);
+        textStyle = GoogleFonts.roboto(
+            color: Palette.white, fontSize: 14, fontWeight: FontWeight.w700);
         logoPath = "assets/login/fb_logo.png";
         break;
-      case Provider.google :
-        loginFuture = () => context.read<UserState>().continueWithGoogle(context);
+      case Provider.google:
+        loginFuture =
+            () => context.read<UserState>().continueWithGoogle(context);
         backgroundColor = Colors.transparent;
-        textStyle = GoogleFonts.roboto(color: Palette.greyDark, fontSize: 14, fontWeight: FontWeight.w700);
+        textStyle = GoogleFonts.roboto(
+            color: Palette.greyDark, fontSize: 14, fontWeight: FontWeight.w700);
         logoPath = "assets/login/google_logo.png";
         break;
-      case Provider.apple :
-        loginFuture = () => context.read<UserState>().continueWithApple(context);
+      case Provider.apple:
+        loginFuture =
+            () => context.read<UserState>().continueWithApple(context);
         backgroundColor = Colors.black;
-        textStyle = GoogleFonts.roboto(color: Palette.white, fontSize: 14, fontWeight: FontWeight.w700);
+        textStyle = GoogleFonts.roboto(
+            color: Palette.white, fontSize: 14, fontWeight: FontWeight.w700);
         logoPath = "assets/login/apple_logo.png";
         break;
-      default :
+      default:
         throw Exception("Invalid provider");
     }
 
@@ -152,23 +152,24 @@ class SignInButton extends StatelessWidget {
                 backgroundColor: backgroundColor,
                 side: BorderSide(width: 1.0, color: Palette.greyLight),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(40))
-            ),
+                    borderRadius: BorderRadius.circular(40))),
             onPressed: () async {
               context.read<LoginStatusChangeNotifier>().setIsSigningIn(true);
 
               try {
                 await loginFuture();
+                print("loginFuture is done");
                 Navigator.of(context).pop();
               } on Exception catch (e, stack) {
                 print(e);
                 print(stack);
-                GenericInfoModal(title: "Sign-in failed",
-                    description: "Please try again or reach out for support").show(context);
+                GenericInfoModal(
+                        title: "Sign-in failed",
+                        description:
+                            "Please try again or reach out for support")
+                    .show(context);
               } finally {
-                context
-                    .read<LoginStatusChangeNotifier>()
-                    .setIsSigningIn(false);
+                context.read<LoginStatusChangeNotifier>().setIsSigningIn(false);
               }
             },
             child: Row(
@@ -182,7 +183,8 @@ class SignInButton extends StatelessWidget {
                   child: Padding(
                     padding: const EdgeInsets.only(left: 10),
                     child: Text(
-                      AppLocalizations.of(context)!.continueWithButton(provider.toString().split(".").last.toUpperCase()),
+                      AppLocalizations.of(context)!.continueWithButton(
+                          provider.toString().split(".").last.toUpperCase()),
                       style: textStyle,
                       textAlign: TextAlign.center,
                     ),
@@ -196,4 +198,3 @@ class SignInButton extends StatelessWidget {
     );
   }
 }
-

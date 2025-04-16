@@ -61,7 +61,6 @@ class UserState extends ChangeNotifier {
     currentUserId = null;
     _sportCenters = null;
     notifyListeners();
-    print("logged out");
   }
 
   // user sport centers
@@ -88,7 +87,7 @@ class UserState extends ChangeNotifier {
   Future<UserDetails?> fetchUserDetails(String uid) async {
     logger.info('fetching user details for $uid');
     var resp = await CloudFunctionsClient().get("users/$uid");
-    
+
     var ud = (resp == null) ? null : UserDetails.fromJson(resp, uid);
     if (ud != null) setUserDetail(ud);
 
@@ -155,32 +154,35 @@ class UserState extends ChangeNotifier {
 
   Future<void> continueWithGoogle(BuildContext context) async {
     FirebaseAuth auth = FirebaseAuth.instance;
-    var userCredentials;
 
-    await auth.signOut();
-    await googleSignIn.signOut();
-    await googleSignIn.disconnect();
+    try {
+      await auth.signOut();
+      await googleSignIn.signOut();
+      await googleSignIn.disconnect();
 
-    if (kIsWeb) {
-      var googleProvider = GoogleAuthProvider();
-      googleProvider.setCustomParameters({
-        'prompt': 'select_account'
-      });
-      userCredentials = await auth.signInWithPopup(googleProvider);
-    } else {
-      final GoogleSignInAccount? googleSignInAccount =
-          await googleSignIn.signIn();
+      if (kIsWeb) {
+        var googleProvider = GoogleAuthProvider();
+        googleProvider.setCustomParameters({'prompt': 'select_account'});
 
-      final GoogleSignInAuthentication? googleSignInAuthentication =
-          await googleSignInAccount?.authentication;
+        var userCredentials = await auth.signInWithPopup(googleProvider);
+        await _login(context, userCredentials);
+      } else {
+        final GoogleSignInAccount? googleSignInAccount =
+            await googleSignIn.signIn();
 
-      final AuthCredential credential = GoogleAuthProvider.credential(
-        accessToken: googleSignInAuthentication?.accessToken,
-        idToken: googleSignInAuthentication?.idToken,
-      );
-      userCredentials = await auth.signInWithCredential(credential);
+        final GoogleSignInAuthentication? googleSignInAuthentication =
+            await googleSignInAccount?.authentication;
+
+        final AuthCredential credential = GoogleAuthProvider.credential(
+          accessToken: googleSignInAuthentication?.accessToken,
+          idToken: googleSignInAuthentication?.idToken,
+        );
+        var userCredentials = await auth.signInWithCredential(credential);
+        await _login(context, userCredentials);
+      }
+    } catch (e) {
+      logger.severe('Error during Google sign-in', e);
     }
-    await _login(context, userCredentials);
   }
 
   Future<void> _login(
