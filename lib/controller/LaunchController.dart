@@ -53,10 +53,13 @@ class LaunchController {
     if (kIsWeb) {
       try {
         // Check current permission status first
-        NotificationSettings currentSettings = await FirebaseMessaging.instance.getNotificationSettings();
-        
-        logger.info('Current notification settings: ${currentSettings.authorizationStatus}');
-        if (currentSettings.authorizationStatus == AuthorizationStatus.notDetermined) {
+        NotificationSettings currentSettings =
+            await FirebaseMessaging.instance.getNotificationSettings();
+
+        logger.info(
+            'Current notification settings: ${currentSettings.authorizationStatus}');
+        if (currentSettings.authorizationStatus ==
+            AuthorizationStatus.notDetermined) {
           // Only request if we haven't asked before
           logger.info('Requesting notification permissions for the first time');
           currentSettings = await FirebaseMessaging.instance.requestPermission(
@@ -65,19 +68,20 @@ class LaunchController {
             sound: true,
           );
         }
-        
-        if (currentSettings.authorizationStatus == AuthorizationStatus.authorized) {
+
+        if (currentSettings.authorizationStatus ==
+            AuthorizationStatus.authorized) {
           const vapidKey = String.fromEnvironment('FIREBASE_VAPID_KEY');
-          String? token = await FirebaseMessaging.instance.getToken(
-            vapidKey: vapidKey
-          );
-          
+          String? token =
+              await FirebaseMessaging.instance.getToken(vapidKey: vapidKey);
+
           if (token != null) {
             logger.info('FCM Web Token obtained: ${token.substring(0, 5)}...');
             await context.read<UserState>().storeUserToken(token);
           }
         } else {
-          logger.info('Notifications not authorized: ${currentSettings.authorizationStatus}');
+          logger.info(
+              'Notifications not authorized: ${currentSettings.authorizationStatus}');
         }
       } catch (e) {
         logger.severe('Error setting up web notifications', e);
@@ -223,29 +227,29 @@ class LaunchController {
     LaunchController.loadingDone = true;
 
     // install/use app prompt
-    if (kIsWeb &&
-        (defaultTargetPlatform == TargetPlatform.iOS ||
-            defaultTargetPlatform == TargetPlatform.android)) {
-      // todo check if app is installed or not
-      // print(GoRouter.of(context).location);
+    // if (kIsWeb &&
+    //     (defaultTargetPlatform == TargetPlatform.iOS ||
+    //         defaultTargetPlatform == TargetPlatform.android)) {
+    //   // todo check if app is installed or not
+    //   // print(GoRouter.of(context).location);
 
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          duration: Duration(seconds: 3),
-          elevation: 0,
-          behavior: SnackBarBehavior.floating,
-          showCloseIcon: true,
-          closeIconColor: Palette.white,
-          padding: EdgeInsets.all(16),
-          content: Text('Use the native app for a better experience',
-              style: TextPalette.linkStyleInverted),
-          // backgroundColor: Colors.transparent,
-          action: SnackBarAction(
-            label: 'Use app',
-            textColor: Colors.blueAccent,
-            onPressed: () =>
-                launchUrl(Uri.parse("https://nutmegapp.page.link/store")),
-          )));
-    }
+    //   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+    //       duration: Duration(seconds: 3),
+    //       elevation: 0,
+    //       behavior: SnackBarBehavior.floating,
+    //       showCloseIcon: true,
+    //       closeIconColor: Palette.white,
+    //       padding: EdgeInsets.all(16),
+    //       content: Text('Use the native app for a better experience',
+    //           style: TextPalette.linkStyleInverted),
+    //       // backgroundColor: Colors.transparent,
+    //       action: SnackBarAction(
+    //         label: 'Use app',
+    //         textColor: Colors.blueAccent,
+    //         onPressed: () =>
+    //             launchUrl(Uri.parse("https://nutmegapp.page.link/store")),
+    //       )));
+    // }
 
     // navigate to next screen
     if (deepLink != null) {
