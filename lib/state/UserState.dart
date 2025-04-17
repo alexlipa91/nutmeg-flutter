@@ -181,7 +181,7 @@ class UserState extends ChangeNotifier {
         await _login(context, userCredentials);
       }
     } catch (e) {
-      logger.severe('Error during Google sign-in', e);
+      logger.severe('Error during Google sign-in', e.toString());
     }
   }
 
