@@ -184,13 +184,13 @@ class UserState extends ChangeNotifier {
 
       print("after sign in with credential ${userCredentials.user?.uid}");
 
-      await _login(context, userCredentials);
+      await login(context, userCredentials);
     } catch (e, stackTrace) {
     logger.severe('Error during Google sign-in', e.toString(), stackTrace );
     }
   }
 
-  Future<void> _login(
+  Future<void> login(
       BuildContext context, UserCredential userCredential) async {
     var userState = context.read<UserState>();
 
@@ -254,7 +254,7 @@ class UserState extends ChangeNotifier {
       userCred = await FirebaseAuth.instance
           .signInWithCredential(facebookAuthCredential);
     }
-    await _login(context, userCred);
+    await login(context, userCred);
   }
 
   Future<void> continueWithApple(BuildContext context) async {
@@ -285,7 +285,7 @@ class UserState extends ChangeNotifier {
     final userCredential =
         await FirebaseAuth.instance.signInWithCredential(oauthCredential);
 
-    return _login(context, userCredential);
+    return login(context, userCredential);
   }
 }
 

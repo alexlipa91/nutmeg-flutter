@@ -8,6 +8,7 @@ import 'package:nutmeg/state/UserState.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/Containers.dart';
+import 'package:nutmeg/widgets/GoogleSignInButton.dart';
 import 'package:provider/provider.dart';
 import '../state/LoginStatusChangeNotifier.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -72,7 +73,7 @@ class LoginArea extends StatelessWidget {
                   child: InfoContainer(
                       child: Column(
                     children: [
-                      SignInButton(provider: Provider.google, from: from),
+                      GoogleSignInButton(from: from),
                       SizedBox(height: 16),
                       SignInButton(provider: Provider.facebook, from: from),
                       if (!kIsWeb && Platform.isIOS)

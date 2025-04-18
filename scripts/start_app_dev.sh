@@ -14,7 +14,7 @@ if [ ! -f "$ENV_FILE" ]; then
     exit 1
 fi
 
-flutter run \
+fvm flutter run \
     -t lib/screens/Launch.dart \
     -d chrome \
     --web-port=7357 \
