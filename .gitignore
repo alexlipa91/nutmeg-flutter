@@ -59,3 +59,6 @@ translator_key
 ios/fastlane/.env.local
 ios/fastlane/build/ios/Pods.build/*
 gc_keys.json
+
+# FVM Version Cache
+.fvm/

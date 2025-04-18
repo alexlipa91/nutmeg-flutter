@@ -160,17 +160,29 @@ class UserState extends ChangeNotifier {
       await googleSignIn.signOut();
       await googleSignIn.disconnect();
 
+      print("after sign out in with google");
+
       final GoogleSignInAccount? googleSignInAccount =
           await googleSignIn.signIn();
 
+      print("after sign in with google");
+
       final GoogleSignInAuthentication? googleSignInAuthentication =
           await googleSignInAccount?.authentication;
+
+      print("after get google sign in authentication");
 
       final AuthCredential credential = GoogleAuthProvider.credential(
         accessToken: googleSignInAuthentication?.accessToken,
         idToken: googleSignInAuthentication?.idToken,
       );
+
+      print("after get credential");
+
       var userCredentials = await auth.signInWithCredential(credential);
+
+      print("after sign in with credential ${userCredentials.user?.uid}");
+
       await _login(context, userCredentials);
     } catch (e) {
       logger.severe('Error during Google sign-in', e.toString());
