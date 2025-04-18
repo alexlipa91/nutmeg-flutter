@@ -160,26 +160,18 @@ class UserState extends ChangeNotifier {
       await googleSignIn.signOut();
       await googleSignIn.disconnect();
 
-      if (kIsWeb) {
-        var googleProvider = GoogleAuthProvider();
-        googleProvider.setCustomParameters({'prompt': 'select_account'});
+      final GoogleSignInAccount? googleSignInAccount =
+          await googleSignIn.signIn();
 
-        var userCredentials = await auth.signInWithPopup(googleProvider);
-        await _login(context, userCredentials);
-      } else {
-        final GoogleSignInAccount? googleSignInAccount =
-            await googleSignIn.signIn();
+      final GoogleSignInAuthentication? googleSignInAuthentication =
+          await googleSignInAccount?.authentication;
 
-        final GoogleSignInAuthentication? googleSignInAuthentication =
-            await googleSignInAccount?.authentication;
-
-        final AuthCredential credential = GoogleAuthProvider.credential(
-          accessToken: googleSignInAuthentication?.accessToken,
-          idToken: googleSignInAuthentication?.idToken,
-        );
-        var userCredentials = await auth.signInWithCredential(credential);
-        await _login(context, userCredentials);
-      }
+      final AuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: googleSignInAuthentication?.accessToken,
+        idToken: googleSignInAuthentication?.idToken,
+      );
+      var userCredentials = await auth.signInWithCredential(credential);
+      await _login(context, userCredentials);
     } catch (e) {
       logger.severe('Error during Google sign-in', e.toString());
     }
