@@ -128,7 +128,6 @@ class UserPageState extends State<UserPage> {
                             });
                           },
                     child: Badge(
-                        toAnimate: false,
                         badgeContent: Icon(Icons.camera_alt_outlined,
                             size: 16.0, color: Palette.white),
                         badgeColor: Palette.primary,
@@ -198,14 +197,20 @@ class UserPageState extends State<UserPage> {
                       });
                     },
                     child: Badge(
-                        toAnimate: false,
-                        badgeContent: Icon(Icons.camera_alt_outlined,
-                            size: 16.0, color: Palette.white),
-                        badgeColor: Palette.primary,
-                        elevation: 0,
-                        position:
-                            BadgePosition.bottomEnd(bottom: -5.0, end: -5.0),
-                        child: UserAvatar(30, userDetails))),
+                        badgeContent: Text('0'),
+                        showBadge: true,
+                        badgeStyle: BadgeStyle(
+                          badgeColor: Palette.primary,
+                        ),
+                        child: Badge(
+                            badgeContent: Icon(Icons.camera_alt_outlined,
+                                size: 16.0, color: Palette.white),
+                            showBadge: true,
+                            badgeStyle: BadgeStyle(
+                              badgeColor: Palette.primary,
+                            ),
+                            position: BadgePosition.custom(bottom: -5.0, end: -5.0),
+                            child: UserAvatar(radius: 30, userDetails: userDetails))),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 30),
               child: Column(
@@ -706,11 +711,12 @@ class UserInfoBox extends StatelessWidget {
                       borderRadius: BorderRadius.circular(8.0)))
               : (rightBadge != null)
                   ? Badge(
-                      badgeColor: Colors.transparent,
-                      borderSide: BorderSide.none,
-                      shape: BadgeShape.circle,
-                      position: BadgePosition(end: 0, bottom: 0),
-                      elevation: 0,
+                      badgeStyle: BadgeStyle(
+                        badgeColor: Colors.transparent,
+                        borderSide: BorderSide.none,
+                        shape: BadgeShape.circle,
+                      ),
+                      position: BadgePosition.custom(end: 0, bottom: 0),
                       badgeContent: rightBadge,
                       child: Padding(
                           padding: EdgeInsets.symmetric(horizontal: 40),
