@@ -160,6 +160,7 @@ class UserState extends ChangeNotifier {
       await googleSignIn.signOut();
       await googleSignIn.disconnect();
 
+      print("using debug mode");
       print("after sign out in with google");
 
       final GoogleSignInAccount? googleSignInAccount =
@@ -184,8 +185,8 @@ class UserState extends ChangeNotifier {
       print("after sign in with credential ${userCredentials.user?.uid}");
 
       await _login(context, userCredentials);
-    } catch (e) {
-      logger.severe('Error during Google sign-in', e.toString());
+    } catch (e, stackTrace) {
+    logger.severe('Error during Google sign-in', e.toString(), stackTrace );
     }
   }
 
