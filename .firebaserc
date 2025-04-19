@@ -1,5 +1,18 @@
 {
   "projects": {
     "default": "nutmeg-9099c"
-  }
+  },
+  "targets": {
+    "nutmeg-9099c": {
+      "hosting": {
+        "staging": [
+          "nutmeg-9099c-staging"
+        ],
+        "live": [
+          "nutmeg-9099c"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }

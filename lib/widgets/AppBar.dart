@@ -14,8 +14,10 @@ class NutmegAppBar extends StatelessWidget {
   final SystemUiOverlayStyle systemUiOverlayStyle;
 
   const NutmegAppBar(
-      {Key? key, required this.backgroundColor, required this.mainRow,
-        required this.systemUiOverlayStyle})
+      {Key? key,
+      required this.backgroundColor,
+      required this.mainRow,
+      required this.systemUiOverlayStyle})
       : super(key: key);
 
   @override
@@ -33,6 +35,7 @@ class NutmegAppBar extends StatelessWidget {
 
 class MainAppBar extends StatelessWidget {
   final Color color;
+  static const buildTimestamp = String.fromEnvironment("BUILD_TIMESTAMP");
 
   MainAppBar(this.color) : super();
 
@@ -57,6 +60,16 @@ class MainAppBar extends StatelessWidget {
                 highlightColor: Colors.transparent,
                 onTap: () => context.go("/"),
                 child: Image.asset('assets/nutmeg_white.png', height: 24)),
+            if (buildTimestamp.isNotEmpty)
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(buildTimestamp,
+                    style: TextStyle(color: Colors.white, fontSize: 12)),
+              ),
             if (isLoggedIn)
               Builder(
                   builder: (context) =>

@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:logging/logging.dart';
 import 'package:nutmeg/state/LoginStatusChangeNotifier.dart';
 import 'package:nutmeg/state/UserState.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
@@ -9,20 +10,28 @@ import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+final logger = Logger('GoogleSignInButton');
+
 class GoogleSignInButton extends StatelessWidget {
+  final GoogleSignIn googleSignIn = GoogleSignIn();
   final String? from;
 
-  const GoogleSignInButton({Key? key, this.from}) : super(key: key);
+  GoogleSignInButton({Key? key, this.from}) : super(key: key);
 
   Future<void> _handleSignIn(BuildContext context) async {
     try {
-      final GoogleSignIn googleSignIn = GoogleSignIn();
+      logger.info("signing in with google");
       final GoogleSignInAccount? googleSignInAccount =
           await googleSignIn.signIn();
 
-      context.read<LoginStatusChangeNotifier>().setIsSigningIn(true);
+      // context.read<LoginStatusChangeNotifier>().setIsSigningIn(true);
 
-      if (googleSignInAccount == null) return;
+      if (googleSignInAccount == null) {
+        logger.info("googleSignInAccount is null");
+        return;
+      } else {
+        logger.info("googleSignInAccount is not null");
+      }
 
       final GoogleSignInAuthentication? googleSignInAuthentication =
           await googleSignInAccount.authentication;
@@ -35,19 +44,20 @@ class GoogleSignInButton extends StatelessWidget {
       final userCredential =
           await FirebaseAuth.instance.signInWithCredential(credential);
 
+      logger.info("userCredential: $userCredential");
+
       if (userCredential.user != null) {
         await context.read<UserState>().login(context, userCredential);
       }
     } catch (e, stack) {
-      print(e);
-      print(stack);
+      logger.severe("error signing in", e, stack);
       await GenericInfoModal(
               title: "Sign-in failed",
               description: "Please try again or reach out for support")
           .show(context);
     } finally {
       Navigator.of(context).pop();
-      context.read<LoginStatusChangeNotifier>().setIsSigningIn(false);
+      // context.read<LoginStatusChangeNotifier>().setIsSigningIn(false);
     }
   }
 

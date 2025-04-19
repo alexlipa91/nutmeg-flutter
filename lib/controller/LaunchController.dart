@@ -194,16 +194,16 @@ class LaunchController {
     Position? position = futuresData[3];
     await context.read<UserState>().setLocationInfo(position);
 
-    // request permissions
-    FirebaseMessaging.instance.requestPermission(
-      alert: true,
-      announcement: false,
-      badge: true,
-      carPlay: false,
-      criticalAlert: false,
-      provisional: false,
-      sound: true,
-    );
+    // request permissions FIXME
+    // FirebaseMessaging.instance.requestPermission(
+    //   alert: true,
+    //   announcement: false,
+    //   badge: true,
+    //   carPlay: false,
+    //   criticalAlert: false,
+    //   provisional: false,
+    //   sound: true,
+    // );
 
     // check if coming from link
     Uri? deepLink;

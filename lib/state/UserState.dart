@@ -88,6 +88,8 @@ class UserState extends ChangeNotifier {
     logger.info('fetching user details for $uid');
     var resp = await CloudFunctionsClient().get("users/$uid");
 
+    logger.info('user details: $resp');
+
     var ud = (resp == null) ? null : UserDetails.fromJson(resp, uid);
     if (ud != null) setUserDetail(ud);
 
@@ -186,7 +188,7 @@ class UserState extends ChangeNotifier {
 
       await login(context, userCredentials);
     } catch (e, stackTrace) {
-    logger.severe('Error during Google sign-in', e.toString(), stackTrace );
+      logger.severe('Error during Google sign-in', e.toString(), stackTrace);
     }
   }
 
@@ -198,6 +200,8 @@ class UserState extends ChangeNotifier {
 
     UserDetails? userDetails =
         await context.read<UserState>().fetchUserDetails(uid!);
+
+    print("userDetails: $userDetails");
 
     // check if first time
     if (userDetails == null) {
@@ -221,9 +225,15 @@ class UserState extends ChangeNotifier {
     }
 
     userState.setCurrentUserDetails(userDetails);
-    userState.storeUserToken(await FirebaseMessaging.instance.getToken());
-    FirebaseMessaging.instance.onTokenRefresh
-        .listen((t) => userState.storeUserToken(t));
+
+    logger.info("storing user token");
+    try {
+      userState.storeUserToken(await FirebaseMessaging.instance.getToken());
+      FirebaseMessaging.instance.onTokenRefresh
+          .listen((t) => userState.storeUserToken(t));
+    } catch (e, stack) {
+      logger.severe("error storing user token", e, stack);
+    }
 
     context.read<MatchesState>().refreshState(context);
   }
