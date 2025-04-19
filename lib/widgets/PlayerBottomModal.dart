@@ -120,11 +120,14 @@ class StatEntry extends StatelessWidget {
             Expanded(
                 child: (rightBadge != null)
                     ? Badge(
-                        badgeColor: Colors.transparent,
-                        borderSide: BorderSide.none,
-                        shape: BadgeShape.circle,
-                        position: BadgePosition(end: 0, bottom: -2),
-                        elevation: 0,
+                        badgeStyle: BadgeStyle(
+                          badgeColor: Colors.transparent,
+                          borderSide: BorderSide.none,
+                          shape: BadgeShape.circle,
+                          // position: BadgePosition.custom(
+                          //     bottom: -2, end: 0),
+                          elevation: 0,
+                        ),
                         badgeContent: rightBadge,
                         child: Padding(
                             padding: EdgeInsets.symmetric(horizontal: 30),
@@ -200,12 +203,15 @@ class PerformanceGraph extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    List<MapEntry> ratesWithIndex =
-        (context.read<UserState>().getUserDetail(userId)!.lastScores ?? [])
-            .asMap()
-            .entries
-            .map((e) => MapEntry(e.key, double.parse(e.value.toStringAsFixed(2))))
-            .toList();
+    List<MapEntry> ratesWithIndex = (context
+                .read<UserState>()
+                .getUserDetail(userId)!
+                .lastScores ??
+            [])
+        .asMap()
+        .entries
+        .map((e) => MapEntry(e.key, double.parse(e.value.toStringAsFixed(2))))
+        .toList();
 
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 4),
@@ -251,9 +257,9 @@ class PerformanceGraph extends StatelessWidget {
               minY: 1,
               lineTouchData: LineTouchData(
                 handleBuiltInTouches: true,
-                touchTooltipData: LineTouchTooltipData(
-                  tooltipBgColor: Palette.greyLighter,
-                ),
+                // touchTooltipData: LineTouchTooltipData(
+                //   tooltipBgColor: Colors.white,
+                // ),
                 getTouchLineEnd: (a, b) => 0,
               ),
               gridData: FlGridData(
@@ -294,4 +300,3 @@ class PerformanceGraph extends StatelessWidget {
     );
   }
 }
-

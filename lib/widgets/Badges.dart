@@ -5,12 +5,13 @@ import 'package:nutmeg/utils/UiUtils.dart';
 
 
 var badgeIt = (child, content, position) => Badge(
-    toAnimate: false,
     badgeContent: content,
     child: child,
-    badgeColor: Colors.transparent,
-    borderSide: BorderSide.none,
-    elevation: 0,
+    badgeStyle: BadgeStyle(
+      badgeColor: Colors.transparent,
+      borderSide: BorderSide.none,
+      elevation: 0,
+    ),
     position: position);
 
 class TestBadge extends StatelessWidget {

@@ -21,9 +21,7 @@ class UserController {
     if (original == null) return;
     CroppedFile? croppedFile = await ImageCropper().cropImage(
       sourcePath: original.path,
-      aspectRatioPresets: [
-        CropAspectRatioPreset.square,
-      ],
+      aspectRatio: CropAspectRatio(ratioX: 1, ratioY: 1),
       uiSettings: [
         AndroidUiSettings(
             toolbarTitle: 'Cropper',

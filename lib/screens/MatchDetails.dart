@@ -736,7 +736,7 @@ class SportCenterImageCarousel extends StatefulWidget {
 
 class SportCenterImageCarouselState extends State<SportCenterImageCarousel> {
   int _current = 0;
-  final CarouselController _controller = CarouselController();
+  final CarouselSliderController _controller = CarouselSliderController();
 
   @override
   Widget build(BuildContext context) {

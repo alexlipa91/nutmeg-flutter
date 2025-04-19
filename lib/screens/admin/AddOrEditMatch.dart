@@ -1,4 +1,3 @@
-import 'package:cool_alert/cool_alert.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
@@ -15,7 +14,6 @@ import '../PlayerOfTheMatch.dart';
 
 // main widget
 class AdminMatchDetails extends StatefulWidget {
-
   final String matchId;
 
   const AdminMatchDetails({Key? key, required this.matchId}) : super(key: key);
@@ -25,7 +23,6 @@ class AdminMatchDetails extends StatefulWidget {
 }
 
 class AdminMatchDetailsState extends State<AdminMatchDetails> {
-
   Future<void> refreshState() async {
     // get details
     var futures = [
@@ -38,7 +35,9 @@ class AdminMatchDetailsState extends State<AdminMatchDetails> {
     var m = result[0] as Match;
 
     // get users details
-    m.getGoingUsersByTime().map((e) => context.read<UserState>().fetchUserDetails(e));
+    m
+        .getGoingUsersByTime()
+        .map((e) => context.read<UserState>().fetchUserDetails(e));
   }
 
   @override
@@ -78,17 +77,19 @@ class AdminMatchDetailsState extends State<AdminMatchDetails> {
             ],
           ),
         ),
-        body: (match == null) ? Container() : Container(
-          color: Palette.greyLightest,
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 30, vertical: 20),
-            child: Column(children: [
-              Expanded(
-                child: AddOrEditMatchForm(match: match),
-              )
-            ]),
-          ),
-        ));
+        body: (match == null)
+            ? Container()
+            : Container(
+                color: Palette.greyLightest,
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 30, vertical: 20),
+                  child: Column(children: [
+                    Expanded(
+                      child: AddOrEditMatchForm(match: match),
+                    )
+                  ]),
+                ),
+              ));
   }
 }
 
@@ -102,7 +103,6 @@ class AddOrEditMatchForm extends StatefulWidget {
 }
 
 class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
-
   @override
   void initState() {
     super.initState();
@@ -110,7 +110,8 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
 
   @override
   Widget build(BuildContext context) {
-    var ratings = context.watch<MatchesState>().getRatings(widget.match.documentId);
+    var ratings =
+        context.watch<MatchesState>().getRatings(widget.match.documentId);
 
     // utility
     return Scaffold(
@@ -121,9 +122,12 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
             primary: false,
             shrinkWrap: true,
             children: [
-              SelectableText("Match id: " + widget.match.documentId, style: TextPalette.h2),
+              SelectableText("Match id: " + widget.match.documentId,
+                  style: TextPalette.h2),
               SizedBox(height: 16.0),
-              Text("Status is: " + widget.match.status.toString().split(".").last,
+              Text(
+                  "Status is: " +
+                      widget.match.status.toString().split(".").last,
                   style: TextPalette.h2),
               SizedBox(height: 16.0),
               Row(
@@ -132,25 +136,37 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
                       child: GenericButtonWithLoader("CANCEL MATCH",
                           (BuildContext context) async {
                     context.read<GenericButtonWithLoaderState>().change(true);
-                    var shouldCancel = await CoolAlert.show(
+                    var shouldCancel = await showDialog<bool>(
                       context: context,
-                      type: CoolAlertType.confirm,
-                      text: "This is going to cancel the match with id: \n" +
-                          widget.match.documentId +
-                          "\nAre you sure?",
-                      onConfirmBtnTap: () => Navigator.of(context).pop(true),
-                      onCancelBtnTap: () => Navigator.of(context).pop(false),
-                    );
+                      builder: (BuildContext context) => AlertDialog(
+                        content: Text("This is going to cancel the match with id: \n" +
+                            widget.match.documentId +
+                            "\nAre you sure?"),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(false),
+                            child: Text('Cancel'),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(true),
+                            child: Text('Confirm'),
+                          ),
+                        ],
+                      ),
+                    ) ?? false;
 
                     if (shouldCancel) {
                       try {
-                        await MatchesController.cancelMatch(widget.match.documentId);
+                        await MatchesController.cancelMatch(
+                            widget.match.documentId);
                         GenericInfoModal(title: "Successfully canceled match")
                             .show(context);
                       } catch (e, stack) {
                         print(e);
                         print(stack);
-                        GenericInfoModal(title: AppLocalizations.of(context)!.genericErrorMessage)
+                        GenericInfoModal(
+                                title: AppLocalizations.of(context)!
+                                    .genericErrorMessage)
                             .show(context);
                       }
                     }
@@ -169,14 +185,16 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
 
                                 return Expanded(
                                     child: GenericButtonWithLoader(
-                                        "POTM SCREEN: " + (ud.name ??
-                                            "PLAYER").toUpperCase(),
+                                        "POTM SCREEN: " +
+                                            (ud.name ?? "PLAYER").toUpperCase(),
                                         (BuildContext context) async {
-                                          Navigator.push(context,
-                                              MaterialPageRoute(builder: (context) =>
-                                              PlayerOfTheMatch(userId: ud.documentId)));
-                                        },
-                                        Primary()));
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              PlayerOfTheMatch(
+                                                  userId: ud.documentId)));
+                                }, Primary()));
                               })
                             ]))
                         .toList()),
@@ -187,4 +205,3 @@ class AddOrEditMatchFormState extends State<AddOrEditMatchForm> {
         ));
   }
 }
-

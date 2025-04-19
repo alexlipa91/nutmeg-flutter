@@ -18,7 +18,7 @@ import 'package:nutmeg/widgets/PlayerBottomModal.dart';
 import 'package:nutmeg/widgets/Section.dart';
 import 'package:nutmeg/widgets/WarningWidget.dart';
 import 'package:provider/provider.dart';
-import 'package:skeletons/skeletons.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:tuple/tuple.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:version/version.dart';
@@ -72,19 +72,31 @@ class UserPageState extends State<UserPage> {
               child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          SkeletonLine(
-              style: SkeletonLineStyle(
-                  alignment: AlignmentDirectional.center,
-                  width: 80,
-                  height: 12,
-                  borderRadius: BorderRadius.circular(8.0))),
+          Shimmer.fromColors(
+            baseColor: Colors.grey[300]!,
+            highlightColor: Colors.grey[100]!,
+            child: Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
           SizedBox(height: 4),
-          SkeletonLine(
-              style: SkeletonLineStyle(
-                  alignment: AlignmentDirectional.center,
-                  width: 80,
-                  height: 12,
-                  borderRadius: BorderRadius.circular(8.0))),
+          Shimmer.fromColors(
+            baseColor: Colors.grey[300]!,
+            highlightColor: Colors.grey[100]!,
+            child: Container(
+              width: 80,
+              height: 12,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8.0),
+              ),
+            ),
+          ),
         ],
       )));
       var userInfoBoxRowSkeleton = Row(
@@ -130,8 +142,9 @@ class UserPageState extends State<UserPage> {
                     child: Badge(
                         badgeContent: Icon(Icons.camera_alt_outlined,
                             size: 16.0, color: Palette.white),
-                        badgeColor: Palette.primary,
-                        elevation: 0,
+                        badgeStyle: BadgeStyle(
+                          badgeColor: Palette.primary,
+                        ),
                         position:
                             BadgePosition.bottomEnd(bottom: -5.0, end: -5.0),
                         child: UserAvatar(30, userDetails))),
@@ -140,16 +153,23 @@ class UserPageState extends State<UserPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SkeletonLine(
-                      style: SkeletonLineStyle(
-                          height: 12,
-                          width: 200,
-                          borderRadius: BorderRadius.circular(8.0))),
-                  SizedBox(height: 10),
-                  SkeletonLine(
-                      style: SkeletonLineStyle(
-                          height: 12,
-                          width: 100,
+                  Shimmer.fromColors(
+                      baseColor: Colors.grey[300]!,
+                      highlightColor: Colors.grey[100]!,
+                      child: Container(
+                        height: 12,
+                        width: 200,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                      )),
+                  const SizedBox(height: 10),
+                  Container(
+                      height: 12,
+                      width: 100,
+                      decoration: BoxDecoration(
+                          color: Colors.white,
                           borderRadius: BorderRadius.circular(8.0)))
                 ],
               ),
@@ -209,8 +229,10 @@ class UserPageState extends State<UserPage> {
                             badgeStyle: BadgeStyle(
                               badgeColor: Palette.primary,
                             ),
-                            position: BadgePosition.custom(bottom: -5.0, end: -5.0),
-                            child: UserAvatar(radius: 30, userDetails: userDetails))),
+                            position:
+                                BadgePosition.custom(bottom: -5.0, end: -5.0),
+                            child: UserAvatar(30, userDetails))),
+                  ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 30),
               child: Column(
@@ -703,12 +725,17 @@ class UserInfoBox extends StatelessWidget {
       children: [
         Row(mainAxisAlignment: MainAxisAlignment.center, children: [
           (content == null)
-              ? SkeletonLine(
-                  style: SkeletonLineStyle(
-                      alignment: AlignmentDirectional.center,
-                      width: 80,
-                      height: 12,
-                      borderRadius: BorderRadius.circular(8.0)))
+              ? Shimmer.fromColors(
+                  baseColor: Colors.grey[300]!,
+                  highlightColor: Colors.grey[100]!,
+                  child: Container(
+                    width: 80,
+                    height: 12,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                  ))
               : (rightBadge != null)
                   ? Badge(
                       badgeStyle: BadgeStyle(

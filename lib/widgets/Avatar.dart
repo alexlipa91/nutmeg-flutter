@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:provider/provider.dart';
-import 'package:skeletons/skeletons.dart';
+import 'package:shimmer/shimmer.dart';
 
 import '../model/UserDetails.dart';
 import '../state/UserState.dart';
@@ -19,18 +19,24 @@ class UserAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (userDetails == null)
-      return SkeletonAvatar(
-        style: SkeletonAvatarStyle(
-            width: radius * 2,
-            padding: EdgeInsets.zero,
-            shape: BoxShape.circle, height: radius * 2),
+      return Shimmer.fromColors(
+        baseColor: Colors.grey[300]!,
+        highlightColor: Colors.grey[100]!,
+        child: Container(
+          width: radius * 2,
+          height: radius * 2,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+          ),
+        ),
       );
 
     var photoUrl = userDetails?.getPhotoUrl();
 
     var backgroundColor = Palette.greyLighter;
-    var backgroundImage = (photoUrl == null || photoUrl == "")
-        ? null : NetworkImage(photoUrl);
+    var backgroundImage =
+        (photoUrl == null || photoUrl == "") ? null : NetworkImage(photoUrl);
 
     var displayName = UserDetails.getDisplayName(userDetails).toUpperCase();
 
@@ -91,8 +97,7 @@ class LoggedUserAvatarWithRedirectUserPage extends StatelessWidget {
               // height and width nullify radius
               child: Center(
                   child: UserAvatar(
-                      15,
-                      context.watch<UserState>().getLoggedUserDetails()))),
+                      15, context.watch<UserState>().getLoggedUserDetails()))),
         ),
       ),
     );
@@ -117,8 +122,8 @@ class UserAvatarWithBottomModal extends StatelessWidget {
   final UserDetails? userData;
   final double radius;
 
-  const UserAvatarWithBottomModal({Key? key, this.userData,
-    this.radius = 24}) : super(key: key);
+  const UserAvatarWithBottomModal({Key? key, this.userData, this.radius = 24})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {

@@ -17,7 +17,6 @@ import 'package:nutmeg/screens/UserPage.dart';
 import 'package:nutmeg/screens/admin/AvailableMatchesAdmin.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:provider/provider.dart';
-import 'package:skeletons/skeletons.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 
 import '../Exceptions.dart';
@@ -149,26 +148,14 @@ void main() async {
   ErrorWidget.builder = (errorDetails) => Container();
 
   usePathUrlStrategy();
-  runApp(MultiProvider(
-    providers: [
-      ChangeNotifierProvider(create: (context) => UserState()),
-      ChangeNotifierProvider(
-          create: (context) => MatchesState(context.read<UserState>())),
-      ChangeNotifierProvider(create: (context) => LoadOnceState()),
-    ],
-    child: SkeletonTheme(
-      shimmerGradient: LinearGradient(
-        colors: [
-          UiUtils.fromHex("EAEAEA"),
-          UiUtils.fromHex("D5D5D5"),
-          UiUtils.fromHex("EAEAEA"),
-        ],
-        stops: [
-          0.1,
-          0.8,
-          0.9,
-        ],
-      ),
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => UserState()),
+        ChangeNotifierProvider(
+            create: (context) => MatchesState(context.read<UserState>())),
+        ChangeNotifierProvider(create: (context) => LoadOnceState()),
+      ],
       child: FlutterWebFrame(
         builder: (context) {
           return MaterialApp.router(
@@ -197,7 +184,7 @@ void main() async {
         backgroundColor: Palette.greyLight,
       ),
     ),
-  ));
+  );
 }
 
 class LaunchWidget extends StatefulWidget {

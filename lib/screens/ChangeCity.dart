@@ -12,7 +12,6 @@ import '../utils/LocationUtils.dart';
 import 'CreateMatch.dart';
 
 class ChangeCity extends StatefulWidget {
-
   @override
   State<StatefulWidget> createState() => ChangeCityState();
 }
@@ -43,13 +42,15 @@ class ChangeCityState extends State<ChangeCity> {
                   children: [
                     Expanded(
                         child: TypeAheadField<PredictionResult>(
-                      textFieldConfiguration: TextFieldConfiguration(
-                          autofocus: true,
-                          style: TextPalette.getBodyText(Palette.black),
-                          decoration: CreateMatchState.getTextFormDecoration(
-                              AppLocalizations.of(context)!
-                                  .searchLocationInputFieldLabel),
-                          controller: cityController),
+                      builder: (context, controller, focusNode) {
+                        return TextField(
+                            controller: controller,
+                            focusNode: focusNode,
+                            style: TextPalette.getBodyText(Palette.black),
+                            decoration: CreateMatchState.getTextFormDecoration(
+                                AppLocalizations.of(context)!
+                                    .searchLocationInputFieldLabel));
+                      },
                       suggestionsCallback: (pattern) async {
                         List<PredictionResult> predictions = [];
                         if (pattern.isNotEmpty) {
@@ -70,8 +71,7 @@ class ChangeCityState extends State<ChangeCity> {
                         if (firstMatch.offset == 0) {
                           boldText =
                               description.substring(0, firstMatch.length);
-                          normalText =
-                              description.substring(firstMatch.length);
+                          normalText = description.substring(firstMatch.length);
                         } else {
                           normalText = description;
                         }
@@ -91,11 +91,15 @@ class ChangeCityState extends State<ChangeCity> {
                               ],
                             )));
                       },
-                      noItemsFoundBuilder: (value) => Container(height: 0,),
-                      onSuggestionSelected: (suggestion) async {
+                      // noItemsFoundBuilder: (value) => Container(
+                      //   height: 0,
+                      // ),
+                      onSelected: (suggestion) async {
                         cityController.text = suggestion.description;
-                        var resp = await CloudFunctionsClient().get("locations/place/${suggestion.placeId}");
-                        Navigator.pop(context,
+                        var resp = await CloudFunctionsClient()
+                            .get("locations/place/${suggestion.placeId}");
+                        Navigator.pop(
+                            context,
                             LocationInfo(resp!["country"], resp["city"],
                                 resp["lat"], resp["lng"], suggestion.placeId));
                       },

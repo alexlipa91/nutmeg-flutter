@@ -16,13 +16,11 @@ import 'BottomBarMatch.dart';
 import 'CreateMatch.dart';
 
 class CreateCourt extends StatefulWidget {
-
   @override
   State<StatefulWidget> createState() => CreateCourtState();
 }
 
 class CreateCourtState extends State<CreateCourt> {
-
   final TextEditingController surfaceController = TextEditingController();
   final TextEditingController courtTypeController = TextEditingController();
   final TextEditingController textEditingController = TextEditingController();
@@ -47,32 +45,40 @@ class CreateCourtState extends State<CreateCourt> {
       child: PageTemplate(
         refreshState: null,
         widgets: [
-          Center(child: Container(
-            width: 700,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-              Text(
-                  AppLocalizations.of(context)!.createNewCourtText,
-                  style: TextPalette.h1Default),
-              Section(
-                  title:  AppLocalizations.of(context)!.courtInfoText,
-                  titleType: "big",
-                  body: Column(
-                    children: [
-                      Row(
+          Center(
+            child: Container(
+              width: 700,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(AppLocalizations.of(context)!.createNewCourtText,
+                      style: TextPalette.h1Default),
+                  Section(
+                      title: AppLocalizations.of(context)!.courtInfoText,
+                      titleType: "big",
+                      body: Column(
                         children: [
-                          Expanded(
-                              child: TypeAheadField<PredictionResult>(
-                                textFieldConfiguration: TextFieldConfiguration(
-                                    style: TextPalette.getBodyText(Palette.black),
-                                    decoration: CreateMatchState.getTextFormDecoration(
-                                        AppLocalizations.of(context)!.courtLocationLabel),
-                                    controller: textEditingController),
+                          Row(
+                            children: [
+                              Expanded(
+                                  child: TypeAheadField<PredictionResult>(
+                                builder: (context, controller, focusNode) {
+                                  return TextField(
+                                    controller: controller,
+                                    focusNode: focusNode,
+                                    style:
+                                        TextPalette.getBodyText(Palette.black),
+                                    decoration:
+                                        CreateMatchState.getTextFormDecoration(
+                                            AppLocalizations.of(context)!
+                                                .courtLocationLabel),
+                                  );
+                                },
                                 suggestionsCallback: (pattern) async {
                                   List<PredictionResult> predictions = [];
                                   if (pattern.isNotEmpty) {
-                                    var result = await getPlacePrediction(pattern);
+                                    var result =
+                                        await getPlacePrediction(pattern);
                                     predictions = result;
                                   }
                                   return predictions;
@@ -87,8 +93,8 @@ class CreateCourtState extends State<CreateCourt> {
                                   String normalText;
 
                                   if (firstMatch.offset == 0) {
-                                    boldText = description.substring(0,
-                                        firstMatch.length);
+                                    boldText = description.substring(
+                                        0, firstMatch.length);
                                     normalText = description
                                         .substring(firstMatch.length);
                                   } else {
@@ -99,94 +105,104 @@ class CreateCourtState extends State<CreateCourt> {
                                       leading: Icon(Icons.place),
                                       title: RichText(
                                           text: TextSpan(
-                                            style: TextPalette.bodyText,
-                                            children: <TextSpan>[
-                                              if (boldText != null)
-                                                TextSpan(text: boldText,
-                                                    style: TextPalette.bodyText
-                                                        .copyWith(fontWeight: FontWeight.bold)),
-                                              TextSpan(text: normalText),
-                                            ],)
-                                      ));
+                                        style: TextPalette.bodyText,
+                                        children: <TextSpan>[
+                                          if (boldText != null)
+                                            TextSpan(
+                                                text: boldText,
+                                                style: TextPalette.bodyText
+                                                    .copyWith(
+                                                        fontWeight:
+                                                            FontWeight.bold)),
+                                          TextSpan(text: normalText),
+                                        ],
+                                      )));
                                 },
-                                noItemsFoundBuilder: (value) => Container(height: 0),
-                                onSuggestionSelected: (suggestion) async {
-                                  textEditingController.text = suggestion.description;
+                                onSelected: (prediction) async {
+                                  textEditingController.text =
+                                      prediction.description;
                                   setState(() {
-                                    placeId = suggestion.placeId;
+                                    placeId = prediction.placeId;
                                   });
                                 },
                               ))
+                            ],
+                          )
                         ],
-                      )
-                    ],
-                  )),
-              Section(
-                  title: AppLocalizations.of(context)!.courtTypeTitleText,
-                  titleType: "big",
-                  body: Column(children: [
-                    Row(
-                      children: [
-                        Expanded(
-                            child: TextFormField(
+                      )),
+                  Section(
+                      title: AppLocalizations.of(context)!.courtTypeTitleText,
+                      titleType: "big",
+                      body: Column(children: [
+                        Row(
+                          children: [
+                            Expanded(
+                                child: TextFormField(
                               readOnly: true,
                               controller: surfaceController,
-                              decoration: CreateMatchState.getTextFormDecoration(
-                                AppLocalizations.of(context)!.surfaceLabelText,
-                                  isDropdown: true),
+                              decoration:
+                                  CreateMatchState.getTextFormDecoration(
+                                      AppLocalizations.of(context)!
+                                          .surfaceLabelText,
+                                      isDropdown: true),
                               onTap: () async {
-                                Surface? surface = await ModalBottomSheet.showNutmegModalBottomSheet(
-                                    context,
-                                    Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          AppLocalizations.of(context)!.surfaceLabelText,
-                                          style: TextPalette.h2,
-                                        ),
-                                        SizedBox(height: 16.0),
-                                        SurfaceRow(
-                                            surface: Surface.indoor,
-                                        ),
-                                        SizedBox(height: 16.0),
-                                        SurfaceRow(
-                                            surface: Surface.grass
-                                        ),
-                                      ],
-                                    ));
+                                Surface? surface = await ModalBottomSheet
+                                    .showNutmegModalBottomSheet(
+                                        context,
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              AppLocalizations.of(context)!
+                                                  .surfaceLabelText,
+                                              style: TextPalette.h2,
+                                            ),
+                                            SizedBox(height: 16.0),
+                                            SurfaceRow(
+                                              surface: Surface.indoor,
+                                            ),
+                                            SizedBox(height: 16.0),
+                                            SurfaceRow(surface: Surface.grass),
+                                          ],
+                                        ));
 
                                 if (surface != null) {
-                                  surfaceController.text = surface.getTitle(context);
+                                  surfaceController.text =
+                                      surface.getTitle(context);
                                   setState(() {
                                     this.surface = surface;
                                   });
                                 }
                               },
                               validator: (v) {
-                                if (v == null || v.isEmpty) return AppLocalizations.of(context)!.requiredError;
+                                if (v == null || v.isEmpty)
+                                  return AppLocalizations.of(context)!
+                                      .requiredError;
                                 return null;
                               },
                             )),
-                      ],
-                    ),
-                    SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                            child: TextFormField(
+                          ],
+                        ),
+                        SizedBox(height: 16),
+                        Row(
+                          children: [
+                            Expanded(
+                                child: TextFormField(
                               readOnly: true,
                               controller: courtTypeController,
-                              decoration: CreateMatchState.getTextFormDecoration(
-                                  AppLocalizations.of(context)!.sizeTitle,
-                                  isDropdown: true),
+                              decoration:
+                                  CreateMatchState.getTextFormDecoration(
+                                      AppLocalizations.of(context)!.sizeTitle,
+                                      isDropdown: true),
                               onTap: () async {
                                 var sizes = ["5v5", "6v6", "7v7", "11v11"];
 
                                 int? i = await CreateMatchState
                                     .showMultipleChoiceSheetWithText(
-                                    context,
-                                    AppLocalizations.of(context)!.sizeTitle,
-                                    sizes);
+                                        context,
+                                        AppLocalizations.of(context)!.sizeTitle,
+                                        sizes);
 
                                 if (i != null) {
                                   courtTypeController.text = sizes[i];
@@ -194,43 +210,47 @@ class CreateCourtState extends State<CreateCourt> {
                               },
                               validator: (v) {
                                 if (v == null || v.isEmpty)
-                                  return AppLocalizations.of(context)!.requiredError;
+                                  return AppLocalizations.of(context)!
+                                      .requiredError;
                                 return null;
                               },
                             )),
-                      ],
-                    ),
-                  ])),
-              Section(
-                  title: AppLocalizations.of(context)!.facilitiesTitle,
-                  titleType: "big",
-                  body: Column(
-                    children: [
-                      Row(
+                          ],
+                        ),
+                      ])),
+                  Section(
+                      title: AppLocalizations.of(context)!.facilitiesTitle,
+                      titleType: "big",
+                      body: Column(
                         children: [
-                          Checkbox(
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(5)),
-                              value: changeRoomsAvailable,
-                              activeColor: Palette.primary,
-                              onChanged: (v) {
-                                if (v != null) {
-                                  setState(() {
-                                    changeRoomsAvailable = v;
-                                  });
-                                }
-                              }),
-                          Flexible(
-                              child: Text(
-                                  AppLocalizations.of(context)!.changeRoomsAvailableLabel,
-                                  style: TextPalette.bodyText,
-                                  overflow: TextOverflow.visible)),
+                          Row(
+                            children: [
+                              Checkbox(
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(5)),
+                                  value: changeRoomsAvailable,
+                                  activeColor: Palette.primary,
+                                  onChanged: (v) {
+                                    if (v != null) {
+                                      setState(() {
+                                        changeRoomsAvailable = v;
+                                      });
+                                    }
+                                  }),
+                              Flexible(
+                                  child: Text(
+                                      AppLocalizations.of(context)!
+                                          .changeRoomsAvailableLabel,
+                                      style: TextPalette.bodyText,
+                                      overflow: TextOverflow.visible)),
+                            ],
+                          ),
                         ],
-                      ),
-                    ],
-                  )),
-            ],),
-          ),)
+                      )),
+                ],
+              ),
+            ),
+          )
         ],
         appBar: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -241,30 +261,28 @@ class CreateCourtState extends State<CreateCourt> {
         bottomNavigationBar: GenericBottomBar(
             child: Padding(
           padding: EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0),
-          child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
+          child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
             Expanded(
               child: Container(
                 width: 700,
                 child: GenericButtonWithLoaderAndErrorHandling(
-                    AppLocalizations.of(context)!.createNewCourtText.toUpperCase(),
-                    (_) async {
+                    AppLocalizations.of(context)!
+                        .createNewCourtText
+                        .toUpperCase(), (_) async {
                   bool? v = _formKey.currentState?.validate();
                   if (v != null && v) {
-                    await CloudFunctionsClient().post(
-                      "/sportcenters/add", {
-                        "place_id": placeId!,
-                        "surface": surface!.getDbName(),
-                        "hasChangingRooms": changeRoomsAvailable,
-                        "courtType": courtTypeController.text
-                      }
-                    );
-                    List<SportCenter> sportCenters = await context.read<UserState>()
+                    await CloudFunctionsClient().post("/sportcenters/add", {
+                      "place_id": placeId!,
+                      "surface": surface!.getDbName(),
+                      "hasChangingRooms": changeRoomsAvailable,
+                      "courtType": courtTypeController.text
+                    });
+                    List<SportCenter> sportCenters = await context
+                        .read<UserState>()
                         .fetchLoggedUserSportCenters();
 
-                    Navigator.of(context).pop(sportCenters
-                        .firstWhere((s) => s.placeId == placeId!));
+                    Navigator.of(context).pop(
+                        sportCenters.firstWhere((s) => s.placeId == placeId!));
                   }
                 }, Primary()),
               ),
@@ -277,7 +295,6 @@ class CreateCourtState extends State<CreateCourt> {
 }
 
 class SurfaceRow extends StatelessWidget {
-
   final Surface surface;
 
   const SurfaceRow({Key? key, required this.surface}) : super(key: key);
@@ -300,13 +317,19 @@ class SurfaceRow extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(surface.getTitle(context), style: TextPalette.h3,),
+              Text(
+                surface.getTitle(context),
+                style: TextPalette.h3,
+              ),
               SizedBox(height: 8),
-              Text(surface.getDescription(context),
-                style: TextPalette.bodyText,)
+              Text(
+                surface.getDescription(context),
+                style: TextPalette.bodyText,
+              )
             ],
           )
-        ],),
+        ],
+      ),
     );
   }
 }

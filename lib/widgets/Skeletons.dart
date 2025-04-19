@@ -2,41 +2,87 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/Containers.dart';
-import 'package:skeletons/skeletons.dart';
+import 'package:shimmer/shimmer.dart';
 
 class Skeletons {
-  static var fullWidthText = SkeletonLine(
-    style: SkeletonLineStyle(
-        borderRadius: BorderRadius.circular(20), width: double.infinity, height: 12),
+  static var fullWidthText = Shimmer.fromColors(
+    baseColor: Colors.grey[300]!,
+    highlightColor: Colors.grey[100]!,
+    child: Container(
+      width: double.infinity,
+      height: 12,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+      ),
+    ),
   );
 
-  static var xlText = SkeletonLine(
-    style: SkeletonLineStyle(
-        borderRadius: BorderRadius.circular(20), width: 200, height: 12),
+  static var xlText = Shimmer.fromColors(
+    baseColor: Colors.grey[300]!,
+    highlightColor: Colors.grey[100]!,
+    child: Container(
+      width: 200,
+      height: 12,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+      ),
+    ),
   );
 
-  static var xlTextCenter = SkeletonLine(
-    style: SkeletonLineStyle(
-        alignment: AlignmentDirectional.center,
-        borderRadius: BorderRadius.circular(20), width: 200, height: 12),
+  static var xlTextCenter = Shimmer.fromColors(
+    baseColor: Colors.grey[300]!,
+    highlightColor: Colors.grey[100]!,
+    child: Container(
+      width: 200,
+      height: 12,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+      ),
+    ),
   );
 
-  static var lText = SkeletonLine(
-    style: SkeletonLineStyle(
-        borderRadius: BorderRadius.circular(20), width: 120, height: 12),
+  static var lText = Shimmer.fromColors(
+    baseColor: Colors.grey[300]!,
+    highlightColor: Colors.grey[100]!,
+    child: Container(
+      width: 120,
+      height: 12,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+      ),
+    ),
   );
 
-  static var mText = SkeletonLine(
-    style: SkeletonLineStyle(
-        borderRadius: BorderRadius.circular(20), width: 80, height: 12),
+  static var mText = Shimmer.fromColors(
+    baseColor: Colors.grey[300]!,
+    highlightColor: Colors.grey[100]!,
+    child: Container(
+      width: 80,
+      height: 12,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+      ),
+    ),
   );
 
   static var sText = Container(
     width: 40,
-    child: SkeletonLine(
-      style: SkeletonLineStyle(
-          alignment: AlignmentDirectional.center,
-          borderRadius: BorderRadius.circular(20), width: 40, height: 12),
+    child: Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
+      child: Container(
+        width: 40,
+        height: 12,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+        ),
+      ),
     ),
   );
 }
@@ -56,15 +102,18 @@ class ListOfMatchesSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var item = SkeletonItem(
+    var item = Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
       child: Row(
         children: [
-          SkeletonAvatar(
-            style: SkeletonAvatarStyle(
+          Container(
+            width: 60,
+            height: 78,
+            decoration: BoxDecoration(
+              color: Colors.white,
               borderRadius: BorderRadius.circular(20),
-              width: 60,
-              height: 78,
-            ),
+            )
           ),
           SizedBox(width: 12),
           Column(
@@ -120,11 +169,18 @@ class SkeletonMatchDetails {
       ])
   );
 
-  static Widget imageSkeleton() => SkeletonAvatar(
-      style: SkeletonAvatarStyle(
+  static Widget imageSkeleton() => Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
+      child: Container(
           width: double.infinity,
           height: 213,
-          borderRadius: BorderRadius.circular(10.0)));
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(10.0)
+          )
+      )
+  );
 }
 
 class StatsSkeleton extends StatelessWidget {
@@ -132,28 +188,50 @@ class StatsSkeleton extends StatelessWidget {
   Widget build(BuildContext context) {
     var r = Row(
       children: [
-        SkeletonAvatar(
-          style: SkeletonAvatarStyle(
-              shape: BoxShape.circle, width: 32, height: 32),
+        Shimmer.fromColors(
+          baseColor: Colors.grey[300]!,
+          highlightColor: Colors.grey[100]!,
+          child: Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+            ),
+          ),
         ),
         SizedBox(width: 8),
-        SkeletonLine(
-            style: SkeletonLineStyle(
-          height: 12,
-          width: 120,
-          borderRadius: BorderRadius.circular(8),
-        )),
+        Shimmer.fromColors(
+          baseColor: Colors.grey[300]!,
+          highlightColor: Colors.grey[100]!,
+          child: Container(
+            height: 12,
+            width: 120,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+        ),
         Spacer(),
-        SkeletonLine(
-            style: SkeletonLineStyle(
-          height: 12,
-          width: 40,
-          borderRadius: BorderRadius.circular(8),
-        )),
+        Shimmer.fromColors(
+          baseColor: Colors.grey[300]!,
+          highlightColor: Colors.grey[100]!,
+          child: Container(
+            height: 12,
+            width: 40,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+        ),
       ],
     );
 
-    return SkeletonItem(
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
         child: Column(
             children: interleave(
                 List<Row>.filled(5, r),
