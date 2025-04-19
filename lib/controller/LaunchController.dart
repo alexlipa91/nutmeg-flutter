@@ -5,7 +5,6 @@ import 'package:firebase_performance/firebase_performance.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:logging/logging.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
@@ -13,7 +12,6 @@ import 'package:nutmeg/model/UserDetails.dart';
 import 'package:nutmeg/screens/EnterDetails.dart';
 import 'package:provider/provider.dart';
 import 'package:tuple/tuple.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:version/version.dart';
 import 'package:timezone/data/latest.dart' as tz;
 
@@ -127,7 +125,6 @@ class LaunchController {
       getVersion(),
       context.read<UserState>().fetchLoggedUserDetails(),
       _loadOnceData(context),
-      determinePosition()
     ];
     var futuresData = await Future.wait(futures);
 
@@ -168,6 +165,14 @@ class LaunchController {
       }
     }
 
+    if (availableUserDetails?.location == null) {
+      logger.info(
+          "no location info in current session, trying to fetch location");
+      await context
+          .read<UserState>()
+          .setLocationInfo(await determinePosition(context));
+    }
+
     // check if user is logged in
     var userDetails = availableUserDetails;
 
@@ -189,10 +194,6 @@ class LaunchController {
       context.read<UserState>().setCurrentUserDetails(userDetails);
       trace.putAttribute("user_id", userDetails.documentId);
     }
-
-    // get location
-    Position? position = futuresData[3];
-    await context.read<UserState>().setLocationInfo(position);
 
     // request permissions FIXME
     // FirebaseMessaging.instance.requestPermission(

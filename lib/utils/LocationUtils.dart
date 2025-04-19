@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-
+import 'package:logging/logging.dart';
 import 'package:nutmeg/state/UserState.dart';
 import 'package:nutmeg/utils/ApiKey.dart';
 import 'package:provider/provider.dart';
 
 import '../api/CloudFunctionsUtils.dart';
 import '../state/LoadOnceState.dart';
+
+final logger = Logger('LocationUtils');
 
 String buildMapUrl(double lat, double lng) =>
     "https://maps.googleapis.com/maps/api/staticmap?center=" +
@@ -24,7 +26,7 @@ Future<LocationInfo?> fetchLocationInfo(double lat, double lng) async {
   // lat = 52.3676; lng = 4.9041;
   try {
     var resp = await CloudFunctionsClient()
-      .get("locations/coordinates", args: {"lat": lat, "lng": lng});
+        .get("locations/coordinates", args: {"lat": lat, "lng": lng});
     return LocationInfo.fromJson(Map<String, dynamic>.from(resp!));
   } catch (e, s) {
     print("failed to fetch location");
@@ -48,11 +50,9 @@ class PredictionResult {
 }
 
 // this needs to happen server side because placesApi doesn't work with CORS
-Future<List<PredictionResult>> getPlacePrediction(
-    String query) async {
-  Map<String, dynamic> data = await CloudFunctionsClient().get(
-          "locations/predictions",
-          args: {"query": query}) ??
+Future<List<PredictionResult>> getPlacePrediction(String query) async {
+  Map<String, dynamic> data = await CloudFunctionsClient()
+          .get("locations/predictions", args: {"query": query}) ??
       {};
 
   List predictions = data["predictions"] ?? [];
@@ -91,7 +91,7 @@ Future<List<PredictionResult>> getCitiesPrediction(String query) async {
   return results;
 }
 
-Future<Position?> determinePosition() async {
+Future<Position?> determinePosition(BuildContext context) async {
   bool serviceEnabled;
   LocationPermission permission;
 
@@ -101,7 +101,7 @@ Future<Position?> determinePosition() async {
 // Location services are not enabled don't continue
 // accessing the position and request users of the
 // App to enable the location services.
-    print('Location services are disabled.');
+    logger.warning('Location services are disabled.');
     return null;
   }
 
@@ -114,27 +114,61 @@ Future<Position?> determinePosition() async {
 // Android's shouldShowRequestPermissionRationale
 // returned true. According to Android guidelines
 // your App should show an explanatory UI now.
-      print('Location permissions are denied');
+      logger.warning('Location permissions are denied');
       return null;
     }
   }
 
   if (permission == LocationPermission.deniedForever) {
 // Permissions are denied forever, handle appropriately.
-    print(
+    logger.warning(
         'Location permissions are permanently denied, we cannot request permissions.');
     return null;
   }
 
 // When we reach here, permissions are granted and we can
 // continue accessing the position of the device.
-  return await Geolocator.getCurrentPosition();
+  logger.info('Location permissions are granted, fetching current position.');
+  var fetchedPosition = null;
+  try {
+    fetchedPosition = await Geolocator.getCurrentPosition();
+  } catch (e) {
+    logger.warning('Error getting current position: $e');
+  }
+
+  // try to show a dialog if we can't fetch location
+  if (fetchedPosition == null) {
+    fetchedPosition = await showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+              title: Text("Enable Location Services"),
+              content: Text(
+                  "To help you find matches and sport centers nearby, we need access to your location. Please enable location services to continue."),
+              actions: [
+                TextButton(
+                    onPressed: () async {
+                      var pos = null;
+                      try {
+                        pos = await Geolocator.getCurrentPosition();
+                      } catch (e) {
+                        logger.warning('Error getting current position: $e');
+                      }
+                      Navigator.of(context).pop(pos);
+                    },
+                    child: Text("Enable Location"))
+              ],
+            ));
+  }
+
+  return fetchedPosition;
 }
 
 var blacklistedCountriesForPayments = ["CH", "BR"];
 
 Locale getLanguageLocaleWatch(BuildContext context) {
-  var userSpecific = context.watch<UserState>().getLoggedUserDetails()?.language;
+  var userSpecific =
+      context.watch<UserState>().getLoggedUserDetails()?.language;
   if (userSpecific != null) return Locale(userSpecific);
   return context.watch<LoadOnceState>().locale;
 }

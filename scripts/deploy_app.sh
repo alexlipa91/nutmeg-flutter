@@ -7,8 +7,7 @@ if [ "$ENV" = "staging" ]; then
         -t lib/screens/Launch.dart \
         --dart-define-from-file=.env.prod \
         --dart-define=BUILD_TIMESTAMP=$(date "+%Y%m%d-%H%M%S") \
-        --release \
-        --web-renderer=canvaskit
+        --release
 
     firebase deploy --only hosting:staging
 else
@@ -16,7 +15,6 @@ else
     fvm flutter build web \
         -t lib/screens/Launch.dart \
         --dart-define-from-file=.env.prod \
-        --release \
-        --web-renderer=canvaskit
+        --release
     firebase deploy --only hosting
 fi

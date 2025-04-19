@@ -135,7 +135,7 @@ class UserState extends ChangeNotifier {
 
   Future<void> setLocationInfo(Position? position) async {
     var defaultFallback = LocationInfo(
-        "NL", "Amsterdam", 52.3676, 4.9041, "ChIJVXealLU_xkcRja_At0z9AGY");
+        "ES", "Barcelona", 41.385063, 2.173404, "ChIJ5TCOcRaYpBIRCmZHTz37sEQ");
     if (position != null) {
       var detected =
           await fetchLocationInfo(position.latitude, position.longitude);

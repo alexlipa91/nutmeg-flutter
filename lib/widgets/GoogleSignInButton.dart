@@ -49,15 +49,19 @@ class GoogleSignInButton extends StatelessWidget {
       if (userCredential.user != null) {
         await context.read<UserState>().login(context, userCredential);
       }
+
+      Navigator.of(context).pop();
     } catch (e, stack) {
+      if (e.toString().contains('popup_closed')) {
+        logger.info("Sign in popup closed by user");
+        return; // Exit silently without showing error
+      }
+
       logger.severe("error signing in", e, stack);
       await GenericInfoModal(
               title: "Sign-in failed",
               description: "Please try again or reach out for support")
           .show(context);
-    } finally {
-      Navigator.of(context).pop();
-      // context.read<LoginStatusChangeNotifier>().setIsSigningIn(false);
     }
   }
 

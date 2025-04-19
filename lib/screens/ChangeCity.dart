@@ -114,7 +114,7 @@ class ChangeCityState extends State<ChangeCity> {
                     setState(() {
                       _loading = true;
                     });
-                    Position? position = await determinePosition();
+                    Position? position = await determinePosition(context);
                     if (position != null) {
                       var fetchedLocationInfo = await fetchLocationInfo(
                           position.latitude, position.longitude);

@@ -62,3 +62,4 @@ gc_keys.json
 
 # FVM Version Cache
 .fvm/
+.firebase/
