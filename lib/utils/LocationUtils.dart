@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:logging/logging.dart';
 import 'package:nutmeg/state/UserState.dart';
-import 'package:nutmeg/utils/ApiKey.dart';
 import 'package:provider/provider.dart';
 
 import '../api/CloudFunctionsUtils.dart';
 import '../state/LoadOnceState.dart';
 
 final logger = Logger('LocationUtils');
+
+const placesApiKey = String.fromEnvironment('GOOGLE_PLACES_API_KEY');
 
 String buildMapUrl(double lat, double lng) =>
     "https://maps.googleapis.com/maps/api/staticmap?center=" +
