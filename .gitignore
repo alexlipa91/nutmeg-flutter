@@ -67,3 +67,5 @@ gc_keys.json
 
 # Environment files
 .env*
+
+nutmeg-deploy-key.json

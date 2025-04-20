@@ -21,6 +21,15 @@ platform :android do
     gradle(task: "test")
   end
 
+  desc "Build the Android app"
+  lane :build do
+    gradle(
+      task: "bundle",
+      build_type: "Release",
+      print_command: false
+    )
+  end
+
   lane :playstoreInternalTest do
     upload_to_play_store(
         aab: "../build/app/outputs/bundle/release/app-release.aab",
