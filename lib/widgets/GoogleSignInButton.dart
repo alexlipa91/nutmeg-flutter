@@ -13,18 +13,20 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 final logger = Logger('GoogleSignInButton');
 
 class GoogleSignInButton extends StatelessWidget {
-  final GoogleSignIn googleSignIn = GoogleSignIn();
+  final GoogleSignIn googleSignIn = GoogleSignIn(
+    clientId:
+        '956073807168-hiadijjqbhfssu8ou4d9fe2qv2dhhsus.apps.googleusercontent.com',
+  );
   final String? from;
 
   GoogleSignInButton({Key? key, this.from}) : super(key: key);
 
   Future<void> _handleSignIn(BuildContext context) async {
     try {
+      context.read<LoginStatusChangeNotifier>().setIsSigningIn(true);
       logger.info("signing in with google");
       final GoogleSignInAccount? googleSignInAccount =
           await googleSignIn.signIn();
-
-      // context.read<LoginStatusChangeNotifier>().setIsSigningIn(true);
 
       if (googleSignInAccount == null) {
         logger.info("googleSignInAccount is null");
@@ -62,6 +64,8 @@ class GoogleSignInButton extends StatelessWidget {
               title: "Sign-in failed",
               description: "Please try again or reach out for support")
           .show(context);
+    } finally {
+      context.read<LoginStatusChangeNotifier>().setIsSigningIn(false);
     }
   }
 
