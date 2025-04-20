@@ -1,7 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:logger/logger.dart';
+import 'package:logging/logging.dart';
 
+final logger = Logger('RefresherWithObserverWidget');
 
 /// A RefreshIndicator with a lifecycle observer.
 /// The refreshState method is called in both cases
@@ -20,7 +21,6 @@ class RefresherWithObserverWidget extends StatefulWidget {
 
 class RefresherWithObserverWidgetState extends State<RefresherWithObserverWidget> {
 
-  final Logger _logger = Logger();
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey = new GlobalKey<RefreshIndicatorState>();
 
   late RefreshStateOnResumeObserver lifecycleEventHandler;
@@ -30,11 +30,11 @@ class RefresherWithObserverWidgetState extends State<RefresherWithObserverWidget
     super.initState();
     lifecycleEventHandler = RefreshStateOnResumeObserver(
         resumeCallBack: () async {
-          _logger.d("RefreshWithObserver: requesting refresh");
+          logger.info("RefreshWithObserver: requesting refresh");
           _refreshIndicatorKey.currentState?.show();
         });
     WidgetsBinding.instance.addObserver(lifecycleEventHandler);
-    _logger.d("RefreshWithObserver: calling refreshState in initState");
+    logger.info("RefreshWithObserver: calling refreshState in initState");
     if (widget.initState != null) {
       widget.initState!();
     }

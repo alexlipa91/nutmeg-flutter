@@ -143,7 +143,7 @@ class MatchesState extends ChangeNotifier {
           _matchesCache![e!.documentId] = e;
           return e;
         })
-        .where((e) => (!e.isTest || context.read<UserState>().isTestMode));
+        .where((e) => (!e.isTest || userState.isTestMode));
 
     if (_matchesPerTab == null) _matchesPerTab = Map();
     _matchesPerTab![tab] = matches.map((m) => m.documentId).toList();

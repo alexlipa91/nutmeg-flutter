@@ -47,6 +47,12 @@ class GenericAvailableMatchesList extends StatefulWidget {
 
 class GenericAvailableMatchesListState
     extends State<GenericAvailableMatchesList> {
+
+  void initState() {
+    super.initState();
+    widget.refreshState();
+  }
+
   Widget waitingWidget() => ListOfMatchesSkeleton(repeatFor: 3);
 
   @override
@@ -128,40 +134,37 @@ class GenericAvailableMatchesListState
         bottom: false,
         child: Scaffold(
           backgroundColor: Palette.greyLightest,
-          body: RefresherWithObserverWidget(
-              child: ListView.builder(
-                  padding: EdgeInsets.zero,
-                  physics: AlwaysScrollableScrollPhysics(
-                      parent: ClampingScrollPhysics()),
-                  itemBuilder: (c, i) {
-                    var core = (widget.tabContent[selected] == null)
-                        ? waitingWidget()
-                        : widget.tabContent[selected];
+          body: ListView.builder(
+              padding: EdgeInsets.zero,
+              physics: AlwaysScrollableScrollPhysics(
+                  parent: ClampingScrollPhysics()),
+              itemBuilder: (c, i) {
+                var core = (widget.tabContent[selected] == null)
+                    ? waitingWidget()
+                    : widget.tabContent[selected];
 
-                    var list = List<Widget>.from([
-                      top,
-                      Padding(
-                          padding: EdgeInsets.only(
-                              left: 16.0, right: 16.0, top: 16.0),
-                          child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Flexible(
-                                  child: Container(
-                                      constraints:
-                                          BoxConstraints(maxWidth: 1000),
-                                      child: core),
-                                )
-                              ])),
-                      SizedBox(
-                          height:
-                              max(16.0, MediaQuery.of(context).padding.bottom))
-                    ]);
-                    return list[i];
-                  },
-                  itemCount: 3),
-              refreshState: () => widget.refreshState(),
-              initState: null),
+                var list = List<Widget>.from([
+                  top,
+                  Padding(
+                      padding:
+                          EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0),
+                      child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Flexible(
+                              child: Container(
+                                  constraints: BoxConstraints(maxWidth: 1000),
+                                  child: core),
+                            )
+                          ])),
+                  SizedBox(
+                      height: max(16.0, MediaQuery.of(context).padding.bottom))
+                ]);
+                return list[i];
+              },
+              itemCount: 3),
+          // refreshState: () => widget.refreshState(),
+          // initState: null),
           floatingActionButton: widget.floatingActionButton,
         ),
       ),
@@ -182,10 +185,10 @@ class GenericMatchInfo extends StatelessWidget {
       : topMargin = 0;
 
   static String formatDate(DateTime d, BuildContext context) {
-    var dayDateFormatPastYear = DateFormat("EEE, MMM dd yyyy HH:mm",
-        getLanguageLocaleWatch(context).languageCode);
-    var dayDateFormat = DateFormat("EEE, MMM dd HH:mm",
-        getLanguageLocaleWatch(context).languageCode);
+    var dayDateFormatPastYear = DateFormat(
+        "EEE, MMM dd yyyy HH:mm", getLanguageLocaleWatch(context).languageCode);
+    var dayDateFormat = DateFormat(
+        "EEE, MMM dd HH:mm", getLanguageLocaleWatch(context).languageCode);
     return DateTime.now().year == d.year
         ? dayDateFormat.format(d)
         : dayDateFormatPastYear.format(d);
@@ -200,74 +203,72 @@ class GenericMatchInfo extends StatelessWidget {
               backgroundColor: Palette.white,
               child: IntrinsicHeight(
                 child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        MatchThumbnail(image: sportCenter.getThumbnail()),
-                        SizedBox(width: 15),
-                        Expanded(
-                          child: Column(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    MatchThumbnail(image: sportCenter.getThumbnail()),
+                    SizedBox(width: 15),
+                    Expanded(
+                      child: Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
                               children: [
-                                Row(
-                                  children: [
-                                    Text(
-                                        sportCenter.getName() +
-                                            " - " +
-                                            sportCenter.getCourtType(),
-                                        style: TextPalette.h2),
-                                  ],
-                                ),
-                                SizedBox(
-                                  height: 8,
-                                ),
                                 Text(
-                                    formatDate(
-                                            match.getLocalizedTime(),
-                                            context) +
-                                        " " +
-                                        gmtSuffix(sportCenter.timezoneId),
+                                    sportCenter.getName() +
+                                        " - " +
+                                        sportCenter.getCourtType(),
+                                    style: TextPalette.h2),
+                              ],
+                            ),
+                            SizedBox(
+                              height: 8,
+                            ),
+                            Text(
+                                formatDate(match.getLocalizedTime(), context) +
+                                    " " +
+                                    gmtSuffix(sportCenter.timezoneId),
+                                style:
+                                    TextPalette.getBodyText(Palette.greyDark)),
+                            SizedBox(
+                              height: 6,
+                            ),
+                            (match.status == MatchStatus.unpublished)
+                                ? Text(
+                                    AppLocalizations.of(context)!
+                                        .notPublishedStatus,
                                     style: TextPalette.getBodyText(
-                                        Palette.greyDark)),
-                                SizedBox(
-                                  height: 6,
-                                ),
-                                (match.status == MatchStatus.unpublished)
+                                        Palette.darkWarning))
+                                : (match.status == MatchStatus.cancelled)
                                     ? Text(
                                         AppLocalizations.of(context)!
-                                            .notPublishedStatus,
+                                            .cancelledStatus,
                                         style: TextPalette.getBodyText(
-                                            Palette.darkWarning))
-                                    : (match.status == MatchStatus.cancelled)
+                                            Palette.destructive))
+                                    : (match.isFull())
                                         ? Text(
                                             AppLocalizations.of(context)!
-                                                .cancelledStatus,
-                                            style: TextPalette.getBodyText(
-                                                Palette.destructive))
-                                        : (match.isFull())
-                                            ? Text(
-                                                AppLocalizations.of(context)!
-                                                    .fullStatus,
-                                                style: TextPalette.bodyText,
-                                                textAlign: TextAlign.right)
-                                            : Text(
-                                                AppLocalizations.of(context)!
-                                                    .spotsLeft(match.maxPlayers -
-                                                        match.numPlayersGoing()),
-                                                style:
-                                                    TextPalette.bodyTextPrimary,
-                                                textAlign: TextAlign.right),
-                              ]),
-                        ),
-                        Column(children: [
-                          if (match.isPrivate)
-                            Icon(Icons.lock_outline),
-                          Spacer(),
-                          getBadges(context, match)
-                        ],)
-                      ],
+                                                .fullStatus,
+                                            style: TextPalette.bodyText,
+                                            textAlign: TextAlign.right)
+                                        : Text(
+                                            AppLocalizations.of(context)!
+                                                .spotsLeft(match.maxPlayers -
+                                                    match.numPlayersGoing()),
+                                            style: TextPalette.bodyTextPrimary,
+                                            textAlign: TextAlign.right),
+                          ]),
                     ),
+                    Column(
+                      children: [
+                        if (match.isPrivate) Icon(Icons.lock_outline),
+                        Spacer(),
+                        getBadges(context, match)
+                      ],
+                    )
+                  ],
+                ),
               )),
         ),
         onTap: () => onTap(context, match.documentId));
@@ -289,8 +290,8 @@ class GenericMatchInfo extends StatelessWidget {
                 width: 2.0,
               ),
             ),
-            child:
-            UserAvatar(14, context.read<UserState>().getLoggedUserDetails())),
+            child: UserAvatar(
+                14, context.read<UserState>().getLoggedUserDetails())),
       if (shouldShowUserBadge && match.numPlayersGoing() > 1)
         Container(
           width: 26,
@@ -312,8 +313,7 @@ class GenericMatchInfo extends StatelessWidget {
               radius: 14,
               backgroundColor: Palette.primary),
         ),
-      if (match.isTest)
-        TestBadge()
+      if (match.isTest) TestBadge()
     ];
 
     var p = 0.0;
@@ -334,10 +334,10 @@ class GenericMatchInfo extends StatelessWidget {
 // variation of match info for past
 class GenericMatchInfoPast extends StatelessWidget {
   static String formatDay(DateTime d, BuildContext context) {
-    var dayDateFormatPastYear = DateFormat(
-        "dd MMM yyyy", getLanguageLocaleWatch(context).languageCode);
-    var dayDateFormat = DateFormat(
-        "dd MMM", getLanguageLocaleWatch(context).languageCode);
+    var dayDateFormatPastYear =
+        DateFormat("dd MMM yyyy", getLanguageLocaleWatch(context).languageCode);
+    var dayDateFormat =
+        DateFormat("dd MMM", getLanguageLocaleWatch(context).languageCode);
     return DateTime.now().year == d.year
         ? dayDateFormat.format(d)
         : dayDateFormatPastYear.format(d);
