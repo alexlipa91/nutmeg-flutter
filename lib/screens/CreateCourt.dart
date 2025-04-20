@@ -62,6 +62,7 @@ class CreateCourtState extends State<CreateCourt> {
                             children: [
                               Expanded(
                                   child: TypeAheadField<PredictionResult>(
+                                controller: textEditingController,
                                 builder: (context, controller, focusNode) {
                                   return TextField(
                                     controller: controller,
@@ -74,6 +75,7 @@ class CreateCourtState extends State<CreateCourt> {
                                                 .courtLocationLabel),
                                   );
                                 },
+                                emptyBuilder: (context) => Container(height: 0),
                                 suggestionsCallback: (pattern) async {
                                   List<PredictionResult> predictions = [];
                                   if (pattern.isNotEmpty) {
