@@ -168,9 +168,9 @@ class LaunchController {
     if (availableUserDetails?.location == null) {
       logger.info(
           "no location info in current session, trying to fetch location");
-      await context
-          .read<UserState>()
-          .setLocationInfo(await determinePosition(context));
+      // TODO: fetch location with IP on web, since it's easier
+      var position = null;
+      await context.read<UserState>().setLocationInfo(position);
     }
 
     // check if user is logged in
