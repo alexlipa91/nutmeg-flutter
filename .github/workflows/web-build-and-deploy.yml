@@ -19,17 +19,11 @@ jobs:
         run: |
           echo "${{ secrets.ENV_PROD }}" > .env.prod
 
-      - name: Set up Dart
-        uses: dart-lang/setup-dart@v1
-
-      - name: Activate FVM
-        run: dart pub global activate fvm
-
-      - name: Install Flutter version from FVM config
-        run: fvm install
-
-      - name: Build web app
-        run: ./scripts/build_web_app.sh
+      - name: Run Flutter tasks
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.29.2" # keep in sync with .fvm/fvm_config.json
+      - run: ./scripts/build_web_app.sh
 
       - name: Deploy to Firebase
         uses: w9jds/firebase-action@master
