@@ -64,3 +64,6 @@ gc_keys.json
 .fvm
 .fvm/
 .firebase/
+
+# Environment files
+.env*
