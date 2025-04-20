@@ -1,1 +1,0 @@
-var placesApiKey = "AIzaSyDlU4z5DbXqoafB-T-t2mJ8rGv3Y4rAcWY";
