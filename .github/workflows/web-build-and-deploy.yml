@@ -14,20 +14,26 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: ${{ github.ref }}
-      
+
       - name: Create env file
         run: |
           echo "${{ secrets.ENV_PROD }}" > .env.prod
-      
-      - name: Run Flutter tasks
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.13.9'
-      - run: flutter build web -t lib/screens/Launch.dart --dart-define-from-file=.env.prod --release --web-renderer=canvaskit
-      
+
+      - name: Set up Dart
+        uses: dart-lang/setup-dart@v1
+
+      - name: Activate FVM
+        run: dart pub global activate fvm
+
+      - name: Install Flutter version from FVM config
+        run: fvm install
+
+      - name: Build web app
+        run: ./scripts/build_web_app.sh
+
       - name: Deploy to Firebase
         uses: w9jds/firebase-action@master
         with:
           args: deploy --only hosting
         env:
-          GCP_SA_KEY: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_NUTMEG_9099C }}'
+          GCP_SA_KEY: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_NUTMEG_9099C }}"
