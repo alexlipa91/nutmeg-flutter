@@ -31,8 +31,6 @@ class GoogleSignInButton extends StatelessWidget {
       if (googleSignInAccount == null) {
         logger.info("googleSignInAccount is null");
         return;
-      } else {
-        logger.info("googleSignInAccount is not null");
       }
 
       final GoogleSignInAuthentication? googleSignInAuthentication =
@@ -45,8 +43,6 @@ class GoogleSignInButton extends StatelessWidget {
 
       final userCredential =
           await FirebaseAuth.instance.signInWithCredential(credential);
-
-      logger.info("userCredential: $userCredential");
 
       if (userCredential.user != null) {
         await context.read<UserState>().login(context, userCredential);
