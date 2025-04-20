@@ -88,8 +88,6 @@ class UserState extends ChangeNotifier {
     logger.info('fetching user details for $uid');
     var resp = await CloudFunctionsClient().get("users/$uid");
 
-    logger.info('user details: $resp');
-
     var ud = (resp == null) ? null : UserDetails.fromJson(resp, uid);
     if (ud != null) setUserDetail(ud);
 
@@ -200,8 +198,6 @@ class UserState extends ChangeNotifier {
 
     UserDetails? userDetails =
         await context.read<UserState>().fetchUserDetails(uid!);
-
-    print("userDetails: $userDetails");
 
     // check if first time
     if (userDetails == null) {

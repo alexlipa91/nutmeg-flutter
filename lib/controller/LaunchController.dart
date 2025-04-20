@@ -1,7 +1,6 @@
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:firebase_performance/firebase_performance.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -112,10 +111,10 @@ class LaunchController {
   static Future<void> loadData(BuildContext context, String? from) async {
     print("start loading data function");
 
-    var trace = FirebasePerformance.instance.newTrace("launch_app");
-    await trace.start();
-    final Stopwatch stopwatch = Stopwatch();
-    stopwatch.start();
+    // var trace = FirebasePerformance.instance.newTrace("launch_app");
+    // await trace.start();
+    // final Stopwatch stopwatch = Stopwatch();
+    // stopwatch.start();
 
     // fetch device model name
     var d = DeviceInfo();
@@ -148,7 +147,7 @@ class LaunchController {
       Tuple2<Version, String> minimumVersion = futuresData[0];
 
       var current = (minimumVersion).item1;
-      trace.putAttribute("app_version", current.toString());
+      // trace.putAttribute("app_version", current.toString());
       var minimumVersionParts =
           firebaseRemoteConfig.getString("minimum_app_version").split(".");
       var minimumRequired = Version(int.parse(minimumVersionParts[0]),
@@ -192,7 +191,7 @@ class LaunchController {
 
     if (userDetails != null) {
       context.read<UserState>().setCurrentUserDetails(userDetails);
-      trace.putAttribute("user_id", userDetails.documentId);
+      // trace.putAttribute("user_id", userDetails.documentId);
     }
 
     // request permissions FIXME
@@ -255,19 +254,19 @@ class LaunchController {
     // navigate to next screen
     if (deepLink != null) {
       print("navigating with deep link:" + deepLink.toString());
-      trace.putAttribute("coming_from_deeplink", true.toString());
+      // trace.putAttribute("coming_from_deeplink", true.toString());
       handleLink(deepLink);
     } else if (initialMessage != null) {
       print("navigating with initial message:" + initialMessage.toString());
-      trace.putAttribute("coming_from_notification", true.toString());
+      // trace.putAttribute("coming_from_notification", true.toString());
       _handleMessageFromNotification(initialMessage);
     } else {
       print("normal navigation");
       context.go(from ?? "/");
     }
 
-    trace.setMetric("duration_ms", stopwatch.elapsed.inMilliseconds);
-    await trace.stop();
+    // trace.setMetric("duration_ms", stopwatch.elapsed.inMilliseconds);
+    // await trace.stop();
   }
 
   static Future<void> _loadOnceData(BuildContext context) async {

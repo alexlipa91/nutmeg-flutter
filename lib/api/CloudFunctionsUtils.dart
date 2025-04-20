@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_performance/firebase_performance.dart';
 import 'package:http/http.dart' as http;
 import 'package:nutmeg/controller/LaunchController.dart';
 import 'package:logging/logging.dart';
@@ -35,14 +34,13 @@ class CloudFunctionsClient {
       String name, Map<String, dynamic> data) async {
     logger.info("POST AppEngine $name with data ${data.toString()}");
 
-    var trace = FirebasePerformance.instance.newTrace("api-call");
-    trace.start();
-    trace.putAttribute("path_name", name);
-    trace.putAttribute("source", "app_engine");
-    trace.putAttribute("path_wildcard_name", _getPathWildcardName(name));
-    trace.putAttribute("method", "post");
-
-    final Stopwatch stopwatch = Stopwatch();
+    // var trace = FirebasePerformance.instance.newTrace("api-call");
+    // trace.start();
+    // trace.putAttribute("path_name", name);
+    // trace.putAttribute("source", "app_engine");
+    // trace.putAttribute("path_wildcard_name", _getPathWildcardName(name));
+    // trace.putAttribute("method", "post");
+    // final Stopwatch stopwatch = Stopwatch();
 
     var r = await http.post(
       Uri.parse("$appEngineBaseUrl/$name"),
@@ -50,8 +48,8 @@ class CloudFunctionsClient {
       body: jsonEncode(data),
     );
 
-    trace.setMetric("duration_ms", stopwatch.elapsed.inMilliseconds);
-    trace.stop();
+    // trace.setMetric("duration_ms", stopwatch.elapsed.inMilliseconds);
+    // trace.stop();
 
     if (r.statusCode == 500) {
       logger.severe("Server error (500): ${r.body}");
@@ -83,15 +81,15 @@ class CloudFunctionsClient {
       {Map<String, dynamic> args = const {}}) async {
     logger.info("GET $name with args ${args.toString()}");
 
-    var trace = FirebasePerformance.instance.newTrace("api-call");
-    await trace.start();
-    trace.putAttribute("path_name", name);
-    trace.putAttribute("path_wildcard_name", _getPathWildcardName(name));
-    trace.putAttribute("method", "get");
-    trace.putAttribute("source", "app_engine");
+    // var trace = FirebasePerformance.instance.newTrace("api-call");
+    // await trace.start();
+    // trace.putAttribute("path_name", name);
+    // trace.putAttribute("path_wildcard_name", _getPathWildcardName(name));
+    // trace.putAttribute("method", "get");
+    // trace.putAttribute("source", "app_engine");
 
-    final Stopwatch stopwatch = Stopwatch();
-    stopwatch.start();
+    // final Stopwatch stopwatch = Stopwatch();
+    // stopwatch.start();
 
     var argsString = args.entries.map((e) => "${e.key}=${e.value}").join("&");
     var url = "$appEngineBaseUrl/$name";
@@ -99,8 +97,8 @@ class CloudFunctionsClient {
 
     var r = await http.get(Uri.parse(url), headers: await _headers());
 
-    trace.setMetric("duration_ms", stopwatch.elapsed.inMilliseconds);
-    await trace.stop();
+    // trace.setMetric("duration_ms", stopwatch.elapsed.inMilliseconds);
+    // await trace.stop();
 
     return jsonDecode(r.body)["data"];
   }

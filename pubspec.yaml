@@ -34,7 +34,6 @@ dependencies:
   firebase_auth: ^5.4.0
   google_sign_in: ^6.2.1
   cloud_firestore: ^5.6.6
-#  date_time_picker: ^2.1.0
   http: ^1.1.0
   dio: ^5.8.0+1
   webview_flutter: ^4.0.7
@@ -62,7 +61,6 @@ dependencies:
   tuple: ^2.0.0
   badges: ^3.1.2
   firebase_analytics: ^11.4.5
-  firebase_performance: ^0.10.1+5
   material_design_icons_flutter: ^7.0.7296
   logging: ^1.2.0
   image_picker: ^1.1.2
@@ -70,8 +68,6 @@ dependencies:
   confetti: ^0.8.0
   shared_preferences: ^2.0.13
   logger: ^2.5.0
-#  screenshot: ^1.2.3
-#  charts_flutter: ^0.12.0
   dotted_border: ^2.0.0+2
   flutter_web_frame: ^1.0.0
   go_router: ^15.0.0

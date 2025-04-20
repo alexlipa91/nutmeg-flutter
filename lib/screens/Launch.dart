@@ -4,6 +4,7 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'dart:html' if (dart.library.html) 'dart:html' as html;
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_web_frame/flutter_web_frame.dart';
 import 'package:go_router/go_router.dart';
@@ -18,6 +19,7 @@ import 'package:nutmeg/screens/admin/AvailableMatchesAdmin.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
+import 'package:logging/logging.dart';
 
 import '../Exceptions.dart';
 import '../firebase_options.dart';
@@ -27,7 +29,6 @@ import '../state/UserState.dart';
 import '../utils/LocationUtils.dart';
 import 'admin/AddOrEditMatch.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:logging/logging.dart' as logging;
 
 final navigatorKey = GlobalKey<NavigatorState>();
 final scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
@@ -121,25 +122,48 @@ final appRouter = GoRouter(
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  logging.Logger.root.level =
-      logging.Level.ALL; // Set the default logging level
-  logging.Logger.root.onRecord.listen((record) {
+  Logger.root.level = Level.ALL;
+  Logger.root.onRecord.listen((record) {
     print('${record.level.name}: ${record.time}: ${record.message}');
   });
 
-  await Firebase.initializeApp(
-      // https://github.com/firebase/flutterfire/issues/10228
-      // name: kIsWeb ? null : "nutmeg",
-      options: DefaultFirebaseOptions.currentPlatform);
+  // Initialize Firebase with error handling
+  try {
+    await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform);
+    
+    // Add error handler for web platform performance monitoring
+    if (kIsWeb) {
+      html.window.addEventListener('error', (event) {
+        if (event is html.ErrorEvent && event.error != null) {
+          if (event.error.toString().contains('FirebaseError: Failed to execute \'send\' on \'Beacon\'')) {
+            Logger('Firebase').warning('Ignoring Firebase Performance Monitoring error: ${event.error}');
+            return;
+          }
+          if (event.error.toString().contains('FirebaseError: Failed to execute \'fetch\'')) {
+            Logger('Firebase').warning('Ignoring Firebase Performance Monitoring fetch error: ${event.error}');
+            return;
+          }
+          final error = event.error;
+          if (error != null) {
+            throw error;
+          }
+        }
+      } as html.EventListener);
+    }
 
-  if (!kIsWeb) {
-    FlutterError.onError = (FlutterErrorDetails details) async {
-      print(details.exceptionAsString());
-      print(details.stack);
-      print("*** CAUGHT FROM FRAMEWORK ***");
-      await FirebaseCrashlytics.instance.recordFlutterError(details);
-    };
+    if (!kIsWeb) {
+      FlutterError.onError = (FlutterErrorDetails details) async {
+        print(details.exceptionAsString());
+        print(details.stack);
+        print("*** CAUGHT FROM FRAMEWORK ***");
+        await FirebaseCrashlytics.instance.recordFlutterError(details);
+      };
+    }
+  } catch (e, stack) {
+    Logger.root.severe('Error initializing Firebase', e, stack);
   }
+
   PlatformDispatcher.instance.onError = (error, stack) {
     FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
     return true;

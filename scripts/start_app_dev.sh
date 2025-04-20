@@ -16,7 +16,7 @@ fi
 
 fvm flutter run \
     -t lib/screens/Launch.dart \
-    -d web-server \
+    -d chrome \
     --web-port=7357 \
     --dart-define-from-file="$ENV_FILE" \
     --dart-define=BUILD_TIMESTAMP=$(date "+%Y%m%d-%H%M%S")
