@@ -111,11 +111,11 @@ class GenericAvailableMatchesListState
                         context.read<AvailableMatchesUiState>().changeTo(index),
                     style: ButtonStyle(
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      minimumSize: MaterialStateProperty.all(Size.zero),
-                      padding: MaterialStateProperty.all(EdgeInsets.zero),
-                      elevation: MaterialStateProperty.all(0),
-                      backgroundColor: MaterialStateProperty.all<Color>(color),
-                      shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                      minimumSize: WidgetStateProperty.all(Size.zero),
+                      padding: WidgetStateProperty.all(EdgeInsets.zero),
+                      elevation: WidgetStateProperty.all(0),
+                      backgroundColor: WidgetStateProperty.all<Color>(color),
+                      shape: WidgetStateProperty.all<RoundedRectangleBorder>(
                           RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(50.0))),
                     ),

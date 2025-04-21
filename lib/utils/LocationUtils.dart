@@ -29,7 +29,7 @@ Future<LocationInfo?> fetchLocationInfo(double lat, double lng) async {
     var resp = await CloudFunctionsClient()
         .get("locations/coordinates", args: {"lat": lat, "lng": lng});
     return LocationInfo.fromJson(Map<String, dynamic>.from(resp!));
-  } catch (e, s) {
+  } catch (e) {
     print("failed to fetch location");
     return null;
   }

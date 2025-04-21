@@ -54,13 +54,13 @@ class GenericButtonWithLoader extends StatelessWidget {
                     ? null
                     : () => onPressed!(context),
             style: ButtonStyle(
-              elevation: MaterialStateProperty.all(0),
+              elevation: WidgetStateProperty.all(0),
               backgroundColor:
-                  MaterialStateProperty.all<Color>(buttonType.backgroundColor),
-              shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                  WidgetStateProperty.all<Color>(buttonType.backgroundColor),
+              shape: WidgetStateProperty.all<RoundedRectangleBorder>(
                   RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(50.0))),
-              side: MaterialStateProperty.all<BorderSide>(
+              side: WidgetStateProperty.all<BorderSide>(
                   BorderSide(color: buttonType.borderColor, width: 2)),
             ),
           );

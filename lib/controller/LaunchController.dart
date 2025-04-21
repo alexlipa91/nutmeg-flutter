@@ -18,7 +18,6 @@ import '../Exceptions.dart';
 import '../screens/Launch.dart';
 import '../state/LoadOnceState.dart';
 import '../state/UserState.dart';
-import '../utils/LocationUtils.dart';
 import '../utils/UiUtils.dart';
 import '../utils/Utils.dart';
 import 'MiscController.dart';

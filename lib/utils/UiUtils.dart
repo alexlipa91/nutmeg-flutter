@@ -89,9 +89,9 @@ class DeviceInfo {
     if (kIsWeb) {
       name = "web";
     } else if (Platform.isIOS) {
-      name = (await deviceInfo.iosInfo).model!.toLowerCase();
+      name = (await deviceInfo.iosInfo).model.toLowerCase();
     } else if (Platform.isAndroid) {
-      name = (await deviceInfo.androidInfo).model!.toLowerCase();
+      name = (await deviceInfo.androidInfo).model.toLowerCase();
     }
     print("device name is " + name);
   }
