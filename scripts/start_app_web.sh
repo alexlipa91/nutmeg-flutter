@@ -15,7 +15,6 @@ if [ ! -f "$ENV_FILE" ]; then
 fi
 
 fvm flutter run \
-    -t lib/screens/Launch.dart \
     -d chrome \
     --web-port=7357 \
     --dart-define-from-file="$ENV_FILE" \
