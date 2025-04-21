@@ -69,3 +69,6 @@ gc_keys.json
 .env*
 
 nutmeg-deploy-key.json
+
+android/app/src/*
+android/app/.cxx/*
