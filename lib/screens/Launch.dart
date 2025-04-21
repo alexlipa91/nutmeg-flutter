@@ -4,7 +4,6 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'dart:html' if (dart.library.html) 'dart:html' as html;
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_web_frame/flutter_web_frame.dart';
 import 'package:go_router/go_router.dart';
@@ -131,26 +130,6 @@ void main() async {
   try {
     await Firebase.initializeApp(
         options: DefaultFirebaseOptions.currentPlatform);
-    
-    // Add error handler for web platform performance monitoring
-    if (kIsWeb) {
-      html.window.addEventListener('error', (event) {
-        if (event is html.ErrorEvent && event.error != null) {
-          if (event.error.toString().contains('FirebaseError: Failed to execute \'send\' on \'Beacon\'')) {
-            Logger('Firebase').warning('Ignoring Firebase Performance Monitoring error: ${event.error}');
-            return;
-          }
-          if (event.error.toString().contains('FirebaseError: Failed to execute \'fetch\'')) {
-            Logger('Firebase').warning('Ignoring Firebase Performance Monitoring fetch error: ${event.error}');
-            return;
-          }
-          final error = event.error;
-          if (error != null) {
-            throw error;
-          }
-        }
-      } as html.EventListener);
-    }
 
     if (!kIsWeb) {
       FlutterError.onError = (FlutterErrorDetails details) async {
