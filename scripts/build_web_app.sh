@@ -11,14 +11,12 @@ fi
 if [ "$ENV" = "staging" ]; then
     echo "Building for staging"
     $FLUTTER_CMD build web \
-        -t lib/screens/Launch.dart \
         --dart-define-from-file=.env.prod \
         --dart-define=BUILD_TIMESTAMP=$(date "+%Y%m%d-%H%M%S") \
         --release    
 else
     echo "Building for prod"
     $FLUTTER_CMD build web \
-        -t lib/screens/Launch.dart \
         --dart-define-from-file=.env.prod \
         --release    
 fi
