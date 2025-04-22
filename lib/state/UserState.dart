@@ -3,13 +3,13 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 import 'package:nutmeg/utils/LocationUtils.dart';
 import 'package:provider/provider.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:logging/logging.dart';
+import 'package:tuple/tuple.dart';
 
 import '../model/SportCenter.dart';
 import '../model/UserDetails.dart';
@@ -131,12 +131,11 @@ class UserState extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> setLocationInfo(Position? position) async {
+  Future<void> setLocationInfo(Tuple2<double, double>? position) async {
     var defaultFallback = LocationInfo(
         "ES", "Barcelona", 41.385063, 2.173404, "ChIJ5TCOcRaYpBIRCmZHTz37sEQ");
     if (position != null) {
-      var detected =
-          await fetchLocationInfo(position.latitude, position.longitude);
+      var detected = await fetchLocationInfo(position.item1, position.item2);
       if (detected != null) {
         _deviceLocationInfo = detected;
       } else {

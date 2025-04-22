@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:logging/logging.dart';
 import 'package:nutmeg/state/UserState.dart';
 import 'package:provider/provider.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:tuple/tuple.dart';
 
 import '../api/CloudFunctionsUtils.dart';
 import '../state/LoadOnceState.dart';
@@ -92,77 +94,17 @@ Future<List<PredictionResult>> getCitiesPrediction(String query) async {
   return results;
 }
 
-Future<Position?> determinePosition(BuildContext context) async {
-  bool serviceEnabled;
-  LocationPermission permission;
-
-// Test if location services are enabled.
-  serviceEnabled = await Geolocator.isLocationServiceEnabled();
-  if (!serviceEnabled) {
-// Location services are not enabled don't continue
-// accessing the position and request users of the
-// App to enable the location services.
-    logger.warning('Location services are disabled.');
-    return null;
-  }
-
-  permission = await Geolocator.checkPermission();
-  if (permission == LocationPermission.denied) {
-    permission = await Geolocator.requestPermission();
-    if (permission == LocationPermission.denied) {
-// Permissions are denied, next time you could try
-// requesting permissions again (this is also where
-// Android's shouldShowRequestPermissionRationale
-// returned true. According to Android guidelines
-// your App should show an explanatory UI now.
-      logger.warning('Location permissions are denied');
-      return null;
-    }
-  }
-
-  if (permission == LocationPermission.deniedForever) {
-// Permissions are denied forever, handle appropriately.
-    logger.warning(
-        'Location permissions are permanently denied, we cannot request permissions.');
-    return null;
-  }
-
-// When we reach here, permissions are granted and we can
-// continue accessing the position of the device.
-  logger.info('Location permissions are granted, fetching current position.');
-  var fetchedPosition = null;
+Future<Tuple2<double, double>?> getLocationFromIP() async {
   try {
-    fetchedPosition = await Geolocator.getCurrentPosition();
+    final response = await http.get(Uri.parse('https://ipapi.co/json/'));
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return Tuple2(data['latitude'], data['longitude']);
+    }
   } catch (e) {
-    logger.warning('Error getting current position: $e');
+    logger.warning('Error getting location from IP: $e');
   }
-
-  // try to show a dialog if we can't fetch location
-  if (fetchedPosition == null) {
-    fetchedPosition = await showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => AlertDialog(
-              title: Text("Enable Location Services"),
-              content: Text(
-                  "To help you find matches and sport centers nearby, we need access to your location. Please enable location services to continue."),
-              actions: [
-                TextButton(
-                    onPressed: () async {
-                      var pos = null;
-                      try {
-                        pos = await Geolocator.getCurrentPosition();
-                      } catch (e) {
-                        logger.warning('Error getting current position: $e');
-                      }
-                      Navigator.of(context).pop(pos);
-                    },
-                    child: Text("Enable Location"))
-              ],
-            ));
-  }
-
-  return fetchedPosition;
+  return null;
 }
 
 var blacklistedCountriesForPayments = ["CH", "BR"];

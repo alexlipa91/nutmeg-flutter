@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 import 'package:nutmeg/state/UserState.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/Containers.dart';
 import 'package:nutmeg/widgets/PageTemplate.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tuple/tuple.dart';
 
 import '../utils/LocationUtils.dart';
 import 'CreateMatch.dart';
@@ -114,18 +114,11 @@ class ChangeCityState extends State<ChangeCity> {
                     setState(() {
                       _loading = true;
                     });
-                    Position? position = await determinePosition(context);
-                    if (position != null) {
+                    Tuple2<double, double>? location = await getLocationFromIP();
+                    if (location != null) {
                       var fetchedLocationInfo = await fetchLocationInfo(
-                          position.latitude, position.longitude);
+                          location.item1, location.item2);
                       Navigator.pop(context, fetchedLocationInfo);
-
-                      // cityController.text = "${fetchedLocationInfo.city}, "
-                      //     "${fetchedLocationInfo.country}";
-                      // setState(() {
-                      //   selectedLocationInfo = fetchedLocationInfo;
-                      //   _loading = false;
-                      // });
                     }
                   },
                   child: Row(

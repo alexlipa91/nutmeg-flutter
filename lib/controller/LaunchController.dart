@@ -10,13 +10,13 @@ import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 import 'package:nutmeg/main.dart';
 import 'package:nutmeg/model/UserDetails.dart';
 import 'package:nutmeg/screens/EnterDetails.dart';
+import 'package:nutmeg/utils/LocationUtils.dart';
 import 'package:provider/provider.dart';
 import 'package:tuple/tuple.dart';
 import 'package:version/version.dart';
 import 'package:timezone/data/latest.dart' as tz;
 
 import '../Exceptions.dart';
-import '../screens/Launch.dart';
 import '../state/LoadOnceState.dart';
 import '../state/UserState.dart';
 import '../utils/UiUtils.dart';
@@ -167,8 +167,7 @@ class LaunchController {
     if (availableUserDetails?.location == null) {
       logger.info(
           "no location info in current session, trying to fetch location");
-      // TODO: fetch location with IP on web, since it's easier
-      var position = null;
+      var position = await getLocationFromIP();
       await context.read<UserState>().setLocationInfo(position);
     }
 
