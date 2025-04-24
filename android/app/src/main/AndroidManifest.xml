@@ -7,8 +7,9 @@
             android:usesCleartextTraffic="true">
 
         <meta-data android:name="com.google.android.geo.API_KEY"
-                   android:value="AIzaSyDlU4z5DbXqoafB-T-t2mJ8rGv3Y4rAcWY"/>
-
+                   android:value=""/>
+        <!-- TODO add api key -->
+        
         <activity
                 android:name="com.yalantis.ucrop.UCropActivity"
                 android:screenOrientation="portrait"
