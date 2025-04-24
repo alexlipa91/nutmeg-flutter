@@ -29,6 +29,7 @@ import 'package:nutmeg/widgets/PageTemplate.dart';
 import 'package:readmore/readmore.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../state/MatchesState.dart';
 import '../state/UserState.dart';
@@ -931,8 +932,7 @@ class MapCardImage extends StatelessWidget {
     return InkWell(
       onTap: () async {
         if (kIsWeb) {
-          // todo get cid for dynamic sportcenter
-          // launchUrl(Uri.parse("https://maps.google.com/?cid=${sportCenter.cid}"));
+          launchUrl(Uri.parse("https://www.google.com/maps/search/?api=1&query=Google&query_place_id=${sportCenter.placeId}"));
         } else if (await MapLauncher.isMapAvailable(m.MapType.google) ??
             false) {
           await MapLauncher.showMarker(
