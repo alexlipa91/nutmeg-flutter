@@ -14,11 +14,12 @@ class CloudFunctionsClient {
       defaultValue: "https://nutmeg-9099c.ew.r.appspot.com");
 
   factory CloudFunctionsClient() {
-    print("appEngineBaseUrl: $appEngineBaseUrl");
     return _singleton;
   }
 
-  CloudFunctionsClient._internal();
+  CloudFunctionsClient._internal() {
+    logger.info("Backend URL: $appEngineBaseUrl");
+  }
 
   Future<Map<String, String>> _headers() async {
     String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
