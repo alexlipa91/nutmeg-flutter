@@ -1,12 +1,11 @@
 importScripts("https://www.gstatic.com/firebasejs/7.15.5/firebase-app.js");
 importScripts("https://www.gstatic.com/firebasejs/7.15.5/firebase-messaging.js");
-import process from 'process';
 
 //Using singleton breaks instantiating messaging()
 // App firebase = FirebaseWeb.instance.app;
 
 firebase.initializeApp({
-    apiKey: process.env.GOOGLE_API_KEY,
+    apiKey: window.localStorage['firebaseVapidKey'],
     authDomain: "nutmeg-9099c.firebaseapp.com",
     databaseURL: "https://nutmeg-9099c-default-rtdb.europe-west1.firebasedatabase.app",
     projectId: "nutmeg-9099c",

@@ -53,7 +53,7 @@
       window.addEventListener('flutter-first-frame', function () {
         navigator.serviceWorker.register('flutter_service_worker.js');
       });
-      window.addEventListener('load', function () {
+      window.addEventListener('register-messaging-service-worker', function () {
         navigator.serviceWorker.register('/firebase-messaging-sw.js');
       });
     }

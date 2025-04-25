@@ -17,6 +17,7 @@ import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:logging/logging.dart';
+import 'dart:html';
 
 import '../firebase_options.dart';
 import '../state/LoadOnceState.dart';
@@ -114,7 +115,16 @@ final appRouter = GoRouter(
   },
 );
 
+void registerMessagingServiceWorker() {
+  if (kIsWeb) {
+    window.localStorage['firebaseVapidKey'] =
+        const String.fromEnvironment('FIREBASE_VAPID_KEY');
+    window.dispatchEvent(Event('register-messaging-service-worker'));
+  }
+}
+
 void main() async {
+  window.dispatchEvent(Event('load-stuff'));
   WidgetsFlutterBinding.ensureInitialized();
 
   Logger.root.level = Level.ALL;
