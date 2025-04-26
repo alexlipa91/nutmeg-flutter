@@ -71,3 +71,5 @@ gc_keys.json
 nutmeg-deploy-key.json
 
 android/app/.cxx/*
+
+web/firebase-messaging-sw.js
