@@ -217,22 +217,14 @@ class UserPageState extends State<UserPage> {
                       });
                     },
                     child: Badge(
-                        badgeContent: Text('0'),
+                        badgeContent: Icon(Icons.camera_alt_outlined,
+                            size: 16.0, color: Palette.white),
                         showBadge: true,
                         badgeStyle: BadgeStyle(
                           badgeColor: Palette.primary,
                         ),
-                        child: Badge(
-                            badgeContent: Icon(Icons.camera_alt_outlined,
-                                size: 16.0, color: Palette.white),
-                            showBadge: true,
-                            badgeStyle: BadgeStyle(
-                              badgeColor: Palette.primary,
-                            ),
-                            position:
-                                BadgePosition.custom(bottom: -5.0, end: -5.0),
-                            child: UserAvatar(30, userDetails))),
-                  ),
+                        position: BadgePosition.custom(bottom: -5.0, end: -5.0),
+                        child: UserAvatar(30, userDetails))),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 30),
               child: Column(
