@@ -34,13 +34,18 @@ class UserController {
         ),
         WebUiSettings(
           context: context,
+          size: CropperSize(
+            width: 300,
+            height: 300,
+          ),
+          viewwMode: WebViewMode.mode_2,
         ),
       ],
     );
     if (croppedFile == null) return;
     var uploaded = await FirebaseStorage.instance
         .ref("users/" + userDetails.documentId)
-        .putFile(File(croppedFile.path));
+        .putData(await croppedFile.readAsBytes());
 
     await context
         .read<UserState>()

@@ -124,7 +124,9 @@ class UserState extends ChangeNotifier {
   List<SportCenter>? getSportCenters() => _sportCenters;
 
   // user location
-  late LocationInfo _deviceLocationInfo;
+  // default to Barcelona, Spain for now
+  LocationInfo _deviceLocationInfo = LocationInfo(
+      "ES", "Barcelona", 41.385063, 2.173404, "ChIJ5TCOcRaYpBIRCmZHTz37sEQ");
 
   void setCustomLocationInfo(LocationInfo l) {
     _deviceLocationInfo = l;
@@ -132,17 +134,11 @@ class UserState extends ChangeNotifier {
   }
 
   Future<void> setLocationInfo(Tuple2<double, double>? position) async {
-    var defaultFallback = LocationInfo(
-        "ES", "Barcelona", 41.385063, 2.173404, "ChIJ5TCOcRaYpBIRCmZHTz37sEQ");
     if (position != null) {
       var detected = await fetchLocationInfo(position.item1, position.item2);
       if (detected != null) {
         _deviceLocationInfo = detected;
-      } else {
-        _deviceLocationInfo = defaultFallback;
       }
-    } else {
-      _deviceLocationInfo = defaultFallback;
     }
   }
 
