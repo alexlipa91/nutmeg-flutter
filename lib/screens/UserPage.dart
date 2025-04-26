@@ -38,8 +38,6 @@ class UserPage extends StatefulWidget {
 class UserPageState extends State<UserPage> {
   final verticalSpace = SizedBox(height: 20);
 
-  bool loadingPicture = false;
-
   Future<void> myInitState() async {
     await FirebaseAnalytics.instance.logEvent(name: "open_user_page");
     await refreshPageState();
@@ -109,45 +107,26 @@ class UserPageState extends State<UserPage> {
         InfoContainer(
             child: Row(
           children: [
-            (loadingPicture)
-                ? CircleAvatar(
-                    backgroundColor: Palette.greyLightest,
-                    radius: 30,
-                    child: Container(
-                      height: 20.0,
-                      width: 20.0,
-                      child: CircularProgressIndicator(
-                        color: Palette.greyLight,
-                        strokeWidth: 2.0,
-                      ),
-                    ))
-                : InkWell(
-                    onTap: (loadSkeleton)
-                        ? null
-                        : () async {
-                            setState(() {
-                              loadingPicture = true;
-                            });
-                            try {
-                              await UserController.updloadPicture(
-                                  context, userDetails);
-                            } catch (e, s) {
-                              print(e);
-                              print(s);
-                            }
-                            setState(() {
-                              loadingPicture = false;
-                            });
-                          },
-                    child: Badge(
-                        badgeContent: Icon(Icons.camera_alt_outlined,
-                            size: 16.0, color: Palette.white),
-                        badgeStyle: BadgeStyle(
-                          badgeColor: Palette.primary,
-                        ),
-                        position:
-                            BadgePosition.bottomEnd(bottom: -5.0, end: -5.0),
-                        child: UserAvatar(30, userDetails))),
+            InkWell(
+                onTap: (loadSkeleton)
+                    ? null
+                    : () async {
+                        try {
+                          await UserController.updloadPicture(
+                              context, userDetails);
+                        } catch (e, s) {
+                          print(e);
+                          print(s);
+                        }
+                      },
+                child: Badge(
+                    badgeContent: Icon(Icons.camera_alt_outlined,
+                        size: 16.0, color: Palette.white),
+                    badgeStyle: BadgeStyle(
+                      badgeColor: Palette.primary,
+                    ),
+                    position: BadgePosition.bottomEnd(bottom: -5.0, end: -5.0),
+                    child: UserAvatar(30, userDetails))),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 30),
               child: Column(
@@ -188,43 +167,24 @@ class UserPageState extends State<UserPage> {
         InfoContainer(
             child: Row(
           children: [
-            (loadingPicture)
-                ? CircleAvatar(
-                    backgroundColor: Palette.greyLightest,
-                    radius: 30,
-                    child: Container(
-                      height: 20.0,
-                      width: 20.0,
-                      child: CircularProgressIndicator(
-                        color: Palette.greyLight,
-                        strokeWidth: 2.0,
-                      ),
-                    ))
-                : InkWell(
-                    onTap: () async {
-                      setState(() {
-                        loadingPicture = true;
-                      });
-                      try {
-                        await UserController.updloadPicture(
-                            context, userDetails);
-                      } catch (e, s) {
-                        print(e);
-                        print(s);
-                      }
-                      setState(() {
-                        loadingPicture = false;
-                      });
-                    },
-                    child: Badge(
-                        badgeContent: Icon(Icons.camera_alt_outlined,
-                            size: 16.0, color: Palette.white),
-                        showBadge: true,
-                        badgeStyle: BadgeStyle(
-                          badgeColor: Palette.primary,
-                        ),
-                        position: BadgePosition.custom(bottom: -5.0, end: -5.0),
-                        child: UserAvatar(30, userDetails))),
+            InkWell(
+                onTap: () async {
+                  try {
+                    await UserController.updloadPicture(context, userDetails);
+                  } catch (e, s) {
+                    print(e);
+                    print(s);
+                  }
+                },
+                child: Badge(
+                    badgeContent: Icon(Icons.camera_alt_outlined,
+                        size: 16.0, color: Palette.white),
+                    showBadge: true,
+                    badgeStyle: BadgeStyle(
+                      badgeColor: Palette.primary,
+                    ),
+                    position: BadgePosition.custom(bottom: -5.0, end: -5.0),
+                    child: UserAvatar(30, userDetails))),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 30),
               child: Column(
