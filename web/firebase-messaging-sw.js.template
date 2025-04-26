@@ -5,7 +5,7 @@ importScripts("https://www.gstatic.com/firebasejs/7.15.5/firebase-messaging.js")
 // App firebase = FirebaseWeb.instance.app;
 
 firebase.initializeApp({
-    apiKey: window.localStorage['firebaseVapidKey'],
+    apiKey: "__ENV__FIREBASE_API_KEY__",
     authDomain: "nutmeg-9099c.firebaseapp.com",
     databaseURL: "https://nutmeg-9099c-default-rtdb.europe-west1.firebasedatabase.app",
     projectId: "nutmeg-9099c",

@@ -115,16 +115,7 @@ final appRouter = GoRouter(
   },
 );
 
-void registerMessagingServiceWorker() {
-  if (kIsWeb) {
-    window.localStorage['firebaseVapidKey'] =
-        const String.fromEnvironment('FIREBASE_VAPID_KEY');
-    window.dispatchEvent(Event('register-messaging-service-worker'));
-  }
-}
-
 void main() async {
-  window.dispatchEvent(Event('load-stuff'));
   WidgetsFlutterBinding.ensureInitialized();
 
   Logger.root.level = Level.ALL;

@@ -8,6 +8,8 @@ if [ -z "$GITHUB_ACTIONS" ]; then
     FLUTTER_CMD="fvm flutter"
 fi
 
+./scripts/pre_build.sh $ENV_FILE
+
 if [ "$ENV" = "staging" ]; then
     echo "Building for staging"
     $FLUTTER_CMD build web \

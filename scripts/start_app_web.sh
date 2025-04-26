@@ -14,8 +14,10 @@ if [ ! -f "$ENV_FILE" ]; then
     exit 1
 fi
 
+./scripts/pre_build.sh $ENV_FILE
+
 fvm flutter run \
-    -d chrome \
+    -d web-server \
     --web-port=7357 \
     --dart-define-from-file="$ENV_FILE" \
     --dart-define=BUILD_TIMESTAMP=$(date "+%Y%m%d-%H%M%S")
