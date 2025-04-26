@@ -165,9 +165,8 @@ class LaunchController {
     }
 
     if (availableUserDetails?.location == null) {
-      logger.info(
-          "no location info in current session, trying to fetch location");
       var position = await getLocationFromIP();
+      logger.info("no location info in current session, fetch location $position");
       await context.read<UserState>().setLocationInfo(position);
     }
 
