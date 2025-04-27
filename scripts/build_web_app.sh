@@ -19,6 +19,7 @@ if [ "$MODE" == "prod" ]; then
         --release
 else
     $FLUTTER_CMD build web \
+        --debug \
         --dart-define-from-file=$ENV_FILE \
         --dart-define=BUILD_TIMESTAMP=$(date "+%Y%m%d-%H%M%S")
 fi
