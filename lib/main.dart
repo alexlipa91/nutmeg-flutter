@@ -17,7 +17,6 @@ import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:logging/logging.dart';
-import 'dart:html';
 
 import '../firebase_options.dart';
 import '../state/LoadOnceState.dart';
