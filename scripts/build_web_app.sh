@@ -1,5 +1,5 @@
-# Set environment, default to prod if not specified
-ENV=${1:-prod}
+# Default env file
+ENV_FILE=".env.prod"
 
 # Set the Flutter command based on environment
 FLUTTER_CMD="flutter"
@@ -10,15 +10,13 @@ fi
 
 ./scripts/pre_build.sh $ENV_FILE
 
-if [ "$ENV" = "staging" ]; then
-    echo "Building for staging"
+if [ "$ENV_FILE" != ".env.prod" ]; then
     $FLUTTER_CMD build web \
-        --dart-define-from-file=.env.prod \
+        --dart-define-from-file=$ENV_FILE \
         --dart-define=BUILD_TIMESTAMP=$(date "+%Y%m%d-%H%M%S") \
         --release    
 else
-    echo "Building for prod"
     $FLUTTER_CMD build web \
-        --dart-define-from-file=.env.prod \
+        --dart-define-from-file=$ENV_FILE \
         --release    
 fi
