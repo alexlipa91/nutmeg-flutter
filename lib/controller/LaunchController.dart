@@ -49,6 +49,8 @@ class LaunchController {
     NotificationSettings currentSettings =
         await FirebaseMessaging.instance.getNotificationSettings();
 
+    logger.info('Current notification settings: $currentSettings');
+
     if (currentSettings.authorizationStatus ==
         AuthorizationStatus.notDetermined) {
       logger.info('Requesting notification permissions for the first time');
@@ -214,7 +216,11 @@ class LaunchController {
         await FirebaseMessaging.instance.getInitialMessage();
 
     if (context.read<UserState>().isLoggedIn()) {
-      await askForNotificationPermissionAndStoreToken(context);
+      try {
+        await askForNotificationPermissionAndStoreToken(context);
+      } catch (e, s) {
+        logger.severe("error storing user token", e, s);
+      }
     }
     setupNotificationsHandler(context);
 
