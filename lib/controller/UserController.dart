@@ -4,6 +4,8 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:logging/logging.dart';
+import 'package:nutmeg/state/MatchesState.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -13,6 +15,9 @@ import '../screens/PlayerOfTheMatch.dart';
 import '../state/UserState.dart';
 
 class UserController {
+  
+  static Logger logger = Logger("UserController");
+
   static var apiClient = CloudFunctionsClient();
 
   static Future<void> updloadPicture(
@@ -63,5 +68,11 @@ class UserController {
           context, MaterialPageRoute(builder: (context) => PlayerOfTheMatch()));
       prefs.setBool(preferencePath, true);
     }
+  }
+
+  static Future<void> logout(BuildContext context) async {
+    logger.info("Logging out user and clearing matches state");
+    await context.read<UserState>().logout();
+    context.read<MatchesState>().clear();
   }
 }

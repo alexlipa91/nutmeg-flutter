@@ -53,13 +53,16 @@ class UserState extends ChangeNotifier {
   bool isLoggedIn() => currentUserId != null;
 
   Future<void> logout() async {
-    logger.info('logging out');
     await FirebaseAuth.instance.signOut();
     if (await googleSignIn.isSignedIn()) {
       await googleSignIn.disconnect();
     }
     currentUserId = null;
     _sportCenters = null;
+
+    // force refresh token to invalidate cached token
+    await FirebaseAuth.instance.currentUser?.getIdToken(true);
+
     notifyListeners();
   }
 

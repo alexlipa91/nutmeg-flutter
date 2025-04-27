@@ -18,23 +18,26 @@ import '../utils/UiUtils.dart';
 
 // main widget
 class AvailableMatches extends StatelessWidget {
-
   static Random random = new Random();
 
-  Future<void> onTap(BuildContext context, String matchId) async => context.go("/match/$matchId");
+  Future<void> onTap(BuildContext context, String matchId) async =>
+      context.go("/match/$matchId");
 
   Widget? pastWidgets(BuildContext context) {
+    print("rebuilding pastWidgets");
     var state = context.watch<MatchesState>();
     var userState = context.watch<UserState>();
 
     if (!userState.isLoggedIn()) {
+      print("user is not logged in");
       return getEmptyStateWidget(context, false);
     }
 
-    var matches = state.getMatchesForTab("PAST");
+    var matches = state.getPastMatches();
 
-    if (matches == null)
-      return null;
+    print("matches: $matches");
+
+    if (matches == null) return null;
 
     List<Widget> widgets = [];
 
@@ -43,8 +46,7 @@ class AvailableMatches extends StatelessWidget {
         if (index == 0) {
           widgets.add(GenericMatchInfoPast.first(m.documentId, onTap));
         } else {
-          widgets.add(
-              GenericMatchInfoPast(m.documentId, onTap));
+          widgets.add(GenericMatchInfoPast(m.documentId, onTap));
         }
       });
     }
@@ -62,10 +64,9 @@ class AvailableMatches extends StatelessWidget {
       return getEmptyStateWidget(context);
     }
 
-    var matches = state.getMatchesForTab("GOING");
+    var matches = state.getGoingMatches();
 
-    if (matches == null)
-      return null;
+    if (matches == null) return null;
 
     List<Widget> widgets = [];
 
@@ -91,10 +92,9 @@ class AvailableMatches extends StatelessWidget {
     var state = context.watch<MatchesState>();
     // var loadOnceState = context.watch<LoadOnceState>();
 
-    var matches = state.getMatchesForTab("UPCOMING");
+    var matches = state.getUpcomingMatches();
 
-    if (matches == null)
-      return null;
+    if (matches == null) return null;
 
     var beginningOfCurrentWeek = getBeginningOfTheWeek(DateTime.now());
 
@@ -109,10 +109,13 @@ class AvailableMatches extends StatelessWidget {
 
     var groupedByWeeksIntervals = Map<String, List<Match>>();
     if (grouped.containsKey(0))
-      groupedByWeeksIntervals[AppLocalizations.of(context)!.thisWeek] = grouped[0]!;
+      groupedByWeeksIntervals[AppLocalizations.of(context)!.thisWeek] =
+          grouped[0]!;
     if (grouped.containsKey(1))
-      groupedByWeeksIntervals[AppLocalizations.of(context)!.nextWeek] = grouped[1]!;
-    groupedByWeeksIntervals[AppLocalizations.of(context)!.moreThanTwoWeeks] = List<Match>.from([]);
+      groupedByWeeksIntervals[AppLocalizations.of(context)!.nextWeek] =
+          grouped[1]!;
+    groupedByWeeksIntervals[AppLocalizations.of(context)!.moreThanTwoWeeks] =
+        List<Match>.from([]);
     sortedWeeks.forEach((w) {
       if (w > 1) {
         groupedByWeeksIntervals[AppLocalizations.of(context)!.moreThanTwoWeeks]
@@ -125,13 +128,13 @@ class AvailableMatches extends StatelessWidget {
       if (e.value.isNotEmpty) {
         Iterable<Widget> widgets =
             e.value.sortedBy((e) => e.dateTime).mapIndexed((index, match) {
-              var s = match.sportCenter;
-              var w;
-              if (index == 0)
-                w = GenericMatchInfo.first(match, s, onTap);
-              else
-                w = GenericMatchInfo(match, s, onTap);
-              return w;
+          var s = match.sportCenter;
+          var w;
+          if (index == 0)
+            w = GenericMatchInfo.first(match, s, onTap);
+          else
+            w = GenericMatchInfo(match, s, onTap);
+          return w;
         });
 
         var section;
@@ -166,27 +169,23 @@ class AvailableMatches extends StatelessWidget {
     var userState = context.read<UserState>();
 
     if (!userState.isLoggedIn()) {
-      return getEmptyStateWidget(context);
+      return null;
     }
 
-    var matches = state.getMatchesForTab("MY MATCHES");
+    var matches = state.getMyOrganizedMatches();
 
-    if (matches == null)
-      return null;
+    if (matches == null || matches.isEmpty) return null;
 
     List<Widget> widgets = [];
 
     if (matches.isNotEmpty) {
       matches.sortedBy((e) => e.dateTime).reversed.forEachIndexed((index, m) {
         if (index == 0) {
-          widgets.add(
-              GenericMatchInfo.first(state.getMatch(m.documentId)!,
-                  m.sportCenter,
-                  onTap));
+          widgets.add(GenericMatchInfo.first(
+              state.getMatch(m.documentId)!, m.sportCenter, onTap));
         } else {
-          widgets.add(GenericMatchInfo(state.getMatch(m.documentId)!,
-              m.sportCenter,
-              onTap));
+          widgets.add(GenericMatchInfo(
+              state.getMatch(m.documentId)!, m.sportCenter, onTap));
         }
       });
     }
@@ -202,8 +201,10 @@ class AvailableMatches extends StatelessWidget {
       child: Container(
         child: Column(
           children: [
-            Image.asset("assets/empty_state/illustration_0${(random.nextInt(2) + 1).toString()}.png",
-              gaplessPlayback: true,),
+            Image.asset(
+              "assets/empty_state/illustration_0${(random.nextInt(2) + 1).toString()}.png",
+              gaplessPlayback: true,
+            ),
             Text(AppLocalizations.of(context)!.noMatchesHere,
                 style: TextPalette.h1Default, textAlign: TextAlign.center),
             SizedBox(height: 4),
@@ -213,8 +214,7 @@ class AvailableMatches extends StatelessWidget {
             if (withAction)
               TappableLinkText(
                   text: AppLocalizations.of(context)!.createNewMatchActionText,
-                  onTap: (BuildContext context) => context.go("/createMatch")
-              ),
+                  onTap: (BuildContext context) => context.go("/createMatch")),
           ],
         ),
       ),
@@ -223,76 +223,84 @@ class AvailableMatches extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(
-          create: (context) => AvailableMatchesUiState()
-        ),
-        ChangeNotifierProxyProvider<UserState, MatchesState>(
-          create: (context) => MatchesState(context.read<UserState>()),
-          update: (context, userState, previous) => 
-            previous ?? MatchesState(userState),
-        ),
-      ],
-      builder: (context, _) => GenericAvailableMatchesList(
-        Palette.primary,
-        [
-          AppLocalizations.of(context)!.upcoming.toUpperCase(),
-          AppLocalizations.of(context)!.going.toUpperCase(),
-          AppLocalizations.of(context)!.past.toUpperCase(),
-          AppLocalizations.of(context)!.myMatches.toUpperCase(),
-        ].toList(),
-        [
-          upcomingWidgets(context),
-          goingWidgets(context),
-          pastWidgets(context),
-          getMyMatchesWidgets(context)
-        ].toList(),
-        getEmptyStateWidget(context),
-        context.watch<AvailableMatchesUiState>().current == 3
-          ? FloatingActionButton(
-            backgroundColor: Palette.primary,
-            child: Icon(Icons.add, color: Palette.white),
-            onPressed: () => context.go("/createMatch"))
-          : null,
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(AppLocalizations.of(context)!.topHeader,
-                style: TextPalette.bodyTextInverted),
-            InkWell(
-              onTap: () async {
-                LocationInfo? newUserLocation = await Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => ChangeCity()));
+    var myMatchesWidgets = getMyMatchesWidgets(context);
 
-                if (newUserLocation != null) {
-                  if (context.read<UserState>().isLoggedIn()) {
-                    await context
-                        .read<UserState>()
-                        .editUser({"location": newUserLocation.toJson()});
-                  } else {
-                    context.read<UserState>()
-                        .setCustomLocationInfo(newUserLocation);
-                  }
-                  await context.read<MatchesState>()
-                      .refreshState(context, reset: true);
-                }
-              },
-              child: Row(children: [
-                Text(context.watch<UserState>().getLocationInfo().getText(),
-                    style: TextPalette.h1Inverted),
-                SizedBox(width: 4,),
-                Icon(Icons.keyboard_arrow_down_outlined, size: 28, color: Palette.white)
-              ]),
-            ),
-          ],
-        ),
-        () async {
-          print("refreshing state for available matches");
-          await context.read<MatchesState>().refreshState(context, reset: true);
-        }
-      )
-    );
+    return MultiProvider(
+        providers: [
+          ChangeNotifierProvider(
+              create: (context) => AvailableMatchesUiState()),
+          ChangeNotifierProxyProvider<UserState, MatchesState>(
+            create: (context) => MatchesState(context.read<UserState>()),
+            update: (context, userState, previous) =>
+                previous ?? MatchesState(userState),
+          ),
+        ],
+        builder: (context, _) => GenericAvailableMatchesList(
+                Palette.primary,
+                [
+                  AppLocalizations.of(context)!.upcoming.toUpperCase(),
+                  AppLocalizations.of(context)!.going.toUpperCase(),
+                  AppLocalizations.of(context)!.past.toUpperCase(),
+                  if (myMatchesWidgets != null)
+                    AppLocalizations.of(context)!.myMatches.toUpperCase(),
+                ].toList(),
+                [
+                  upcomingWidgets(context),
+                  goingWidgets(context),
+                  pastWidgets(context),
+                  if (myMatchesWidgets != null) getMyMatchesWidgets(context)
+                ].toList(),
+                getEmptyStateWidget(context),
+                context.watch<AvailableMatchesUiState>().current == 3
+                    ? FloatingActionButton(
+                        backgroundColor: Palette.primary,
+                        child: Icon(Icons.add, color: Palette.white),
+                        onPressed: () => context.go("/createMatch"))
+                    : null,
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(AppLocalizations.of(context)!.topHeader,
+                        style: TextPalette.bodyTextInverted),
+                    InkWell(
+                      onTap: () async {
+                        LocationInfo? newUserLocation = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => ChangeCity()));
+
+                        if (newUserLocation != null) {
+                          if (context.read<UserState>().isLoggedIn()) {
+                            await context.read<UserState>().editUser(
+                                {"location": newUserLocation.toJson()});
+                          } else {
+                            context
+                                .read<UserState>()
+                                .setCustomLocationInfo(newUserLocation);
+                          }
+                          await context
+                              .read<MatchesState>()
+                              .refreshState(context);
+                        }
+                      },
+                      child: Row(children: [
+                        Text(
+                            context
+                                .watch<UserState>()
+                                .getLocationInfo()
+                                .getText(),
+                            style: TextPalette.h1Inverted),
+                        SizedBox(
+                          width: 4,
+                        ),
+                        Icon(Icons.keyboard_arrow_down_outlined,
+                            size: 28, color: Palette.white)
+                      ]),
+                    ),
+                  ],
+                ), () async {
+              print("refreshing state for available matches");
+              await context.read<MatchesState>().refreshState(context);
+            }));
   }
 }
-

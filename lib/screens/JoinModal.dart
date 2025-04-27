@@ -132,7 +132,7 @@ class JoinModal {
         await context.read<MatchesState>().fetchMatch(matchId);
         await PaymentDetailsDescription.communicateSuccessToUser(context, matchId);
         await navigatorKey.currentContext!
-            .read<MatchesState>().fetchMatches("GOING", context);
+            .read<MatchesState>().fetchGoingMatches(context);
 
         return;
       }

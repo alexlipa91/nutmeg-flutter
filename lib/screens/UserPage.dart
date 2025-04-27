@@ -434,7 +434,7 @@ class UserPageState extends State<UserPage> {
 
                         if (shouldCancel) {
                           await Future.delayed(Duration(milliseconds: 500),
-                              () => context.read<UserState>().logout());
+                              () => UserController.logout(context));
                           Navigator.of(context).pop();
                         }
                       }),
@@ -464,7 +464,7 @@ class UserPageState extends State<UserPage> {
                       context.read<GenericButtonWithLoaderState>().change(true);
 
                       try {
-                        await context.read<UserState>().logout();
+                        await UserController.logout(context);
                       } catch (e, stackTrace) {
                         print(e);
                         print(stackTrace);
