@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Default env file
-ENV_FILE=".env.local"
+ENV_FILE=".env.prod"
 
 # If an argument is provided, use it as the env file
 if [ $# -eq 1 ]; then
@@ -18,6 +18,7 @@ fi
 
 fvm flutter run \
     -d web-server \
+    --web-hostname=0.0.0.0 \
     --web-port=7357 \
     --dart-define-from-file="$ENV_FILE" \
     --dart-define=BUILD_TIMESTAMP=$(date "+%Y%m%d-%H%M%S")
