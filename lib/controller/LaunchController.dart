@@ -71,8 +71,16 @@ class LaunchController {
   static void setupNotificationsHandler(BuildContext context) async {
     logger.info("setting up notification handler");
 
-    // Your existing notification setup
-    FirebaseMessaging.onMessage.listen(_firebaseMessagingBackgroundHandler);
+    // TODO deal with notifications on foreground
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      logger.info('Got a message whilst in the foreground!');
+      logger.info('Message data: ${message.data}');
+
+      if (message.notification != null) {
+        logger.info(
+            'Message also contained a notification: ${message.notification}');
+      }
+    });
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
     if (!kIsWeb) {

@@ -1,8 +1,5 @@
-importScripts("https://www.gstatic.com/firebasejs/7.15.5/firebase-app.js");
-importScripts("https://www.gstatic.com/firebasejs/7.15.5/firebase-messaging.js");
-
-//Using singleton breaks instantiating messaging()
-// App firebase = FirebaseWeb.instance.app;
+importScripts("https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js");
+importScripts("https://www.gstatic.com/firebasejs/10.7.0/firebase-messaging-compat.js");
 
 firebase.initializeApp({
     apiKey: "__ENV__FIREBASE_API_KEY__",
@@ -16,23 +13,16 @@ firebase.initializeApp({
 });
 
 const messaging = firebase.messaging();
-messaging.setBackgroundMessageHandler(function (payload) {
-    const promiseChain = clients
-        .matchAll({
-            type: "window",
-            includeUncontrolled: true
-        })
-        .then(windowClients => {
-            for (let i = 0; i < windowClients.length; i++) {
-                const windowClient = windowClients[i];
-                windowClient.postMessage(payload);
-            }
-        })
-        .then(() => {
-            return registration.showNotification("New Message");
-        });
-    return promiseChain;
-});
-self.addEventListener('notificationclick', function (event) {
-    console.log('notification received: ', event)
+messaging.onBackgroundMessage(function(payload) {
+    console.log('Received background message: ', payload);
+
+    const notificationTitle = payload.notification?.title || "Nutmeg Notification";
+    const notificationOptions = {
+        body: payload.notification?.body,
+        icon: '/icons/icon-192.png', // optional
+    };
+
+    console.log(notificationTitle, notificationOptions);
+
+    self.registration.showNotification(notificationTitle, notificationOptions);
 });

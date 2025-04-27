@@ -57,8 +57,10 @@
       window.addEventListener('flutter-first-frame', function () {
         navigator.serviceWorker.register('flutter_service_worker.js');
       });
-      window.addEventListener('register-messaging-service-worker', function () {
-        navigator.serviceWorker.register('/firebase-messaging-sw.js');
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('firebase-messaging-sw.js', {
+          scope: '/firebase-cloud-messaging-push-scope',
+        });
       });
     }
   </script>
