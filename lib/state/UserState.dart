@@ -123,20 +123,17 @@ class UserState extends ChangeNotifier {
 
   // user location
   // default to Barcelona, Spain for now
-  LocationInfo _deviceLocationInfo = LocationInfo(
-      "ES", "Barcelona", 41.385063, 2.173404, "ChIJ5TCOcRaYpBIRCmZHTz37sEQ");
+  LocationInfo _deviceLocationInfo =
+      LocationInfo("ES", "Barcelona", 41.385063, 2.173404);
 
   void setCustomLocationInfo(LocationInfo l) {
     _deviceLocationInfo = l;
     notifyListeners();
   }
 
-  Future<void> setLocationInfo(Tuple2<double, double>? position) async {
+  Future<void> setLocationInfo(LocationInfo? position) async {
     if (position != null) {
-      var detected = await fetchLocationInfo(position.item1, position.item2);
-      if (detected != null) {
-        _deviceLocationInfo = detected;
-      }
+      _deviceLocationInfo = position;
     }
   }
 
@@ -215,8 +212,7 @@ class UserState extends ChangeNotifier {
 
     userState.setCurrentUserDetails(userDetails);
     try {
-      await LaunchController
-          .askForNotificationPermissionAndStoreToken(context);
+      await LaunchController.askForNotificationPermissionAndStoreToken(context);
     } catch (e, stack) {
       logger.severe("error storing user token", e, stack);
     }
@@ -291,24 +287,17 @@ class LocationInfo {
   double lng;
   String country;
   String city;
-  String placeId;
 
-  LocationInfo(this.country, this.city, this.lat, this.lng, this.placeId);
+  LocationInfo(this.country, this.city, this.lat, this.lng);
 
   LocationInfo.fromJson(Map<String, dynamic> json)
       : country = json["country"],
         city = json["city"],
         lat = json["lat"],
-        lng = json["lng"],
-        placeId = json["place_id"];
+        lng = json["lng"];
 
-  Map<String, dynamic> toJson() => {
-        "country": country,
-        "city": city,
-        "lat": lat,
-        "lng": lng,
-        "place_id": placeId
-      };
+  Map<String, dynamic> toJson() =>
+      {"country": country, "city": city, "lat": lat, "lng": lng};
 
   String getText() => "$city, $country";
 }

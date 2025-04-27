@@ -101,7 +101,7 @@ class ChangeCityState extends State<ChangeCity> {
                         Navigator.pop(
                             context,
                             LocationInfo(resp!["country"], resp["city"],
-                                resp["lat"], resp["lng"], suggestion.placeId));
+                                resp["lat"], resp["lng"]));
                       },
                     ))
                   ],
@@ -114,11 +114,9 @@ class ChangeCityState extends State<ChangeCity> {
                     setState(() {
                       _loading = true;
                     });
-                    Tuple2<double, double>? location = await getLocationFromIP();
+                    LocationInfo? location = await getLocationFromIP();
                     if (location != null) {
-                      var fetchedLocationInfo = await fetchLocationInfo(
-                          location.item1, location.item2);
-                      Navigator.pop(context, fetchedLocationInfo);
+                      Navigator.pop(context, location);
                     }
                   },
                   child: Row(

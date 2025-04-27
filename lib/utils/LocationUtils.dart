@@ -24,19 +24,6 @@ String buildMapUrl(double lat, double lng) =>
     "," +
     lng.toString();
 
-Future<LocationInfo?> fetchLocationInfo(double lat, double lng) async {
-  // uncomment to get amsterdam
-  // lat = 52.3676; lng = 4.9041;
-  try {
-    var resp = await CloudFunctionsClient()
-        .get("locations/coordinates", args: {"lat": lat, "lng": lng});
-    return LocationInfo.fromJson(Map<String, dynamic>.from(resp!));
-  } catch (e) {
-    print("failed to fetch location");
-    return null;
-  }
-}
-
 class PredictionMatch {
   int offset;
   int length;
@@ -94,12 +81,13 @@ Future<List<PredictionResult>> getCitiesPrediction(String query) async {
   return results;
 }
 
-Future<Tuple2<double, double>?> getLocationFromIP() async {
+Future<LocationInfo?> getLocationFromIP() async {
   try {
     final response = await http.get(Uri.parse('https://ipapi.co/json/'));
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
-      return Tuple2(data['latitude'], data['longitude']);
+      return LocationInfo(data['country'], data['city'],
+          data['latitude'], data['longitude']);
     }
   } catch (e) {
     logger.warning('Error getting location from IP: $e');

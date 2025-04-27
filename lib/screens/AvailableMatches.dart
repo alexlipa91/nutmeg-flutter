@@ -265,9 +265,7 @@ class AvailableMatches extends StatelessWidget {
                 LocationInfo? newUserLocation = await Navigator.push(context,
                   MaterialPageRoute(builder: (context) => ChangeCity()));
 
-                if (newUserLocation != null
-                    && newUserLocation.placeId !=
-                    context.read<UserState>().getLocationInfo().placeId) {
+                if (newUserLocation != null) {
                   if (context.read<UserState>().isLoggedIn()) {
                     await context
                         .read<UserState>()
