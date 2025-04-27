@@ -1,10 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
+import 'package:nutmeg/controller/LaunchController.dart';
 import 'package:nutmeg/utils/LocationUtils.dart';
 import 'package:provider/provider.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
@@ -99,10 +99,8 @@ class UserState extends ChangeNotifier {
     await fetchLoggedUserDetails();
   }
 
-  Future<void> storeUserToken(String? token) async {
-    if (token == null) {
-      return;
-    }
+  Future<void> storeUserToken(String token) async {
+    logger.config('storing user token: $token');
     CloudFunctionsClient()
         .post("users/${currentUserId!}/tokens", {"token": token});
   }
@@ -216,12 +214,9 @@ class UserState extends ChangeNotifier {
     }
 
     userState.setCurrentUserDetails(userDetails);
-
-    logger.info("storing user token");
     try {
-      userState.storeUserToken(await FirebaseMessaging.instance.getToken());
-      FirebaseMessaging.instance.onTokenRefresh
-          .listen((t) => userState.storeUserToken(t));
+      await LaunchController
+          .askForNotificationPermissionAndStoreToken(context);
     } catch (e, stack) {
       logger.severe("error storing user token", e, stack);
     }

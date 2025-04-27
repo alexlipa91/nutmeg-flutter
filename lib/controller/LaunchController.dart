@@ -44,46 +44,32 @@ class LaunchController {
     GoRouter.of(navigatorKey.currentContext!).go(message.data["route"]);
   }
 
-  static void _setupNotifications(BuildContext context) async {
-    logger.info("setting up notification handler");
+  static Future<void> askForNotificationPermissionAndStoreToken(
+      BuildContext context) async {
+    NotificationSettings currentSettings =
+        await FirebaseMessaging.instance.getNotificationSettings();
 
-    if (kIsWeb) {
-      try {
-        // Check current permission status first
-        NotificationSettings currentSettings =
-            await FirebaseMessaging.instance.getNotificationSettings();
+    if (currentSettings.authorizationStatus ==
+        AuthorizationStatus.notDetermined) {
+      logger.info('Requesting notification permissions for the first time');
+      await FirebaseMessaging.instance.requestPermission();
+    }
 
-        logger.info(
-            'Current notification settings: ${currentSettings.authorizationStatus}');
-        if (currentSettings.authorizationStatus ==
-            AuthorizationStatus.notDetermined) {
-          // Only request if we haven't asked before
-          logger.info('Requesting notification permissions for the first time');
-          currentSettings = await FirebaseMessaging.instance.requestPermission(
-            alert: true,
-            badge: true,
-            sound: true,
-          );
-        }
+    if (currentSettings.authorizationStatus == AuthorizationStatus.authorized) {
+      logger.info('Requesting FCM Web Token');
+      const vapidKey = String.fromEnvironment('FIREBASE_VAPID_KEY');
+      String? token =
+          await FirebaseMessaging.instance.getToken(vapidKey: vapidKey);
 
-        if (currentSettings.authorizationStatus ==
-            AuthorizationStatus.authorized) {
-          const vapidKey = String.fromEnvironment('FIREBASE_VAPID_KEY');
-          String? token =
-              await FirebaseMessaging.instance.getToken(vapidKey: vapidKey);
-
-          if (token != null) {
-            logger.info('FCM Web Token obtained: ${token.substring(0, 5)}...');
-            await context.read<UserState>().storeUserToken(token);
-          }
-        } else {
-          logger.info(
-              'Notifications not authorized: ${currentSettings.authorizationStatus}');
-        }
-      } catch (e) {
-        logger.severe('Error setting up web notifications', e);
+      if (token != null) {
+        logger.info('FCM Web Token obtained: ${token.substring(0, 5)}...');
+        await context.read<UserState>().storeUserToken(token);
       }
     }
+  }
+
+  static void setupNotificationsHandler(BuildContext context) async {
+    logger.info("setting up notification handler");
 
     // Your existing notification setup
     FirebaseMessaging.onMessage.listen(_firebaseMessagingBackgroundHandler);
@@ -109,7 +95,7 @@ class LaunchController {
   }
 
   static Future<void> loadData(BuildContext context, String? from) async {
-    print("start loading data function");
+    logger.info("start loading data function");
 
     // var trace = FirebasePerformance.instance.newTrace("launch_app");
     // await trace.start();
@@ -166,7 +152,8 @@ class LaunchController {
 
     if (availableUserDetails?.location == null) {
       var position = await getLocationFromIP();
-      logger.info("no location info in current session, fetch location $position");
+      logger.info(
+          "no location info in current session, fetch location $position");
       await context.read<UserState>().setLocationInfo(position);
     }
 
@@ -213,15 +200,19 @@ class LaunchController {
       deepLink = data?.link;
     }
 
+    // NOTIFICATIONS STUFF
     // check if coming from notification
     RemoteMessage? initialMessage =
         await FirebaseMessaging.instance.getInitialMessage();
 
-    _setupNotifications(context);
+    if (context.read<UserState>().isLoggedIn()) {
+      await askForNotificationPermissionAndStoreToken(context);
+    }
+    setupNotificationsHandler(context);
 
     tz.initializeTimeZones();
 
-    print("load data method is done");
+    logger.info("load data method is done");
     LaunchController.loadingDone = true;
 
     // install/use app prompt
