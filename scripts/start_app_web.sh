@@ -3,6 +3,12 @@
 # Default env file
 ENV_FILE=".env.prod"
 
+# Set default device if not specified
+if [ -z "$DEVICE" ]; then
+    DEVICE="web-server"
+fi
+
+
 # If an argument is provided, use it as the env file
 if [ $# -eq 1 ]; then
     ENV_FILE="$1"
@@ -16,9 +22,14 @@ fi
 
 ./scripts/pre_build.sh $ENV_FILE
 
+PARAMETRICS_ARGS=""
+if [ "$DEVICE" == "web-server" ]; then
+    PARAMETRICS_ARGS="-d web-server --web-hostname=0.0.0.0"
+elif [ "$DEVICE" == "chrome" ]; then
+    PARAMETRICS_ARGS="-d chrome"
+fi
+
 fvm flutter run \
-    -d web-server \
-    --web-hostname=0.0.0.0 \
-    --web-port=7357 \
+    $PARAMETRICS_ARGS \
     --dart-define-from-file="$ENV_FILE" \
     --dart-define=BUILD_TIMESTAMP=$(date "+%Y%m%d-%H%M%S")
