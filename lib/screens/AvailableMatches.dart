@@ -229,11 +229,6 @@ class AvailableMatches extends StatelessWidget {
         providers: [
           ChangeNotifierProvider(
               create: (context) => AvailableMatchesUiState()),
-          ChangeNotifierProxyProvider<UserState, MatchesState>(
-            create: (context) => MatchesState(context.read<UserState>()),
-            update: (context, userState, previous) =>
-                previous ?? MatchesState(userState),
-          ),
         ],
         builder: (context, _) => GenericAvailableMatchesList(
                 Palette.primary,

@@ -220,7 +220,9 @@ class UserState extends ChangeNotifier {
       logger.severe("error storing user token", e, stack);
     }
 
-    context.read<MatchesState>().refreshState(context);
+    // force refresh token
+    FirebaseAuth.instance.currentUser?.getIdToken();
+    await context.read<MatchesState>().refreshState(context);
   }
 
   Future<void> continueWithFacebook(BuildContext context) async {

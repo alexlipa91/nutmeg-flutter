@@ -60,8 +60,8 @@ class DynamicLinks {
           ),
           socialMetaTagParameters: SocialMetaTagParameters(
             title: "Match on ${dayDateFormat.format(match.getLocalizedTime())} "
-                "${gmtSuffix(match.sportCenter.timezoneId)}",
-            description: "Location: ${match.sportCenter.name}",
+                "${gmtSuffix(match.sportCenter?.timezoneId ?? "")}",
+            description: "Location: ${match.sportCenter?.name}",
           ));
       var url = await FirebaseDynamicLinks.instance.buildShortLink(parameters);
       link = url.shortUrl.toString();

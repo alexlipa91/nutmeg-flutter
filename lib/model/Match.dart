@@ -44,7 +44,7 @@ class Match {
   DateTime dateTime;
 
   String? sportCenterId;
-  SportCenter sportCenter;
+  SportCenter? sportCenter;
 
   Duration duration;
   String? sportCenterSubLocation;
@@ -101,7 +101,7 @@ class Match {
             ? null
             : List<int>.from(jsonInput["score"]),
         dynamicLink = jsonInput["dynamicLink"],
-        sportCenter = SportCenter.fromJson(
+        sportCenter = jsonInput["sportCenter"] == null ? null : SportCenter.fromJson(
             Map<String, dynamic>.from(jsonInput["sportCenter"]),
             jsonInput["sportCenter"]["placeId"]),
         isPrivate = jsonInput["isPrivate"] ?? false,
@@ -161,7 +161,7 @@ class Match {
   Map<String, dynamic> toJson() => {
         'dateTime': dateTime.toUtc().toIso8601String(),
         if (sportCenterId != null) 'sportCenterId': sportCenterId,
-        'sportCenter': sportCenter.toJson(),
+        if (sportCenter != null) 'sportCenter': sportCenter!.toJson(),
         if (sportCenterSubLocation != null)
           'sportCenterSubLocation': sportCenterSubLocation,
         if (price != null)
@@ -219,11 +219,11 @@ class Match {
   }
 
   DateTime getLocalizedTime() =>
-      tz.TZDateTime.from(dateTime, tz.getLocation(sportCenter.timezoneId));
+      tz.TZDateTime.from(dateTime, tz.getLocation(sportCenter?.timezoneId ?? ""));
 
   DateTime getLocalizedTimeCancellation() =>
       tz.TZDateTime.from(dateTime.subtract(cancelBefore!),
-          tz.getLocation(sportCenter.timezoneId));
+          tz.getLocation(sportCenter?.timezoneId ?? ""));
 
   bool isMatchFinished() => DateTime.now().isAfter(dateTime.add(duration));
 

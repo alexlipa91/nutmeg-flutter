@@ -45,12 +45,12 @@ class AdminAvailableMatches extends StatelessWidget {
       if (index == 0) {
         result.add(
             GenericMatchInfo.first(matchesState.getMatch(match.documentId)!,
-                match.sportCenter,
+                match.sportCenter!,
                 onTap));
       } else {
         result
             .add(GenericMatchInfo(matchesState.getMatch(match.documentId)!,
-            match.sportCenter,
+            match.sportCenter!,
             onTap));
       }
     });

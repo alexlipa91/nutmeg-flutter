@@ -11,7 +11,6 @@ import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/AppBar.dart';
 import 'package:nutmeg/widgets/Avatar.dart';
 import 'package:nutmeg/widgets/Containers.dart';
-import 'package:nutmeg/widgets/RefresherWithObserverWidget.dart';
 import 'package:nutmeg/widgets/Texts.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -174,7 +173,7 @@ class GenericAvailableMatchesListState
 
 class GenericMatchInfo extends StatelessWidget {
   final Match match;
-  final SportCenter sportCenter;
+  final SportCenter? sportCenter;
 
   final double topMargin;
   final Function onTap;
@@ -206,7 +205,8 @@ class GenericMatchInfo extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    MatchThumbnail(image: sportCenter.getThumbnail()),
+                    MatchThumbnail(
+                        image: sportCenter?.getThumbnail() ?? Container()),
                     SizedBox(width: 15),
                     Expanded(
                       child: Column(
@@ -216,9 +216,10 @@ class GenericMatchInfo extends StatelessWidget {
                             Row(
                               children: [
                                 Text(
-                                    sportCenter.getName() +
-                                        " - " +
-                                        sportCenter.getCourtType(),
+                                    sportCenter?.getName() ??
+                                        "" +
+                                            " - " +
+                                            (sportCenter?.getCourtType() ?? ""),
                                     style: TextPalette.h2),
                               ],
                             ),
@@ -228,7 +229,7 @@ class GenericMatchInfo extends StatelessWidget {
                             Text(
                                 formatDate(match.getLocalizedTime(), context) +
                                     " " +
-                                    gmtSuffix(sportCenter.timezoneId),
+                                    gmtSuffix(sportCenter?.timezoneId ?? ""),
                                 style:
                                     TextPalette.getBodyText(Palette.greyDark)),
                             SizedBox(
@@ -376,12 +377,13 @@ class GenericMatchInfoPast extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                            sportCenter.getName() +
-                                " - " +
-                                sportCenter.getCourtType(),
+                            sportCenter?.getName() ??
+                                "" +
+                                    " - " +
+                                    (sportCenter?.getCourtType() ?? ""),
                             style: TextPalette.h2),
                         SizedBox(height: 8),
-                        Text(sportCenter.getName(),
+                        Text(sportCenter?.getName() ?? "",
                             style: TextPalette.bodyText),
                         if (match.status == MatchStatus.cancelled)
                           Padding(
