@@ -4,6 +4,7 @@ import 'package:badges/badges.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:logging/logging.dart';
 import 'package:nutmeg/model/Match.dart';
 import 'package:nutmeg/model/SportCenter.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
@@ -47,7 +48,10 @@ class GenericAvailableMatchesList extends StatefulWidget {
 class GenericAvailableMatchesListState
     extends State<GenericAvailableMatchesList> {
 
+  final logger = Logger("GenericAvailableMatchesList");
+
   void initState() {
+    logger.info("GenericAvailableMatchesList initState");
     super.initState();
     widget.refreshState();
   }

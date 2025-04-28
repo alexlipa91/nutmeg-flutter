@@ -1,11 +1,14 @@
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:logging/logging.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 import 'package:nutmeg/model/Match.dart';
 import 'package:nutmeg/state/UserState.dart';
 import 'package:provider/provider.dart';
 
 class MatchesState extends ChangeNotifier {
+  final logger = Logger("MatchesState");
+  
   // Add UserState as a field
   final UserState userState;
 
@@ -313,6 +316,7 @@ class MatchesState extends ChangeNotifier {
   }
 
   Future<void> refreshState(BuildContext context) async {
+    logger.info("refreshing matches state");
     var futures = [
       fetchGoingMatches(context),
       fetchUpcomingMatches(context),
@@ -320,6 +324,7 @@ class MatchesState extends ChangeNotifier {
       fetchMyOrganizedMatches(context),
     ];
     await Future.wait(futures);
+    logger.info("refreshing matches state done: fetched ${_pastMatchesIds?.length} past, ${_upcomingMatchesIds?.length} upcoming, ${_goingMatchesIds?.length} going, ${_myOrganizedMatchesIds?.length} organized matches");
   }
 
   Future<Match> fetchMatch(String matchId) async {

@@ -75,7 +75,7 @@ class TextPalette {
 class DeviceInfo {
   static final DeviceInfo _singleton = DeviceInfo._internal();
 
-  late String name;
+  String? name;
 
   factory DeviceInfo() {
     return _singleton;
@@ -93,6 +93,6 @@ class DeviceInfo {
     } else if (Platform.isAndroid) {
       name = (await deviceInfo.androidInfo).model.toLowerCase();
     }
-    print("device name is " + name);
+    print("device name is $name");
   }
 }

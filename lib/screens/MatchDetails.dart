@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:nutmeg/controller/LaunchController.dart';
 import 'package:nutmeg/utils/LocationUtils.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -84,7 +85,6 @@ class MatchDetailsState extends State<MatchDetails> {
   }
 
   Future<void> myInitState() async {
-    print("MatchDetails init state");
     // check if payment outcome
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (widget.paymentOutcome != null) {
@@ -367,7 +367,7 @@ class MatchDetailsState extends State<MatchDetails> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             BackButton(color: Palette.black),
-            if (!DeviceInfo().name.contains("ipad") && !kIsWeb)
+            if ((DeviceInfo().name?.contains("ipad") ?? false) && !kIsWeb)
               if (match != null)
                 Align(
                     alignment: Alignment.centerRight,

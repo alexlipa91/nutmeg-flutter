@@ -24,18 +24,14 @@ class AvailableMatches extends StatelessWidget {
       context.go("/match/$matchId");
 
   Widget? pastWidgets(BuildContext context) {
-    print("rebuilding pastWidgets");
     var state = context.watch<MatchesState>();
     var userState = context.watch<UserState>();
 
     if (!userState.isLoggedIn()) {
-      print("user is not logged in");
       return getEmptyStateWidget(context, false);
     }
 
     var matches = state.getPastMatches();
-
-    print("matches: $matches");
 
     if (matches == null) return null;
 
@@ -294,7 +290,6 @@ class AvailableMatches extends StatelessWidget {
                     ),
                   ],
                 ), () async {
-              print("refreshing state for available matches");
               await context.read<MatchesState>().refreshState(context);
             }));
   }

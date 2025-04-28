@@ -28,6 +28,8 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 final scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
+final logger = Logger("Main");
+
 final appRouter = GoRouter(
   debugLogDiagnostics: true,
   // urlPathStrategy: UrlPathStrategy.path,
@@ -108,7 +110,7 @@ final appRouter = GoRouter(
       redirectUrl = "/";
     }
 
-    print("redirecting from ${state.matchedLocation} to $redirectUrl");
+    logger.info("redirecting from ${state.matchedLocation} to $redirectUrl");
 
     return redirectUrl;
   },
