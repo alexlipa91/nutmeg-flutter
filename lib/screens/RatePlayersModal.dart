@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/rating_bar/RatingWidgetForMulti.dart';
+import 'package:nutmeg/screens/MatchAwardsModal.dart';
 import 'package:nutmeg/state/MatchesState.dart';
 import 'package:nutmeg/state/RatingPlayersState.dart';
 import 'package:nutmeg/state/UserState.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
-import 'package:nutmeg/widgets/FeedbackBottomModal.dart';
 import 'package:nutmeg/widgets/ModalBottomSheet.dart';
 import 'package:nutmeg/widgets/Section.dart';
 import 'package:provider/provider.dart';
@@ -28,7 +28,8 @@ class RateButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GenericButtonWithLoader("RATE PLAYERS",
+    return GenericButtonWithLoader(
+        AppLocalizations.of(context)!.ratePlayersButtonText,
         (BuildContext context) async {
       context.read<GenericButtonWithLoaderState>().change(true);
       await RatePlayerBottomModal.rateAction(context, matchId);
@@ -38,41 +39,25 @@ class RateButton extends StatelessWidget {
 }
 
 class RatePlayerBottomModal extends StatelessWidget {
-  static bool multiPage = false;
+  static Future<void> rateAction(BuildContext context, String matchId) async {
+    bool userDismissedRateAction = false;
 
-  static Future<bool?> rateAction(BuildContext context, String matchId) async {
-    var completed;
-    if (multiPage) {
-      var toRate = context
-          .read<MatchesState>()
-          .getStillToVote(matchId, context.read<UserState>().currentUserId!)!;
-
-      toRate.forEach((e) => context.read<UserState>().getOrFetch(e));
-
-      completed = await ModalBottomSheet.showNutmegModalBottomSheet(
-          context,
-          MultiProvider(
-            providers: [
+    bool completed = await ModalBottomSheet.showNutmegModalBottomSheet(
+            context,
+            MultiProvider(providers: [
               ChangeNotifierProvider(
-                  create: (context) => RatingPlayersState(toRate)),
-            ],
-            child: RatePlayerBottomModal(matchId),
-          ));
-      // if (completed != null && (completed as bool) == true)
-      //   await FeedbackBottomModal.feedbackAction(context);
-      // don't refresh the status here because the last rating might have not yet propagated; instead leave RatePlayerBottomModal modify it if necessary
-    } else {
-      completed = await ModalBottomSheet.showNutmegModalBottomSheet(
-          context,
-          MultiProvider(providers: [
-            ChangeNotifierProvider(
-                create: (context) => RatingPlayersMultiState(context
-                    .read<MatchesState>()
-                    .getMatch(matchId)!
-                    .getToRate(context.read<UserState>().currentUserId!))),
-          ], child: RatePlayerSingleSheet(matchId: matchId)));
+                  create: (context) => RatingPlayersMultiState(context
+                      .read<MatchesState>()
+                      .getMatch(matchId)!
+                      .getToRate(context.read<UserState>().currentUserId!))),
+            ], child: RatePlayerSingleSheet(matchId: matchId))) ??
+        false;
+
+    userDismissedRateAction = !completed;
+
+    if (!userDismissedRateAction) {
+      await MatchAwardsModal.bestAwardAction(context, matchId);
     }
-    return completed;
   }
 
   final String matchId;
@@ -242,8 +227,8 @@ class RatePlayerSingleSheet extends StatelessWidget {
                     await CloudFunctionsClient().post(
                         "matches/$matchId/ratings/add_multi",
                         context.read<RatingPlayersMultiState>().getScored());
-                    await context.read<MatchesState>().fetchStillToVote(matchId,
-                        context.read<UserState>().currentUserId!);
+                    await context.read<MatchesState>().fetchStillToVote(
+                        matchId, context.read<UserState>().currentUserId!);
                     Navigator.of(context).pop(true);
                   }, Primary()),
                 )

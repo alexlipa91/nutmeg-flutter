@@ -35,7 +35,7 @@
     "refundWithoutFee": "a refund (excluding Nutmeg service fee)",
 
     "paymentPolicyHeader": "Payment Policy",
-    "refundInfo":  "If you leave the match you will get {info}.\nIf the match is cancelled you will get a full refund.\nIf you don’t show up you won’t get a refund.",
+    "refundInfo":  "If you leave the match you will get {info}.\nIf the match is cancelled you will get a full refund.\nIf you don't show up you won't get a refund.",
     "@refundInfo" : {
         "placeholders": {
             "info":  {"type": "String"}
@@ -232,6 +232,7 @@
     "genericErrorDesc": "Please contact us for support.",
 
     "ratePlayersTitle": "Rate Players",
+    "ratePlayersButtonText": "RATE PLAYERS",
     "submitRatesButtonText": "SUBMIT",
 
     "accountTitle": "Account",
@@ -280,5 +281,21 @@
         }
     },
 
-    "leaderboardNoData": "No available data"
+    "leaderboardNoData": "No available data",
+
+    "matchAwardsTitle": "Match Awards",
+    "matchAwardsSubtitle": "Vote for outstanding performances of the match",
+    "selectPlayerText": "Select player",
+    
+    "bestGoalAwardName": "Best Goal",
+    "bestGoalAwardDesc": "Most impressive goal of the match",
+    
+    "bestStrikerAwardName": "Best Striker",
+    "bestStrikerAwardDesc": "Most impactful attacking player",
+    
+    "bestGoalkeeperAwardName": "Best Goalkeeper",
+    "bestGoalkeeperAwardDesc": "Most crucial saves and defensive plays",
+    
+    "bestDefenderAwardName": "Best Defender",
+    "bestDefenderAwardDesc": "Most solid defensive performance"
 }

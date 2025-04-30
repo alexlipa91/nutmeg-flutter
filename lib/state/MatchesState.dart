@@ -8,7 +8,7 @@ import 'package:provider/provider.dart';
 
 class MatchesState extends ChangeNotifier {
   final logger = Logger("MatchesState");
-  
+
   // Add UserState as a field
   final UserState userState;
 
@@ -324,7 +324,8 @@ class MatchesState extends ChangeNotifier {
       fetchMyOrganizedMatches(context),
     ];
     await Future.wait(futures);
-    logger.info("refreshing matches state done: fetched ${_pastMatchesIds?.length} past, ${_upcomingMatchesIds?.length} upcoming, ${_goingMatchesIds?.length} going, ${_myOrganizedMatchesIds?.length} organized matches");
+    logger.info(
+        "refreshing matches state done: fetched ${_pastMatchesIds?.length} past, ${_upcomingMatchesIds?.length} upcoming, ${_goingMatchesIds?.length} going, ${_myOrganizedMatchesIds?.length} organized matches");
   }
 
   Future<Match> fetchMatch(String matchId) async {

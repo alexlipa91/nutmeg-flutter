@@ -133,6 +133,7 @@
     "genericErrorMessage": "Qualcosa è andato storto",
     "genericErrorDesc": "Contattaci per ricevere supporto.",
     "ratePlayersTitle": "Valuta i giocatori",
+    "ratePlayersButtonText": "VALUTA I GIOCATORI",
     "submitRatesButtonText": "INVIA",
     "accountTitle": "Account",
     "performanceTitle": "PRESTAZIONE",
@@ -155,5 +156,16 @@
     "languageModalTitle": "Lingua",
     "preMatchNotificationTitle": "Pronti per la partita? u\"⚽️",
     "preMatchNotificationBody": "La tua partita di oggi è alle {d} alle {s}. Tocca qui per controllare la tua squadra!",
-    "leaderboardNoData": "Nessun dato disponibile"
+    "leaderboardNoData": "Nessun dato disponibile",
+    "matchAwardsTitle": "Premi di partita",
+    "matchAwardsSubtitle": "Vota le prestazioni eccezionali della partita",
+    "selectPlayerText": "Seleziona il giocatore",
+    "bestGoalAwardName": "Miglior gol",
+    "bestGoalAwardDesc": "Il gol più impressionante della partita",
+    "bestStrikerAwardName": "Miglior attaccante",
+    "bestStrikerAwardDesc": "Giocatore d'attacco più impattante",
+    "bestGoalkeeperAwardName": "Miglior portiere",
+    "bestGoalkeeperAwardDesc": "Le parate più importanti e le azioni difensive più decisive",
+    "bestDefenderAwardName": "Miglior difensore",
+    "bestDefenderAwardDesc": "La prestazione difensiva più solida"
 }

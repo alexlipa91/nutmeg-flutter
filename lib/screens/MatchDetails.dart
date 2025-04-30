@@ -59,27 +59,16 @@ class MatchDetails extends StatefulWidget {
 }
 
 class MatchDetailsState extends State<MatchDetails> {
-
   Future<void> showRatingModalIfNeverSeen(
       Match match, UserDetails? loggedUser) async {
-    // bool? shown = (await SharedPreferences.getInstance())
-    //         .getBool("${match.documentId}-rate-action-shown") ??
-    //     false;
-    bool shown = false;
-    if (!shown) {
-      if (match.status == MatchStatus.to_rate &&
-          match.isUserGoing(loggedUser)) {
-        var stillToVote = context
-            .read<MatchesState>()
-            .getStillToVote(widget.matchId, loggedUser!.documentId);
+    var sharedPrefs = await SharedPreferences.getInstance();
+    var rateActionShownKey = "${match.documentId}-rate-action-shown";
+    bool? rateActionShown = sharedPrefs.getBool(rateActionShownKey) ?? false;
 
-        if (stillToVote != null && stillToVote.isNotEmpty) {
-          await RatePlayerBottomModal.rateAction(context, widget.matchId);
-          setState(() {});
-        }
+    if (match.status == MatchStatus.to_rate && match.isUserGoing(loggedUser)) {
+      if (!rateActionShown) {
+        await RatePlayerBottomModal.rateAction(context, widget.matchId);
       }
-      (await SharedPreferences.getInstance())
-          .setBool("${match.documentId}-rate-action-shown", true);
     }
   }
 
@@ -931,7 +920,8 @@ class MapCardImage extends StatelessWidget {
     return InkWell(
       onTap: () async {
         if (kIsWeb) {
-          launchUrl(Uri.parse("https://www.google.com/maps/search/?api=1&query=Google&query_place_id=${sportCenter.placeId}"));
+          launchUrl(Uri.parse(
+              "https://www.google.com/maps/search/?api=1&query=Google&query_place_id=${sportCenter.placeId}"));
         } else if (await MapLauncher.isMapAvailable(m.MapType.google) ??
             false) {
           await MapLauncher.showMarker(
@@ -1021,8 +1011,8 @@ class Stats extends StatelessWidget {
                     Builder(
                       builder: (context) {
                         Map<String, double?> userAndRate = {};
-                        match.going.keys.forEach(
-                            (u) => userAndRate[u] = ratings.scores[u]);
+                        match.going.keys
+                            .forEach((u) => userAndRate[u] = ratings.scores[u]);
                         var entries = userAndRate.entries.toList();
                         entries.sort((a, b) =>
                             (b.value ?? -1).compareTo((a.value ?? -1)));
@@ -1033,8 +1023,7 @@ class Stats extends StatelessWidget {
                           children: filteredEntries.map((e) {
                             var userDetails = userState.getUserDetail(e.key);
                             double? rate = e.value;
-                            bool isPotm =
-                                (ratings.potms ?? []).contains(e.key);
+                            bool isPotm = (ratings.potms ?? []).contains(e.key);
 
                             var widgets = [
                               Container(
@@ -1112,8 +1101,9 @@ class Stats extends StatelessWidget {
     return InfoContainerWithTitle(
         title: AppLocalizations.of(context)!.matchStatsTitle, body: child);
   }
-  
-  List<MapEntry<String, double?>> filterEntries(List<MapEntry<String, double?>> entries) {
+
+  List<MapEntry<String, double?>> filterEntries(
+      List<MapEntry<String, double?>> entries) {
     var toKeep = (entries.length * 0.7).ceil();
     var filtered = entries.take(toKeep).toList();
     return filtered;
