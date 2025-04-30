@@ -1027,8 +1027,10 @@ class Stats extends StatelessWidget {
                         entries.sort((a, b) =>
                             (b.value ?? -1).compareTo((a.value ?? -1)));
 
+                        var filteredEntries = filterEntries(entries);
+
                         return Column(
-                          children: entries.map((e) {
+                          children: filteredEntries.map((e) {
                             var userDetails = userState.getUserDetail(e.key);
                             double? rate = e.value;
                             bool isPotm =
@@ -1109,6 +1111,12 @@ class Stats extends StatelessWidget {
 
     return InfoContainerWithTitle(
         title: AppLocalizations.of(context)!.matchStatsTitle, body: child);
+  }
+  
+  List<MapEntry<String, double?>> filterEntries(List<MapEntry<String, double?>> entries) {
+    var toKeep = (entries.length * 0.7).ceil();
+    var filtered = entries.take(toKeep).toList();
+    return filtered;
   }
 }
 
