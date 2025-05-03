@@ -18,9 +18,14 @@ jobs:
       - run: echo $NUTMEG_DEPLOY_KEY  | base64 -d > android/nutmeg-deploy-key.json
         env:
           NUTMEG_DEPLOY_KEY: ${{ secrets.NUTMEG_DEPLOY_KEY }}
+
       - run: echo $ANDROID_JSON | base64 -d > android/nutmeg-9099c-sa-credentials.json
         env:
           ANDROID_JSON: ${{ secrets.ANDROID_JSON }}
+
+      - name: Create key.properties
+        run: |
+          echo "${{ secrets.ANDROID_KEY_PROPERTIES }}" > android/key.properties
 
       - name: Create env file
         run: |
