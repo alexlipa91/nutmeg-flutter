@@ -52,7 +52,11 @@ Future<void> rateAction(BuildContext context, String matchId) async {
   userDismissedRateAction = !completed;
 
   if (!userDismissedRateAction) {
-    await MatchAwardsModal.bestAwardAction(context, matchId, userRatings);
+    // Create a new UserRatings instance for the awards modal
+    var awardsUserRatings = UserRatings(matchId);
+    // Copy the ratings from the previous instance
+    awardsUserRatings.copyFrom(userRatings);
+    await MatchAwardsModal.bestAwardAction(context, matchId, awardsUserRatings);
   }
 }
 

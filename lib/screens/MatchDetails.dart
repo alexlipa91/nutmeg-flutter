@@ -131,10 +131,7 @@ class MatchDetailsImplState extends State<MatchDetailsImpl> {
   Future<Match> refreshMatch() async {
     List<Future<dynamic>> futures = [
       context.read<MatchesState>().fetchRatings(widget.matchId),
-      context.read<MatchesState>().fetchMatch(widget.matchId),
-      if (context.read<UserState>().isLoggedIn())
-        context.read<MatchesState>().fetchStillToVote(
-            widget.matchId, context.read<UserState>().currentUserId!),
+      context.read<MatchesState>().fetchMatch(widget.matchId),      
     ];
 
     return (await Future.wait(futures))[1];

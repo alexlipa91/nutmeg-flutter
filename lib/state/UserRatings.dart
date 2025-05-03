@@ -103,4 +103,11 @@ class UserRatings extends ChangeNotifier {
     _awards = Map<String, String?>.from(_awards);
     notifyListeners();  
   }
+
+  /// Copies ratings and awards from another UserRatings instance
+  void copyFrom(UserRatings other) {
+    _ratings = Map<String, int>.from(other._ratings);
+    _awards = Map<String, String?>.from(other._awards);
+    notifyListeners();
+  }
 } 

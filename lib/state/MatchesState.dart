@@ -298,23 +298,6 @@ class MatchesState extends ChangeNotifier {
     return ratings;
   }
 
-  Future<List<String>> fetchStillToVote(String matchId, String userId) async {
-    var r =
-        await CloudFunctionsClient().get("matches/$matchId/ratings/to_vote");
-    if (r == null) return [];
-
-    var stillToVote = List<String>.from(r["users"]);
-    var current = this._stillToVote[matchId];
-    if (current == null) {
-      this._stillToVote[matchId] = Map();
-    }
-    this._stillToVote[matchId]![userId] = stillToVote;
-
-    notifyListeners();
-
-    return stillToVote;
-  }
-
   Future<void> postUserRatings(
       String matchId, String userId, Map<String, int> ratings) async {
     await CloudFunctionsClient()

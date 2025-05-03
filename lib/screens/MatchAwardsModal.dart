@@ -63,7 +63,7 @@ class MatchAwardsModal extends StatelessWidget {
   static final List<Map<String, dynamic>> awards = [
     {
       'id': 'best_goal',
-      'icon': Icons.sports_soccer,
+      'icon': 'assets/icons/icons8-soccer-ball-48.png',
       'name': (BuildContext context) =>
           AppLocalizations.of(context)!.bestGoalAwardName,
       'description': (BuildContext context) =>
@@ -71,7 +71,7 @@ class MatchAwardsModal extends StatelessWidget {
     },
     {
       'id': 'best_striker',
-      'icon': Icons.sports_handball,
+      'icon': 'assets/icons/icons8-ronaldo-48.png',
       'name': (BuildContext context) =>
           AppLocalizations.of(context)!.bestStrikerAwardName,
       'description': (BuildContext context) =>
@@ -79,7 +79,7 @@ class MatchAwardsModal extends StatelessWidget {
     },
     {
       'id': 'best_goalkeeper',
-      'icon': Icons.catching_pokemon,
+      'icon': 'assets/icons/icons8-goalkeeper-with-net-48.png',
       'name': (BuildContext context) =>
           AppLocalizations.of(context)!.bestGoalkeeperAwardName,
       'description': (BuildContext context) =>
@@ -87,7 +87,7 @@ class MatchAwardsModal extends StatelessWidget {
     },
     {
       'id': 'best_defender',
-      'icon': Icons.shield,
+      'icon': 'assets/icons/icons8-runners-crossing-finish-line-48.png',
       'name': (BuildContext context) =>
           AppLocalizations.of(context)!.bestDefenderAwardName,
       'description': (BuildContext context) =>
@@ -136,15 +136,15 @@ class MatchAwardsModal extends StatelessWidget {
                             Container(
                               width: 40,
                               height: 40,
-                              decoration: BoxDecoration(
-                                color: Palette.primary.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(20),
+                              // decoration: BoxDecoration(
+                              //   color: Palette.primary.withOpacity(0.1),
+                              //   borderRadius: BorderRadius.circular(20),
+                              // ),
+                              child: Image.asset(
+                                award['icon'],
+                                width: 24,
+                                height: 24,
                               ),
-                              child: Icon(
-                                      award['icon'] as IconData,
-                                      color: Palette.primary,
-                                      size: 24,
-                                    ),
                             ),
                             SizedBox(width: 16),
                             Expanded(
