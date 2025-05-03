@@ -38,6 +38,11 @@ class UserRatings extends ChangeNotifier {
     return _ratings[userId];
   }
 
+  void setAward(String awardId, String userId) {
+    _awards[awardId] = userId;
+    notifyListeners();
+  }
+
   /// Gets the user ID who received a specific award.
   /// Returns null if no award was given.
   String? getAward(String awardId) {
@@ -70,13 +75,9 @@ class UserRatings extends ChangeNotifier {
 
   /// Posts awards to the backend.
   /// Only posts non-null awards and updates the local state after successful posting.
-  void postAwards(Map<String, String?> awards) async {
-    // Filter out null values
-    var awardsToPost = Map.fromEntries(awards.entries.where((e) => e.value != null));
-    if (awardsToPost.isNotEmpty) {
-      await CloudFunctionsClient().post("matches/$matchId/awards/add", awardsToPost);
-      _awards = Map<String, String?>.from(awards);
-      notifyListeners();
-    }
+  void postAwards() async {
+    await CloudFunctionsClient().post("matches/$matchId/awards/add", _awards);
+    _awards = Map<String, String?>.from(_awards);
+    notifyListeners();  
   }
 } 

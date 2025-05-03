@@ -233,6 +233,7 @@
 
     "ratePlayersTitle": "Rate Players",
     "ratePlayersButtonText": "RATE PLAYERS",
+    "updateRatesPlayersButtonText": "CHANGE VOTES",
     "submitRatesButtonText": "SUBMIT",
 
     "accountTitle": "Account",
@@ -297,5 +298,21 @@
     "bestGoalkeeperAwardDesc": "Most crucial saves and defensive plays",
     
     "bestDefenderAwardName": "Best Defender",
-    "bestDefenderAwardDesc": "Most solid defensive performance"
+    "bestDefenderAwardDesc": "Most solid defensive performance",
+
+    "ratePlayersThanksText": "Thanks for rating!",
+    "ratePlayersTitleText": "Rate players",
+    "updateRatesPlayersTitleText": "Change votes",
+    "ratePlayersChangeVotesText": "{hours} hours left to vote",
+    "@ratePlayersChangeVotesText": {
+        "placeholders": {
+            "hours": {"type": "String"}
+        }
+    },
+    "ratePlayersVoteText": "{hours} hours left to vote",
+    "@ratePlayersVoteText": {
+        "placeholders": {
+            "hours": {"type": "String"}
+        }
+    }
 }

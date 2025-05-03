@@ -212,14 +212,9 @@ class MatchAwardsModal extends StatelessWidget {
                             }).toList(),
                           ],
                           onChanged: (String? value) {
-                            var newAwards = Map<String, String?>.from({
-                              'best_goal': userRatings.getAward('best_goal'),
-                              'best_striker': userRatings.getAward('best_striker'),
-                              'best_goalkeeper': userRatings.getAward('best_goalkeeper'),
-                              'best_defender': userRatings.getAward('best_defender'),
-                            });
-                            newAwards[award['id']] = value;
-                            userRatings.postAwards(newAwards);
+                            if (value != null) {
+                              userRatings.setAward(award['id'], value);
+                            }
                           },
                         ),
                       ],
@@ -233,6 +228,7 @@ class MatchAwardsModal extends StatelessWidget {
                 child: GenericButtonWithLoaderAndErrorHandling(
                   l10n.submitRatesButtonText,
                   (BuildContext context) async {
+                    userRatings.postAwards();
                     Navigator.of(context).pop(true);
                   },
                   Primary(),
