@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nutmeg/screens/MatchAwardsModal.dart';
 import 'package:nutmeg/state/MatchesState.dart';
-import 'package:nutmeg/state/RatingPlayersState.dart';
 import 'package:nutmeg/state/UserRatings.dart';
 import 'package:nutmeg/state/UserState.dart';
 import 'package:nutmeg/utils/Utils.dart';
@@ -19,12 +18,15 @@ class RateButton extends StatelessWidget {
   final String matchId;
   final bool hasRated;
 
-  const RateButton({Key? key, required this.matchId, required this.hasRated}) : super(key: key);
+  const RateButton({Key? key, required this.matchId, required this.hasRated})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return GenericButtonWithLoader(
-        hasRated ? AppLocalizations.of(context)!.updateRatesPlayersButtonText : AppLocalizations.of(context)!.ratePlayersButtonText,
+        hasRated
+            ? AppLocalizations.of(context)!.updateRatesPlayersButtonText
+            : AppLocalizations.of(context)!.ratePlayersButtonText,
         (BuildContext context) async {
       context.read<GenericButtonWithLoaderState>().change(true);
       await rateAction(context, matchId);
