@@ -132,94 +132,92 @@ class MatchAwardsModal extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Container(
-                              width: 40,
-                              height: 40,
-                              // decoration: BoxDecoration(
-                              //   color: Palette.primary.withOpacity(0.1),
-                              //   borderRadius: BorderRadius.circular(20),
-                              // ),
+                              width: 32,
+                              height: 32,
                               child: Image.asset(
                                 award['icon'],
-                                width: 24,
-                                height: 24,
+                                width: 20,
+                                height: 20,
                               ),
                             ),
-                            SizedBox(width: 16),
+                            SizedBox(width: 8),
                             Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    award['name'](context),
-                                    style: TextPalette.h3,
-                                  ),
-                                  Text(
-                                    award['description'](context),
-                                    style: TextPalette.getBodyText(
-                                        Palette.greyDark),
-                                  ),
-                                ],
+                              flex: 1,
+                              child: Align(
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  award['name'](context),
+                                  style: TextPalette.h3,
+                                  maxLines: 2,
+                                ),
                               ),
                             ),
-                          ],
-                        ),
-                        SizedBox(height: 16),
-                        DropdownButtonFormField<String>(
-                          value: userRatings.getAward(award['id']),
-                          isExpanded: true,
-                          decoration: InputDecoration(
-                            contentPadding: EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 8),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: Palette.greyLight),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: Palette.greyLight),
-                            ),
-                          ),
-                          items: [
-                            DropdownMenuItem<String>(
-                              value: null,
-                              child: Text(l10n.selectPlayerText,
-                                  style: TextPalette.bodyText),
-                            ),
-                            ...players.map((playerId) {
-                              final user = context
-                                  .watch<UserState>()
-                                  .getUserDetail(playerId);
-                              return DropdownMenuItem<String>(
-                                value: playerId,
-                                child: Row(
-                                  children: [
-                                    UserAvatar(12, user),
-                                    SizedBox(width: 8),
-                                    Expanded(
-                                      child: Text(
-                                        user?.name ?? 'Unknown',
+                            SizedBox(width: 8),
+                            Expanded(
+                              flex: 2,
+                              child: DropdownButtonFormField<String>(
+                                value: userRatings.getAward(award['id']),
+                                isExpanded: true,
+                                decoration: InputDecoration(
+                                  contentPadding: EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 4),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                    borderSide: BorderSide(color: Palette.greyLight),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                    borderSide: BorderSide(color: Palette.greyLight),
+                                  ),
+                                ),
+                                items: [
+                                  DropdownMenuItem<String>(
+                                    value: null,
+                                    child: Text(l10n.selectPlayerText,
                                         style: TextPalette.bodyText,
                                         overflow: TextOverflow.ellipsis,
+                                        maxLines: 1),
+                                  ),
+                                  ...players.map((playerId) {
+                                    final user = context
+                                        .watch<UserState>()
+                                        .getUserDetail(playerId);
+                                    return DropdownMenuItem<String>(
+                                      value: playerId,
+                                      child: Row(
+                                        children: [
+                                          UserAvatar(10, user),
+                                          SizedBox(width: 6),
+                                          Expanded(
+                                            child: Text(
+                                              user?.name ?? 'Unknown',
+                                              style: TextPalette.bodyText,
+                                              overflow: TextOverflow.ellipsis,
+                                              maxLines: 1,
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            }).toList(),
+                                    );
+                                  }).toList(),
+                                ],
+                                onChanged: (String? value) {
+                                  if (value != null) {
+                                    userRatings.setAward(award['id'], value);
+                                  }
+                                },
+                              ),
+                            ),
                           ],
-                          onChanged: (String? value) {
-                            if (value != null) {
-                              userRatings.setAward(award['id'], value);
-                            }
-                          },
                         ),
                       ],
                     ),
                   ))
               .toList(),
-          SizedBox(height: 24),
+          SizedBox(height: 16),
           Row(
             children: [
               Expanded(
