@@ -11,7 +11,7 @@
     "notPublishedStatus": "Non pubblicato",
     "cancelledStatus": "Annullato",
     "fullStatus": "Pieno",
-    "matchDetailsScreen": "****************************************************************************************************",
+    "matchDetailsScreen": "*****************************************************************************************************",
     "cancellationInfo": "La partita verrà automaticamente annullata il {date} alle {hour} se si saranno uniti meno di {n} giocatori.",
     "fullRefund": "un rimborso completo",
     "refundWithoutFee": "un rimborso (esclusa la commissione del servizio Nutmeg)",
@@ -134,6 +134,7 @@
     "genericErrorDesc": "Contattaci per ricevere supporto.",
     "ratePlayersTitle": "Valuta i giocatori",
     "ratePlayersButtonText": "VALUTA I GIOCATORI",
+    "updateRatesPlayersButtonText": "VOTI DI CAMBIAMENTO",
     "submitRatesButtonText": "INVIA",
     "accountTitle": "Account",
     "performanceTitle": "PRESTAZIONE",
@@ -167,5 +168,9 @@
     "bestGoalkeeperAwardName": "Miglior portiere",
     "bestGoalkeeperAwardDesc": "Le parate più importanti e le azioni difensive più decisive",
     "bestDefenderAwardName": "Miglior difensore",
-    "bestDefenderAwardDesc": "La prestazione difensiva più solida"
+    "bestDefenderAwardDesc": "La prestazione difensiva più solida",
+    "ratePlayersThanksText": "Grazie per la valutazione!",
+    "ratePlayersTitleText": "Valuta i giocatori",
+    "updateRatesPlayersTitleText": "Cambia voti",
+    "ratesCloseInText": "Le valutazioni chiudono tra {hours} ore"
 }

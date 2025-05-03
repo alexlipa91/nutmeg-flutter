@@ -98,7 +98,7 @@
     "youWantToLeaveTitle": "¿Estás seguro que deseas salir?",
     "youWantToLeaveSubtitle": "Si sale, se perderán todos los cambios que no haya guardado.",
     "leftMatchTitle": "Abandonaste el partido",
-    "finalScoreSubmitText": "¿Cuál fue el resultado final?",
+    "finalScoreSubmitText": "¿Cual fue el resultado final?",
     "submitScoreButton": "ENVIAR PUNTUACIÓN",
     "editScoreButton": "EDITAR PUNTUACIÓN",
     "cancelScoreButton": "CANCELAR",
@@ -134,6 +134,7 @@
     "genericErrorDesc": "Por favor póngase en contacto con nosotros para obtener ayuda.",
     "ratePlayersTitle": "Califica a los jugadores",
     "ratePlayersButtonText": "CALIFICAR A LOS JUGADORES",
+    "updateRatesPlayersButtonText": "CAMBIAR VOTOS",
     "submitRatesButtonText": "ENTREGAR",
     "accountTitle": "Cuenta",
     "performanceTitle": "ACTUACIÓN",
@@ -167,5 +168,9 @@
     "bestGoalkeeperAwardName": "Mejor portero",
     "bestGoalkeeperAwardDesc": "Las paradas y jugadas defensivas más cruciales",
     "bestDefenderAwardName": "Mejor defensor",
-    "bestDefenderAwardDesc": "La actuación defensiva más sólida"
+    "bestDefenderAwardDesc": "La actuación defensiva más sólida",
+    "ratePlayersThanksText": "¡Gracias por calificar!",
+    "ratePlayersTitleText": "Califica a los jugadores",
+    "updateRatesPlayersTitleText": "Cambiar votos",
+    "ratesCloseInText": "Las calificaciones cierran en {hours} horas"
 }

@@ -11,7 +11,7 @@
     "notPublishedStatus": "Não publicado",
     "cancelledStatus": "Cancelado",
     "fullStatus": "Cheio",
-    "matchDetailsScreen": "**************************************************************************************************",
+    "matchDetailsScreen": "*****************************************************************************************************",
     "cancellationInfo": "A partida será cancelada automaticamente às {date} às {hour} se menos de {n} jogadores tiverem entrado.",
     "fullRefund": "um reembolso total",
     "refundWithoutFee": "um reembolso (excluindo a taxa de serviço da Nutmeg)",
@@ -134,6 +134,7 @@
     "genericErrorDesc": "Entre em contato conosco para obter suporte.",
     "ratePlayersTitle": "Avalie os jogadores",
     "ratePlayersButtonText": "AVALIE OS JOGADORES",
+    "updateRatesPlayersButtonText": "ALTERAR VOTOS",
     "submitRatesButtonText": "ENVIAR",
     "accountTitle": "Perfil",
     "performanceTitle": "DESEMPENHO",
@@ -167,5 +168,9 @@
     "bestGoalkeeperAwardName": "Melhor Goleiro",
     "bestGoalkeeperAwardDesc": "Defesas e jogadas defensivas mais cruciais",
     "bestDefenderAwardName": "Melhor Defensor",
-    "bestDefenderAwardDesc": "Desempenho defensivo mais sólido"
+    "bestDefenderAwardDesc": "Desempenho defensivo mais sólido",
+    "ratePlayersThanksText": "Obrigado pela avaliação!",
+    "ratePlayersTitleText": "Avalie os jogadores",
+    "updateRatesPlayersTitleText": "Alterar votos",
+    "ratesCloseInText": "As avaliações fecham em {hours} horas"
 }
