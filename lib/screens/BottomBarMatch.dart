@@ -195,6 +195,10 @@ class RatePlayersBottomBar extends StatelessWidget {
   Widget build(BuildContext context) {
     // Check if user has already provided ratings
     final userRatings = context.watch<UserRatings>();
+    if (userRatings.isLoading) {
+      return Container();
+    }
+
     final hasRated = !userRatings.isEmpty();
 
     var hoursLeft = context
@@ -206,8 +210,8 @@ class RatePlayersBottomBar extends StatelessWidget {
         .inHours
         .toString();
 
-    final text = hasRated 
-        ? AppLocalizations.of(context)!.ratePlayersThanksText 
+    final text = hasRated
+        ? AppLocalizations.of(context)!.ratePlayersThanksText
         : AppLocalizations.of(context)!.ratePlayersTitleText;
     final subText = AppLocalizations.of(context)!.ratesCloseInText(hoursLeft);
 

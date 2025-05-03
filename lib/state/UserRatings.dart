@@ -7,6 +7,12 @@ class UserRatings extends ChangeNotifier {
   /// The ID of the match these ratings belong to
   final String matchId;
 
+  /// Whether the ratings and awards are currently being loaded
+  bool _isLoading = false;
+
+  /// Gets the current loading state
+  bool get isLoading => _isLoading;
+
   /// Creates a new UserRatings instance for a specific match.
   /// Automatically fetches existing ratings and awards for the match.
   UserRatings(this.matchId) {
@@ -56,18 +62,30 @@ class UserRatings extends ChangeNotifier {
 
   /// Fetches the ratings given by the current user for this match from the backend.
   Future<void> fetchRatings(String matchId) async {
-    var ratings = await CloudFunctionsClient().get("matches/$matchId/ratings/given");
-    _ratings = Map<String, int>.from(ratings ?? {});
+    _isLoading = true;
     notifyListeners();
+    try {
+      var ratings = await CloudFunctionsClient().get("matches/$matchId/ratings/given");
+      _ratings = Map<String, int>.from(ratings ?? {});
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
   /// Fetches the awards given by the current user for this match from the backend.
   Future<void> fetchAwards(String matchId) async {
-    var awards = await CloudFunctionsClient().get("matches/$matchId/awards/given");
-    if (awards != null) {
-      _awards = Map<String, String?>.from(awards);
-    }
+    _isLoading = true;
     notifyListeners();
+    try {
+      var awards = await CloudFunctionsClient().get("matches/$matchId/awards/given");
+      if (awards != null) {
+        _awards = Map<String, String?>.from(awards);
+      }
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
   /// Posts multiple ratings to the backend.
