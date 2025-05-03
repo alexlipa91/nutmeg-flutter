@@ -1,13 +1,13 @@
 name: Playstore Deployment
 
-on:
-  push:
-    tags:
-      - v*
+# on:
+#   push:
+#     tags:
+#       - v*
 
 jobs:
   deploy_android:
-    name: Deploy build to Playstore (internal test)
+    name: Deploy build to Playstore
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code from ref
@@ -20,5 +20,15 @@ jobs:
       - run: echo $ANDROID_JSON | base64 -d > android/nutmeg-9099c-sa-credentials.json
         env:
           ANDROID_JSON: ${{ secrets.ANDROID_JSON }}
-      - name: Build and deploy to Playstore
-        run: ./scripts/deploy_android.sh production
+            
+      - name: Build appbundle
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.29.2" # keep in sync with .fvm/fvm_config.json
+      - run: ./scripts/build_android_app.sh
+
+      - name: Deploy to Playstore production
+        uses: maierj/fastlane-action@v1.4.0
+        with:
+          lane: playstoreProduction
+          subdirectory: android

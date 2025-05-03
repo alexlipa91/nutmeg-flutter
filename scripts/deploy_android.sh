@@ -10,6 +10,5 @@ else
     exit 1
 fi
 
-flutter build appbundle --release
 echo "Deploying with lane $LANE_NAME"
 (cd android && fastlane $LANE_NAME)
