@@ -209,15 +209,13 @@ class RatePlayersBottomBar extends StatelessWidget {
     final text = hasRated 
         ? AppLocalizations.of(context)!.ratePlayersThanksText 
         : AppLocalizations.of(context)!.ratePlayersTitleText;
-    final subText = hasRated
-        ? AppLocalizations.of(context)!.ratePlayersChangeVotesText(hoursLeft)
-        : AppLocalizations.of(context)!.ratePlayersVoteText(hoursLeft);
+    final subText = AppLocalizations.of(context)!.ratesCloseInText(hoursLeft);
 
     return BottomBarMatch(
         matchId: matchId,
         text: text,
         subText: subText,
-        button: RateButton(matchId: matchId));
+        button: RateButton(matchId: matchId, hasRated: hasRated));
   }
 }
 

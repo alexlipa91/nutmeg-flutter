@@ -69,7 +69,7 @@ class MatchDetailsState extends State<MatchDetails> {
 
     if (match.status == MatchStatus.to_rate && match.isUserGoing(loggedUser)) {
       if (!rateActionShown) {
-        await RatePlayerBottomModal.rateAction(context, widget.matchId);
+        await rateAction(context, widget.matchId);
         sharedPrefs.setBool(rateActionShownKey, true);
       }
     }

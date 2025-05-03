@@ -5,19 +5,23 @@ import 'package:flutter/material.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:provider/provider.dart';
 
-import '../state/RatingPlayersState.dart';
+import '../state/UserRatings.dart';
 
 typedef void RatingChangeCallback(double rating);
 
 class RatingBar extends StatelessWidget {
+  final String userId;
+
+  RatingBar({required this.userId});
 
   @override
   Widget build(BuildContext context) {
-    return SmoothStarRating(
+    return SmoothStarRating(  
+        userId: userId,
         allowHalfRating: false,
         starCount: 5,
-        rating: context.watch<RatingPlayersState>().currentScore,
-        size: 52.0,
+        rating: context.watch<UserRatings>().getRating(userId) as double, 
+        size: 25.0,
         isReadOnly: false,
         color: Palette.accent,
         defaultIconData: Icons.star,
@@ -42,11 +46,14 @@ class SmoothStarRating extends StatefulWidget {
   defaultIconData; //this is needed only when having fullRatedIconData && halfRatedIconData
   final double spacing;
   final bool isReadOnly;
+
+  final String userId;
+
   SmoothStarRating({
     this.starCount = 5,
     this.isReadOnly = false,
     this.spacing = 0.0,
-    this.rating = 0.0,
+    this.rating = 0,
     this.defaultIconData = Icons.star_border,
     required this.onRated,
     required this.color,
@@ -55,6 +62,7 @@ class SmoothStarRating extends StatefulWidget {
     this.filledIconData = Icons.star,
     this.halfFilledIconData = Icons.star_half,
     this.allowHalfRating = true,
+    required this.userId,
   });
 
   @override
@@ -90,26 +98,26 @@ class _SmoothStarRatingState extends State<SmoothStarRating> {
             alignment: WrapAlignment.start,
             spacing: widget.spacing,
             children: List.generate(
-                widget.starCount, (index) => buildStar(context, index))),
+                widget.starCount, (index) => buildStar(context, index, widget.rating)),
+          ),
         ],
       ),
     );
   }
 
-  Widget buildStar(BuildContext context, int index) {
-    var rat = context.watch<RatingPlayersState>().getCurrentScore();
+  Widget buildStar(BuildContext context, int index, double rating) {
 
     Icon icon;
-    if (index >= rat) {
+    if (index >= rating) {
       icon = Icon(
         widget.defaultIconData,
         color: widget.borderColor ?? Theme.of(context).primaryColor,
         size: widget.size,
       );
     } else if (index >
-        rat -
+        rating -
             (widget.allowHalfRating ? halfStarThreshold : 1.0) &&
-        index < rat) {
+        index < rating) {
       icon = Icon(
         widget.halfFilledIconData,
         color: widget.color ?? Theme.of(context).primaryColor,
@@ -159,7 +167,7 @@ class _SmoothStarRatingState extends State<SmoothStarRating> {
               newRating = 0.0;
             }
             // newRating = normalizeRating(newRating);
-            context.read<RatingPlayersState>().setCurrentScore(newRating);
+            context.read<UserRatings>().setRating(widget.userId, newRating.toInt()  );
           },
           // onTapUp: (e) {
           //   widget.onRated(
@@ -205,10 +213,10 @@ class _SmoothStarRatingState extends State<SmoothStarRating> {
           newRating = 0.0;
         }
         // newRating = normalizeRating(newRating);
-        context.read<RatingPlayersState>().setCurrentScore(newRating);
+        context.read<UserRatings>().setRating(widget.userId, newRating.toInt());
       },
       onTapUp: (e) {
-        widget.onRated(context.read<RatingPlayersState>().currentScore);
+        widget.onRated(context.read<UserRatings>().getRating(widget.userId).toDouble());
       },
       // onHorizontalDragUpdate: (dragDetails) {
       //   RenderBox box = context.findRenderObject();

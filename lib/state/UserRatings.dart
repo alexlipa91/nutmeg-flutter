@@ -34,8 +34,13 @@ class UserRatings extends ChangeNotifier {
 
   /// Gets the rating given to a specific user.
   /// Returns null if no rating was given.
-  int? getRating(String userId) {
-    return _ratings[userId];
+  int getRating(String userId) {
+    return _ratings[userId] ?? 0;
+  }
+
+  void setRating(String userId, int rating) {
+    _ratings[userId] = rating;
+    notifyListeners();
   }
 
   void setAward(String awardId, String userId) {
@@ -67,9 +72,9 @@ class UserRatings extends ChangeNotifier {
 
   /// Posts multiple ratings to the backend.
   /// Updates the local state after successful posting.
-  void postRatings(Map<String, int> ratings) async {
-    await CloudFunctionsClient().post("matches/$matchId/ratings/add_multi", ratings);
-    _ratings = Map<String, int>.from(ratings);
+  void postRatings() async {
+    await CloudFunctionsClient().post("matches/$matchId/ratings/add_multi", _ratings);
+    _ratings = Map<String, int>.from(_ratings);
     notifyListeners();
   }
 

@@ -303,16 +303,10 @@
     "ratePlayersThanksText": "Thanks for rating!",
     "ratePlayersTitleText": "Rate players",
     "updateRatesPlayersTitleText": "Change votes",
-    "ratePlayersChangeVotesText": "{hours} hours left to vote",
+    "ratesCloseInText": "Ratings close in {hours} hours",
     "@ratePlayersChangeVotesText": {
         "placeholders": {
             "hours": {"type": "String"}
         }
-    },
-    "ratePlayersVoteText": "{hours} hours left to vote",
-    "@ratePlayersVoteText": {
-        "placeholders": {
-            "hours": {"type": "String"}
-        }
-    }
+    }   
 }
