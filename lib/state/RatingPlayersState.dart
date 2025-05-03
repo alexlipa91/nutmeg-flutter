@@ -48,15 +48,15 @@ class RatingPlayersState extends ChangeNotifier {
 class RatingPlayersMultiState extends ChangeNotifier {
 
   final List<String> toRate;
-  final List<int> scores;
+  final List<int?> scores;
 
   RatingPlayersMultiState(this.toRate) :
     scores = List<int>.filled(toRate.length, -1);
 
-  int getCurrentScore(int i) => scores[i];
+  int getCurrentScore(int i) => scores[i] ?? 0;
 
-  void setScore(int i, int score) {
-    scores[i] = score;
+  void setScore(int i, int? score) {
+    scores[i] = score ?? -1;
     notifyListeners();
   }
 

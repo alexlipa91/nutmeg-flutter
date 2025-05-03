@@ -33,6 +33,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../state/MatchesState.dart';
 import '../state/UserState.dart';
+import '../state/UserRatings.dart';
 import '../utils/InfoModals.dart';
 import '../widgets/Buttons.dart' as buttons;
 import '../widgets/ButtonsWithLoader.dart';
@@ -47,12 +48,13 @@ import 'PaymentDetailsDescription.dart';
 class MatchDetails extends StatefulWidget {
   final String matchId;
   final String? paymentOutcome;
+  final Key? key;
 
-  const MatchDetails(
-      {Key? key,
-      @PathParam('id') required this.matchId,
-      @QueryParam('payment_outcome') this.paymentOutcome})
-      : super(key: key);
+  const MatchDetails({
+    this.key,
+    required this.matchId,
+    this.paymentOutcome,
+  }) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => MatchDetailsState();
@@ -68,6 +70,7 @@ class MatchDetailsState extends State<MatchDetails> {
     if (match.status == MatchStatus.to_rate && match.isUserGoing(loggedUser)) {
       if (!rateActionShown) {
         await RatePlayerBottomModal.rateAction(context, widget.matchId);
+        sharedPrefs.setBool(rateActionShownKey, true);
       }
     }
   }
@@ -138,235 +141,238 @@ class MatchDetailsState extends State<MatchDetails> {
 
   @override
   Widget build(BuildContext context) {
-    var userState = context.watch<UserState>();
-    var matchesState = context.watch<MatchesState>();
+    return ChangeNotifierProvider(
+      create: (context) => UserRatings(widget.matchId),
+      child: LayoutBuilder(builder: (context, constraints) {
+        var userState = context.watch<UserState>();
+        var matchesState = context.watch<MatchesState>();
 
-    Match? match = matchesState.getMatch(widget.matchId);
-    SportCenter? sportCenter = match?.sportCenter;
+        Match? match = matchesState.getMatch(widget.matchId);
+        SportCenter? sportCenter = match?.sportCenter;
 
-    var status = match?.status;
+        var status = match?.status;
 
-    var isTest = match != null && match.isTest;
-    var organizerView = userState.isLoggedIn() &&
-        match != null &&
-        match.organizerId == userState.getLoggedUserDetails()!.documentId;
+        var isTest = match != null && match.isTest;
+        var organizerView = userState.isLoggedIn() &&
+            match != null &&
+            match.organizerId == userState.getLoggedUserDetails()!.documentId;
 
-    var bottomBar =
-        BottomBarMatch.getBottomBar(context, widget.matchId, status);
+        var bottomBar =
+            BottomBarMatch.getBottomBar(context, widget.matchId, status);
 
-    var skeletons;
-    if (match == null || sportCenter == null) {
-      skeletons = [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Flexible(
-              child: Container(
-                constraints: BoxConstraints(maxWidth: 700),
-                child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(children: [
-                        Expanded(child: SkeletonMatchDetails.imageSkeleton())
-                      ]),
-                      SkeletonMatchDetails.skeletonRepeatedElement(),
-                      SkeletonMatchDetails.skeletonRepeatedElement(),
-                      SkeletonMatchDetails.skeletonRepeatedElement(),
-                      SkeletonMatchDetails.skeletonRepeatedElement(),
-                      SkeletonMatchDetails.skeletonRepeatedElement(),
-                    ]),
-              ),
-            )
-          ],
-        )
-      ];
-    }
-
-    return LayoutBuilder(builder: (context, constraints) {
-      var widgets;
-      if (skeletons == null) {
-        var completeOrganiserWidget = organizerView &&
-                match.price != null &&
-                userState.getLoggedUserDetails()?.areChargesEnabled(isTest) !=
-                    null &&
-                !userState.getLoggedUserDetails()!.areChargesEnabled(isTest)
-            ? CompleteOrganiserAccountWidget(isTest: isTest)
-            : null;
-
-        var testInfo = isTest
-            ? InfoContainer(
-                backgroundColor: Palette.accent,
-                child: SelectableText(
-                  "Test match: " + widget.matchId,
-                  style: TextPalette.getBodyText(Palette.black),
-                ))
-            : null;
-
-        var matchInfo = MatchInfo(match!, sportCenter!);
-
-        var teamsWidget = match.going.length > 1 && match.hasTeams()
-            ? TeamsWidget(matchId: widget.matchId)
-            : null;
-
-        var infoPlayersList = match.isMatchFinished()
-            ? null
-            : PlayerList(
-                match: match,
-                withJoinButton:
-                    bottomBar is JoinMatchBottomBar && !match.isFull());
-
-        var stats = ((status == MatchStatus.rated &&
-                    matchesState.getRatings(match.documentId) != null) ||
-                status == MatchStatus.to_rate)
-            ? Stats(match: match, sportCenter: sportCenter)
-            : null;
-
-        var sportCenterDetails =
-            SportCenterDetails(match: match, sportCenter: sportCenter);
-
-        var rules = (bool large) {
-          var rules = [];
-
-          if (match.cancelBefore != null) {
-            var cancellationDate = match.dateTime.subtract(match.cancelBefore!);
-
-            if (cancellationDate.isAfter(DateTime.now())) {
-              rules.add(AppLocalizations.of(context)!.cancellationInfo(
-                  MatchInfo.formatDay(
-                      match.getLocalizedTimeCancellation(), context),
-                  MatchInfo.formatHour(
-                      match.getLocalizedTimeCancellation(), context),
-                  match.minPlayers));
-            }
-          }
-
-          if (match.price != null) {
-            var refundString = (match.price!.userFee == 0)
-                ? AppLocalizations.of(context)!.fullRefund
-                : AppLocalizations.of(context)!.refundWithoutFee;
-
-            rules.add(AppLocalizations.of(context)!.refundInfo(refundString));
-          }
-
-          if (rules.length == 0) {
-            return null;
-          }
-
-          return RuleCard(AppLocalizations.of(context)!.paymentPolicyHeader,
-              rules.join("\n"), large);
-        };
-
-        var organiserBadge = match.organizerId != null
-            ? Builder(builder: (context) {
-                var ud = context
-                    .watch<UserState>()
-                    .getUserDetail(match.organizerId!);
-
-                return InfoContainer(
-                    child: Row(children: [
-                  UserAvatarWithBottomModal(userData: ud),
-                  SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(AppLocalizations.of(context)!.organizedBy,
-                            style: TextPalette.bodyText),
-                        SizedBox(height: 4),
-                        (ud == null)
-                            ? Skeletons.lText
-                            : Text(ud.name!.split(" ").first,
-                                style: TextPalette.h2),
-                      ],
-                    ),
-                  ),
-                ]));
-              })
-            : null;
-
-        if (constraints.maxWidth < 800) {
-          widgets = interleave([
-            // title
-            if (completeOrganiserWidget != null) completeOrganiserWidget,
-            // info box
-            if (testInfo != null) testInfo,
-            matchInfo,
-            // stats
-            if (infoPlayersList != null) infoPlayersList,
-            if (teamsWidget != null) teamsWidget,
-            if (stats != null) stats,
-            // horizontal players list or teams
-            sportCenterDetails,
-            if (rules(false) != null) rules(false)!,
-            if (organiserBadge != null) organiserBadge
-          ], SizedBox(height: 16));
-        } else {
-          widgets = [
-            if (completeOrganiserWidget != null) completeOrganiserWidget,
+        var skeletons;
+        if (match == null || sportCenter == null) {
+          skeletons = [
             Row(
-              mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Flexible(
                   child: Container(
                     constraints: BoxConstraints(maxWidth: 700),
                     child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: interleave(
-                            [
-                              matchInfo,
-                              if (infoPlayersList != null) infoPlayersList,
-                              if (teamsWidget != null) teamsWidget,
-                              if (stats != null) stats
-                            ],
-                            SizedBox(
-                              height: 16,
-                            ))),
-                  ),
-                ),
-                SizedBox(width: 20),
-                Flexible(
-                  child: Container(
-                    constraints: BoxConstraints(maxWidth: 700),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: interleave([
-                        sportCenterDetails,
-                        if (rules(true) != null) rules(true)!,
-                        if (organiserBadge != null) organiserBadge
-                      ], SizedBox(height: 16)),
-                    ),
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(children: [
+                            Expanded(child: SkeletonMatchDetails.imageSkeleton())
+                          ]),
+                          SkeletonMatchDetails.skeletonRepeatedElement(),
+                          SkeletonMatchDetails.skeletonRepeatedElement(),
+                          SkeletonMatchDetails.skeletonRepeatedElement(),
+                          SkeletonMatchDetails.skeletonRepeatedElement(),
+                          SkeletonMatchDetails.skeletonRepeatedElement(),
+                        ]),
                   ),
                 )
               ],
             )
           ];
         }
-      } else {
-        widgets = skeletons;
-      }
 
-      return PageTemplate(
-        initState: () => myInitState(),
-        refreshState: () => refreshState(),
-        widgets: widgets,
-        appBar: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            BackButton(color: Palette.black),
-            if ((DeviceInfo().name?.contains("ipad") ?? false) && !kIsWeb)
-              if (match != null)
-                Align(
-                    alignment: Alignment.centerRight,
-                    child: buttons.ShareButton(() async {
-                      await DynamicLinks.shareMatchFunction(context, match);
-                    }, Palette.black, 25.0)),
-          ],
-        ),
-        bottomNavigationBar: bottomBar,
-      );
-    });
+        var widgets;
+        if (skeletons == null) {
+          var completeOrganiserWidget = organizerView &&
+                  match.price != null &&
+                  userState.getLoggedUserDetails()?.areChargesEnabled(isTest) !=
+                      null &&
+                  !userState.getLoggedUserDetails()!.areChargesEnabled(isTest)
+              ? CompleteOrganiserAccountWidget(isTest: isTest)
+              : null;
+
+          var testInfo = isTest
+              ? InfoContainer(
+                  backgroundColor: Palette.accent,
+                  child: SelectableText(
+                    "Test match: " + widget.matchId,
+                    style: TextPalette.getBodyText(Palette.black),
+                  ))
+              : null;
+
+          var matchInfo = MatchInfo(match!, sportCenter!);
+
+          var teamsWidget = match.going.length > 1 && match.hasTeams()
+              ? TeamsWidget(matchId: widget.matchId)
+              : null;
+
+          var infoPlayersList = match.isMatchFinished()
+              ? null
+              : PlayerList(
+                  match: match,
+                  withJoinButton:
+                      bottomBar is JoinMatchBottomBar && !match.isFull());
+
+          var stats = ((status == MatchStatus.rated &&
+                      matchesState.getRatings(match.documentId) != null) ||
+                  status == MatchStatus.to_rate)
+              ? Stats(match: match, sportCenter: sportCenter)
+              : null;
+
+          var sportCenterDetails =
+              SportCenterDetails(match: match, sportCenter: sportCenter);
+
+          var rules = (bool large) {
+            var rules = [];
+
+            if (match.cancelBefore != null) {
+              var cancellationDate = match.dateTime.subtract(match.cancelBefore!);
+
+              if (cancellationDate.isAfter(DateTime.now())) {
+                rules.add(AppLocalizations.of(context)!.cancellationInfo(
+                    MatchInfo.formatDay(
+                        match.getLocalizedTimeCancellation(), context),
+                    MatchInfo.formatHour(
+                        match.getLocalizedTimeCancellation(), context),
+                    match.minPlayers));
+              }
+            }
+
+            if (match.price != null) {
+              var refundString = (match.price!.userFee == 0)
+                  ? AppLocalizations.of(context)!.fullRefund
+                  : AppLocalizations.of(context)!.refundWithoutFee;
+
+              rules.add(AppLocalizations.of(context)!.refundInfo(refundString));
+            }
+
+            if (rules.length == 0) {
+              return null;
+            }
+
+            return RuleCard(AppLocalizations.of(context)!.paymentPolicyHeader,
+                rules.join("\n"), large);
+          };
+
+          var organiserBadge = match.organizerId != null
+              ? Builder(builder: (context) {
+                  var ud = context
+                      .watch<UserState>()
+                      .getUserDetail(match.organizerId!);
+
+                  return InfoContainer(
+                      child: Row(children: [
+                    UserAvatarWithBottomModal(userData: ud),
+                    SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(AppLocalizations.of(context)!.organizedBy,
+                              style: TextPalette.bodyText),
+                          SizedBox(height: 4),
+                          (ud == null)
+                              ? Skeletons.lText
+                              : Text(ud.name!.split(" ").first,
+                                  style: TextPalette.h2),
+                        ],
+                      ),
+                    ),
+                  ]));
+                })
+              : null;
+
+          if (constraints.maxWidth < 800) {
+            widgets = interleave([
+              // title
+              if (completeOrganiserWidget != null) completeOrganiserWidget,
+              // info box
+              if (testInfo != null) testInfo,
+              matchInfo,
+              // stats
+              if (infoPlayersList != null) infoPlayersList,
+              if (teamsWidget != null) teamsWidget,
+              if (stats != null) stats,
+              // horizontal players list or teams
+              sportCenterDetails,
+              if (rules(false) != null) rules(false)!,
+              if (organiserBadge != null) organiserBadge
+            ], SizedBox(height: 16));
+          } else {
+            widgets = [
+              if (completeOrganiserWidget != null) completeOrganiserWidget,
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Flexible(
+                    child: Container(
+                      constraints: BoxConstraints(maxWidth: 700),
+                      child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: interleave(
+                              [
+                                matchInfo,
+                                if (infoPlayersList != null) infoPlayersList,
+                                if (teamsWidget != null) teamsWidget,
+                                if (stats != null) stats
+                              ],
+                              SizedBox(
+                                height: 16,
+                              ))),
+                    ),
+                  ),
+                  SizedBox(width: 20),
+                  Flexible(
+                    child: Container(
+                      constraints: BoxConstraints(maxWidth: 700),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: interleave([
+                          sportCenterDetails,
+                          if (rules(true) != null) rules(true)!,
+                          if (organiserBadge != null) organiserBadge
+                        ], SizedBox(height: 16)),
+                      ),
+                    ),
+                  )
+                ],
+              )
+            ];
+          }
+        } else {
+          widgets = skeletons;
+        }
+
+        return PageTemplate(
+          initState: () => myInitState(),
+          refreshState: () => refreshState(),
+          widgets: widgets,
+          appBar: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              BackButton(color: Palette.black),
+              if ((DeviceInfo().name?.contains("ipad") ?? false) && !kIsWeb)
+                if (match != null)
+                  Align(
+                      alignment: Alignment.centerRight,
+                      child: buttons.ShareButton(() async {
+                        await DynamicLinks.shareMatchFunction(context, match);
+                      }, Palette.black, 25.0)),
+            ],
+          ),
+          bottomNavigationBar: bottomBar,
+        );
+      }),
+    );
   }
 }
 

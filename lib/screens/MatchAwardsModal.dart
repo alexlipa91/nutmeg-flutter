@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 import 'package:nutmeg/state/MatchesState.dart';
 import 'package:nutmeg/state/UserState.dart';
+import 'package:nutmeg/state/UserRatings.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/Avatar.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
@@ -29,12 +29,21 @@ class MatchAwardsButton extends StatelessWidget {
   }
 }
 
-class MatchAwardsModal extends StatefulWidget {
+class MatchAwardsModal extends StatelessWidget {
   static Future<bool?> bestAwardAction(
-      BuildContext context, String matchId) async {
+      BuildContext context, String matchId, UserRatings userRatings) async {
+    // Wait for both ratings and awards to be loaded
+    await Future.wait([
+      userRatings.fetchRatings(matchId),
+      userRatings.fetchAwards(matchId)
+    ]);
+
     return await ModalBottomSheet.showNutmegModalBottomSheet(
       context,
-      MatchAwardsModal(matchId: matchId),
+      ChangeNotifierProvider<UserRatings>.value(
+        value: userRatings,
+        child: MatchAwardsModal(matchId: matchId),
+      ),
     );
   }
 
@@ -45,20 +54,15 @@ class MatchAwardsModal extends StatefulWidget {
   static Future<bool?> showModal(BuildContext context, String matchId) async {
     return await ModalBottomSheet.showNutmegModalBottomSheet(
       context,
-      MatchAwardsModal(matchId: matchId),
+      ChangeNotifierProvider(
+        create: (context) => UserRatings(matchId),
+        child: MatchAwardsModal(matchId: matchId),
+      ),
     );
   }
 
-  @override
-  State<MatchAwardsModal> createState() => _MatchAwardsModalState();
-}
-
-class _MatchAwardsModalState extends State<MatchAwardsModal> {
-  // Store selected users for each award
-  final Map<String, String?> selectedUsers = {};
-
   // Define awards with their icons and names
-  final List<Map<String, dynamic>> awards = [
+  static final List<Map<String, dynamic>> awards = [
     {
       'id': 'best_goal',
       'icon': Icons.sports_soccer,
@@ -95,7 +99,7 @@ class _MatchAwardsModalState extends State<MatchAwardsModal> {
 
   @override
   Widget build(BuildContext context) {
-    final match = context.read<MatchesState>().getMatch(widget.matchId);
+    final match = context.read<MatchesState>().getMatch(matchId);
     if (match == null) return Container();
 
     // Get all players except current user
@@ -104,6 +108,7 @@ class _MatchAwardsModalState extends State<MatchAwardsModal> {
         match.going.keys.where((id) => id != currentUserId).toList();
 
     final l10n = AppLocalizations.of(context)!;
+    final userRatings = context.watch<UserRatings>();
 
     return Section(
       topSpace: 0,
@@ -164,7 +169,7 @@ class _MatchAwardsModalState extends State<MatchAwardsModal> {
                         ),
                         SizedBox(height: 16),
                         DropdownButtonFormField<String>(
-                          value: selectedUsers[award['id']],
+                          value: userRatings.getAward(award['id']),
                           isExpanded: true,
                           decoration: InputDecoration(
                             contentPadding: EdgeInsets.symmetric(
@@ -207,9 +212,14 @@ class _MatchAwardsModalState extends State<MatchAwardsModal> {
                             }).toList(),
                           ],
                           onChanged: (String? value) {
-                            setState(() {
-                              selectedUsers[award['id']] = value;
+                            var newAwards = Map<String, String?>.from({
+                              'best_goal': userRatings.getAward('best_goal'),
+                              'best_striker': userRatings.getAward('best_striker'),
+                              'best_goalkeeper': userRatings.getAward('best_goalkeeper'),
+                              'best_defender': userRatings.getAward('best_defender'),
                             });
+                            newAwards[award['id']] = value;
+                            userRatings.postAwards(newAwards);
                           },
                         ),
                       ],
@@ -223,14 +233,6 @@ class _MatchAwardsModalState extends State<MatchAwardsModal> {
                 child: GenericButtonWithLoaderAndErrorHandling(
                   l10n.submitRatesButtonText,
                   (BuildContext context) async {
-                    // Filter out null values
-                    final awards = Map.fromEntries(
-                        selectedUsers.entries.where((e) => e.value != null));
-
-                    if (awards.isNotEmpty) {
-                      await CloudFunctionsClient()
-                          .post("matches/${widget.matchId}/awards/add", awards);
-                    }
                     Navigator.of(context).pop(true);
                   },
                   Primary(),

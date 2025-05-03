@@ -315,6 +315,12 @@ class MatchesState extends ChangeNotifier {
     return stillToVote;
   }
 
+  Future<void> postUserRatings(
+      String matchId, String userId, Map<String, int> ratings) async {
+    await CloudFunctionsClient()
+        .post("matches/$matchId/ratings/add_multi", ratings);
+  }
+
   Future<void> refreshState(BuildContext context) async {
     logger.info("refreshing matches state");
     var futures = [

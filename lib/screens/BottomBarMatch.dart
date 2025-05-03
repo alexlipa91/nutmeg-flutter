@@ -3,6 +3,7 @@ import 'package:nutmeg/model/Match.dart';
 import 'package:nutmeg/screens/JoinModal.dart';
 import 'package:nutmeg/screens/LeaveMatchModal.dart';
 import 'package:nutmeg/screens/RatePlayersModal.dart';
+import 'package:nutmeg/state/UserRatings.dart';
 import 'package:nutmeg/state/UserState.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
@@ -45,10 +46,7 @@ class BottomBarMatch extends StatelessWidget {
         break;
       case MatchStatus.to_rate:
         if (isGoing) {
-          var stillToVote = context.read<MatchesState>().getStillToVote(
-              matchId, context.read<UserState>().currentUserId!);
-          if (stillToVote != null && stillToVote.isNotEmpty)
-            bottomBar = RatePlayersBottomBar(matchId: matchId);
+          bottomBar = RatePlayersBottomBar(matchId: matchId);
         }
         break;
       case MatchStatus.rated:
@@ -195,16 +193,28 @@ class RatePlayersBottomBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Check if user has already provided ratings
+    final userRatings = context.watch<UserRatings>();
+    final hasRated = !userRatings.isEmpty();
+
+    var hoursLeft = context
+        .watch<MatchesState>()
+        .getMatch(matchId)!
+        .dateTime
+        .add(Duration(days: 1))
+        .difference(DateTime.now())
+        .inHours
+        .toString();
+
+    final text = hasRated ? "Thanks for rating!" : "Rate players";
+    final subText = hasRated
+        ? " ${hoursLeft} more hours to change your votes"
+        : " ${hoursLeft} more hours to vote";
+
     return BottomBarMatch(
         matchId: matchId,
-        text: "Rate players",
-        subText: context
-                .watch<MatchesState>()
-                .getStillToVote(
-                    matchId, context.read<UserState>().currentUserId!)!
-                .length
-                .toString() +
-            " players left",
+        text: text,
+        subText: subText,
         button: RateButton(matchId: matchId));
   }
 }

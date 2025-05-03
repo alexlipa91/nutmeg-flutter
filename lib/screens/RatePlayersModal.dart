@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/rating_bar/RatingWidgetForMulti.dart';
 import 'package:nutmeg/screens/MatchAwardsModal.dart';
 import 'package:nutmeg/state/MatchesState.dart';
 import 'package:nutmeg/state/RatingPlayersState.dart';
+import 'package:nutmeg/state/UserRatings.dart';
 import 'package:nutmeg/state/UserState.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
@@ -42,21 +42,34 @@ class RatePlayerBottomModal extends StatelessWidget {
   static Future<void> rateAction(BuildContext context, String matchId) async {
     bool userDismissedRateAction = false;
 
+    // Get the existing UserRatings state from MatchDetails
+    var userRatings = context.read<UserRatings>();
+
+    // Get the list of users to rate
+    var toRate = context
+        .read<MatchesState>()
+        .getMatch(matchId)!
+        .getToRate(context.read<UserState>().currentUserId!);
+
+    // Create RatingPlayersMultiState with preloaded ratings
+    var ratingState = RatingPlayersMultiState(toRate);
+    toRate.asMap().forEach((index, userId) {
+      var rating = userRatings.getRating(userId);
+      ratingState.setScore(index, rating);
+    });
+
     bool completed = await ModalBottomSheet.showNutmegModalBottomSheet(
             context,
             MultiProvider(providers: [
-              ChangeNotifierProvider(
-                  create: (context) => RatingPlayersMultiState(context
-                      .read<MatchesState>()
-                      .getMatch(matchId)!
-                      .getToRate(context.read<UserState>().currentUserId!))),
+              ChangeNotifierProvider.value(value: ratingState),
+              ChangeNotifierProvider.value(value: userRatings),
             ], child: RatePlayerSingleSheet(matchId: matchId))) ??
         false;
 
     userDismissedRateAction = !completed;
 
     if (!userDismissedRateAction) {
-      await MatchAwardsModal.bestAwardAction(context, matchId);
+      await MatchAwardsModal.bestAwardAction(context, matchId, userRatings);
     }
   }
 
@@ -223,12 +236,9 @@ class RatePlayerSingleSheet extends StatelessWidget {
                 Expanded(
                   child: GenericButtonWithLoaderAndErrorHandling(
                       AppLocalizations.of(context)!.submitRatesButtonText,
-                      (BuildContext context) async {
-                    await CloudFunctionsClient().post(
-                        "matches/$matchId/ratings/add_multi",
+                      (BuildContext context) {
+                    context.read<UserRatings>().postRatings(
                         context.read<RatingPlayersMultiState>().getScored());
-                    await context.read<MatchesState>().fetchStillToVote(
-                        matchId, context.read<UserState>().currentUserId!);
                     Navigator.of(context).pop(true);
                   }, Primary()),
                 )
