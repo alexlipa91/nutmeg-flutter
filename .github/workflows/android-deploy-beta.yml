@@ -20,15 +20,5 @@ jobs:
       - run: echo $ANDROID_JSON | base64 -d > android/nutmeg-9099c-sa-credentials.json
         env:
           ANDROID_JSON: ${{ secrets.ANDROID_JSON }}
-      - name: Run Flutter tasks
-        uses: subosito/flutter-action@v1
-        with:
-          flutter-version: '3.13.9'
-      - run: flutter clean
-      - run: flutter pub get
-      - run: flutter build appbundle -t lib/screens/Launch.dart --release
-      - name: Deploy to Playstore production
-        uses: maierj/fastlane-action@v1.4.0
-        with:
-          lane: playstoreInternalTest
-          subdirectory: android
+      - name: Build and deploy to Playstore
+        run: ./scripts/deploy_android.sh production
