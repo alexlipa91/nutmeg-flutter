@@ -1,9 +1,9 @@
 name: Playstore Deployment
 
-# on:
-#   push:
-#     tags:
-#       - v*
+on:
+  push:
+    branches:
+      - master
 
 jobs:
   deploy_android:
