@@ -43,9 +43,10 @@ Future<void> rateAction(BuildContext context, String matchId) async {
 
   bool completed = await ModalBottomSheet.showNutmegModalBottomSheet(
           context,
-          MultiProvider(providers: [
-            ChangeNotifierProvider.value(value: userRatings),
-          ], child: RatePlayerSingleSheet(matchId: matchId))) ??
+          ChangeNotifierProvider.value(
+            value: userRatings,
+            child: RatePlayerSingleSheet(matchId: matchId),
+          )) ??
       false;
 
   userDismissedRateAction = !completed;

@@ -33,10 +33,8 @@ class MatchAwardsModal extends StatelessWidget {
   static Future<bool?> bestAwardAction(
       BuildContext context, String matchId, UserRatings userRatings) async {
     // Wait for both ratings and awards to be loaded
-    await Future.wait([
-      userRatings.fetchRatings(matchId),
-      userRatings.fetchAwards(matchId)
-    ]);
+    await Future.wait(
+        [userRatings.fetchRatings(matchId), userRatings.fetchAwards(matchId)]);
 
     return await ModalBottomSheet.showNutmegModalBottomSheet(
       context,
@@ -143,10 +141,10 @@ class MatchAwardsModal extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: Icon(
-                                award['icon'] as IconData,
-                                color: Palette.primary,
-                                size: 24,
-                              ),
+                                      award['icon'] as IconData,
+                                      color: Palette.primary,
+                                      size: 24,
+                                    ),
                             ),
                             SizedBox(width: 16),
                             Expanded(
