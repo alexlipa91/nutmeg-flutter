@@ -30,8 +30,9 @@ class CreateCourtState extends State<CreateCourt> {
   bool changeRoomsAvailable = false;
 
   String? address;
-  String? name;
+  String? name; 
   String? placeId;
+  String? city;
   double? lat;
   double? lng;
 

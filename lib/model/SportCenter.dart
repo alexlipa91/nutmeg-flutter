@@ -46,6 +46,7 @@ extension SurfaceExstension on Surface {
 class SportCenter {
   String placeId;
   String address;
+  String city;
   String name;
   double lat;
   double lng;
@@ -65,6 +66,7 @@ class SportCenter {
       : placeId = documentId,
         name = json!['name'],
         address = json['address'],
+        city = json['city'],
         lat = json['lat'],
         lng = json['lng'],
         country = json['country'] ?? 'NL',
@@ -81,6 +83,7 @@ class SportCenter {
 
   Map<String, dynamic> toJson() => {
         'address': address,
+        'city': city,
         'placeId': placeId,
         'name': name,
         'lat': lat,
