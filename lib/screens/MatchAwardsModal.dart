@@ -208,9 +208,7 @@ class MatchAwardsModal extends StatelessWidget {
                                   }).toList(),
                                 ],
                                 onChanged: (String? value) {
-                                  if (value != null) {
-                                    userRatings.setAward(award['id'], value);
-                                  }
+                                  userRatings.setAward(award['id'], value);
                                 },
                               ),
                             ),

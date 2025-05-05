@@ -26,12 +26,14 @@ class UserRatings extends ChangeNotifier {
 
   /// Map storing awards given by the user.
   /// Key is the award ID, value is the user ID who received the award.
-  Map<String, String?> _awards = {
-    'best_goal': null,
-    'best_striker': null,
-    'best_goalkeeper': null,
-    'best_defender': null,
-  };
+  Map<String, String?> _awards = {};
+
+  List<String> _awardIds = [
+    'best_goal',
+    'best_striker',
+    'best_goalkeeper',
+    'best_defender',
+  ];
 
   /// Checks if the user has given any ratings or awards for this match.
   bool isEmpty() {
@@ -49,7 +51,7 @@ class UserRatings extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setAward(String awardId, String userId) {
+  void setAward(String awardId, String? userId) {
     _awards[awardId] = userId;
     notifyListeners();
   }
@@ -65,7 +67,8 @@ class UserRatings extends ChangeNotifier {
     _isLoading = true;
     notifyListeners();
     try {
-      var ratings = await CloudFunctionsClient().get("matches/$matchId/ratings/given");
+      var ratings =
+          await CloudFunctionsClient().get("matches/$matchId/ratings/given");
       _ratings = Map<String, int>.from(ratings ?? {});
     } finally {
       _isLoading = false;
@@ -78,7 +81,8 @@ class UserRatings extends ChangeNotifier {
     _isLoading = true;
     notifyListeners();
     try {
-      var awards = await CloudFunctionsClient().get("matches/$matchId/awards/given");
+      var awards =
+          await CloudFunctionsClient().get("matches/$matchId/awards/given");
       if (awards != null) {
         _awards = Map<String, String?>.from(awards);
       }
@@ -91,7 +95,8 @@ class UserRatings extends ChangeNotifier {
   /// Posts multiple ratings to the backend.
   /// Updates the local state after successful posting.
   void postRatings() async {
-    await CloudFunctionsClient().post("matches/$matchId/ratings/add_multi", _ratings);
+    await CloudFunctionsClient()
+        .post("matches/$matchId/ratings/add_multi", _ratings);
     _ratings = Map<String, int>.from(_ratings);
     notifyListeners();
   }
@@ -99,9 +104,12 @@ class UserRatings extends ChangeNotifier {
   /// Posts awards to the backend.
   /// Only posts non-null awards and updates the local state after successful posting.
   void postAwards() async {
-    await CloudFunctionsClient().post("matches/$matchId/awards/add", _awards);
-    _awards = Map<String, String?>.from(_awards);
-    notifyListeners();  
+    var allAwards = Map<String, String?>();
+    for (var awardId in _awardIds) {
+      allAwards[awardId] = _awards[awardId];
+    }
+    await CloudFunctionsClient().post("matches/$matchId/awards/add", allAwards);
+    notifyListeners();
   }
 
   /// Copies ratings and awards from another UserRatings instance
@@ -110,4 +118,4 @@ class UserRatings extends ChangeNotifier {
     _awards = Map<String, String?>.from(other._awards);
     notifyListeners();
   }
-} 
+}
