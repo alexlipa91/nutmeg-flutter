@@ -240,10 +240,27 @@ class Match {
 class Ratings {
   Map<String, double> scores;
   List<String>? potms;
+  // user_id -> {award_id -> number_of_votes}
+  Map<String, Map<String, int>> awards;
+
+  static Map<String, Map<String, int>> readAwards(
+      Map<String, dynamic> awardsJson) {
+    
+    var awards = Map<String, Map<String, int>>();
+    for (var award in awardsJson.entries) {
+      var awardId = award.key;
+      var votes = Map<String, int>.from(award.value);
+      awards[awardId] = votes;
+    }
+    print("read awards");
+    print(awards);
+    return awards;
+  }
 
   Ratings.fromJson(Map<String, dynamic> jsonInput)
       : scores = Map<String, double>.from(jsonInput["scores"]),
-        potms = List<String>.from(jsonInput["potms"] ?? []);
+        potms = List<String>.from(jsonInput["potms"] ?? []),
+        awards = readAwards(jsonInput["awards"]);
 }
 
 class Payout {

@@ -10,6 +10,7 @@ import 'package:go_router/go_router.dart';
 import 'package:nutmeg/state/MatchState.dart';
 import 'package:nutmeg/state/UsersState.dart';
 import 'package:nutmeg/utils/LocationUtils.dart';
+import 'package:nutmeg/widgets/UserAwardsReceived.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:map_launcher/map_launcher.dart';
@@ -260,6 +261,14 @@ List<Widget> getWidgets(
       ? Stats()
       : null;
 
+  var awards = null;
+
+  if (ratings != null && ratings.awards.isNotEmpty) {
+    awards = UserAwardsReceivedList(awards: ratings.awards);
+  }
+
+  print(awards);
+
   var sportCenterDetails =
       SportCenterDetails(match: match, sportCenter: sportCenter);
 
@@ -330,6 +339,7 @@ List<Widget> getWidgets(
       matchInfo,
       // stats
       if (infoPlayersList != null) infoPlayersList,
+      if (awards != null) awards,
       if (teamsWidget != null) teamsWidget,
       if (stats != null) stats,
       // horizontal players list or teams
@@ -355,7 +365,8 @@ List<Widget> getWidgets(
                         matchInfo,
                         if (infoPlayersList != null) infoPlayersList,
                         if (teamsWidget != null) teamsWidget,
-                        if (stats != null) stats
+                        if (stats != null) stats,
+                        if (awards != null) awards,
                       ],
                       SizedBox(
                         height: 16,
