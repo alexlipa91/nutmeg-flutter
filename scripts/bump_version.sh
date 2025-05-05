@@ -44,6 +44,11 @@ git commit -m "Bump version to $VERSION+$BUILD_NUMBER"
 echo "Creating tag v$VERSION..."
 git tag -a "v$VERSION" -m "Release version $VERSION"
 
+if [ $? -ne 0 ]; then
+    echo "Error: Failed to create tag"
+    exit 1
+fi
+
 echo "Done! Version bumped to $VERSION+$BUILD_NUMBER"
 echo "Pushing the commit and tag"
 git push && git push --tags 
