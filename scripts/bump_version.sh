@@ -45,5 +45,5 @@ echo "Creating tag v$VERSION..."
 git tag -a "v$VERSION" -m "Release version $VERSION"
 
 echo "Done! Version bumped to $VERSION+$BUILD_NUMBER"
-echo "Don't forget to push the commit and tag:"
-echo "git push && git push --tags" 
+echo "Pushing the commit and tag"
+git push && git push --tags 
