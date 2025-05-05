@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
@@ -158,7 +159,45 @@ class UserState extends ChangeNotifier {
       await CloudFunctionsClient().post("users/$uid/add", userDetails.toJson());
     }
 
+    await askForNotificationPermissionAndStoreToken();
+
     _setCurrentUserDetails(userDetails);
+  }
+
+  Future<void> askForNotificationPermissionAndStoreToken() async {
+    if (!isLoggedIn()) {
+      return;
+    }
+
+    NotificationSettings currentSettings =
+        await FirebaseMessaging.instance.getNotificationSettings();
+
+    logger.info(
+        'Current notification settings: ${currentSettings.authorizationStatus.name}');
+
+    if (currentSettings.authorizationStatus ==
+            AuthorizationStatus.notDetermined ||
+        currentSettings.authorizationStatus == AuthorizationStatus.denied) {
+      logger.info('Requesting notification permissions for the first time');
+      await FirebaseMessaging.instance.requestPermission();
+    }
+
+    if (currentSettings.authorizationStatus == AuthorizationStatus.authorized) {
+      logger.info('Requesting FCM Web Token');
+
+      const vapidKey = String.fromEnvironment('FIREBASE_VAPID_KEY');
+      String? token = await FirebaseMessaging.instance
+          .getToken(vapidKey: vapidKey)
+          .timeout(Duration(seconds: 5), onTimeout: () {
+        logger.info("FCM Web Token request took too long, skipping");
+        return null;
+      });
+
+      if (token != null) {
+        logger.info('FCM Web Token obtained: ${token.substring(0, 5)}...');
+        await storeUserToken(token);
+      }
+    }
   }
 
   Future<void> continueWithFacebook(BuildContext context) async {

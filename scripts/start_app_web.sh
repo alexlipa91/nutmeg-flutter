@@ -27,6 +27,8 @@ if [ "$DEVICE" == "web-server" ]; then
     PARAMETRICS_ARGS="-d web-server --web-hostname=0.0.0.0"
 elif [ "$DEVICE" == "chrome" ]; then
     PARAMETRICS_ARGS="-d chrome"
+elif [ "$DEVICE" == "android" ]; then
+    PARAMETRICS_ARGS="-d emulator-5554"
 fi
 
 fvm flutter run \

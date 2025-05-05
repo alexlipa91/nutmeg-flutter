@@ -45,40 +45,6 @@ class LaunchController {
     GoRouter.of(navigatorKey.currentContext!).go(message.data["route"]);
   }
 
-  static Future<void> askForNotificationPermissionAndStoreToken(
-      BuildContext context) async {
-    NotificationSettings currentSettings =
-        await FirebaseMessaging.instance.getNotificationSettings();
-
-    logger.info('Current notification settings: $currentSettings');
-
-    if (currentSettings.authorizationStatus ==
-        AuthorizationStatus.notDetermined) {
-      logger.info('Requesting notification permissions for the first time');
-      await FirebaseMessaging.instance.requestPermission();
-    }
-
-    if (currentSettings.authorizationStatus == AuthorizationStatus.authorized) {
-      logger.info('Requesting FCM Web Token');
-      _storeUserToken(context.read<UserState>());
-    }
-  }
-
-  static Future<void> _storeUserToken(UserState userState) async {
-    const vapidKey = String.fromEnvironment('FIREBASE_VAPID_KEY');
-    String? token = await FirebaseMessaging.instance
-        .getToken(vapidKey: vapidKey)
-        .timeout(Duration(seconds: 5), onTimeout: () {
-      logger.info("FCM Web Token request took too long, skipping");
-      return null;
-    });
-
-    if (token != null) {
-      logger.info('FCM Web Token obtained: ${token.substring(0, 5)}...');
-      await userState.storeUserToken(token);
-    }
-  }
-
   static void setupNotificationsHandler(BuildContext context) async {
     logger.info("setting up notification handler");
 
@@ -216,13 +182,7 @@ class LaunchController {
     RemoteMessage? initialMessage =
         await FirebaseMessaging.instance.getInitialMessage();
 
-    if (context.read<UserState>().isLoggedIn()) {
-      try {
-        await askForNotificationPermissionAndStoreToken(context);
-      } catch (e, s) {
-        logger.severe("error storing user token", e, s);
-      }
-    }
+    context.read<UserState>().askForNotificationPermissionAndStoreToken();
     setupNotificationsHandler(context);
 
     tz.initializeTimeZones();
