@@ -204,6 +204,12 @@
     "yourCourtsTitle": "Your Courts",
 
     "matchStatsTitle": "Top Performing Players",
+    "matchStatsSubTitle": "{n} voters",
+    "@matchStatsSubTitle": {
+        "placeholders": {
+            "n":  {"type": "int", "example": "7"}
+        }
+    },
 
     "createNewCourtText": "Create new Court",
     "courtInfoText": "Court Information",

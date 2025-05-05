@@ -242,6 +242,7 @@ class Ratings {
   List<String>? potms;
   // user_id -> {award_id -> number_of_votes}
   Map<String, Map<String, int>> awards;
+  int numDistinctScoreVoters;
 
   static Map<String, Map<String, int>> readAwards(
       Map<String, dynamic> awardsJson) {
@@ -260,7 +261,8 @@ class Ratings {
   Ratings.fromJson(Map<String, dynamic> jsonInput)
       : scores = Map<String, double>.from(jsonInput["scores"]),
         potms = List<String>.from(jsonInput["potms"] ?? []),
-        awards = readAwards(jsonInput["awards"]);
+        awards = readAwards(jsonInput["awards"]),
+        numDistinctScoreVoters = jsonInput["num_distinct_score_voters"];
 }
 
 class Payout {

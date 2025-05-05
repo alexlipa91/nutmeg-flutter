@@ -264,7 +264,13 @@ List<Widget> getWidgets(
   var awards = null;
 
   if (ratings != null && ratings.awards.isNotEmpty) {
-    awards = UserAwardsReceivedList(awards: ratings.awards);
+    // Compute the number of distinct voters for awards
+    final Set<String> distinctAwardVoters = ratings.awards.values
+        .expand((userVotes) => userVotes.keys)
+        .toSet();
+    awards = UserAwardsReceivedList(
+      awards: ratings.awards,
+    );
   }
 
   print(awards);
@@ -339,9 +345,9 @@ List<Widget> getWidgets(
       matchInfo,
       // stats
       if (infoPlayersList != null) infoPlayersList,
-      if (awards != null) awards,
       if (teamsWidget != null) teamsWidget,
       if (stats != null) stats,
+      if (awards != null) awards,
       // horizontal players list or teams
       sportCenterDetails,
       if (rules(false) != null) rules(false)!,
@@ -1131,8 +1137,10 @@ class Stats extends StatelessWidget {
             );
     }
 
-    return InfoContainerWithTitle(
-        title: AppLocalizations.of(context)!.matchStatsTitle, body: child);
+    return InfoContainerWithTitleAndSubtitle(
+        title: AppLocalizations.of(context)!.matchStatsTitle,
+        subtitle: AppLocalizations.of(context)!.matchStatsSubTitle(ratings?.numDistinctScoreVoters ?? 0),
+        body: child);
   }
 
   List<MapEntry<String, double?>> filterEntries(

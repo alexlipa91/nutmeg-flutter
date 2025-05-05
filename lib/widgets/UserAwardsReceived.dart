@@ -40,7 +40,13 @@ class UserAwardsReceivedList extends StatelessWidget {
       },
     ];
 
-    return InfoContainerWithTitle(
+    // Compute the number of distinct voters
+    final Set<String> distinctVoters = awards.values
+        .expand((userVotes) => userVotes.keys)
+        .toSet();
+
+    return InfoContainerWithTitleAndSubtitle(
+      subtitle: l10n.matchStatsSubTitle(distinctVoters.length),
       title: l10n.matchAwardsTitle,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

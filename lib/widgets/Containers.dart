@@ -65,6 +65,39 @@ class InfoContainerWithTitle extends StatelessWidget {
   }
 }
 
+class InfoContainerWithTitleAndSubtitle extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final Widget body;
+  final EdgeInsets padding;
+
+  const InfoContainerWithTitleAndSubtitle({
+    Key? key,
+    required this.title,
+    required this.subtitle,
+    required this.body,
+    this.padding = const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return InfoContainer(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: TextPalette.h2),
+          SizedBox(height: 8),
+          Text(subtitle, style: TextPalette.bodyText),
+          SizedBox(height: 12),
+          body
+        ],
+      ),
+      padding: padding,
+    );
+  }
+}
+
+
 class NutmegDivider extends StatelessWidget {
 
   final bool horizontal;
