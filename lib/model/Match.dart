@@ -2,10 +2,10 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:nutmeg/model/SportCenter.dart';
+import 'package:nutmeg/state/UserState.dart';
 import 'package:timezone/timezone.dart' as tz;
 
 import 'UserDetails.dart';
-
 
 enum MatchStatus {
   open, // match is on and can be joined
@@ -23,14 +23,11 @@ class Price {
 
   Price(this.basePrice, this.userFee);
 
-  Price.fromJson(Map<String, dynamic> json):
-      basePrice = json["basePrice"],
-      userFee = json["userFee"];
+  Price.fromJson(Map<String, dynamic> json)
+      : basePrice = json["basePrice"],
+        userFee = json["userFee"];
 
-  Map<String, dynamic> toJson() => {
-    "basePrice": basePrice,
-    "userFee": userFee
-  };
+  Map<String, dynamic> toJson() => {"basePrice": basePrice, "userFee": userFee};
 
   int getBasePrice() => basePrice;
   int getTotalPrice() => basePrice + userFee;
@@ -73,17 +70,25 @@ class Match {
   Payout? payout;
 
   bool isPrivate;
-  bool isTest;
+  bool isTest = false;
 
   Match(
       this.dateTime,
       this.sportCenterId,
       this.sportCenter,
       this.sportCenterSubLocation,
-      this.maxPlayers, this.price, this.duration,
-      this.isTest, this.minPlayers, this.organizerId,
-      this.going, this.computedTeams, this.manualTeams,
-      this.isPrivate, this.cancelBefore, this.score);
+      this.maxPlayers,
+      this.price,
+      this.duration,
+      this.isTest,
+      this.minPlayers,
+      this.organizerId,
+      this.going,
+      this.computedTeams,
+      this.manualTeams,
+      this.isPrivate,
+      this.cancelBefore,
+      this.score);
 
   Match.fromJson(Map<String, dynamic> jsonInput, String documentId)
       : dateTime = DateTime.parse(jsonInput['dateTime']),
@@ -95,15 +100,19 @@ class Match {
         computedTeams = _readComputedTeams(jsonInput),
         manualTeams = _readManualTeams(jsonInput),
         hasManualTeams = jsonInput["hasManualTeams"],
-        price = jsonInput["price"] == null ? null : Price.fromJson(jsonInput['price']),
+        price = jsonInput["price"] == null
+            ? null
+            : Price.fromJson(jsonInput['price']),
         sportCenterId = jsonInput['sportCenterId'],
         score = jsonInput["score"] == null
             ? null
             : List<int>.from(jsonInput["score"]),
         dynamicLink = jsonInput["dynamicLink"],
-        sportCenter = jsonInput["sportCenter"] == null ? null : SportCenter.fromJson(
-            Map<String, dynamic>.from(jsonInput["sportCenter"]),
-            jsonInput["sportCenter"]["placeId"]),
+        sportCenter = jsonInput["sportCenter"] == null
+            ? null
+            : SportCenter.fromJson(
+                Map<String, dynamic>.from(jsonInput["sportCenter"]),
+                jsonInput["sportCenter"]["placeId"]),
         isPrivate = jsonInput["isPrivate"] ?? false,
         payout = jsonInput["payout"] != null
             ? Payout.fromJson(jsonInput["payout"])
@@ -164,18 +173,15 @@ class Match {
         if (sportCenter != null) 'sportCenter': sportCenter!.toJson(),
         if (sportCenterSubLocation != null)
           'sportCenterSubLocation': sportCenterSubLocation,
-        if (price != null)
-          'price': price!.toJson(),
+        if (price != null) 'price': price!.toJson(),
         'maxPlayers': maxPlayers,
         'minPlayers': minPlayers,
         if (cancelledAt != null) 'cancelledAt': cancelledAt,
         if (hasManualTeams != null) "hasManualTeams": hasManualTeams,
         'duration': duration.inMinutes,
         'organizerId': organizerId,
-        if (cancelBefore != null)
-          'cancelHoursBefore': cancelBefore?.inHours,
-        if (score != null)
-          'score': score,
+        if (cancelBefore != null) 'cancelHoursBefore': cancelBefore?.inHours,
+        if (score != null) 'score': score,
         "isPrivate": isPrivate,
         "dynamicLink": dynamicLink,
         'isTest': isTest
@@ -204,10 +210,10 @@ class Match {
 
   bool hasTeams() => computedTeams.isNotEmpty;
 
-  TimeOfDay getLocalizedStart() => TimeOfDay(hour: getLocalizedTime().hour,
-      minute: getLocalizedTime().minute);
-  TimeOfDay getLocalizedEnd() => TimeOfDay(hour: getLocalizedTime()
-      .add(duration).hour,
+  TimeOfDay getLocalizedStart() => TimeOfDay(
+      hour: getLocalizedTime().hour, minute: getLocalizedTime().minute);
+  TimeOfDay getLocalizedEnd() => TimeOfDay(
+      hour: getLocalizedTime().add(duration).hour,
       minute: getLocalizedTime().add(duration).minute);
 
   List<String> getToRate(String currentUser) {
@@ -218,18 +224,17 @@ class Match {
     return l;
   }
 
-  DateTime getLocalizedTime() =>
-      tz.TZDateTime.from(dateTime, tz.getLocation(sportCenter?.timezoneId ?? ""));
+  DateTime getLocalizedTime() {
+    var location = tz.getLocation(sportCenter?.timezoneId ?? tz.local.name);
+    return tz.TZDateTime.from(dateTime, location);
+  }
 
-  DateTime getLocalizedTimeCancellation() =>
-      tz.TZDateTime.from(dateTime.subtract(cancelBefore!),
-          tz.getLocation(sportCenter?.timezoneId ?? ""));
+  DateTime getLocalizedTimeCancellation() {
+    var location = tz.getLocation(sportCenter?.timezoneId ?? tz.local.name);
+    return tz.TZDateTime.from(dateTime.subtract(cancelBefore!), location);
+  }
 
   bool isMatchFinished() => DateTime.now().isAfter(dateTime.add(duration));
-
-  bool canUserModifyTeams(String? userId) {
-    return userId != null && userId == organizerId && status != MatchStatus.rated;
-  }
 }
 
 class Ratings {
@@ -248,7 +253,7 @@ class Payout {
 
   Payout.fromJson(Map<String, dynamic> json)
       : status = json["status"],
-        arrivalDate = DateTime.fromMillisecondsSinceEpoch(json["arrival_date"]
-            * 1000),
+        arrivalDate =
+            DateTime.fromMillisecondsSinceEpoch(json["arrival_date"] * 1000),
         amount = json["amount"];
 }

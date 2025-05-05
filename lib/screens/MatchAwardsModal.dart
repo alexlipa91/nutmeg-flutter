@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:nutmeg/state/MatchesState.dart';
 import 'package:nutmeg/state/UserState.dart';
 import 'package:nutmeg/state/UserRatings.dart';
+import 'package:nutmeg/state/UsersState.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/Avatar.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
@@ -101,9 +102,9 @@ class MatchAwardsModal extends StatelessWidget {
     if (match == null) return Container();
 
     // Get all players except current user
-    final currentUserId = context.read<UserState>().currentUserId;
+    final currentUserId = context.read<UserState>().getLoggedUserId();
     final players =
-        match.going.keys.where((id) => id != currentUserId).toList();
+        match.match?.going.keys.where((id) => id != currentUserId).toList();
 
     final l10n = AppLocalizations.of(context)!;
     final userRatings = context.watch<UserRatings>();
@@ -166,11 +167,13 @@ class MatchAwardsModal extends StatelessWidget {
                                       horizontal: 8, vertical: 4),
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(8),
-                                    borderSide: BorderSide(color: Palette.greyLight),
+                                    borderSide:
+                                        BorderSide(color: Palette.greyLight),
                                   ),
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(8),
-                                    borderSide: BorderSide(color: Palette.greyLight),
+                                    borderSide:
+                                        BorderSide(color: Palette.greyLight),
                                   ),
                                 ),
                                 items: [
@@ -181,9 +184,9 @@ class MatchAwardsModal extends StatelessWidget {
                                         overflow: TextOverflow.ellipsis,
                                         maxLines: 1),
                                   ),
-                                  ...players.map((playerId) {
+                                  ...players!.map((playerId) {
                                     final user = context
-                                        .watch<UserState>()
+                                        .watch<UsersState>()
                                         .getUserDetail(playerId);
                                     return DropdownMenuItem<String>(
                                       value: playerId,

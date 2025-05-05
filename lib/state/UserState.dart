@@ -4,58 +4,76 @@ import 'package:flutter/material.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
-import 'package:nutmeg/controller/LaunchController.dart';
-import 'package:provider/provider.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:logging/logging.dart';
 
 import '../model/SportCenter.dart';
 import '../model/UserDetails.dart';
 import '../screens/EnterDetails.dart';
-import 'MatchesState.dart';
 
 final logger = Logger('UserState');
 
 class UserState extends ChangeNotifier {
+  static Future<UserDetails?> _fetchUserDetails(String uid) async {
+    logger.info('fetching user details for $uid');
+    var resp = await CloudFunctionsClient().get("users/$uid");
+
+    return (resp == null) ? null : UserDetails.fromJson(resp, uid);
+  }
+
   // hold current user id
-  String? currentUserId;
+  UserDetails? _usersDetails;
+
+  String? _previousUserId;
+
   bool _isTestMode = false;
 
-  // holds state for all users' data (both logged in user and others)
-  Map<String, UserDetails> _usersDetails = Map();
+  UserDetails? getLoggedUserDetails() => _usersDetails;
 
-  UserDetails? getLoggedUserDetails() => _usersDetails[currentUserId];
-
-  void setCurrentUserDetails(UserDetails u) {
-    currentUserId = u.documentId;
-    if (u.getIsAdmin()) {
-      _isTestMode = true;
-    }
-    setUserDetail(u);
-  }
-
-  void setUserDetail(UserDetails u) {
-    _usersDetails[u.documentId] = u;
-    notifyListeners();
-  }
-
-  UserDetails? getUserDetail(String uid) => _usersDetails[uid];
+  String? getLoggedUserId() => _usersDetails?.documentId;
 
   bool get isTestMode => _isTestMode;
 
-  void setTestMode(bool value) {
-    _isTestMode = value;
+  bool isLoggedIn() => _usersDetails != null;
+
+  List<SportCenter>? getSportCenters() => _sportCenters;
+
+  void notifyListeners() {
+    logger.info('UserState ${this.hashCode} notifying listeners');
+    print(_usersDetails?.documentId);
+    super.notifyListeners();
+  }
+
+  bool haveUserChanged() {
+    return _previousUserId != _usersDetails?.documentId;
+  }
+
+  // SETTERS that trigger a notifyListeners
+  void setTestMode(bool isTestMode) {
+    _isTestMode = isTestMode;
     notifyListeners();
   }
 
-  bool isLoggedIn() => currentUserId != null;
+  void _setCurrentUserDetails(UserDetails? u) {
+    if (u?.getIsAdmin() ?? false) {
+      _isTestMode = true;
+    }
+    _previousUserId = _usersDetails?.documentId;
+    _usersDetails = u;
+    notifyListeners();
+  }
+
+  void _setSportCenters(List<SportCenter> sportCenters) {
+    _sportCenters = sportCenters;
+    notifyListeners();
+  }
 
   Future<void> logout() async {
     await FirebaseAuth.instance.signOut();
     if (await googleSignIn.isSignedIn()) {
       await googleSignIn.disconnect();
     }
-    currentUserId = null;
+    _setCurrentUserDetails(null);
     _sportCenters = null;
 
     // force refresh token to invalidate cached token
@@ -67,7 +85,7 @@ class UserState extends ChangeNotifier {
   // user sport centers
   List<SportCenter>? _sportCenters;
 
-  Future<UserDetails?> fetchLoggedUserDetails() async {
+  Future<void> fetchLoggedUserDetails() async {
     // uncomment this to navigate as another user for testing
     // return fetchUserDetails("bQHD0EM265V6GuSZuy1uQPHzb602");
 
@@ -77,38 +95,25 @@ class UserState extends ChangeNotifier {
       return null;
     }
 
-    return fetchUserDetails(u.uid);
-  }
-
-  Future<UserDetails> getOrFetch(String uid) async {
-    var u = _usersDetails[uid] ?? (await fetchUserDetails(uid));
-    return u!;
-  }
-
-  Future<UserDetails?> fetchUserDetails(String uid) async {
-    logger.info('fetching user details for $uid');
-    var resp = await CloudFunctionsClient().get("users/$uid");
-
-    var ud = (resp == null) ? null : UserDetails.fromJson(resp, uid);
-    if (ud != null) setUserDetail(ud);
-
-    return ud;
+    var ud = await _fetchUserDetails(u.uid);
+    if (ud != null) _setCurrentUserDetails(ud);
   }
 
   Future<void> editUser(Map<String, dynamic> data) async {
-    await CloudFunctionsClient().post("users/${currentUserId!}", data);
+    // TODO: maybe we should not fetch the user details again
+    await CloudFunctionsClient().post("users/${getLoggedUserId()!}", data);
     await fetchLoggedUserDetails();
   }
 
   Future<void> storeUserToken(String token) async {
     logger.config('storing user token: $token');
     CloudFunctionsClient()
-        .post("users/${currentUserId!}/tokens", {"token": token});
+        .post("users/${getLoggedUserId()!}/tokens", {"token": token});
   }
 
-  Future<List<SportCenter>> fetchLoggedUserSportCenters() async {
+  Future<void> fetchLoggedUserSportCenters() async {
     Map<String, dynamic> data = await CloudFunctionsClient()
-            .get("sportcenters", args: {"user": currentUserId!}) ??
+            .get("sportcenters", args: {"user": getLoggedUserId()!}) ??
         {};
 
     _sportCenters = data.entries
@@ -116,79 +121,21 @@ class UserState extends ChangeNotifier {
             SportCenter.fromJson(Map<String, dynamic>.from(e.value), e.key))
         .toList();
 
-    notifyListeners();
-    return _sportCenters!;
-  }
-
-  List<SportCenter>? getSportCenters() => _sportCenters;
-
-  // user location
-  // default to Barcelona, Spain for now
-  LocationInfo _deviceLocationInfo =
-      LocationInfo("ES", "Barcelona", 41.385063, 2.173404);
-
-  void setCustomLocationInfo(LocationInfo l) {
-    _deviceLocationInfo = l;
-    notifyListeners();
-  }
-
-  Future<void> setLocationInfo(LocationInfo? position) async {
-    if (position != null) {
-      _deviceLocationInfo = position;
+    if (_sportCenters != null) {
+      _setSportCenters(_sportCenters!);
+    } else {
+      logger.severe('sportcenters not found for user ${getLoggedUserId()}');
     }
   }
 
-  LocationInfo getLocationInfo() =>
-      _usersDetails[currentUserId]?.location ?? _deviceLocationInfo;
-
+  // GOOGLE SIGN IN
   GoogleSignIn googleSignIn = GoogleSignIn();
 
-  Future<void> continueWithGoogle(BuildContext context) async {
-    FirebaseAuth auth = FirebaseAuth.instance;
-
-    try {
-      await auth.signOut();
-      await googleSignIn.signOut();
-      await googleSignIn.disconnect();
-
-      print("using debug mode");
-      print("after sign out in with google");
-
-      final GoogleSignInAccount? googleSignInAccount =
-          await googleSignIn.signIn();
-
-      print("after sign in with google");
-
-      final GoogleSignInAuthentication? googleSignInAuthentication =
-          await googleSignInAccount?.authentication;
-
-      print("after get google sign in authentication");
-
-      final AuthCredential credential = GoogleAuthProvider.credential(
-        accessToken: googleSignInAuthentication?.accessToken,
-        idToken: googleSignInAuthentication?.idToken,
-      );
-
-      print("after get credential");
-
-      var userCredentials = await auth.signInWithCredential(credential);
-
-      print("after sign in with credential ${userCredentials.user?.uid}");
-
-      await login(context, userCredentials);
-    } catch (e, stackTrace) {
-      logger.severe('Error during Google sign-in', e.toString(), stackTrace);
-    }
-  }
-
   Future<void> login(
-      BuildContext context, UserCredential userCredential) async {
-    var userState = context.read<UserState>();
-
+      UserCredential userCredential, BuildContext context) async {
     var uid = userCredential.user?.uid;
 
-    UserDetails? userDetails =
-        await context.read<UserState>().fetchUserDetails(uid!);
+    UserDetails? userDetails = await UserState._fetchUserDetails(uid!);
 
     // check if first time
     if (userDetails == null) {
@@ -211,16 +158,7 @@ class UserState extends ChangeNotifier {
       await CloudFunctionsClient().post("users/$uid/add", userDetails.toJson());
     }
 
-    userState.setCurrentUserDetails(userDetails);
-    try {
-      await LaunchController.askForNotificationPermissionAndStoreToken(context);
-    } catch (e, stack) {
-      logger.severe("error storing user token", e, stack);
-    }
-
-    // force refresh token
-    FirebaseAuth.instance.currentUser?.getIdToken();
-    await context.read<MatchesState>().refreshState(context);
+    _setCurrentUserDetails(userDetails);
   }
 
   Future<void> continueWithFacebook(BuildContext context) async {
@@ -249,7 +187,7 @@ class UserState extends ChangeNotifier {
       userCred = await FirebaseAuth.instance
           .signInWithCredential(facebookAuthCredential);
     }
-    await login(context, userCred);
+    await login(userCred, context);
   }
 
   Future<void> continueWithApple(BuildContext context) async {
@@ -280,27 +218,6 @@ class UserState extends ChangeNotifier {
     final userCredential =
         await FirebaseAuth.instance.signInWithCredential(oauthCredential);
 
-    return login(context, userCredential);
+    await login(userCredential, context);
   }
-}
-
-class LocationInfo {
-  // these are city coordinates:
-  double lat;
-  double lng;
-  String country;
-  String city;
-
-  LocationInfo(this.country, this.city, this.lat, this.lng);
-
-  LocationInfo.fromJson(Map<String, dynamic> json)
-      : country = json["country"],
-        city = json["city"],
-        lat = json["lat"],
-        lng = json["lng"];
-
-  Map<String, dynamic> toJson() =>
-      {"country": country, "city": city, "lat": lat, "lng": lng};
-
-  String getText() => "$city, $country";
 }

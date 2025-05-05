@@ -10,6 +10,7 @@ import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 import 'package:nutmeg/main.dart';
 import 'package:nutmeg/model/UserDetails.dart';
 import 'package:nutmeg/screens/EnterDetails.dart';
+import 'package:nutmeg/state/MatchesState.dart';
 import 'package:nutmeg/utils/LocationUtils.dart';
 import 'package:provider/provider.dart';
 import 'package:tuple/tuple.dart';
@@ -59,14 +60,22 @@ class LaunchController {
 
     if (currentSettings.authorizationStatus == AuthorizationStatus.authorized) {
       logger.info('Requesting FCM Web Token');
-      const vapidKey = String.fromEnvironment('FIREBASE_VAPID_KEY');
-      String? token =
-          await FirebaseMessaging.instance.getToken(vapidKey: vapidKey);
+      _storeUserToken(context.read<UserState>());
+    }
+  }
 
-      if (token != null) {
-        logger.info('FCM Web Token obtained: ${token.substring(0, 5)}...');
-        await context.read<UserState>().storeUserToken(token);
-      }
+  static Future<void> _storeUserToken(UserState userState) async {
+    const vapidKey = String.fromEnvironment('FIREBASE_VAPID_KEY');
+    String? token = await FirebaseMessaging.instance
+        .getToken(vapidKey: vapidKey)
+        .timeout(Duration(seconds: 5), onTimeout: () {
+      logger.info("FCM Web Token request took too long, skipping");
+      return null;
+    });
+
+    if (token != null) {
+      logger.info('FCM Web Token obtained: ${token.substring(0, 5)}...');
+      await userState.storeUserToken(token);
     }
   }
 
@@ -116,9 +125,13 @@ class LaunchController {
     var d = DeviceInfo();
     d.init();
 
+    var userState = context.read<UserState>();
+    var matchesState = context.read<MatchesState>();
+
     List<Future<dynamic>> futures = [
       getVersion(),
-      context.read<UserState>().fetchLoggedUserDetails(),
+      userState.fetchLoggedUserDetails(),
+      matchesState.fetchLocation(),
       _loadOnceData(context),
     ];
     var futuresData = await Future.wait(futures);
@@ -160,13 +173,6 @@ class LaunchController {
       }
     }
 
-    if (availableUserDetails?.location == null) {
-      var position = await getLocationFromIP();
-      logger.info(
-          "no location info in current session, fetch location $position");
-      await context.read<UserState>().setLocationInfo(position);
-    }
-
     // check if user is logged in
     var userDetails = availableUserDetails;
 
@@ -182,11 +188,6 @@ class LaunchController {
       } else {
         await context.read<UserState>().editUser({"name": name});
       }
-    }
-
-    if (userDetails != null) {
-      context.read<UserState>().setCurrentUserDetails(userDetails);
-      // trace.putAttribute("user_id", userDetails.documentId);
     }
 
     // request permissions FIXME

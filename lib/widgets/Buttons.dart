@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:nutmeg/state/MatchesState.dart';
+import 'package:nutmeg/state/MatchState.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-
 
 // MAIN PAGE BUTTONS
 class PrimaryButton extends StatelessWidget {
@@ -163,7 +162,7 @@ class ShareButtonWithText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var match = context.read<MatchesState>().getMatch(matchId);
+    var match = context.watch<MatchState>().match;
     var icon = Icon(Icons.share, color: color, size: iconSize);
 
     var child = Row(
@@ -176,11 +175,12 @@ class ShareButtonWithText extends StatelessWidget {
       ],
     );
 
-    return match == null ? Container() :
-      InkWell(
-        child: child,
-        onTap: () async {
-          await DynamicLinks.shareMatchFunction(context, match);
-        });
+    return match == null
+        ? Container()
+        : InkWell(
+            child: child,
+            onTap: () async {
+              await DynamicLinks.shareMatchFunction(context, match);
+            });
   }
 }

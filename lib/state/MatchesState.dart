@@ -2,134 +2,146 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:logging/logging.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
+import 'package:nutmeg/model/LocationInfo.dart';
 import 'package:nutmeg/model/Match.dart';
+import 'package:nutmeg/state/MatchState.dart';
 import 'package:nutmeg/state/UserState.dart';
-import 'package:provider/provider.dart';
+import 'package:nutmeg/utils/LocationUtils.dart';
+
+final logger = Logger("MatchesState");
 
 class MatchesState extends ChangeNotifier {
-  final logger = Logger("MatchesState");
+  UserState? userState;
 
-  // Add UserState as a field
-  final UserState userState;
+  LocationInfo? _locationInfo;
 
-  // Constructor to receive UserState
-  MatchesState(this.userState);
+  MatchesState() {
+    getLocationFromIP().then((location) {
+      if (location != null) {
+        _locationInfo = location;
+        // notifyListeners();
+      }
+    });
+  }
 
   // match details
-  Map<String, Match> matchesCache = Map();
+  Map<String, MatchState> _matches = Map();
 
   List<String>? _pastMatchesIds;
   List<String>? _upcomingMatchesIds;
   List<String>? _goingMatchesIds;
   List<String>? _myOrganizedMatchesIds;
 
-  // ratings per match
-  Map<String, Ratings> _ratingsPerMatch = Map();
-
-  // still to vote per match
-  Map<String, Map<String, List<String>>> _stillToVote = Map();
-
-  Ratings? getRatings(String matchId) => _ratingsPerMatch[matchId];
-
-  List<Match>? getMatches() {
-    return matchesCache.values.toList()
-      ..sort((a, b) => b.dateTime.compareTo(a.dateTime));
-  }
-
-  List<Match>? getPastMatches() {
+  List<MatchState>? getPastMatches() {
     return _pastMatchesIds
-            ?.map((e) => matchesCache[e])
-            .where((e) => e != null)
-            .map((e) => e!)
-            .toList() ??
-        [];
+        ?.map((e) => _matches[e])
+        .where((e) => e != null)
+        .map((e) => e!)
+        .toList();
   }
 
-  List<Match>? getUpcomingMatches() {
+  List<MatchState>? getUpcomingMatches() {
     return _upcomingMatchesIds
-            ?.map((e) => matchesCache[e])
-            .where((e) => e != null)
-            .map((e) => e!)
-            .toList() ??
-        [];
+        ?.map((e) => _matches[e])
+        .where((e) => e != null)
+        .map((e) => e!)
+        .toList();
   }
 
-  List<Match>? getGoingMatches() {
+  List<MatchState>? getGoingMatches() {
     return _goingMatchesIds
-            ?.map((e) => matchesCache[e])
-            .where((e) => e != null)
-            .map((e) => e!)
-            .toList() ??
-        [];
+        ?.map((e) => _matches[e])
+        .where((e) => e != null)
+        .map((e) => e!)
+        .toList();
   }
 
-  List<Match>? getMyOrganizedMatches() {
+  List<MatchState>? getMyOrganizedMatches() {
     return _myOrganizedMatchesIds
-            ?.map((e) => matchesCache[e])
-            .where((e) => e != null)
-            .map((e) => e!)
-            .toList() ??
-        [];
+        ?.map((e) => _matches[e])
+        .where((e) => e != null)
+        .map((e) => e!)
+        .toList();
   }
 
-  Match? getMatch(String matchId) => matchesCache[matchId];
-
-  List<String>? getStillToVote(String matchId, String userId) =>
-      _stillToVote[matchId]?[userId];
-
-  void hasVoted(String matchId, String giver, String receiver) {
-    var current = _stillToVote[matchId]![giver] ?? [];
-    List<String> newList = [];
-    current.forEach((u) {
-      if (u != receiver) {
-        newList.add(u);
-      }
-    });
-    _stillToVote[matchId]![giver] = newList;
+  void addToGoingMatches(String matchId) {
+    _goingMatchesIds?.add(matchId);
     notifyListeners();
   }
 
-  void _setMatch(Match m) {
-    matchesCache[m.documentId] = m;
-    notifyListeners();
+  MatchState getMatch(String matchId) {
+    if (!_matches.containsKey(matchId)) {
+      _matches[matchId] = MatchState(matchId, userState);
+    }
+    return _matches[matchId]!;
   }
 
-  void movePlayerToTeam(
-      String matchId, String userId, int teamTargetIndex) async {
-    getMatch(matchId)!.manualTeams[teamTargetIndex].add(userId);
-    getMatch(matchId)!.manualTeams[(teamTargetIndex + 1) % 2].remove(userId);
-
-    notifyListeners();
-
-    await storeManualTeams(matchId, getMatch(matchId)!.manualTeams);
-  }
-
-  Future<void> storeManualTeams(
-      String matchId, List<List<String>> teams) async {
-    getMatch(matchId)!.manualTeams = teams;
-    notifyListeners();
-
-    await editMatch(matchId, {
-      "teams.manual.players.a": teams[0],
-      "teams.manual.players.b": teams[1],
-    });
-  }
-
-  Set<String> getSportCenters() => matchesCache.values
-      .where((m) => m.sportCenterId != null)
-      .map((e) => e.sportCenterId!)
+  Set<String> getSportCenters() => _matches.values
+      .where((m) => m.match!.sportCenterId != null)
+      .map((e) => e.match!.sportCenterId!)
       .toSet();
 
-  Future<void> fetchGoingMatches(BuildContext context) async {
-    var userState = context.read<UserState>();
-    if (userState.currentUserId == null) return;
+  LocationInfo? get locationInfo => _locationInfo;
+
+  void setLocationInfo(LocationInfo locationInfo) {
+    _locationInfo = locationInfo;
+    notifyListeners();
+  }
+
+  void updateMatchStateBasedOnUser(UserState newUserState) {
+    if (newUserState.haveUserChanged()) {
+      logger.info("updating matches state based on user because user changed");
+      _pastMatchesIds = null;
+      _upcomingMatchesIds = null;
+      _goingMatchesIds = null;
+      _myOrganizedMatchesIds = null;
+      notifyListeners();
+
+      fetchGoingMatches();
+      fetchUpcomingMatches();
+      fetchPastMatches();
+      fetchMyOrganizedMatches();
+    }
+
+    userState = newUserState;
+  }
+
+  Match? deserializeMatch(MapEntry<String, dynamic> element) {
+    try {
+      return Match.fromJson(
+          Map<String, dynamic>.from(element.value), element.key);
+    } catch (e, s) {
+      logger.severe("Failed to deserialize match ${element.key.toString()}");
+      logger.severe(e);
+      logger.severe(s);
+      FirebaseCrashlytics.instance
+          .recordError(e, s, reason: 'failed to deserialize a match');
+      return null;
+    }
+  }
+
+  void notifyListeners() {
+    logger.info("MatchesState notifying listeners");
+    super.notifyListeners();
+  }
+
+  Future<void> fetchLocation() async {
+    var location = await getLocationFromIP();
+    _locationInfo =
+        location ?? LocationInfo("ES", "Barcelona", 41.385063, 2.173404);
+    notifyListeners();
+  }
+
+  Future<void> fetchGoingMatches() async {
+    if (userState?.getLoggedUserId() == null) return;
+    if (_locationInfo == null) return;
 
     Map<String, dynamic> params = {
-      "with_user": userState.currentUserId!,
+      "with_user": userState!.getLoggedUserId()!,
       "when": "future",
       "radius_km": 20,
-      "lat": userState.getLocationInfo().lat,
-      "lng": userState.getLocationInfo().lng,
+      "lat": _locationInfo!.lat,
+      "lng": _locationInfo!.lng,
       "version": 2,
     };
 
@@ -137,42 +149,31 @@ class MatchesState extends ChangeNotifier {
     Map<String, dynamic> data =
         (resp == null) ? Map() : Map<String, dynamic>.from(resp);
 
-    // filter tests and get sportcenters to download
-    Iterable<Match> matches = data.entries
-        .map((element) {
-          try {
-            return Match.fromJson(
-                Map<String, dynamic>.from(element.value), element.key);
-          } catch (e, s) {
-            print("Failed to deserialize match ${element.key.toString()}");
-            print(e);
-            print(s);
-            FirebaseCrashlytics.instance
-                .recordError(e, s, reason: 'failed to deserialize a match');
-            return null;
-          }
-        })
-        .where((e) => e != null)
-        .map((e) {
-          matchesCache[e!.documentId] = e;
-          return e;
-        })
-        .where((e) => (!e.isTest || userState.isTestMode));
+    List<String> matches = [];
 
-    _goingMatchesIds = matches.map((m) => m.documentId).toList();
+    // filter tests and get sportcenters to download
+    data.entries
+        .map((element) => deserializeMatch(element))
+        .where((e) => e != null)
+        .where((e) => (e!.isTest || userState!.isTestMode))
+        .forEach((m) {
+      _matches[m!.documentId] = MatchState.fromMatch(m, userState!);
+      matches.add(m.documentId);
+    });
+
+    _goingMatchesIds = matches;
 
     notifyListeners();
   }
 
-  Future<void> fetchUpcomingMatches(BuildContext context) async {
-    var userState = context.read<UserState>();
-    if (userState.currentUserId == null) return;
+  Future<void> fetchUpcomingMatches() async {
+    if (_locationInfo == null) return;
 
     Map<String, dynamic> params = {
       "when": "future",
       "radius_km": 20,
-      "lat": userState.getLocationInfo().lat,
-      "lng": userState.getLocationInfo().lng,
+      "lat": _locationInfo!.lat,
+      "lng": _locationInfo!.lng,
       "version": 2,
     };
 
@@ -180,40 +181,29 @@ class MatchesState extends ChangeNotifier {
     Map<String, dynamic> data =
         (resp == null) ? Map() : Map<String, dynamic>.from(resp);
 
-    // filter tests and get sportcenters to download
-    Iterable<Match> matches = data.entries
-        .map((element) {
-          try {
-            return Match.fromJson(
-                Map<String, dynamic>.from(element.value), element.key);
-          } catch (e, s) {
-            print("Failed to deserialize match ${element.key.toString()}");
-            print(e);
-            print(s);
-            FirebaseCrashlytics.instance
-                .recordError(e, s, reason: 'failed to deserialize a match');
-            return null;
-          }
-        })
-        .where((e) => e != null)
-        .map((e) {
-          matchesCache[e!.documentId] = e;
-          return e;
-        })
-        .where((e) => (!e.isTest || userState.isTestMode));
+    List<String> matches = [];
 
-    _upcomingMatchesIds = matches.map((m) => m.documentId).toList();
+    // filter tests and get sportcenters to download
+    data.entries
+        .map((element) => deserializeMatch(element))
+        .where((e) => e != null)
+        .where((e) => (e!.isTest || userState!.isTestMode))
+        .forEach((m) {
+      _matches[m!.documentId] = MatchState.fromMatch(m, userState!);
+      matches.add(m.documentId);
+    });
+
+    _upcomingMatchesIds = matches;
 
     notifyListeners();
   }
 
-  Future<void> fetchPastMatches(BuildContext context) async {
-    var userState = context.read<UserState>();
-    if (userState.currentUserId == null) return;
+  Future<void> fetchPastMatches() async {
+    if (userState?.getLoggedUserId() == null) return;
 
     Map<String, dynamic> params = {
       "when": "past",
-      "with_user": userState.currentUserId!,
+      "with_user": userState!.getLoggedUserId()!,
       "version": 2,
     };
 
@@ -221,123 +211,72 @@ class MatchesState extends ChangeNotifier {
     Map<String, dynamic> data =
         (resp == null) ? Map() : Map<String, dynamic>.from(resp);
 
-    // filter tests and get sportcenters to download
-    Iterable<Match> matches = data.entries
-        .map((element) {
-          try {
-            return Match.fromJson(
-                Map<String, dynamic>.from(element.value), element.key);
-          } catch (e, s) {
-            print("Failed to deserialize match ${element.key.toString()}");
-            print(e);
-            print(s);
-            FirebaseCrashlytics.instance
-                .recordError(e, s, reason: 'failed to deserialize a match');
-            return null;
-          }
-        })
-        .where((e) => e != null)
-        .map((e) {
-          matchesCache[e!.documentId] = e;
-          return e;
-        })
-        .where((e) => (!e.isTest || userState.isTestMode));
+    List<String> matches = [];
 
-    _pastMatchesIds = matches.map((m) => m.documentId).toList();
+    // filter tests and get sportcenters to download
+    data.entries
+        .map((element) => deserializeMatch(element))
+        .where((e) => e != null)
+        .where((e) => (e!.isTest || userState!.isTestMode))
+        .forEach((m) {
+      _matches[m!.documentId] = MatchState.fromMatch(m, userState!);
+      matches.add(m.documentId);
+    });
+
+    _pastMatchesIds = matches;
 
     notifyListeners();
   }
 
-  Future<void> fetchMyOrganizedMatches(BuildContext context) async {
-    var userState = context.read<UserState>();
-    if (userState.currentUserId == null) return;
+  Future<void> fetchMyOrganizedMatches() async {
+    if (userState?.getLoggedUserId() == null) return;
 
     Map<String, dynamic> params = {
-      "organized_by": userState.currentUserId!,
+      "organized_by": userState!.getLoggedUserId()!,
     };
 
     var resp = await CloudFunctionsClient().get("matches", args: params);
     Map<String, dynamic> data =
         (resp == null) ? Map() : Map<String, dynamic>.from(resp);
 
+    List<String> matches = [];
+
     // filter tests and get sportcenters to download
-    Iterable<Match> matches = data.entries
-        .map((element) {
-          try {
-            return Match.fromJson(
-                Map<String, dynamic>.from(element.value), element.key);
-          } catch (e, s) {
-            print("Failed to deserialize match ${element.key.toString()}");
-            print(e);
-            print(s);
-            FirebaseCrashlytics.instance
-                .recordError(e, s, reason: 'failed to deserialize a match');
-            return null;
-          }
-        })
+    data.entries
+        .map((element) => deserializeMatch(element))
         .where((e) => e != null)
-        .map((e) {
-          matchesCache[e!.documentId] = e;
-          return e;
-        })
-        .where((e) => (!e.isTest || userState.isTestMode));
+        .where((e) => (e!.isTest || userState!.isTestMode))
+        .forEach((m) {
+      _matches[m!.documentId] = MatchState.fromMatch(m, userState!);
+      matches.add(m.documentId);
+    });
 
-    _myOrganizedMatchesIds = matches.map((m) => m.documentId).toList();
+    _myOrganizedMatchesIds = matches;
 
     notifyListeners();
   }
 
-  Future<Ratings?> fetchRatings(String matchId) async {
-    var r = await CloudFunctionsClient().get("matches/$matchId/ratings");
-    if (r == null) return null;
-
-    var ratings = Ratings.fromJson(Map<String, dynamic>.from(r));
-    this._ratingsPerMatch[matchId] = ratings;
+  Future<String> createMatch(Match match) async {
+    var resp = await CloudFunctionsClient().post("matches", match.toJson());
+    var id = resp!["id"];
+    match.documentId = id;
+    _matches[id] = MatchState.fromMatch(match, userState!);
+    _myOrganizedMatchesIds?.add(id);
     notifyListeners();
-
-    return ratings;
+    return id;
   }
 
-  Future<void> postUserRatings(
-      String matchId, String userId, Map<String, int> ratings) async {
-    await CloudFunctionsClient()
-        .post("matches/$matchId/ratings/add_multi", ratings);
-  }
-
-  Future<void> refreshState(BuildContext context) async {
+  Future<void> refreshState() async {
     logger.info("refreshing matches state");
     var futures = [
-      fetchGoingMatches(context),
-      fetchUpcomingMatches(context),
-      fetchPastMatches(context),
-      fetchMyOrganizedMatches(context),
+      fetchGoingMatches(),
+      fetchUpcomingMatches(),
+      fetchPastMatches(),
+      fetchMyOrganizedMatches(),
     ];
     await Future.wait(futures);
     logger.info(
         "refreshing matches state done: fetched ${_pastMatchesIds?.length} past, ${_upcomingMatchesIds?.length} upcoming, ${_goingMatchesIds?.length} going, ${_myOrganizedMatchesIds?.length} organized matches");
-  }
-
-  Future<Match> fetchMatch(String matchId) async {
-    var resp = await CloudFunctionsClient()
-        .get("matches/$matchId", args: {"version": 2});
-    var match = Match.fromJson(resp!, matchId);
-
-    _setMatch(match);
-
-    return match;
-  }
-
-  Future<void> editMatch(String matchId, Map<String, dynamic> data) async {
-    await CloudFunctionsClient().post("matches/$matchId", data = data);
-    await fetchMatch(matchId);
-  }
-
-  Future<String> createMatch(Match m) async {
-    var resp = await CloudFunctionsClient().post("matches", m.toJson());
-    var id = resp!["id"];
-
-    await fetchMatch(id);
-    return id;
   }
 
   void clear() {
@@ -345,8 +284,6 @@ class MatchesState extends ChangeNotifier {
     _upcomingMatchesIds = null;
     _goingMatchesIds = null;
     _myOrganizedMatchesIds = null;
-    _ratingsPerMatch = Map();
-    _stillToVote = Map();
     notifyListeners();
   }
 }

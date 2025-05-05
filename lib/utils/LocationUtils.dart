@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
+import 'package:nutmeg/model/LocationInfo.dart';
 import 'package:nutmeg/state/UserState.dart';
 import 'package:provider/provider.dart';
 import 'dart:convert';

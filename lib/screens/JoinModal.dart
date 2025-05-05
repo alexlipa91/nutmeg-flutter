@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:nutmeg/api/CloudFunctionsUtils.dart';
-import 'package:nutmeg/main.dart';
-import 'package:nutmeg/screens/Launch.dart';
 import 'package:nutmeg/screens/Login.dart';
 import 'package:nutmeg/screens/PaymentDetailsDescription.dart';
+import 'package:nutmeg/state/MatchState.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
@@ -18,12 +16,12 @@ import '../state/UserState.dart';
 import 'PayWithMoneyModal.dart';
 
 class JoinButtonDisabled extends StatelessWidget {
-
   @override
   Widget build(BuildContext context) => GenericButtonWithLoader(
-    AppLocalizations.of(context)!.joinButtonText,
-    null, Disabled(),
-  );
+        AppLocalizations.of(context)!.joinButtonText,
+        null,
+        Disabled(),
+      );
 }
 
 class JoinButton extends StatelessWidget {
@@ -32,19 +30,25 @@ class JoinButton extends StatelessWidget {
   const JoinButton({Key? key, required this.matchId}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) => GenericButtonWithLoader(
-        AppLocalizations.of(context)!.joinButtonText,
-        (BuildContext context) async {
-          context.read<GenericButtonWithLoaderState>().change(true);
-          await JoinModal.onJoinGameAction(context, matchId);
-          context.read<GenericButtonWithLoaderState>().change(false);
-        },
-        Primary(),
-      );
+  Widget build(BuildContext context) {
+    var matchState = context.read<MatchState>();
+    var userState = context.read<UserState>();
+    var matchesState = context.read<MatchesState>();
+
+    return GenericButtonWithLoader(
+      AppLocalizations.of(context)!.joinButtonText,
+      (BuildContext context) async {
+        var loaderState = context.read<GenericButtonWithLoaderState>();
+        loaderState.change(true);
+        await JoinModal.onJoinGameAction(context, userState, matchState, matchesState);
+        // loaderState.change(false);
+      },
+      Primary(),
+    );
+  }
 }
 
 class JoinModal {
-
   static Widget getModalDescriptionArea(
       BuildContext context, int basePrice, int userFee) {
     int creditsUsed = 0;
@@ -54,11 +58,12 @@ class JoinModal {
         Container(
           height: 24,
           width: 24,
-          child: UserAvatar(15,
-              context.read<UserState>().getLoggedUserDetails()),
+          child:
+              UserAvatar(15, context.read<UserState>().getLoggedUserDetails()),
         ),
         SizedBox(width: 10),
-        Text("1x ${AppLocalizations.of(context)!.player}", style: TextPalette.h3),
+        Text("1x ${AppLocalizations.of(context)!.player}",
+            style: TextPalette.h3),
         Expanded(
             child: Text(
           formatCurrency(basePrice),
@@ -68,20 +73,20 @@ class JoinModal {
       ]),
       if (userFee > 0)
         Row(
-        children: [
-          // adding this here as a trick to align the rows
-          Container(height: 24, width: 24),
-          SizedBox(width: 10),
-          Text(
-              AppLocalizations.of(context)!.serviceFee,
-              style: TextPalette.bodyText),
-          Expanded(
-              child: Text(formatCurrency(userFee),
-            style: TextPalette.bodyText,
-            textAlign: TextAlign.end,
-          ))
-        ],
-      ),
+          children: [
+            // adding this here as a trick to align the rows
+            Container(height: 24, width: 24),
+            SizedBox(width: 10),
+            Text(AppLocalizations.of(context)!.serviceFee,
+                style: TextPalette.bodyText),
+            Expanded(
+                child: Text(
+              formatCurrency(userFee),
+              style: TextPalette.bodyText,
+              textAlign: TextAlign.end,
+            ))
+          ],
+        ),
       if (creditsUsed > 0)
         Row(
           children: [
@@ -102,9 +107,7 @@ class JoinModal {
     var finalRow = Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-            AppLocalizations.of(context)!.subtotal,
-            style: TextPalette.h3),
+        Text(AppLocalizations.of(context)!.subtotal, style: TextPalette.h3),
         Text(
           formatCurrency(basePrice + userFee - creditsUsed),
           style: TextPalette.h3,
@@ -116,41 +119,37 @@ class JoinModal {
         rows: List<Widget>.from(widgets), finalRow: finalRow);
   }
 
-  static var onJoinGameAction = (BuildContext context, String matchId) async {
+  static var onJoinGameAction = (BuildContext context, UserState userState,
+      MatchState matchState, MatchesState matchesState) async {
     var userState = context.read<UserState>();
-    var match = context.read<MatchesState>().getMatch(matchId);
+    var match = matchState.match;
+    var matchId = matchState.matchId;
 
     if (!userState.isLoggedIn())
-      await Navigator.push(context,
-          MaterialPageRoute(builder: (context) => Login()));
+      await Navigator.push(
+          context, MaterialPageRoute(builder: (context) => Login()));
 
     if (userState.isLoggedIn()) {
       if (match!.price == null) {
-        await CloudFunctionsClient().post("matches/$matchId/users/add", {
-          "user_id": userState.currentUserId!
-        });
-        await context.read<MatchesState>().fetchMatch(matchId);
+        await matchState.addLoggedInUserToMatch();
+        matchesState.addToGoingMatches(matchId!);
         await PaymentDetailsDescription.communicateSuccessToUser(context, matchId);
-        await navigatorKey.currentContext!
-            .read<MatchesState>().fetchGoingMatches(context);
-
         return;
       }
 
       await GenericInfoModal(
           title: AppLocalizations.of(context)!.joinThisMatchTitle,
           description: AppLocalizations.of(context)!.joinMatchInfo,
-          content: getModalDescriptionArea(context,
-            match.price!.basePrice,
-            match.price!.userFee),
+          content: getModalDescriptionArea(
+              context, match.price!.basePrice, match.price!.userFee),
           action: Row(children: [
             Expanded(
                 child:
-                // (false)
-                //     ? PayWithCreditsButton(
-                //         match: match,)
-                //     :
-          PayWithMoneyButton(matchId: matchId))
+                    // (false)
+                    //     ? PayWithCreditsButton(
+                    //         match: match,)
+                    //     :
+                    PayWithMoneyButton(matchId: matchId!))
           ])).show(context);
     }
   };

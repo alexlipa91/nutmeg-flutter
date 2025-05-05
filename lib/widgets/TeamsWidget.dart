@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:nutmeg/model/Match.dart';
+import 'package:nutmeg/state/MatchState.dart';
+import 'package:nutmeg/state/UsersState.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -40,25 +42,29 @@ class TeamsWidgetState extends State<TeamsWidget> {
   @override
   void initState() {
     super.initState();
-    var match = context.read<MatchesState>().getMatch(widget.matchId);
+
+    var state = context.read<MatchState>();
+
+    var match = state.match;
     manualSplit = match?.hasManualTeams ?? false;
-    isOrganizerView = context.read<UserState>().isLoggedIn() &&
-        context.read<UserState>().currentUserId ==
-            context.read<MatchesState>().getMatch(widget.matchId)?.organizerId;
+    isOrganizerView = state.isLoggedUserOrganizer();
   }
 
   getTeamColumn(BuildContext context, MainAxisAlignment alignment,
       List<List<String>> teams, int index) {
-    var draggable = manualSplit &&
-        context
-            .watch<MatchesState>()
-            .getMatch(widget.matchId)!
-            .canUserModifyTeams(context.read<UserState>().currentUserId);
+    var state = context.watch<MatchState>();
+
+    var match = state.match;
+    manualSplit = match?.hasManualTeams ?? false;
+    isOrganizerView = state.isLoggedUserOrganizer();
+
+    var draggable =
+        manualSplit && match?.status != MatchStatus.rated && isOrganizerView;
 
     var isLeftColumn = MainAxisAlignment.start == alignment;
     var playersWidgets = interleave(
         teams[index].map((e) {
-          var ud = context.watch<UserState>().getUserDetail(e);
+          var ud = context.watch<UsersState>().getUserDetail(e);
 
           var avatar = UserAvatar(16, ud);
           var name = UserNameWidget(userDetails: ud);
@@ -156,18 +162,20 @@ class TeamsWidgetState extends State<TeamsWidget> {
       onAccept: (item) {
         context
             .read<MatchesState>()
-            .movePlayerToTeam(widget.matchId, item, isLeftColumn ? 0 : 1);
+            .getMatch(widget.matchId)!
+            .movePlayerToTeam(item, isLeftColumn ? 0 : 1);
       },
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    var match = context.watch<MatchesState>().getMatch(widget.matchId)!;
+    var state = context.watch<MatchState>();
+    var match = state.match;
 
-    var teams = (match.hasManualTeams ?? false)
-        ? match.manualTeams
-        : match.computedTeams;
+    var teams = (match?.hasManualTeams ?? false)
+        ? match?.manualTeams
+        : match?.computedTeams;
 
     var content = Padding(
       padding: EdgeInsets.symmetric(horizontal: 8),
@@ -186,15 +194,15 @@ class TeamsWidgetState extends State<TeamsWidget> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    match.score == null
+                    match?.score == null
                         ? Container()
-                        : Text(match.score![0].toString(),
+                        : Text(match?.score![0].toString() ?? "",
                             textAlign: TextAlign.end,
                             style: TextPalette.getStats(Palette.black)),
                     Text("  vs  ", style: TextPalette.bodyText),
-                    match.score == null
+                    match?.score == null
                         ? Container()
-                        : Text(match.score![1].toString(),
+                        : Text(match?.score![1].toString() ?? "",
                             textAlign: TextAlign.end,
                             style: TextPalette.getStats(Palette.black))
                   ],
@@ -214,11 +222,11 @@ class TeamsWidgetState extends State<TeamsWidget> {
               children: [
                 Expanded(
                     child: getTeamColumn(
-                        context, MainAxisAlignment.start, teams, 0)),
+                        context, MainAxisAlignment.start, teams ?? [], 0)),
                 NutmegDivider(horizontal: false),
                 Expanded(
                     child: getTeamColumn(
-                        context, MainAxisAlignment.end, teams, 1)),
+                        context, MainAxisAlignment.end, teams ?? [], 1)),
               ],
             ),
           ),
@@ -230,9 +238,15 @@ class TeamsWidgetState extends State<TeamsWidget> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    teams[0].map((u) => context.watch<UserState>()
-                        .getUserDetail(u)?.averageScore ?? 3)
-                        .fold<double>(0, (a, b) => a + b).toStringAsFixed(2),
+                    teams![0]
+                        .map((u) =>
+                            context
+                                .watch<UserState>()
+                                .getLoggedUserDetails()
+                                ?.averageScore ??
+                            3)
+                        .fold<double>(0, (a, b) => a + b)
+                        .toStringAsFixed(2),
                     style: TextPalette.bodyText,
                   ),
                   Expanded(
@@ -241,15 +255,22 @@ class TeamsWidgetState extends State<TeamsWidget> {
                         style: TextPalette.bodyText),
                   ),
                   Text(
-                    teams[1].map((u) => context.watch<UserState>()
-                        .getUserDetail(u)?.averageScore ?? 3)
-                        .fold<double>(0, (a, b) => a + b).toStringAsFixed(2),
+                    teams[1]
+                        .map((u) =>
+                            context
+                                .watch<UserState>()
+                                .getLoggedUserDetails()
+                                ?.averageScore ??
+                            3)
+                        .fold<double>(0, (a, b) => a + b)
+                        .toStringAsFixed(2),
                     style: TextPalette.bodyText,
                   ),
                 ],
               ),
             ),
-          if (match.canUserModifyTeams(context.read<UserState>().currentUserId))
+          if (state.isLoggedUserOrganizer() &&
+              match?.status != MatchStatus.rated)
             Padding(
               padding: EdgeInsets.only(top: 24),
               child: Column(
@@ -266,18 +287,18 @@ class TeamsWidgetState extends State<TeamsWidget> {
                               setState(() {
                                 manualSplit = v;
                               });
-                              await context.read<MatchesState>().editMatch(
-                                  widget.matchId,
-                                  {"hasManualTeams": manualSplit});
+                              await context
+                                  .read<MatchesState>()
+                                  .getMatch(widget.matchId)!
+                                  .editMatch({"hasManualTeams": manualSplit});
                               if (manualSplit) {
                                 await context
                                     .read<MatchesState>()
-                                    .storeManualTeams(
-                                        widget.matchId,
-                                        context
-                                            .read<MatchesState>()
-                                            .getMatch(widget.matchId)!
-                                            .computedTeams);
+                                    .getMatch(widget.matchId)!
+                                    .editMatch({
+                                  "teams.manual.players.a": teams![0],
+                                  "teams.manual.players.b": teams![1]
+                                });
                               }
                             }),
                         SizedBox(width: 8),
@@ -299,12 +320,11 @@ class TeamsWidgetState extends State<TeamsWidget> {
                 ],
               ),
             ),
-          if (isOrganizerView && match.status == MatchStatus.to_rate)
+          if (isOrganizerView && match?.status == MatchStatus.to_rate)
             Padding(
                 padding: EdgeInsets.only(top: 8),
-                child: NutmegDivider(horizontal: true)
-            ),
-          if (isOrganizerView && match.status == MatchStatus.to_rate)
+                child: NutmegDivider(horizontal: true)),
+          if (isOrganizerView && match?.status == MatchStatus.to_rate)
             Padding(
                 padding: EdgeInsets.only(top: 8),
                 child: EditScoreWidget(matchId: widget.matchId))
@@ -333,9 +353,9 @@ class EditScoreWidgetState extends State<EditScoreWidget> {
   @override
   void initState() {
     super.initState();
-    isSubmitMode =
-        context.read<MatchesState>().getMatch(widget.matchId)!.score == null;
-    var score = context.read<MatchesState>().getMatch(widget.matchId)!.score;
+    var state = context.read<MatchState>();
+    isSubmitMode = state.match?.score == null;
+    var score = state.match?.score;
     if (score != null) {
       controllers[0].text = score[0].toString();
       controllers[1].text = score[1].toString();
@@ -354,11 +374,8 @@ class EditScoreWidgetState extends State<EditScoreWidget> {
         },
         style: TextPalette.getStats(Palette.black),
         textAlign: teamIndex == 0 ? TextAlign.end : TextAlign.start,
-        decoration: CreateMatchState.getTextFormDecoration(
-            null,
-            hintText: "0",
-            hintStyle: TextPalette.getStats(Palette.greyLight)
-        ),
+        decoration: CreateMatchState.getTextFormDecoration(null,
+            hintText: "0", hintStyle: TextPalette.getStats(Palette.greyLight)),
       );
 
   @override
@@ -405,7 +422,8 @@ class EditScoreWidgetState extends State<EditScoreWidget> {
                           ];
                           await context
                               .read<MatchesState>()
-                              .editMatch(widget.matchId, {"score": score});
+                              .getMatch(widget.matchId)!
+                              .editMatch({"score": score});
                           setState(() {
                             isSubmitMode = false;
                           });
@@ -433,11 +451,7 @@ class EditScoreWidgetState extends State<EditScoreWidget> {
                   ],
                 ),
               if (isSubmitMode &&
-                  context
-                          .watch<MatchesState>()
-                          .getMatch(widget.matchId)!
-                          .score !=
-                      null)
+                  context.watch<MatchState>().match?.score != null)
                 Row(
                   children: [
                     Expanded(

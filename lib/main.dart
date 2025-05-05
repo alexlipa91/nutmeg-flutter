@@ -12,7 +12,8 @@ import 'package:nutmeg/screens/LeaderboardScreen.dart';
 import 'package:nutmeg/screens/Login.dart';
 import 'package:nutmeg/screens/MatchDetails.dart';
 import 'package:nutmeg/screens/UserPage.dart';
-import 'package:nutmeg/screens/admin/AvailableMatchesAdmin.dart';
+import 'package:nutmeg/state/MatchState.dart';
+import 'package:nutmeg/state/UsersState.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
@@ -23,7 +24,6 @@ import '../state/LoadOnceState.dart';
 import '../state/MatchesState.dart';
 import '../state/UserState.dart';
 import '../utils/LocationUtils.dart';
-import 'screens/admin/AddOrEditMatch.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
@@ -42,7 +42,9 @@ final appRouter = GoRouter(
     ),
     GoRoute(
         path: '/',
-        builder: (context, state) => AvailableMatches(),
+        builder: (context, state) {
+          return AvailableMatches();
+        },
         routes: [
           GoRoute(path: 'login', builder: (context, state) => Login()),
           GoRoute(
@@ -58,12 +60,18 @@ final appRouter = GoRouter(
           GoRoute(
               path: 'match/:id',
               builder: (context, state) {
-                var keyString = "MatchDetails-${state.pathParameters["id"]}-"
-                    "${state.pathParameters.entries.map((e) => "${e.key}-${e.value}").join("-")}";
-                return MatchDetails(
-                    key: ValueKey(keyString),
-                    matchId: state.pathParameters["id"]!,
-                    paymentOutcome: state.pathParameters["payment_outcome"]);
+                final matchId = state.pathParameters["id"]!;
+                final matchState =
+                    context.read<MatchesState>().getMatch(matchId);
+
+                return ChangeNotifierProvider<MatchState>.value(
+                  value: matchState,
+                  child: MatchDetails(
+                    key: ValueKey("MatchDetails-$matchId"),
+                    matchId: matchId,
+                    paymentOutcome: state.pathParameters["payment_outcome"],
+                  ),
+                );
               },
               routes: [
                 GoRoute(
@@ -75,21 +83,6 @@ final appRouter = GoRouter(
               path: 'leaderboard',
               builder: (context, state) => LeaderboardScreen()),
         ]),
-    GoRoute(
-        path: '/admin',
-        builder: (context, state) => AdminAvailableMatches(),
-        routes: [
-          GoRoute(
-              path: 'match/:id',
-              builder: (context, state) {
-                var keyString =
-                    "AdminMatchDetails-${state.pathParameters["id"]}-"
-                    "${state.pathParameters.entries.map((e) => "${e.key}-${e.value}").join("-")}";
-                return AdminMatchDetails(
-                    key: ValueKey(keyString),
-                    matchId: state.pathParameters["id"]!);
-              }),
-        ])
   ],
   // redirect to the launch page
   redirect: (context, state) {
@@ -110,7 +103,9 @@ final appRouter = GoRouter(
       redirectUrl = "/";
     }
 
-    logger.info("redirecting from ${state.matchedLocation} to $redirectUrl");
+    if (redirectUrl != null) {
+      logger.info("redirecting from ${state.matchedLocation} to $redirectUrl");
+    }
 
     return redirectUrl;
   },
@@ -152,9 +147,16 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (context) => UsersState()),
         ChangeNotifierProvider(create: (context) => UserState()),
-        ChangeNotifierProvider(
-            create: (context) => MatchesState(context.read<UserState>())),
+        ChangeNotifierProxyProvider<UserState, MatchesState>(
+          create: (_) => MatchesState(),
+          update: (context, userState, matchesState) {
+            matchesState ??= MatchesState();
+            matchesState.updateMatchStateBasedOnUser(userState);
+            return matchesState;
+          },
+        ),
         ChangeNotifierProvider(create: (context) => LoadOnceState()),
       ],
       child: FlutterWebFrame(

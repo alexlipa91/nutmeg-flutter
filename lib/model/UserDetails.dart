@@ -1,4 +1,4 @@
-import '../state/UserState.dart';
+import 'package:nutmeg/model/LocationInfo.dart';
 
 class UserDetails {
   String documentId;
@@ -50,15 +50,26 @@ class UserDetails {
         numRatedMatches = (json["scores"] ?? {})["number_of_scored_games"] ?? 0,
         sumTotalRates = ((json["scores"] ?? {})["total_sum"] ?? 0).toDouble(),
         potmCount = json["potm_count"] ?? 0,
-        lastScores = (json["last_date_scores"] == null) ? []
-            : _readLastScores(Map<String, double>.from(json["last_date_scores"])),
+        lastScores = (json["last_date_scores"] == null)
+            ? []
+            : _readLastScores(
+                Map<String, double>.from(json["last_date_scores"])),
         deltaFromLastScore = json["delta_from_last_score"],
         skillsCount = Map<String, int>.from((json["skills_count"] ?? {})),
         chargesEnabledOnStripe = json["chargesEnabledOnStripe"] ?? false,
-        chargesEnabledOnStripeTest = json["chargesEnabledOnStripeTest"] ?? false,
-        createdMatches = Map<String, dynamic>.from(json["created_matches"] ?? {}).keys.toList(),
-        createdTestMatches = Map<String, dynamic>.from(json["created_test_matches"] ?? {}).keys.toList(),
-        location = json.containsKey("location") ? LocationInfo.fromJson(json["location"]) : null,
+        chargesEnabledOnStripeTest =
+            json["chargesEnabledOnStripeTest"] ?? false,
+        createdMatches =
+            Map<String, dynamic>.from(json["created_matches"] ?? {})
+                .keys
+                .toList(),
+        createdTestMatches =
+            Map<String, dynamic>.from(json["created_test_matches"] ?? {})
+                .keys
+                .toList(),
+        location = json.containsKey("location")
+            ? LocationInfo.fromJson(json["location"])
+            : null,
         language = json["language"],
         numWin = (json["record"] ?? {})["num_win"],
         numLoss = (json["record"] ?? {})["num_loss"],
@@ -70,8 +81,7 @@ class UserDetails {
     return sortedKeys.map((d) => lastDateScores[d]!).toList();
   }
 
-  Map<String, dynamic> toJson() =>
-      {
+  Map<String, dynamic> toJson() => {
         'isAdmin': isAdmin,
         'image': image,
         'name': name,
@@ -94,17 +104,20 @@ class UserDetails {
   void setStripeId(String stripeId) => stripeId = stripeId;
 
   String? getPhotoUrl() => image;
-  
+
   bool getIsAdmin() => (isAdmin == null) ? false : isAdmin!;
 
   bool isOrganiser(isTest) {
     if (isTest)
-      return this.createdTestMatches != null && this.createdTestMatches!.isNotEmpty;
+      return this.createdTestMatches != null &&
+          this.createdTestMatches!.isNotEmpty;
     return this.createdMatches != null && this.createdMatches!.isNotEmpty;
   }
 
   bool areChargesEnabled(bool isTest) {
-    return isTest ? chargesEnabledOnStripeTest ?? false : chargesEnabledOnStripe ?? false;
+    return isTest
+        ? chargesEnabledOnStripeTest ?? false
+        : chargesEnabledOnStripe ?? false;
   }
 
   double getDeltaFromLastScore() => deltaFromLastScore ?? 0;
@@ -112,7 +125,8 @@ class UserDetails {
   static String getDisplayName(UserDetails? ud) {
     if (ud == null) return "Player";
     if (ud.name != null) return ud.name!;
-    if (ud.email != null && !ud.email!.contains("privaterelay")) return ud.email!;
+    if (ud.email != null && !ud.email!.contains("privaterelay"))
+      return ud.email!;
     return "Player";
   }
 }

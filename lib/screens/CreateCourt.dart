@@ -279,9 +279,8 @@ class CreateCourtState extends State<CreateCourt> {
                       "hasChangingRooms": changeRoomsAvailable,
                       "courtType": courtTypeController.text
                     });
-                    List<SportCenter> sportCenters = await context
-                        .read<UserState>()
-                        .fetchLoggedUserSportCenters();
+                    List<SportCenter> sportCenters =
+                        await context.read<UserState>().getSportCenters()!;
 
                     Navigator.of(context).pop(
                         sportCenters.firstWhere((s) => s.placeId == placeId!));

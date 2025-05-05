@@ -45,7 +45,7 @@ class GoogleSignInButton extends StatelessWidget {
           await FirebaseAuth.instance.signInWithCredential(credential);
 
       if (userCredential.user != null) {
-        await context.read<UserState>().login(context, userCredential);
+        await context.read<UserState>().login(userCredential, context);
       }
 
       Navigator.of(context).pop();

@@ -3,6 +3,7 @@ import 'package:nutmeg/model/Match.dart';
 import 'package:nutmeg/screens/JoinModal.dart';
 import 'package:nutmeg/screens/LeaveMatchModal.dart';
 import 'package:nutmeg/screens/RatePlayersModal.dart';
+import 'package:nutmeg/state/MatchState.dart';
 import 'package:nutmeg/state/UserRatings.dart';
 import 'package:nutmeg/state/UserState.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
@@ -10,20 +11,17 @@ import 'package:nutmeg/utils/Utils.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-import '../state/MatchesState.dart';
-
 class BottomBarMatch extends StatelessWidget {
   static Widget? getBottomBar(
-      BuildContext context, String matchId, MatchStatus? matchStatus) {
+      MatchState matchState, String matchId, MatchStatus? matchStatus) {
     // https://docs.google.com/document/d/1PpHh-8blyMYH7ePtU-XIBU289guZX847eBfHz_yqPJ0/edit#
 
-    var match = context.read<MatchesState>().getMatch(matchId);
+    var match = matchState.match;
 
     if (match == null || matchStatus == null) return null;
 
     var isFull = match.isFull();
-    var isGoing =
-        match.isUserGoing(context.read<UserState>().getLoggedUserDetails());
+    var isGoing = matchState.isLoggedUserInMatch();
 
     var bottomBar;
 
@@ -54,7 +52,7 @@ class BottomBarMatch extends StatelessWidget {
       case MatchStatus.cancelled:
         break;
       case MatchStatus.unpublished:
-        if (match.organizerId == context.read<UserState>().currentUserId)
+        if (matchState.isLoggedUserOrganizer())
           bottomBar =
               NotPublishedBottomBar(matchId: matchId, isTest: match.isTest);
     }
@@ -147,7 +145,7 @@ class JoinMatchBottomBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var match = context.read<MatchesState>().getMatch(matchId);
+    var match = context.watch<MatchState>().match;
 
     if (match == null) {
       return Container();
@@ -173,7 +171,7 @@ class LeaveMatchBottomBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var match = context.read<MatchesState>().getMatch(matchId);
+    var match = context.watch<MatchState>().match;
 
     return BottomBarMatch(
         matchId: matchId,
@@ -194,17 +192,16 @@ class RatePlayersBottomBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Check if user has already provided ratings
-    final userRatings = context.watch<UserRatings>();
-    if (userRatings.isLoading) {
+    var userRatings = context.watch<UserRatings>();
+    var match = context.watch<MatchState>().match;
+
+    if (userRatings.isLoading || match == null) {
       return Container();
     }
 
     final hasRated = !userRatings.isEmpty();
 
-    var hoursLeft = context
-        .watch<MatchesState>()
-        .getMatch(matchId)!
-        .dateTime
+    var hoursLeft = match.dateTime
         .add(Duration(days: 1))
         .difference(DateTime.now())
         .inHours

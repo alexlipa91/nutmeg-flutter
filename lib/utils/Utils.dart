@@ -13,11 +13,10 @@ import 'package:timezone/timezone.dart' as tz;
 
 import '../state/UserState.dart';
 
-String gmtSuffix(String timeZoneId) {
+String gmtSuffix(String? timeZoneId) {
+  var tzLocation = timeZoneId == null ? tz.local : tz.getLocation(timeZoneId);
   var hourOffset =
-      tz.TZDateTime.from(DateTime.now(), tz.getLocation(timeZoneId))
-          .timeZoneOffset
-          .inHours;
+      tz.TZDateTime.from(DateTime.now(), tzLocation).timeZoneOffset.inHours;
   var gmtString = ((hourOffset > 0) ? "+" : "") + hourOffset.toString();
   return "GMT$gmtString";
 }
@@ -60,7 +59,7 @@ class DynamicLinks {
           ),
           socialMetaTagParameters: SocialMetaTagParameters(
             title: "Match on ${dayDateFormat.format(match.getLocalizedTime())} "
-                "${gmtSuffix(match.sportCenter?.timezoneId ?? "")}",
+                "${gmtSuffix(match.sportCenter?.timezoneId)}",
             description: "Location: ${match.sportCenter?.name}",
           ));
       var url = await FirebaseDynamicLinks.instance.buildShortLink(parameters);
@@ -115,7 +114,10 @@ String getStripeUrl(bool isTest, String userId, String? matchId) {
 }
 
 Future<void> completeAccountAction(BuildContext context, bool isTest,
-    {String? matchId}) => launchUrl(
-      Uri.parse(getStripeUrl(isTest,
-          context.read<UserState>().getLoggedUserDetails()!.documentId, matchId)),
-      mode: LaunchMode.externalApplication);
+        {String? matchId}) =>
+    launchUrl(
+        Uri.parse(getStripeUrl(
+            isTest,
+            context.read<UserState>().getLoggedUserDetails()!.documentId,
+            matchId)),
+        mode: LaunchMode.externalApplication);

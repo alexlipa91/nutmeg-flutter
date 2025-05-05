@@ -6,12 +6,14 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:logging/logging.dart';
 import 'package:nutmeg/Exceptions.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 import 'package:nutmeg/model/Match.dart';
 import 'package:nutmeg/model/SportCenter.dart';
 import 'package:nutmeg/screens/BottomBarMatch.dart';
 import 'package:nutmeg/screens/CreateCourt.dart';
+import 'package:nutmeg/state/MatchState.dart';
 import 'package:nutmeg/state/UserState.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/LocationUtils.dart';
@@ -110,16 +112,15 @@ class CreateMatchState extends State<CreateMatch> {
   FocusNode datefocusNode = FocusNode();
   FocusNode startTimefocusNode = FocusNode();
 
+  final logger = Logger('CreateMatch');
+
   Future<void> refreshState() async {
-    print("refresh state");
-    var res = await Future.wait([
+    logger.info("refreshing state");
+    await Future.wait([
       context.read<LoadOnceState>().fetchSavedSportCenters(),
       context.read<UserState>().fetchLoggedUserSportCenters(),
-      CloudFunctionsClient().get("users/organisers_with_fee")
+      // CloudFunctionsClient().get("users/organisers_with_fee")
     ]);
-    if (res[2] != null)
-      organiserWithFee = ((res[2]! as Map)["users"] as List)
-          .contains(context.read<UserState>().currentUserId!);
   }
 
   void unfocusIfNoValue(FocusNode focusNode, TextEditingController controller) {
@@ -142,10 +143,10 @@ class CreateMatchState extends State<CreateMatch> {
   }
 
   Future<void> initAsync() async {
-    // nothing that context.watch should be here
     if (widget.existingMatch != null) {
-      var match =
-          await context.read<MatchesState>().fetchMatch(widget.existingMatch!);
+      var state = context.read<MatchesState>().getMatch(widget.existingMatch!)!;
+      var match = state.match!;
+
       sportCenter = match.sportCenter;
       isTest = match.isTest;
       withAutomaticCancellation = match.cancelBefore != null;
@@ -207,8 +208,11 @@ class CreateMatchState extends State<CreateMatch> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.existingMatch != null &&
-        context.watch<MatchesState>().getMatch(widget.existingMatch!) == null) {
+    var existingMatch = widget.existingMatch != null
+        ? context.watch<MatchesState>().getMatch(widget.existingMatch!).match
+        : null;
+
+    if (widget.existingMatch != null && existingMatch == null) {
       return Container();
     }
 
@@ -889,44 +893,26 @@ class CreateMatchState extends State<CreateMatch> {
                               isTest,
                               numberOfPeopleRangeValues.start.toInt(),
                               widget.existingMatch != null
-                                  ? context
-                                      .read<MatchesState>()
-                                      .getMatch(widget.existingMatch!)!
-                                      .organizerId
+                                  ? existingMatch?.organizerId
                                   : context
                                       .read<UserState>()
                                       .getLoggedUserDetails()!
                                       .documentId,
                               widget.existingMatch != null
-                                  ? context
-                                      .read<MatchesState>()
-                                      .getMatch(widget.existingMatch!)!
-                                      .going
+                                  ? existingMatch?.going ?? Map()
                                   : Map(),
                               widget.existingMatch != null
-                                  ? context
-                                      .read<MatchesState>()
-                                      .getMatch(widget.existingMatch!)!
-                                      .computedTeams
+                                  ? existingMatch?.computedTeams ?? []
                                   : [],
                               widget.existingMatch != null
-                                  ? context
-                                      .read<MatchesState>()
-                                      .getMatch(widget.existingMatch!)!
-                                      .manualTeams
+                                  ? existingMatch?.manualTeams ?? []
                                   : [],
                               widget.existingMatch != null
-                                  ? context
-                                      .read<MatchesState>()
-                                      .getMatch(widget.existingMatch!)!
-                                      .isPrivate
+                                  ? existingMatch?.isPrivate ?? false
                                   : privateMatch,
                               withAutomaticCancellation ? cancelBefore : null,
                               widget.existingMatch != null
-                                  ? context
-                                      .read<MatchesState>()
-                                      .getMatch(widget.existingMatch!)!
-                                      .score
+                                  ? existingMatch?.score
                                   : null);
 
                           var id;
@@ -939,7 +925,8 @@ class CreateMatchState extends State<CreateMatch> {
                             match.documentId = widget.existingMatch!;
                             await context
                                 .read<MatchesState>()
-                                .editMatch(match.documentId, match.toJson());
+                                .getMatch(widget.existingMatch!)!
+                                .editMatch(match.toJson());
 
                             id = widget.existingMatch!;
                           }

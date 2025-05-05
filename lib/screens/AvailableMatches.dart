@@ -1,8 +1,10 @@
 import "package:collection/collection.dart";
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:nutmeg/model/LocationInfo.dart';
 import 'package:nutmeg/model/Match.dart';
 import 'package:nutmeg/screens/ChangeCity.dart';
+import 'package:nutmeg/state/MatchState.dart';
 import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/GenericAvailableMatches.dart';
 import 'package:nutmeg/widgets/Section.dart';
@@ -23,11 +25,18 @@ class AvailableMatches extends StatelessWidget {
   Future<void> onTap(BuildContext context, String matchId) async =>
       context.go("/match/$matchId");
 
+  Widget widgetWithMatchProvider(
+      MatchesState state, Widget widget, String matchId) {
+    return ChangeNotifierProvider<MatchState>.value(
+      value: state.getMatch(matchId),
+      child: widget,
+    );
+  }
+
   Widget? pastWidgets(BuildContext context) {
     var state = context.watch<MatchesState>();
-    var userState = context.watch<UserState>();
 
-    if (!userState.isLoggedIn()) {
+    if (!context.read<UserState>().isLoggedIn()) {
       return getEmptyStateWidget(context, false);
     }
 
@@ -38,11 +47,20 @@ class AvailableMatches extends StatelessWidget {
     List<Widget> widgets = [];
 
     if (matches.isNotEmpty) {
-      matches.sortedBy((e) => e.dateTime).reversed.forEachIndexed((index, m) {
+      matches
+          .sortedBy((e) => e.match!.dateTime)
+          .reversed
+          .forEachIndexed((index, m) {
         if (index == 0) {
-          widgets.add(GenericMatchInfoPast.first(m.documentId, onTap));
+          widgets.add(widgetWithMatchProvider(
+              state,
+              GenericMatchInfoPast.first(m.match!.documentId, onTap),
+              m.match!.documentId));
         } else {
-          widgets.add(GenericMatchInfoPast(m.documentId, onTap));
+          widgets.add(widgetWithMatchProvider(
+              state,
+              GenericMatchInfoPast(m.match!.documentId, onTap),
+              m.match!.documentId));
         }
       });
     }
@@ -54,9 +72,8 @@ class AvailableMatches extends StatelessWidget {
 
   Widget? goingWidgets(BuildContext context) {
     var state = context.watch<MatchesState>();
-    var userState = context.watch<UserState>();
 
-    if (!userState.isLoggedIn()) {
+    if (!context.read<UserState>().isLoggedIn()) {
       return getEmptyStateWidget(context);
     }
 
@@ -67,13 +84,19 @@ class AvailableMatches extends StatelessWidget {
     List<Widget> widgets = [];
 
     if (matches.isNotEmpty) {
-      matches.sortedBy((e) => e.dateTime).forEachIndexed((index, match) {
-        var s = match.sportCenter;
+      matches.sortedBy((e) => e.match!.dateTime).forEachIndexed((index, match) {
+        var s = match.match!.sportCenter;
         var w;
         if (index == 0) {
-          w = GenericMatchInfo.first(match, s, onTap);
+          w = widgetWithMatchProvider(
+              state,
+              GenericMatchInfo.first(match.match!, s, onTap),
+              match.match!.documentId);
         } else {
-          w = GenericMatchInfo(match, s, onTap);
+          w = widgetWithMatchProvider(
+              state,
+              GenericMatchInfo(match.match!, s, onTap),
+              match.match!.documentId);
         }
         widgets.add(w);
       });
@@ -96,8 +119,8 @@ class AvailableMatches extends StatelessWidget {
 
     // group by delta of days from first day of the week
     var grouped = matches.groupListsBy((m) {
-      var durationDifference =
-          getBeginningOfTheWeek(m.dateTime).difference(beginningOfCurrentWeek);
+      var durationDifference = getBeginningOfTheWeek(m.match!.dateTime)
+          .difference(beginningOfCurrentWeek);
       return durationDifference.inDays ~/ 7;
     });
 
@@ -106,16 +129,16 @@ class AvailableMatches extends StatelessWidget {
     var groupedByWeeksIntervals = Map<String, List<Match>>();
     if (grouped.containsKey(0))
       groupedByWeeksIntervals[AppLocalizations.of(context)!.thisWeek] =
-          grouped[0]!;
+          grouped[0]!.map((e) => e.match!).toList();
     if (grouped.containsKey(1))
       groupedByWeeksIntervals[AppLocalizations.of(context)!.nextWeek] =
-          grouped[1]!;
+          grouped[1]!.map((e) => e.match!).toList();
     groupedByWeeksIntervals[AppLocalizations.of(context)!.moreThanTwoWeeks] =
         List<Match>.from([]);
     sortedWeeks.forEach((w) {
       if (w > 1) {
         groupedByWeeksIntervals[AppLocalizations.of(context)!.moreThanTwoWeeks]
-            ?.addAll(grouped[w]!);
+            ?.addAll(grouped[w]!.map((e) => e.match!).toList());
       }
     });
 
@@ -127,9 +150,11 @@ class AvailableMatches extends StatelessWidget {
           var s = match.sportCenter;
           var w;
           if (index == 0)
-            w = GenericMatchInfo.first(match, s, onTap);
+            w = widgetWithMatchProvider(state,
+                GenericMatchInfo.first(match, s, onTap), match.documentId);
           else
-            w = GenericMatchInfo(match, s, onTap);
+            w = widgetWithMatchProvider(
+                state, GenericMatchInfo(match, s, onTap), match.documentId);
           return w;
         });
 
@@ -160,14 +185,7 @@ class AvailableMatches extends StatelessWidget {
     return Column(children: result);
   }
 
-  Widget? getMyMatchesWidgets(BuildContext context) {
-    var state = context.read<MatchesState>();
-    var userState = context.read<UserState>();
-
-    if (!userState.isLoggedIn()) {
-      return null;
-    }
-
+  Widget? getMyMatchesWidgets(BuildContext context, MatchesState state) {
     var matches = state.getMyOrganizedMatches();
 
     if (matches == null || matches.isEmpty) return null;
@@ -175,13 +193,20 @@ class AvailableMatches extends StatelessWidget {
     List<Widget> widgets = [];
 
     if (matches.isNotEmpty) {
-      matches.sortedBy((e) => e.dateTime).reversed.forEachIndexed((index, m) {
+      matches
+          .sortedBy((e) => e.match!.dateTime)
+          .reversed
+          .forEachIndexed((index, m) {
         if (index == 0) {
-          widgets.add(GenericMatchInfo.first(
-              state.getMatch(m.documentId)!, m.sportCenter, onTap));
+          widgets.add(widgetWithMatchProvider(
+              state,
+              GenericMatchInfo.first(m.match!, m.match!.sportCenter, onTap),
+              m.match!.documentId));
         } else {
-          widgets.add(GenericMatchInfo(
-              state.getMatch(m.documentId)!, m.sportCenter, onTap));
+          widgets.add(widgetWithMatchProvider(
+              state,
+              GenericMatchInfo(m.match!, m.match!.sportCenter, onTap),
+              m.match!.documentId));
         }
       });
     }
@@ -219,7 +244,13 @@ class AvailableMatches extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var myMatchesWidgets = getMyMatchesWidgets(context);
+    var state = context.watch<MatchesState>();
+    var userState = context.watch<UserState>();
+
+    var locationInfo =
+        userState.getLoggedUserDetails()?.location ?? state.locationInfo;
+
+    var myMatchesWidgets = getMyMatchesWidgets(context, state);
 
     return MultiProvider(
         providers: [
@@ -239,7 +270,8 @@ class AvailableMatches extends StatelessWidget {
                   upcomingWidgets(context),
                   goingWidgets(context),
                   pastWidgets(context),
-                  if (myMatchesWidgets != null) getMyMatchesWidgets(context)
+                  if (myMatchesWidgets != null)
+                    getMyMatchesWidgets(context, state)
                 ].toList(),
                 getEmptyStateWidget(context),
                 context.watch<AvailableMatchesUiState>().current == 3
@@ -266,20 +298,14 @@ class AvailableMatches extends StatelessWidget {
                                 {"location": newUserLocation.toJson()});
                           } else {
                             context
-                                .read<UserState>()
-                                .setCustomLocationInfo(newUserLocation);
+                                .read<MatchesState>()
+                                .setLocationInfo(newUserLocation);
                           }
-                          await context
-                              .read<MatchesState>()
-                              .refreshState(context);
+                          await state.refreshState();
                         }
                       },
                       child: Row(children: [
-                        Text(
-                            context
-                                .watch<UserState>()
-                                .getLocationInfo()
-                                .getText(),
+                        Text(locationInfo?.getText() ?? "",
                             style: TextPalette.h1Inverted),
                         SizedBox(
                           width: 4,
@@ -290,7 +316,7 @@ class AvailableMatches extends StatelessWidget {
                     ),
                   ],
                 ), () async {
-              await context.read<MatchesState>().refreshState(context);
+              await state.refreshState();
             }));
   }
 }

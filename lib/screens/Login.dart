@@ -99,7 +99,7 @@ class LoginArea extends StatelessWidget {
   }
 }
 
-enum Provider { facebook, google, apple }
+enum Provider { facebook, apple }
 
 class SignInButton extends StatelessWidget {
   final Provider provider;
@@ -124,14 +124,6 @@ class SignInButton extends StatelessWidget {
             color: Palette.white, fontSize: 14, fontWeight: FontWeight.w700);
         logoPath = "assets/login/fb_logo.png";
         break;
-      case Provider.google:
-        loginFuture =
-            () => context.read<UserState>().continueWithGoogle(context);
-        backgroundColor = Colors.transparent;
-        textStyle = GoogleFonts.roboto(
-            color: Palette.greyDark, fontSize: 14, fontWeight: FontWeight.w700);
-        logoPath = "assets/login/google_logo.png";
-        break;
       case Provider.apple:
         loginFuture =
             () => context.read<UserState>().continueWithApple(context);
@@ -140,9 +132,7 @@ class SignInButton extends StatelessWidget {
             color: Palette.white, fontSize: 14, fontWeight: FontWeight.w700);
         logoPath = "assets/login/apple_logo.png";
         break;
-      default:
-        throw Exception("Invalid provider");
-    }
+      }
 
     return Row(
       children: [

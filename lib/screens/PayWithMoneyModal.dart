@@ -11,9 +11,7 @@ import '../state/UserState.dart';
 class PayWithMoneyButton extends StatelessWidget {
   final String matchId;
 
-  const PayWithMoneyButton(
-      {Key? key, required this.matchId})
-      : super(key: key);
+  const PayWithMoneyButton({Key? key, required this.matchId}) : super(key: key);
 
   @override
   Widget build(BuildContext context) => GenericButtonWithLoader(
@@ -23,9 +21,8 @@ class PayWithMoneyButton extends StatelessWidget {
 
           var userState = context.read<UserState>();
 
-          var uri =
-              Uri.parse(CloudFunctionsClient().getUrl("payments/checkout?"
-                  "user_id=${userState.currentUserId}&match_id=$matchId&v=2"));
+          var uri = Uri.parse(CloudFunctionsClient().getUrl("payments/checkout?"
+              "user_id=${userState.getLoggedUserId()!}&match_id=$matchId&v=2"));
 
           if (kIsWeb)
             await launchUrl(uri, webOnlyWindowName: "_self");

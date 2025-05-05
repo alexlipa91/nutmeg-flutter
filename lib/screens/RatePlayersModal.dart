@@ -3,6 +3,7 @@ import 'package:nutmeg/screens/MatchAwardsModal.dart';
 import 'package:nutmeg/state/MatchesState.dart';
 import 'package:nutmeg/state/UserRatings.dart';
 import 'package:nutmeg/state/UserState.dart';
+import 'package:nutmeg/state/UsersState.dart';
 import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:nutmeg/widgets/ModalBottomSheet.dart';
@@ -68,10 +69,8 @@ class RatePlayerSingleSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var usersToRate = context
-        .read<MatchesState>()
-        .getMatch(matchId)!
-        .getToRate(context.read<UserState>().currentUserId!);
+    var usersToRate =
+        context.watch<MatchesState>().getMatch(matchId)!.getUsersToRate();
 
     return Section(
         topSpace: 0,
@@ -90,14 +89,14 @@ class RatePlayerSingleSheet extends StatelessWidget {
                                 UserAvatar(
                                     16,
                                     context
-                                        .watch<UserState>()
+                                        .watch<UsersState>()
                                         .getUserDetail(e.value)),
                                 SizedBox(
                                   width: 16,
                                 ),
                                 UserNameWidget(
                                     userDetails: context
-                                        .watch<UserState>()
+                                        .watch<UsersState>()
                                         .getUserDetail(e.value)),
                                 Spacer(),
                                 RatingBar(userId: e.value)

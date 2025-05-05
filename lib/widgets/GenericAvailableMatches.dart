@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:logging/logging.dart';
 import 'package:nutmeg/model/Match.dart';
 import 'package:nutmeg/model/SportCenter.dart';
+import 'package:nutmeg/state/MatchState.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/AppBar.dart';
@@ -17,7 +18,6 @@ import 'package:provider/provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../state/AvailableMatchesState.dart';
-import '../state/MatchesState.dart';
 import '../state/UserState.dart';
 import '../utils/LocationUtils.dart';
 import 'Badges.dart';
@@ -47,7 +47,6 @@ class GenericAvailableMatchesList extends StatefulWidget {
 
 class GenericAvailableMatchesListState
     extends State<GenericAvailableMatchesList> {
-
   final logger = Logger("GenericAvailableMatchesList");
 
   void initState() {
@@ -233,7 +232,7 @@ class GenericMatchInfo extends StatelessWidget {
                             Text(
                                 formatDate(match.getLocalizedTime(), context) +
                                     " " +
-                                    gmtSuffix(sportCenter?.timezoneId ?? ""),
+                                    gmtSuffix(sportCenter?.timezoneId),
                                 style:
                                     TextPalette.getBodyText(Palette.greyDark)),
                             SizedBox(
@@ -358,7 +357,7 @@ class GenericMatchInfoPast extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var match = context.watch<MatchesState>().getMatch(matchId);
+    var match = context.watch<MatchState>().match;
 
     if (match == null) return Container();
 

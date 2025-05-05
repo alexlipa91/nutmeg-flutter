@@ -9,7 +9,6 @@ import 'package:nutmeg/widgets/Avatar.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:provider/provider.dart';
 
-
 class PlayerOfTheMatch extends StatelessWidget {
   final GlobalKey previewContainer = new GlobalKey();
 
@@ -20,30 +19,30 @@ class PlayerOfTheMatch extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        extendBodyBehindAppBar: true,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          centerTitle: false,
-          automaticallyImplyLeading: false,
-          leadingWidth: 0,
-          actions: [
-            Padding(
-                padding: EdgeInsets.only(right: 20),
-                child: InkWell(
-                  child: Icon(Icons.close),
-                  onTap: () => Navigator.of(context).pop(),
-                ))
-          ],
-        ),
-        body: Stack(children: [
-          Container(
-              constraints: BoxConstraints.expand(),
-              decoration: new BoxDecoration(color: Palette.primary)),
-          LaunchWidgetState.getBackgroundImages(context),
-          MainArea(userId: userId ?? context.read<UserState>().currentUserId!)
-        ]),
-      );
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: false,
+        automaticallyImplyLeading: false,
+        leadingWidth: 0,
+        actions: [
+          Padding(
+              padding: EdgeInsets.only(right: 20),
+              child: InkWell(
+                child: Icon(Icons.close),
+                onTap: () => Navigator.of(context).pop(),
+              ))
+        ],
+      ),
+      body: Stack(children: [
+        Container(
+            constraints: BoxConstraints.expand(),
+            decoration: new BoxDecoration(color: Palette.primary)),
+        LaunchWidgetState.getBackgroundImages(context),
+        MainArea(userId: userId ?? context.read<UserState>().getLoggedUserId()!)
+      ]),
+    );
   }
 }
 
@@ -69,7 +68,7 @@ class MainAreaState extends State<MainArea> {
   @override
   Widget build(BuildContext context) {
     var userState = context.read<UserState>();
-    var userDetails = userState.getUserDetail(widget.userId);
+    var userDetails = userState.getLoggedUserDetails();
 
     return Padding(
       padding: EdgeInsets.all(16.0),
@@ -120,17 +119,17 @@ class MainAreaState extends State<MainArea> {
                             Text("+1", style: TextPalette.getH2(Palette.white))
                           ]),
                       SizedBox(height: 24),
-                      GenericButtonWithLoader("SEE MATCH STATS",
-                              (BuildContext context) async =>
-                                  Navigator.of(context).pop(),
+                      GenericButtonWithLoader(
+                          "SEE MATCH STATS",
+                          (BuildContext context) async =>
+                              Navigator.of(context).pop(),
                           PrimaryInverted()),
                     ],
                   ),
                 ),
               ),
             ],
-          )
-      ),
+          )),
     );
   }
 }

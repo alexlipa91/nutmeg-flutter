@@ -1,6 +1,5 @@
 import 'dart:math';
 
-import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:dotted_border/dotted_border.dart';
@@ -8,6 +7,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:nutmeg/state/MatchState.dart';
+import 'package:nutmeg/state/UsersState.dart';
 import 'package:nutmeg/utils/LocationUtils.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -44,6 +45,9 @@ import '../widgets/Skeletons.dart';
 import '../widgets/TeamsWidget.dart';
 import 'BottomBarMatch.dart';
 import 'PaymentDetailsDescription.dart';
+import 'package:logging/logging.dart';
+
+final logger = Logger('MatchDetails');
 
 // MatchDetails is a stateless widget that provides a UserRatings provider to the MatchDetailsImpl widget
 class MatchDetails extends StatelessWidget {
@@ -92,6 +96,12 @@ class MatchDetailsImplState extends State<MatchDetailsImpl> {
     }
   }
 
+  @override
+  void initState() {
+    super.initState();
+    myInitState();
+  }
+
   Future<void> myInitState() async {
     // check if payment outcome
     WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -109,265 +119,62 @@ class MatchDetailsImplState extends State<MatchDetailsImpl> {
       }
     });
 
-    Match match = await refreshMatch();
-    // we need to wait to load all logged user info before building the UI
-    await context.read<UserState>().fetchLoggedUserDetails();
-    refreshUsers(match);
+    var state = context.read<MatchState>();
 
-    Ratings? ratings = context.read<MatchesState>().getRatings(widget.matchId);
+    await refreshState();
+    // we need to wait to load all logged user info before building the UI
+
+    var match = state.match!;
+    match.going.forEach((key, value) {
+      context.read<UsersState>().fetchUserDetails(key);
+    });
+
+    Ratings? ratings = state.ratings;
 
     // show rating modal
     var loggedUser = context.read<UserState>().getLoggedUserDetails();
-    await showRatingModalIfNeverSeen(match, loggedUser);
+    showRatingModalIfNeverSeen(context.read<MatchState>().match!, loggedUser);
 
     if (loggedUser != null &&
         (ratings?.potms ?? []).contains(loggedUser.documentId) &&
-        match.status == MatchStatus.rated) {
+        context.read<MatchState>().match!.status == MatchStatus.rated) {
       UserController.showPotmIfNotSeen(
           context, widget.matchId, loggedUser.documentId);
     }
   }
 
-  Future<Match> refreshMatch() async {
+  Future<void> refreshState() async {
+    logger.info("refreshing state for MatchDetails widget");
+    var state = context.read<MatchState>();
+    var usersState = context.read<UsersState>();
     List<Future<dynamic>> futures = [
-      context.read<MatchesState>().fetchRatings(widget.matchId),
-      context.read<MatchesState>().fetchMatch(widget.matchId),      
+      state.fetchRatings(),
+      state.fetchMatch(),
     ];
 
-    return (await Future.wait(futures))[1];
-  }
-
-  Future<void> refreshUsers(Match match) async {
-    var users = Set();
-    users.addAll(match.getGoingUsersByTime());
-    if (match.organizerId != null) {
-      users.add(match.organizerId);
+    await Future.wait(futures);
+    if (state.match?.organizerId != null) {
+      usersState.fetchUserDetails(state.match!.organizerId!);
     }
-    users.forEach((u) => context.read<UserState>().getOrFetch(u));
-  }
-
-  Future<void> refreshState() async {
-    Match match = await refreshMatch();
-    var loggedUser = context.read<UserState>().getLoggedUserDetails();
-    await showRatingModalIfNeverSeen(match, loggedUser);
-    await refreshUsers(match);
   }
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraints) {
-      var userState = context.watch<UserState>();
-      var matchesState = context.watch<MatchesState>();
+      var matchState = context.watch<MatchState>();
 
-      Match? match = matchesState.getMatch(widget.matchId);
+      Match? match = matchState.match;
       SportCenter? sportCenter = match?.sportCenter;
 
-      var status = match?.status;
-
       var isTest = match != null && match.isTest;
-      var organizerView = userState.isLoggedIn() &&
-          match != null &&
-          match.organizerId == userState.getLoggedUserDetails()!.documentId;
+      var organizerView = matchState.isLoggedUserOrganizer();
 
-      var bottomBar =
-          BottomBarMatch.getBottomBar(context, widget.matchId, status);
-
-      var skeletons;
-      if (match == null || sportCenter == null) {
-        skeletons = [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Flexible(
-                child: Container(
-                  constraints: BoxConstraints(maxWidth: 700),
-                  child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(children: [
-                          Expanded(child: SkeletonMatchDetails.imageSkeleton())
-                        ]),
-                        SkeletonMatchDetails.skeletonRepeatedElement(),
-                        SkeletonMatchDetails.skeletonRepeatedElement(),
-                        SkeletonMatchDetails.skeletonRepeatedElement(),
-                        SkeletonMatchDetails.skeletonRepeatedElement(),
-                        SkeletonMatchDetails.skeletonRepeatedElement(),
-                      ]),
-                ),
-              )
-            ],
-          )
-        ];
-      }
-
-      var widgets;
-      if (skeletons == null) {
-        var completeOrganiserWidget = organizerView &&
-                match.price != null &&
-                userState.getLoggedUserDetails()?.areChargesEnabled(isTest) !=
-                    null &&
-                !userState.getLoggedUserDetails()!.areChargesEnabled(isTest)
-            ? CompleteOrganiserAccountWidget(isTest: isTest)
-            : null;
-
-        var testInfo = isTest
-            ? InfoContainer(
-                backgroundColor: Palette.accent,
-                child: SelectableText(
-                  "Test match: " + widget.matchId,
-                  style: TextPalette.getBodyText(Palette.black),
-                ))
-            : null;
-
-        var matchInfo = MatchInfo(match!, sportCenter!);
-
-        var teamsWidget = match.going.length > 1 && match.hasTeams()
-            ? TeamsWidget(matchId: widget.matchId)
-            : null;
-
-        var infoPlayersList = match.isMatchFinished()
-            ? null
-            : PlayerList(
-                match: match,
-                withJoinButton:
-                    bottomBar is JoinMatchBottomBar && !match.isFull());
-
-        var stats = ((status == MatchStatus.rated &&
-                    matchesState.getRatings(match.documentId) != null) ||
-                status == MatchStatus.to_rate)
-            ? Stats(match: match, sportCenter: sportCenter)
-            : null;
-
-        var sportCenterDetails =
-            SportCenterDetails(match: match, sportCenter: sportCenter);
-
-        var rules = (bool large) {
-          var rules = [];
-
-          if (match.cancelBefore != null) {
-            var cancellationDate = match.dateTime.subtract(match.cancelBefore!);
-
-            if (cancellationDate.isAfter(DateTime.now())) {
-              rules.add(AppLocalizations.of(context)!.cancellationInfo(
-                  MatchInfo.formatDay(
-                      match.getLocalizedTimeCancellation(), context),
-                  MatchInfo.formatHour(
-                      match.getLocalizedTimeCancellation(), context),
-                  match.minPlayers));
-            }
-          }
-
-          if (match.price != null) {
-            var refundString = (match.price!.userFee == 0)
-                ? AppLocalizations.of(context)!.fullRefund
-                : AppLocalizations.of(context)!.refundWithoutFee;
-
-            rules.add(AppLocalizations.of(context)!.refundInfo(refundString));
-          }
-
-          if (rules.length == 0) {
-            return null;
-          }
-
-          return RuleCard(AppLocalizations.of(context)!.paymentPolicyHeader,
-              rules.join("\n"), large);
-        };
-
-        var organiserBadge = match.organizerId != null
-            ? Builder(builder: (context) {
-                var ud = context
-                    .watch<UserState>()
-                    .getUserDetail(match.organizerId!);
-
-                return InfoContainer(
-                    child: Row(children: [
-                  UserAvatarWithBottomModal(userData: ud),
-                  SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(AppLocalizations.of(context)!.organizedBy,
-                            style: TextPalette.bodyText),
-                        SizedBox(height: 4),
-                        (ud == null)
-                            ? Skeletons.lText
-                            : Text(ud.name!.split(" ").first,
-                                style: TextPalette.h2),
-                      ],
-                    ),
-                  ),
-                ]));
-              })
-            : null;
-
-        if (constraints.maxWidth < 800) {
-          widgets = interleave([
-            // title
-            if (completeOrganiserWidget != null) completeOrganiserWidget,
-            // info box
-            if (testInfo != null) testInfo,
-            matchInfo,
-            // stats
-            if (infoPlayersList != null) infoPlayersList,
-            if (teamsWidget != null) teamsWidget,
-            if (stats != null) stats,
-            // horizontal players list or teams
-            sportCenterDetails,
-            if (rules(false) != null) rules(false)!,
-            if (organiserBadge != null) organiserBadge
-          ], SizedBox(height: 16));
-        } else {
-          widgets = [
-            if (completeOrganiserWidget != null) completeOrganiserWidget,
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Flexible(
-                  child: Container(
-                    constraints: BoxConstraints(maxWidth: 700),
-                    child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: interleave(
-                            [
-                              matchInfo,
-                              if (infoPlayersList != null) infoPlayersList,
-                              if (teamsWidget != null) teamsWidget,
-                              if (stats != null) stats
-                            ],
-                            SizedBox(
-                              height: 16,
-                            ))),
-                  ),
-                ),
-                SizedBox(width: 20),
-                Flexible(
-                  child: Container(
-                    constraints: BoxConstraints(maxWidth: 700),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: interleave([
-                        sportCenterDetails,
-                        if (rules(true) != null) rules(true)!,
-                        if (organiserBadge != null) organiserBadge
-                      ], SizedBox(height: 16)),
-                    ),
-                  ),
-                )
-              ],
-            )
-          ];
-        }
-      } else {
-        widgets = skeletons;
-      }
+      var bottomBar = BottomBarMatch.getBottomBar(
+          matchState, widget.matchId, match?.status);
 
       return PageTemplate(
-        initState: () => myInitState(),
-        refreshState: () => refreshState(),
-        widgets: widgets,
+        widgets: getWidgets(context, matchState, sportCenter,
+            matchState.ratings, organizerView, isTest, constraints),
         appBar: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -385,6 +192,196 @@ class MatchDetailsImplState extends State<MatchDetailsImpl> {
       );
     });
   }
+}
+
+List<Widget> getWidgets(
+    BuildContext context,
+    MatchState matchState,
+    SportCenter? sportCenter,
+    Ratings? ratings,
+    bool organizerView,
+    bool isTest,
+    BoxConstraints constraints) {
+  var match = matchState.match;
+
+  if (matchState.match == null || sportCenter == null) {
+    return [
+      Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Flexible(
+            child: Container(
+              constraints: BoxConstraints(maxWidth: 700),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(children: [
+                      Expanded(child: SkeletonMatchDetails.imageSkeleton())
+                    ]),
+                    SkeletonMatchDetails.skeletonRepeatedElement(),
+                    SkeletonMatchDetails.skeletonRepeatedElement(),
+                    SkeletonMatchDetails.skeletonRepeatedElement(),
+                    SkeletonMatchDetails.skeletonRepeatedElement(),
+                    SkeletonMatchDetails.skeletonRepeatedElement(),
+                  ]),
+            ),
+          )
+        ],
+      )
+    ];
+  }
+
+  var completeOrganiserWidget = organizerView && match?.price != null
+      ? CompleteOrganiserAccountWidget(isTest: isTest)
+      : null;
+
+  var testInfo = isTest
+      ? InfoContainer(
+          backgroundColor: Palette.accent,
+          child: SelectableText(
+            "Test match: " + match!.documentId,
+            style: TextPalette.getBodyText(Palette.black),
+          ))
+      : null;
+
+  var matchInfo = MatchInfo(match!, sportCenter);
+
+  var teamsWidget = match.going.length > 1 && match.hasTeams()
+      ? TeamsWidget(matchId: match.documentId)
+      : null;
+
+  var infoPlayersList = match.isMatchFinished()
+      ? null
+      : PlayerList(match: match, withJoinButton: false);
+
+  var status = match.status;
+  var stats = ((status == MatchStatus.rated && ratings != null) ||
+          status == MatchStatus.to_rate)
+      ? Stats()
+      : null;
+
+  var sportCenterDetails =
+      SportCenterDetails(match: match, sportCenter: sportCenter);
+
+  var rules = (bool large) {
+    var rules = [];
+
+    if (match.cancelBefore != null) {
+      var cancellationDate = match.dateTime.subtract(match.cancelBefore!);
+
+      if (cancellationDate.isAfter(DateTime.now())) {
+        rules.add(AppLocalizations.of(context)!.cancellationInfo(
+            MatchInfo.formatDay(match.getLocalizedTimeCancellation(), context),
+            MatchInfo.formatHour(match.getLocalizedTimeCancellation(), context),
+            match.minPlayers));
+      }
+    }
+
+    if (match.price != null) {
+      var refundString = (match.price!.userFee == 0)
+          ? AppLocalizations.of(context)!.fullRefund
+          : AppLocalizations.of(context)!.refundWithoutFee;
+
+      rules.add(AppLocalizations.of(context)!.refundInfo(refundString));
+    }
+
+    if (rules.length == 0) {
+      return null;
+    }
+
+    return RuleCard(AppLocalizations.of(context)!.paymentPolicyHeader,
+        rules.join("\n"), large);
+  };
+
+  var organiserBadge = match.organizerId != null
+      ? Builder(builder: (context) {
+          var ud =
+              context.watch<UsersState>().getUserDetail(match.organizerId!);
+
+          return InfoContainer(
+              child: Row(children: [
+            UserAvatarWithBottomModal(userData: ud),
+            SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(AppLocalizations.of(context)!.organizedBy,
+                      style: TextPalette.bodyText),
+                  SizedBox(height: 4),
+                  (ud == null)
+                      ? Skeletons.lText
+                      : Text(ud.name!.split(" ").first, style: TextPalette.h2),
+                ],
+              ),
+            ),
+          ]));
+        })
+      : null;
+
+  var widgets = List<Widget>.empty();
+
+  if (constraints.maxWidth < 800) {
+    widgets = interleave([
+      // title
+      if (completeOrganiserWidget != null) completeOrganiserWidget,
+      // info box
+      if (testInfo != null) testInfo,
+      matchInfo,
+      // stats
+      if (infoPlayersList != null) infoPlayersList,
+      if (teamsWidget != null) teamsWidget,
+      if (stats != null) stats,
+      // horizontal players list or teams
+      sportCenterDetails,
+      if (rules(false) != null) rules(false)!,
+      if (organiserBadge != null) organiserBadge
+    ], SizedBox(height: 16));
+  } else {
+    widgets = [
+      if (completeOrganiserWidget != null) completeOrganiserWidget,
+      Row(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Flexible(
+            child: Container(
+              constraints: BoxConstraints(maxWidth: 700),
+              child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: interleave(
+                      [
+                        matchInfo,
+                        if (infoPlayersList != null) infoPlayersList,
+                        if (teamsWidget != null) teamsWidget,
+                        if (stats != null) stats
+                      ],
+                      SizedBox(
+                        height: 16,
+                      ))),
+            ),
+          ),
+          SizedBox(width: 20),
+          Flexible(
+            child: Container(
+              constraints: BoxConstraints(maxWidth: 700),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: interleave([
+                  sportCenterDetails,
+                  if (rules(true) != null) rules(true)!,
+                  if (organiserBadge != null) organiserBadge
+                ], SizedBox(height: 16)),
+              ),
+            ),
+          )
+        ],
+      )
+    ];
+  }
+
+  return widgets;
 }
 
 class PlayerList extends StatelessWidget {
@@ -584,8 +581,8 @@ class MatchInfo extends StatelessWidget {
                                                         match.documentId);
                                                 await context
                                                     .read<MatchesState>()
-                                                    .fetchMatch(
-                                                        match.documentId);
+                                                    .getMatch(match.documentId)!
+                                                    .fetchMatch();
                                                 Navigator.pop(context);
                                               }, Primary()),
                                             )
@@ -805,7 +802,7 @@ class PlayerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var userData = context.watch<UserState>().getUserDetail(userId);
+    var userData = context.watch<UsersState>().getUserDetail(userId);
 
     return Column(children: [
       UserAvatarWithBottomModal(userData: userData, radius: 30),
@@ -826,11 +823,16 @@ class EmptyPlayerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var userState = context.read<UserState>();
+    var matchState = context.read<MatchState>();
+    var matchesState = context.read<MatchesState>();
+
     return InkWell(
-      onTap: context.watch<MatchesState>().getMatch(matchId)!.status ==
-              MatchStatus.unpublished
-          ? null
-          : () => JoinModal.onJoinGameAction(context, matchId),
+      onTap:
+          context.watch<MatchState>().match?.status == MatchStatus.unpublished
+              ? null
+              : () => JoinModal.onJoinGameAction(
+                  context, userState, matchState, matchesState),
       child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
         DottedBorder(
           padding: EdgeInsets.zero,
@@ -970,17 +972,21 @@ class MapCardImage extends StatelessWidget {
 }
 
 class Stats extends StatelessWidget {
-  final Match match;
-  final SportCenter sportCenter;
-
-  Stats({Key? key, required this.match, required this.sportCenter})
-      : super(key: key);
-
   @override
   Widget build(BuildContext context) {
     var child;
     var dayDateFormat = DateFormat(
         "EEEE, MMM dd HH:mm", getLanguageLocaleWatch(context).languageCode);
+
+    var state = context.watch<MatchState>();
+    var match = state.match;
+
+    if (match == null) {
+      return Container();
+    }
+
+    var sportCenter = match.sportCenter!;
+    var ratings = state.ratings;
 
     if (match.status == MatchStatus.to_rate) {
       child = Container(
@@ -1011,8 +1017,7 @@ class Stats extends StatelessWidget {
             ],
           ));
     } else {
-      var ratings = context.watch<MatchesState>().getRatings(match.documentId);
-      var userState = context.watch<UserState>();
+      var userState = context.watch<UsersState>();
 
       var loadSkeleton = ratings == null;
       child = (loadSkeleton)

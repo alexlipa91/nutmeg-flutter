@@ -205,7 +205,7 @@ class PerformanceGraph extends StatelessWidget {
   Widget build(BuildContext context) {
     List<MapEntry> ratesWithIndex = (context
                 .read<UserState>()
-                .getUserDetail(userId)!
+                .getLoggedUserDetails()!
                 .lastScores ??
             [])
         .asMap()
