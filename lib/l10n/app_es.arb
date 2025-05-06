@@ -91,7 +91,7 @@
     "policiesSectionTitle": "Políticas",
     "privateMatchInfo": "La partida es privada. Los usuarios solo pueden unirse a través del enlace compartido.",
     "privateMatchDesc": "Partida privada",
-    "automaticCancellationInfo": "Cancelar automáticamente el partido si no se alcanza la cantidad mínima de jugadores",
+    "automaticCancellationInfo": "Cancelar automáticamente el partido si no se alcanza el número mínimo de jugadores",
     "automaticCancellationExplanation": "Cancelaremos el partido si al menos {x} jugadores no se han unido {y} horas antes del inicio.\nSi los jugadores pagaron a través de Nutmeg, recibirán un reembolso completo.",
     "teamNameLabelText": "EQUIPO {x}",
     "hoursLabel": "Horas",
@@ -173,5 +173,7 @@
     "ratePlayersThanksText": "¡Gracias por calificar!",
     "ratePlayersTitleText": "Califica a los jugadores",
     "updateRatesPlayersTitleText": "Cambiar votos",
-    "ratesCloseInText": "Las calificaciones cierran en {hours} horas"
+    "ratesCloseInText": "Las calificaciones cierran en {hours} horas",
+    "locationErrorTitle": "¡No se pudo obtener la ubicación!",
+    "locationErrorDescription": "Por favor, inténtelo de nuevo más tarde."
 }

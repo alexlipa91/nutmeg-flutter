@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 import 'package:nutmeg/model/LocationInfo.dart';
+import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/Containers.dart';
 import 'package:nutmeg/widgets/PageTemplate.dart';
@@ -116,7 +117,15 @@ class ChangeCityState extends State<ChangeCity> {
                     LocationInfo? location = await getLocationFromIP();
                     if (location != null) {
                       Navigator.pop(context, location);
+                    } else {
+                      GenericInfoModal(
+                          title: AppLocalizations.of(context)!.locationErrorTitle,
+                          description: AppLocalizations.of(context)!.locationErrorDescription)
+                          .show(context);
                     }
+                    setState(() {
+                      _loading = false;
+                    });
                   },
                   child: Row(
                     children: [

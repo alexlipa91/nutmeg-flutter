@@ -15,14 +15,7 @@ class MatchesState extends ChangeNotifier {
 
   LocationInfo? _locationInfo;
 
-  MatchesState() {
-    getLocationFromIP().then((location) {
-      if (location != null) {
-        _locationInfo = location;
-        // notifyListeners();
-      }
-    });
-  }
+  MatchesState() {}
 
   // match details
   Map<String, MatchState> _matches = Map();
@@ -114,8 +107,8 @@ class MatchesState extends ChangeNotifier {
       logger.severe("Failed to deserialize match ${element.key.toString()}");
       logger.severe(e);
       logger.severe(s);
-      FirebaseCrashlytics.instance
-          .recordError(e, s, reason: 'failed to deserialize match ${element.key}');
+      FirebaseCrashlytics.instance.recordError(e, s,
+          reason: 'failed to deserialize match ${element.key}');
       return null;
     }
   }
@@ -187,7 +180,8 @@ class MatchesState extends ChangeNotifier {
   Future<void> fetchPastMatches() async {
     if (userState?.getLoggedUserId() == null) return;
 
-    var resp = await CloudFunctionsClient().get("v2/matches/user", args: {"when": "past"});
+    var resp = await CloudFunctionsClient()
+        .get("v2/matches/user", args: {"when": "past"});
     Map<String, dynamic> data =
         (resp == null) ? Map() : Map<String, dynamic>.from(resp);
 

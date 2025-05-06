@@ -173,5 +173,7 @@
     "ratePlayersThanksText": "Grazie per la valutazione!",
     "ratePlayersTitleText": "Valuta i giocatori",
     "updateRatesPlayersTitleText": "Cambiare i voti",
-    "ratesCloseInText": "Le valutazioni chiudono tra {hours} ore"
+    "ratesCloseInText": "Le valutazioni chiudono tra {hours} ore",
+    "locationErrorTitle": "Impossibile ottenere la posizione!",
+    "locationErrorDescription": "Riprova più tardi."
 }

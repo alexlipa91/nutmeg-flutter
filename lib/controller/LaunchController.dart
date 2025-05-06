@@ -1,3 +1,4 @@
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -11,7 +12,7 @@ import 'package:nutmeg/main.dart';
 import 'package:nutmeg/model/UserDetails.dart';
 import 'package:nutmeg/screens/EnterDetails.dart';
 import 'package:nutmeg/state/MatchesState.dart';
-import 'package:nutmeg/utils/LocationUtils.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:tuple/tuple.dart';
 import 'package:version/version.dart';
@@ -21,7 +22,6 @@ import '../Exceptions.dart';
 import '../state/LoadOnceState.dart';
 import '../state/UserState.dart';
 import '../utils/UiUtils.dart';
-import '../utils/Utils.dart';
 import 'MiscController.dart';
 
 final logger = Logger('LaunchController');
@@ -30,7 +30,6 @@ class LaunchController {
   static bool loadingDone = false;
   static var apiClient = CloudFunctionsClient();
   static String? appVersion;
-
   static Future<void> handleLink(Uri deepLink) async {
     print("handling dynamic link " + deepLink.toString());
     var fullPath =
@@ -79,13 +78,19 @@ class LaunchController {
     }
   }
 
+  static Future<void> trackAppVersion() async {
+    PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    appVersion = packageInfo.version;
+    await FirebaseAnalytics.instance.logEvent(name: "app_started", parameters: {
+      "app_version": packageInfo.version,
+    });
+    logger.info("Logged app_started event with version ${packageInfo.version}");
+  }
+
   static Future<void> loadData(BuildContext context, String? from) async {
     logger.info("start loading data function");
 
-    // var trace = FirebasePerformance.instance.newTrace("launch_app");
-    // await trace.start();
-    // final Stopwatch stopwatch = Stopwatch();
-    // stopwatch.start();
+    trackAppVersion();
 
     // fetch device model name
     var d = DeviceInfo();
@@ -94,16 +99,8 @@ class LaunchController {
     var userState = context.read<UserState>();
     var matchesState = context.read<MatchesState>();
 
-    List<Future<dynamic>> futures = [
-      getVersion(),
-      userState.fetchLoggedUserDetails(),
-      matchesState.fetchLocation(),
-      _loadOnceData(context),
-    ];
-    var futuresData = await Future.wait(futures);
-
-    appVersion = futuresData[0].toString();
-    UserDetails? availableUserDetails = futuresData[1];
+    await userState.fetchLoggedUserDetails();
+    await matchesState.fetchLocation();
 
     if (!kIsWeb) {
       FirebaseRemoteConfig firebaseRemoteConfig = FirebaseRemoteConfig.instance;
@@ -119,15 +116,15 @@ class LaunchController {
         print(s);
       }
 
-      Tuple2<Version, String> minimumVersion = futuresData[0];
+      // Tuple2<Version, String> minimumVersion = futuresData[0];
 
-      var current = (minimumVersion).item1;
-      // trace.putAttribute("app_version", current.toString());
-      var minimumVersionParts =
-          firebaseRemoteConfig.getString("minimum_app_version").split(".");
-      var minimumRequired = Version(int.parse(minimumVersionParts[0]),
-          int.parse(minimumVersionParts[1]), int.parse(minimumVersionParts[2]));
-      if (current < minimumRequired) throw OutdatedAppException();
+      // var current = (minimumVersion).item1;
+      // // trace.putAttribute("app_version", current.toString());
+      // var minimumVersionParts =
+      //     firebaseRemoteConfig.getString("minimum_app_version").split(".");
+      // var minimumRequired = Version(int.parse(minimumVersionParts[0]),
+      //     int.parse(minimumVersionParts[1]), int.parse(minimumVersionParts[2]));
+      // if (current < minimumRequired) throw OutdatedAppException();
     }
 
     if (kDebugMode) {
@@ -140,8 +137,7 @@ class LaunchController {
     }
 
     // check if user is logged in
-    var userDetails = availableUserDetails;
-
+    var userDetails = userState.getLoggedUserDetails();
     // fixme force users without name
     if (userDetails != null &&
         (userDetails.name == null || userDetails.name == "")) {

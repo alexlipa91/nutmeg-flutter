@@ -83,17 +83,19 @@ Future<List<PredictionResult>> getCitiesPrediction(String query) async {
 }
 
 Future<LocationInfo?> getLocationFromIP() async {
-  try {
-    final response = await http.get(Uri.parse('https://ipapi.co/json/'));
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      return LocationInfo(data['country'], data['city'],
-          data['latitude'], data['longitude']);
-    }
-  } catch (e) {
-    logger.warning('Error getting location from IP: $e');
+  final response = await _getLocationFromIPWho();
+  return response;
+}
+
+Future<LocationInfo?> _getLocationFromIPWho() async {
+  final response = await http.get(Uri.parse('https://ipwho.is'));
+  if (response.statusCode == 200) {
+    final data = json.decode(response.body);
+    return LocationInfo(data['country_code'], data['city'], data['latitude'],
+        data['longitude']);
+  } else {
+    return null;
   }
-  return null;
 }
 
 var blacklistedCountriesForPayments = ["CH", "BR"];
