@@ -40,6 +40,9 @@ echo "Creating commit..."
 git add pubspec.yaml
 git commit -m "Bump version to $VERSION+$BUILD_NUMBER"
 
+
+exit 0
+
 # Create tag
 echo "Creating tag v$VERSION..."
 git tag -a "v$VERSION" -m "Release version $VERSION"
