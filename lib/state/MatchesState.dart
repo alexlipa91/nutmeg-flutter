@@ -115,7 +115,7 @@ class MatchesState extends ChangeNotifier {
       logger.severe(e);
       logger.severe(s);
       FirebaseCrashlytics.instance
-          .recordError(e, s, reason: 'failed to deserialize a match');
+          .recordError(e, s, reason: 'failed to deserialize match ${element.key}');
       return null;
     }
   }
@@ -134,18 +134,9 @@ class MatchesState extends ChangeNotifier {
 
   Future<void> fetchGoingMatches() async {
     if (userState?.getLoggedUserId() == null) return;
-    if (_locationInfo == null) return;
 
-    Map<String, dynamic> params = {
-      "with_user": userState!.getLoggedUserId()!,
-      "when": "future",
-      "radius_km": 20,
-      "lat": _locationInfo!.lat,
-      "lng": _locationInfo!.lng,
-      "version": 2,
-    };
-
-    var resp = await CloudFunctionsClient().get("matches", args: params);
+    var resp = await CloudFunctionsClient()
+        .get("v2/matches/user", args: {"when": "future"});
     Map<String, dynamic> data =
         (resp == null) ? Map() : Map<String, dynamic>.from(resp);
 
@@ -169,15 +160,10 @@ class MatchesState extends ChangeNotifier {
   Future<void> fetchUpcomingMatches() async {
     if (_locationInfo == null) return;
 
-    Map<String, dynamic> params = {
+    var resp = await CloudFunctionsClient().get("v2/matches", args: {
       "when": "future",
-      "radius_km": 20,
-      "lat": _locationInfo!.lat,
-      "lng": _locationInfo!.lng,
-      "version": 2,
-    };
-
-    var resp = await CloudFunctionsClient().get("matches", args: params);
+      "location": "${_locationInfo!.city},${_locationInfo!.country}"
+    });
     Map<String, dynamic> data =
         (resp == null) ? Map() : Map<String, dynamic>.from(resp);
 
@@ -201,13 +187,7 @@ class MatchesState extends ChangeNotifier {
   Future<void> fetchPastMatches() async {
     if (userState?.getLoggedUserId() == null) return;
 
-    Map<String, dynamic> params = {
-      "when": "past",
-      "with_user": userState!.getLoggedUserId()!,
-      "version": 2,
-    };
-
-    var resp = await CloudFunctionsClient().get("matches", args: params);
+    var resp = await CloudFunctionsClient().get("v2/matches/user", args: {"when": "past"});
     Map<String, dynamic> data =
         (resp == null) ? Map() : Map<String, dynamic>.from(resp);
 
@@ -231,11 +211,7 @@ class MatchesState extends ChangeNotifier {
   Future<void> fetchMyOrganizedMatches() async {
     if (userState?.getLoggedUserId() == null) return;
 
-    Map<String, dynamic> params = {
-      "organized_by": userState!.getLoggedUserId()!,
-    };
-
-    var resp = await CloudFunctionsClient().get("matches", args: params);
+    var resp = await CloudFunctionsClient().get("v2/matches/organizer");
     Map<String, dynamic> data =
         (resp == null) ? Map() : Map<String, dynamic>.from(resp);
 

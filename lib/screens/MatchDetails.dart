@@ -273,8 +273,6 @@ List<Widget> getWidgets(
     );
   }
 
-  print(awards);
-
   var sportCenterDetails =
       SportCenterDetails(match: match, sportCenter: sportCenter);
 

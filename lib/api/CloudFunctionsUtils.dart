@@ -67,17 +67,6 @@ class CloudFunctionsClient {
     }
   }
 
-  String _getPathWildcardName(String name) {
-    var parts = name.split("/");
-    if (parts.length < 2) {
-      return name;
-    }
-    if (parts[0] == "matches" || parts[0] == "users") {
-      parts[1] = "<id>";
-    }
-    return parts.join("/");
-  }
-
   Future<Map<String, dynamic>?> get(String name,
       {Map<String, dynamic> args = const {}}) async {
     logger.info("GET $name with args ${args.toString()}");

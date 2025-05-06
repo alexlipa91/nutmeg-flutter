@@ -253,8 +253,6 @@ class Ratings {
       var votes = Map<String, int>.from(award.value);
       awards[awardId] = votes;
     }
-    print("read awards");
-    print(awards);
     return awards;
   }
 

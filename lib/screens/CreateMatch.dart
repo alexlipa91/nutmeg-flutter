@@ -918,7 +918,7 @@ class CreateMatchState extends State<CreateMatch> {
                             id = await context
                                 .read<MatchesState>()
                                 .createMatch(match);
-                            print("added match with id " + id);
+                            logger.info("added match with id $id");
                           } else {
                             match.documentId = widget.existingMatch!;
                             await context
@@ -935,12 +935,11 @@ class CreateMatchState extends State<CreateMatch> {
 
                         context.go("/match/${ids.first}");
                       } on Exception catch (e, s) {
-                        print(e);
-                        print(s);
+                        logger.severe("error creating match", e, s);
                         ErrorHandlingUtils.handleError(e, s, context);
                       }
                     } else {
-                      print("validation error");
+                      logger.severe("validation error");
                       setState(() {});
                     }
 
