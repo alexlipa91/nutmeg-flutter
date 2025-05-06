@@ -5,11 +5,9 @@ import 'package:flutter/material.dart' hide Badge;
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/Skeletons.dart';
-import 'package:provider/provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../model/UserDetails.dart';
-import '../state/UserState.dart';
 import 'Avatar.dart';
 
 class BottomModalWithTopImage extends StatelessWidget {
@@ -189,7 +187,7 @@ class JoinedPlayerBottomModal extends StatelessWidget {
                 padding: EdgeInsets.only(top: 24.0, left: 8, right: 8),
                 child: SizedBox(
                     height: 150,
-                    child: PerformanceGraph(userId: userDetails.documentId)))
+                    child: PerformanceGraph(userDetails: userDetails)))
         ]),
         UserDetails.getDisplayName(userDetails),
         null);
@@ -197,17 +195,14 @@ class JoinedPlayerBottomModal extends StatelessWidget {
 }
 
 class PerformanceGraph extends StatelessWidget {
-  final String userId;
+  final UserDetails userDetails;
 
-  const PerformanceGraph({Key? key, required this.userId}) : super(key: key);
+  const PerformanceGraph({Key? key, required this.userDetails})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    List<MapEntry> ratesWithIndex = (context
-                .read<UserState>()
-                .getLoggedUserDetails()!
-                .lastScores ??
-            [])
+    List<MapEntry> ratesWithIndex = (userDetails.lastScores ?? [])
         .asMap()
         .entries
         .map((e) => MapEntry(e.key, double.parse(e.value.toStringAsFixed(2))))
@@ -257,9 +252,10 @@ class PerformanceGraph extends StatelessWidget {
               minY: 1,
               lineTouchData: LineTouchData(
                 handleBuiltInTouches: true,
-                // touchTooltipData: LineTouchTooltipData(
-                //   tooltipBgColor: Colors.white,
-                // ),
+                touchTooltipData: LineTouchTooltipData(
+                  getTooltipColor: (value) => Palette.greyLightest,
+                  tooltipPadding: EdgeInsets.all(8),
+                ),
                 getTouchLineEnd: (a, b) => 0,
               ),
               gridData: FlGridData(

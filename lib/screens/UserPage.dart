@@ -250,7 +250,7 @@ class UserPageState extends State<UserPage> {
                   height: 180,
                   child: InfoContainer(
                       child:
-                          PerformanceGraph(userId: userDetails.documentId)))),
+                          PerformanceGraph(userDetails: userDetails)))),
         if ((userDetails.skillsCount ?? {}).isNotEmpty)
           Builder(
             builder: (BuildContext context) {
