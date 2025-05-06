@@ -249,8 +249,7 @@ class UserPageState extends State<UserPage> {
               body: SizedBox(
                   height: 180,
                   child: InfoContainer(
-                      child:
-                          PerformanceGraph(userDetails: userDetails)))),
+                      child: PerformanceGraph(userDetails: userDetails)))),
         if ((userDetails.skillsCount ?? {}).isNotEmpty)
           Builder(
             builder: (BuildContext context) {
@@ -591,15 +590,10 @@ class UserPageState extends State<UserPage> {
           padding: EdgeInsets.only(top: 8),
           child: Center(
             child: Container(
-              child: FutureBuilder<Tuple2<Version, String>>(
+              child: FutureBuilder<String>(
                   future: getVersion(),
                   builder: (context, snapshot) => Text(
-                        "v" +
-                            ((snapshot.hasData)
-                                ? (snapshot.data!.item1.toString() +
-                                    " build " +
-                                    snapshot.data!.item2)
-                                : ""),
+                        "v " + ((snapshot.hasData) ? (snapshot.data!) : ""),
                         style: TextPalette.bodyText,
                         textAlign: TextAlign.right,
                       )),

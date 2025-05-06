@@ -1,4 +1,5 @@
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
@@ -89,13 +90,12 @@ List<T> interleave<T>(List<T> elements, T e, [bool withTop = false]) {
   return result;
 }
 
-Future<Tuple2<Version, String>> getVersion() async {
+Future<String> getVersion() async {
+  if (kIsWeb) {
+    return String.fromEnvironment("COMMIT_SHA", defaultValue: "");
+  }
   PackageInfo packageInfo = await PackageInfo.fromPlatform();
-  var versionParts = packageInfo.version.split(".");
-  return Tuple2<Version, String>(
-      Version(int.parse(versionParts[0]), int.parse(versionParts[1]),
-          int.parse(versionParts[2])),
-      packageInfo.buildNumber);
+  return packageInfo.version + " + " + packageInfo.buildNumber;
 }
 
 class ConfigsUtils {
