@@ -1,14 +1,14 @@
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:logging/logging.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 import 'package:nutmeg/model/LocationInfo.dart';
 import 'package:nutmeg/model/Match.dart';
 import 'package:nutmeg/state/MatchState.dart';
 import 'package:nutmeg/state/UserState.dart';
+import 'package:nutmeg/utils/CrashlyticsLogger.dart';
 import 'package:nutmeg/utils/LocationUtils.dart';
 
-final logger = Logger("MatchesState");
+final logger = CrashlyticsLogger("MatchesState");
 
 class MatchesState extends ChangeNotifier {
   UserState? userState;
@@ -104,11 +104,8 @@ class MatchesState extends ChangeNotifier {
       return Match.fromJson(
           Map<String, dynamic>.from(element.value), element.key);
     } catch (e, s) {
-      logger.severe("Failed to deserialize match ${element.key.toString()}");
-      logger.severe(e);
-      logger.severe(s);
-      FirebaseCrashlytics.instance.recordError(e, s,
-          reason: 'failed to deserialize match ${element.key}');
+      logger.severe(
+          "Failed to deserialize match ${element.key.toString()}", e, s);
       return null;
     }
   }

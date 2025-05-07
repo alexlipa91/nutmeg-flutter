@@ -9,6 +9,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nutmeg/state/MatchState.dart';
 import 'package:nutmeg/state/UsersState.dart';
+import 'package:nutmeg/utils/CrashlyticsLogger.dart';
 import 'package:nutmeg/utils/LocationUtils.dart';
 import 'package:nutmeg/widgets/UserAwardsReceived.dart';
 import 'package:provider/provider.dart';
@@ -46,9 +47,8 @@ import '../widgets/Skeletons.dart';
 import '../widgets/TeamsWidget.dart';
 import 'BottomBarMatch.dart';
 import 'PaymentDetailsDescription.dart';
-import 'package:logging/logging.dart';
 
-final logger = Logger('MatchDetails');
+final logger = CrashlyticsLogger('MatchDetails');
 
 // MatchDetails is a stateless widget that provides a UserRatings provider to the MatchDetailsImpl widget
 class MatchDetails extends StatelessWidget {
@@ -265,9 +265,6 @@ List<Widget> getWidgets(
 
   if (ratings != null && ratings.awards.isNotEmpty) {
     // Compute the number of distinct voters for awards
-    final Set<String> distinctAwardVoters = ratings.awards.values
-        .expand((userVotes) => userVotes.keys)
-        .toSet();
     awards = UserAwardsReceivedList(
       awards: ratings.awards,
     );
@@ -596,7 +593,7 @@ class MatchInfo extends StatelessWidget {
                                                         match.documentId);
                                                 await context
                                                     .read<MatchesState>()
-                                                    .getMatch(match.documentId)!
+                                                    .getMatch(match.documentId)
                                                     .fetchMatch();
                                                 Navigator.pop(context);
                                               }, Primary()),
@@ -1137,7 +1134,8 @@ class Stats extends StatelessWidget {
 
     return InfoContainerWithTitleAndSubtitle(
         title: AppLocalizations.of(context)!.matchStatsTitle,
-        subtitle: AppLocalizations.of(context)!.matchStatsSubTitle(ratings?.numDistinctScoreVoters ?? 0),
+        subtitle: AppLocalizations.of(context)!
+            .matchStatsSubTitle(ratings?.numDistinctScoreVoters ?? 0),
         body: child);
   }
 

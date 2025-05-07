@@ -9,22 +9,19 @@ import 'package:go_router/go_router.dart';
 import 'package:logging/logging.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 import 'package:nutmeg/main.dart';
-import 'package:nutmeg/model/UserDetails.dart';
 import 'package:nutmeg/screens/EnterDetails.dart';
 import 'package:nutmeg/state/MatchesState.dart';
+import 'package:nutmeg/utils/CrashlyticsLogger.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
-import 'package:tuple/tuple.dart';
-import 'package:version/version.dart';
 import 'package:timezone/data/latest.dart' as tz;
 
-import '../Exceptions.dart';
 import '../state/LoadOnceState.dart';
 import '../state/UserState.dart';
 import '../utils/UiUtils.dart';
 import 'MiscController.dart';
 
-final logger = Logger('LaunchController');
+final logger = CrashlyticsLogger('LaunchController');
 
 class LaunchController {
   static bool loadingDone = false;
@@ -228,19 +225,10 @@ class LaunchController {
     // trace.setMetric("duration_ms", stopwatch.elapsed.inMilliseconds);
     // await trace.stop();
   }
-
-  static Future<void> _loadOnceData(BuildContext context) async {
-    print("loading static data");
-    var futures = [
-      MiscController.getGifs(context.read<LoadOnceState>()),
-    ];
-    await Future.wait(futures);
-    print("loading static done");
-  }
 }
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  print(
+  logger.info(
       "Handling a background message: ${message.messageId} with data ${message.data.toString()}");
   if (message.data.containsKey("route")) {
     GoRouter.of(navigatorKey.currentContext!).go(message.data["route"]);

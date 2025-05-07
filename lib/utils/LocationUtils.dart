@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:logging/logging.dart';
 import 'package:nutmeg/model/LocationInfo.dart';
 import 'package:nutmeg/state/UserState.dart';
+import 'package:nutmeg/utils/CrashlyticsLogger.dart';
 import 'package:provider/provider.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:tuple/tuple.dart';
 
 import '../api/CloudFunctionsUtils.dart';
 import '../state/LoadOnceState.dart';
 
-final logger = Logger('LocationUtils');
+final logger = CrashlyticsLogger('LocationUtils');
 
 const placesApiKey = String.fromEnvironment('GOOGLE_API_KEY');
 
@@ -92,7 +91,7 @@ Future<LocationInfo?> _getLocationFromIPWho() async {
     final response = await http.get(Uri.parse('https://ipwho.is'));
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
-    return LocationInfo(data['country_code'], data['city'], data['latitude'],
+      return LocationInfo(data['country_code'], data['city'], data['latitude'],
           data['longitude']);
     } else {
       return null;

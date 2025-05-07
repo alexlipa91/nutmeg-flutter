@@ -2,15 +2,15 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:logging/logging.dart';
 import 'package:nutmeg/state/LoginStatusChangeNotifier.dart';
 import 'package:nutmeg/state/UserState.dart';
+import 'package:nutmeg/utils/CrashlyticsLogger.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-final logger = Logger('GoogleSignInButton');
+final logger = CrashlyticsLogger('GoogleSignInButton');
 
 class GoogleSignInButton extends StatelessWidget {
   final GoogleSignIn googleSignIn = GoogleSignIn(

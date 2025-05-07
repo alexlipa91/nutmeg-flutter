@@ -14,6 +14,7 @@ import 'package:nutmeg/screens/MatchDetails.dart';
 import 'package:nutmeg/screens/UserPage.dart';
 import 'package:nutmeg/state/MatchState.dart';
 import 'package:nutmeg/state/UsersState.dart';
+import 'package:nutmeg/utils/CrashlyticsLogger.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
@@ -28,7 +29,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 final scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
-final logger = Logger("Main");
+final logger = CrashlyticsLogger("Main");
 
 final appRouter = GoRouter(
   debugLogDiagnostics: true,
@@ -137,7 +138,11 @@ void main() async {
   }
 
   PlatformDispatcher.instance.onError = (error, stack) {
-    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+    if (kIsWeb) {
+      logger.severe("*** ERROR CAUGHT FROM PLATFORM ***", error, stack);
+    } else {
+      FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+    }
     return true;
   };
 

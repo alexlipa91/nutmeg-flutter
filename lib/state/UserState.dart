@@ -5,18 +5,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
+import 'package:nutmeg/utils/CrashlyticsLogger.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
-import 'package:logging/logging.dart';
 
 import '../model/SportCenter.dart';
 import '../model/UserDetails.dart';
 import '../screens/EnterDetails.dart';
 
-final logger = Logger('UserState');
+final logger = CrashlyticsLogger('UserState');
 
 class UserState extends ChangeNotifier {
   static Future<UserDetails?> _fetchUserDetails(String uid) async {
-    logger.info('fetching user details for $uid');
+    logger.info('Fetching user details for $uid');
     var resp = await CloudFunctionsClient().get("users/$uid");
 
     return (resp == null) ? null : UserDetails.fromJson(resp, uid);
@@ -104,7 +104,7 @@ class UserState extends ChangeNotifier {
   }
 
   Future<void> storeUserToken(String token) async {
-    logger.config('storing user token: $token');
+    logger.info('Storing user token: $token');
     CloudFunctionsClient()
         .post("users/${getLoggedUserId()!}/tokens", {"token": token});
   }

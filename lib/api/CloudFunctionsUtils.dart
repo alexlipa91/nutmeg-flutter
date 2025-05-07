@@ -3,9 +3,9 @@ import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
 import 'package:nutmeg/controller/LaunchController.dart';
-import 'package:logging/logging.dart';
+import 'package:nutmeg/utils/CrashlyticsLogger.dart';
 
-final logger = Logger('CloudFunctionsUtils');
+final logger = CrashlyticsLogger('CloudFunctionsUtils');
 
 class CloudFunctionsClient {
   static final CloudFunctionsClient _singleton =

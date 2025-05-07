@@ -6,13 +6,13 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:logging/logging.dart';
 import 'package:nutmeg/Exceptions.dart';
 import 'package:nutmeg/model/Match.dart';
 import 'package:nutmeg/model/SportCenter.dart';
 import 'package:nutmeg/screens/BottomBarMatch.dart';
 import 'package:nutmeg/screens/CreateCourt.dart';
 import 'package:nutmeg/state/UserState.dart';
+import 'package:nutmeg/utils/CrashlyticsLogger.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/LocationUtils.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
@@ -110,7 +110,7 @@ class CreateMatchState extends State<CreateMatch> {
   FocusNode datefocusNode = FocusNode();
   FocusNode startTimefocusNode = FocusNode();
 
-  final logger = Logger('CreateMatch');
+  final logger = CrashlyticsLogger('CreateMatch');
 
   Future<void> refreshState() async {
     logger.info("refreshing state");
@@ -923,7 +923,7 @@ class CreateMatchState extends State<CreateMatch> {
                             match.documentId = widget.existingMatch!;
                             await context
                                 .read<MatchesState>()
-                                .getMatch(widget.existingMatch!)!
+                                .getMatch(widget.existingMatch!)
                                 .editMatch(match.toJson());
 
                             id = widget.existingMatch!;

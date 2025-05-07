@@ -1,44 +1,47 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:logging/logging.dart';
+import 'package:nutmeg/utils/CrashlyticsLogger.dart';
 
-final logger = Logger('RefresherWithObserverWidget');
+final logger = CrashlyticsLogger('RefresherWithObserverWidget');
 
 /// A RefreshIndicator with a lifecycle observer.
 /// The refreshState method is called in both cases
 class RefresherWithObserverWidget extends StatefulWidget {
-
   final Widget child;
   final Function? initState;
   final Function refreshState;
 
-  const RefresherWithObserverWidget({Key? key, required this.child,
-    required this.refreshState, this.initState}) : super(key: key);
+  const RefresherWithObserverWidget(
+      {Key? key,
+      required this.child,
+      required this.refreshState,
+      this.initState})
+      : super(key: key);
 
   @override
   State<StatefulWidget> createState() => RefresherWithObserverWidgetState();
 }
 
-class RefresherWithObserverWidgetState extends State<RefresherWithObserverWidget> {
-
-  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey = new GlobalKey<RefreshIndicatorState>();
+class RefresherWithObserverWidgetState
+    extends State<RefresherWithObserverWidget> {
+  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
+      new GlobalKey<RefreshIndicatorState>();
 
   late RefreshStateOnResumeObserver lifecycleEventHandler;
 
   @override
   void initState() {
     super.initState();
-    lifecycleEventHandler = RefreshStateOnResumeObserver(
-        resumeCallBack: () async {
-          logger.info("RefreshWithObserver: requesting refresh");
-          _refreshIndicatorKey.currentState?.show();
-        });
+    lifecycleEventHandler =
+        RefreshStateOnResumeObserver(resumeCallBack: () async {
+      logger.info("RefreshWithObserver: requesting refresh");
+      _refreshIndicatorKey.currentState?.show();
+    });
     WidgetsBinding.instance.addObserver(lifecycleEventHandler);
     logger.info("RefreshWithObserver: calling refreshState in initState");
     if (widget.initState != null) {
       widget.initState!();
-    }
-    else {
+    } else {
       widget.refreshState();
     }
   }
@@ -83,4 +86,3 @@ class RefreshStateOnResumeObserver extends WidgetsBindingObserver {
     }
   }
 }
-

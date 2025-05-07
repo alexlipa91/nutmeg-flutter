@@ -1,10 +1,10 @@
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 import 'package:nutmeg/model/Match.dart';
 import 'package:flutter/material.dart';
-import 'package:logging/logging.dart';
 import 'package:nutmeg/state/UserState.dart';
+import 'package:nutmeg/utils/CrashlyticsLogger.dart';
 
-final logger = Logger("MatchState");
+final logger = CrashlyticsLogger("MatchState");
 
 class MatchState extends ChangeNotifier {
   final String _matchId;

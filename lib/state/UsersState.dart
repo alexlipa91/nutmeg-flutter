@@ -1,11 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
-import 'package:logging/logging.dart';
+import 'package:nutmeg/utils/CrashlyticsLogger.dart';
 
 import '../model/UserDetails.dart';
 
-final logger = Logger('UsersState');
+final logger = CrashlyticsLogger('UsersState');
 
 class UsersState extends ChangeNotifier {
   // holds state for users' data (both logged in user and others)
@@ -19,7 +19,7 @@ class UsersState extends ChangeNotifier {
   UserDetails? getUserDetail(String uid) => _usersDetails[uid];
 
   Future<void> fetchUserDetails(String uid) async {
-    logger.info('fetching user details for $uid');
+    logger.info('Fetching user details for $uid');
     var resp = await CloudFunctionsClient().get("users/$uid");
 
     var ud = (resp == null) ? null : UserDetails.fromJson(resp, uid);
