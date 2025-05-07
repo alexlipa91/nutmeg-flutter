@@ -88,12 +88,17 @@ Future<LocationInfo?> getLocationFromIP() async {
 }
 
 Future<LocationInfo?> _getLocationFromIPWho() async {
-  final response = await http.get(Uri.parse('https://ipwho.is'));
-  if (response.statusCode == 200) {
-    final data = json.decode(response.body);
+  try {
+    final response = await http.get(Uri.parse('https://ipwho.is'));
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
     return LocationInfo(data['country_code'], data['city'], data['latitude'],
-        data['longitude']);
-  } else {
+          data['longitude']);
+    } else {
+      return null;
+    }
+  } catch (e, s) {
+    logger.severe("Error getting location from IPWho", e, s);
     return null;
   }
 }
