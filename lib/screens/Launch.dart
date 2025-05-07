@@ -4,8 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:nutmeg/controller/LaunchController.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
+import 'package:nutmeg/utils/CrashlyticsLogger.dart';
 
-import '../Exceptions.dart';
+final logger = CrashlyticsLogger('Launch');
 
 class LaunchWidget extends StatefulWidget {
   final String? from;
@@ -22,7 +23,7 @@ class LaunchWidgetState extends State<LaunchWidget> {
   void initState() {
     super.initState();
     LaunchController.loadData(context, widget.from)
-        .catchError((e, s) => ErrorHandlingUtils.handleError(e, s, context));
+        .catchError((e, s) => logger.severe("Error loading data", e, s));
   }
 
   void initDynamicLinks() {
@@ -38,7 +39,7 @@ class LaunchWidgetState extends State<LaunchWidget> {
     FirebaseDynamicLinks.instance.onLink.listen((dynamicLinkData) {
       onSuccess(dynamicLinkData);
     }).onError((error) {
-      print(error);
+      logger.severe("Error on dynamic link", error);
     });
   }
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nutmeg/utils/CrashlyticsLogger.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -14,6 +15,8 @@ class GenericButtonWithLoaderState extends ChangeNotifier {
     notifyListeners();
   }
 }
+
+final logger = CrashlyticsLogger('ButtonsWithLoader');
 
 class GenericButtonWithLoader extends StatelessWidget {
   final String text;
@@ -85,9 +88,11 @@ class GenericButtonWithLoaderAndErrorHandling extends StatelessWidget {
       try {
         await onPressed(context);
       } catch (e, stack) {
-        print(e);
-        print(stack);
-        GenericInfoModal(title: AppLocalizations.of(context)!.genericErrorMessage).show(context);
+        logger.severe(
+            "Error in button with loader and error handling", e, stack);
+        GenericInfoModal(
+                title: AppLocalizations.of(context)!.genericErrorMessage)
+            .show(context);
       }
       context.read<GenericButtonWithLoaderState>().change(false);
     }, buttonType);

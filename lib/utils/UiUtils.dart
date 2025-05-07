@@ -4,10 +4,9 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-
+import 'package:nutmeg/utils/CrashlyticsLogger.dart';
 
 class UiUtils {
-
   /// String is in the format "aabbcc" or "ffaabbcc" with an optional leading "#".
   static Color fromHex(String hexString) {
     final buffer = StringBuffer();
@@ -39,38 +38,73 @@ class Palette {
 }
 
 class TextPalette {
+  static TextStyle h1Default = GoogleFonts.roboto(
+      color: Palette.black, fontSize: 30, fontWeight: FontWeight.w900);
+  static TextStyle h1Inverted = GoogleFonts.roboto(
+      color: Palette.white, fontSize: 30, fontWeight: FontWeight.w900);
 
-  static TextStyle h1Default = GoogleFonts.roboto(color: Palette.black, fontSize: 30, fontWeight: FontWeight.w900);
-  static TextStyle h1Inverted = GoogleFonts.roboto(color: Palette.white, fontSize: 30, fontWeight: FontWeight.w900);
+  static TextStyle getH2(Color color) => GoogleFonts.roboto(
+      color: color, fontSize: 18, fontWeight: FontWeight.w700);
+  static TextStyle h2 = GoogleFonts.roboto(
+      color: Palette.black, fontSize: 18, fontWeight: FontWeight.w700);
 
-  static TextStyle getH2(Color color) => GoogleFonts.roboto(color: color, fontSize: 18, fontWeight: FontWeight.w700);
-  static TextStyle h2 = GoogleFonts.roboto(color: Palette.black, fontSize: 18, fontWeight: FontWeight.w700);
-
-  static TextStyle getH3(Color color) => GoogleFonts.roboto(color: color, fontSize: 14, fontWeight: FontWeight.w500);
+  static TextStyle getH3(Color color) => GoogleFonts.roboto(
+      color: color, fontSize: 14, fontWeight: FontWeight.w500);
   static TextStyle h3 = getH3(Palette.black);
 
-  static TextStyle h3WithBar = GoogleFonts.roboto(color: Palette.black, fontSize: 14, fontWeight: FontWeight.w500, decoration: TextDecoration.lineThrough);
+  static TextStyle h3WithBar = GoogleFonts.roboto(
+      color: Palette.black,
+      fontSize: 14,
+      fontWeight: FontWeight.w500,
+      decoration: TextDecoration.lineThrough);
 
-  static TextStyle h4 = GoogleFonts.roboto(color: Palette.black, fontSize: 12, fontWeight: FontWeight.w500);
+  static TextStyle h4 = GoogleFonts.roboto(
+      color: Palette.black, fontSize: 12, fontWeight: FontWeight.w500);
 
-  static TextStyle getBodyText(Color color) => GoogleFonts.roboto(color: color, fontSize: 14, fontWeight: FontWeight.w400, height: 1.6);
-  static TextStyle bodyText = GoogleFonts.roboto(color: Palette.greyDark, fontSize: 14, fontWeight: FontWeight.w400, height: 1.6);
-  static TextStyle bodyTextPrimary = GoogleFonts.roboto(color: Palette.primary, fontSize: 14, fontWeight: FontWeight.w400, height: 1.6);
+  static TextStyle getBodyText(Color color) => GoogleFonts.roboto(
+      color: color, fontSize: 14, fontWeight: FontWeight.w400, height: 1.6);
+  static TextStyle bodyText = GoogleFonts.roboto(
+      color: Palette.greyDark,
+      fontSize: 14,
+      fontWeight: FontWeight.w400,
+      height: 1.6);
+  static TextStyle bodyTextPrimary = GoogleFonts.roboto(
+      color: Palette.primary,
+      fontSize: 14,
+      fontWeight: FontWeight.w400,
+      height: 1.6);
 
-  static TextStyle bodyTextOneLine = GoogleFonts.roboto(color: Palette.greyDark, fontSize: 14, fontWeight: FontWeight.w400);
-  static TextStyle bodyTextInverted = GoogleFonts.roboto(color: Palette.white, fontSize: 14, fontWeight: FontWeight.w400, height: 1.6);
+  static TextStyle bodyTextOneLine = GoogleFonts.roboto(
+      color: Palette.greyDark, fontSize: 14, fontWeight: FontWeight.w400);
+  static TextStyle bodyTextInverted = GoogleFonts.roboto(
+      color: Palette.white,
+      fontSize: 14,
+      fontWeight: FontWeight.w400,
+      height: 1.6);
 
-  static TextStyle listItem = GoogleFonts.roboto(color: Palette.black, fontSize: 16, fontWeight: FontWeight.w400, height: 1.6);
-  static TextStyle getListItem(Color color) => GoogleFonts.roboto(color: color, fontSize: 16, fontWeight: FontWeight.w400, height: 1.6);
+  static TextStyle listItem = GoogleFonts.roboto(
+      color: Palette.black,
+      fontSize: 16,
+      fontWeight: FontWeight.w400,
+      height: 1.6);
+  static TextStyle getListItem(Color color) => GoogleFonts.roboto(
+      color: color, fontSize: 16, fontWeight: FontWeight.w400, height: 1.6);
 
-  static TextStyle linkStyle = GoogleFonts.roboto(color: Palette.primary, fontSize: 14, fontWeight: FontWeight.w700);
-  static TextStyle linkStyleInverted = GoogleFonts.roboto(color: Palette.white, fontSize: 14, fontWeight: FontWeight.w700);
+  static TextStyle linkStyle = GoogleFonts.roboto(
+      color: Palette.primary, fontSize: 14, fontWeight: FontWeight.w700);
+  static TextStyle linkStyleInverted = GoogleFonts.roboto(
+      color: Palette.white, fontSize: 14, fontWeight: FontWeight.w700);
 
-  static TextStyle getLinkStyle(Color color) => GoogleFonts.roboto(color: color, fontSize: 14, fontWeight: FontWeight.w700);
+  static TextStyle getLinkStyle(Color color) => GoogleFonts.roboto(
+      color: color, fontSize: 14, fontWeight: FontWeight.w700);
 
-  static TextStyle buttonOff = GoogleFonts.roboto(color: Palette.greyLighter, fontSize: 14, fontWeight: FontWeight.w700);
-  static TextStyle getStats(Color color) => GoogleFonts.roboto(color: color, fontSize: 30, fontWeight: FontWeight.w400);
+  static TextStyle buttonOff = GoogleFonts.roboto(
+      color: Palette.greyLighter, fontSize: 14, fontWeight: FontWeight.w700);
+  static TextStyle getStats(Color color) => GoogleFonts.roboto(
+      color: color, fontSize: 30, fontWeight: FontWeight.w400);
 }
+
+final logger = CrashlyticsLogger('UiUtils');
 
 class DeviceInfo {
   static final DeviceInfo _singleton = DeviceInfo._internal();
@@ -93,6 +127,6 @@ class DeviceInfo {
     } else if (Platform.isAndroid) {
       name = (await deviceInfo.androidInfo).model.toLowerCase();
     }
-    print("device name is $name");
+    logger.info("device name is $name");
   }
 }

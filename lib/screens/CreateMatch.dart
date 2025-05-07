@@ -6,7 +6,6 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:nutmeg/Exceptions.dart';
 import 'package:nutmeg/model/Match.dart';
 import 'package:nutmeg/model/SportCenter.dart';
 import 'package:nutmeg/screens/BottomBarMatch.dart';
@@ -936,7 +935,6 @@ class CreateMatchState extends State<CreateMatch> {
                         context.go("/match/${ids.first}");
                       } on Exception catch (e, s) {
                         logger.severe("error creating match", e, s);
-                        ErrorHandlingUtils.handleError(e, s, context);
                       }
                     } else {
                       logger.severe("validation error");

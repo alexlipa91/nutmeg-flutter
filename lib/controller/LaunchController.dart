@@ -16,10 +16,8 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:timezone/data/latest.dart' as tz;
 
-import '../state/LoadOnceState.dart';
 import '../state/UserState.dart';
 import '../utils/UiUtils.dart';
-import 'MiscController.dart';
 
 final logger = CrashlyticsLogger('LaunchController');
 
@@ -28,7 +26,7 @@ class LaunchController {
   static var apiClient = CloudFunctionsClient();
   static String? appVersion;
   static Future<void> handleLink(Uri deepLink) async {
-    print("handling dynamic link " + deepLink.toString());
+    logger.info("Handling dynamic link " + deepLink.toString());
     var fullPath =
         "${deepLink.path}?${deepLink.queryParameters.entries.map((e) => "${e.key}=${e.value}").join("&")}";
     appRouter.go(fullPath);
@@ -36,8 +34,9 @@ class LaunchController {
   }
 
   static void _handleMessageFromNotification(RemoteMessage message) async {
-    print('message ${message.messageId} opened from notification with data ' +
-        message.data.toString());
+    logger.info(
+        'message ${message.messageId} opened from notification with data ' +
+            message.data.toString());
     GoRouter.of(navigatorKey.currentContext!).go(message.data["route"]);
   }
 
@@ -70,7 +69,7 @@ class LaunchController {
       FirebaseDynamicLinks.instance.onLink.listen((dynamicLinkData) {
         future(dynamicLinkData);
       }).onError((error) {
-        print(error);
+        logger.severe("Error on dynamic link", error);
       });
     }
   }
@@ -109,8 +108,7 @@ class LaunchController {
       try {
         await firebaseRemoteConfig.fetchAndActivate();
       } catch (e, s) {
-        print(e);
-        print(s);
+        logger.severe("Error fetching and activating remote config", e, s);
       }
 
       // Tuple2<Version, String> minimumVersion = futuresData[0];
@@ -210,15 +208,15 @@ class LaunchController {
 
     // navigate to next screen
     if (deepLink != null) {
-      print("navigating with deep link:" + deepLink.toString());
+      logger.info("navigating with deep link:" + deepLink.toString());
       // trace.putAttribute("coming_from_deeplink", true.toString());
       handleLink(deepLink);
     } else if (initialMessage != null) {
-      print("navigating with initial message:" + initialMessage.toString());
+      logger
+          .info("navigating with initial message:" + initialMessage.toString());
       // trace.putAttribute("coming_from_notification", true.toString());
       _handleMessageFromNotification(initialMessage);
     } else {
-      print("normal navigation");
       context.go(from ?? "/");
     }
 

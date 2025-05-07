@@ -12,6 +12,9 @@ import 'package:nutmeg/widgets/GoogleSignInButton.dart';
 import 'package:provider/provider.dart';
 import '../state/LoginStatusChangeNotifier.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:nutmeg/utils/CrashlyticsLogger.dart';
+
+final logger = CrashlyticsLogger('Login');
 
 class Login extends StatelessWidget {
   final String? from;
@@ -132,7 +135,7 @@ class SignInButton extends StatelessWidget {
             color: Palette.white, fontSize: 14, fontWeight: FontWeight.w700);
         logoPath = "assets/login/apple_logo.png";
         break;
-      }
+    }
 
     return Row(
       children: [
@@ -149,11 +152,9 @@ class SignInButton extends StatelessWidget {
 
               try {
                 await loginFuture();
-                print("loginFuture is done");
                 Navigator.of(context).pop();
               } on Exception catch (e, stack) {
-                print(e);
-                print(stack);
+                logger.severe("Error signing in", e, stack);
                 GenericInfoModal(
                         title: "Sign-in failed",
                         description:

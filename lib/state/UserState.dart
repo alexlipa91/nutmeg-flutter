@@ -41,7 +41,6 @@ class UserState extends ChangeNotifier {
 
   void notifyListeners() {
     logger.info('UserState ${this.hashCode} notifying listeners');
-    print(_usersDetails?.documentId);
     super.notifyListeners();
   }
 

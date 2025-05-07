@@ -127,10 +127,8 @@ void main() async {
 
     if (!kIsWeb) {
       FlutterError.onError = (FlutterErrorDetails details) async {
-        print(details.exceptionAsString());
-        print(details.stack);
-        print("*** CAUGHT FROM FRAMEWORK ***");
-        await FirebaseCrashlytics.instance.recordFlutterError(details);
+        logger.severe("*** ERROR CAUGHT FROM FRAMEWORK ***",
+            details.exceptionAsString(), details.stack);
       };
     }
   } catch (e, stack) {

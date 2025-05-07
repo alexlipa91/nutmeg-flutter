@@ -158,7 +158,6 @@ class _SmoothStarRatingState extends State<SmoothStarRating> {
             var i = ((_pos.dx - widget.spacing) / widget.size);
             // var newRating =
             // widget.allowHalfRating ? i : i.round().toDouble();
-            // print(i.round().toDouble());
             var newRating = i.ceil().toDouble();  // just take the ceil
             if (newRating > widget.starCount) {
               newRating = widget.starCount.toDouble();
@@ -204,7 +203,6 @@ class _SmoothStarRatingState extends State<SmoothStarRating> {
         var i = ((_pos.dx - widget.spacing) / widget.size);
         // var newRating =
         // widget.allowHalfRating ? i : i.round().toDouble();
-        // print(i.round().toDouble());
         var newRating = i.ceil().toDouble();  // just take the ceil
         if (newRating > widget.starCount) {
           newRating = widget.starCount.toDouble();

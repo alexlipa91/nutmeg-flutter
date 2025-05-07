@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/model/UserDetails.dart';
+import 'package:nutmeg/utils/CrashlyticsLogger.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/Avatar.dart';
@@ -19,14 +20,14 @@ import 'package:nutmeg/widgets/Section.dart';
 import 'package:nutmeg/widgets/WarningWidget.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:tuple/tuple.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:version/version.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../state/UserState.dart';
 import '../utils/InfoModals.dart';
 import '../widgets/ModalBottomSheet.dart';
+
+final logger = CrashlyticsLogger('UserPage');
 
 class UserPage extends StatefulWidget {
   @override
@@ -115,8 +116,7 @@ class UserPageState extends State<UserPage> {
                           await UserController.updloadPicture(
                               context, userDetails);
                         } catch (e, s) {
-                          print(e);
-                          print(s);
+                          logger.severe("Error updating profile picture", e, s);
                         }
                       },
                 child: Badge(
@@ -172,8 +172,7 @@ class UserPageState extends State<UserPage> {
                   try {
                     await UserController.updloadPicture(context, userDetails);
                   } catch (e, s) {
-                    print(e);
-                    print(s);
+                    logger.severe("Error updating profile picture", e, s);
                   }
                 },
                 child: Badge(
@@ -465,8 +464,7 @@ class UserPageState extends State<UserPage> {
                       try {
                         await UserController.logout(context);
                       } catch (e, stackTrace) {
-                        print(e);
-                        print(stackTrace);
+                        logger.severe("Error logging out", e, stackTrace);
                       }
                       Navigator.of(context).pop();
                     },

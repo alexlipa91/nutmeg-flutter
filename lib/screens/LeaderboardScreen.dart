@@ -96,7 +96,6 @@ class LeaderboardScreenState extends State<LeaderboardScreen> {
                               elevation: 1,
                               value: selectedLeaderboard,
                               onChanged: (v) {
-                                print(v);
                                 setState(() {
                                   if (v != selectedLeaderboard) {
                                     selectedLeaderboard = v!;
