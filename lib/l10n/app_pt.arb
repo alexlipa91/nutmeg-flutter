@@ -11,6 +11,7 @@
     "notPublishedStatus": "Não publicado",
     "cancelledStatus": "Cancelado",
     "fullStatus": "Cheio",
+    "votes": "votos",
     "matchDetailsScreen": "*****************************************************************************************************",
     "cancellationInfo": "A partida será cancelada automaticamente às {date} às {hour} se menos de {n} jogadores tiverem entrado.",
     "fullRefund": "um reembolso total",

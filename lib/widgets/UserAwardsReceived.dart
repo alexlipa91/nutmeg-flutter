@@ -52,76 +52,128 @@ class UserAwardsReceivedList extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           for (int i = 0; i < awardTypes.length; i++) ...[
-            if (i > 0)
-              Divider(height: 24, thickness: 1, color: Palette.greyLighter),
+            if (i > 0) const SizedBox(height: 8),
             (() {
               final award = awardTypes[i];
               final awardId = award['id']!;
               final userVotes = awards[awardId] ?? {};
               final sortedVotes = userVotes.entries.toList()
                 ..sort((a, b) => b.value.compareTo(a.value));
-              if (sortedVotes.isEmpty) return SizedBox.shrink();
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 0.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Image.asset(award['icon']!, width: 32, height: 32),
-                        const SizedBox(width: 8),
-                        Text(award['label']!, style: Theme.of(context).textTheme.titleMedium),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    ...(() {
-                      // Find if there is a single winner
-                      int maxVotes = sortedVotes.isNotEmpty ? sortedVotes.first.value : 0;
-                      int numWinners = sortedVotes.where((e) => e.value == maxVotes).length;
-                      return sortedVotes.asMap().entries.map((entryWithIndex) {
-                        final index = entryWithIndex.key;
-                        final entry = entryWithIndex.value;
-                        final user = usersState.getUserDetail(entry.key);
-                        final isWinner = index == 0 && sortedVotes.isNotEmpty && entry.value == maxVotes && numWinners == 1;
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 4.0),
-                          child: Container(
-                            decoration: isWinner
-                                ? BoxDecoration(
-                                    color: Theme.of(context).colorScheme.primary.withOpacity(0.12),
-                                    borderRadius: BorderRadius.circular(8),
-                                  )
-                                : null,
-                            child: Row(
-                              children: [
-                                SizedBox(
-                                  width: 40,
-                                  child: Text(
-                                    '${entry.value}',
-                                    textAlign: TextAlign.right,
-                                    style: TextPalette.bodyText,
+              if (sortedVotes.isEmpty) return const SizedBox.shrink();
+              
+              return Container(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surface,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                    width: 1,
+                  ),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: 32,
+                                height: 32,
+                                child: Center(
+                                  child: Image.asset(award['icon']!, width: 32, height: 32),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  award['label']!,
+                                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              if (i == 0) Text(
+                                l10n.votes,
+                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          ...(() {
+                            // Find if there is a single winner
+                            int maxVotes = sortedVotes.isNotEmpty ? sortedVotes.first.value : 0;
+                            int numWinners = sortedVotes.where((e) => e.value == maxVotes).length;
+                            return sortedVotes.asMap().entries.map((entryWithIndex) {
+                              final index = entryWithIndex.key;
+                              final entry = entryWithIndex.value;
+                              final user = usersState.getUserDetail(entry.key);
+                              final isWinner = index == 0 && sortedVotes.isNotEmpty && entry.value == maxVotes && numWinners == 1;
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 2.0),
+                                child: Container(
+                                  decoration: isWinner
+                                      ? BoxDecoration(
+                                          color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+                                          borderRadius: BorderRadius.circular(8),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.black.withOpacity(0.1),
+                                              offset: const Offset(0, 2),
+                                              blurRadius: 2,
+                                            ),
+                                          ],
+                                        )
+                                      : null,
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
+                                    child: Row(
+                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      children: [
+                                        SizedBox(
+                                          width: 20,
+                                          height: 20,
+                                          child: Center(
+                                            child: UserAvatar(20, user),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: Text(
+                                            user?.name ?? 'Unknown',
+                                            style: TextPalette.bodyText,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                        Text(
+                                          '${entry.value}',
+                                          style: TextPalette.bodyText,
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
-                                const SizedBox(width: 16),
-                                Row(
-                                  children: [
-                                    UserAvatar(14, user),
-                                    const SizedBox(width: 8),
-                                    Text(user?.name ?? 'Unknown', style: TextPalette.bodyText),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      });
-                    })(),
-                  ],
+                              );
+                            });
+                          })(),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               );
             })(),
           ]
-        ].where((widget) => widget is! SizedBox).toList(),
+        ],
       ),
     );
   }
