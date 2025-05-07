@@ -92,6 +92,7 @@ List<T> interleave<T>(List<T> elements, T e, [bool withTop = false]) {
 
 Future<String> getVersion() async {
   if (kIsWeb) {
+    // FIXME
     return String.fromEnvironment("COMMIT_SHA", defaultValue: "");
   }
   PackageInfo packageInfo = await PackageInfo.fromPlatform();
