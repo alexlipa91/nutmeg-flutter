@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
+import 'package:nutmeg/model/LocationInfo.dart';
 import 'package:nutmeg/utils/CrashlyticsLogger.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
@@ -25,7 +26,7 @@ class UserState extends ChangeNotifier {
   // hold current user id
   UserDetails? _usersDetails;
 
-  String? _previousUserId;
+  UserDetails? _previousUserDetails;
 
   bool _isTestMode = false;
 
@@ -39,33 +40,40 @@ class UserState extends ChangeNotifier {
 
   List<SportCenter>? getSportCenters() => _sportCenters;
 
-  void notifyListeners() {
-    logger.info('UserState ${this.hashCode} notifying listeners');
+  void notifyListeners({String? reason = "unknown"}) {
+    logger
+        .info('UserState ${this.hashCode} notifying listeners because $reason');
     super.notifyListeners();
   }
 
   bool haveUserChanged() {
-    return _previousUserId != _usersDetails?.documentId;
+    if (_previousUserDetails?.getUid() != _usersDetails?.getUid()) {
+      return true;
+    }
+    if (_previousUserDetails?.location != _usersDetails?.location) {
+      return true;
+    }
+    return false;
   }
 
   // SETTERS that trigger a notifyListeners
   void setTestMode(bool isTestMode) {
     _isTestMode = isTestMode;
-    notifyListeners();
+    notifyListeners(reason: "setTestMode");
   }
 
   void _setCurrentUserDetails(UserDetails? u) {
     if (u?.getIsAdmin() ?? false) {
       _isTestMode = true;
     }
-    _previousUserId = _usersDetails?.documentId;
+    _previousUserDetails = _usersDetails;
     _usersDetails = u;
-    notifyListeners();
+    notifyListeners(reason: "setCurrentUserDetails");
   }
 
   void _setSportCenters(List<SportCenter> sportCenters) {
     _sportCenters = sportCenters;
-    notifyListeners();
+    notifyListeners(reason: "setSportCenters");
   }
 
   Future<void> logout() async {
@@ -80,6 +88,13 @@ class UserState extends ChangeNotifier {
     await FirebaseAuth.instance.currentUser?.getIdToken(true);
 
     notifyListeners();
+  }
+
+  Future<void> setLocation(LocationInfo location) async {
+    _usersDetails?.location = location;
+    notifyListeners(reason: "setLocation");
+
+    await editUser({"location": location.toJson()});
   }
 
   // user sport centers

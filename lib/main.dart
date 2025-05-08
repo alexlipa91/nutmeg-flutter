@@ -150,8 +150,15 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (context) => UsersState()),
         ChangeNotifierProvider(create: (context) => UserState()),
+        ChangeNotifierProxyProvider<UserState, UsersState>(
+          create: (_) => UsersState(),
+          update: (context, userState, usersState) {
+            usersState ??= UsersState();
+            usersState.updateBasedOnLoggedUser(userState);
+            return usersState;
+          },
+        ),
         ChangeNotifierProxyProvider<UserState, MatchesState>(
           create: (_) => MatchesState(),
           update: (context, userState, matchesState) {

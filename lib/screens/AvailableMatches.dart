@@ -40,7 +40,8 @@ class AvailableMatches extends StatelessWidget {
       return getEmptyStateWidget(context, false);
     }
 
-    var matches = state.getPastMatches();
+    var matches = context
+        .select<MatchesState, List<MatchState>?>((s) => s.getPastMatches());
 
     if (matches == null) return null;
 
@@ -77,7 +78,8 @@ class AvailableMatches extends StatelessWidget {
       return getEmptyStateWidget(context);
     }
 
-    var matches = state.getGoingMatches();
+    var matches = context
+        .select<MatchesState, List<MatchState>?>((s) => s.getGoingMatches());
 
     if (matches == null) return null;
 
@@ -108,10 +110,8 @@ class AvailableMatches extends StatelessWidget {
   }
 
   Widget? upcomingWidgets(BuildContext context) {
-    var state = context.watch<MatchesState>();
-    // var loadOnceState = context.watch<LoadOnceState>();
-
-    var matches = state.getUpcomingMatches();
+    var matches = context
+        .select<MatchesState, List<MatchState>?>((s) => s.getUpcomingMatches());
 
     if (matches == null) return null;
 
@@ -150,11 +150,13 @@ class AvailableMatches extends StatelessWidget {
           var s = match.sportCenter;
           var w;
           if (index == 0)
-            w = widgetWithMatchProvider(state,
+            w = widgetWithMatchProvider(context.read<MatchesState>(),
                 GenericMatchInfo.first(match, s, onTap), match.documentId);
           else
             w = widgetWithMatchProvider(
-                state, GenericMatchInfo(match, s, onTap), match.documentId);
+                context.read<MatchesState>(),
+                GenericMatchInfo(match, s, onTap),
+                match.documentId);
           return w;
         });
 
@@ -186,7 +188,8 @@ class AvailableMatches extends StatelessWidget {
   }
 
   Widget? getMyMatchesWidgets(BuildContext context, MatchesState state) {
-    var matches = state.getMyOrganizedMatches();
+    var matches = context
+        .select<MatchesState, List<MatchState>?>((s) => s.getMyOrganizedMatches());
 
     if (matches == null || matches.isEmpty) return null;
 
@@ -294,8 +297,9 @@ class AvailableMatches extends StatelessWidget {
 
                         if (newUserLocation != null) {
                           if (context.read<UserState>().isLoggedIn()) {
-                            await context.read<UserState>().editUser(
-                                {"location": newUserLocation.toJson()});
+                            await context
+                                .read<UserState>()
+                                .setLocation(newUserLocation);
                           } else {
                             context
                                 .read<MatchesState>()

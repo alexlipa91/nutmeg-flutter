@@ -1,4 +1,3 @@
-import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 import 'package:nutmeg/model/LocationInfo.dart';
@@ -13,7 +12,8 @@ final logger = CrashlyticsLogger("MatchesState");
 class MatchesState extends ChangeNotifier {
   UserState? userState;
 
-  LocationInfo? _locationInfo;
+  // device location
+  LocationInfo? _deviceLocationInfo;
 
   MatchesState() {}
 
@@ -74,10 +74,10 @@ class MatchesState extends ChangeNotifier {
       .map((e) => e.match!.sportCenterId!)
       .toSet();
 
-  LocationInfo? get locationInfo => _locationInfo;
+  LocationInfo? get locationInfo => _deviceLocationInfo;
 
   void setLocationInfo(LocationInfo locationInfo) {
-    _locationInfo = locationInfo;
+    _deviceLocationInfo = locationInfo;
     notifyListeners();
   }
 
@@ -117,7 +117,7 @@ class MatchesState extends ChangeNotifier {
 
   Future<void> fetchLocation() async {
     var location = await getLocationFromIP();
-    _locationInfo =
+    _deviceLocationInfo =
         location ?? LocationInfo("ES", "Barcelona", 41.385063, 2.173404);
     notifyListeners();
   }
@@ -148,11 +148,14 @@ class MatchesState extends ChangeNotifier {
   }
 
   Future<void> fetchUpcomingMatches() async {
-    if (_locationInfo == null) return;
+    var locationForQuery =
+        userState?.getLoggedUserDetails()?.location ?? _deviceLocationInfo;
+    // still loading location so we don't query
+    if (locationForQuery == null) return;
 
     var resp = await CloudFunctionsClient().get("v2/matches", args: {
       "when": "future",
-      "location": "${_locationInfo!.city},${_locationInfo!.country}"
+      "location": "${locationForQuery.city},${locationForQuery.country}"
     });
     Map<String, dynamic> data =
         (resp == null) ? Map() : Map<String, dynamic>.from(resp);
