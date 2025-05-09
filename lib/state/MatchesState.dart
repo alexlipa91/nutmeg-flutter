@@ -122,6 +122,13 @@ class MatchesState extends ChangeNotifier {
     notifyListeners();
   }
 
+  bool shouldShow(Match match) {
+    if (match.isTest) {
+      return userState?.isTestMode ?? false;
+    }
+    return true;
+  }
+
   Future<void> fetchGoingMatches() async {
     if (userState?.getLoggedUserId() == null) return;
 
@@ -136,7 +143,7 @@ class MatchesState extends ChangeNotifier {
     data.entries
         .map((element) => deserializeMatch(element))
         .where((e) => e != null)
-        .where((e) => (e!.isTest || userState!.isTestMode))
+        .where((e) => shouldShow(e!))
         .forEach((m) {
       _matches[m!.documentId] = MatchState.fromMatch(m, userState!);
       matches.add(m.documentId);
@@ -166,7 +173,7 @@ class MatchesState extends ChangeNotifier {
     data.entries
         .map((element) => deserializeMatch(element))
         .where((e) => e != null)
-        .where((e) => (e!.isTest || userState!.isTestMode))
+        .where((e) => shouldShow(e!))
         .forEach((m) {
       _matches[m!.documentId] = MatchState.fromMatch(m, userState!);
       matches.add(m.documentId);
@@ -191,7 +198,7 @@ class MatchesState extends ChangeNotifier {
     data.entries
         .map((element) => deserializeMatch(element))
         .where((e) => e != null)
-        .where((e) => (e!.isTest || userState!.isTestMode))
+        .where((e) => shouldShow(e!))
         .forEach((m) {
       _matches[m!.documentId] = MatchState.fromMatch(m, userState!);
       matches.add(m.documentId);
@@ -215,7 +222,7 @@ class MatchesState extends ChangeNotifier {
     data.entries
         .map((element) => deserializeMatch(element))
         .where((e) => e != null)
-        .where((e) => (e!.isTest || userState!.isTestMode))
+        .where((e) => shouldShow(e!))
         .forEach((m) {
       _matches[m!.documentId] = MatchState.fromMatch(m, userState!);
       matches.add(m.documentId);
