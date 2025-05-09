@@ -33,7 +33,14 @@ fi
 
 # Update pubspec.yaml
 echo "Updating version to $VERSION+$BUILD_NUMBER in pubspec.yaml..."
-sed -i '' "0,/^version: /s/^version: .*/version: $VERSION+$BUILD_NUMBER/" pubspec.yaml
+# Use a more robust sed command that works across different Unix-like systems
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    # macOS
+    sed -i '' "s/^version: .*/version: $VERSION+$BUILD_NUMBER/" pubspec.yaml
+else
+    # Linux and other Unix-like systems
+    sed -i "s/^version: .*/version: $VERSION+$BUILD_NUMBER/" pubspec.yaml
+fi
 
 # Create commit
 echo "Creating commit..."
