@@ -90,10 +90,12 @@ List<T> interleave<T>(List<T> elements, T e, [bool withTop = false]) {
   return result;
 }
 
+const String COMMIT_SHA =
+    String.fromEnvironment("COMMIT_SHA", defaultValue: "");
+
 Future<String> getVersion() async {
   if (kIsWeb) {
-    // FIXME
-    return String.fromEnvironment("COMMIT_SHA", defaultValue: "");
+    return COMMIT_SHA;
   }
   PackageInfo packageInfo = await PackageInfo.fromPlatform();
   return packageInfo.version + " + " + packageInfo.buildNumber;

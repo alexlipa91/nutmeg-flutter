@@ -39,8 +39,11 @@ class UserPage extends StatefulWidget {
 class UserPageState extends State<UserPage> {
   final verticalSpace = SizedBox(height: 20);
 
+  String? appVersion;
+
   Future<void> myInitState() async {
     await FirebaseAnalytics.instance.logEvent(name: "open_user_page");
+    appVersion = await getVersion();
     await refreshPageState();
   }
 
@@ -588,13 +591,11 @@ class UserPageState extends State<UserPage> {
           padding: EdgeInsets.only(top: 8),
           child: Center(
             child: Container(
-              child: FutureBuilder<String>(
-                  future: getVersion(),
-                  builder: (context, snapshot) => Text(
-                        "v " + ((snapshot.hasData) ? (snapshot.data!) : ""),
-                        style: TextPalette.bodyText,
-                        textAlign: TextAlign.right,
-                      )),
+              child: Text(
+                "v $appVersion",
+                style: TextPalette.bodyText,
+                textAlign: TextAlign.right,
+              ),
             ),
           ),
         )
