@@ -40,5 +40,10 @@ class UsersState extends ChangeNotifier {
 
   void updateBasedOnLoggedUser(UserState userState) {
     _loggedUserState = userState;
+
+    if (userState.getLoggedUserId() != null) {
+      _usersDetails[userState.getLoggedUserId()!] =
+          userState.getLoggedUserDetails()!;
+    }
   }
 }
