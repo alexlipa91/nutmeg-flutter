@@ -55,15 +55,16 @@ class MatchState extends ChangeNotifier {
         .post("matches/$_matchId/ratings/add_multi", ratings);
   }
 
-  void movePlayerToTeam(String userId, int teamTargetIndex) async {
-    _match!.manualTeams[teamTargetIndex].add(userId);
-    _match!.manualTeams[(teamTargetIndex + 1) % 2].remove(userId);
-
-    notifyListeners();
-
+  void saveManualTeams(List<List<String>> manualTeams) async {
     await editMatch({
-      "teams.manual.players.a": _match!.manualTeams[0],
-      "teams.manual.players.b": _match!.manualTeams[1],
+      "teams.manual.players.a": manualTeams[0],
+      "teams.manual.players.b": manualTeams[1],
+    });
+  }
+
+  void eraseManualTeams() async {
+    await editMatch({
+      "teams.manual": {},
     });
   }
 

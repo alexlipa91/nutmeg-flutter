@@ -235,6 +235,9 @@
     "teamStrenghtLabel": "Team strength",
     "manualSplitTeamInfo": "By default, we split the teams fairly based on players performance and overall team strength. You can manually split the teams yourself.",
 
+    "doneButtonText": "DONE",
+    "modifyButtonText": "MODIFY",
+
     "genericErrorMessage": "Something went wrong",
     "genericErrorDesc": "Please contact us for support.",
 

@@ -132,6 +132,8 @@
     "manualSplitTeamCheckBoxLabel": "Dividir equipes manualmente",
     "teamStrenghtLabel": "Força da equipe",
     "manualSplitTeamInfo": "Por padrão, dividimos as equipes de forma justa com base no desempenho dos jogadores e na força geral da equipe. Você pode dividir as equipes manualmente.",
+    "doneButtonText": "FEITO",
+    "modifyButtonText": "MODIFICAR",
     "genericErrorMessage": "Algo deu errado",
     "genericErrorDesc": "Entre em contato conosco para obter suporte.",
     "ratePlayersTitle": "Avalie os jogadores",

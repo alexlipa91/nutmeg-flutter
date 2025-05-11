@@ -132,6 +132,8 @@
     "manualSplitTeamCheckBoxLabel": "Dividi manualmente i team",
     "teamStrenghtLabel": "Forza della squadra",
     "manualSplitTeamInfo": "Di default, dividiamo le squadre equamente in base alle prestazioni dei giocatori e alla forza complessiva della squadra. Puoi dividere le squadre manualmente.",
+    "doneButtonText": "FATTO",
+    "modifyButtonText": "MODIFICARE",
     "genericErrorMessage": "Qualcosa è andato storto",
     "genericErrorDesc": "Contattaci per ricevere supporto.",
     "ratePlayersTitle": "Valuta i giocatori",
@@ -173,7 +175,7 @@
     "bestDefenderAwardDesc": "La prestazione difensiva più solida",
     "ratePlayersThanksText": "Grazie per la valutazione!",
     "ratePlayersTitleText": "Valuta i giocatori",
-    "updateRatesPlayersTitleText": "Cambiare i voti",
+    "updateRatesPlayersTitleText": "Cambia voti",
     "ratesCloseInText": "Le valutazioni chiudono tra {hours} ore",
     "locationErrorTitle": "Impossibile ottenere la posizione!",
     "locationErrorDescription": "Riprova più tardi."

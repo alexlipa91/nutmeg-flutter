@@ -36,6 +36,10 @@ class TeamsWidgetState extends State<TeamsWidget> {
   late bool manualSplit;
   bool loader = false;
   bool? movingItemFromLeft;
+  bool isEditing = false;
+  bool hasMovedAnyPlayer = false;
+
+  List<List<String>> manualTeams = [];
 
   List<FocusNode> focusNodes = [FocusNode(), FocusNode()];
 
@@ -46,7 +50,8 @@ class TeamsWidgetState extends State<TeamsWidget> {
     var state = context.read<MatchState>();
 
     var match = state.match;
-    manualSplit = match?.hasManualTeams ?? false;
+    manualTeams = match?.manualTeams ?? [];
+    manualSplit = manualTeams.isNotEmpty;
     isOrganizerView = state.isLoggedUserOrganizer();
   }
 
@@ -55,11 +60,12 @@ class TeamsWidgetState extends State<TeamsWidget> {
     var state = context.watch<MatchState>();
 
     var match = state.match;
-    manualSplit = match?.hasManualTeams ?? false;
     isOrganizerView = state.isLoggedUserOrganizer();
 
-    var draggable =
-        manualSplit && match?.status != MatchStatus.rated && isOrganizerView;
+    var draggable = isEditing &&
+        manualSplit &&
+        match?.status != MatchStatus.rated &&
+        isOrganizerView;
 
     var isLeftColumn = MainAxisAlignment.start == alignment;
     var playersWidgets = interleave(
@@ -160,10 +166,18 @@ class TeamsWidgetState extends State<TeamsWidget> {
         return interested;
       },
       onAccept: (item) {
-        context
-            .read<MatchesState>()
-            .getMatch(widget.matchId)!
-            .movePlayerToTeam(item, isLeftColumn ? 0 : 1);
+        if (manualSplit) {
+          setState(() {
+            hasMovedAnyPlayer = true;
+            if (isLeftColumn) {
+              manualTeams[0].add(item);
+              manualTeams[1].remove(item);
+            } else {
+              manualTeams[1].add(item);
+              manualTeams[0].remove(item);
+            }
+          });
+        }
       },
     );
   }
@@ -173,9 +187,7 @@ class TeamsWidgetState extends State<TeamsWidget> {
     var state = context.watch<MatchState>();
     var match = state.match;
 
-    var teams = (match?.hasManualTeams ?? false)
-        ? match?.manualTeams
-        : match?.computedTeams;
+    var teams = manualSplit ? manualTeams : match?.computedTeams;
 
     var content = Padding(
       padding: EdgeInsets.symmetric(horizontal: 8),
@@ -283,30 +295,45 @@ class TeamsWidgetState extends State<TeamsWidget> {
                         Switch(
                             value: manualSplit,
                             activeColor: Palette.primary,
-                            onChanged: (v) async {
-                              setState(() {
-                                manualSplit = v;
-                              });
-                              await context
-                                  .read<MatchesState>()
-                                  .getMatch(widget.matchId)!
-                                  .editMatch({"hasManualTeams": manualSplit});
-                              if (manualSplit) {
-                                await context
-                                    .read<MatchesState>()
-                                    .getMatch(widget.matchId)!
-                                    .editMatch({
-                                  "teams.manual.players.a": teams![0],
-                                  "teams.manual.players.b": teams![1]
-                                });
-                              }
-                            }),
+                            onChanged: isEditing
+                                ? (v) async {
+                                    setState(() {
+                                      manualSplit = v;
+                                      if (manualSplit) {
+                                        // copy over the computed teams
+                                        manualTeams = List.from(teams ?? []);
+                                      }
+                                    });
+                                  }
+                                : null),
                         SizedBox(width: 8),
                         Text(
                             AppLocalizations.of(context)!
                                 .manualSplitTeamCheckBoxLabel,
-                            style: TextPalette.h3),
+                            style: TextPalette.h3.copyWith(
+                              color: isEditing ? null : Palette.greyLight,
+                            )),
                         Spacer(),
+                        GenericButtonWithLoader(
+                          isEditing ? AppLocalizations.of(context)!.doneButtonText : AppLocalizations.of(context)!.modifyButtonText,
+                          (BuildContext context) {
+                            setState(() {
+                              isEditing = !isEditing;
+                              if (isEditing) {
+                                hasMovedAnyPlayer = false;
+                              }
+                            });
+                            if (manualSplit && hasMovedAnyPlayer) {
+                              context.read<MatchState>().saveManualTeams(
+                                    manualTeams,
+                                  );
+                            }
+                            if (!manualSplit) {
+                              context.read<MatchState>().eraseManualTeams();
+                            }
+                          },
+                          isEditing ? Secondary() : Primary(),
+                        ),
                         if (loader)
                           CupertinoActivityIndicator(
                             color: Palette.primary,

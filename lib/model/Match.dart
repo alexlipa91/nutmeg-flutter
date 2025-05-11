@@ -58,7 +58,6 @@ class Match {
 
   List<List<String>> computedTeams;
   List<List<String>> manualTeams;
-  bool? hasManualTeams;
 
   String? organizerId;
   Duration? cancelBefore;
@@ -99,7 +98,6 @@ class Match {
         going = _readGoing(jsonInput),
         computedTeams = _readComputedTeams(jsonInput),
         manualTeams = _readManualTeams(jsonInput),
-        hasManualTeams = jsonInput["hasManualTeams"],
         price = jsonInput["price"] == null
             ? null
             : Price.fromJson(jsonInput['price']),
@@ -159,7 +157,9 @@ class Match {
   }
 
   static List<List<String>> _readManualTeams(Map<String, dynamic> json) {
-    if (json.containsKey("teams") && json["teams"].containsKey("manual"))
+    if (json.containsKey("teams") &&
+        json["teams"].containsKey("manual") &&
+        json["teams"]["manual"].containsKey("players"))
       return [
         List<String>.from(json["teams"]["manual"]["players"]["a"]),
         List<String>.from(json["teams"]["manual"]["players"]["b"]),
@@ -177,7 +177,6 @@ class Match {
         'maxPlayers': maxPlayers,
         'minPlayers': minPlayers,
         if (cancelledAt != null) 'cancelledAt': cancelledAt,
-        if (hasManualTeams != null) "hasManualTeams": hasManualTeams,
         'duration': duration.inMinutes,
         'organizerId': organizerId,
         if (cancelBefore != null) 'cancelHoursBefore': cancelBefore?.inHours,
@@ -208,7 +207,7 @@ class Match {
 
   int getMissingPlayers() => max(0, minPlayers - going.length);
 
-  bool hasTeams() => computedTeams.isNotEmpty;
+  bool hasTeams() => computedTeams.isNotEmpty || manualTeams.isNotEmpty;
 
   TimeOfDay getLocalizedStart() => TimeOfDay(
       hour: getLocalizedTime().hour, minute: getLocalizedTime().minute);
