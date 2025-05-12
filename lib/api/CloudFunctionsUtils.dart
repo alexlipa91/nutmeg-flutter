@@ -53,7 +53,7 @@ class CloudFunctionsClient {
     // trace.stop();
 
     if (r.statusCode == 500) {
-      logger.severe("Server error (500): ${r.body}");
+      logger.severe("Server error (500) on POST $name: ${r.body}");
       throw Exception(r.body);
     }
 
@@ -86,9 +86,10 @@ class CloudFunctionsClient {
     if (argsString.isNotEmpty) url = "$url?$argsString";
 
     var r = await http.get(Uri.parse(url), headers: await _headers());
-
-    // trace.setMetric("duration_ms", stopwatch.elapsed.inMilliseconds);
-    // await trace.stop();
+    if (r.statusCode == 500) {
+      logger.severe("Server error (500) on GET $name: ${r.body}");
+      throw Exception(r.body);
+    }
 
     return jsonDecode(r.body)["data"];
   }
