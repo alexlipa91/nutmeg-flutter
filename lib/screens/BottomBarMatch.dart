@@ -204,13 +204,14 @@ class RatePlayersBottomBar extends StatelessWidget {
     var hoursLeft = match.dateTime
         .add(Duration(days: 1))
         .difference(DateTime.now())
-        .inHours
-        .toString();
+        .inHours;
 
     final text = hasRated
         ? AppLocalizations.of(context)!.ratePlayersThanksText
         : AppLocalizations.of(context)!.ratePlayersTitleText;
-    final subText = AppLocalizations.of(context)!.ratesCloseInText(hoursLeft);
+    final subText = (hoursLeft > 0)
+        ? AppLocalizations.of(context)!.ratesCloseInText(hoursLeft.toString())
+        : "";
 
     return BottomBarMatch(
         matchId: matchId,
