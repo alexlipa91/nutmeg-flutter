@@ -267,6 +267,7 @@ List<Widget> getWidgets(
     // Compute the number of distinct voters for awards
     awards = UserAwardsReceivedList(
       awards: ratings.awards,
+      distinctVoters: ratings.numDistinctAwardVoters,
     );
   }
 

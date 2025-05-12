@@ -9,8 +9,10 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 class UserAwardsReceivedList extends StatelessWidget {
   final Map<String, Map<String, int>>
       awards; // awardId -> userId -> number of votes
+  final int distinctVoters;
 
-  const UserAwardsReceivedList({Key? key, required this.awards})
+  const UserAwardsReceivedList(
+      {Key? key, required this.awards, required this.distinctVoters})
       : super(key: key);
 
   @override
@@ -43,11 +45,8 @@ class UserAwardsReceivedList extends StatelessWidget {
     ];
 
     // Compute the number of distinct voters
-    final Set<String> distinctVoters =
-        awards.values.expand((userVotes) => userVotes.keys).toSet();
-
     return InfoContainerWithTitleAndSubtitle(
-      subtitle: l10n.matchStatsSubTitle(distinctVoters.length),
+      subtitle: l10n.matchStatsSubTitle(distinctVoters),
       title: l10n.matchAwardsTitle,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

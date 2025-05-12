@@ -99,7 +99,6 @@ class MatchAwardsModal extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final match = context.read<MatchesState>().getMatch(matchId);
-    if (match == null) return Container();
 
     // Get all players except current user
     final currentUserId = context.read<UserState>().getLoggedUserId();
