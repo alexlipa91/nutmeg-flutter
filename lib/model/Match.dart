@@ -258,8 +258,8 @@ class Ratings {
   Ratings.fromJson(Map<String, dynamic> jsonInput)
       : scores = Map<String, double>.from(jsonInput["scores"]),
         potms = List<String>.from(jsonInput["potms"] ?? []),
-        awards = readAwards(jsonInput["awards"]),
-        numDistinctScoreVoters = jsonInput["num_distinct_score_voters"];
+        awards = readAwards(jsonInput["awards"] ?? {}),
+        numDistinctScoreVoters = jsonInput["num_distinct_score_voters"] ?? 0;
 }
 
 class Payout {
