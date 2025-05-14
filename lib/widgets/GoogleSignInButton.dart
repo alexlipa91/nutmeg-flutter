@@ -44,6 +44,9 @@ class GoogleSignInButton extends StatelessWidget {
       final userCredential =
           await FirebaseAuth.instance.signInWithCredential(credential);
 
+      // final userCredential = await FirebaseAuth.instance.signInWithCustomToken(
+      //     'eyJhbGciOiAiUlMyNTYiLCAidHlwIjogIkpXVCIsICJraWQiOiAiYzQyNDU2MmIxYjgwODY1NmNkN2Y4N2FmNGE2NDI1YjBkNzY4YTQwNyJ9.eyJpc3MiOiAiZmlyZWJhc2UtYWRtaW5zZGstb3pzeTZAbnV0bWVnLTkwOTljLmlhbS5nc2VydmljZWFjY291bnQuY29tIiwgInN1YiI6ICJmaXJlYmFzZS1hZG1pbnNkay1venN5NkBudXRtZWctOTA5OWMuaWFtLmdzZXJ2aWNlYWNjb3VudC5jb20iLCAiYXVkIjogImh0dHBzOi8vaWRlbnRpdHl0b29sa2l0Lmdvb2dsZWFwaXMuY29tL2dvb2dsZS5pZGVudGl0eS5pZGVudGl0eXRvb2xraXQudjEuSWRlbnRpdHlUb29sa2l0IiwgInVpZCI6ICJ2emtyTUw0SGRIZGJBS3RRTHBJTUJ1aWowbmwyIiwgImlhdCI6IDE3NDcwNzgzMTMsICJleHAiOiAxNzQ3MDgxOTEzfQ.RyGBs86tK2AX_4I8hcvuFN8OCGHcfuf9JguRNLoRhXHLFCuQHSk-pzNFSYUq6mQa6czAFO_ucw6vcilFStJljxBf6oU12CJ4HqVI5Xz8LIQL4zDYYo5hHFpVc3v8wD3IgsqOS-53_1QkxqAD_BDmS_eKlQKVwvi9WjuNQ0x-f7PZhRI8NrdvndfCiZHyR1k-gEFtc6gp_5Z9ESZSlmPs-0hVjZrBoAtxHqz2usr8asyiB7cN3IgRwtJ1KKLJdusc0rz6rCKYSpYbr_1ef7KXT-8KXqR0-UR6dEq4mQK4Nv4wmJhISvfBWeabjPUKnLA7t9HqSaBFecGrSFLKLnxb4Q');
+
       if (userCredential.user != null) {
         await context.read<UserState>().login(userCredential, context);
       }
