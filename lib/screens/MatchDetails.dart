@@ -1,6 +1,8 @@
 import 'dart:math';
 import 'dart:ui' as ui;
 import 'dart:html' as html;
+import 'dart:convert';
+import 'package:js/js_util.dart' as js_util;
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
@@ -1275,13 +1277,38 @@ class ShareableStats extends StatelessWidget {
         final bytes = byteData.buffer.asUint8List();
 
         if (kIsWeb) {
-          // On web, trigger download
-          final blob = html.Blob([bytes]);
-          final url = html.Url.createObjectUrlFromBlob(blob);
-          final anchor = html.AnchorElement(href: url)
-            ..setAttribute('download', 'match_stats.png')
-            ..click();
-          html.Url.revokeObjectUrl(url);
+          // Check if Web Share API is available (mostly on mobile browsers)
+          if (js_util.hasProperty(html.window.navigator, 'canShare') &&
+              js_util.hasProperty(html.window.navigator, 'share')) {
+            try {
+              final blob = html.Blob([bytes]);
+              final url = html.Url.createObjectUrlFromBlob(blob);
+
+              await html.window.navigator.share({
+                'title': 'Match Stats',
+                'text': 'Check out these match stats!',
+                'url': url,
+              });
+
+              html.Url.revokeObjectUrl(url);
+            } catch (e) {
+              // If sharing fails, fall back to download
+              final blob = html.Blob([bytes]);
+              final url = html.Url.createObjectUrlFromBlob(blob);
+              final anchor = html.AnchorElement(href: url)
+                ..setAttribute('download', 'match_stats.png')
+                ..click();
+              html.Url.revokeObjectUrl(url);
+            }
+          } else {
+            // Fallback for browsers without Web Share API
+            final blob = html.Blob([bytes]);
+            final url = html.Url.createObjectUrlFromBlob(blob);
+            final anchor = html.AnchorElement(href: url)
+              ..setAttribute('download', 'match_stats.png')
+              ..click();
+            html.Url.revokeObjectUrl(url);
+          }
         } else {
           // On mobile, share the image
           await Share.shareXFiles(
