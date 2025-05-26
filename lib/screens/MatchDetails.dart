@@ -989,8 +989,8 @@ class MapCardImage extends StatelessWidget {
 }
 
 class Stats extends StatelessWidget {
-  Widget userRow(BuildContext context, MapEntry<String, double?> e, int index,
-      UsersState userState, Ratings ratings) {
+  static Widget userRow(BuildContext context, MapEntry<String, double?> e,
+      int index, UsersState userState, Ratings ratings) {
     var userDetails = userState.getUserDetail(e.key);
     double? rate = e.value;
     print(rate);
@@ -1372,69 +1372,17 @@ class ShareableStats extends StatelessWidget {
                               const SizedBox(height: 24),
                               // Top 5 Players Section
                               ...topPlayers.map((e) {
-                                var userDetails =
-                                    userState.getUserDetail(e.key);
-                                double rate = e.value;
-                                bool isPotm =
-                                    (ratings.potms ?? []).contains(e.key);
-
                                 return Container(
                                   decoration: BoxDecoration(
                                     color: Colors.white,
                                     borderRadius: BorderRadius.circular(24),
                                   ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(bottom: 16),
-                                    child: Row(
-                                      children: [
-                                        UserAvatar(16, userDetails),
-                                        const SizedBox(width: 16),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Row(
-                                                children: [
-                                                  Text(
-                                                    userDetails?.name ??
-                                                        "Unknown",
-                                                    style:
-                                                        TextPalette.getBodyText(
-                                                            Palette.black),
-                                                  ),
-                                                  if (isPotm) ...[
-                                                    const SizedBox(width: 8),
-                                                    Image.asset(
-                                                      "assets/potm_badge.png",
-                                                      width: 20,
-                                                    ),
-                                                  ],
-                                                ],
-                                              ),
-                                              const SizedBox(height: 4),
-                                              ClipRRect(
-                                                borderRadius:
-                                                    BorderRadius.circular(10),
-                                                child: LinearProgressIndicator(
-                                                  value: rate / 5.0,
-                                                  color: Palette.primary,
-                                                  backgroundColor:
-                                                      Palette.greyLighter,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        const SizedBox(width: 24),
-                                        Text(
-                                          rate.toStringAsFixed(1),
-                                          style: TextPalette.getBodyText(
-                                              Palette.black),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
+                                  child: Stats.userRow(
+                                      context,
+                                      e,
+                                      topPlayers.indexOf(e) + 1,
+                                      userState,
+                                      ratings),
                                 );
                               }).toList(),
                               // Award Winners Section
