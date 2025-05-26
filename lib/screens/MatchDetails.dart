@@ -989,6 +989,66 @@ class MapCardImage extends StatelessWidget {
 }
 
 class Stats extends StatelessWidget {
+  Widget userRow(BuildContext context, MapEntry<String, double?> e, int index,
+      UsersState userState, Ratings ratings) {
+    var userDetails = userState.getUserDetail(e.key);
+    double? rate = e.value;
+    print(rate);
+    bool isPotm = (ratings.potms ?? []).contains(e.key);
+
+    var widgets = [
+      Container(
+          width: 18,
+          child: Text(index.toString(), style: TextPalette.bodyText)),
+      SizedBox(width: 8),
+      UserAvatar(16, userDetails),
+      const SizedBox(width: 16),
+      Padding(
+        padding: EdgeInsets.only(left: 16),
+        child: Row(
+          children: [
+            UserNameWidget(userDetails: userDetails),
+            SizedBox(width: 8),
+            if (userDetails != null && isPotm && rate != null)
+              Image.asset(
+                "assets/potm_badge.png",
+                width: 20,
+              )
+          ],
+        ),
+      ),
+      Spacer(),
+      Container(
+        height: 8,
+        width: 72,
+        child: ClipRRect(
+          borderRadius: BorderRadius.all(Radius.circular(10)),
+          child: LinearProgressIndicator(
+            value: (rate ?? 0) / 5.0,
+            color: Palette.primary,
+            backgroundColor: Palette.greyLighter,
+          ),
+        ),
+      ),
+      SizedBox(width: 16),
+      Container(
+        width: 22,
+        child: Text((rate == null) ? "  -" : rate.toStringAsFixed(1),
+            style: TextPalette.getBodyText(Palette.black)),
+      ),
+    ];
+
+    index++;
+    return Padding(
+        padding: (index > 2) ? EdgeInsets.only(top: 16) : EdgeInsets.zero,
+        child: InkWell(
+            onTap: userDetails == null
+                ? null
+                : () => ModalBottomSheet.showNutmegModalBottomSheet(
+                    context, JoinedPlayerBottomModal(userDetails)),
+            child: Row(children: widgets)));
+  }
+
   @override
   Widget build(BuildContext context) {
     var child;
@@ -1056,79 +1116,60 @@ class Stats extends StatelessWidget {
                         entries.sort((a, b) =>
                             (b.value ?? -1).compareTo((a.value ?? -1)));
 
-                        var filteredEntries = filterEntries(entries);
+                        var filteredEntries = entries.take(5).toList();
 
                         return Column(
-                          children: filteredEntries.map((e) {
-                            var userDetails = userState.getUserDetail(e.key);
-                            double? rate = e.value;
-                            bool isPotm = (ratings.potms ?? []).contains(e.key);
-
-                            var widgets = [
-                              Container(
-                                  width: 18,
-                                  child: Text(index.toString(),
-                                      style: TextPalette.bodyText)),
-                              SizedBox(width: 8),
-                              UserAvatar(16, userDetails),
-                              const SizedBox(width: 16),
-                              Padding(
-                                padding: EdgeInsets.only(left: 16),
-                                child: Row(
-                                  children: [
-                                    UserNameWidget(userDetails: userDetails),
-                                    SizedBox(width: 8),
-                                    if (userDetails != null &&
-                                        isPotm &&
-                                        rate != null)
-                                      Image.asset(
-                                        "assets/potm_badge.png",
-                                        width: 20,
-                                      )
-                                  ],
-                                ),
-                              ),
-                              Spacer(),
-                              Container(
-                                height: 8,
-                                width: 72,
-                                child: ClipRRect(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(10)),
-                                  child: LinearProgressIndicator(
-                                    value: (rate ?? 0) / 5,
-                                    color: Palette.primary,
-                                    backgroundColor: Palette.greyLighter,
+                          children: [
+                            ...filteredEntries.map((e) {
+                              index++;
+                              return userRow(
+                                  context, e, index, userState, ratings);
+                            }).toList(),
+                            if (entries.length > 5) ...[
+                              InkWell(
+                                onTap: () {
+                                  ModalBottomSheet.showNutmegModalBottomSheet(
+                                    context,
+                                    Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.all(16.0),
+                                          child: Text(
+                                            AppLocalizations.of(context)!
+                                                .matchStatsTitle,
+                                            style: TextPalette.h2,
+                                          ),
+                                        ),
+                                        ...entries.map((e) {
+                                          return userRow(
+                                              context,
+                                              e,
+                                              entries.indexOf(e) + 1,
+                                              userState,
+                                              ratings);
+                                        }).toList(),
+                                      ],
+                                    ),
+                                  );
+                                },
+                                child: Container(
+                                  width: double.infinity,
+                                  padding: EdgeInsets.symmetric(vertical: 0),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.keyboard_arrow_down,
+                                        color: Palette.greyDark,
+                                        size: 20,
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
-                              SizedBox(width: 16),
-                              Container(
-                                width: 22,
-                                child: Text(
-                                    (rate == null)
-                                        ? "  -"
-                                        : rate.toStringAsFixed(1),
-                                    style:
-                                        TextPalette.getBodyText(Palette.black)),
-                              ),
-                            ];
-
-                            index++;
-                            return Padding(
-                                padding: (index > 2)
-                                    ? EdgeInsets.only(top: 16)
-                                    : EdgeInsets.zero,
-                                child: InkWell(
-                                    onTap: userDetails == null
-                                        ? null
-                                        : () => ModalBottomSheet
-                                            .showNutmegModalBottomSheet(
-                                                context,
-                                                JoinedPlayerBottomModal(
-                                                    userDetails)),
-                                    child: Row(children: widgets)));
-                          }).toList(),
+                            ],
+                          ],
                         );
                       },
                     )
@@ -1157,13 +1198,6 @@ class Stats extends StatelessWidget {
             }
           : null,
     );
-  }
-
-  List<MapEntry<String, double?>> filterEntries(
-      List<MapEntry<String, double?>> entries) {
-    var toKeep = (entries.length * 0.7).ceil();
-    var filtered = entries.take(toKeep).toList();
-    return filtered;
   }
 }
 
@@ -1383,7 +1417,7 @@ class ShareableStats extends StatelessWidget {
                                                 borderRadius:
                                                     BorderRadius.circular(10),
                                                 child: LinearProgressIndicator(
-                                                  value: rate / 5,
+                                                  value: rate / 5.0,
                                                   color: Palette.primary,
                                                   backgroundColor:
                                                       Palette.greyLighter,
