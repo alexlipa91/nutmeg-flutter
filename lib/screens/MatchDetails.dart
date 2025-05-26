@@ -1,10 +1,13 @@
 import 'dart:math';
+import 'dart:ui' as ui;
+import 'dart:html' as html;
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nutmeg/state/MatchState.dart';
@@ -33,6 +36,7 @@ import 'package:readmore/readmore.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../state/MatchesState.dart';
 import '../state/UserState.dart';
@@ -1067,6 +1071,7 @@ class Stats extends StatelessWidget {
                                       style: TextPalette.bodyText)),
                               SizedBox(width: 8),
                               UserAvatar(16, userDetails),
+                              const SizedBox(width: 16),
                               Padding(
                                 padding: EdgeInsets.only(left: 16),
                                 child: Row(
@@ -1133,11 +1138,25 @@ class Stats extends StatelessWidget {
             );
     }
 
-    return InfoContainerWithTitleAndSubtitle(
-        title: AppLocalizations.of(context)!.matchStatsTitle,
-        subtitle: AppLocalizations.of(context)!
-            .matchStatsSubTitle(ratings?.numDistinctScoreVoters ?? 0),
-        body: child);
+    return InfoContainerWithTitleAndSubtitleAndAction(
+      title: AppLocalizations.of(context)!.matchStatsTitle,
+      subtitle: AppLocalizations.of(context)!
+          .matchStatsSubTitle(ratings?.numDistinctScoreVoters ?? 0),
+      body: child,
+      actionIcon: match.status == MatchStatus.rated ? Icons.share : null,
+      onActionPressed: match.status == MatchStatus.rated
+          ? () {
+              ModalBottomSheet.showNutmegModalBottomSheet(
+                context,
+                ShareableStats(
+                  match: match,
+                  ratings: ratings!,
+                  userState: context.read<UserState>(),
+                ),
+              );
+            }
+          : null,
+    );
   }
 
   List<MapEntry<String, double?>> filterEntries(
@@ -1193,5 +1212,350 @@ class IconList extends StatelessWidget {
     List<Widget> widgets = interleave(rows.toList(), SizedBox(height: 12));
 
     return Column(children: widgets);
+  }
+}
+
+class ShareableStats extends StatelessWidget {
+  final Match match;
+  final Ratings ratings;
+  final UserState userState;
+  final GlobalKey _globalKey = GlobalKey();
+
+  ShareableStats({
+    required this.match,
+    required this.ratings,
+    required this.userState,
+    Key? key,
+  }) : super(key: key);
+
+  Future<void> _captureAndShare(BuildContext context) async {
+    try {
+      // Capture the widget as an image
+      RenderRepaintBoundary boundary = _globalKey.currentContext!
+          .findRenderObject() as RenderRepaintBoundary;
+      ui.Image image = await boundary.toImage(
+          pixelRatio: 3.0); // This will give us ~1200px width
+      ByteData? byteData =
+          await image.toByteData(format: ui.ImageByteFormat.png);
+      if (byteData != null) {
+        final bytes = byteData.buffer.asUint8List();
+
+        if (kIsWeb) {
+          // On web, trigger download
+          final blob = html.Blob([bytes]);
+          final url = html.Url.createObjectUrlFromBlob(blob);
+          final anchor = html.AnchorElement(href: url)
+            ..setAttribute('download', 'match_stats.png')
+            ..click();
+          html.Url.revokeObjectUrl(url);
+        } else {
+          // On mobile, share the image
+          await Share.shareXFiles(
+            [XFile.fromData(bytes, name: 'match_stats.png')],
+            text: 'Match Stats',
+          );
+        }
+      }
+    } catch (e) {
+      print('Error capturing image: $e');
+      // Show error to user
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to process image. Please try again.'),
+          backgroundColor: Palette.destructive,
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    var userState = context.watch<UsersState>();
+    var entries = ratings.scores.entries.toList();
+    entries.sort((a, b) => (b.value).compareTo(a.value));
+
+    // Get top 5 players
+    var topPlayers = entries.take(5).toList();
+
+    // Format the date
+    var dateFormat = DateFormat(
+        "EEEE, MMM dd yyyy", getLanguageLocaleWatch(context).languageCode);
+    var formattedDate = dateFormat.format(match.getLocalizedTime());
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 400, // Base width
+          child: Stack(
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.white,
+                      Palette.primary.withOpacity(0.05),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 20,
+                      offset: Offset(0, 4),
+                      spreadRadius: 0,
+                    ),
+                  ],
+                ),
+                child: RepaintBoundary(
+                  key: _globalKey,
+                  child: Stack(
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(24),
+                                ),
+                                child: Text(
+                                  "$formattedDate - ${match.sportCenter?.getName() ?? ''}",
+                                  style: TextPalette.h2,
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+                              // Top 5 Players Section
+                              ...topPlayers.map((e) {
+                                var userDetails =
+                                    userState.getUserDetail(e.key);
+                                double rate = e.value;
+                                bool isPotm =
+                                    (ratings.potms ?? []).contains(e.key);
+
+                                return Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(24),
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(bottom: 16),
+                                    child: Row(
+                                      children: [
+                                        UserAvatar(16, userDetails),
+                                        const SizedBox(width: 16),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Row(
+                                                children: [
+                                                  Text(
+                                                    userDetails?.name ??
+                                                        "Unknown",
+                                                    style:
+                                                        TextPalette.getBodyText(
+                                                            Palette.black),
+                                                  ),
+                                                  if (isPotm) ...[
+                                                    const SizedBox(width: 8),
+                                                    Image.asset(
+                                                      "assets/potm_badge.png",
+                                                      width: 20,
+                                                    ),
+                                                  ],
+                                                ],
+                                              ),
+                                              const SizedBox(height: 4),
+                                              ClipRRect(
+                                                borderRadius:
+                                                    BorderRadius.circular(10),
+                                                child: LinearProgressIndicator(
+                                                  value: rate / 5,
+                                                  color: Palette.primary,
+                                                  backgroundColor:
+                                                      Palette.greyLighter,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        const SizedBox(width: 24),
+                                        Text(
+                                          rate.toStringAsFixed(1),
+                                          style: TextPalette.getBodyText(
+                                              Palette.black),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                              // Award Winners Section
+                              const SizedBox(height: 24),
+                              LayoutBuilder(
+                                builder: (context, constraints) {
+                                  return Column(
+                                    children: [
+                                      for (var i = 0; i < awards.length; i += 2)
+                                        Padding(
+                                          padding:
+                                              const EdgeInsets.only(bottom: 8),
+                                          child: Row(
+                                            children: [
+                                              Expanded(
+                                                child: _buildAwardBox(
+                                                  context,
+                                                  awards[i],
+                                                  userState,
+                                                  ratings,
+                                                ),
+                                              ),
+                                              if (i + 1 < awards.length) ...[
+                                                const SizedBox(width: 8),
+                                                Expanded(
+                                                  child: _buildAwardBox(
+                                                    context,
+                                                    awards[i + 1],
+                                                    userState,
+                                                    ratings,
+                                                  ),
+                                                ),
+                                              ],
+                                            ],
+                                          ),
+                                        ),
+                                    ],
+                                  );
+                                },
+                              ),
+                              const SizedBox(height: 48), // Space for the logo
+                            ],
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        bottom: 16,
+                        left: 0,
+                        right: 0,
+                        child: Center(
+                          child: Image.asset(
+                            "assets/nutmeg_white.png",
+                            height: 24,
+                            color: Palette.primary,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        GenericButtonWithLoader(
+          AppLocalizations.of(context)!.shareAction.toUpperCase(),
+          (BuildContext context) => _captureAndShare(context),
+          Primary(),
+        ),
+      ],
+    );
+  }
+
+  // Define awards with their names
+  static final List<Map<String, dynamic>> awards = [
+    {
+      'id': 'best_goal',
+      'name': (BuildContext context) =>
+          AppLocalizations.of(context)!.bestGoalAwardName,
+    },
+    {
+      'id': 'best_striker',
+      'name': (BuildContext context) =>
+          AppLocalizations.of(context)!.bestStrikerAwardName,
+    },
+    {
+      'id': 'best_goalkeeper',
+      'name': (BuildContext context) =>
+          AppLocalizations.of(context)!.bestGoalkeeperAwardName,
+    },
+    {
+      'id': 'best_defender',
+      'name': (BuildContext context) =>
+          AppLocalizations.of(context)!.bestDefenderAwardName,
+    },
+  ];
+
+  Widget _buildAwardBox(
+    BuildContext context,
+    Map<String, dynamic> award,
+    UsersState userState,
+    Ratings ratings,
+  ) {
+    final awardId = award['id']!;
+    final userVotes = ratings.awards[awardId] ?? {};
+    final sortedVotes = userVotes.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+
+    if (sortedVotes.isEmpty) return const SizedBox.shrink();
+
+    final winnerId = sortedVotes.first.key;
+    final winner = userState.getUserDetail(winnerId);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Palette.greyLighter,
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Palette.greyLightest,
+            offset: const Offset(0, 1),
+            blurRadius: 2,
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              award['name'](context),
+              style: TextPalette.h3,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 16),
+            UserAvatar(16, winner),
+            const SizedBox(height: 4),
+            Text(
+              winner?.name ?? "Unknown",
+              style: TextPalette.bodyText,
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

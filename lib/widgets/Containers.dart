@@ -97,6 +97,51 @@ class InfoContainerWithTitleAndSubtitle extends StatelessWidget {
   }
 }
 
+class InfoContainerWithTitleAndSubtitleAndAction extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final Widget body;
+  final EdgeInsets padding;
+  final IconData? actionIcon;
+  final VoidCallback? onActionPressed;
+
+  const InfoContainerWithTitleAndSubtitleAndAction({
+    Key? key,
+    required this.title,
+    required this.subtitle,
+    required this.body,
+    this.padding = const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+    this.actionIcon,
+    this.onActionPressed,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return InfoContainer(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(title, style: TextPalette.h2),
+              if (actionIcon != null && onActionPressed != null)
+                IconButton(
+                  icon: Icon(actionIcon),
+                  onPressed: onActionPressed,
+                ),
+            ],
+          ),
+          SizedBox(height: 8),
+          Text(subtitle, style: TextPalette.bodyText),
+          SizedBox(height: 12),
+          body
+        ],
+      ),
+      padding: padding,
+    );
+  }
+}
 
 class NutmegDivider extends StatelessWidget {
 
