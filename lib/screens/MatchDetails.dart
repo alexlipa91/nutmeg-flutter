@@ -18,6 +18,7 @@ import 'package:nutmeg/utils/CrashlyticsLogger.dart';
 import 'package:nutmeg/utils/LocationUtils.dart';
 import 'package:nutmeg/widgets/UserAwardsReceived.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:intl/intl.dart';
 import 'package:map_launcher/map_launcher.dart';
 import 'package:map_launcher/src/models.dart' as m;
@@ -1272,6 +1273,29 @@ class _ShareableStatsState extends State<ShareableStats> {
   final GlobalKey _awardsKey = GlobalKey();
 
   Future<void> _captureAndShare(BuildContext context) async {
+    final key = _current == 0 ? _statsKey : _awardsKey;
+    final boundary =
+        key.currentContext!.findRenderObject() as RenderRepaintBoundary;
+    final image = await boundary.toImage(pixelRatio: 2.0);
+    final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+    final params = ShareParams(
+      text: 'Great picture',
+      files: [
+        XFile.fromData(byteData!.buffer.asUint8List(), name: 'match_stats.png')
+      ],
+    );
+
+    final result = await SharePlus.instance.share(params);
+
+    if (result.status == ShareResultStatus.success) {
+      print('Thank you for sharing the picture!');
+    } else {
+      print('Failed to share the picture');
+      print(result.status);
+    }
+  }
+
+  Future<void> _captureAndShareOld(BuildContext context) async {
     try {
       // Use the key for the currently visible page
       final key = _current == 0 ? _statsKey : _awardsKey;
@@ -1297,11 +1321,13 @@ class _ShareableStatsState extends State<ShareableStats> {
                   js_util.jsify({
                     'title': 'Match Stats',
                     'text': 'Check out these match stats!',
-                    'files': [js_util.jsify({
-                      'type': 'image/png',
-                      'name': 'match_stats.png',
-                      'url': url
-                    })]
+                    'files': [
+                      js_util.jsify({
+                        'type': 'image/png',
+                        'name': 'match_stats.png',
+                        'url': url
+                      })
+                    ]
                   })
                 ]),
               );
