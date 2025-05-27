@@ -130,7 +130,7 @@
     "searchLocationInputFieldLabel": "Buscar",
     "currentLocationLabel": "UBICACIÓN ACTUAL",
     "currentLocationInfo": "Tu ubicación nos ayuda a mejorar tu experiencia con recomendaciones aproximadas de coincidencias.",
-    "manualSplitTeamCheckBoxLabel": "Dividir equipos manualmente",
+    "manualSplitTeamCheckBoxLabel": "División manual",
     "teamStrenghtLabel": "Fuerza del equipo",
     "manualSplitTeamInfo": "Por defecto, dividimos los equipos equitativamente según el rendimiento de los jugadores y la fuerza general del equipo. Puedes dividir los equipos manualmente.",
     "doneButtonText": "HECHO",
