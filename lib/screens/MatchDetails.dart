@@ -1304,8 +1304,9 @@ class _ShareableStatsState extends State<ShareableStats> {
               );
 
               html.Url.revokeObjectUrl(url);
-            } catch (e) {
+            } catch (e, stackTrace) {
               print("Error sharing with web share api: $e");
+              print("Stack trace: $stackTrace");
               // If sharing fails, fall back to download
               final blob = html.Blob([bytes]);
               final url = html.Url.createObjectUrlFromBlob(blob);
