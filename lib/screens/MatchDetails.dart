@@ -1105,9 +1105,7 @@ class Stats extends StatelessWidget {
               builder: (context) {
                 int index = 1;
 
-                return Container(
-                    child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                return Column(
                   children: [
                     Builder(
                       builder: (context) {
@@ -1176,7 +1174,7 @@ class Stats extends StatelessWidget {
                       },
                     )
                   ],
-                ));
+                );
               },
             );
     }
@@ -1251,11 +1249,10 @@ class IconList extends StatelessWidget {
   }
 }
 
-class ShareableStats extends StatelessWidget {
+class ShareableStats extends StatefulWidget {
   final Match match;
   final Ratings ratings;
   final UserState userState;
-  final GlobalKey _globalKey = GlobalKey();
 
   ShareableStats({
     required this.match,
@@ -1264,13 +1261,24 @@ class ShareableStats extends StatelessWidget {
     Key? key,
   }) : super(key: key);
 
+  @override
+  State<ShareableStats> createState() => _ShareableStatsState();
+}
+
+class _ShareableStatsState extends State<ShareableStats> {
+  final CarouselSliderController _carouselController =
+      CarouselSliderController();
+  int _current = 0;
+  final GlobalKey _statsKey = GlobalKey();
+  final GlobalKey _awardsKey = GlobalKey();
+
   Future<void> _captureAndShare(BuildContext context) async {
     try {
-      // Capture the widget as an image
-      RenderRepaintBoundary boundary = _globalKey.currentContext!
-          .findRenderObject() as RenderRepaintBoundary;
-      ui.Image image = await boundary.toImage(
-          pixelRatio: 3.0); // This will give us ~1200px width
+      // Use the key for the currently visible page
+      final key = _current == 0 ? _statsKey : _awardsKey;
+      RenderRepaintBoundary boundary =
+          key.currentContext!.findRenderObject() as RenderRepaintBoundary;
+      ui.Image image = await boundary.toImage(pixelRatio: 2.0);
       ByteData? byteData =
           await image.toByteData(format: ui.ImageByteFormat.png);
       if (byteData != null) {
@@ -1329,10 +1337,9 @@ class ShareableStats extends StatelessWidget {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildStatsPage(BuildContext context) {
     var userState = context.watch<UsersState>();
-    var entries = ratings.scores.entries.toList();
+    var entries = widget.ratings.scores.entries.toList();
     entries.sort((a, b) => (b.value).compareTo(a.value));
 
     // Get top 5 players
@@ -1341,144 +1348,209 @@ class ShareableStats extends StatelessWidget {
     // Format the date
     var dateFormat = DateFormat(
         "EEEE, MMM dd yyyy", getLanguageLocaleWatch(context).languageCode);
-    var formattedDate = dateFormat.format(match.getLocalizedTime());
+    var formattedDate = dateFormat.format(widget.match.getLocalizedTime());
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 400, // Base width
-          child: Stack(
+    return RepaintBoundary(
+      key: _statsKey,
+      child: Container(
+        width: 400,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.white,
-                      Palette.primary.withOpacity(0.05),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 20,
-                      offset: Offset(0, 4),
-                      spreadRadius: 0,
-                    ),
-                  ],
-                ),
-                child: RepaintBoundary(
-                  key: _globalKey,
-                  child: Stack(
-                    children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(24),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(24),
-                                ),
-                                child: Text(
-                                  "$formattedDate - ${match.sportCenter?.getName() ?? ''}",
-                                  style: TextPalette.h2,
-                                ),
-                              ),
-                              const SizedBox(height: 24),
-                              // Top 5 Players Section
-                              ...topPlayers.map((e) {
-                                return Container(
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(24),
-                                  ),
-                                  child: Stats.userRow(
-                                      context,
-                                      e,
-                                      topPlayers.indexOf(e) + 1,
-                                      userState,
-                                      ratings),
-                                );
-                              }).toList(),
-                              // Award Winners Section
-                              const SizedBox(height: 24),
-                              LayoutBuilder(
-                                builder: (context, constraints) {
-                                  return Column(
-                                    children: [
-                                      for (var i = 0; i < awards.length; i += 2)
-                                        Padding(
-                                          padding:
-                                              const EdgeInsets.only(bottom: 8),
-                                          child: Row(
-                                            children: [
-                                              Expanded(
-                                                child: _buildAwardBox(
-                                                  context,
-                                                  awards[i],
-                                                  userState,
-                                                  ratings,
-                                                ),
-                                              ),
-                                              if (i + 1 < awards.length) ...[
-                                                const SizedBox(width: 8),
-                                                Expanded(
-                                                  child: _buildAwardBox(
-                                                    context,
-                                                    awards[i + 1],
-                                                    userState,
-                                                    ratings,
-                                                  ),
-                                                ),
-                                              ],
-                                            ],
-                                          ),
-                                        ),
-                                    ],
-                                  );
-                                },
-                              ),
-                              const SizedBox(height: 48), // Space for the logo
-                            ],
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        bottom: 16,
-                        left: 0,
-                        right: 0,
-                        child: Center(
-                          child: Image.asset(
-                            "assets/nutmeg_white.png",
-                            height: 24,
-                            color: Palette.primary,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+              Text(
+                "$formattedDate - " +
+                    (widget.match.sportCenter?.getName() ?? ''),
+                style: TextPalette.h2,
+              ),
+              const SizedBox(height: 24),
+              ...topPlayers.map((e) {
+                return Stats.userRow(context, e, topPlayers.indexOf(e) + 1,
+                    userState, widget.ratings);
+              }).toList(),
+              const SizedBox(height: 24),
+              Center(
+                child: Image.asset(
+                  "assets/nutmeg_white.png",
+                  height: 24,
+                  color: Palette.primary,
                 ),
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildAwardsPage(BuildContext context) {
+    var userState = context.watch<UsersState>();
+    var dateFormat = DateFormat(
+        "EEEE, MMM dd yyyy", getLanguageLocaleWatch(context).languageCode);
+    var formattedDate = dateFormat.format(widget.match.getLocalizedTime());
+
+    return RepaintBoundary(
+      key: _awardsKey,
+      child: Container(
+        width: 400,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "$formattedDate - " +
+                    (widget.match.sportCenter?.getName() ?? ''),
+                style: TextPalette.h2,
+              ),
+              const SizedBox(height: 24),
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  return Column(
+                    children: [
+                      for (var i = 0; i < awards.length; i += 2)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: _buildAwardBox(
+                                  context,
+                                  awards[i],
+                                  userState,
+                                  widget.ratings,
+                                ),
+                              ),
+                              if (i + 1 < awards.length) ...[
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: _buildAwardBox(
+                                    context,
+                                    awards[i + 1],
+                                    userState,
+                                    widget.ratings,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                    ],
+                  );
+                },
+              ),
+              const SizedBox(height: 24),
+              Center(
+                child: Image.asset(
+                  "assets/nutmeg_white.png",
+                  height: 24,
+                  color: Palette.primary,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 16.0, bottom: 16.0),
+          child: Text(
+            AppLocalizations.of(context)!.shareMatchStats,
+            style: TextPalette.h2,
+          ),
+        ),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                blurRadius: 10,
+                offset: Offset(0, 2),
+              ),
+            ],
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: CarouselSlider(
+            carouselController: _carouselController,
+            options: CarouselOptions(
+              height: 400,
+              viewportFraction: 1.0,
+              enableInfiniteScroll: false,
+              onPageChanged: (index, reason) {
+                setState(() {
+                  _current = index;
+                });
+              },
+            ),
+            items: [
+              _buildStatsPage(context),
+              _buildAwardsPage(context),
+            ],
+          ),
+        ),
         const SizedBox(height: 16),
-        GenericButtonWithLoader(
-          AppLocalizations.of(context)!.shareAction.toUpperCase(),
-          (BuildContext context) => _captureAndShare(context),
-          Primary(),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            IconButton(
+              icon: Icon(Icons.arrow_back_ios, color: Palette.greyDark),
+              onPressed: _current > 0
+                  ? () => _carouselController.animateToPage(_current - 1)
+                  : null,
+            ),
+            Container(
+              width: 8,
+              height: 8,
+              margin: EdgeInsets.symmetric(horizontal: 4),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: _current == 0 ? Palette.primary : Palette.greyLighter,
+              ),
+            ),
+            Container(
+              width: 8,
+              height: 8,
+              margin: EdgeInsets.symmetric(horizontal: 4),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: _current == 1 ? Palette.primary : Palette.greyLighter,
+              ),
+            ),
+            IconButton(
+              icon: Icon(Icons.arrow_forward_ios, color: Palette.greyDark),
+              onPressed: _current < 1
+                  ? () => _carouselController.animateToPage(_current + 1)
+                  : null,
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Center(
+          child: IconButton(
+            icon: Icon(Icons.share, color: Palette.primary),
+            onPressed: () => _captureAndShare(context),
+          ),
         ),
       ],
     );
@@ -1532,13 +1604,6 @@ class ShareableStats extends StatelessWidget {
           color: Palette.greyLighter,
           width: 1,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Palette.greyLightest,
-            offset: const Offset(0, 1),
-            blurRadius: 2,
-          ),
-        ],
       ),
       child: Padding(
         padding: const EdgeInsets.all(8.0),
