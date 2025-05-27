@@ -46,6 +46,7 @@
     "editAction": "Edit",
     "shareAction": "Share",
     "shareMatchStats": "Share Match Stats",
+    "shareMatchStatsText": "Check out the stats of my last match with Nutmeg! ⚽️ 🔥",
     "cancelMatchAction": "Cancel Match",
     "joinAction": "Join",
     "player": "Player",

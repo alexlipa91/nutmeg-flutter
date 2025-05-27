@@ -22,6 +22,7 @@
     "editAction": "Modificare",
     "shareAction": "Condividi",
     "shareMatchStats": "Condividi le statistiche della partita",
+    "shareMatchStatsText": "Dai un'occhiata alle statistiche della mia ultima partita con Nutmeg! ⚽️ 🔥",
     "cancelMatchAction": "Annulla partita",
     "joinAction": "Unisciti",
     "player": "Giocatore",

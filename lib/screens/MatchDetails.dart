@@ -1279,7 +1279,7 @@ class _ShareableStatsState extends State<ShareableStats> {
     final image = await boundary.toImage(pixelRatio: 2.0);
     final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
     final params = ShareParams(
-      text: 'Great picture',
+      text: AppLocalizations.of(context)!.shareMatchStatsText,
       files: [
         XFile.fromData(byteData!.buffer.asUint8List(), name: 'match_stats.png')
       ],
@@ -1287,91 +1287,9 @@ class _ShareableStatsState extends State<ShareableStats> {
 
     final result = await SharePlus.instance.share(params);
 
-    if (result.status == ShareResultStatus.success) {
-      print('Thank you for sharing the picture!');
-    } else {
+    if (result.status != ShareResultStatus.success) {
       print('Failed to share the picture');
       print(result.status);
-    }
-  }
-
-  Future<void> _captureAndShareOld(BuildContext context) async {
-    try {
-      // Use the key for the currently visible page
-      final key = _current == 0 ? _statsKey : _awardsKey;
-      RenderRepaintBoundary boundary =
-          key.currentContext!.findRenderObject() as RenderRepaintBoundary;
-      ui.Image image = await boundary.toImage(pixelRatio: 2.0);
-      ByteData? byteData =
-          await image.toByteData(format: ui.ImageByteFormat.png);
-      if (byteData != null) {
-        final bytes = byteData.buffer.asUint8List();
-
-        if (kIsWeb) {
-          // Check if Web Share API is available (mostly on mobile browsers)
-          if (js_util.hasProperty(html.window.navigator, 'canShare') &&
-              js_util.hasProperty(html.window.navigator, 'share')) {
-            print("Can share with web share api");
-            try {
-              final blob = html.Blob([bytes], 'image/png');
-              final url = html.Url.createObjectUrlFromBlob(blob);
-
-              await js_util.promiseToFuture(
-                js_util.callMethod(html.window.navigator, 'share', [
-                  js_util.jsify({
-                    'title': 'Match Stats',
-                    'text': 'Check out these match stats!',
-                    'files': [
-                      js_util.jsify({
-                        'type': 'image/png',
-                        'name': 'match_stats.png',
-                        'url': url
-                      })
-                    ]
-                  })
-                ]),
-              );
-
-              html.Url.revokeObjectUrl(url);
-            } catch (e, stackTrace) {
-              print("Error sharing with web share api: $e");
-              print("Stack trace: $stackTrace");
-              // If sharing fails, fall back to download
-              final blob = html.Blob([bytes]);
-              final url = html.Url.createObjectUrlFromBlob(blob);
-              final anchor = html.AnchorElement(href: url)
-                ..setAttribute('download', 'match_stats.png')
-                ..click();
-              html.Url.revokeObjectUrl(url);
-            }
-          } else {
-            print("Cannot share with web share api");
-            // Fallback for browsers without Web Share API
-            final blob = html.Blob([bytes]);
-            final url = html.Url.createObjectUrlFromBlob(blob);
-            final anchor = html.AnchorElement(href: url)
-              ..setAttribute('download', 'match_stats.png')
-              ..click();
-            html.Url.revokeObjectUrl(url);
-          }
-        } else {
-          print("On mobile, share the image");
-          // On mobile, share the image
-          await Share.shareXFiles(
-            [XFile.fromData(bytes, name: 'match_stats.png')],
-            text: 'Match Stats',
-          );
-        }
-      }
-    } catch (e) {
-      print('Error capturing image: $e');
-      // Show error to user
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to process image. Please try again.'),
-          backgroundColor: Palette.destructive,
-        ),
-      );
     }
   }
 
