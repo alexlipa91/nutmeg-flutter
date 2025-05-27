@@ -995,7 +995,6 @@ class Stats extends StatelessWidget {
       int index, UsersState userState, Ratings ratings) {
     var userDetails = userState.getUserDetail(e.key);
     double? rate = e.value;
-    print(rate);
     bool isPotm = (ratings.potms ?? []).contains(e.key);
 
     var widgets = [
@@ -1290,7 +1289,7 @@ class _ShareableStatsState extends State<ShareableStats> {
               js_util.hasProperty(html.window.navigator, 'share')) {
             print("Can share with web share api");
             try {
-              final blob = html.Blob([bytes]);
+              final blob = html.Blob([bytes], 'image/png');
               final url = html.Url.createObjectUrlFromBlob(blob);
 
               await js_util.promiseToFuture(
@@ -1298,7 +1297,11 @@ class _ShareableStatsState extends State<ShareableStats> {
                   js_util.jsify({
                     'title': 'Match Stats',
                     'text': 'Check out these match stats!',
-                    'url': url,
+                    'files': [js_util.jsify({
+                      'type': 'image/png',
+                      'name': 'match_stats.png',
+                      'url': url
+                    })]
                   })
                 ]),
               );
