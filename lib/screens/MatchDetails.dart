@@ -1271,6 +1271,7 @@ class _ShareableStatsState extends State<ShareableStats> {
   int _current = 0;
   final GlobalKey _statsKey = GlobalKey();
   final GlobalKey _awardsKey = GlobalKey();
+  // final GlobalKey _potmKey = GlobalKey();
 
   Future<void> _captureAndShare(BuildContext context) async {
     final key = _current == 0 ? _statsKey : _awardsKey;
@@ -1309,37 +1310,31 @@ class _ShareableStatsState extends State<ShareableStats> {
     return RepaintBoundary(
       key: _statsKey,
       child: Container(
-        width: 400,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(24),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
+        height: 400,
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.max,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Center(
+              child: Text(
                 "$formattedDate - " +
                     (widget.match.sportCenter?.getName() ?? ''),
                 style: TextPalette.h2,
               ),
-              const SizedBox(height: 24),
-              ...topPlayers.map((e) {
-                return Stats.userRow(context, e, topPlayers.indexOf(e) + 1,
-                    userState, widget.ratings);
-              }).toList(),
-              const SizedBox(height: 24),
-              Center(
-                child: Image.asset(
-                  "assets/nutmeg_white.png",
-                  height: 24,
-                  color: Palette.primary,
-                ),
-              ),
-            ],
-          ),
+            ),
+            const SizedBox(height: 24),
+            ...topPlayers.map((e) {
+              return Stats.userRow(context, e, topPlayers.indexOf(e) + 1,
+                  userState, widget.ratings);
+            }).toList(),
+            Spacer(),
+            Image.asset(
+              "assets/nutmeg_white.png",
+              height: 24,
+              color: Palette.primary,
+            ),
+          ],
         ),
       ),
     );
@@ -1362,8 +1357,8 @@ class _ShareableStatsState extends State<ShareableStats> {
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.max,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(
                 "$formattedDate - " +
@@ -1406,7 +1401,7 @@ class _ShareableStatsState extends State<ShareableStats> {
                   );
                 },
               ),
-              const SizedBox(height: 24),
+              Spacer(),
               Center(
                 child: Image.asset(
                   "assets/nutmeg_white.png",
@@ -1420,6 +1415,81 @@ class _ShareableStatsState extends State<ShareableStats> {
       ),
     );
   }
+
+  // Widget _buildPotmPage(BuildContext context) {
+  //   var userState = context.watch<UsersState>();
+  //   var dateFormat = DateFormat(
+  //       "EEEE, MMM dd yyyy", getLanguageLocaleWatch(context).languageCode);
+  //   var formattedDate = dateFormat.format(widget.match.getLocalizedTime());
+
+  //   return RepaintBoundary(
+  //     key: _potmKey,
+  //     child: Container(
+  //       width: 400,
+  //       height: 400,
+  //       decoration: BoxDecoration(
+  //         color: Colors.white,
+  //         borderRadius: BorderRadius.circular(24),
+  //       ),
+  //       child: Padding(
+  //         padding: const EdgeInsets.all(16),
+  //         child: Column(
+  //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //           children: [
+  //             Text(
+  //               "$formattedDate - " +
+  //                   (widget.match.sportCenter?.getName() ?? ''),
+  //               style: TextPalette.h2,
+  //             ),
+  //             const SizedBox(height: 24),
+  //             LayoutBuilder(
+  //               builder: (context, constraints) {
+  //                 return Column(
+  //                   children: [
+  //                     for (var i = 0; i < awards.length; i += 2)
+  //                       Padding(
+  //                         padding: const EdgeInsets.only(bottom: 8),
+  //                         child: Row(
+  //                           children: [
+  //                             Expanded(
+  //                               child: _buildAwardBox(
+  //                                 context,
+  //                                 awards[i],
+  //                                 userState,
+  //                                 widget.ratings,
+  //                               ),
+  //                             ),
+  //                             if (i + 1 < awards.length) ...[
+  //                               const SizedBox(width: 8),
+  //                               Expanded(
+  //                                 child: _buildAwardBox(
+  //                                   context,
+  //                                   awards[i + 1],
+  //                                   userState,
+  //                                   widget.ratings,
+  //                                 ),
+  //                               ),
+  //                             ],
+  //                           ],
+  //                         ),
+  //                       ),
+  //                   ],
+  //                 );
+  //               },
+  //             ),
+  //             Center(
+  //               child: Image.asset(
+  //                 "assets/nutmeg_white.png",
+  //                 height: 24,
+  //                 color: Palette.primary,
+  //               ),
+  //             ),
+  //           ],
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -1462,6 +1532,7 @@ class _ShareableStatsState extends State<ShareableStats> {
             items: [
               _buildStatsPage(context),
               _buildAwardsPage(context),
+              // _buildPotmPage(context),
             ],
           ),
         ),
@@ -1493,9 +1564,18 @@ class _ShareableStatsState extends State<ShareableStats> {
                 color: _current == 1 ? Palette.primary : Palette.greyLighter,
               ),
             ),
+            Container(
+              width: 8,
+              height: 8,
+              margin: EdgeInsets.symmetric(horizontal: 4),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: _current == 2 ? Palette.primary : Palette.greyLighter,
+              ),
+            ),
             IconButton(
               icon: Icon(Icons.arrow_forward_ios, color: Palette.greyDark),
-              onPressed: _current < 1
+              onPressed: _current < 2
                   ? () => _carouselController.animateToPage(_current + 1)
                   : null,
             ),
