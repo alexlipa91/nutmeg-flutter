@@ -1288,6 +1288,7 @@ class _ShareableStatsState extends State<ShareableStats> {
           // Check if Web Share API is available (mostly on mobile browsers)
           if (js_util.hasProperty(html.window.navigator, 'canShare') &&
               js_util.hasProperty(html.window.navigator, 'share')) {
+            print("Can share with web share api");
             try {
               final blob = html.Blob([bytes]);
               final url = html.Url.createObjectUrlFromBlob(blob);
@@ -1300,6 +1301,7 @@ class _ShareableStatsState extends State<ShareableStats> {
 
               html.Url.revokeObjectUrl(url);
             } catch (e) {
+              print("Error sharing with web share api: $e");
               // If sharing fails, fall back to download
               final blob = html.Blob([bytes]);
               final url = html.Url.createObjectUrlFromBlob(blob);
@@ -1309,6 +1311,7 @@ class _ShareableStatsState extends State<ShareableStats> {
               html.Url.revokeObjectUrl(url);
             }
           } else {
+            print("Cannot share with web share api");
             // Fallback for browsers without Web Share API
             final blob = html.Blob([bytes]);
             final url = html.Url.createObjectUrlFromBlob(blob);
@@ -1318,6 +1321,7 @@ class _ShareableStatsState extends State<ShareableStats> {
             html.Url.revokeObjectUrl(url);
           }
         } else {
+          print("On mobile, share the image");
           // On mobile, share the image
           await Share.shareXFiles(
             [XFile.fromData(bytes, name: 'match_stats.png')],
