@@ -1293,11 +1293,15 @@ class _ShareableStatsState extends State<ShareableStats> {
               final blob = html.Blob([bytes]);
               final url = html.Url.createObjectUrlFromBlob(blob);
 
-              await html.window.navigator.share({
-                'title': 'Match Stats',
-                'text': 'Check out these match stats!',
-                'url': url,
-              });
+              await js_util.promiseToFuture(
+                js_util.callMethod(html.window.navigator, 'share', [
+                  js_util.jsify({
+                    'title': 'Match Stats',
+                    'text': 'Check out these match stats!',
+                    'url': url,
+                  })
+                ]),
+              );
 
               html.Url.revokeObjectUrl(url);
             } catch (e) {
