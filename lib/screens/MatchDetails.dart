@@ -39,7 +39,6 @@ import 'package:readmore/readmore.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:share_plus/share_plus.dart';
 
 import '../state/MatchesState.dart';
 import '../state/UserState.dart';
@@ -54,6 +53,7 @@ import '../widgets/Skeletons.dart';
 import '../widgets/TeamsWidget.dart';
 import 'BottomBarMatch.dart';
 import 'PaymentDetailsDescription.dart';
+import 'package:nutmeg/screens/Launch.dart';
 
 final logger = CrashlyticsLogger('MatchDetails');
 
@@ -1271,26 +1271,41 @@ class _ShareableStatsState extends State<ShareableStats> {
   int _current = 0;
   final GlobalKey _statsKey = GlobalKey();
   final GlobalKey _awardsKey = GlobalKey();
-  // final GlobalKey _potmKey = GlobalKey();
+  final GlobalKey _potmKey = GlobalKey();
 
   Future<void> _captureAndShare(BuildContext context) async {
-    final key = _current == 0 ? _statsKey : _awardsKey;
-    final boundary =
-        key.currentContext!.findRenderObject() as RenderRepaintBoundary;
-    final image = await boundary.toImage(pixelRatio: 2.0);
-    final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-    final params = ShareParams(
-      text: AppLocalizations.of(context)!.shareMatchStatsText,
-      files: [
-        XFile.fromData(byteData!.buffer.asUint8List(), name: 'match_stats.png')
-      ],
-    );
+    try {
+      final key = _current == 0 ? _statsKey : (_current == 1 ? _awardsKey : _potmKey);
+      final boundary = key.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+      
+      if (boundary == null) {
+        print('Failed to find render boundary');
+        return;
+      }
 
-    final result = await SharePlus.instance.share(params);
+      final image = await boundary.toImage(pixelRatio: 2.0);
+      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      
+      if (byteData == null) {
+        print('Failed to convert image to byte data');
+        return;
+      }
 
-    if (result.status != ShareResultStatus.success) {
-      print('Failed to share the picture');
-      print(result.status);
+      final params = ShareParams(
+        text: AppLocalizations.of(context)!.shareMatchStatsText,
+        files: [
+          XFile.fromData(byteData.buffer.asUint8List(), name: 'match_stats.png')
+        ],
+      );
+
+      final result = await SharePlus.instance.share(params);
+
+      if (result.status != ShareResultStatus.success) {
+        print('Failed to share the picture');
+        print(result.status);
+      }
+    } catch (e) {
+      print('Error sharing image: $e');
     }
   }
 
@@ -1416,80 +1431,84 @@ class _ShareableStatsState extends State<ShareableStats> {
     );
   }
 
-  // Widget _buildPotmPage(BuildContext context) {
-  //   var userState = context.watch<UsersState>();
-  //   var dateFormat = DateFormat(
-  //       "EEEE, MMM dd yyyy", getLanguageLocaleWatch(context).languageCode);
-  //   var formattedDate = dateFormat.format(widget.match.getLocalizedTime());
+  Widget _buildPotmPage(BuildContext context) {
+    var userState = context.watch<UsersState>();
+    var dateFormat = DateFormat(
+        "EEEE, MMM dd yyyy", getLanguageLocaleWatch(context).languageCode);
+    var formattedDate = dateFormat.format(widget.match.getLocalizedTime());
 
-  //   return RepaintBoundary(
-  //     key: _potmKey,
-  //     child: Container(
-  //       width: 400,
-  //       height: 400,
-  //       decoration: BoxDecoration(
-  //         color: Colors.white,
-  //         borderRadius: BorderRadius.circular(24),
-  //       ),
-  //       child: Padding(
-  //         padding: const EdgeInsets.all(16),
-  //         child: Column(
-  //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //           children: [
-  //             Text(
-  //               "$formattedDate - " +
-  //                   (widget.match.sportCenter?.getName() ?? ''),
-  //               style: TextPalette.h2,
-  //             ),
-  //             const SizedBox(height: 24),
-  //             LayoutBuilder(
-  //               builder: (context, constraints) {
-  //                 return Column(
-  //                   children: [
-  //                     for (var i = 0; i < awards.length; i += 2)
-  //                       Padding(
-  //                         padding: const EdgeInsets.only(bottom: 8),
-  //                         child: Row(
-  //                           children: [
-  //                             Expanded(
-  //                               child: _buildAwardBox(
-  //                                 context,
-  //                                 awards[i],
-  //                                 userState,
-  //                                 widget.ratings,
-  //                               ),
-  //                             ),
-  //                             if (i + 1 < awards.length) ...[
-  //                               const SizedBox(width: 8),
-  //                               Expanded(
-  //                                 child: _buildAwardBox(
-  //                                   context,
-  //                                   awards[i + 1],
-  //                                   userState,
-  //                                   widget.ratings,
-  //                                 ),
-  //                               ),
-  //                             ],
-  //                           ],
-  //                         ),
-  //                       ),
-  //                   ],
-  //                 );
-  //               },
-  //             ),
-  //             Center(
-  //               child: Image.asset(
-  //                 "assets/nutmeg_white.png",
-  //                 height: 24,
-  //                 color: Palette.primary,
-  //               ),
-  //             ),
-  //           ],
-  //         ),
-  //       ),
-  //     ),
-  //   );
-  // }
+    return RepaintBoundary(
+      key: _potmKey,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Palette.primary,
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.max,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                "$formattedDate - " +
+                    (widget.match.sportCenter?.getName() ?? ''),
+                style: TextPalette.getH2(Palette.white),
+              ),
+              const SizedBox(height: 24),
+              if (widget.ratings.potms != null && widget.ratings.potms!.isNotEmpty)
+                ...widget.ratings.potms!.map((potmId) {
+                  final user = userState.getUserDetail(potmId);
+                  return Column(
+                    children: [
+                      UserAvatar(48, user),
+                      const SizedBox(height: 24),
+                      Text(
+                        "Player of the Match",
+                        textAlign: TextAlign.center,
+                        style: TextPalette.h1Inverted,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        "Congratulations ${user?.name}!",
+                        textAlign: TextAlign.center,
+                        style: TextPalette.getBodyText(Palette.white),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        "You won the Player of the Match award",
+                        textAlign: TextAlign.center,
+                        style: TextPalette.getBodyText(Palette.white),
+                      ),
+                      const SizedBox(height: 24),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image.asset(
+                            'assets/potm_badge.png',
+                            height: 40,
+                          ),
+                          const SizedBox(width: 8),
+                          Text("+1", style: TextPalette.getH2(Palette.white))
+                        ],
+                      ),
+                    ],
+                  );
+                }).toList(),
+              const Spacer(),
+              Center(
+                child: Image.asset(
+                  "assets/nutmeg_white.png",
+                  height: 24,
+                  color: Palette.white,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1532,7 +1551,8 @@ class _ShareableStatsState extends State<ShareableStats> {
             items: [
               _buildStatsPage(context),
               _buildAwardsPage(context),
-              // _buildPotmPage(context),
+              if (widget.ratings.potms != null && widget.ratings.potms!.isNotEmpty)
+                _buildPotmPage(context),
             ],
           ),
         ),
@@ -1644,20 +1664,19 @@ class _ShareableStatsState extends State<ShareableStats> {
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
           children: [
+            UserAvatar(28, winner),
+            const SizedBox(height: 16),
             Text(
               award['name'](context),
               style: TextPalette.h3,
               textAlign: TextAlign.center,
-              maxLines: 2,
+              maxLines: 1,
               overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 16),
-            UserAvatar(16, winner),
-            const SizedBox(height: 4),
+            ),            
+            const SizedBox(height: 2),
             Text(
-              winner?.name ?? "Unknown",
+              winner?.getShortName() ?? "Unknown",
               style: TextPalette.bodyText,
               textAlign: TextAlign.center,
               maxLines: 1,

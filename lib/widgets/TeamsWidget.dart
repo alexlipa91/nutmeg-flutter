@@ -186,6 +186,7 @@ class TeamsWidgetState extends State<TeamsWidget> {
   Widget build(BuildContext context) {
     var state = context.watch<MatchState>();
     var match = state.match;
+    var usersState = context.watch<UsersState>();
 
     var teams = manualSplit ? manualTeams : match?.computedTeams;
 
@@ -252,11 +253,7 @@ class TeamsWidgetState extends State<TeamsWidget> {
                   Text(
                     teams![0]
                         .map((u) =>
-                            context
-                                .watch<UserState>()
-                                .getLoggedUserDetails()
-                                ?.averageScore ??
-                            3)
+                            usersState.getUserDetail(u)?.averageScore ?? 3)
                         .fold<double>(0, (a, b) => a + b)
                         .toStringAsFixed(2),
                     style: TextPalette.bodyText,
@@ -269,11 +266,7 @@ class TeamsWidgetState extends State<TeamsWidget> {
                   Text(
                     teams[1]
                         .map((u) =>
-                            context
-                                .watch<UserState>()
-                                .getLoggedUserDetails()
-                                ?.averageScore ??
-                            3)
+                            usersState.getUserDetail(u)?.averageScore ?? 3)
                         .fold<double>(0, (a, b) => a + b)
                         .toStringAsFixed(2),
                     style: TextPalette.bodyText,
@@ -315,7 +308,9 @@ class TeamsWidgetState extends State<TeamsWidget> {
                             )),
                         Spacer(),
                         GenericButtonWithLoader(
-                          isEditing ? AppLocalizations.of(context)!.doneButtonText : AppLocalizations.of(context)!.modifyButtonText,
+                          isEditing
+                              ? AppLocalizations.of(context)!.doneButtonText
+                              : AppLocalizations.of(context)!.modifyButtonText,
                           (BuildContext context) {
                             setState(() {
                               isEditing = !isEditing;
@@ -407,6 +402,8 @@ class EditScoreWidgetState extends State<EditScoreWidget> {
 
   @override
   Widget build(BuildContext context) {
+    var state = context.watch<MatchState>();
+
     return Form(
       key: _scoreFormKey,
       child: Column(
@@ -477,8 +474,7 @@ class EditScoreWidgetState extends State<EditScoreWidget> {
                     )
                   ],
                 ),
-              if (isSubmitMode &&
-                  context.watch<MatchState>().match?.score != null)
+              if (isSubmitMode && state?.match?.score != null)
                 Row(
                   children: [
                     Expanded(

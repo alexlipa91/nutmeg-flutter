@@ -107,6 +107,8 @@ class UserDetails {
 
   bool getIsAdmin() => (isAdmin == null) ? false : isAdmin!;
 
+  String? getShortName() => name?.split(' ').first;
+
   bool isOrganiser(isTest) {
     if (isTest)
       return this.createdTestMatches != null &&
