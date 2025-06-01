@@ -9,8 +9,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../screens/CreateMatch.dart';
 import '../screens/MatchDetails.dart';
 import '../state/MatchesState.dart';
-import '../state/UserState.dart';
-import '../utils/UiUtils.dart';
+import '../utils/UiUtils.dart'; 
 import '../utils/Utils.dart';
 import 'Avatar.dart';
 import 'ButtonsWithLoader.dart';
@@ -20,8 +19,9 @@ import 'PlayerBottomModal.dart';
 
 class TeamsWidget extends StatefulWidget {
   final String matchId;
+  final bool shareableVersion;
 
-  const TeamsWidget({Key? key, required this.matchId}) : super(key: key);
+  const TeamsWidget({Key? key, required this.matchId, this.shareableVersion = false}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => TeamsWidgetState();
@@ -243,7 +243,7 @@ class TeamsWidgetState extends State<TeamsWidget> {
               ],
             ),
           ),
-          if (isOrganizerView)
+          if (isOrganizerView && !widget.shareableVersion)
             Padding(
               padding: EdgeInsets.only(top: 24),
               child: Row(

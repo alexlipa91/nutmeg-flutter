@@ -1189,10 +1189,13 @@ class Stats extends StatelessWidget {
           ? () {
               ModalBottomSheet.showNutmegModalBottomSheet(
                 context,
-                ShareableStats(
-                  match: match,
-                  ratings: ratings!,
-                  userState: context.read<UserState>(),
+                ChangeNotifierProvider.value(
+                  value: context.read<MatchState>(),
+                  child: ShareableStats(
+                    match: match,
+                    ratings: ratings!,
+                    userState: context.read<UserState>(),
+                  ),
                 ),
               );
             }
@@ -1272,10 +1275,11 @@ class _ShareableStatsState extends State<ShareableStats> {
   final GlobalKey _statsKey = GlobalKey();
   final GlobalKey _awardsKey = GlobalKey();
   final GlobalKey _potmKey = GlobalKey();
+  final GlobalKey _teamsKey = GlobalKey();
 
   Future<void> _captureAndShare(BuildContext context) async {
     try {
-      final key = _current == 0 ? _statsKey : (_current == 1 ? _awardsKey : _potmKey);
+      final key = _current == 0 ? _statsKey : (_current == 1 ? _teamsKey : (_current == 2 ? _potmKey : _awardsKey));
       final boundary = key.currentContext?.findRenderObject() as RenderRepaintBoundary?;
       
       if (boundary == null) {
@@ -1307,6 +1311,119 @@ class _ShareableStatsState extends State<ShareableStats> {
     } catch (e) {
       print('Error sharing image: $e');
     }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 16.0, bottom: 16.0),
+          child: Text(
+            AppLocalizations.of(context)!.shareMatchStats,
+            style: TextPalette.h2,
+          ),
+        ),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                blurRadius: 10,
+                offset: Offset(0, 2),
+              ),
+            ],
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: CarouselSlider(
+            carouselController: _carouselController,
+            options: CarouselOptions(
+              height: 400,
+              viewportFraction: 1.0,
+              enableInfiniteScroll: false,
+              onPageChanged: (index, reason) {
+                setState(() {
+                  _current = index;
+                });
+              },
+            ),
+            items: [
+              _buildStatsPage(context),
+              if (widget.match.going.length > 1 && widget.match.hasTeams())
+                _buildTeamsPage(context),
+              if (widget.ratings.potms != null && widget.ratings.potms!.isNotEmpty)
+                _buildPotmPage(context),
+              _buildAwardsPage(context),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            IconButton(
+              icon: Icon(Icons.arrow_back_ios, color: Palette.greyDark),
+              onPressed: _current > 0
+                  ? () => _carouselController.animateToPage(_current - 1)
+                  : null,
+            ),
+            Container(
+              width: 8,
+              height: 8,
+              margin: EdgeInsets.symmetric(horizontal: 4),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: _current == 0 ? Palette.primary : Palette.greyLighter,
+              ),
+            ),
+            Container(
+              width: 8,
+              height: 8,
+              margin: EdgeInsets.symmetric(horizontal: 4),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: _current == 1 ? Palette.primary : Palette.greyLighter,
+              ),
+            ),
+            Container(
+              width: 8,
+              height: 8,
+              margin: EdgeInsets.symmetric(horizontal: 4),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: _current == 2 ? Palette.primary : Palette.greyLighter,
+              ),
+            ),
+            Container(
+              width: 8,
+              height: 8,
+              margin: EdgeInsets.symmetric(horizontal: 4),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: _current == 3 ? Palette.primary : Palette.greyLighter,
+              ),
+            ),
+            IconButton(
+              icon: Icon(Icons.arrow_forward_ios, color: Palette.greyDark),
+              onPressed: _current < 3
+                  ? () => _carouselController.animateToPage(_current + 1)
+                  : null,
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Center(
+          child: IconButton(
+            icon: Icon(Icons.share, color: Palette.primary),
+            onPressed: () => _captureAndShare(context),
+          ),
+        ),
+      ],
+    );
   }
 
   Widget _buildStatsPage(BuildContext context) {
@@ -1510,105 +1627,46 @@ class _ShareableStatsState extends State<ShareableStats> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 16.0, bottom: 16.0),
-          child: Text(
-            AppLocalizations.of(context)!.shareMatchStats,
-            style: TextPalette.h2,
-          ),
+  Widget _buildTeamsPage(BuildContext context) {
+    var dateFormat = DateFormat(
+        "EEEE, MMM dd yyyy", getLanguageLocaleWatch(context).languageCode);
+    var formattedDate = dateFormat.format(widget.match.getLocalizedTime());
+
+    return RepaintBoundary(
+      key: _teamsKey,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
         ),
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(24),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.2),
-                blurRadius: 10,
-                offset: Offset(0, 2),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.max,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                "$formattedDate - " +
+                    (widget.match.sportCenter?.getName() ?? ''),
+                style: TextPalette.h2,
+              ),
+              // const SizedBox(height: 12),
+              ChangeNotifierProvider.value(
+                value: context.read<MatchState>(),
+                child: TeamsWidget(matchId: widget.match.documentId, shareableVersion: true),
+              ),
+              const Spacer(),
+              Center(
+                child: Image.asset(
+                  "assets/nutmeg_white.png",
+                  height: 18,
+                  color: Palette.primary,
+                ),
               ),
             ],
           ),
-          clipBehavior: Clip.antiAlias,
-          child: CarouselSlider(
-            carouselController: _carouselController,
-            options: CarouselOptions(
-              height: 400,
-              viewportFraction: 1.0,
-              enableInfiniteScroll: false,
-              onPageChanged: (index, reason) {
-                setState(() {
-                  _current = index;
-                });
-              },
-            ),
-            items: [
-              _buildStatsPage(context),
-              _buildAwardsPage(context),
-              if (widget.ratings.potms != null && widget.ratings.potms!.isNotEmpty)
-                _buildPotmPage(context),
-            ],
-          ),
         ),
-        const SizedBox(height: 16),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            IconButton(
-              icon: Icon(Icons.arrow_back_ios, color: Palette.greyDark),
-              onPressed: _current > 0
-                  ? () => _carouselController.animateToPage(_current - 1)
-                  : null,
-            ),
-            Container(
-              width: 8,
-              height: 8,
-              margin: EdgeInsets.symmetric(horizontal: 4),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: _current == 0 ? Palette.primary : Palette.greyLighter,
-              ),
-            ),
-            Container(
-              width: 8,
-              height: 8,
-              margin: EdgeInsets.symmetric(horizontal: 4),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: _current == 1 ? Palette.primary : Palette.greyLighter,
-              ),
-            ),
-            Container(
-              width: 8,
-              height: 8,
-              margin: EdgeInsets.symmetric(horizontal: 4),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: _current == 2 ? Palette.primary : Palette.greyLighter,
-              ),
-            ),
-            IconButton(
-              icon: Icon(Icons.arrow_forward_ios, color: Palette.greyDark),
-              onPressed: _current < 2
-                  ? () => _carouselController.animateToPage(_current + 1)
-                  : null,
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        Center(
-          child: IconButton(
-            icon: Icon(Icons.share, color: Palette.primary),
-            onPressed: () => _captureAndShare(context),
-          ),
-        ),
-      ],
+      ),
     );
   }
 
