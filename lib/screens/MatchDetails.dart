@@ -1443,6 +1443,10 @@ class _ShareableStatsState extends State<ShareableStats> {
       key: _statsKey,
       child: Container(
         height: 400,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+        ),
         padding: const EdgeInsets.all(16),
         child: Column(
           mainAxisSize: MainAxisSize.max,
