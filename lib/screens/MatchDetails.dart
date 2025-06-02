@@ -1315,6 +1315,12 @@ class _ShareableStatsState extends State<ShareableStats> {
 
   @override
   Widget build(BuildContext context) {
+    // Calculate the total number of pages
+    int totalPages = 1; // Stats page is always present
+    if (widget.match.going.length > 1 && widget.match.hasTeams()) totalPages++;
+    if (widget.ratings.potms != null && widget.ratings.potms!.isNotEmpty) totalPages++;
+    totalPages++; // Awards page is always present
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1380,36 +1386,38 @@ class _ShareableStatsState extends State<ShareableStats> {
                 color: _current == 0 ? Palette.primary : Palette.greyLighter,
               ),
             ),
-            Container(
-              width: 8,
-              height: 8,
-              margin: EdgeInsets.symmetric(horizontal: 4),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: _current == 1 ? Palette.primary : Palette.greyLighter,
+            if (widget.match.going.length > 1 && widget.match.hasTeams())
+              Container(
+                width: 8,
+                height: 8,
+                margin: EdgeInsets.symmetric(horizontal: 4),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: _current == 1 ? Palette.primary : Palette.greyLighter,
+                ),
               ),
-            ),
-            Container(
-              width: 8,
-              height: 8,
-              margin: EdgeInsets.symmetric(horizontal: 4),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: _current == 2 ? Palette.primary : Palette.greyLighter,
+            if (widget.ratings.potms != null && widget.ratings.potms!.isNotEmpty)
+              Container(
+                width: 8,
+                height: 8,
+                margin: EdgeInsets.symmetric(horizontal: 4),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: _current == 2 ? Palette.primary : Palette.greyLighter,
+                ),
               ),
-            ),
             Container(
               width: 8,
               height: 8,
               margin: EdgeInsets.symmetric(horizontal: 4),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: _current == 3 ? Palette.primary : Palette.greyLighter,
+                color: _current == totalPages - 1 ? Palette.primary : Palette.greyLighter,
               ),
             ),
             IconButton(
               icon: Icon(Icons.arrow_forward_ios, color: Palette.greyDark),
-              onPressed: _current < 3
+              onPressed: _current < totalPages - 1
                   ? () => _carouselController.animateToPage(_current + 1)
                   : null,
             ),
