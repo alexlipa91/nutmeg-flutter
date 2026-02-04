@@ -93,6 +93,14 @@
     "joinThisMatchTitle": "Join this match",
     "joinMatchInfo": "If you leave the match you will get a refund",
     "leaveThisMatchTitle": "Leave this match?",
+    "removePlayerTitle": "Remove player?",
+    "removePlayerSubtitle": "This will remove {name} from the match.",
+    "@removePlayerSubtitle": {
+        "placeholders": {
+            "name": { "type": "String" }
+        }
+    },
+    "removePlayerRefundInfo": "If the player paid, a refund will be issued.",
     "leaveMatchRefundTitle": "Refund",
     "leaveMatchCreditsRefundTitle": "Credits Refund",
     "leaveMatchInfo": "We will refund you on the payment method you used to pay.",

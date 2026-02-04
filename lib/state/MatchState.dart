@@ -1,4 +1,5 @@
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
+import 'package:nutmeg/config/app_config.dart';
 import 'package:nutmeg/model/Match.dart';
 import 'package:flutter/material.dart';
 import 'package:nutmeg/state/UserState.dart';
@@ -33,9 +34,13 @@ class MatchState extends ChangeNotifier {
   bool isLoggedUserGoing() =>
       _match?.isUserGoing(_userState?.getLoggedUserDetails()) ?? false;
 
-  bool isLoggedUserOrganizer() =>
-      _match?.organizerId != null &&
-      _match?.organizerId == _userState?.getLoggedUserId();
+  bool isLoggedUserOrganizer() {
+    if (AppConfig.testModeOrganizer) {
+      return _match != null;
+    }
+    return _match?.organizerId != null &&
+        _match?.organizerId == _userState?.getLoggedUserId();
+  }
 
   Future<void> addLoggedInUserToMatch() async {
     await CloudFunctionsClient().post("matches/$_matchId/users/add", {
@@ -47,6 +52,13 @@ class MatchState extends ChangeNotifier {
 
   Future<void> removeLoggedInUserFromMatch() async {
     await CloudFunctionsClient().post("matches/$_matchId/users/remove", {});
+    await fetchMatch();
+  }
+
+  Future<void> removeUserFromMatch(String userId) async {
+    await CloudFunctionsClient().post("matches/$_matchId/users/remove_other", {
+      "user_id": userId,
+    });
     await fetchMatch();
   }
 

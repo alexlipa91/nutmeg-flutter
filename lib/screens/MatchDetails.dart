@@ -422,12 +422,19 @@ class PlayerList extends StatelessWidget {
     List<Widget> widgets = [];
 
     var space = (min(475, MediaQuery.of(context).size.width) - 300) / 4.5;
+    var canRemovePlayers = context.watch<MatchState>().isLoggedUserOrganizer() &&
+        match.status != MatchStatus.cancelled &&
+        !match.isMatchFinished();
 
     List<Widget> cards = [];
     if (withJoinButton) {
       cards.add(EmptyPlayerCard(matchId: match.documentId));
     }
-    match.getGoingUsersByTime().forEach((s) => cards.add(PlayerCard(s)));
+    match.getGoingUsersByTime().forEach((s) => cards.add(PlayerCard(
+          s,
+          matchId: match.documentId,
+          showRemove: canRemovePlayers && match.organizerId != s,
+        )));
 
     widgets.add(SizedBox(width: 16));
     widgets.addAll(interleave(cards, SizedBox(width: space)));
@@ -524,9 +531,9 @@ class MatchInfo extends StatelessWidget {
 
     var matchWidget = getStatusWidget(context, match);
     var loggedUser = context.watch<UserState>().getLoggedUserDetails();
-    var isOrganizerView = match.organizerId != null &&
-        loggedUser != null &&
-        match.organizerId == loggedUser.documentId;
+    // Use MatchState's organizer check (which includes test mode override)
+    var matchState = context.watch<MatchState>();
+    var isOrganizerView = matchState.isLoggedUserOrganizer();
 
     child = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -817,15 +824,87 @@ class PlayerCard extends StatelessWidget {
   static var width = 80.0;
 
   final String userId;
+  final String? matchId;
+  final bool showRemove;
 
-  PlayerCard(this.userId);
+  PlayerCard(this.userId, {this.matchId, this.showRemove = false});
 
   @override
   Widget build(BuildContext context) {
     var userData = context.watch<UsersState>().getUserDetail(userId);
 
     return Column(children: [
-      UserAvatarWithBottomModal(userData: userData, radius: 30),
+      Padding(
+        padding: EdgeInsets.only(top: showRemove ? 6 : 0, right: showRemove ? 6 : 0),
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            UserAvatarWithBottomModal(userData: userData, radius: 30),
+            if (showRemove)
+              Positioned(
+                right: -6,
+                top: -6,
+                child: InkWell(
+                onTap: () async {
+                  if (matchId == null) return;
+
+                  var name =
+                      (userData?.name ?? "Player").split(" ").first.trim();
+                  if (name.isEmpty) name = "Player";
+
+                  var match = context.read<MatchState>().match;
+                  var refundInfo = (match?.price != null)
+                      ? ("\n\n" +
+                          AppLocalizations.of(context)!.removePlayerRefundInfo)
+                      : "";
+
+                  await GenericInfoModal(
+                    title: AppLocalizations.of(context)!.removePlayerTitle,
+                    description: AppLocalizations.of(context)!
+                            .removePlayerSubtitle(name) +
+                        refundInfo,
+                    action: Row(
+                      children: [
+                        Expanded(
+                          child: GenericButtonWithLoaderAndErrorHandling(
+                            AppLocalizations.of(context)!.confirmButtonText,
+                            (_) async {
+                              await context
+                                  .read<MatchState>()
+                                  .removeUserFromMatch(userId);
+                              Navigator.of(context).pop(true);
+                            },
+                            Destructive(),
+                          ),
+                        )
+                      ],
+                    ),
+                  ).show(context);
+                },
+                child: Container(
+                  padding: EdgeInsets.all(2),
+                  decoration: BoxDecoration(
+                    color: Palette.white,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        blurRadius: 6,
+                        color: Colors.black.withOpacity(0.15),
+                        offset: Offset(0, 2),
+                      )
+                    ],
+                  ),
+                  child: Icon(
+                    Icons.remove_circle,
+                    color: Palette.destructive,
+                    size: 20,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
       SizedBox(height: 10),
       (userData == null)
           ? Skeletons.sText
