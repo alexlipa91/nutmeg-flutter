@@ -45,6 +45,7 @@
     "organizedBy": "Organized By",
     "editAction": "Edit",
     "shareAction": "Share",
+    "linkCopiedToClipboard": "Link copied to clipboard",
     "shareMatchStats": "Share Match Stats",
     "shareMatchStatsText": "Check out the stats of my last match with Nutmeg! ⚽️ 🔥",
     "cancelMatchAction": "Cancel Match",

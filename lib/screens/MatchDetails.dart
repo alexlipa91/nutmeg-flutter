@@ -9,6 +9,7 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
@@ -50,6 +51,7 @@ import '../widgets/ModalBottomSheet.dart';
 import '../widgets/PlayerBottomModal.dart';
 import '../widgets/Skeletons.dart';
 
+import '../utils/web_url.dart';
 import '../widgets/TeamsWidget.dart';
 import 'BottomBarMatch.dart';
 import 'PaymentDetailsDescription.dart';
@@ -187,13 +189,35 @@ class MatchDetailsImplState extends State<MatchDetailsImpl> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             BackButton(color: Palette.black),
-            if ((DeviceInfo().name?.contains("ipad") ?? false) && !kIsWeb)
-              if (match != null)
-                Align(
-                    alignment: Alignment.centerRight,
-                    child: buttons.ShareButton(() async {
-                      await DynamicLinks.shareMatchFunction(context, match);
-                    }, Palette.black, 25.0)),
+            if (match != null)
+              Align(
+                alignment: Alignment.centerRight,
+                child: buttons.ShareButton(() async {
+                  if (kIsWeb) {
+                    final baseUrl = getWebBaseUrl();
+                    final url = '$baseUrl/match/${match.documentId}';
+                    await Clipboard.setData(ClipboardData(text: url));
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            AppLocalizations.of(context)!.linkCopiedToClipboard,
+                            style: TextStyle(color: Palette.greyDark),
+                          ),
+                          backgroundColor: Palette.white.withOpacity(0.92),
+                          behavior: SnackBarBehavior.floating,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                    }
+                  } else {
+                    await DynamicLinks.shareMatchFunction(context, match);
+                  }
+                }, Palette.black, 25.0),
+              ),
           ],
         ),
         bottomNavigationBar: bottomBar,
