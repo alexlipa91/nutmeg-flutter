@@ -8,6 +8,10 @@ if [ -z "$DEVICE" ]; then
     DEVICE="web-server"
 fi
 
+# Set default server mode if not specified (local or remote)
+if [ -z "$SERVER_MODE" ]; then
+    SERVER_MODE="remote"
+fi
 
 # If an argument is provided, use it as the env file
 if [ $# -eq 1 ]; then
@@ -31,9 +35,19 @@ elif [ "$DEVICE" == "android" ]; then
     PARAMETRICS_ARGS="-d emulator-5554"
 fi
 
+# Set backend URL based on server mode
+BACKEND_URL_ARG=""
+if [ "$SERVER_MODE" == "local" ]; then
+    BACKEND_URL_ARG="--dart-define=BACKEND_URL=http://localhost:8080"
+    echo "Using local backend: http://localhost:8080"
+else
+    echo "Using remote backend (from env file or default)"
+fi
+
 fvm flutter run \
     $PARAMETRICS_ARGS \
     --web-port=7357 \
     --dart-define-from-file="$ENV_FILE" \
     --dart-define=COMMIT_SHA=$(git rev-parse HEAD) \
-    --dart-define=BUILD_TIMESTAMP=$(date "+%Y%m%d-%H%M%S")
+    --dart-define=BUILD_TIMESTAMP=$(date "+%Y%m%d-%H%M%S") \
+    $BACKEND_URL_ARG
