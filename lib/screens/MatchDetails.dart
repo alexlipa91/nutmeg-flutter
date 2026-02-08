@@ -286,6 +286,11 @@ List<Widget> getWidgets(
       ? null
       : PlayerList(match: match, withJoinButton: false);
 
+  var waitListWidget =
+      (!match.isMatchFinished() && match.numPlayersInWaitList() > 0)
+          ? WaitListWidget(match: match)
+          : null;
+
   var status = match.status;
   var stats = ((status == MatchStatus.rated && ratings != null) ||
           status == MatchStatus.to_rate)
@@ -372,6 +377,7 @@ List<Widget> getWidgets(
       matchInfo,
       // stats
       if (infoPlayersList != null) infoPlayersList,
+      if (waitListWidget != null) waitListWidget,
       if (teamsWidget != null) teamsWidget,
       if (stats != null) stats,
       if (awards != null) awards,
@@ -397,6 +403,7 @@ List<Widget> getWidgets(
                       [
                         matchInfo,
                         if (infoPlayersList != null) infoPlayersList,
+                        if (waitListWidget != null) waitListWidget,
                         if (teamsWidget != null) teamsWidget,
                         if (stats != null) stats,
                         if (awards != null) awards,
@@ -472,6 +479,67 @@ class PlayerList extends StatelessWidget {
           Padding(
               padding: EdgeInsets.symmetric(horizontal: 16),
               child: Text(getTitle(context, match), style: TextPalette.h2)),
+          SizedBox(height: 24),
+          LayoutBuilder(builder: (context, constraints) {
+            if (MediaQuery.of(context).size.width < 800)
+              return SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(children: widgets),
+              );
+            return Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: Row(children: [
+                Expanded(
+                    child: Wrap(spacing: 16, runSpacing: 16, children: cards))
+              ]),
+            );
+          })
+        ],
+      ),
+      padding: EdgeInsets.symmetric(vertical: 16),
+    );
+  }
+}
+
+class WaitListWidget extends StatelessWidget {
+  final Match match;
+
+  const WaitListWidget({Key? key, required this.match}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    var waitListUsers = match.getWaitListUsersByTime();
+
+    if (waitListUsers.isEmpty) return Container();
+
+    var isOrganizer = context.watch<MatchState>().isLoggedUserOrganizer();
+    var isFull = match.isFull();
+
+    var space = (min(475, MediaQuery.of(context).size.width) - 300) / 4.5;
+
+    List<Widget> cards = waitListUsers
+        .map((userId) => PlayerCard(
+              userId,
+              matchId: match.documentId,
+              showPromote: isOrganizer,
+              isPromoteEnabled: isOrganizer && !isFull,
+            ))
+        .toList();
+
+    List<Widget> widgets = [];
+    widgets.add(SizedBox(width: 16));
+    widgets.addAll(interleave(cards, SizedBox(width: space)));
+    widgets.add(SizedBox(width: 16));
+
+    return InfoContainer(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: Text(
+                  "Waitlist (${match.numPlayersInWaitList()})",
+                  style: TextPalette.h2)),
           SizedBox(height: 24),
           LayoutBuilder(builder: (context, constraints) {
             if (MediaQuery.of(context).size.width < 800)
@@ -850,16 +918,23 @@ class PlayerCard extends StatelessWidget {
   final String userId;
   final String? matchId;
   final bool showRemove;
+  final bool showPromote;
+  final bool isPromoteEnabled;
 
-  PlayerCard(this.userId, {this.matchId, this.showRemove = false});
+  PlayerCard(this.userId,
+      {this.matchId,
+      this.showRemove = false,
+      this.showPromote = false,
+      this.isPromoteEnabled = false});
 
   @override
   Widget build(BuildContext context) {
     var userData = context.watch<UsersState>().getUserDetail(userId);
+    var hasOverlay = showRemove || showPromote;
 
     return Column(children: [
       Padding(
-        padding: EdgeInsets.only(top: showRemove ? 6 : 0, right: showRemove ? 6 : 0),
+        padding: EdgeInsets.only(top: hasOverlay ? 6 : 0, right: hasOverlay ? 6 : 0),
         child: Stack(
           clipBehavior: Clip.none,
           children: [
@@ -926,6 +1001,65 @@ class PlayerCard extends StatelessWidget {
                 ),
               ),
             ),
+            if (showPromote)
+              Positioned(
+                right: -6,
+                top: -6,
+                child: InkWell(
+                  onTap: isPromoteEnabled
+                      ? () async {
+                          if (matchId == null) return;
+
+                          var matchState = context.read<MatchState>();
+                          var name =
+                              (userData?.name ?? "Player").split(" ").first.trim();
+                          if (name.isEmpty) name = "Player";
+
+                          await GenericInfoModal(
+                            title: "Add to match",
+                            description:
+                                "Are you sure you want to move $name from the waitlist to the match?",
+                            action: Row(
+                              children: [
+                                Expanded(
+                                  child: GenericButtonWithLoaderAndErrorHandling(
+                                    AppLocalizations.of(context)!.confirmButtonText,
+                                    (_) async {
+                                      await matchState
+                                          .promoteUserFromWaitList(userId);
+                                      Navigator.of(context).pop(true);
+                                    },
+                                    Primary(),
+                                  ),
+                                )
+                              ],
+                            ),
+                          ).show(context);
+                        }
+                      : null,
+                  child: Container(
+                    padding: EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: isPromoteEnabled
+                          ? Palette.primary
+                          : Palette.greyLighter,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          blurRadius: 6,
+                          color: Colors.black.withOpacity(0.15),
+                          offset: Offset(0, 2),
+                        )
+                      ],
+                    ),
+                    child: Icon(
+                      Icons.arrow_upward,
+                      color: Palette.white,
+                      size: 16,
+                    ),
+                  ),
+                ),
+              ),
           ],
         ),
       ),

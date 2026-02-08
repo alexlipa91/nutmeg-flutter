@@ -55,6 +55,7 @@ class Match {
   DateTime? paidOutAt;
 
   Map<String, DateTime> going;
+  Map<String, DateTime> waitList;
 
   List<List<String>> computedTeams;
   List<List<String>> manualTeams;
@@ -83,6 +84,7 @@ class Match {
       this.minPlayers,
       this.organizerId,
       this.going,
+      this.waitList,
       this.computedTeams,
       this.manualTeams,
       this.isPrivate,
@@ -96,6 +98,7 @@ class Match {
         minPlayers = jsonInput['minPlayers'] ?? 0,
         maxPlayers = jsonInput['maxPlayers'],
         going = _readGoing(jsonInput),
+        waitList = _readWaitList(jsonInput),
         computedTeams = _readComputedTeams(jsonInput),
         manualTeams = _readManualTeams(jsonInput),
         price = jsonInput["price"] == null
@@ -143,6 +146,12 @@ class Match {
 
   static Map<String, DateTime> _readGoing(Map<String, dynamic> json) {
     var map = Map<String, dynamic>.from(json["going"] ?? {});
+    return map
+        .map((key, value) => MapEntry(key, DateTime.parse(value["createdAt"])));
+  }
+
+  static Map<String, DateTime> _readWaitList(Map<String, dynamic> json) {
+    var map = Map<String, dynamic>.from(json["waitList"] ?? {});
     return map
         .map((key, value) => MapEntry(key, DateTime.parse(value["createdAt"])));
   }
@@ -202,6 +211,17 @@ class Match {
       ..sort((e1, e2) => -e1.value.compareTo(e2.value));
     return entries.map((e) => e.key).toList();
   }
+
+  List<String> getWaitListUsersByTime() {
+    var entries = waitList.entries.toList()
+      ..sort((e1, e2) => e1.value.compareTo(e2.value));
+    return entries.map((e) => e.key).toList();
+  }
+
+  bool isUserInWaitList(UserDetails? user) =>
+      user != null && waitList.containsKey(user.documentId);
+
+  int numPlayersInWaitList() => waitList.length;
 
   int getGoingPlayers() => going.length;
 

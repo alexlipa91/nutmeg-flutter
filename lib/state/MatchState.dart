@@ -55,6 +55,29 @@ class MatchState extends ChangeNotifier {
     await fetchMatch();
   }
 
+  bool isLoggedUserInWaitList() {
+    return _match?.isUserInWaitList(_userState?.getLoggedUserDetails()) ?? false;
+  }
+
+  Future<void> addLoggedInUserToWaitList() async {
+    await CloudFunctionsClient().post("matches/$_matchId/waitlist/add", {
+      'user_id': _userState?.getLoggedUserId(),
+    });
+    await fetchMatch();
+  }
+
+  Future<void> removeLoggedInUserFromWaitList() async {
+    await CloudFunctionsClient().post("matches/$_matchId/waitlist/remove", {});
+    await fetchMatch();
+  }
+
+  Future<void> promoteUserFromWaitList(String userId) async {
+    await CloudFunctionsClient().post("matches/$_matchId/waitlist/promote", {
+      'user_id': userId,
+    });
+    await fetchMatch();
+  }
+
   Future<void> removeUserFromMatch(String userId) async {
     await CloudFunctionsClient().post("matches/$_matchId/users/remove_other", {
       "user_id": userId,

@@ -3,6 +3,7 @@ import 'package:nutmeg/model/Match.dart';
 import 'package:nutmeg/screens/JoinModal.dart';
 import 'package:nutmeg/screens/LeaveMatchModal.dart';
 import 'package:nutmeg/screens/RatePlayersModal.dart';
+import 'package:nutmeg/screens/WaitListModal.dart';
 import 'package:nutmeg/state/MatchState.dart';
 import 'package:nutmeg/state/UserRatings.dart';
 import 'package:nutmeg/state/UserState.dart';
@@ -25,19 +26,29 @@ class BottomBarMatch extends StatelessWidget {
 
     var bottomBar;
 
+    var isInWaitList = matchState.isLoggedUserInWaitList();
+
     switch (matchStatus) {
       case MatchStatus.open:
         if (isGoing) {
           bottomBar = LeaveMatchBottomBar(matchId: matchId, enabled: true);
+        } else if (isInWaitList) {
+          bottomBar = LeaveWaitListBottomBar(matchId: matchId);
+        } else if (isFull) {
+          bottomBar = JoinWaitListBottomBar(matchId: matchId);
         } else {
-          bottomBar = JoinMatchBottomBar(matchId: matchId, enabled: !isFull);
+          bottomBar = JoinMatchBottomBar(matchId: matchId, enabled: true);
         }
         break;
       case MatchStatus.pre_playing:
         if (isGoing) {
           bottomBar = LeaveMatchBottomBar(matchId: matchId, enabled: false);
+        } else if (isInWaitList) {
+          bottomBar = LeaveWaitListBottomBar(matchId: matchId);
+        } else if (isFull) {
+          bottomBar = JoinWaitListBottomBar(matchId: matchId);
         } else {
-          bottomBar = JoinMatchBottomBar(matchId: matchId, enabled: !isFull);
+          bottomBar = JoinMatchBottomBar(matchId: matchId, enabled: true);
         }
         break;
       case MatchStatus.playing:
