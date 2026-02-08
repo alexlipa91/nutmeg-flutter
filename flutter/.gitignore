@@ -1,0 +1,75 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.buildlog/
+.history
+.svn/
+.env
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# The .vscode folder contains launch configuration and tasks you configure in
+# VS Code which you may wish to be included in version control, so this line
+# is commented out by default.
+#.vscode/
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+/build/
+
+# Web related
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
+
+# Android Studio will place build artifacts here
+/android/app/debug
+/android/app/profile
+/android/app/release
+
+venv/
+
+android/nutmeg-9099c-c70a0f6cba3d.json
+android/nutmeg-9099c-sa-credentials.json
+ios/AuthKey_CTJDHGWL48.p8
+ios/fastlane/report.xml
+
+.firebase/hosting.YnVpbGQvd2Vi.cache
+lib/utils/ApiKey.dart
+translator_key
+
+ios/fastlane/.env.local
+ios/fastlane/build/ios/Pods.build/*
+gc_keys.json
+
+# FVM Version Cache
+.fvm
+.fvm/
+.firebase/
+
+# Environment files
+.env*
+
+nutmeg-deploy-key.json
+
+android/app/.cxx/*
+
+web/firebase-messaging-sw.js

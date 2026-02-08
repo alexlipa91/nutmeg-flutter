@@ -2,7 +2,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_web_frame/flutter_web_frame.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nutmeg/controller/LaunchController.dart';
 import 'package:nutmeg/screens/AvailableMatches.dart';
@@ -169,7 +168,7 @@ void main() async {
         ),
         ChangeNotifierProvider(create: (context) => LoadOnceState()),
       ],
-      child: FlutterWebFrame(
+      child: Builder(
         builder: (context) {
           return MaterialApp.router(
             key: navigatorKey,
@@ -190,11 +189,51 @@ void main() async {
               splashColor: Colors.transparent,
               highlightColor: Colors.transparent,
             ),
+            builder: (context, child) {
+              return _buildDesktopShell(context, child);
+            },
           );
         },
-        maximumSize: Size(812.0, 812.0), // Maximum size
-        enabled: false,
-        backgroundColor: Palette.greyLight,
+      ),
+    ),
+  );
+}
+
+/// On wide screens (desktop/web), constrains the app to a phone-like width
+/// and centers it with a subtle shadow, so mobile-designed UI doesn't stretch.
+Widget _buildDesktopShell(BuildContext context, Widget? child) {
+  final mediaQuery = MediaQuery.of(context);
+  final screenWidth = mediaQuery.size.width;
+
+  const double maxAppWidth = 500.0;
+  const double desktopBreakpoint = 600.0;
+
+  // On mobile-sized screens, render normally
+  if (screenWidth <= desktopBreakpoint) {
+    return child ?? const SizedBox.shrink();
+  }
+
+  // On desktop/wide screens, center the app in a phone-like container
+  return Container(
+    color: Palette.greyLighter,
+    child: Center(
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: maxAppWidth),
+        decoration: BoxDecoration(
+          boxShadow: [
+            BoxShadow(
+              color: Palette.black.withAlpha(30),
+              blurRadius: 40,
+              spreadRadius: 0,
+            ),
+          ],
+        ),
+        child: MediaQuery(
+          data: mediaQuery.copyWith(
+            size: Size(maxAppWidth, mediaQuery.size.height),
+          ),
+          child: child ?? const SizedBox.shrink(),
+        ),
       ),
     ),
   );

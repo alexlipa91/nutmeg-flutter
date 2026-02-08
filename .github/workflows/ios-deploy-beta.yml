@@ -9,6 +9,9 @@ jobs:
   deploy_ios:
     name: Deploy build to TestFlight
     runs-on: macOS-latest
+    defaults:
+      run:
+        working-directory: flutter
     steps:
       - name: Checkout code from ref
         uses: actions/checkout@v2
@@ -21,11 +24,11 @@ jobs:
         with:
           ruby-version: '3.0'
           bundler-cache: true
-          working-directory: 'ios'
+          working-directory: 'flutter/ios'
       - uses: maierj/fastlane-action@v3.0.0
         with:
           lane: 'install_certificates'
-          subdirectory: 'ios'
+          subdirectory: 'flutter/ios'
         env:
           FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD: "odnv-ruvg-mzoo-enld"
           MATCH_PASSWORD: "nutmeg"
@@ -38,11 +41,11 @@ jobs:
       - run: flutter clean
       - run: flutter pub get
       - run: flutter build ipa --release -t lib/screens/Launch.dart --export-options-plist ios/export.plist
-      - run: "ls -l /Users/runner/work/nutmeg-flutter/nutmeg-flutter/build/ios/ipa"
+      - run: "ls -l build/ios/ipa"
       - uses: maierj/fastlane-action@v3.0.0
         with:
           lane: 'closed_beta'
-          subdirectory: 'ios'
+          subdirectory: 'flutter/ios'
         env:
           FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD: "odnv-ruvg-mzoo-enld"
           MATCH_PASSWORD: "nutmeg"

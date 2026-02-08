@@ -1,4 +1,4 @@
-# Miscellaneous
+# ==== General ====
 *.class
 *.log
 *.pyc
@@ -8,20 +8,9 @@
 .buildlog/
 .history
 .svn/
-.env
-
-# IntelliJ related
-*.iml
-*.ipr
-*.iws
 .idea/
 
-# The .vscode folder contains launch configuration and tasks you configure in
-# VS Code which you may wish to be included in version control, so this line
-# is commented out by default.
-#.vscode/
-
-# Flutter/Dart/Pub related
+# ==== Flutter (flutter/) ====
 **/doc/api/
 **/ios/Flutter/.last_build_id
 .dart_tool/
@@ -30,46 +19,39 @@
 .packages
 .pub-cache/
 .pub/
-/build/
+flutter/build/
 
-# Web related
+# Flutter/Dart
+flutter/.env*
+flutter/android/app/debug
+flutter/android/app/profile
+flutter/android/app/release
+flutter/android/nutmeg-9099c-c70a0f6cba3d.json
+flutter/android/nutmeg-9099c-sa-credentials.json
+flutter/ios/AuthKey_CTJDHGWL48.p8
+flutter/ios/fastlane/report.xml
+flutter/ios/fastlane/.env.local
+flutter/ios/fastlane/build/ios/Pods.build/*
+flutter/.firebase/
+flutter/.fvm/
+flutter/lib/utils/ApiKey.dart
+flutter/translator_key
+flutter/nutmeg-deploy-key.json
+flutter/gc_keys.json
+flutter/android/app/.cxx/*
+flutter/web/firebase-messaging-sw.js
 
-# Symbolication related
-app.*.symbols
+# ==== Backend (backend/) ====
+backend/.firebase/
+backend/.env
+backend/firebase-admin-sdk-sa-key.json
 
-# Obfuscation related
-app.*.map.json
+# ==== Node ====
+node_modules/
+.npm
+*.tgz
 
-# Android Studio will place build artifacts here
-/android/app/debug
-/android/app/profile
-/android/app/release
-
+# ==== Python ====
 venv/
-
-android/nutmeg-9099c-c70a0f6cba3d.json
-android/nutmeg-9099c-sa-credentials.json
-ios/AuthKey_CTJDHGWL48.p8
-ios/fastlane/report.xml
-
-.firebase/hosting.YnVpbGQvd2Vi.cache
-lib/utils/ApiKey.dart
-translator_key
-
-ios/fastlane/.env.local
-ios/fastlane/build/ios/Pods.build/*
-gc_keys.json
-
-# FVM Version Cache
-.fvm
-.fvm/
-.firebase/
-
-# Environment files
-.env*
-
-nutmeg-deploy-key.json
-
-android/app/.cxx/*
-
-web/firebase-messaging-sw.js
+__pycache__/
+*.egg-info/

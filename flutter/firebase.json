@@ -2,7 +2,7 @@
   "hosting": [
     {
       "target": "live",
-      "public": "flutter/build/web",
+      "public": "build/web",
       "headers": [
         {
           "source": "/**",
@@ -41,7 +41,7 @@
     },
     {
       "target": "staging",
-      "public": "flutter/build/web",
+      "public": "build/web",
       "headers": [
         {
           "source": "/**",

@@ -4,11 +4,16 @@ on:
   push:
     branches:
       - master
+    paths:
+      - 'flutter/**'
 
 jobs:
   deploy_web:
     name: Deploy Web
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: flutter
     steps:
       - name: Checkout code from ref
         uses: actions/checkout@v2
@@ -31,3 +36,4 @@ jobs:
           args: deploy --only hosting
         env:
           GCP_SA_KEY: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_NUTMEG_9099C }}"
+          PROJECT_PATH: flutter

@@ -1,0 +1,56 @@
+name: Backend Deploy
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'backend/**'
+
+jobs:
+  deploy:
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    name: Deploying to App Engine
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+#      - name: Install test deps
+#        run: pip3 install -r backend/requirements.txt
+#
+#      - name: Test
+#        run: python3 -m unittest discover tests
+#        working-directory: backend
+
+      - name: Create app yaml
+        uses: cuchi/jinja2-action@v1.2.0
+        with:
+          template: backend/scripts/app.yaml.j2
+          output_file: backend/app.yaml
+        env:
+          DYNAMIC_LINK_API_KEY: ${{ secrets.DYNAMIC_LINK_API_KEY }}
+          GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
+          STRIPE_CHECKOUT_WEBHOOK_SECRET: ${{ secrets.STRIPE_CHECKOUT_WEBHOOK_SECRET }}
+          STRIPE_CHECKOUT_WEBHOOK_SECRET_TEST: ${{ secrets.STRIPE_CHECKOUT_WEBHOOK_SECRET_TEST }}
+          STRIPE_CONNECT_UPDATED_WEBHOOK_SECRET: ${{ secrets.STRIPE_CONNECT_UPDATED_WEBHOOK_SECRET }}
+          STRIPE_CONNECT_UPDATED_WEBHOOK_SECRET_TEST: ${{ secrets.STRIPE_CONNECT_UPDATED_WEBHOOK_SECRET_TEST }}
+          STRIPE_KEY: ${{ secrets.STRIPE_KEY }}
+          STRIPE_KEY_TEST: ${{ secrets.STRIPE_KEY_TEST }}
+
+      - run: "cat backend/app.yaml"
+
+      - id: 'auth'
+        uses: 'google-github-actions/auth@v1'
+        with:
+          workload_identity_provider: 'projects/956073807168/locations/global/workloadIdentityPools/my-pool/providers/my-provider'
+          service_account: 'deploy-cloud-functions@nutmeg-9099c.iam.gserviceaccount.com'
+
+      - id: 'deploy'
+        uses: 'google-github-actions/deploy-appengine@v1'
+        with:
+          working_directory: backend
+          flags: '--no-cache'
