@@ -43,7 +43,6 @@ flutter/web/firebase-messaging-sw.js
 
 # ==== Backend (backend/) ====
 backend/.firebase/
-backend/.env
 backend/firebase-admin-sdk-sa-key.json
 
 # ==== Node ====
