@@ -288,6 +288,16 @@ def get_ratings(match_id):
     if not ratings_data:
         return {}, 200
 
+    if "ratings_not_computed_reason" in ratings_data:
+        distinct_score_voters = set()
+        for _, votes in ratings_data.get("scores", {}).items():
+            distinct_score_voters.update(votes.keys())
+        return {"data": {
+            "ratings_not_computed_reason": ratings_data["ratings_not_computed_reason"],
+            "num_distinct_score_voters": len(distinct_score_voters),
+            "num_distinct_award_voters": len(ratings_data.get("awardVotes", {})),
+        }}, 200
+
     # legacy version, keep supporting it
     if not "finalScores" in ratings_data:
         resp = _get_ratings_data_legacy(match_id, ratings_data)

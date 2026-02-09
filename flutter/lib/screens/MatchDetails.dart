@@ -1332,6 +1332,26 @@ class Stats extends StatelessWidget {
               ),
             ],
           ));
+    } else if (ratings?.ratingsNotComputedReason != null) {
+      child = Container(
+          width: double.infinity,
+          child: Column(
+            children: [
+              CircleAvatar(
+                  radius: 36,
+                  backgroundColor: Palette.greyLightest,
+                  child: Image.asset(
+                    "assets/empty_state/stats.png",
+                    height: 24,
+                  )),
+              SizedBox(height: 16),
+              Text(
+                AppLocalizations.of(context)!.statsNotEnoughRatings,
+                style: TextPalette.bodyText,
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ));
     } else {
       var userState = context.watch<UsersState>();
 

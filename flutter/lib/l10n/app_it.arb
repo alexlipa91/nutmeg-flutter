@@ -30,6 +30,7 @@
     "showMore": "MOSTRA DI PIÙ",
     "showLess": "MOSTRA MENO",
     "statsWaiting": "Statistiche disponibili a breve",
+    "statsNotEnoughRatings": "Non ci sono abbastanza valutazioni per calcolare le statistiche",
     "statsAvailableAt": "Le statistiche per questa partita saranno disponibili\n{date}",
     "courtType": "Tipo di campo: {t}",
     "changingRooms": "Spogliatoi disponibili",

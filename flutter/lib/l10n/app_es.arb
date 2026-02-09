@@ -30,6 +30,7 @@
     "showMore": "MOSTRAR MÁS",
     "showLess": "MOSTRAR MENOS",
     "statsWaiting": "Estadísticas disponibles próximamente",
+    "statsNotEnoughRatings": "No hay suficientes valoraciones para calcular las estadísticas",
     "statsAvailableAt": "Las estadísticas de este partido estarán disponibles\n{date}",
     "courtType": "{t} Tipo de tribunal",
     "changingRooms": "Vestuarios disponibles",
