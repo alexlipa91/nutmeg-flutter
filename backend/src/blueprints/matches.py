@@ -1291,8 +1291,8 @@ def _close_rating_round_transaction(
     users_docs_ref,
 ):
     for u in user_updates:
-        transaction.set(
-            users_docs_ref[u], user_updates[u].to_user_document_update(), merge=True
+        transaction.update(
+            users_docs_ref[u], user_updates[u].to_user_document_update()
         )
 
     for leaderboard in ["abs", yearmonth]:

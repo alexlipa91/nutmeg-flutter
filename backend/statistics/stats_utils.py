@@ -40,9 +40,9 @@ class UserUpdates:
 
     def to_user_document_update(self):
         base_fields = self.to_leaderboard_document_update()
-        base_fields["last_date_scores"] = {
-            d.strftime("%Y%m%d%H%M%S"): v for d, v in self.date_score.items() if v
-        }
+        for d, v in self.date_score.items():
+            if v:
+                base_fields["last_date_scores." + d.strftime("%Y%m%d%H%M%S")] = v
         return base_fields
 
     def to_leaderboard_document_update(self):
