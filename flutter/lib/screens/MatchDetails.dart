@@ -1360,7 +1360,7 @@ class Stats extends StatelessWidget {
           ? StatsSkeleton()
           : Builder(
               builder: (context) {
-                int index = 1;
+                int index = 0;
 
                 return Column(
                   children: [
