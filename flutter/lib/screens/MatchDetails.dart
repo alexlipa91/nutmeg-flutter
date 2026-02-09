@@ -186,38 +186,49 @@ class MatchDetailsImplState extends State<MatchDetailsImpl> {
         widgets: getWidgets(context, matchState, sportCenter,
             matchState.ratings, organizerView, isTest, constraints),
         appBar: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            BackButton(color: Palette.black),
-            if (match != null)
-              Align(
-                alignment: Alignment.centerRight,
-                child: buttons.ShareButton(() async {
-                  if (kIsWeb) {
-                    final baseUrl = getWebBaseUrl();
-                    final url = '$baseUrl/match/${match.documentId}';
-                    await Clipboard.setData(ClipboardData(text: url));
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            AppLocalizations.of(context)!.linkCopiedToClipboard,
-                            style: TextStyle(color: Palette.greyDark),
-                          ),
-                          backgroundColor: Palette.white.withOpacity(0.92),
-                          behavior: SnackBarBehavior.floating,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          duration: Duration(seconds: 2),
+            Expanded(
+              child: Center(
+                child: Container(
+                  constraints: BoxConstraints(maxWidth: 1100),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      BackButton(color: Palette.black),
+                      if (match != null)
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: buttons.ShareButton(() async {
+                            if (kIsWeb) {
+                              final baseUrl = getWebBaseUrl();
+                              final url = '$baseUrl/match/${match.documentId}';
+                              await Clipboard.setData(ClipboardData(text: url));
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      AppLocalizations.of(context)!.linkCopiedToClipboard,
+                                      style: TextStyle(color: Palette.greyDark),
+                                    ),
+                                    backgroundColor: Palette.white.withOpacity(0.92),
+                                    behavior: SnackBarBehavior.floating,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    duration: Duration(seconds: 2),
+                                  ),
+                                );
+                              }
+                            } else {
+                              await DynamicLinks.shareMatchFunction(context, match);
+                            }
+                          }, Palette.black, 25.0),
                         ),
-                      );
-                    }
-                  } else {
-                    await DynamicLinks.shareMatchFunction(context, match);
-                  }
-                }, Palette.black, 25.0),
+                    ],
+                  ),
+                ),
               ),
+            ),
           ],
         ),
         bottomNavigationBar: bottomBar,
@@ -389,46 +400,50 @@ List<Widget> getWidgets(
   } else {
     widgets = [
       if (completeOrganiserWidget != null) completeOrganiserWidget,
-      Row(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Flexible(
-            child: Container(
-              constraints: BoxConstraints(maxWidth: 700),
+      if (testInfo != null) testInfo,
+      // match info full width at the top
+      Center(
+        child: Container(
+          constraints: BoxConstraints(maxWidth: 1100),
+          child: matchInfo,
+        ),
+      ),
+      SizedBox(height: 16),
+      // two balanced columns below
+      Center(
+        child: Container(
+          constraints: BoxConstraints(maxWidth: 1100),
+          child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Flexible(
               child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: interleave(
-                      [
-                        matchInfo,
-                        if (infoPlayersList != null) infoPlayersList,
-                        if (waitListWidget != null) waitListWidget,
-                        if (teamsWidget != null) teamsWidget,
-                        if (stats != null) stats,
-                        if (awards != null) awards,
-                      ],
-                      SizedBox(
-                        height: 16,
-                      ))),
+                mainAxisSize: MainAxisSize.min,
+                children: interleave([
+                  if (infoPlayersList != null) infoPlayersList,
+                  if (waitListWidget != null) waitListWidget,
+                  if (teamsWidget != null) teamsWidget,
+                  if (stats != null) stats,
+                  if (awards != null) awards,
+                ], SizedBox(height: 16)),
+              ),
             ),
-          ),
-          SizedBox(width: 20),
-          Flexible(
-            child: Container(
-              constraints: BoxConstraints(maxWidth: 700),
+            SizedBox(width: 20),
+            Flexible(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: interleave([
                   sportCenterDetails,
+                  if (organiserBadge != null) organiserBadge,
                   if (rules(true) != null) rules(true)!,
-                  if (organiserBadge != null) organiserBadge
                 ], SizedBox(height: 16)),
               ),
             ),
-          )
-        ],
-      )
+          ],
+        ),
+        ),
+      ),
     ];
   }
 

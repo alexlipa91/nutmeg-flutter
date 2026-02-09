@@ -138,7 +138,12 @@ class GenericBottomBar extends StatelessWidget {
           ),
           child: SafeArea(
             minimum: EdgeInsets.only(bottom: 16),
-            child: child,
+            child: Center(
+              child: Container(
+                constraints: BoxConstraints(maxWidth: 1100),
+                child: child,
+              ),
+            ),
           ),
         )
       ],

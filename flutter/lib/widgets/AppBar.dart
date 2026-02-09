@@ -50,43 +50,46 @@ class MainAppBar extends StatelessWidget {
       automaticallyImplyLeading: false,
       titleSpacing: 0,
       elevation: 0,
-      title: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 20),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            InkWell(
-                splashColor: Colors.transparent,
-                highlightColor: Colors.transparent,
-                onTap: () => context.go("/"),
-                child: Image.asset('assets/nutmeg_white.png', height: 24)),
-            if (buildTimestamp.isNotEmpty)
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(buildTimestamp,
-                    style: TextStyle(color: Colors.white, fontSize: 12)),
-              ),
-            if (isLoggedIn)
-              Builder(
-                  builder: (context) =>
-                      LoggedUserAvatarWithRedirectUserPage(radius: 2))
-            else
+      title: Center(
+        child: Container(
+          constraints: BoxConstraints(maxWidth: 1100),
+          padding: EdgeInsets.symmetric(horizontal: 20),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
               InkWell(
-                onTap: () async {
-                  context.go("/login");
-                },
-                child: Container(
-                  height: 50,
-                  child: Center(
-                      child:
-                          Text("LOGIN", style: TextPalette.linkStyleInverted)),
+                  splashColor: Colors.transparent,
+                  highlightColor: Colors.transparent,
+                  onTap: () => context.go("/"),
+                  child: Image.asset('assets/nutmeg_white.png', height: 24)),
+              if (buildTimestamp.isNotEmpty)
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(buildTimestamp,
+                      style: TextStyle(color: Colors.white, fontSize: 12)),
                 ),
-              )
-          ],
+              if (isLoggedIn)
+                Builder(
+                    builder: (context) =>
+                        LoggedUserAvatarWithRedirectUserPage(radius: 2))
+              else
+                InkWell(
+                  onTap: () async {
+                    context.go("/login");
+                  },
+                  child: Container(
+                    height: 50,
+                    child: Center(
+                        child:
+                            Text("LOGIN", style: TextPalette.linkStyleInverted)),
+                  ),
+                )
+            ],
+          ),
         ),
       ),
     );

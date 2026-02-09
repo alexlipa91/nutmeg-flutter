@@ -82,49 +82,52 @@ class GenericAvailableMatchesListState
                 bottomLeft: Radius.circular(20),
                 bottomRight: Radius.circular(20))),
         width: double.infinity,
-        child: Padding(
-          padding: EdgeInsets.only(left: 16.0, right: 16.0, bottom: 16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              widget.titleWidget!,
-              SizedBox(height: 24),
-              SingleChildScrollView(
-                clipBehavior: Clip.none,
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                    children: widget.tabNames.asMap().entries.map((e) {
-                  var index = e.key;
-                  var title = e.value;
+        child: Center(
+          child: Container(
+            constraints: BoxConstraints(maxWidth: 1100),
+            padding: EdgeInsets.only(left: 16.0, right: 16.0, bottom: 16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                widget.titleWidget!,
+                SizedBox(height: 24),
+                SingleChildScrollView(
+                  clipBehavior: Clip.none,
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                      children: widget.tabNames.asMap().entries.map((e) {
+                    var index = e.key;
+                    var title = e.value;
 
-                  var textStyle = (index == selected)
-                      ? TextPalette.linkStyle
-                      : TextPalette.linkStyleInverted;
-                  var color =
-                      (index == selected) ? Palette.white : widget.appBarColor;
+                    var textStyle = (index == selected)
+                        ? TextPalette.linkStyle
+                        : TextPalette.linkStyleInverted;
+                    var color =
+                        (index == selected) ? Palette.white : widget.appBarColor;
 
-                  return ElevatedButton(
-                    child: Padding(
-                      padding:
-                          EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                      child: Text(title!, style: textStyle),
-                    ),
-                    onPressed: () =>
-                        context.read<AvailableMatchesUiState>().changeTo(index),
-                    style: ButtonStyle(
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      minimumSize: WidgetStateProperty.all(Size.zero),
-                      padding: WidgetStateProperty.all(EdgeInsets.zero),
-                      elevation: WidgetStateProperty.all(0),
-                      backgroundColor: WidgetStateProperty.all<Color>(color),
-                      shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                          RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(50.0))),
-                    ),
-                  );
-                }).toList()),
-              )
-            ].toList(),
+                    return ElevatedButton(
+                      child: Padding(
+                        padding:
+                            EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                        child: Text(title!, style: textStyle),
+                      ),
+                      onPressed: () =>
+                          context.read<AvailableMatchesUiState>().changeTo(index),
+                      style: ButtonStyle(
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        minimumSize: WidgetStateProperty.all(Size.zero),
+                        padding: WidgetStateProperty.all(EdgeInsets.zero),
+                        elevation: WidgetStateProperty.all(0),
+                        backgroundColor: WidgetStateProperty.all<Color>(color),
+                        shape: WidgetStateProperty.all<RoundedRectangleBorder>(
+                            RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(50.0))),
+                      ),
+                    );
+                  }).toList()),
+                )
+              ].toList(),
+            ),
           ),
         ),
       )
@@ -155,7 +158,7 @@ class GenericAvailableMatchesListState
                           children: [
                             Flexible(
                               child: Container(
-                                  constraints: BoxConstraints(maxWidth: 1000),
+                                  constraints: BoxConstraints(maxWidth: 1100),
                                   child: core),
                             )
                           ])),
