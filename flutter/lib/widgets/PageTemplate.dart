@@ -41,9 +41,7 @@ class PageTemplate extends StatelessWidget {
       body: SafeArea(
         bottom: false,
         child: Center(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: 600),
-            child: refreshContainer(CustomScrollView(
+          child: refreshContainer(CustomScrollView(
               physics: AlwaysScrollableScrollPhysics(parent: ClampingScrollPhysics()),
               slivers: [
                 SliverAppBar(
@@ -66,8 +64,7 @@ class PageTemplate extends StatelessWidget {
                   ),
                 )
               ],
-            )),
-          ),
+          )),
         ),
       ),
       bottomNavigationBar: bottomNavigationBar,

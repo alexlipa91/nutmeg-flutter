@@ -190,50 +190,10 @@ void main() async {
               highlightColor: Colors.transparent,
             ),
             builder: (context, child) {
-              return _buildDesktopShell(context, child);
+              return child ?? const SizedBox.shrink();
             },
           );
         },
-      ),
-    ),
-  );
-}
-
-/// On wide screens (desktop/web), constrains the app to a phone-like width
-/// and centers it with a subtle shadow, so mobile-designed UI doesn't stretch.
-Widget _buildDesktopShell(BuildContext context, Widget? child) {
-  final mediaQuery = MediaQuery.of(context);
-  final screenWidth = mediaQuery.size.width;
-
-  const double maxAppWidth = 500.0;
-  const double desktopBreakpoint = 600.0;
-
-  // On mobile-sized screens, render normally
-  if (screenWidth <= desktopBreakpoint) {
-    return child ?? const SizedBox.shrink();
-  }
-
-  // On desktop/wide screens, center the app in a phone-like container
-  return Container(
-    color: Palette.greyLighter,
-    child: Center(
-      child: Container(
-        constraints: const BoxConstraints(maxWidth: maxAppWidth),
-        decoration: BoxDecoration(
-          boxShadow: [
-            BoxShadow(
-              color: Palette.black.withAlpha(30),
-              blurRadius: 40,
-              spreadRadius: 0,
-            ),
-          ],
-        ),
-        child: MediaQuery(
-          data: mediaQuery.copyWith(
-            size: Size(maxAppWidth, mediaQuery.size.height),
-          ),
-          child: child ?? const SizedBox.shrink(),
-        ),
       ),
     ),
   );
