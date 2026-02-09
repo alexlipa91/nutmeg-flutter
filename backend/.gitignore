@@ -2,8 +2,6 @@ env-variables.yaml
 
 .env.*
 
-app.yaml
-
 venv/*
 
 __pycache__/
