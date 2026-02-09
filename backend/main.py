@@ -10,8 +10,12 @@ load_dotenv(".env.local")
 def create_app():
     firebase_admin.initialize_app()
 
+    from src.secrets import load_secrets
+    load_secrets()
+
     if "GAE_SERVICE" in os.environ:
         CloudLoggingHandler.setup_logging()
+
     return _create_app()
 
 
