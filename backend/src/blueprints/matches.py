@@ -310,14 +310,17 @@ def get_ratings(match_id):
 
 
 def _get_ratings_data_legacy(match_id, ratings_data):
-    match_stats = MatchStats(
-        match_id,
-        None,
-        [],
-        ratings_data.get("scores", {}),
-        ratings_data.get("skills", {}),
-        {},
-    )
+    try:
+        match_stats = MatchStats(
+            match_id,
+            None,
+            [],
+            ratings_data.get("scores", {}),
+            ratings_data.get("skills", {}),
+            {},
+        )
+    except NotEnoughVotersError:
+        return {"scores": {}, "potms": []}
     return {"scores": match_stats.user_scores, "potms": match_stats.potms}
 
 
@@ -1168,7 +1171,13 @@ Updates = namedtuple("Updates", "match_updates users_updates users_match_stats_u
 def freeze_match_stats(match_id, notify=True, only_for_user=None):
     # only_for_user can be used to apply match stats only to a certain user
     match_data = get_match(match_id, is_local=True)
-    updates, error = _freeze_match_stats(match_id, match_data)
+    try:
+        updates, error = _freeze_match_stats(match_id, match_data)
+    except NotEnoughVotersError:
+        app.db_client.collection("ratings").document(match_id).set(
+            {"ratings_not_computed_reason": RatingsNotComputedReason.NOT_ENOUGH_RATINGS}, merge=True
+        )
+        return {}, 200
 
     if only_for_user:
         updates = {only_for_user: updates[only_for_user]}
@@ -1877,7 +1886,18 @@ def _update_user_account(user_id, is_test, match_id, manage_payments):
     user_doc_ref.update(user_updates)
 
 
+class RatingsNotComputedReason(str, Enum):
+    NOT_ENOUGH_RATINGS = "not_enough_ratings"
+
+
+class NotEnoughVotersError(Exception):
+    """Raised when there are fewer than 2 voters for a match."""
+    pass
+
+
 class MatchStats:
+
+    MIN_VOTERS = 2
 
     def __init__(
         self,
@@ -1889,6 +1909,16 @@ class MatchStats:
         # voter_id -> {award_id -> voted_user_id}
         award_votes: Dict[str, Dict[str, str]],
     ):
+        # collect unique voters across all scored users
+        voters = set()
+        for voted_by in raw_scores.values():
+            voters.update(voted_by.keys())
+        if len(voters) < self.MIN_VOTERS:
+            raise NotEnoughVotersError(
+                f"Not enough voters for match {match_id}: "
+                f"got {len(voters)}, need at least {self.MIN_VOTERS}"
+            )
+
         self.id = match_id
         self.date = date
         self.going = going
