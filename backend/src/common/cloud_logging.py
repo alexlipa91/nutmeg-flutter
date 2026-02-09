@@ -1,4 +1,6 @@
 import logging
+import traceback
+
 import flask
 import google.cloud.logging
 
@@ -26,8 +28,12 @@ class CloudLoggingHandler(logging.Handler):
 
     def emit(self, record):
         try:  # Create base structured log
+            message = record.getMessage()
+            if record.exc_info:
+                message += "\n" + "".join(traceback.format_exception(*record.exc_info))
+
             structured_log = {
-                "message": record.getMessage(),
+                "message": message,
                 "severity": record.levelname,
             }
 
