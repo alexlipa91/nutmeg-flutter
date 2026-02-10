@@ -46,7 +46,9 @@ jobs:
           flutter-version: '3.29.2'
       - run: flutter clean
       - run: flutter pub get
-      - run: flutter build ipa --release -t lib/screens/Launch.dart --export-options-plist ios/export.plist --dart-define-from-file=.env.prod
+      - run: |
+          COMMIT_TS=$(git log -1 --format=%cd --date=format:'%Y%m%d-%H%M')
+          flutter build ipa --release -t lib/screens/Launch.dart --export-options-plist ios/export.plist --dart-define-from-file=.env.prod --dart-define=COMMIT_TIMESTAMP="$COMMIT_TS"
       - run: "ls -l build/ios/ipa"
       - name: Upload to TestFlight
         uses: maierj/fastlane-action@v3.0.0

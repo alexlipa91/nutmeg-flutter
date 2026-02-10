@@ -93,7 +93,13 @@ List<T> interleave<T>(List<T> elements, T e, [bool withTop = false]) {
 const String COMMIT_SHA =
     String.fromEnvironment("COMMIT_SHA", defaultValue: "");
 
+const String COMMIT_TIMESTAMP =
+    String.fromEnvironment("COMMIT_TIMESTAMP", defaultValue: "");
+
 Future<String> getVersion() async {
+  if (COMMIT_TIMESTAMP.isNotEmpty) {
+    return COMMIT_TIMESTAMP;
+  }
   if (kIsWeb) {
     return COMMIT_SHA;
   }

@@ -587,18 +587,19 @@ class UserPageState extends State<UserPage> {
               ),
             ])),
           ),
-        Padding(
-          padding: EdgeInsets.only(top: 8),
-          child: Center(
-            child: Container(
-              child: Text(
-                "v $appVersion",
-                style: TextPalette.bodyText,
-                textAlign: TextAlign.right,
+        if (appVersion != null)
+          Padding(
+            padding: EdgeInsets.only(top: 8),
+            child: Center(
+              child: Container(
+                child: Text(
+                  "v $appVersion",
+                  style: TextPalette.bodyText,
+                  textAlign: TextAlign.right,
+                ),
               ),
             ),
-          ),
-        )
+          )
       ];
     }
 
