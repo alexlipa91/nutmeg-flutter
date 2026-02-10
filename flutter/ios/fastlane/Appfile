@@ -1,8 +1,8 @@
-# app_identifier("com.nutmeg.app") # The bundle identifier of your app
-# apple_id("alessandroliparoti@live.it") # Your Apple email address
+# app_identifier("com.nutmegfootball.app") # The bundle identifier of your app
+# apple_id("jirachi155@gmail.com") # Your Apple email address
 #
-# itc_team_id("123691355") # App Store Connect Team ID
-# team_id("CN7XB83K76") # Developer Portal Team ID
+# itc_team_id("TBD") # App Store Connect Team ID
+# team_id("CQD5MU7BCC") # Developer Portal Team ID
 
 # For more information about the Appfile, see:
 #     https://docs.fastlane.tools/advanced/#appfile

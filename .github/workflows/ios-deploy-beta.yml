@@ -17,37 +17,38 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: ${{ github.ref }}
-      - run: pwd; echo $P8_KEY | base64 -d > ios/AuthKey_CTJDHGWL48.p8
+      - name: Decode App Store Connect API key
+        run: echo "$ASC_API_KEY" | base64 -d > ios/AuthKey_${{ secrets.ASC_KEY_ID }}.p8
         env:
-          P8_KEY: ${{ secrets.P8_KEY }}
+          ASC_API_KEY: ${{ secrets.ASC_API_KEY }}
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.0'
           bundler-cache: true
           working-directory: 'flutter/ios'
-      - uses: maierj/fastlane-action@v3.0.0
+      - name: Install certificates via Fastlane Match
+        uses: maierj/fastlane-action@v3.0.0
         with:
           lane: 'install_certificates'
           subdirectory: 'flutter/ios'
         env:
-          FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD: "odnv-ruvg-mzoo-enld"
-          MATCH_PASSWORD: "nutmeg"
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
           GIT_AUTH_TOKEN: ${{ secrets.GIT_AUTH_TOKEN }}
-          KEY_ID: "CTJDHGWL48"
+          KEY_ID: ${{ secrets.ASC_KEY_ID }}
       - name: Run Flutter tasks
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.13.9'
       - run: flutter clean
       - run: flutter pub get
-      - run: flutter build ipa --release -t lib/screens/Launch.dart --export-options-plist ios/export.plist
+      - run: flutter build ipa --release -t lib/screens/Launch.dart --export-options-plist ios/export.plist --dart-define-from-file=.env.prod
       - run: "ls -l build/ios/ipa"
-      - uses: maierj/fastlane-action@v3.0.0
+      - name: Upload to TestFlight
+        uses: maierj/fastlane-action@v3.0.0
         with:
           lane: 'closed_beta'
           subdirectory: 'flutter/ios'
         env:
-          FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD: "odnv-ruvg-mzoo-enld"
-          MATCH_PASSWORD: "nutmeg"
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
           GIT_AUTH_TOKEN: ${{ secrets.GIT_AUTH_TOKEN }}
-          KEY_ID: "CTJDHGWL48"
+          KEY_ID: ${{ secrets.ASC_KEY_ID }}

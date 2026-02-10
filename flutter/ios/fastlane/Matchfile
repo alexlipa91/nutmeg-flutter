@@ -4,8 +4,10 @@ storage_mode("git")
 
 type("appstore") # The default type, can be: appstore, adhoc, enterprise or development
 
-app_identifier("com.nutmeg.app")
-username("alessandroliparoti@live.it") # Your Apple Developer Portal username
+app_identifier("com.nutmegfootball.app")
+username("jirachi155@gmail.com") # Your Apple Developer Portal username
+
+team_id("CQD5MU7BCC")
 
 # For all available options run `fastlane match --help`
 # Remove the # in the beginning of the line to enable the other options
