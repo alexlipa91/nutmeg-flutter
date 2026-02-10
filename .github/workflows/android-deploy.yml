@@ -4,6 +4,8 @@ on:
   push:
     tags:
       - v*
+    branches:
+      - master
 
 jobs:
   deploy_android:
@@ -36,7 +38,7 @@ jobs:
 
       - uses: ruby/setup-ruby@v1
         with:
-          ruby-version: "3.1.0"
+          ruby-version: "3.3"
           bundler-cache: true
           working-directory: "flutter/android"
 
