@@ -898,7 +898,7 @@ def run_prematch_tasks(match_id):
     )
 
     send_notification_to_users(
-        flask_app=app,
+        db=app.db_client,
         title="Ready for the match? " + "\u26bd\ufe0f",
         body="Your match today is at {} at {}. Tap here to check your team!".format(
             date_time_local.strftime("%H:%M"), sport_center["name"]
@@ -927,7 +927,7 @@ def run_precancellation_tasks(match_id):
 
     if num_going < min_players:
         send_notification_to_users(
-            flask_app=app,
+            db=app.db_client,
             title="Your match might be canceled in 1 hour!",
             body="Currently only {} players out of {} have joined your match.".format(
                 num_going, min_players
@@ -959,7 +959,7 @@ def run_post_match_tasks(match_id):
     organiser_id = match_data.get("organizerId", None)
 
     send_notification_to_users(
-        flask_app=app,
+        db=app.db_client,
         title="Rate players! " + "\u2b50\ufe0f",
         body="You have 24h to rate the players of today's match.",
         users=going_users,
@@ -972,7 +972,7 @@ def run_post_match_tasks(match_id):
 
     if organiser_id:
         send_notification_to_users(
-            flask_app=app,
+            db=app.db_client,
             title="Add match result! " + "\u2b50\ufe0f",
             body="Add the final score for your match.",
             users=organiser_id,
@@ -1045,7 +1045,7 @@ def create_organizer_payout(match_id):
             }
         )
         send_notification_to_users(
-            flask_app=app,
+            db=app.db_client,
             title="Your money is on the way! " + "\U0001f4b5",
             body="The amount of € {:.2f} for the match on {} is on its way to your bank account".format(
                 amount / 100, datetime.strftime(match_data["dateTime"], "%B %-d, %Y")
@@ -1140,7 +1140,7 @@ def _cancel_match_firestore_transactional(
         )
 
     send_notification_to_users(
-        flask_app=app,
+        db=app.db_client,
         title="Match cancelled!",
         body=user_info_message,
         data={
@@ -1162,7 +1162,7 @@ def _cancel_match_firestore_transactional(
         )
 
     send_notification_to_users(
-        flask_app=app,
+        db=app.db_client,
         title="Match cancelled!",
         body=org_info_message,
         data={
@@ -1337,7 +1337,7 @@ def _send_close_voting_notification(match_id, going_users, potms, sport_center):
     sport_center_name = sport_center.get("name", "")
 
     send_notification_to_users(
-        flask_app=app,
+        db=app.db_client,
         title="Match stats are available!",
         body="Check out the stats for the{} match".format(" " + sport_center_name),
         users=list(going_users),
@@ -1349,7 +1349,7 @@ def _send_close_voting_notification(match_id, going_users, potms, sport_center):
     )
 
     send_notification_to_users(
-        flask_app=app,
+        db=app.db_client,
         title="Congratulations! " + "\U0001f3c6",
         body="You won the Player of the Match award for the{} match".format(
             " " + sport_center_name

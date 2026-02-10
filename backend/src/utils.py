@@ -101,27 +101,61 @@ def build_dynamic_link(link):
     return json.loads(resp.text)["shortLink"]
 
 
-def send_notification_to_users(flask_app, title, body, data, users):
-    db = flask_app.db_client
+def send_notification_to_users(db, title, body, data, users):
 
     for user_id in users:
-        user_data = (
-            db.collection("users")
-            .document(user_id)
-            .get(field_paths={"tokens"})
-            .to_dict()
-        )
-        for t in user_data.get("tokens", []):
-            try:
-                message = messaging.Message(
-                    notification=messaging.Notification(title=title, body=body),
-                    data=data,
-                    token=t,
+        try:
+            user_data = (
+                db.collection("users")
+                .document(user_id)
+                .get(field_paths={"tokens"})
+                .to_dict()
+            )
+        except Exception as e:
+            logging.error(f"Error fetching user {user_id}: {e}")
+            continue
+
+        if not user_data:
+            logging.warning(f"User {user_id} not found, skipping")
+            continue
+
+        tokens = user_data.get("tokens", [])
+        if not tokens:
+            continue
+
+        messages = [
+            messaging.Message(
+                notification=messaging.Notification(title=title, body=body),
+                data=data,
+                token=t,
+            )
+            for t in tokens
+        ]
+
+        response = messaging.send_each(messages)
+
+        # Clean up stale tokens
+        stale_tokens = []
+        for i, send_response in enumerate(response.responses):
+            if send_response.success:
+                logging.info(f"Notification sent to {tokens[i][:20]}...")
+            elif isinstance(send_response.exception, (
+                messaging.UnregisteredError,
+                messaging.SenderIdMismatchError,
+            )):
+                logging.warning(f"Token {tokens[i][:20]}... is stale, removing")
+                stale_tokens.append(tokens[i])
+            else:
+                logging.error(
+                    f"Error sending to {tokens[i][:20]}...: {send_response.exception}"
                 )
-                response = messaging.send(message)
-                logging.info(f"Notification to {t} sent with response {response}")
-            except Exception as e:
-                logging.error(f"Error sending notification to {t}: {e}")
+
+        if stale_tokens:
+            from google.cloud.firestore_v1 import ArrayRemove
+
+            db.collection("users").document(user_id).update(
+                {"tokens": ArrayRemove(stale_tokens)}
+            )
 
 
 def update_leaderboard(app, leaderboard_id, match_list, updates_map):
@@ -146,16 +180,24 @@ def _get_user_basic_data(app, u):
     )
 
 
-def send_test_notification(app):
+def send_test_notification(db):
     # send to admin a test notification
     send_notification_to_users(
-        app, "test", "test", {}, ["IwrZWBFb4LZl3Kto1V3oUKPnCni1"]
+        db, "test", "test", {}, ["IwrZWBFb4LZl3Kto1V3oUKPnCni1"]
     )
 
 
 if __name__ == "__main__":
-    import os
+    import sys
+    import firebase_admin
+    from firebase_admin import firestore
 
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = (
-        "/Users/alessandrolipa/IdeaProjects/nutmeg-firebase/nutmeg-9099c-bf73c9d6b62a.json"
-    )
+    firebase_admin.initialize_app()
+    db = firestore.client()
+
+    # Default to the admin user, or pass a user ID as argument
+    user_id = sys.argv[1] if len(sys.argv) > 1 else "IwrZWBFb4LZl3Kto1V3oUKPnCni1"
+
+    print(f"Sending test notification to user: {user_id}")
+    send_notification_to_users(db, "Nutmeg Test", "If you see this, notifications work!", {}, [user_id])
+    print("Done!")
