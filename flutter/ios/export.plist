@@ -7,11 +7,16 @@
     <key>method</key>
     <string>app-store</string>
     <key>signingStyle</key>
-    <string>automatic</string>
+    <string>manual</string>
     <key>stripSwiftSymbols</key>
     <true/>
     <key>teamID</key>
     <string>CQD5MU7BCC</string>
+    <key>provisioningProfiles</key>
+    <dict>
+        <key>com.nutmegfootball.app</key>
+        <string>match AppStore com.nutmegfootball.app</string>
+    </dict>
     <key>thinning</key>
     <string>&lt;none&gt;</string>
 </dict>
