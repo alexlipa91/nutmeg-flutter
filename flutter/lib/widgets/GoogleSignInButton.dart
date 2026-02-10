@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -14,8 +15,9 @@ final logger = CrashlyticsLogger('GoogleSignInButton');
 
 class GoogleSignInButton extends StatelessWidget {
   final GoogleSignIn googleSignIn = GoogleSignIn(
-    clientId:
-        '956073807168-hiadijjqbhfssu8ou4d9fe2qv2dhhsus.apps.googleusercontent.com',
+    clientId: kIsWeb
+        ? '956073807168-hiadijjqbhfssu8ou4d9fe2qv2dhhsus.apps.googleusercontent.com'
+        : null,
   );
   final String? from;
 
