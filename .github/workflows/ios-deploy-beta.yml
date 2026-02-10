@@ -37,6 +37,9 @@ jobs:
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
           GIT_AUTH_TOKEN: ${{ secrets.GIT_AUTH_TOKEN }}
           KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      - name: Create env file
+        run: |
+          echo "${{ secrets.ENV_PROD }}" > .env.prod
       - name: Run Flutter tasks
         uses: subosito/flutter-action@v2
         with:
