@@ -17,38 +17,37 @@ jobs:
       run:
         working-directory: flutter
     steps:
+      # --- common: checkout ---
       - name: Checkout code from ref
         uses: actions/checkout@v2
         with:
           ref: ${{ github.ref }}
-
-      - run: echo $NUTMEG_DEPLOY_KEY  | base64 -d > android/nutmeg-deploy-key.json
-        env:
-          NUTMEG_DEPLOY_KEY: ${{ secrets.NUTMEG_DEPLOY_KEY }}
-
-      - run: echo $ANDROID_JSON | base64 -d > android/nutmeg-9099c-sa-credentials.json
-        env:
-          ANDROID_JSON: ${{ secrets.ANDROID_JSON }}
-
-      - name: Create key.properties
-        run: |
-          echo "${{ secrets.ANDROID_KEY_PROPERTIES }}" > android/key.properties
-
+      # --- common: env file ---
       - name: Create env file
         run: |
           echo "${{ secrets.ENV_PROD }}" > .env.prod
+          echo "COMMIT_TIMESTAMP=$(git log -1 --format=%cd --date=format:'%Y%m%d-%H%M')" >> .env.prod
+      # --- common: flutter setup ---
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.29.2"
 
+      # --- android-specific ---
+      - run: echo $NUTMEG_DEPLOY_KEY | base64 -d > android/nutmeg-deploy-key.json
+        env:
+          NUTMEG_DEPLOY_KEY: ${{ secrets.NUTMEG_DEPLOY_KEY }}
+      - run: echo $ANDROID_JSON | base64 -d > android/nutmeg-9099c-sa-credentials.json
+        env:
+          ANDROID_JSON: ${{ secrets.ANDROID_JSON }}
+      - name: Create key.properties
+        run: |
+          echo "${{ secrets.ANDROID_KEY_PROPERTIES }}" > android/key.properties
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: "3.3"
           bundler-cache: true
           working-directory: "flutter/android"
-
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: "3.29.2" # keep in sync with .fvm/fvm_config.json
-
       - name: Build and deploy to Play Store
         uses: maierj/fastlane-action@v3.1.0
         with:

@@ -15,10 +15,23 @@ jobs:
       run:
         working-directory: flutter
     steps:
+      # --- common: checkout ---
       - name: Checkout code from ref
         uses: actions/checkout@v2
         with:
           ref: ${{ github.ref }}
+      # --- common: env file ---
+      - name: Create env file
+        run: |
+          echo "${{ secrets.ENV_PROD }}" > .env.prod
+          echo "COMMIT_TIMESTAMP=$(git log -1 --format=%cd --date=format:'%Y%m%d-%H%M')" >> .env.prod
+      # --- common: flutter setup ---
+      - name: Run Flutter tasks
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.29.2'
+
+      # --- ios-specific ---
       - name: Decode App Store Connect API key
         run: echo "$ASC_API_KEY" | base64 -d > ios/AuthKey_${{ secrets.ASC_KEY_ID }}.p8
         env:
@@ -37,18 +50,9 @@ jobs:
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
           GIT_AUTH_TOKEN: ${{ secrets.GIT_AUTH_TOKEN }}
           KEY_ID: ${{ secrets.ASC_KEY_ID }}
-      - name: Create env file
-        run: |
-          echo "${{ secrets.ENV_PROD }}" > .env.prod
-      - name: Run Flutter tasks
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.29.2'
       - run: flutter clean
       - run: flutter pub get
-      - run: |
-          COMMIT_TS=$(git log -1 --format=%cd --date=format:'%Y%m%d-%H%M')
-          flutter build ipa --release -t lib/screens/Launch.dart --export-options-plist ios/export.plist --dart-define-from-file=.env.prod --dart-define=COMMIT_TIMESTAMP="$COMMIT_TS"
+      - run: flutter build ipa --release -t lib/screens/Launch.dart --export-options-plist ios/export.plist --dart-define-from-file=.env.prod
       - run: "ls -l build/ios/ipa"
       - name: Upload to TestFlight
         uses: maierj/fastlane-action@v3.0.0
