@@ -55,6 +55,7 @@ class Match {
   DateTime? paidOutAt;
 
   Map<String, DateTime> going;
+  Map<String, String> goingPaymentStatus; // userId -> manualPaymentStatus
   Map<String, DateTime> waitList;
 
   List<List<String>> computedTeams;
@@ -85,6 +86,7 @@ class Match {
       this.minPlayers,
       this.organizerId,
       this.going,
+      this.goingPaymentStatus,
       this.waitList,
       this.computedTeams,
       this.manualTeams,
@@ -100,6 +102,7 @@ class Match {
         minPlayers = jsonInput['minPlayers'] ?? 0,
         maxPlayers = jsonInput['maxPlayers'],
         going = _readGoing(jsonInput),
+        goingPaymentStatus = _readGoingPaymentStatus(jsonInput),
         waitList = _readWaitList(jsonInput),
         computedTeams = _readComputedTeams(jsonInput),
         manualTeams = _readManualTeams(jsonInput),
@@ -152,6 +155,18 @@ class Match {
     return map
         .map((key, value) => MapEntry(key, DateTime.parse(value["createdAt"])));
   }
+
+  static Map<String, String> _readGoingPaymentStatus(Map<String, dynamic> json) {
+    var map = Map<String, dynamic>.from(json["going"] ?? {});
+    return map.map((key, value) =>
+        MapEntry(key, (value["manualPaymentStatus"] ?? "not_yet_paid") as String));
+  }
+
+  String getPaymentStatus(String userId) =>
+      goingPaymentStatus[userId] ?? "not_yet_paid";
+
+  bool hasUserPaid(String userId) =>
+      goingPaymentStatus[userId] == "paid";
 
   static Map<String, DateTime> _readWaitList(Map<String, dynamic> json) {
     var map = Map<String, dynamic>.from(json["waitList"] ?? {});

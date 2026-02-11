@@ -10,7 +10,6 @@ import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/Buttons.dart';
 import 'package:nutmeg/widgets/ModalBottomSheet.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../state/LoadOnceState.dart';
@@ -72,37 +71,22 @@ class _PaymentReminder extends StatefulWidget {
 }
 
 class _PaymentReminderState extends State<_PaymentReminder> {
-  bool _hasPaid = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadStatus();
-  }
-
-  Future<void> _loadStatus() async {
-    var prefs = await SharedPreferences.getInstance();
-    var key = "${widget.matchId}-user-paid";
-    setState(() {
-      _hasPaid = prefs.getBool(key) ?? false;
-    });
-  }
-
-  Future<void> _toggleStatus() async {
-    var newStatus = !_hasPaid;
-    var prefs = await SharedPreferences.getInstance();
-    var key = "${widget.matchId}-user-paid";
-    await prefs.setBool(key, newStatus);
-    setState(() {
-      _hasPaid = newStatus;
-    });
+  Future<void> _toggleStatus(BuildContext context) async {
+    var matchState = context.read<MatchState>();
+    var userId = context.read<UserState>().getLoggedUserId()!;
+    var currentStatus = widget.match.getPaymentStatus(userId);
+    var newStatus = currentStatus == "paid" ? "not_yet_paid" : "paid";
+    await matchState.setManualPaymentStatus(userId, newStatus);
   }
 
   @override
   Widget build(BuildContext context) {
+    var match = context.watch<MatchState>().match ?? widget.match;
+    var loggedUserId = context.read<UserState>().getLoggedUserId();
+    var hasPaid = match.hasUserPaid(loggedUserId ?? "");
     var organizerDetails = context
         .watch<UsersState>()
-        .getUserDetail(widget.match.organizerId!);
+        .getUserDetail(match.organizerId!);
     var organizerName =
         organizerDetails?.name?.split(" ").first ?? "the organizer";
     var paymentInfo = organizerDetails?.paymentInfo;
@@ -148,34 +132,34 @@ class _PaymentReminderState extends State<_PaymentReminder> {
             SizedBox(height: 12),
             Center(
               child: InkWell(
-                onTap: _toggleStatus,
+                onTap: () => _toggleStatus(context),
                 borderRadius: BorderRadius.circular(20),
                 child: Container(
                   padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
-                    color: _hasPaid
+                    color: hasPaid
                         ? Palette.green.withOpacity(0.15)
                         : Palette.white,
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: _hasPaid ? Palette.green : Palette.greyLight,
+                      color: hasPaid ? Palette.green : Palette.greyLight,
                     ),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      if (_hasPaid)
+                      if (hasPaid)
                         Padding(
                           padding: EdgeInsets.only(right: 6),
                           child:
                               Icon(Icons.check, color: Palette.green, size: 16),
                         ),
                       Text(
-                        _hasPaid
+                        hasPaid
                             ? AppLocalizations.of(context)!.paid
                             : AppLocalizations.of(context)!.iPaid,
                         style: TextPalette.getBodyText(
-                                _hasPaid ? Palette.green : Palette.greyDark)
+                                hasPaid ? Palette.green : Palette.greyDark)
                             .copyWith(
                                 fontSize: 13, fontWeight: FontWeight.w600),
                       ),

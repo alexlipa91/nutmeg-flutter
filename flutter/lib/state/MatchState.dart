@@ -85,6 +85,10 @@ class MatchState extends ChangeNotifier {
     await fetchMatch();
   }
 
+  Future<void> setManualPaymentStatus(String userId, String status) async {
+    await editMatch({"going.$userId.manualPaymentStatus": status});
+  }
+
   Future<void> postUserRatings(Map<String, int> ratings) async {
     await CloudFunctionsClient()
         .post("matches/$_matchId/ratings/add_multi", ratings);

@@ -103,28 +103,16 @@ class LaunchController {
     // preload GIFs for join-match celebration
     MiscController.getGifs(context.read<LoadOnceState>());
 
-    if (!kIsWeb) {
-      FirebaseRemoteConfig firebaseRemoteConfig = FirebaseRemoteConfig.instance;
-      await firebaseRemoteConfig.setConfigSettings(RemoteConfigSettings(
-        fetchTimeout: Duration(seconds: 5),
-        minimumFetchInterval: Duration(minutes: 1),
-      ));
+    FirebaseRemoteConfig firebaseRemoteConfig = FirebaseRemoteConfig.instance;
+    await firebaseRemoteConfig.setConfigSettings(RemoteConfigSettings(
+      fetchTimeout: Duration(seconds: 5),
+      minimumFetchInterval: Duration(minutes: 1),
+    ));
 
-      try {
-        await firebaseRemoteConfig.fetchAndActivate();
-      } catch (e, s) {
-        logger.severe("Error fetching and activating remote config", e, s);
-      }
-
-      // Tuple2<Version, String> minimumVersion = futuresData[0];
-
-      // var current = (minimumVersion).item1;
-      // // trace.putAttribute("app_version", current.toString());
-      // var minimumVersionParts =
-      //     firebaseRemoteConfig.getString("minimum_app_version").split(".");
-      // var minimumRequired = Version(int.parse(minimumVersionParts[0]),
-      //     int.parse(minimumVersionParts[1]), int.parse(minimumVersionParts[2]));
-      // if (current < minimumRequired) throw OutdatedAppException();
+    try {
+      await firebaseRemoteConfig.fetchAndActivate();
+    } catch (e, s) {
+      logger.severe("Error fetching and activating remote config", e, s);
     }
 
     if (kDebugMode) {

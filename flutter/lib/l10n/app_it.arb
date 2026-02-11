@@ -201,7 +201,7 @@
     "sharedPaymentDetails": "{name} ha condiviso queste info di pagamento:",
     "markedAsPaid": "Hai segnato come pagato",
     "undo": "Annulla",
-    "iPaid": "Ho pagato",
+    "iPaid": "Non ancora pagato",
     "notYet": "Non ancora",
     "payOutsideNutmeg": "Paga fuori da Nutmeg",
     "payThroughNutmeg": "Paga tramite Nutmeg",

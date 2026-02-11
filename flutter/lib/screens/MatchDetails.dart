@@ -760,7 +760,7 @@ class MatchInfo extends StatelessWidget {
               _PaymentInfoRow(
                 match: match,
                 isOrganizerView: isOrganizerView,
-                isUserGoing: isUserGoing,
+                isUserGoing: match.isUserGoing(loggedUser),
               ),
             if (isOrganizerView &&
                 match.price != null &&
@@ -1549,72 +1549,41 @@ class _PaymentInfoRow extends StatefulWidget {
 }
 
 class _PaymentInfoRowState extends State<_PaymentInfoRow> {
-  bool _hasPaid = false;
   bool _isPlayerPaymentsExpanded = false;
-  Map<String, bool> _playerPayments = {};
 
-  @override
-  void initState() {
-    super.initState();
-    _loadPaymentStatus();
+  Future<void> _togglePaymentStatus(BuildContext context) async {
+    var matchState = context.read<MatchState>();
+    var userId = context.read<UserState>().getLoggedUserId()!;
+    var currentStatus = widget.match.getPaymentStatus(userId);
+    var newStatus = currentStatus == "paid" ? "not_yet_paid" : "paid";
+    await matchState.setManualPaymentStatus(userId, newStatus);
   }
 
-  Future<void> _loadPaymentStatus() async {
-    var prefs = await SharedPreferences.getInstance();
-    var key = "${widget.match.documentId}-user-paid";
-    setState(() {
-      _hasPaid = prefs.getBool(key) ?? false;
-    });
-
-    if (widget.isOrganizerView) {
-      await _loadPlayerPayments();
-    }
-  }
-
-  Future<void> _loadPlayerPayments() async {
-    var prefs = await SharedPreferences.getInstance();
-    var payments = <String, bool>{};
-    for (var userId in widget.match.going.keys) {
-      if (userId == widget.match.organizerId) continue;
-      var key = "${widget.match.documentId}-player-$userId-paid";
-      payments[userId] = prefs.getBool(key) ?? false;
-    }
-    setState(() {
-      _playerPayments = payments;
-    });
-  }
-
-  Future<void> _togglePlayerPayment(String userId) async {
-    var prefs = await SharedPreferences.getInstance();
-    var key = "${widget.match.documentId}-player-$userId-paid";
-    var newStatus = !(_playerPayments[userId] ?? false);
-    await prefs.setBool(key, newStatus);
-    setState(() {
-      _playerPayments[userId] = newStatus;
-    });
-  }
-
-  Future<void> _togglePaymentStatus() async {
-    var newStatus = !_hasPaid;
-    var prefs = await SharedPreferences.getInstance();
-    var key = "${widget.match.documentId}-user-paid";
-    await prefs.setBool(key, newStatus);
-    setState(() {
-      _hasPaid = newStatus;
-    });
+  Future<void> _togglePlayerPayment(BuildContext context, String userId) async {
+    var matchState = context.read<MatchState>();
+    var currentStatus = widget.match.getPaymentStatus(userId);
+    var newStatus = currentStatus == "paid" ? "not_yet_paid" : "paid";
+    await matchState.setManualPaymentStatus(userId, newStatus);
   }
 
   @override
   Widget build(BuildContext context) {
+    var match = context.watch<MatchState>().match ?? widget.match;
     var organizerDetails = context
         .watch<UsersState>()
-        .getUserDetail(widget.match.organizerId!);
+        .getUserDetail(match.organizerId!);
     var paymentInfo = organizerDetails?.paymentInfo;
     if (paymentInfo == null || paymentInfo.isEmpty) return SizedBox.shrink();
 
+    var loggedUserId = context.read<UserState>().getLoggedUserId();
+    var hasPaid = match.hasUserPaid(loggedUserId ?? "");
+
+    var playerIds = match.going.keys
+        .where((id) => id != match.organizerId)
+        .toList();
     var paidCount =
-        _playerPayments.values.where((paid) => paid).length;
-    var totalPlayers = _playerPayments.length;
+        playerIds.where((id) => match.hasUserPaid(id)).length;
+    var totalPlayers = playerIds.length;
 
     return Column(children: [
       SizedBox(height: 12),
@@ -1627,34 +1596,34 @@ class _PaymentInfoRowState extends State<_PaymentInfoRow> {
         if (!widget.isOrganizerView && widget.isUserGoing && ConfigsUtils.allowUsersToMarkPayments()) ...[
           SizedBox(width: 8),
           InkWell(
-            onTap: _togglePaymentStatus,
+            onTap: () => _togglePaymentStatus(context),
             borderRadius: BorderRadius.circular(16),
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
               decoration: BoxDecoration(
-                color: _hasPaid
+                color: hasPaid
                     ? Palette.green.withOpacity(0.15)
                     : Palette.greyLightest,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: _hasPaid ? Palette.green : Palette.greyLight,
+                  color: hasPaid ? Palette.green : Palette.greyLight,
                 ),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (_hasPaid)
+                  if (hasPaid)
                     Padding(
                       padding: EdgeInsets.only(right: 4),
                       child:
                           Icon(Icons.check, color: Palette.green, size: 14),
                     ),
                   Text(
-                    _hasPaid
+                    hasPaid
                         ? AppLocalizations.of(context)!.paid
                         : AppLocalizations.of(context)!.iPaid,
                     style: TextPalette.getBodyText(
-                            _hasPaid ? Palette.green : Palette.greyDark)
+                            hasPaid ? Palette.green : Palette.greyDark)
                         .copyWith(fontSize: 12, fontWeight: FontWeight.w600),
                   ),
                 ],
@@ -1706,12 +1675,12 @@ class _PaymentInfoRowState extends State<_PaymentInfoRow> {
               borderRadius: BorderRadius.circular(8),
             ),
             child: Column(
-              children: _playerPayments.keys.map((userId) {
+              children: playerIds.map((userId) {
                 var ud = context.watch<UsersState>().getUserDetail(userId);
-                var hasPaid = _playerPayments[userId] ?? false;
+                var playerPaid = match.hasUserPaid(userId);
 
                 return InkWell(
-                  onTap: () => _togglePlayerPayment(userId),
+                  onTap: () => _togglePlayerPayment(context, userId),
                   child: Padding(
                     padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     child: Row(
@@ -1729,30 +1698,30 @@ class _PaymentInfoRowState extends State<_PaymentInfoRow> {
                           padding:
                               EdgeInsets.symmetric(horizontal: 10, vertical: 3),
                           decoration: BoxDecoration(
-                            color: hasPaid
+                            color: playerPaid
                                 ? Palette.green.withOpacity(0.15)
                                 : Colors.transparent,
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
                               color:
-                                  hasPaid ? Palette.green : Palette.greyLight,
+                                  playerPaid ? Palette.green : Palette.greyLight,
                             ),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              if (hasPaid)
+                              if (playerPaid)
                                 Padding(
                                   padding: EdgeInsets.only(right: 4),
                                   child: Icon(Icons.check,
                                       color: Palette.green, size: 12),
                                 ),
                               Text(
-                                hasPaid
+                                playerPaid
                                     ? AppLocalizations.of(context)!.paid
                                     : AppLocalizations.of(context)!.notYet,
                                 style: TextPalette.getBodyText(
-                                        hasPaid
+                                        playerPaid
                                             ? Palette.green
                                             : Palette.greyDark)
                                     .copyWith(

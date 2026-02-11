@@ -1,4 +1,5 @@
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
+import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -113,7 +114,8 @@ class ConfigsUtils {
   // FirebaseRemoteConfig.instance.getBool("remove_credit_functionality");
   static bool feesOnOrganiser(String orgId) => false;
 
-  static bool allowUsersToMarkPayments() => true;
+  static bool allowUsersToMarkPayments() =>
+      FirebaseRemoteConfig.instance.getBool("allow_users_to_mark_payments");
 }
 
 String getStripeUrl(bool isTest, String userId, String? matchId) {

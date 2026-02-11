@@ -1056,6 +1056,9 @@ class CreateMatchState extends State<CreateMatch> {
                                   ? existingMatch?.going ?? Map()
                                   : Map(),
                               widget.existingMatch != null
+                                  ? existingMatch?.goingPaymentStatus ?? {}
+                                  : {},
+                              widget.existingMatch != null
                                   ? existingMatch?.waitList ?? Map()
                                   : Map(),
                               widget.existingMatch != null
