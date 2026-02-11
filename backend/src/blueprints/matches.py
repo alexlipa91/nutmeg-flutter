@@ -117,7 +117,7 @@ def _get_matches(
             filter=FieldFilter("sportCenter.country", "==", location_filter.country)
         )
 
-    res = _run_match_query(query, user_id=user_id)
+    res = _run_match_query(query, user_id=user_id, exclude_private=True)
     logging.info(
         f"Queried matches time filter {time_filter}, location filter {location_filter}: {len(res)} matches"
     )
@@ -220,7 +220,7 @@ def _get_organizer_matches(
     return res
 
 
-def _run_match_query(query, user_id: str):
+def _run_match_query(query, user_id: str, exclude_private: bool = False):
     res = {}
 
     num_fetched_matches = 0
@@ -238,6 +238,9 @@ def _run_match_query(query, user_id: str):
                 continue
 
             if user_id not in ADMIN_IDS and data.get("isTest", False):
+                continue
+
+            if exclude_private and data.get("isPrivate", False):
                 continue
 
             res[m.id] = data
