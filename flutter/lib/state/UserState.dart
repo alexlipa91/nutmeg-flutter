@@ -2,7 +2,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 import 'package:nutmeg/model/LocationInfo.dart';
@@ -211,31 +210,16 @@ class UserState extends ChangeNotifier {
     }
   }
 
-  Future<void> continueWithFacebook(BuildContext context) async {
-    var userCred;
-
-    if (kIsWeb) {
-      // Create a new provider
-      FacebookAuthProvider facebookProvider = FacebookAuthProvider();
-
-      facebookProvider.addScope('email');
-      facebookProvider.setCustomParameters({
-        'display': 'popup',
-      });
-
-      // Once signed in, return the UserCredential
-      userCred = await FirebaseAuth.instance.signInWithPopup(facebookProvider);
-    } else {
-      // Trigger the sign-in flow
-      final LoginResult loginResult = await FacebookAuth.instance.login();
-
-      // Create a credential from the access token
-      final OAuthCredential facebookAuthCredential =
-          FacebookAuthProvider.credential(loginResult.accessToken?.token ?? "");
-
-      // Once signed in, return the UserCredential
+  Future<void> continueWithEmail(
+      BuildContext context, String email, String password,
+      {required bool isNewUser}) async {
+    UserCredential userCred;
+    if (isNewUser) {
       userCred = await FirebaseAuth.instance
-          .signInWithCredential(facebookAuthCredential);
+          .createUserWithEmailAndPassword(email: email, password: password);
+    } else {
+      userCred = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(email: email, password: password);
     }
     await login(userCred, context);
   }

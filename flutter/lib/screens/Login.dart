@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:nutmeg/screens/Launch.dart';
 import 'package:nutmeg/state/UserState.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
+import 'package:nutmeg/screens/EmailLogin.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/Containers.dart';
 import 'package:nutmeg/widgets/GoogleSignInButton.dart';
@@ -77,13 +78,15 @@ class LoginArea extends StatelessWidget {
                       child: Column(
                     children: [
                       GoogleSignInButton(from: from),
-                      SizedBox(height: 16),
-                      SignInButton(provider: Provider.facebook, from: from),
                       if (!kIsWeb && Platform.isIOS)
                         Padding(
                             padding: EdgeInsets.only(top: 16),
                             child: SignInButton(
                                 provider: Provider.apple, from: from)),
+                      Padding(
+                        padding: EdgeInsets.only(top: 16),
+                        child: _EmailSignInButton(from: from),
+                      ),
                     ],
                   )),
                 ),
@@ -102,7 +105,7 @@ class LoginArea extends StatelessWidget {
   }
 }
 
-enum Provider { facebook, apple }
+enum Provider { apple }
 
 class SignInButton extends StatelessWidget {
   final Provider provider;
@@ -119,14 +122,6 @@ class SignInButton extends StatelessWidget {
     var logoPath;
 
     switch (provider) {
-      case Provider.facebook:
-        loginFuture =
-            () => context.read<UserState>().continueWithFacebook(context);
-        backgroundColor = UiUtils.fromHex("#4267B2");
-        textStyle = GoogleFonts.roboto(
-            color: Palette.white, fontSize: 14, fontWeight: FontWeight.w700);
-        logoPath = "assets/login/fb_logo.png";
-        break;
       case Provider.apple:
         loginFuture =
             () => context.read<UserState>().continueWithApple(context);
@@ -178,6 +173,56 @@ class SignInButton extends StatelessWidget {
                       AppLocalizations.of(context)!.continueWithButton(
                           provider.toString().split(".").last.toUpperCase()),
                       style: textStyle,
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                )
+              ],
+            ),
+          ),
+        )
+      ],
+    );
+  }
+}
+
+class _EmailSignInButton extends StatelessWidget {
+  final String? from;
+
+  const _EmailSignInButton({Key? key, this.from}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: OutlinedButton(
+            style: OutlinedButton.styleFrom(
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                backgroundColor: Colors.transparent,
+                side: BorderSide(width: 1.0, color: Palette.greyLight),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(40))),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                    builder: (context) => EmailLogin(from: from)),
+              );
+            },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: <Widget>[
+                Icon(Icons.email_outlined, size: 20, color: Palette.greyDark),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 10),
+                    child: Text(
+                      AppLocalizations.of(context)!
+                          .continueWithButton('EMAIL'),
+                      style: GoogleFonts.roboto(
+                          color: Palette.greyDark,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700),
                       textAlign: TextAlign.center,
                     ),
                   ),

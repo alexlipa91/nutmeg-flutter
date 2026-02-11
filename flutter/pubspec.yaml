@@ -48,7 +48,6 @@ dependencies:
   firebase_crashlytics: ^4.3.5
   package_info_plus: ^8.3.0
   share_plus: ^11.0.0
-  flutter_facebook_auth: ^6.0.4
   firebase_messaging: ^15.2.5
   firebase_storage: ^12.4.5
   cached_network_image: ^3.3.0

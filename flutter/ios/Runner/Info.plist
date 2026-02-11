@@ -26,16 +26,6 @@
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>CFBundleURLName</key>
-			<string></string>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>fb876470106296837</string>
-			</array>
-		</dict>
-		<dict>
-			<key>CFBundleTypeRole</key>
-			<string>Editor</string>
-			<key>CFBundleURLName</key>
 			<string>Bundle ID</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
@@ -53,12 +43,6 @@
 	</array>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
-	<key>FacebookAppID</key>
-	<string>876470106296837</string>
-	<key>FacebookClientToken</key>
-	<string>f0ddace6a9ece2c0e381c6223aebc1d8</string>
-	<key>FacebookDisplayName</key>
-	<string>Nutmeg</string>
 	<key>FlutterDeepLinkingEnabled</key>
 	<true/>
 	<key>ITSAppUsesNonExemptEncryption</key>
