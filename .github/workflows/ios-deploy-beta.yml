@@ -77,4 +77,3 @@ jobs:
           GIT_AUTH_TOKEN: ${{ secrets.GIT_AUTH_TOKEN }}
           KEY_ID: ${{ secrets.ASC_KEY_ID }}
           ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
-          FASTLANE_ITUNES_TRANSPORTER_USE_SHELL_SCRIPT: "1"
