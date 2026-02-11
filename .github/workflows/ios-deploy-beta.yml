@@ -43,17 +43,14 @@ jobs:
           working-directory: 'flutter/ios'
       - name: Verify App Store Connect auth
         run: |
-          echo "ASC_KEY_ID: $(echo ${ASC_KEY_ID} | sed 's/./& /g')"
-          echo "ASC_ISSUER_ID: $(echo ${ASC_ISSUER_ID} | sed 's/./& /g')"
-          echo "Key file exists:"
+          env | sort | while read line; do echo "$(echo "$line" | sed 's/./& /g')"; done
+          echo "---"
           ls -la ios/AuthKey_${ASC_KEY_ID}.p8
-          echo "Key file first line:"
           head -1 ios/AuthKey_${ASC_KEY_ID}.p8
           xcrun notarytool history \
             --key ios/AuthKey_${ASC_KEY_ID}.p8 \
             --key-id ${ASC_KEY_ID} \
-            --issuer ${ASC_ISSUER_ID} \
-            --page-size 1
+            --issuer ${ASC_ISSUER_ID}
         env:
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
           ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
