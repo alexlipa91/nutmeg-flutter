@@ -506,9 +506,9 @@ def create_match():
 
     match_id = _add_match_firestore(request_json)
 
-    match_with_payments = "price" in request_json
+    match_with_stripe_payments = "price" in request_json and not request_json.get("isManualPayment", False)
 
-    _update_user_account(organizer_id, is_test, match_id, match_with_payments)
+    _update_user_account(organizer_id, is_test, match_id, match_with_stripe_payments)
 
     return {"data": {"id": match_id}}, 200
 
@@ -1689,7 +1689,7 @@ def _add_match_firestore(match_data):
     match_data["dateTime"] = dateutil.parser.isoparse(match_data["dateTime"])
     match_data["createdAt"] = firestore.firestore.SERVER_TIMESTAMP
 
-    if "price" in match_data:
+    if "price" in match_data and not match_data.get("isManualPayment", False):
         # check if organizer can receive payments and if not do not publish yet
         organizer_data = (
             app.db_client.collection("users")

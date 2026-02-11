@@ -84,7 +84,8 @@ class CreateMatchState extends State<CreateMatch> {
   bool isSavedSportCenter = false;
   bool isTest = false;
   bool paymentsPossible = true;
-  bool managePayments = false;
+  bool hasPrice = false;
+  bool showPaymentInfo = true;
   bool withAutomaticCancellation = false;
   bool privateMatch = false;
   Duration cancelBefore = Duration(hours: 24);
@@ -110,6 +111,61 @@ class CreateMatchState extends State<CreateMatch> {
   FocusNode startTimefocusNode = FocusNode();
 
   final logger = CrashlyticsLogger('CreateMatch');
+
+  void _showEditPaymentInfoModal(BuildContext context) {
+    var userDetails = context.read<UserState>().getLoggedUserDetails();
+    var controller =
+        TextEditingController(text: userDetails?.paymentInfo ?? "");
+
+    ModalBottomSheet.showNutmegModalBottomSheet(
+      context,
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(AppLocalizations.of(context)!.paymentInfoHeader, style: TextPalette.h2),
+          SizedBox(height: 8),
+          Text(
+            AppLocalizations.of(context)!.paymentInfoShownToPlayers,
+            style: TextPalette.bodyText,
+          ),
+          SizedBox(height: 16),
+          TextFormField(
+            controller: controller,
+            maxLines: 4,
+            minLines: 2,
+            autofocus: true,
+            decoration: InputDecoration(
+              hintText: AppLocalizations.of(context)!.paymentInfoPlaceholder,
+              hintStyle: TextPalette.getBodyText(Palette.greyDark),
+              filled: true,
+              fillColor: Palette.greyLighter,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide.none,
+              ),
+              contentPadding:
+                  EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            ),
+          ),
+          SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: GenericButtonWithLoader(AppLocalizations.of(context)!.save, (_) async {
+                  var text = controller.text.trim();
+                  await context.read<UserState>().editUser({
+                    "paymentInfo": text.isEmpty ? null : text,
+                  });
+                  Navigator.pop(context);
+                }, Primary()),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 
   Future<void> refreshState() async {
     logger.info("refreshing state");
@@ -149,7 +205,8 @@ class CreateMatchState extends State<CreateMatch> {
       withAutomaticCancellation = match.cancelBefore != null;
       cancelTimeEditingController.text =
           match.cancelBefore?.inHours.toString() ?? "";
-      managePayments = match.price != null;
+      hasPrice = match.price != null;
+      showPaymentInfo = match.isManualPayment;
       paymentsPossible =
           !blacklistedCountriesForPayments.contains(sportCenter!.country);
       start = match.getLocalizedTime();
@@ -497,169 +554,267 @@ class CreateMatchState extends State<CreateMatch> {
       Section(
         title: AppLocalizations.of(context)!.paymentSectionTitle,
         titleType: "big",
-        body: Column(children: [
+        body: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          // "Set Payment Info" checkbox
           Row(
             children: [
-              if (paymentsPossible)
-                Checkbox(
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(5)),
-                    value: managePayments,
-                    activeColor: Palette.primary,
-                    onChanged: widget.existingMatch != null
-                        ? null
-                        : (v) {
-                            setState(() {
-                              managePayments = v!;
-                            });
-                          }),
-              if (paymentsPossible)
-                Flexible(
-                    child: Text(AppLocalizations.of(context)!.paymentEnableInfo,
-                        style: TextPalette.bodyText,
-                        overflow: TextOverflow.visible)),
-              if (!paymentsPossible)
-                Flexible(
-                    child: Text(
-                        AppLocalizations.of(context)!.paymentNotPossibleInfo,
-                        style: TextPalette.bodyText,
-                        overflow: TextOverflow.visible)),
+              Checkbox(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(5)),
+                  value: hasPrice,
+                  activeColor: Palette.primary,
+                  onChanged: widget.existingMatch != null
+                      ? null
+                      : (v) {
+                          setState(() {
+                            hasPrice = v!;
+                          });
+                        }),
+              Flexible(
+                  child: Text(AppLocalizations.of(context)!.setPaymentInfo,
+                      style: TextPalette.bodyText,
+                      overflow: TextOverflow.visible)),
             ],
           ),
-          SizedBox(
-            height: 16,
-          ),
-          if (paymentsPossible && managePayments)
-            Container(
-              child: Column(
-                children: [
-                  Row(
+          if (hasPrice) ...[
+            SizedBox(height: 16),
+            // Price field
+            Row(
+              children: [
+                Expanded(
+                    child: TextFormField(
+                        enabled: widget.existingMatch == null,
+                        validator: (v) {
+                          if (!hasPrice) return null;
+                          if (v == null || v.isEmpty) return requiredError;
+                          var f = regexPrice.firstMatch(v);
+                          if (f == null || f.end - f.start != v.length)
+                            return AppLocalizations.of(context)!
+                                .invalidAmountError;
+                          if (double.parse(v) < 0.50)
+                            return AppLocalizations.of(context)!
+                                .minimumAmountError;
+                          return null;
+                        },
+                        onChanged: (v) {
+                          setState(() {
+                            price = v;
+                          });
+                        },
+                        controller: priceController,
+                        keyboardType: TextInputType.numberWithOptions(
+                            signed: true, decimal: true),
+                        autovalidateMode:
+                            AutovalidateMode.onUserInteraction,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(
+                              RegExp(r'^\d*\.?\d*$')),
+                        ],
+                        decoration: getTextFormDecoration(
+                            AppLocalizations.of(context)!
+                                .pricePerPlayerLabel,
+                            prefixText: "€ ",
+                            fill: widget.existingMatch == null))),
+              ],
+            ),
+            SizedBox(height: 16),
+            // Payment mode radio buttons
+            RadioListTile<bool>(
+              title: Text(AppLocalizations.of(context)!.payOutsideNutmeg,
+                  style: TextPalette.bodyText),
+              value: true,
+              groupValue: showPaymentInfo,
+              activeColor: Palette.primary,
+              contentPadding: EdgeInsets.zero,
+              dense: true,
+              onChanged: widget.existingMatch != null
+                  ? null
+                  : (v) {
+                      setState(() {
+                        showPaymentInfo = v!;
+                      });
+                    },
+            ),
+            // Pay outside Nutmeg: show payment info card
+            if (showPaymentInfo) ...[
+              SizedBox(height: 12),
+              Builder(builder: (context) {
+                var userDetails =
+                    context.watch<UserState>().getLoggedUserDetails();
+                var hasPaymentInfo = userDetails?.paymentInfo != null &&
+                    userDetails!.paymentInfo!.isNotEmpty;
+
+                return Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Palette.greyLightest,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Palette.greyLight),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(
-                          child: TextFormField(
-                              enabled: widget.existingMatch == null,
-                              validator: (v) {
-                                if (v == null || v.isEmpty)
-                                  return requiredError;
-                                var f = regexPrice.firstMatch(v);
-                                if (f == null || f.end - f.start != v.length)
-                                  return AppLocalizations.of(context)!
-                                      .invalidAmountError;
-                                if (double.parse(v) < 0.50)
-                                  return AppLocalizations.of(context)!
-                                      .minimumAmountError;
-                                return null;
-                              },
-                              onChanged: (v) {
-                                setState(() {
-                                  price = v;
-                                });
-                              },
-                              controller: priceController,
-                              keyboardType: TextInputType.numberWithOptions(
-                                  signed: true, decimal: true),
-                              autovalidateMode:
-                                  AutovalidateMode.onUserInteraction,
-                              inputFormatters: [
-                                FilteringTextInputFormatter.allow(
-                                    RegExp(r'^\d*\.?\d*$')),
-                              ],
-                              decoration: getTextFormDecoration(
-                                  AppLocalizations.of(context)!
-                                      .pricePerPlayerLabel,
-                                  prefixText: "€ ",
-                                  fill: widget.existingMatch == null))),
+                      Row(
+                        children: [
+                          Icon(Icons.payment_outlined,
+                              color: Palette.primary, size: 20),
+                          SizedBox(width: 8),
+                          Text(AppLocalizations.of(context)!.yourPaymentInfo,
+                              style: TextPalette.h2),
+                        ],
+                      ),
+                      SizedBox(height: 12),
+                      Text(
+                        hasPaymentInfo
+                            ? userDetails!.paymentInfo!
+                            : AppLocalizations.of(context)!.noPaymentInfoYet,
+                        style: TextPalette.getBodyText(
+                            hasPaymentInfo
+                                ? Palette.black
+                                : Palette.greyDark),
+                      ),
+                      SizedBox(height: 12),
+                      InkWell(
+                        onTap: () {
+                          _showEditPaymentInfoModal(context);
+                        },
+                        child: Text(
+                          hasPaymentInfo ? AppLocalizations.of(context)!.editAction : AppLocalizations.of(context)!.addPaymentInfo,
+                          style: TextPalette.linkStyle,
+                        ),
+                      ),
+                      if (!hasPaymentInfo)
+                        Padding(
+                          padding: EdgeInsets.only(top: 4),
+                          child: Text(
+                            AppLocalizations.of(context)!.paymentInfoPlayersHint,
+                            style: TextPalette.getBodyText(
+                                Palette.greyDark),
+                          ),
+                        ),
                     ],
                   ),
-                  if (ConfigsUtils.feesOnOrganiser(organiserId))
-                    Padding(
-                      padding: EdgeInsets.only(top: 16),
-                      child: Row(children: [
-                        Text(
-                            AppLocalizations.of(context)!
-                                .nutmegFeeInfo(formatCurrency(50)),
-                            style: TextPalette.bodyText),
-                      ]),
-                    ),
-                  SizedBox(height: 16),
-                  Row(children: [
-                    Text(AppLocalizations.of(context)!.youWillGetLabel,
-                        style: TextPalette.h3),
-                    Spacer(),
-                    Builder(builder: (BuildContext buildContext) {
-                      var price = Decimal.tryParse(priceController.text);
-                      if (price != null &&
-                          ConfigsUtils.feesOnOrganiser(organiserId))
-                        price = price - Decimal.parse("0.5");
-                      return Text(
-                          (price == null)
-                              ? "€ --"
-                              : "€ " +
-                                  (price.toDouble() *
-                                          numberOfPeopleRangeValues.start)
-                                      .toStringAsFixed(2) +
-                                  " - " +
-                                  "€ " +
-                                  (price.toDouble() *
-                                          numberOfPeopleRangeValues.end)
-                                      .toStringAsFixed(2),
-                          style: TextPalette.h3);
-                    }),
-                  ]),
-                  SizedBox(height: 8),
-                  Row(children: [
-                    Text(AppLocalizations.of(context)!.usersWillPayLabel,
-                        style: TextPalette.bodyText),
-                    Spacer(),
-                    Builder(builder: (BuildContext buildContext) {
-                      var price = Decimal.tryParse(priceController.text);
-                      if (price != null && organiserWithFee)
-                        price = price + Decimal.parse("0.5");
-                      return Text(
-                          (price == null)
-                              ? "€ --"
-                              : "€ ${price.toDouble().toStringAsFixed(2)}",
-                          style: TextPalette.bodyText);
-                    }),
-                  ]),
-                  if (organiserWithFee)
-                    Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-                      Text(AppLocalizations.of(context)!.usersWillPayText,
-                          style: GoogleFonts.roboto(
-                              color: Palette.greyDark,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w400,
-                              height: 1.6)),
+                );
+              }),
+            ],
+            SizedBox(height: 8),
+            RadioListTile<bool>(
+              title: Text(AppLocalizations.of(context)!.payThroughNutmeg,
+                  style: TextPalette.bodyText),
+              value: false,
+              groupValue: showPaymentInfo,
+              activeColor: Palette.primary,
+              contentPadding: EdgeInsets.zero,
+              dense: true,
+              onChanged: widget.existingMatch != null
+                  ? null
+                  : (v) {
+                      setState(() {
+                        showPaymentInfo = v!;
+                      });
+                    },
+            ),
+            // Pay through Nutmeg: Stripe content
+            if (!showPaymentInfo) ...[
+              if (paymentsPossible) ...[
+                if (ConfigsUtils.feesOnOrganiser(organiserId))
+                  Padding(
+                    padding: EdgeInsets.only(top: 8),
+                    child: Row(children: [
+                      Text(
+                          AppLocalizations.of(context)!
+                              .nutmegFeeInfo(formatCurrency(50)),
+                          style: TextPalette.bodyText),
                     ]),
-                  SizedBox(height: 16),
-                  NutmegDivider(horizontal: true),
-                  RichText(
-                      textAlign: TextAlign.start,
-                      text: TextSpan(
-                        children: [
-                          TextSpan(
-                              text: AppLocalizations.of(context)!
-                                  .paymentExplanationText,
-                              style: TextPalette.bodyText),
-                          TextSpan(
-                              text: " Stripe.",
-                              recognizer: TapGestureRecognizer()
-                                ..onTap = () async {
-                                  final url = 'https://stripe.com';
-                                  if (await canLaunchUrl(Uri.parse(url))) {
-                                    await launchUrl(
-                                      Uri.parse(url),
-                                    );
-                                  }
-                                },
-                              style: TextPalette.bodyText.copyWith(
-                                  color: Palette.primary,
-                                  decoration: TextDecoration.underline))
-                        ],
-                      ))
-                ],
-              ),
-            )
+                  ),
+                SizedBox(height: 16),
+                Row(children: [
+                  Text(AppLocalizations.of(context)!.youWillGetLabel,
+                      style: TextPalette.h3),
+                  Spacer(),
+                  Builder(builder: (BuildContext buildContext) {
+                    var price = Decimal.tryParse(priceController.text);
+                    if (price != null &&
+                        ConfigsUtils.feesOnOrganiser(organiserId))
+                      price = price - Decimal.parse("0.5");
+                    return Text(
+                        (price == null)
+                            ? "€ --"
+                            : "€ " +
+                                (price.toDouble() *
+                                        numberOfPeopleRangeValues.start)
+                                    .toStringAsFixed(2) +
+                                " - " +
+                                "€ " +
+                                (price.toDouble() *
+                                        numberOfPeopleRangeValues.end)
+                                    .toStringAsFixed(2),
+                        style: TextPalette.h3);
+                  }),
+                ]),
+                SizedBox(height: 8),
+                Row(children: [
+                  Text(AppLocalizations.of(context)!.usersWillPayLabel,
+                      style: TextPalette.bodyText),
+                  Spacer(),
+                  Builder(builder: (BuildContext buildContext) {
+                    var price = Decimal.tryParse(priceController.text);
+                    if (price != null && organiserWithFee)
+                      price = price + Decimal.parse("0.5");
+                    return Text(
+                        (price == null)
+                            ? "€ --"
+                            : "€ ${price.toDouble().toStringAsFixed(2)}",
+                        style: TextPalette.bodyText);
+                  }),
+                ]),
+                if (organiserWithFee)
+                  Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+                    Text(AppLocalizations.of(context)!.usersWillPayText,
+                        style: GoogleFonts.roboto(
+                            color: Palette.greyDark,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w400,
+                            height: 1.6)),
+                  ]),
+                SizedBox(height: 16),
+                NutmegDivider(horizontal: true),
+                RichText(
+                    textAlign: TextAlign.start,
+                    text: TextSpan(
+                      children: [
+                        TextSpan(
+                            text: AppLocalizations.of(context)!
+                                .paymentExplanationText,
+                            style: TextPalette.bodyText),
+                        TextSpan(
+                            text: " Stripe.",
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () async {
+                                final url = 'https://stripe.com';
+                                if (await canLaunchUrl(Uri.parse(url))) {
+                                  await launchUrl(
+                                    Uri.parse(url),
+                                  );
+                                }
+                              },
+                            style: TextPalette.bodyText.copyWith(
+                                color: Palette.primary,
+                                decoration: TextDecoration.underline))
+                      ],
+                    )),
+              ],
+              if (!paymentsPossible)
+                Padding(
+                  padding: EdgeInsets.only(top: 8),
+                  child: Text(
+                      AppLocalizations.of(context)!.paymentNotPossibleInfo,
+                      style: TextPalette.getBodyText(Palette.greyDark),
+                      overflow: TextOverflow.visible),
+                ),
+            ],
+          ],
         ]),
       ),
       if (widget.existingMatch == null)
@@ -878,13 +1033,15 @@ class CreateMatchState extends State<CreateMatch> {
                               sportCenter!,
                               courtNumber,
                               numberOfPeopleRangeValues.end.toInt(),
-                              (paymentsPossible && managePayments)
+                              hasPrice
                                   ? Price(
                                       (Decimal.parse(price!) *
                                               Decimal.parse("100"))
                                           .toDouble()
                                           .toInt(),
-                                      organiserWithFee ? 50 : 0)
+                                      (!showPaymentInfo && organiserWithFee)
+                                          ? 50
+                                          : 0)
                                   : null,
                               endDateTime.difference(startDateTime),
                               isTest,
@@ -913,7 +1070,8 @@ class CreateMatchState extends State<CreateMatch> {
                               withAutomaticCancellation ? cancelBefore : null,
                               widget.existingMatch != null
                                   ? existingMatch?.score
-                                  : null);
+                                  : null,
+                              showPaymentInfo);
 
                           var id;
                           if (widget.existingMatch == null) {

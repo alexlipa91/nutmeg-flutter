@@ -1,10 +1,12 @@
 import 'dart:io';
 
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:nutmeg/utils/CrashlyticsLogger.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class UiUtils {
   /// String is in the format "aabbcc" or "ffaabbcc" with an optional leading "#".
@@ -129,4 +131,40 @@ class DeviceInfo {
     }
     logger.info("device name is $name");
   }
+}
+
+final _urlRegex = RegExp(
+  r'(https?://[^\s]+)',
+  caseSensitive: false,
+);
+
+Widget buildLinkedText(String text, TextStyle style) {
+  final matches = _urlRegex.allMatches(text).toList();
+  if (matches.isEmpty) return Text(text, style: style);
+
+  final spans = <TextSpan>[];
+  var lastEnd = 0;
+  for (final match in matches) {
+    if (match.start > lastEnd) {
+      spans.add(TextSpan(text: text.substring(lastEnd, match.start)));
+    }
+    final url = match.group(0)!;
+    spans.add(TextSpan(
+      text: url,
+      style: style.copyWith(
+          color: Palette.primary, decoration: TextDecoration.underline),
+      recognizer: TapGestureRecognizer()
+        ..onTap = () async {
+          if (await canLaunchUrl(Uri.parse(url))) {
+            await launchUrl(Uri.parse(url),
+                mode: LaunchMode.externalApplication);
+          }
+        },
+    ));
+    lastEnd = match.end;
+  }
+  if (lastEnd < text.length) {
+    spans.add(TextSpan(text: text.substring(lastEnd)));
+  }
+  return Text.rich(TextSpan(style: style, children: spans));
 }

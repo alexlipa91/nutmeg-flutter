@@ -185,5 +185,24 @@
     "updateRatesPlayersTitleText": "Alterar votos",
     "ratesCloseInText": "As avaliações fecham em {hours} horas",
     "locationErrorTitle": "Falha ao obter a localização!",
-    "locationErrorDescription": "Tente novamente mais tarde."
+    "locationErrorDescription": "Tente novamente mais tarde.",
+
+    "setPaymentInfo": "Definir info de pagamento",
+    "showPlayersPaymentInfo": "Mostrar aos jogadores info para pagamento",
+    "paymentInfoHeader": "Info de pagamento",
+    "yourPaymentInfo": "Suas info de pagamento",
+    "noPaymentInfoYet": "Nenhuma info de pagamento definida",
+    "addPaymentInfo": "ADICIONAR INFO DE PAGAMENTO",
+    "paymentInfoPlayersHint": "Os jogadores que entrarem verão estas info para saber como te pagar",
+    "paymentInfoShownToPlayers": "Isto será mostrado aos jogadores que entrarem nas suas partidas",
+    "paymentInfoPlaceholder": "ex. Revolut @username, IBAN PT123...",
+    "paymentInfoProfileDesc": "Adicione os seus dados de pagamento (ex. Revolut, IBAN) para que os jogadores saibam como te pagar",
+    "save": "Salvar",
+    "sharedPaymentDetails": "{name} compartilhou estas info de pagamento:",
+    "markedAsPaid": "Você marcou como pago",
+    "undo": "Desfazer",
+    "iPaid": "Eu paguei",
+    "notYet": "Ainda não",
+    "payOutsideNutmeg": "Pagar fora do Nutmeg",
+    "payThroughNutmeg": "Pagar pelo Nutmeg"
 }

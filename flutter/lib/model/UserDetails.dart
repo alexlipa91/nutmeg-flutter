@@ -33,6 +33,8 @@ class UserDetails {
   LocationInfo? location;
   String? language;
 
+  String? paymentInfo;
+
   UserDetails(this.documentId, this.isAdmin, this.image, this.name, this.email)
       : numRatedMatches = 0,
         sumTotalRates = 0,
@@ -74,6 +76,7 @@ class UserDetails {
         numWin = (json["record"] ?? {})["num_win"],
         numLoss = (json["record"] ?? {})["num_loss"],
         numDraw = (json["record"] ?? {})["num_draw"],
+        paymentInfo = json["paymentInfo"],
         documentId = documentId;
 
   static List<double> _readLastScores(Map<String, double> lastDateScores) {

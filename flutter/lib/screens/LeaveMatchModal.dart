@@ -23,9 +23,10 @@ class LeaveButton extends StatelessWidget {
       (BuildContext context) async {
         var state = context.read<MatchState>();
         var match = state.match;
+        var paidThroughNutmeg = match!.price != null && !match.isManualPayment;
         // fixme make it parametric
         var leaveMatchText;
-        if (match!.price != null) {
+        if (paidThroughNutmeg) {
           leaveMatchText = AppLocalizations.of(context)!.leaveMatchInfo;
           if (match.price!.userFee > 0) {
             leaveMatchText = leaveMatchText +
@@ -40,7 +41,7 @@ class LeaveButton extends StatelessWidget {
         await GenericInfoModal(
             title: AppLocalizations.of(context)!.leaveThisMatchTitle,
             description: leaveMatchText,
-            content: match.price != null
+            content: paidThroughNutmeg
                 ? ModalPaymentDescriptionArea(
                     rows: [],
                     finalRow: Row(
@@ -91,6 +92,8 @@ class ConfirmLeaveMatchButton extends StatelessWidget {
   Widget build(BuildContext context) {
     var match = matchState.match!;
 
+    var paidThroughNutmeg = match.price != null && !match.isManualPayment;
+
     return GenericButtonWithLoader(
       AppLocalizations.of(context)!.confirmButtonText,
       (BuildContext context) async {
@@ -100,19 +103,19 @@ class ConfirmLeaveMatchButton extends StatelessWidget {
         Navigator.of(context).pop(true);
 
         GenericInfoModal(
-                title: match.price != null
+                title: paidThroughNutmeg
                     ? ConfigsUtils.removeCreditsFunctionality()
                         ? "A refund of ${formatCurrency(match.price!.basePrice)} "
                             "was issued "
                         : formatCurrency(match.price!.basePrice) +
                             " credits were added to your account"
                     : AppLocalizations.of(context)!.leftMatchTitle,
-                description: match.price != null
+                description: paidThroughNutmeg
                     ? (ConfigsUtils.removeCreditsFunctionality()
                         ? "You will receive the money in 3 to 5 business days on the payment method you used."
                         : "You can find your credits in your account page. Next time you join a game they will be automatically used.")
                     : "",
-                action: match.price != null
+                action: paidThroughNutmeg
                     ? InkWell(
                         onTap: () async {
                           context.read<UserState>().fetchLoggedUserDetails();

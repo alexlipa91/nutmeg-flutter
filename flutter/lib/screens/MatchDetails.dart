@@ -6,6 +6,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/rendering.dart';
@@ -349,6 +350,27 @@ List<Widget> getWidgets(
         rules.join("\n"), large);
   };
 
+  var loggedUser = context.read<UserState>().getLoggedUserDetails();
+  var isUserGoing = match.isUserGoing(loggedUser);
+
+  var paymentInfoWidget = (match.isManualPayment &&
+          match.organizerId != null &&
+          isUserGoing &&
+          !match.isMatchFinished() &&
+          match.organizerId != loggedUser?.documentId)
+      ? Builder(builder: (context) {
+          var organizerDetails = context
+              .watch<UsersState>()
+              .getUserDetail(match.organizerId!);
+          var paymentInfo = organizerDetails?.paymentInfo;
+          if (paymentInfo == null || paymentInfo.isEmpty) return SizedBox.shrink();
+          return PaymentInfoCard(
+            match: match,
+            organizerDetails: organizerDetails!,
+          );
+        })
+      : null;
+
   var organiserBadge = match.organizerId != null
       ? Builder(builder: (context) {
           var ud =
@@ -386,6 +408,7 @@ List<Widget> getWidgets(
       matchInfo,
       // stats
       if (infoPlayersList != null) infoPlayersList,
+      if (paymentInfoWidget != null) paymentInfoWidget,
       if (waitListWidget != null) waitListWidget,
       if (teamsWidget != null) teamsWidget,
       if (stats != null) stats,
@@ -420,6 +443,7 @@ List<Widget> getWidgets(
                 mainAxisSize: MainAxisSize.min,
                 children: interleave([
                   if (infoPlayersList != null) infoPlayersList,
+                  if (paymentInfoWidget != null) paymentInfoWidget,
                   if (waitListWidget != null) waitListWidget,
                   if (teamsWidget != null) teamsWidget,
                   if (stats != null) stats,
@@ -752,6 +776,26 @@ class MatchInfo extends StatelessWidget {
                 Icons.lock_outline:
                     AppLocalizations.of(context)!.privateMatchDesc,
             }),
+            if (match.isManualPayment && match.organizerId != null)
+              Builder(builder: (context) {
+                var organizerDetails = context
+                    .watch<UsersState>()
+                    .getUserDetail(match.organizerId!);
+                var paymentInfo = organizerDetails?.paymentInfo;
+                if (paymentInfo == null || paymentInfo.isEmpty)
+                  return SizedBox.shrink();
+                return Column(children: [
+                  SizedBox(height: 12),
+                  Row(children: [
+                    Icon(Icons.payment_outlined,
+                        color: Palette.black, size: 18),
+                    SizedBox(width: 16),
+                    Expanded(
+                      child: buildLinkedText(paymentInfo, TextPalette.listItem),
+                    ),
+                  ]),
+                ]);
+              }),
             if (isOrganizerView &&
                 match.price != null &&
                 match.isMatchFinished() &&
@@ -1519,6 +1563,147 @@ class IconList extends StatelessWidget {
     List<Widget> widgets = interleave(rows.toList(), SizedBox(height: 12));
 
     return Column(children: widgets);
+  }
+}
+
+class PaymentInfoCard extends StatefulWidget {
+  final Match match;
+  final UserDetails organizerDetails;
+
+  const PaymentInfoCard({
+    Key? key,
+    required this.match,
+    required this.organizerDetails,
+  }) : super(key: key);
+
+  @override
+  State<PaymentInfoCard> createState() => _PaymentInfoCardState();
+}
+
+class _PaymentInfoCardState extends State<PaymentInfoCard> {
+  bool? _hasPaid;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPaymentStatus();
+  }
+
+  Future<void> _loadPaymentStatus() async {
+    var prefs = await SharedPreferences.getInstance();
+    var key = "${widget.match.documentId}-user-paid";
+    setState(() {
+      _hasPaid = prefs.getBool(key);
+    });
+  }
+
+  Future<void> _setPaymentStatus(bool paid) async {
+    var prefs = await SharedPreferences.getInstance();
+    var key = "${widget.match.documentId}-user-paid";
+    await prefs.setBool(key, paid);
+    setState(() {
+      _hasPaid = paid;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    var organizerName =
+        widget.organizerDetails.name?.split(" ").first ?? "Organizer";
+    var paymentInfo = widget.organizerDetails.paymentInfo!;
+
+    return InfoContainer(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.payment_outlined, color: Palette.primary, size: 20),
+              SizedBox(width: 8),
+              Text(AppLocalizations.of(context)!.paymentInfoHeader, style: TextPalette.h2),
+            ],
+          ),
+          SizedBox(height: 12),
+          Text(
+            AppLocalizations.of(context)!.sharedPaymentDetails(organizerName),
+            style: TextPalette.bodyText,
+          ),
+          SizedBox(height: 8),
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Palette.greyLightest,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: buildLinkedText(paymentInfo, TextPalette.getBodyText(Palette.black)),
+          ),
+          SizedBox(height: 16),
+          if (_hasPaid == true)
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+              decoration: BoxDecoration(
+                color: Palette.green.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Palette.green.withOpacity(0.3)),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.check_circle, color: Palette.green, size: 20),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text(AppLocalizations.of(context)!.markedAsPaid,
+                        style: TextPalette.getBodyText(Palette.green)),
+                  ),
+                  InkWell(
+                    onTap: () => _setPaymentStatus(false),
+                    child: Text(AppLocalizations.of(context)!.undo,
+                        style: TextPalette.getBodyText(Palette.greyDark)
+                            .copyWith(decoration: TextDecoration.underline)),
+                  ),
+                ],
+              ),
+            )
+          else
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () => _setPaymentStatus(true),
+                    icon: Icon(Icons.check, color: Palette.green),
+                    label: Text(AppLocalizations.of(context)!.iPaid,
+                        style: TextPalette.getBodyText(Palette.green)),
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(color: Palette.green),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding: EdgeInsets.symmetric(vertical: 12),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 12),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () => _setPaymentStatus(false),
+                    icon: Icon(Icons.schedule, color: Palette.greyDark),
+                    label: Text(AppLocalizations.of(context)!.notYet,
+                        style: TextPalette.getBodyText(Palette.greyDark)),
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(color: Palette.greyLight),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding: EdgeInsets.symmetric(vertical: 12),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+        ],
+      ),
+    );
   }
 }
 

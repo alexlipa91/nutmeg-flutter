@@ -71,6 +71,7 @@ class Match {
 
   bool isPrivate;
   bool isTest = false;
+  bool isManualPayment;
 
   Match(
       this.dateTime,
@@ -89,7 +90,8 @@ class Match {
       this.manualTeams,
       this.isPrivate,
       this.cancelBefore,
-      this.score);
+      this.score,
+      this.isManualPayment);
 
   Match.fromJson(Map<String, dynamic> jsonInput, String documentId)
       : dateTime = DateTime.parse(jsonInput['dateTime']),
@@ -115,6 +117,7 @@ class Match {
                 Map<String, dynamic>.from(jsonInput["sportCenter"]),
                 jsonInput["sportCenter"]["placeId"]),
         isPrivate = jsonInput["isPrivate"] ?? false,
+        isManualPayment = jsonInput["isManualPayment"] ?? false,
         payout = jsonInput["payout"] != null
             ? Payout.fromJson(jsonInput["payout"])
             : null {
@@ -192,7 +195,8 @@ class Match {
         if (score != null) 'score': score,
         "isPrivate": isPrivate,
         "dynamicLink": dynamicLink,
-        'isTest': isTest
+        'isTest': isTest,
+        'isManualPayment': isManualPayment
       };
 
   int getSpotsLeft() => maxPlayers - numPlayersGoing();

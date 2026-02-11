@@ -332,5 +332,29 @@
         }
     },
     "locationErrorTitle": "Failed to get location!",
-    "locationErrorDescription": "Please try again later."
+    "locationErrorDescription": "Please try again later.",
+
+    "setPaymentInfo": "Set Payment Info",
+    "showPlayersPaymentInfo": "Show players info for payments",
+    "paymentInfoHeader": "Payment Info",
+    "yourPaymentInfo": "Your payment info",
+    "noPaymentInfoYet": "No payment info set yet",
+    "addPaymentInfo": "ADD PAYMENT INFO",
+    "paymentInfoPlayersHint": "Players who join will see this so they know how to pay you",
+    "paymentInfoShownToPlayers": "This will be shown to players who join your matches",
+    "paymentInfoPlaceholder": "e.g. Revolut @username, IBAN IT123...",
+    "paymentInfoProfileDesc": "Add your payment details (e.g. Revolut, IBAN) so players know how to pay you",
+    "save": "Save",
+    "sharedPaymentDetails": "{name} shared these payment details:",
+    "@sharedPaymentDetails": {
+        "placeholders": {
+            "name": {"type": "String"}
+        }
+    },
+    "markedAsPaid": "You marked this as paid",
+    "undo": "Undo",
+    "iPaid": "I paid",
+    "notYet": "Not yet",
+    "payOutsideNutmeg": "Pay outside Nutmeg",
+    "payThroughNutmeg": "Pay through Nutmeg"
 }

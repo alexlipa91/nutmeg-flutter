@@ -130,13 +130,15 @@ class JoinModal {
           context, MaterialPageRoute(builder: (context) => Login()));
 
     if (userState.isLoggedIn()) {
-      if (match!.price == null) {
+      // Free match or manual payment: join directly
+      if (match!.price == null || match.isManualPayment) {
         await matchState.addLoggedInUserToMatch();
         matchesState.addToGoingMatches(matchId!);
         await PaymentDetailsDescription.communicateSuccessToUser(context, matchId);
         return;
       }
 
+      // Stripe payment flow
       await GenericInfoModal(
           title: AppLocalizations.of(context)!.joinThisMatchTitle,
           description: AppLocalizations.of(context)!.joinMatchInfo,
