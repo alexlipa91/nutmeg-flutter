@@ -700,14 +700,21 @@ class CreateMatchState extends State<CreateMatch> {
             ],
             SizedBox(height: 8),
             RadioListTile<bool>(
-              title: Text(AppLocalizations.of(context)!.payThroughNutmeg,
-                  style: TextPalette.bodyText),
+              title: Text(
+                AppLocalizations.of(context)!.payThroughNutmeg,
+                style: TextPalette.bodyText.copyWith(
+                  color: ConfigsUtils.allowNutmegManagedPayments()
+                      ? null
+                      : Palette.greyDark,
+                ),
+              ),
               value: false,
               groupValue: showPaymentInfo,
               activeColor: Palette.primary,
               contentPadding: EdgeInsets.zero,
               dense: true,
-              onChanged: widget.existingMatch != null
+              onChanged: (widget.existingMatch != null ||
+                      !ConfigsUtils.allowNutmegManagedPayments())
                   ? null
                   : (v) {
                       setState(() {
@@ -716,7 +723,7 @@ class CreateMatchState extends State<CreateMatch> {
                     },
             ),
             // Pay through Nutmeg: Stripe content
-            if (!showPaymentInfo) ...[
+            if (!showPaymentInfo && ConfigsUtils.allowNutmegManagedPayments()) ...[
               if (paymentsPossible) ...[
                 if (ConfigsUtils.feesOnOrganiser(organiserId))
                   Padding(

@@ -253,6 +253,7 @@ class AvailableMatches extends StatelessWidget {
     var locationInfo =
         userState.getLoggedUserDetails()?.location ?? state.locationInfo;
 
+    var isLoggedIn = userState.isLoggedIn();
     var myMatchesWidgets = getMyMatchesWidgets(context, state);
 
     return MultiProvider(
@@ -266,15 +267,15 @@ class AvailableMatches extends StatelessWidget {
                   AppLocalizations.of(context)!.upcoming.toUpperCase(),
                   AppLocalizations.of(context)!.going.toUpperCase(),
                   AppLocalizations.of(context)!.past.toUpperCase(),
-                  if (myMatchesWidgets != null)
+                  if (isLoggedIn)
                     AppLocalizations.of(context)!.myMatches.toUpperCase(),
                 ].toList(),
                 [
                   upcomingWidgets(context),
                   goingWidgets(context),
                   pastWidgets(context),
-                  if (myMatchesWidgets != null)
-                    getMyMatchesWidgets(context, state)
+                  if (isLoggedIn)
+                    myMatchesWidgets ?? getEmptyStateWidget(context)
                 ].toList(),
                 getEmptyStateWidget(context),
                 context.watch<AvailableMatchesUiState>().current == 3

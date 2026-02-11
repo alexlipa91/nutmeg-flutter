@@ -116,6 +116,9 @@ class ConfigsUtils {
 
   static bool allowUsersToMarkPayments() =>
       FirebaseRemoteConfig.instance.getBool("allow_users_to_mark_payments");
+
+  static bool allowNutmegManagedPayments() =>
+      FirebaseRemoteConfig.instance.getBool("allow_nutmeg_managed_payments");
 }
 
 String getStripeUrl(bool isTest, String userId, String? matchId) {
