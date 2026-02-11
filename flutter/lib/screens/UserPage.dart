@@ -202,8 +202,10 @@ class UserPageState extends State<UserPage> {
           ],
         )),
         verticalSpace,
-        PaymentInfoEditor(userDetails: userDetails),
-        verticalSpace,
+        if (userDetails.createdMatches != null && userDetails.createdMatches!.isNotEmpty) ...[
+          PaymentInfoEditor(userDetails: userDetails),
+          verticalSpace,
+        ],
         Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
           Expanded(
             child: UserInfoBox(
