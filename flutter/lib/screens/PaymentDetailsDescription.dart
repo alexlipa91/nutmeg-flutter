@@ -1,6 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:nutmeg/model/Match.dart';
 import 'package:nutmeg/state/MatchState.dart';
 import 'package:nutmeg/state/UsersState.dart';
 import 'package:nutmeg/state/UserState.dart';
@@ -23,6 +22,18 @@ class PaymentDetailsDescription {
     var loggedUserId = userState.getLoggedUserId();
     var isManualPayment = match?.isManualPayment ?? false;
     var isOrganizer = match?.organizerId == loggedUserId;
+
+    // Read all data from the outer context (providers aren't available inside modal)
+    var organizerDetails = match?.organizerId != null
+        ? context.read<UsersState>().getUserDetail(match!.organizerId!)
+        : null;
+    var organizerName =
+        organizerDetails?.name?.split(" ").first ?? "the organizer";
+    var paymentInfo = organizerDetails?.paymentInfo;
+    var showReminder = isManualPayment &&
+        !isOrganizer &&
+        match?.organizerId != null &&
+        ConfigsUtils.allowUsersToMarkPayments();
 
     await ModalBottomSheet.showNutmegModalBottomSheet(
         context,
@@ -47,8 +58,19 @@ class PaymentDetailsDescription {
                   padding: EdgeInsets.only(top: 10),
                   child: Text(AppLocalizations.of(context)!.joinedMatchText,
                       style: TextPalette.bodyText)),
-              if (isManualPayment && !isOrganizer && match?.organizerId != null && ConfigsUtils.allowUsersToMarkPayments())
-                _PaymentReminder(match: match!, matchId: matchId),
+              if (showReminder)
+                _PaymentReminder(
+                  organizerName: organizerName,
+                  paymentInfo: paymentInfo,
+                  onToggle: () async {
+                    var currentStatus =
+                        match!.getPaymentStatus(loggedUserId!);
+                    var newStatus =
+                        currentStatus == "paid" ? "not_yet_paid" : "paid";
+                    await matchState.setManualPaymentStatus(
+                        loggedUserId, newStatus);
+                  },
+                ),
               if ((DeviceInfo().name?.contains("ipad") ?? false))
                 Padding(
                     padding: EdgeInsets.only(top: 20),
@@ -60,36 +82,35 @@ class PaymentDetailsDescription {
 }
 
 class _PaymentReminder extends StatefulWidget {
-  final Match match;
-  final String matchId;
+  final String organizerName;
+  final String? paymentInfo;
+  final Future<void> Function() onToggle;
 
-  const _PaymentReminder({Key? key, required this.match, required this.matchId})
-      : super(key: key);
+  const _PaymentReminder({
+    Key? key,
+    required this.organizerName,
+    required this.paymentInfo,
+    required this.onToggle,
+  }) : super(key: key);
 
   @override
   State<_PaymentReminder> createState() => _PaymentReminderState();
 }
 
 class _PaymentReminderState extends State<_PaymentReminder> {
-  Future<void> _toggleStatus(BuildContext context) async {
-    var matchState = context.read<MatchState>();
-    var userId = context.read<UserState>().getLoggedUserId()!;
-    var currentStatus = widget.match.getPaymentStatus(userId);
-    var newStatus = currentStatus == "paid" ? "not_yet_paid" : "paid";
-    await matchState.setManualPaymentStatus(userId, newStatus);
+  bool _hasPaid = false;
+
+  Future<void> _toggleStatus() async {
+    await widget.onToggle();
+    setState(() {
+      _hasPaid = !_hasPaid;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    var match = context.watch<MatchState>().match ?? widget.match;
-    var loggedUserId = context.read<UserState>().getLoggedUserId();
-    var hasPaid = match.hasUserPaid(loggedUserId ?? "");
-    var organizerDetails = context
-        .watch<UsersState>()
-        .getUserDetail(match.organizerId!);
-    var organizerName =
-        organizerDetails?.name?.split(" ").first ?? "the organizer";
-    var paymentInfo = organizerDetails?.paymentInfo;
+    var organizerName = widget.organizerName;
+    var paymentInfo = widget.paymentInfo;
 
     return Padding(
       padding: EdgeInsets.only(top: 20),
@@ -132,34 +153,34 @@ class _PaymentReminderState extends State<_PaymentReminder> {
             SizedBox(height: 12),
             Center(
               child: InkWell(
-                onTap: () => _toggleStatus(context),
+                onTap: _toggleStatus,
                 borderRadius: BorderRadius.circular(20),
                 child: Container(
                   padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
-                    color: hasPaid
+                    color: _hasPaid
                         ? Palette.green.withOpacity(0.15)
                         : Palette.white,
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: hasPaid ? Palette.green : Palette.greyLight,
+                      color: _hasPaid ? Palette.green : Palette.greyLight,
                     ),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      if (hasPaid)
+                      if (_hasPaid)
                         Padding(
                           padding: EdgeInsets.only(right: 6),
                           child:
                               Icon(Icons.check, color: Palette.green, size: 16),
                         ),
                       Text(
-                        hasPaid
+                        _hasPaid
                             ? AppLocalizations.of(context)!.paid
                             : AppLocalizations.of(context)!.iPaid,
                         style: TextPalette.getBodyText(
-                                hasPaid ? Palette.green : Palette.greyDark)
+                                _hasPaid ? Palette.green : Palette.greyDark)
                             .copyWith(
                                 fontSize: 13, fontWeight: FontWeight.w600),
                       ),

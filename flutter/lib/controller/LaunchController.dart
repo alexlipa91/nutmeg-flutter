@@ -104,6 +104,10 @@ class LaunchController {
     MiscController.getGifs(context.read<LoadOnceState>());
 
     FirebaseRemoteConfig firebaseRemoteConfig = FirebaseRemoteConfig.instance;
+    await firebaseRemoteConfig.setDefaults({
+      "allow_users_to_mark_payments": true,
+      "allow_nutmeg_managed_payments": false,
+    });
     await firebaseRemoteConfig.setConfigSettings(RemoteConfigSettings(
       fetchTimeout: Duration(seconds: 5),
       minimumFetchInterval: Duration(minutes: 1),
