@@ -1,13 +1,9 @@
 name: Playstore Deployment
 
-# temporarily disabled
-# on:
-#   push:
-#     tags:
-#       - v*
-#     branches:
-#       - master
-on: workflow_dispatch
+on:
+  push:
+    tags:
+      - v*
 
 jobs:
   deploy_android:
@@ -48,8 +44,8 @@ jobs:
           ruby-version: "3.3"
           bundler-cache: true
           working-directory: "flutter/android"
-      - name: Build and deploy to Play Store
+      - name: Build and deploy to Play Store (Internal Testing)
         uses: maierj/fastlane-action@v3.1.0
         with:
-          lane: "playstoreProduction"
+          lane: "playstoreInternalTest"
           subdirectory: "flutter/android"

@@ -22,4 +22,12 @@ platform :android do
       release_status: "completed",
     )
   end
+
+  lane :promoteToProduction do
+    upload_to_play_store(
+      track: "internal",
+      track_promote_to: "production",
+      release_status: "completed",
+    )
+  end
 end

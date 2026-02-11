@@ -1,0 +1,75 @@
+name: Promote to Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: "Platform to promote"
+        required: true
+        type: choice
+        options:
+          - android
+          - ios
+          - both
+
+jobs:
+  promote_android:
+    name: Promote Android to Production
+    if: ${{ inputs.platform == 'android' || inputs.platform == 'both' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: flutter
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - run: echo $NUTMEG_DEPLOY_KEY | base64 -d > android/nutmeg-deploy-key.json
+        env:
+          NUTMEG_DEPLOY_KEY: ${{ secrets.NUTMEG_DEPLOY_KEY }}
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: true
+          working-directory: "flutter/android"
+      - name: Promote internal testing to production
+        uses: maierj/fastlane-action@v3.1.0
+        with:
+          lane: "promoteToProduction"
+          subdirectory: "flutter/android"
+
+  promote_ios:
+    name: Promote iOS to App Store Review
+    if: ${{ inputs.platform == 'ios' || inputs.platform == 'both' }}
+    runs-on: macOS-latest
+    defaults:
+      run:
+        working-directory: flutter
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Read version from pubspec.yaml
+        id: version
+        run: |
+          VERSION_LINE=$(grep '^version:' pubspec.yaml | head -1)
+          APP_VERSION=$(echo "$VERSION_LINE" | sed 's/version: *//;s/+.*//')
+          BUILD_NUMBER=$(echo "$VERSION_LINE" | sed 's/.*+//')
+          echo "app_version=$APP_VERSION" >> $GITHUB_OUTPUT
+          echo "build_number=$BUILD_NUMBER" >> $GITHUB_OUTPUT
+          echo "Parsed version: $APP_VERSION+$BUILD_NUMBER"
+      - name: Decode App Store Connect API key
+        run: echo "$ASC_API_KEY" | base64 -d > ios/AuthKey_${{ secrets.ASC_KEY_ID }}.p8
+        env:
+          ASC_API_KEY: ${{ secrets.ASC_API_KEY }}
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: true
+          working-directory: "flutter/ios"
+      - name: Submit for App Store review
+        uses: maierj/fastlane-action@v3.1.0
+        with:
+          lane: "submit_for_review build_number:${{ steps.version.outputs.build_number }} version:${{ steps.version.outputs.app_version }}"
+          subdirectory: "flutter/ios"
+        env:
+          KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
