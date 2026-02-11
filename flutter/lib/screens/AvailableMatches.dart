@@ -1,6 +1,7 @@
 import "package:collection/collection.dart";
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:nutmeg/model/LocationInfo.dart';
 import 'package:nutmeg/model/Match.dart';
 import 'package:nutmeg/screens/ChangeCity.dart';
@@ -48,21 +49,35 @@ class AvailableMatches extends StatelessWidget {
     List<Widget> widgets = [];
 
     if (matches.isNotEmpty) {
-      matches
-          .sortedBy((e) => e.match!.dateTime)
-          .reversed
-          .forEachIndexed((index, m) {
-        if (index == 0) {
-          widgets.add(widgetWithMatchProvider(
-              state,
-              GenericMatchInfoPast.first(m.match!.documentId, onTap),
-              m.match!.documentId));
-        } else {
-          widgets.add(widgetWithMatchProvider(
-              state,
-              GenericMatchInfoPast(m.match!.documentId, onTap),
-              m.match!.documentId));
-        }
+      var sorted = matches.sortedBy((e) => e.match!.dateTime).reversed.toList();
+      var locale = Localizations.localeOf(context).languageCode;
+
+      var grouped = sorted.groupListsBy((m) {
+        var date = m.match!.dateTime;
+        return "${date.year}-${date.month}";
+      });
+
+      grouped.entries.forEachIndexed((groupIndex, entry) {
+        var firstDate = entry.value.first.match!.dateTime;
+        var label = DateFormat("MMMM yyyy", locale).format(firstDate).toUpperCase();
+
+        var matchWidgets = entry.value.mapIndexed((index, m) {
+          if (groupIndex == 0 && index == 0) {
+            return widgetWithMatchProvider(state,
+                GenericMatchInfoPast.first(m.match!.documentId, onTap),
+                m.match!.documentId);
+          } else {
+            return widgetWithMatchProvider(state,
+                GenericMatchInfoPast(m.match!.documentId, onTap),
+                m.match!.documentId);
+          }
+        }).toList();
+
+        widgets.add(Section(
+          topSpace: groupIndex == 0 ? 16 : 32,
+          title: label,
+          body: Column(children: matchWidgets),
+        ));
       });
     }
 
@@ -196,21 +211,35 @@ class AvailableMatches extends StatelessWidget {
     List<Widget> widgets = [];
 
     if (matches.isNotEmpty) {
-      matches
-          .sortedBy((e) => e.match!.dateTime)
-          .reversed
-          .forEachIndexed((index, m) {
-        if (index == 0) {
-          widgets.add(widgetWithMatchProvider(
-              state,
-              GenericMatchInfo.first(m.match!, m.match!.sportCenter, onTap),
-              m.match!.documentId));
-        } else {
-          widgets.add(widgetWithMatchProvider(
-              state,
-              GenericMatchInfo(m.match!, m.match!.sportCenter, onTap),
-              m.match!.documentId));
-        }
+      var sorted = matches.sortedBy((e) => e.match!.dateTime).reversed.toList();
+      var locale = Localizations.localeOf(context).languageCode;
+
+      var grouped = sorted.groupListsBy((m) {
+        var date = m.match!.dateTime;
+        return "${date.year}-${date.month}";
+      });
+
+      grouped.entries.forEachIndexed((groupIndex, entry) {
+        var firstDate = entry.value.first.match!.dateTime;
+        var label = DateFormat("MMMM yyyy", locale).format(firstDate).toUpperCase();
+
+        var matchWidgets = entry.value.mapIndexed((index, m) {
+          if (groupIndex == 0 && index == 0) {
+            return widgetWithMatchProvider(state,
+                GenericMatchInfo.first(m.match!, m.match!.sportCenter, onTap),
+                m.match!.documentId);
+          } else {
+            return widgetWithMatchProvider(state,
+                GenericMatchInfo(m.match!, m.match!.sportCenter, onTap),
+                m.match!.documentId);
+          }
+        }).toList();
+
+        widgets.add(Section(
+          topSpace: groupIndex == 0 ? 16 : 32,
+          title: label,
+          body: Column(children: matchWidgets),
+        ));
       });
     }
 
