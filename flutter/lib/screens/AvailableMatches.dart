@@ -83,6 +83,13 @@ class AvailableMatches extends StatelessWidget {
 
     if (widgets.isEmpty) return getEmptyStateWidget(context, false);
 
+    widgets.add(_buildLoadMoreButton(
+      context,
+      hasMore: state.pastMatchesHasMore,
+      isLoading: state.pastMatchesLoadingMore,
+      onPressed: () => state.fetchMorePastMatches(),
+    ));
+
     return Column(children: widgets);
   }
 
@@ -245,7 +252,39 @@ class AvailableMatches extends StatelessWidget {
 
     if (widgets.isEmpty) return getEmptyStateWidget(context);
 
+    widgets.add(_buildLoadMoreButton(
+      context,
+      hasMore: state.myOrganizedMatchesHasMore,
+      isLoading: state.myOrganizedMatchesLoadingMore,
+      onPressed: () => state.fetchMoreMyOrganizedMatches(),
+    ));
+
     return Column(children: widgets);
+  }
+
+  Widget _buildLoadMoreButton(
+    BuildContext context, {
+    required bool hasMore,
+    required bool isLoading,
+    required VoidCallback onPressed,
+  }) {
+    if (!hasMore) return SizedBox.shrink();
+
+    return Padding(
+      padding: EdgeInsets.only(top: 16, bottom: 8),
+      child: Center(
+        child: isLoading
+            ? SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : IconButton(
+                onPressed: onPressed,
+                icon: Icon(Icons.expand_more, color: Palette.primary, size: 28),
+              ),
+      ),
+    );
   }
 
   Widget getEmptyStateWidget(BuildContext context, [bool withAction = true]) {

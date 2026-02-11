@@ -131,7 +131,12 @@ def _get_teams(match_data: Dict) -> Tuple[List[str], List[str]]:
     return teams["players"]["a"], teams["players"]["b"]
 
 
-def _get_user_matches(user_id: str, time_filter: Optional[MatchesTimeFilter]):
+def _get_user_matches(
+    user_id: str,
+    time_filter: Optional[MatchesTimeFilter],
+    limit: Optional[int] = None,
+    cursor: Optional[str] = None,
+):
     now = datetime.now(tz=pytz.UTC)
 
     query = app.db_client.collection("matches")
@@ -142,13 +147,37 @@ def _get_user_matches(user_id: str, time_filter: Optional[MatchesTimeFilter]):
     elif time_filter == MatchesTimeFilter.FUTURE:
         query = query.where(filter=FieldFilter("dateTime", ">", now))
 
+    if limit is not None:
+        query = query.order_by("dateTime", direction=firestore.Query.DESCENDING)
+        if cursor:
+            cursor_dt = dateutil.parser.parse(cursor)
+            query = query.start_after({"dateTime": cursor_dt})
+        query = query.limit(limit + 1)
+
     res = _run_match_query(query, user_id=user_id)
     logging.info(f"Queried user matches time filter {time_filter}: {len(res)} matches")
+
+    if limit is not None:
+        has_more = len(res) > limit
+        if has_more:
+            keys = list(res.keys())[:limit]
+            res = {k: res[k] for k in keys}
+        last_cursor = None
+        if res:
+            last_key = list(res.keys())[-1]
+            last_dt = res[last_key].get("dateTime")
+            if last_dt:
+                last_cursor = last_dt if isinstance(last_dt, str) else last_dt.isoformat()
+        return res, has_more, last_cursor
+
     return res
 
 
 def _get_organizer_matches(
-    organizer_id: str, time_filter: Optional[MatchesTimeFilter] = None
+    organizer_id: str,
+    time_filter: Optional[MatchesTimeFilter] = None,
+    limit: Optional[int] = None,
+    cursor: Optional[str] = None,
 ):
     now = datetime.now(tz=pytz.UTC)
 
@@ -163,10 +192,31 @@ def _get_organizer_matches(
     if organizer_id not in ADMIN_IDS:
         query = query.where(filter=FieldFilter("isTest", "==", False))
 
+    if limit is not None:
+        query = query.order_by("dateTime", direction=firestore.Query.DESCENDING)
+        if cursor:
+            cursor_dt = dateutil.parser.parse(cursor)
+            query = query.start_after({"dateTime": cursor_dt})
+        query = query.limit(limit + 1)
+
     res = _run_match_query(query, user_id=organizer_id)
     logging.info(
         f"Queried organizer matches time filter {time_filter}: {len(res)} matches"
     )
+
+    if limit is not None:
+        has_more = len(res) > limit
+        if has_more:
+            keys = list(res.keys())[:limit]
+            res = {k: res[k] for k in keys}
+        last_cursor = None
+        if res:
+            last_key = list(res.keys())[-1]
+            last_dt = res[last_key].get("dateTime")
+            if last_dt:
+                last_cursor = last_dt if isinstance(last_dt, str) else last_dt.isoformat()
+        return res, has_more, last_cursor
+
     return res
 
 
@@ -219,9 +269,23 @@ def get_user_matches():
     time_filter: Optional[MatchesTimeFilter] = MatchesTimeFilter.from_arg(
         flask.request.args.get("when", None)
     )
-    return {
-        "data": _get_user_matches(user_id=flask.g.uid, time_filter=time_filter)
-    }, 200
+    limit_str = flask.request.args.get("limit", None)
+    cursor = flask.request.args.get("cursor", None)
+    limit = int(limit_str) if limit_str else None
+
+    result = _get_user_matches(
+        user_id=flask.g.uid, time_filter=time_filter, limit=limit, cursor=cursor
+    )
+
+    if limit is not None:
+        matches, has_more, last_cursor = result
+        return {
+            "data": matches,
+            "has_more": has_more,
+            "cursor": last_cursor,
+        }, 200
+    else:
+        return {"data": result}, 200
 
 
 @bp_v2.route("/organizer", methods=["GET"])
@@ -229,11 +293,23 @@ def get_organizer_matches():
     time_filter: Optional[MatchesTimeFilter] = MatchesTimeFilter.from_arg(
         flask.request.args.get("when", None)
     )
-    return {
-        "data": _get_organizer_matches(
-            organizer_id=flask.g.uid, time_filter=time_filter
-        )
-    }, 200
+    limit_str = flask.request.args.get("limit", None)
+    cursor = flask.request.args.get("cursor", None)
+    limit = int(limit_str) if limit_str else None
+
+    result = _get_organizer_matches(
+        organizer_id=flask.g.uid, time_filter=time_filter, limit=limit, cursor=cursor
+    )
+
+    if limit is not None:
+        matches, has_more, last_cursor = result
+        return {
+            "data": matches,
+            "has_more": has_more,
+            "cursor": last_cursor,
+        }, 200
+    else:
+        return {"data": result}, 200
 
 
 ## V1 API

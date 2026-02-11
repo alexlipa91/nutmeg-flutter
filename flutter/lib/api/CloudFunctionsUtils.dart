@@ -69,29 +69,31 @@ class CloudFunctionsClient {
 
   Future<Map<String, dynamic>?> get(String name,
       {Map<String, dynamic> args = const {}}) async {
+    var fullResponse = await getFullResponse(name, args: args);
+    return fullResponse?["data"];
+  }
+
+  Future<Map<String, dynamic>?> getFullResponse(String name,
+      {Map<String, dynamic> args = const {}}) async {
     logger.info("GET $name with args ${args.toString()}");
 
-    // var trace = FirebasePerformance.instance.newTrace("api-call");
-    // await trace.start();
-    // trace.putAttribute("path_name", name);
-    // trace.putAttribute("path_wildcard_name", _getPathWildcardName(name));
-    // trace.putAttribute("method", "get");
-    // trace.putAttribute("source", "app_engine");
+    var baseUri = Uri.parse("$appEngineBaseUrl/$name");
+    Uri uri;
+    if (args.isNotEmpty) {
+      uri = baseUri.replace(
+          queryParameters:
+              args.map((key, value) => MapEntry(key, value.toString())));
+    } else {
+      uri = baseUri;
+    }
 
-    // final Stopwatch stopwatch = Stopwatch();
-    // stopwatch.start();
-
-    var argsString = args.entries.map((e) => "${e.key}=${e.value}").join("&");
-    var url = "$appEngineBaseUrl/$name";
-    if (argsString.isNotEmpty) url = "$url?$argsString";
-
-    var r = await http.get(Uri.parse(url), headers: await _headers());
+    var r = await http.get(uri, headers: await _headers());
     if (r.statusCode == 500) {
       logger.severe("Server error (500) on GET $name: ${r.body}");
       throw Exception(r.body);
     }
 
-    return jsonDecode(r.body)["data"];
+    return Map<String, dynamic>.from(jsonDecode(r.body));
   }
 
   String getUrl(String path) => "$appEngineBaseUrl/$path";

@@ -25,6 +25,20 @@ class MatchesState extends ChangeNotifier {
   List<String>? _goingMatchesIds;
   List<String>? _myOrganizedMatchesIds;
 
+  // pagination state
+  static const int pageSize = 7;
+  String? _pastMatchesCursor;
+  bool _pastMatchesHasMore = false;
+  bool _pastMatchesLoadingMore = false;
+  String? _myOrganizedMatchesCursor;
+  bool _myOrganizedMatchesHasMore = false;
+  bool _myOrganizedMatchesLoadingMore = false;
+
+  bool get pastMatchesHasMore => _pastMatchesHasMore;
+  bool get pastMatchesLoadingMore => _pastMatchesLoadingMore;
+  bool get myOrganizedMatchesHasMore => _myOrganizedMatchesHasMore;
+  bool get myOrganizedMatchesLoadingMore => _myOrganizedMatchesLoadingMore;
+
   List<MatchState>? getPastMatches() {
     return _pastMatchesIds
         ?.map((e) => _matches[e])
@@ -88,6 +102,10 @@ class MatchesState extends ChangeNotifier {
       _upcomingMatchesIds = null;
       _goingMatchesIds = null;
       _myOrganizedMatchesIds = null;
+      _pastMatchesCursor = null;
+      _pastMatchesHasMore = false;
+      _myOrganizedMatchesCursor = null;
+      _myOrganizedMatchesHasMore = false;
       notifyListeners();
 
       fetchGoingMatches();
@@ -188,9 +206,16 @@ class MatchesState extends ChangeNotifier {
     if (userState?.getLoggedUserId() == null) return;
 
     var resp = await CloudFunctionsClient()
-        .get("v2/matches/user", args: {"when": "past"});
-    Map<String, dynamic> data =
-        (resp == null) ? Map() : Map<String, dynamic>.from(resp);
+        .getFullResponse("v2/matches/user", args: {
+      "when": "past",
+      "limit": pageSize.toString(),
+    });
+
+    Map<String, dynamic> data = (resp?["data"] == null)
+        ? Map()
+        : Map<String, dynamic>.from(resp!["data"]);
+    _pastMatchesHasMore = resp?["has_more"] == true;
+    _pastMatchesCursor = resp?["cursor"];
 
     List<String> matches = [];
 
@@ -209,12 +234,56 @@ class MatchesState extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> fetchMorePastMatches() async {
+    if (userState?.getLoggedUserId() == null) return;
+    if (!_pastMatchesHasMore || _pastMatchesCursor == null) return;
+    if (_pastMatchesLoadingMore) return;
+
+    _pastMatchesLoadingMore = true;
+    notifyListeners();
+
+    try {
+      var resp = await CloudFunctionsClient()
+          .getFullResponse("v2/matches/user", args: {
+        "when": "past",
+        "limit": pageSize.toString(),
+        "cursor": _pastMatchesCursor!,
+      });
+
+      Map<String, dynamic> data = (resp?["data"] == null)
+          ? Map()
+          : Map<String, dynamic>.from(resp!["data"]);
+      _pastMatchesHasMore = resp?["has_more"] == true;
+      _pastMatchesCursor = resp?["cursor"];
+
+      data.entries
+          .map((element) => deserializeMatch(element))
+          .where((e) => e != null)
+          .where((e) => shouldShow(e!))
+          .forEach((m) {
+        _matches[m!.documentId] = MatchState.fromMatch(m, userState!);
+        _pastMatchesIds?.add(m.documentId);
+      });
+    } finally {
+      _pastMatchesLoadingMore = false;
+    }
+
+    notifyListeners();
+  }
+
   Future<void> fetchMyOrganizedMatches() async {
     if (userState?.getLoggedUserId() == null) return;
 
-    var resp = await CloudFunctionsClient().get("v2/matches/organizer");
-    Map<String, dynamic> data =
-        (resp == null) ? Map() : Map<String, dynamic>.from(resp);
+    var resp = await CloudFunctionsClient()
+        .getFullResponse("v2/matches/organizer", args: {
+      "limit": pageSize.toString(),
+    });
+
+    Map<String, dynamic> data = (resp?["data"] == null)
+        ? Map()
+        : Map<String, dynamic>.from(resp!["data"]);
+    _myOrganizedMatchesHasMore = resp?["has_more"] == true;
+    _myOrganizedMatchesCursor = resp?["cursor"];
 
     List<String> matches = [];
 
@@ -229,6 +298,42 @@ class MatchesState extends ChangeNotifier {
     });
 
     _myOrganizedMatchesIds = matches;
+
+    notifyListeners();
+  }
+
+  Future<void> fetchMoreMyOrganizedMatches() async {
+    if (userState?.getLoggedUserId() == null) return;
+    if (!_myOrganizedMatchesHasMore || _myOrganizedMatchesCursor == null) return;
+    if (_myOrganizedMatchesLoadingMore) return;
+
+    _myOrganizedMatchesLoadingMore = true;
+    notifyListeners();
+
+    try {
+      var resp = await CloudFunctionsClient()
+          .getFullResponse("v2/matches/organizer", args: {
+        "limit": pageSize.toString(),
+        "cursor": _myOrganizedMatchesCursor!,
+      });
+
+      Map<String, dynamic> data = (resp?["data"] == null)
+          ? Map()
+          : Map<String, dynamic>.from(resp!["data"]);
+      _myOrganizedMatchesHasMore = resp?["has_more"] == true;
+      _myOrganizedMatchesCursor = resp?["cursor"];
+
+      data.entries
+          .map((element) => deserializeMatch(element))
+          .where((e) => e != null)
+          .where((e) => shouldShow(e!))
+          .forEach((m) {
+        _matches[m!.documentId] = MatchState.fromMatch(m, userState!);
+        _myOrganizedMatchesIds?.add(m.documentId);
+      });
+    } finally {
+      _myOrganizedMatchesLoadingMore = false;
+    }
 
     notifyListeners();
   }
@@ -261,6 +366,12 @@ class MatchesState extends ChangeNotifier {
     _upcomingMatchesIds = null;
     _goingMatchesIds = null;
     _myOrganizedMatchesIds = null;
+    _pastMatchesCursor = null;
+    _pastMatchesHasMore = false;
+    _pastMatchesLoadingMore = false;
+    _myOrganizedMatchesCursor = null;
+    _myOrganizedMatchesHasMore = false;
+    _myOrganizedMatchesLoadingMore = false;
     notifyListeners();
   }
 }
