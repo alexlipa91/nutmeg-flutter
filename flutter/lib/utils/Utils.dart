@@ -112,6 +112,8 @@ class ConfigsUtils {
 
   // FirebaseRemoteConfig.instance.getBool("remove_credit_functionality");
   static bool feesOnOrganiser(String orgId) => false;
+
+  static bool allowUsersToMarkPayments() => true;
 }
 
 String getStripeUrl(bool isTest, String userId, String? matchId) {

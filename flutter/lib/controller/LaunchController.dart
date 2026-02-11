@@ -8,7 +8,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:logging/logging.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
+import 'package:nutmeg/controller/MiscController.dart';
 import 'package:nutmeg/main.dart';
+import 'package:nutmeg/state/LoadOnceState.dart';
 import 'package:nutmeg/screens/EnterDetails.dart';
 import 'package:nutmeg/state/MatchesState.dart';
 import 'package:nutmeg/utils/CrashlyticsLogger.dart';
@@ -97,6 +99,9 @@ class LaunchController {
 
     await userState.fetchLoggedUserDetails();
     await matchesState.fetchLocation();
+
+    // preload GIFs for join-match celebration
+    MiscController.getGifs(context.read<LoadOnceState>());
 
     if (!kIsWeb) {
       FirebaseRemoteConfig firebaseRemoteConfig = FirebaseRemoteConfig.instance;

@@ -204,5 +204,6 @@
     "iPaid": "Pagué",
     "notYet": "Aún no",
     "payOutsideNutmeg": "Pagar fuera de Nutmeg",
-    "payThroughNutmeg": "Pagar a través de Nutmeg"
+    "payThroughNutmeg": "Pagar a través de Nutmeg",
+    "paid": "Pagado"
 }
