@@ -22,6 +22,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:intl/intl.dart';
 import 'package:map_launcher/map_launcher.dart';
 import 'package:map_launcher/src/models.dart' as m;
+import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/model/Match.dart';
@@ -470,9 +471,11 @@ class PlayerList extends StatelessWidget {
     List<Widget> widgets = [];
 
     var space = (min(475, MediaQuery.of(context).size.width) - 300) / 4.5;
-    var canRemovePlayers = context.watch<MatchState>().isLoggedUserOrganizer() &&
+    var isOrganizer = context.watch<MatchState>().isLoggedUserOrganizer();
+    var canRemovePlayers = isOrganizer &&
         match.status != MatchStatus.cancelled &&
         !match.isMatchFinished();
+    var hasSpotsLeft = match.numPlayersGoing() < match.maxPlayers;
 
     List<Widget> cards = [];
     if (withJoinButton) {
@@ -483,6 +486,10 @@ class PlayerList extends StatelessWidget {
           matchId: match.documentId,
           showRemove: canRemovePlayers && match.organizerId != s,
         )));
+    if (isOrganizer && hasSpotsLeft && !match.isMatchFinished() &&
+        match.status != MatchStatus.cancelled) {
+      cards.add(_AddPlayerCard(matchId: match.documentId));
+    }
 
     widgets.add(SizedBox(width: 16));
     widgets.addAll(interleave(cards, SizedBox(width: space)));
@@ -975,7 +982,7 @@ class PlayerCard extends StatelessWidget {
                   if (name.isEmpty) name = "Player";
 
                   var match = context.read<MatchState>().match;
-                  var refundInfo = (match?.price != null)
+                  var refundInfo = (match?.price != null && ConfigsUtils.allowNutmegManagedPayments())
                       ? ("\n\n" +
                           AppLocalizations.of(context)!.removePlayerRefundInfo)
                       : "";
@@ -1131,6 +1138,232 @@ class EmptyPlayerCard extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: TextPalette.getBodyText(Palette.primary))
       ]),
+    );
+  }
+}
+
+class _AddPlayerCard extends StatelessWidget {
+  final String matchId;
+
+  const _AddPlayerCard({required this.matchId});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: () {
+        var organizerId = context.read<UserState>().getLoggedUserId()!;
+        var matchState = context.read<MatchState>();
+        var match = matchState.match!;
+        var alreadyGoingIds = match.going.keys.toSet();
+
+        ModalBottomSheet.showNutmegModalBottomSheet(
+          context,
+          _PlayerPickerSheet(
+            organizerId: organizerId,
+            alreadyGoingIds: alreadyGoingIds,
+            onPlayerSelected: (String playerId) async {
+              Navigator.pop(context);
+              await matchState.addUserToMatch(playerId);
+            },
+          ),
+        );
+      },
+      child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
+        DottedBorder(
+          padding: EdgeInsets.zero,
+          borderType: BorderType.Circle,
+          color: Palette.green,
+          strokeWidth: 1.5,
+          dashPattern: [4],
+          child: CircleAvatar(
+            radius: 29,
+            child: Icon(Icons.person_add, color: Palette.green, size: 22),
+            backgroundColor: Colors.transparent,
+          ),
+        ),
+        SizedBox(height: 10),
+        Text("Add",
+            overflow: TextOverflow.ellipsis,
+            style: TextPalette.getBodyText(Palette.green))
+      ]),
+    );
+  }
+}
+
+class _PlayerPickerSheet extends StatefulWidget {
+  final String organizerId;
+  final Set<String> alreadyGoingIds;
+  final Future<void> Function(String playerId) onPlayerSelected;
+
+  const _PlayerPickerSheet({
+    required this.organizerId,
+    required this.alreadyGoingIds,
+    required this.onPlayerSelected,
+  });
+
+  @override
+  State<_PlayerPickerSheet> createState() => _PlayerPickerSheetState();
+}
+
+class _PlayerPickerSheetState extends State<_PlayerPickerSheet> {
+  Map<String, int>? _playerCounts;
+  bool _adding = false;
+  String _searchQuery = "";
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchPlayers();
+  }
+
+  Future<void> _fetchPlayers() async {
+    var resp = await CloudFunctionsClient()
+        .get("users/${widget.organizerId}/organizer/players");
+    if (resp != null && mounted) {
+      var raw = Map<String, dynamic>.from(resp["players_joined"] ?? {});
+      var counts = raw.map((k, v) => MapEntry(k, (v as num).toInt()));
+      // remove players already in the match
+      counts.removeWhere((k, _) => widget.alreadyGoingIds.contains(k));
+      setState(() => _playerCounts = counts);
+      // fetch user details
+      var usersState = context.read<UsersState>();
+      for (var id in counts.keys) {
+        usersState.fetchUserDetails(id);
+      }
+    }
+  }
+
+  Widget _buildPlayerRow(MapEntry<String, int> entry, UserDetails? ud) {
+    var isLoading = ud == null;
+
+    return InkWell(
+      onTap: (_adding || isLoading)
+          ? null
+          : () async {
+              setState(() => _adding = true);
+              await widget.onPlayerSelected(entry.key);
+            },
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: 8),
+        child: Row(
+          children: [
+            UserAvatar(20, ud),
+            SizedBox(width: 12),
+            Expanded(
+              child: isLoading
+                  ? Container(
+                      height: 12,
+                      width: 100,
+                      decoration: BoxDecoration(
+                        color: Palette.greyLighter,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                    )
+                  : Text(
+                      UserDetails.getDisplayName(ud),
+                      style: TextPalette.getBodyText(Palette.black),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+            ),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: Palette.greyLighter,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text("${entry.value}x",
+                  style: TextPalette.getBodyText(Palette.greyDark)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    var usersState = context.watch<UsersState>();
+    var maxHeight = MediaQuery.of(context).size.height * 0.55;
+
+    if (_playerCounts == null) {
+      return Padding(
+        padding: EdgeInsets.symmetric(vertical: 32),
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_playerCounts!.isEmpty) {
+      return Padding(
+        padding: EdgeInsets.symmetric(vertical: 24),
+        child: Center(
+          child: Text("No players available to add",
+              style: TextPalette.bodyText),
+        ),
+      );
+    }
+
+    var sorted = _playerCounts!.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+
+    var filtered = _searchQuery.isEmpty
+        ? sorted
+        : sorted.where((entry) {
+            var ud = usersState.getUserDetail(entry.key);
+            if (ud == null) return true; // keep loading ones visible
+            var name = UserDetails.getDisplayName(ud).toLowerCase();
+            return name.contains(_searchQuery.toLowerCase());
+          }).toList();
+
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxHeight: maxHeight),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text("ADD PLAYER", style: TextPalette.h4),
+          SizedBox(height: 4),
+          Text("Pick from players who played with you",
+              style: TextPalette.bodyText),
+          SizedBox(height: 12),
+          TextField(
+            onChanged: (v) => setState(() => _searchQuery = v),
+            decoration: InputDecoration(
+              hintText: "Search by name",
+              hintStyle: TextPalette.getBodyText(Palette.greyDark),
+              prefixIcon: Icon(Icons.search, color: Palette.greyDark, size: 20),
+              filled: true,
+              fillColor: Palette.greyLighter,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide.none,
+              ),
+              contentPadding: EdgeInsets.symmetric(vertical: 10),
+              isDense: true,
+            ),
+            style: TextPalette.getBodyText(Palette.black),
+          ),
+          SizedBox(height: 12),
+          Flexible(
+            child: filtered.isEmpty
+                ? Center(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 16),
+                      child: Text("No matches",
+                          style: TextPalette.getBodyText(Palette.greyDark)),
+                    ),
+                  )
+                : ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: filtered.length,
+                    itemBuilder: (context, index) {
+                      var entry = filtered[index];
+                      var ud = usersState.getUserDetail(entry.key);
+                      return _buildPlayerRow(entry, ud);
+                    },
+                  ),
+          ),
+        ],
+      ),
     );
   }
 }
