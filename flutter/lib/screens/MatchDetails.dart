@@ -273,7 +273,7 @@ List<Widget> getWidgets(
     ];
   }
 
-  var completeOrganiserWidget = organizerView && match?.price != null
+  var completeOrganiserWidget = organizerView && match?.price != null && ConfigsUtils.allowNutmegManagedPayments()
       ? CompleteOrganiserAccountWidget(isTest: isTest)
       : null;
 

@@ -328,7 +328,8 @@ class UserPageState extends State<UserPage> {
               var widgets = List<Widget>.from([]);
 
               void addCompleteBanner(bool isTest) {
-                if (userDetails.isOrganiser(isTest) &&
+                if (ConfigsUtils.allowNutmegManagedPayments() &&
+                    userDetails.isOrganiser(isTest) &&
                     !userDetails.areChargesEnabled(isTest))
                   widgets.addAll([
                     Row(children: [
