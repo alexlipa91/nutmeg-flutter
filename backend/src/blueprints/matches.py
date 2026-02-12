@@ -1564,6 +1564,21 @@ def _add_user_to_match_firestore_transaction(
         },
     )
 
+    # track player for organizer (skip if the organizer is joining their own match)
+    organizer_id = match.get("organizerId")
+    if organizer_id and user_id != organizer_id:
+        organizer_data_ref = (
+            app.db_client.collection("users")
+            .document(organizer_id)
+            .collection("organizer")
+            .document("data")
+        )
+        transaction.set(
+            organizer_data_ref,
+            {"players_joined": {user_id: firestore.Increment(1)}},
+            merge=True,
+        )
+
 
 class MatchStatus(Enum):
     CANCELLED = "cancelled"  # match has been canceled (cancelation can triggered both before or after match start time)

@@ -24,6 +24,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../state/UserState.dart';
+import '../state/UsersState.dart';
 import '../utils/InfoModals.dart';
 import '../widgets/ModalBottomSheet.dart';
 
@@ -346,13 +347,13 @@ class UserPageState extends State<UserPage> {
                   children: [
                     Expanded(child: Builder(builder: (BuildContext context) {
                       int n = userDetails.createdMatches!.length;
-                      var widgets = List<Widget>.from([]);
+                      var dashboardWidgets = List<Widget>.from([]);
 
                       void addGotoDashboard(bool isTest) {
                         if (userDetails.isOrganiser(isTest) &&
                             userDetails.areChargesEnabled(isTest))
-                          widgets.addAll([
-                            if (widgets.isNotEmpty) verticalSpace,
+                          dashboardWidgets.addAll([
+                            if (dashboardWidgets.isNotEmpty) verticalSpace,
                             Row(children: [
                               Expanded(
                                   child: GenericButtonWithLoader(
@@ -376,9 +377,14 @@ class UserPageState extends State<UserPage> {
                         content: (loadSkeleton) ? null : n.toString(),
                         description: AppLocalizations.of(context)!
                             .organizedMatchesBoxTitle,
-                        bottom: Column(children: widgets),
+                        bottom: Column(children: dashboardWidgets),
                       );
-                    }))
+                    })),
+                    SizedBox(width: 20),
+                    Expanded(
+                      child: _PlayersPlayedWithYou(
+                          userId: userDetails.documentId),
+                    ),
                   ]));
 
               return Column(children: widgets);
@@ -874,6 +880,142 @@ class PaymentInfoEditor extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _PlayersPlayedWithYou extends StatefulWidget {
+  final String userId;
+
+  const _PlayersPlayedWithYou({required this.userId});
+
+  @override
+  State<_PlayersPlayedWithYou> createState() => _PlayersPlayedWithYouState();
+}
+
+class _PlayersPlayedWithYouState extends State<_PlayersPlayedWithYou> {
+  Map<String, int>? _playerCounts;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchPlayers();
+  }
+
+  Future<void> _fetchPlayers() async {
+    var resp = await CloudFunctionsClient()
+        .get("users/${widget.userId}/organizer/players");
+    if (resp != null && mounted) {
+      var raw = Map<String, dynamic>.from(resp["players_joined"] ?? {});
+      var counts = raw.map((k, v) => MapEntry(k, (v as num).toInt()));
+      setState(() => _playerCounts = counts);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    var count = _playerCounts?.length;
+
+    return InkWell(
+      onTap: (_playerCounts != null && _playerCounts!.isNotEmpty)
+          ? () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (_) => _PlayersPlayedWithYouPage(
+                        playerCounts: _playerCounts!)),
+              )
+          : null,
+      child: UserInfoBox(
+        content: count?.toString(),
+        description: "Played with you",
+        rightBadge: (_playerCounts != null && _playerCounts!.isNotEmpty)
+            ? Icon(Icons.chevron_right, color: Palette.primary, size: 18)
+            : null,
+      ),
+    );
+  }
+}
+
+class _PlayersPlayedWithYouPage extends StatefulWidget {
+  final Map<String, int> playerCounts;
+
+  const _PlayersPlayedWithYouPage({required this.playerCounts});
+
+  @override
+  State<_PlayersPlayedWithYouPage> createState() =>
+      _PlayersPlayedWithYouPageState();
+}
+
+class _PlayersPlayedWithYouPageState extends State<_PlayersPlayedWithYouPage> {
+  late List<MapEntry<String, int>> _sorted;
+
+  @override
+  void initState() {
+    super.initState();
+    _sorted = widget.playerCounts.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+    var usersState = context.read<UsersState>();
+    for (var entry in _sorted) {
+      usersState.fetchUserDetails(entry.key);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    var usersState = context.watch<UsersState>();
+
+    return PageTemplate(
+      appBar: Row(
+        children: [
+          BackButton(
+              color: Palette.black,
+              onPressed: () => Navigator.pop(context)),
+        ],
+      ),
+      widgets: [
+        Text("PLAYED WITH YOU", style: TextPalette.h4),
+        SizedBox(height: 4),
+        Text(
+          "${_sorted.length} players",
+          style: TextPalette.bodyText,
+        ),
+        SizedBox(height: 16),
+        InfoContainer(
+          child: Column(
+            children: _sorted.map((entry) {
+              var ud = usersState.getUserDetail(entry.key);
+              return Padding(
+                padding: EdgeInsets.symmetric(vertical: 8),
+                child: Row(
+                  children: [
+                    UserAvatar(20, ud),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        UserDetails.getDisplayName(ud),
+                        style: TextPalette.getBodyText(Palette.black),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    Container(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Palette.greyLighter,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        "${entry.value}x",
+                        style: TextPalette.getBodyText(Palette.greyDark),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+      ],
     );
   }
 }
