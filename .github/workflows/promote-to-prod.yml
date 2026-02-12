@@ -1,6 +1,9 @@
 name: Promote to Production
 
 on:
+  push:
+    branches:
+      - master
   workflow_dispatch:
     inputs:
       platform:
@@ -15,7 +18,9 @@ on:
 jobs:
   promote_android:
     name: Promote Android to Production
-    if: ${{ inputs.platform == 'android' || inputs.platform == 'both' }}
+    if: >-
+      (github.event_name == 'push' && contains(github.event.head_commit.message, '[promote]')) ||
+      (github.event_name == 'workflow_dispatch' && (inputs.platform == 'android' || inputs.platform == 'both'))
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -39,7 +44,9 @@ jobs:
 
   promote_ios:
     name: Promote iOS to App Store Review
-    if: ${{ inputs.platform == 'ios' || inputs.platform == 'both' }}
+    if: >-
+      (github.event_name == 'push' && contains(github.event.head_commit.message, '[promote]')) ||
+      (github.event_name == 'workflow_dispatch' && (inputs.platform == 'ios' || inputs.platform == 'both'))
     runs-on: macOS-latest
     defaults:
       run:
