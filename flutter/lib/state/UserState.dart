@@ -186,25 +186,27 @@ class UserState extends ChangeNotifier {
         'Current notification settings: ${currentSettings.authorizationStatus.name}');
 
     if (currentSettings.authorizationStatus ==
-            AuthorizationStatus.notDetermined ||
-        currentSettings.authorizationStatus == AuthorizationStatus.denied) {
+            AuthorizationStatus.notDetermined) {
       logger.info('Requesting notification permissions for the first time');
-      await FirebaseMessaging.instance.requestPermission();
+      currentSettings = await FirebaseMessaging.instance.requestPermission();
+      logger.info(
+          'Permission result: ${currentSettings.authorizationStatus.name}');
     }
 
-    if (currentSettings.authorizationStatus == AuthorizationStatus.authorized) {
-      logger.info('Requesting FCM Web Token');
+    if (currentSettings.authorizationStatus == AuthorizationStatus.authorized ||
+        currentSettings.authorizationStatus == AuthorizationStatus.provisional) {
+      logger.info('Requesting FCM token');
 
       const vapidKey = String.fromEnvironment('FIREBASE_VAPID_KEY');
       String? token = await FirebaseMessaging.instance
           .getToken(vapidKey: vapidKey)
           .timeout(Duration(seconds: 5), onTimeout: () {
-        logger.info("FCM Web Token request took too long, skipping");
+        logger.info("FCM token request took too long, skipping");
         return null;
       });
 
       if (token != null) {
-        logger.info('FCM Web Token obtained: ${token.substring(0, 5)}...');
+        logger.info('FCM token obtained: ${token.substring(0, 5)}...');
         await storeUserToken(token);
       }
     }
