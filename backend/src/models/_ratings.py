@@ -148,6 +148,8 @@ class Ratings:
         user_scores: Dict[str, float],
         potms: List[str],
         award_votes: Dict[str, Any],
+        num_score_voters: int,
+        num_award_voters: int,
         db: Client,
     ) -> None:
         """Write computed final scores, POTMs, and awards."""
@@ -162,6 +164,8 @@ class Ratings:
             "finalScores": user_scores,
             "finalPotms": potms,
             "finalAwards": award_votes,
+            "num_distinct_score_voters": num_score_voters,
+            "num_distinct_award_voters": num_award_voters,
         }, db)
 
     @staticmethod

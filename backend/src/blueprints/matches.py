@@ -1241,9 +1241,12 @@ def _freeze_match_stats(match_id, match: MatchModel):
     )
 
     # store final scores in ratings subcollection + match doc summary
+    num_score_voters = ratings.num_voters() if ratings else 0
+    num_award_voters = len(ratings.award_votes) if ratings else 0
     Ratings.store_final_results(
         match_id, match_stats.user_scores, match_stats.potms,
-        match_stats.award_votes, app.db_client,
+        match_stats.award_votes, num_score_voters, num_award_voters,
+        app.db_client,
     )
 
     # score - use Match model helpers
@@ -1987,9 +1990,7 @@ if __name__ == "__main__":
     app = Flask("test")
     app.db_client = firestore.client()
 
-    import json
     with app.app_context():
         match_id = "XWvvqiYPJU7MvG3TcQXv"
-        raw = app.db_client.collection("matches").document(match_id).get().to_dict()
-        formatted = _format_match_data_v2(match_id, raw, version=2)
-        print(json.dumps(formatted, indent=2, default=str))
+        result = freeze_match_stats(match_id, notify=False)
+        print(result)

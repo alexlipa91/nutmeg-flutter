@@ -324,8 +324,8 @@ class Ratings {
       : scores = Map<String, double>.from(jsonInput["finalScores"] ?? {}),
         potms = List<String>.from(jsonInput["finalPotms"] ?? []),
         awards = readAwards(jsonInput["finalAwards"] ?? {}),
-        numDistinctScoreVoters = 0,
-        numDistinctAwardVoters = 0,
+        numDistinctScoreVoters = jsonInput["num_distinct_score_voters"] ?? 0,
+        numDistinctAwardVoters = jsonInput["num_distinct_award_voters"] ?? 0,
         ratingsNotComputedReason = jsonInput["ratings_not_computed_reason"];
 }
 
