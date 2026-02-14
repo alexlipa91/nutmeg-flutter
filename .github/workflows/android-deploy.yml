@@ -28,7 +28,7 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: "3.29.2"
+          flutter-version: "3.41.0"
 
       # --- android-specific ---
       - run: echo $NUTMEG_DEPLOY_KEY | base64 -d > android/nutmeg-deploy-key.json

@@ -9,7 +9,7 @@ jobs:
   deploy_ios:
     name: Build & Deploy iOS
     if: contains(github.event.head_commit.message, '[deploy_test]') || contains(github.event.head_commit.message, '[deploy_prod]')
-    runs-on: macOS-latest
+    runs-on: macos-26
     defaults:
       run:
         working-directory: flutter
@@ -28,7 +28,7 @@ jobs:
       - name: Run Flutter tasks
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.29.2'
+          flutter-version: '3.41.0'
 
       # --- ios-specific ---
       - name: Decode App Store Connect API key
