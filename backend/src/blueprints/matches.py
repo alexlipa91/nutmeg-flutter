@@ -539,22 +539,15 @@ def get_teams(match_id, algorithm="balanced"):
             for u in team:
                 teams_total_score[i] += scores[u]
     elif algorithm == "balanced":
+        # Greedy: sort by score descending, always assign to the weaker team
         users_sorted_by_score = sorted(scores.items(), key=lambda x: x[1], reverse=True)
-        i = 0
-        while i < len(users_sorted_by_score):
+        for uid, score in users_sorted_by_score:
             if teams_total_score[0] <= teams_total_score[1]:
-                next_team_to_assign = 0
+                teams[0].append(uid)
+                teams_total_score[0] += score
             else:
-                next_team_to_assign = 1
-            teams[next_team_to_assign].append(users_sorted_by_score[i][0])
-            teams_total_score[next_team_to_assign] += users_sorted_by_score[i][1]
-            i = i + 1
-            if i < len(users_sorted_by_score):
-                teams[not next_team_to_assign].append(users_sorted_by_score[i][0])
-                teams_total_score[not next_team_to_assign] += users_sorted_by_score[i][
-                    1
-                ]
-            i = i + 1
+                teams[1].append(uid)
+                teams_total_score[1] += score
 
     assert len(going) == len(teams[0]) + len(teams[1])
 
