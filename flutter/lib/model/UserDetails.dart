@@ -35,6 +35,9 @@ class UserDetails {
 
   String? paymentInfo;
 
+  Map<String, int>? playedWith;
+  Map<String, int>? organizerPlayers;
+
   UserDetails(this.documentId, this.isAdmin, this.image, this.name, this.email)
       : numRatedMatches = 0,
         sumTotalRates = 0,
@@ -77,6 +80,14 @@ class UserDetails {
         numLoss = (json["record"] ?? {})["num_loss"],
         numDraw = (json["record"] ?? {})["num_draw"],
         paymentInfo = json["paymentInfo"],
+        playedWith = json["played_with"] != null
+            ? Map<String, dynamic>.from(json["played_with"])
+                .map((k, v) => MapEntry(k, (v as num).toInt()))
+            : null,
+        organizerPlayers = json["organizer_players"] != null
+            ? Map<String, dynamic>.from(json["organizer_players"])
+                .map((k, v) => MapEntry(k, (v as num).toInt()))
+            : null,
         documentId = documentId;
 
   static List<double> _readLastScores(Map<String, double> lastDateScores) {

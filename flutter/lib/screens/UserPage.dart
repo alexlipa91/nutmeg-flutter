@@ -17,6 +17,7 @@ import 'package:nutmeg/widgets/FeedbackBottomModal.dart';
 import 'package:nutmeg/widgets/PageTemplate.dart';
 import 'package:nutmeg/widgets/PlayerBottomModal.dart';
 import 'package:nutmeg/widgets/Section.dart';
+import 'package:nutmeg/widgets/Skeletons.dart';
 import 'package:nutmeg/widgets/WarningWidget.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
@@ -250,6 +251,16 @@ class UserPageState extends State<UserPage> {
                       AppLocalizations.of(context)!.numMatchesLostBoxTitle),
             )
           ]),
+        if (userDetails.playedWith != null &&
+            userDetails.playedWith!.isNotEmpty) ...[
+          verticalSpace,
+          Row(children: [
+            Expanded(
+              child: _PlayersPlayedWithYou(
+                  playerCounts: userDetails.playedWith),
+            ),
+          ]),
+        ],
         if (userDetails.getLastScores().length > 0)
           Section(
               title: AppLocalizations.of(context)!.performanceTitle,
@@ -383,8 +394,8 @@ class UserPageState extends State<UserPage> {
                     })),
                     SizedBox(width: 20),
                     Expanded(
-                      child: _PlayersPlayedWithYou(
-                          userId: userDetails.documentId),
+                      child: _PlayersInYourGames(
+                          playerCounts: userDetails.organizerPlayers),
                     ),
                   ]));
 
@@ -885,51 +896,29 @@ class PaymentInfoEditor extends StatelessWidget {
   }
 }
 
-class _PlayersPlayedWithYou extends StatefulWidget {
-  final String userId;
+class _PlayersInYourGames extends StatelessWidget {
+  final Map<String, int>? playerCounts;
 
-  const _PlayersPlayedWithYou({required this.userId});
-
-  @override
-  State<_PlayersPlayedWithYou> createState() => _PlayersPlayedWithYouState();
-}
-
-class _PlayersPlayedWithYouState extends State<_PlayersPlayedWithYou> {
-  Map<String, int>? _playerCounts;
-
-  @override
-  void initState() {
-    super.initState();
-    _fetchPlayers();
-  }
-
-  Future<void> _fetchPlayers() async {
-    var resp = await CloudFunctionsClient()
-        .get("users/${widget.userId}/organizer/players");
-    if (resp != null && mounted) {
-      var raw = Map<String, dynamic>.from(resp["players_joined"] ?? {});
-      var counts = raw.map((k, v) => MapEntry(k, (v as num).toInt()));
-      setState(() => _playerCounts = counts);
-    }
-  }
+  const _PlayersInYourGames({required this.playerCounts});
 
   @override
   Widget build(BuildContext context) {
-    var count = _playerCounts?.length;
+    var count = playerCounts?.length;
 
     return InkWell(
-      onTap: (_playerCounts != null && _playerCounts!.isNotEmpty)
+      onTap: (playerCounts != null && playerCounts!.isNotEmpty)
           ? () => Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (_) => _PlayersPlayedWithYouPage(
-                        playerCounts: _playerCounts!)),
+                    builder: (_) => _PlayerCountsPage(
+                        title: "PLAYED IN YOUR GAMES",
+                        playerCounts: playerCounts!)),
               )
           : null,
       child: UserInfoBox(
         content: count?.toString(),
-        description: "Played with you",
-        rightBadge: (_playerCounts != null && _playerCounts!.isNotEmpty)
+        description: "Played in your games",
+        rightBadge: (playerCounts != null && playerCounts!.isNotEmpty)
             ? Icon(Icons.chevron_right, color: Palette.primary, size: 18)
             : null,
       ),
@@ -937,17 +926,48 @@ class _PlayersPlayedWithYouState extends State<_PlayersPlayedWithYou> {
   }
 }
 
-class _PlayersPlayedWithYouPage extends StatefulWidget {
-  final Map<String, int> playerCounts;
+class _PlayersPlayedWithYou extends StatelessWidget {
+  final Map<String, int>? playerCounts;
 
-  const _PlayersPlayedWithYouPage({required this.playerCounts});
+  const _PlayersPlayedWithYou({required this.playerCounts});
 
   @override
-  State<_PlayersPlayedWithYouPage> createState() =>
-      _PlayersPlayedWithYouPageState();
+  Widget build(BuildContext context) {
+    var count = playerCounts?.length;
+
+    return InkWell(
+      onTap: (playerCounts != null && playerCounts!.isNotEmpty)
+          ? () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (_) => _PlayerCountsPage(
+                        title: "PLAYED WITH YOU",
+                        playerCounts: playerCounts!)),
+              )
+          : null,
+      child: UserInfoBox(
+        content: count?.toString(),
+        description: "Played with you",
+        rightBadge: (playerCounts != null && playerCounts!.isNotEmpty)
+            ? Icon(Icons.chevron_right, color: Palette.primary, size: 18)
+            : null,
+      ),
+    );
+  }
 }
 
-class _PlayersPlayedWithYouPageState extends State<_PlayersPlayedWithYouPage> {
+class _PlayerCountsPage extends StatefulWidget {
+  final String title;
+  final Map<String, int> playerCounts;
+
+  const _PlayerCountsPage(
+      {required this.title, required this.playerCounts});
+
+  @override
+  State<_PlayerCountsPage> createState() => _PlayerCountsPageState();
+}
+
+class _PlayerCountsPageState extends State<_PlayerCountsPage> {
   late List<MapEntry<String, int>> _sorted;
 
   @override
@@ -974,7 +994,7 @@ class _PlayersPlayedWithYouPageState extends State<_PlayersPlayedWithYouPage> {
         ],
       ),
       widgets: [
-        Text("PLAYED WITH YOU", style: TextPalette.h4),
+        Text(widget.title, style: TextPalette.h4),
         SizedBox(height: 4),
         Text(
           "${_sorted.length} players",
@@ -992,11 +1012,13 @@ class _PlayersPlayedWithYouPageState extends State<_PlayersPlayedWithYouPage> {
                     UserAvatar(20, ud),
                     SizedBox(width: 12),
                     Expanded(
-                      child: Text(
-                        UserDetails.getDisplayName(ud),
-                        style: TextPalette.getBodyText(Palette.black),
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                      child: ud == null
+                          ? Skeletons.lText
+                          : Text(
+                              UserDetails.getDisplayName(ud),
+                              style: TextPalette.getBodyText(Palette.black),
+                              overflow: TextOverflow.ellipsis,
+                            ),
                     ),
                     Container(
                       padding:
