@@ -1186,12 +1186,14 @@ def freeze_match_stats(match_id, notify=True, only_for_user=None):
         raise Exception(error)
 
     match_doc_ref = app.db_client.collection("matches").document(match_id)
-    users_doc_ref = {
-        u: app.db_client.collection(
-            _get_users_collection_name(is_test=match.is_test)
-        ).document(u)
-        for u in updates
-    }
+    users_collection = _get_users_collection_name(is_test=match.is_test)
+    users_doc_ref = {}
+    for u in updates:
+        ref = app.db_client.collection(users_collection).document(u)
+        if ref.get().exists:
+            users_doc_ref[u] = ref
+        else:
+            logging.warning(f"User {u} document not found, skipping stats update")
 
     # write to db
     _close_rating_round_transaction(
@@ -1280,7 +1282,7 @@ def _close_rating_round_transaction(
     match_doc_ref,
     users_docs_ref,
 ):
-    for u in user_updates:
+    for u in users_docs_ref:
         transaction.update(users_docs_ref[u], user_updates[u].to_user_document_update())
 
     for leaderboard in ["abs", yearmonth]:
@@ -1985,7 +1987,9 @@ if __name__ == "__main__":
     app = Flask("test")
     app.db_client = firestore.client()
 
+    import json
     with app.app_context():
-        match_id = "Okr9i46WOMJVQagSNFfQ"
-        result = freeze_match_stats(match_id, notify=False)
-        print(result)
+        match_id = "XWvvqiYPJU7MvG3TcQXv"
+        raw = app.db_client.collection("matches").document(match_id).get().to_dict()
+        formatted = _format_match_data_v2(match_id, raw, version=2)
+        print(json.dumps(formatted, indent=2, default=str))
