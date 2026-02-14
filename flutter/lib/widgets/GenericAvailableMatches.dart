@@ -31,6 +31,8 @@ class GenericAvailableMatchesList extends StatefulWidget {
   final FloatingActionButton? floatingActionButton;
   final Widget? titleWidget;
   final Function refreshState;
+  final Map<int, IconData>? tabIcons;
+  final int? separatorBeforeIndex;
 
   const GenericAvailableMatchesList(
       this.appBarColor,
@@ -39,7 +41,8 @@ class GenericAvailableMatchesList extends StatefulWidget {
       this.emptyStateWidget,
       this.floatingActionButton,
       this.titleWidget,
-      this.refreshState);
+      this.refreshState,
+      {this.tabIcons, this.separatorBeforeIndex});
 
   @override
   State<StatefulWidget> createState() => GenericAvailableMatchesListState();
@@ -94,21 +97,53 @@ class GenericAvailableMatchesListState
                   clipBehavior: Clip.none,
                   scrollDirection: Axis.horizontal,
                   child: Row(
-                      children: widget.tabNames.asMap().entries.map((e) {
+                      children: widget.tabNames.asMap().entries.expand((e) {
                     var index = e.key;
                     var title = e.value;
 
-                    var textStyle = (index == selected)
+                    var isSelected = index == selected;
+                    var textStyle = isSelected
                         ? TextPalette.linkStyle
                         : TextPalette.linkStyleInverted;
                     var color =
-                        (index == selected) ? Palette.white : widget.appBarColor;
+                        isSelected ? Palette.white : widget.appBarColor;
+                    var icon = widget.tabIcons?[index];
 
-                    return ElevatedButton(
+                    var buttonChild = icon != null
+                        ? Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(icon,
+                                  size: 15,
+                                  color: isSelected
+                                      ? Palette.primary
+                                      : Palette.white),
+                              SizedBox(width: 6),
+                              Text(title!, style: textStyle),
+                            ],
+                          )
+                        : Text(title!, style: textStyle);
+
+                    var items = <Widget>[];
+
+                    // insert separator before this tab if needed
+                    if (widget.separatorBeforeIndex != null &&
+                        index == widget.separatorBeforeIndex) {
+                      items.add(Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 8),
+                        child: Container(
+                          width: 1,
+                          height: 20,
+                          color: Palette.white.withValues(alpha: 0.4),
+                        ),
+                      ));
+                    }
+
+                    items.add(ElevatedButton(
                       child: Padding(
                         padding:
                             EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                        child: Text(title!, style: textStyle),
+                        child: buttonChild,
                       ),
                       onPressed: () =>
                           context.read<AvailableMatchesUiState>().changeTo(index),
@@ -122,7 +157,9 @@ class GenericAvailableMatchesListState
                             RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(50.0))),
                       ),
-                    );
+                    ));
+
+                    return items;
                   }).toList()),
                 )
               ].toList(),

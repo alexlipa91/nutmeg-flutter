@@ -281,7 +281,10 @@ class AvailableMatches extends StatelessWidget {
                   ],
                 ), () async {
               await state.refreshState();
-            });
+            },
+            tabIcons: isLoggedIn ? {2: Icons.edit_calendar_outlined} : null,
+            separatorBeforeIndex: isLoggedIn ? 2 : null,
+            );
         });
   }
 

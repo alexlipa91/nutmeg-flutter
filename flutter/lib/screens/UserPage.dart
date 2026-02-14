@@ -204,10 +204,6 @@ class UserPageState extends State<UserPage> {
           ],
         )),
         verticalSpace,
-        if (userDetails.createdMatches != null && userDetails.createdMatches!.isNotEmpty) ...[
-          PaymentInfoEditor(userDetails: userDetails),
-          verticalSpace,
-        ],
         Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
           Expanded(
             child: UserInfoBox(
@@ -398,6 +394,11 @@ class UserPageState extends State<UserPage> {
                           playerCounts: userDetails.organizerPlayers),
                     ),
                   ]));
+
+              widgets.addAll([
+                verticalSpace,
+                PaymentInfoEditor(userDetails: userDetails),
+              ]);
 
               return Column(children: widgets);
             })),
