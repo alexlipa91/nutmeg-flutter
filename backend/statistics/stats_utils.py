@@ -39,16 +39,10 @@ class UserUpdates:
         self.num_loss = num_loss
 
     def to_user_document_update(self):
-        base_fields = self.to_leaderboard_document_update()
-        for d, v in self.date_score.items():
-            if v:
-                base_fields["last_date_scores." + d.strftime("%Y%m%d%H%M%S")] = v
-        return base_fields
-
-    def to_leaderboard_document_update(self):
-        # Use dot notation for nested fields so Firestore merges them
-        # instead of replacing the entire nested map on each update.
-        return {
+        # Uses dot notation for nested fields because this is passed to
+        # transaction.update(), which replaces entire nested maps unless
+        # you use dot paths.
+        fields = {
             "num_matches_joined": firestore.firestore.Increment(self.num_matches_joined),
             "scores.number_of_scored_games": firestore.firestore.Increment(self.num_scored_games),
             "scores.total_sum": firestore.firestore.Increment(self.total_sum_score),
@@ -56,6 +50,27 @@ class UserUpdates:
             "record.num_win": firestore.firestore.Increment(self.num_win),
             "record.num_draw": firestore.firestore.Increment(self.num_draw),
             "record.num_loss": firestore.firestore.Increment(self.num_loss),
+        }
+        for d, v in self.date_score.items():
+            if v:
+                fields["last_date_scores." + d.strftime("%Y%m%d%H%M%S")] = v
+        return fields
+
+    def to_leaderboard_document_update(self):
+        # Uses nested dicts because this is passed to set(merge=True) via
+        # update_leaderboard(), which deep-merges nested maps correctly.
+        return {
+            "num_matches_joined": firestore.firestore.Increment(self.num_matches_joined),
+            "scores": {
+                "number_of_scored_games": firestore.firestore.Increment(self.num_scored_games),
+                "total_sum": firestore.firestore.Increment(self.total_sum_score)
+            },
+            "potm_count": firestore.firestore.Increment(self.num_potms),
+            "record": {
+                "num_win": firestore.firestore.Increment(self.num_win),
+                "num_draw": firestore.firestore.Increment(self.num_draw),
+                "num_loss": firestore.firestore.Increment(self.num_loss),
+            }
         }
 
     def to_absolute_user_doc_update(self):
