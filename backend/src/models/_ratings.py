@@ -138,6 +138,11 @@ class Ratings:
         )
 
     @staticmethod
+    def _write_match_summary(match_id: str, summary: Dict[str, Any], db: Client) -> None:
+        """Write ratings summary to the main match document."""
+        db.collection("matches").document(match_id).update({"ratings": summary})
+
+    @staticmethod
     def store_final_results(
         match_id: str,
         user_scores: Dict[str, float],
@@ -146,19 +151,31 @@ class Ratings:
         db: Client,
     ) -> None:
         """Write computed final scores, POTMs, and awards."""
+        # TODO drop it once all clients move to use match
         ratings_ref(match_id, db).update({
             "finalScores": user_scores,
             "finalPotms": potms,
             "finalAwards": award_votes,
         })
+        # also store summary on the main match doc for fast reads
+        Ratings._write_match_summary(match_id, {
+            "finalScores": user_scores,
+            "finalPotms": potms,
+            "finalAwards": award_votes,
+        }, db)
 
     @staticmethod
     def set_not_computed_reason(match_id: str, reason: str, db: Client) -> None:
         """Mark ratings as not computable with a reason."""
+        # TODO drop it once all clients move to use match
         ratings_ref(match_id, db).set(
             {"ratings_not_computed_reason": reason},
             merge=True,
         )
+        # also store summary on the main match doc for fast reads
+        Ratings._write_match_summary(match_id, {
+            "ratings_not_computed_reason": reason,
+        }, db)
 
 
 if __name__ == "__main__":

@@ -132,8 +132,16 @@ class MatchState extends ChangeNotifier {
   }
 
   Future<void> fetchRatings() async {
+    // Read from the ratings summary embedded on the match doc (fast path)
+    if (_match?.ratingSummary != null) {
+      setRatings(_match!.ratingSummary!);
+      return;
+    }
+
+    // Fallback: call the API for matches not yet backfilled
+    // TODO: remove this fallback once all matches have a ratings summary
     var r = await CloudFunctionsClient().get("matches/$matchId/ratings");
-    if (r == null) return null;
+    if (r == null) return;
 
     var ratings = Ratings.fromJson(Map<String, dynamic>.from(r));
     setRatings(ratings);

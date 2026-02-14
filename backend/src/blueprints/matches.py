@@ -1238,7 +1238,7 @@ def _freeze_match_stats(match_id, match: MatchModel):
         ratings.award_votes if ratings else {},
     )
 
-    # store final scores
+    # store final scores in ratings subcollection + match doc summary
     Ratings.store_final_results(
         match_id, match_stats.user_scores, match_stats.potms,
         match_stats.award_votes, app.db_client,
@@ -1985,8 +1985,6 @@ if __name__ == "__main__":
     app.db_client = firestore.client()
 
     with app.app_context():
-        m = _get_user_matches(
-            user_id="VCRshYa2BWYohWIJJ4UjBUMctH53",
-            time_filter=MatchesTimeFilter.PAST,
-        )
-        print(len(m))
+        match_id = "Okr9i46WOMJVQagSNFfQ"
+        result = freeze_match_stats(match_id, notify=False)
+        print(result)

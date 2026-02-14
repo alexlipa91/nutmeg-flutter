@@ -74,6 +74,9 @@ class Match:
     paid_out_at: Optional[datetime] = None
     payout_id: Optional[str] = None
 
+    # --- ratings summary (embedded on the match doc) ---
+    ratings_summary: Optional[Dict[str, Any]] = None
+
     # ---- field mapping: Firestore camelCase -> Python snake_case ----
     _FIELD_MAP: Dict[str, str] = field(default=None, init=False, repr=False)
 
@@ -115,6 +118,7 @@ class Match:
             "unpublished_reason": "unpublished_reason",
             "paid_out_at": "paid_out_at",
             "payout_id": "payout_id",
+            "ratings": "ratings_summary",
         }
 
     @classmethod

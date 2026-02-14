@@ -70,6 +70,8 @@ class Match {
 
   Payout? payout;
 
+  Ratings? ratingSummary;
+
   bool isPrivate;
   bool isTest = false;
   bool isManualPayment;
@@ -146,6 +148,12 @@ class Match {
 
     if (jsonInput.containsKey("paid_out_at"))
       paidOutAt = DateTime.parse(jsonInput['paid_out_at']).toLocal();
+
+    // parse ratings summary embedded on the match doc
+    if (jsonInput.containsKey("ratings") && jsonInput["ratings"] != null) {
+      var r = Map<String, dynamic>.from(jsonInput["ratings"]);
+      ratingSummary = Ratings.fromMatchDoc(r);
+    }
 
     this.documentId = documentId;
   }
@@ -302,6 +310,16 @@ class Ratings {
         awards = readAwards(jsonInput["awards"] ?? {}),
         numDistinctScoreVoters = jsonInput["num_distinct_score_voters"] ?? 0,
         numDistinctAwardVoters = jsonInput["num_distinct_award_voters"] ?? 0,
+        ratingsNotComputedReason = jsonInput["ratings_not_computed_reason"];
+
+  /// Parse from the `ratings` map embedded on the match document.
+  /// Keys are finalScores/finalPotms/finalAwards instead of scores/potms/awards.
+  Ratings.fromMatchDoc(Map<String, dynamic> jsonInput)
+      : scores = Map<String, double>.from(jsonInput["finalScores"] ?? {}),
+        potms = List<String>.from(jsonInput["finalPotms"] ?? []),
+        awards = readAwards(jsonInput["finalAwards"] ?? {}),
+        numDistinctScoreVoters = 0,
+        numDistinctAwardVoters = 0,
         ratingsNotComputedReason = jsonInput["ratings_not_computed_reason"];
 }
 
