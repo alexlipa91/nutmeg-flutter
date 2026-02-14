@@ -1,0 +1,227 @@
+"""
+Typed model for the Match Firestore document.
+Uses dataclasses with a from_dict/from_doc classmethod to map
+Firestore camelCase fields to snake_case Python attributes.
+"""
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from datetime import datetime
+from typing import Any, Dict, List, Optional, Tuple
+
+
+@dataclass
+class Match:
+    """Typed representation of a Firestore match document."""
+
+    # document id
+    id: str
+
+    # --- core ---
+    date_time: Optional[datetime] = None
+    duration: Optional[int] = None  # minutes
+    min_players: Optional[int] = None
+    max_players: Optional[int] = None
+    organizer_id: Optional[str] = None
+
+    # --- location ---
+    sport_center_id: Optional[str] = None
+    sport_center: Optional[Dict[str, Any]] = None
+    sport_center_sub_location: Optional[str] = None
+
+    # --- pricing ---
+    price: Optional[Dict[str, int]] = None  # {basePrice: int, userFee: int}
+    is_manual_payment: bool = False
+    stripe_product_id: Optional[str] = None
+    stripe_price_id: Optional[str] = None
+
+    # --- flags ---
+    is_test: bool = False
+    is_private: bool = False
+
+    # --- players ---
+    going: Dict[str, Dict[str, Any]] = field(default_factory=dict)
+    going_players: List[str] = field(default_factory=list)
+    wait_list: Dict[str, Dict[str, Any]] = field(default_factory=dict)
+
+    # --- teams ---
+    teams: Optional[Dict[str, Any]] = None
+    has_manual_teams: bool = False
+
+    # --- score ---
+    score: Optional[List[int]] = None  # [team_a_score, team_b_score]
+
+    # --- lifecycle timestamps ---
+    created_at: Optional[datetime] = None
+    cancelled_at: Optional[datetime] = None
+    cancelled_reason: Optional[str] = None
+    confirmed_at: Optional[datetime] = None
+    scores_computed_at: Optional[datetime] = None
+
+    # --- cancellation policy ---
+    cancel_hours_before: Optional[int] = None
+
+    # --- sharing ---
+    dynamic_link: Optional[str] = None
+
+    # --- scheduling ---
+    tasks_scheduled: Optional[List[str]] = None
+
+    # --- publishing ---
+    unpublished_reason: Optional[str] = None
+
+    # --- payout ---
+    paid_out_at: Optional[datetime] = None
+    payout_id: Optional[str] = None
+
+    # ---- field mapping: Firestore camelCase -> Python snake_case ----
+    _FIELD_MAP: Dict[str, str] = field(default=None, init=False, repr=False)
+
+    # map of firestore key -> dataclass attribute
+    _FIRESTORE_TO_ATTR: Dict[str, str] = field(default=None, init=False, repr=False)
+
+    @classmethod
+    def _field_mapping(cls) -> Dict[str, str]:
+        """Return {firestoreKey: python_attr} mapping."""
+        return {
+            "dateTime": "date_time",
+            "duration": "duration",
+            "minPlayers": "min_players",
+            "maxPlayers": "max_players",
+            "organizerId": "organizer_id",
+            "sportCenterId": "sport_center_id",
+            "sportCenter": "sport_center",
+            "sportCenterSubLocation": "sport_center_sub_location",
+            "price": "price",
+            "isManualPayment": "is_manual_payment",
+            "stripeProductId": "stripe_product_id",
+            "stripePriceId": "stripe_price_id",
+            "isTest": "is_test",
+            "isPrivate": "is_private",
+            "going": "going",
+            "goingPlayers": "going_players",
+            "waitList": "wait_list",
+            "teams": "teams",
+            "hasManualTeams": "has_manual_teams",
+            "score": "score",
+            "createdAt": "created_at",
+            "cancelledAt": "cancelled_at",
+            "cancelledReason": "cancelled_reason",
+            "confirmedAt": "confirmed_at",
+            "scoresComputedAt": "scores_computed_at",
+            "cancelHoursBefore": "cancel_hours_before",
+            "dynamicLink": "dynamic_link",
+            "tasksScheduled": "tasks_scheduled",
+            "unpublished_reason": "unpublished_reason",
+            "paid_out_at": "paid_out_at",
+            "payout_id": "payout_id",
+        }
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any], doc_id: str) -> Match:
+        """Create a Match from a Firestore document dict."""
+        kwargs: Dict[str, Any] = {"id": doc_id}
+        mapping = cls._field_mapping()
+        for firestore_key, attr_name in mapping.items():
+            if firestore_key in data:
+                kwargs[attr_name] = data[firestore_key]
+        return cls(**kwargs)
+
+    @classmethod
+    def from_doc(cls, doc) -> Optional[Match]:
+        """Create a Match from a Firestore DocumentSnapshot."""
+        if not doc.exists:
+            return None
+        return cls.from_dict(doc.to_dict(), doc.id)
+
+    @classmethod
+    def get_by_id(cls, match_id: str, db) -> Optional[Match]:
+        """Fetch a Match from Firestore by document ID."""
+        doc = db.collection("matches").document(match_id).get()
+        return cls.from_doc(doc)
+
+    # ---- helpers ----
+
+    def get_team_players(self) -> Tuple[List[str], List[str]]:
+        """Return (team_a, team_b) based on manual vs balanced teams."""
+        if not self.teams:
+            return [], []
+        logic = "manual" if self.has_manual_teams else "balanced"
+        team_data = self.teams.get(logic, {}).get("players", {})
+        return team_data.get("a", []), team_data.get("b", [])
+
+    def get_score_delta(self) -> Optional[int]:
+        """Return score[0] - score[1], or None if no score."""
+        if not self.score or len(self.score) != 2:
+            return None
+        return self.score[0] - self.score[1]
+
+    def get_win_draw_loss(self) -> Tuple[List[str], List[str], List[str]]:
+        """Return (winners, drawers, losers) as lists of user IDs."""
+        delta = self.get_score_delta()
+        if delta is None:
+            return [], [], []
+
+        team_a, team_b = self.get_team_players()
+        if delta > 0:
+            return team_a, [], team_b
+        elif delta == 0:
+            return [], team_a + team_b, []
+        else:
+            return team_b, [], team_a
+
+    def is_rated(self) -> bool:
+        return self.scores_computed_at is not None
+
+    def is_cancelled(self) -> bool:
+        return self.cancelled_at is not None
+
+    def going_user_ids(self) -> List[str]:
+        """Return list of user IDs from the going map."""
+        if not self.going:
+            return []
+        return list(self.going.keys())
+
+
+if __name__ == "__main__":
+    import argparse
+
+    import firebase_admin
+    from firebase_admin import firestore
+
+    parser = argparse.ArgumentParser(description="Fetch and print a Match document")
+    parser.add_argument("match_id", help="Firestore document ID of the match")
+    args = parser.parse_args()
+
+    firebase_admin.initialize_app()
+    db = firestore.client()
+
+    match = Match.get_by_id(args.match_id, db)
+    if not match:
+        print(f"Match {args.match_id} not found")
+        exit(1)
+
+    print(f"Match: {match.id}")
+    print(f"  date_time:       {match.date_time}")
+    print(f"  duration:        {match.duration} min")
+    print(f"  organizer_id:    {match.organizer_id}")
+    print(f"  max_players:     {match.max_players}")
+    print(f"  min_players:     {match.min_players}")
+    print(f"  sport_center_id: {match.sport_center_id}")
+    print(f"  is_test:         {match.is_test}")
+    print(f"  is_private:      {match.is_private}")
+    print(f"  score:           {match.score}")
+    print(f"  has_manual_teams:{match.has_manual_teams}")
+    print(f"  going:           {match.going_user_ids()}")
+    print(f"  scores_computed: {match.scores_computed_at}")
+    print(f"  cancelled_at:    {match.cancelled_at}")
+    print(f"  dynamic_link:    {match.dynamic_link}")
+
+    team_a, team_b = match.get_team_players()
+    print(f"  team_a:          {team_a}")
+    print(f"  team_b:          {team_b}")
+
+    winners, drawers, losers = match.get_win_draw_loss()
+    print(f"  winners:         {winners}")
+    print(f"  drawers:         {drawers}")
+    print(f"  losers:          {losers}")

@@ -123,13 +123,6 @@ def _get_matches(
     )
     return res
 
-def _get_teams(match_data: Dict) -> Tuple[List[str], List[str]]:
-    if match_data.get("hasManualTeams", False):
-        teams = match_data["teams"]["manual"]
-    else:
-        teams = match_data["teams"]["balanced"]
-    return teams["players"]["a"], teams["players"]["b"]
-
 
 def _get_user_matches(
     user_id: str,
@@ -167,7 +160,9 @@ def _get_user_matches(
             last_key = list(res.keys())[-1]
             last_dt = res[last_key].get("dateTime")
             if last_dt:
-                last_cursor = last_dt if isinstance(last_dt, str) else last_dt.isoformat()
+                last_cursor = (
+                    last_dt if isinstance(last_dt, str) else last_dt.isoformat()
+                )
         return res, has_more, last_cursor
 
     return res
@@ -214,7 +209,9 @@ def _get_organizer_matches(
             last_key = list(res.keys())[-1]
             last_dt = res[last_key].get("dateTime")
             if last_dt:
-                last_cursor = last_dt if isinstance(last_dt, str) else last_dt.isoformat()
+                last_cursor = (
+                    last_dt if isinstance(last_dt, str) else last_dt.isoformat()
+                )
         return res, has_more, last_cursor
 
     return res
@@ -371,11 +368,15 @@ def get_ratings(match_id):
         distinct_score_voters = set()
         for _, votes in ratings_data.get("scores", {}).items():
             distinct_score_voters.update(votes.keys())
-        return {"data": {
-            "ratings_not_computed_reason": ratings_data["ratings_not_computed_reason"],
-            "num_distinct_score_voters": len(distinct_score_voters),
-            "num_distinct_award_voters": len(ratings_data.get("awardVotes", {})),
-        }}, 200
+        return {
+            "data": {
+                "ratings_not_computed_reason": ratings_data[
+                    "ratings_not_computed_reason"
+                ],
+                "num_distinct_score_voters": len(distinct_score_voters),
+                "num_distinct_award_voters": len(ratings_data.get("awardVotes", {})),
+            }
+        }, 200
 
     # legacy version, keep supporting it
     if not "finalScores" in ratings_data:
@@ -585,7 +586,9 @@ def create_match():
 
     match_id = _add_match_firestore(request_json)
 
-    match_with_stripe_payments = "price" in request_json and not request_json.get("isManualPayment", False)
+    match_with_stripe_payments = "price" in request_json and not request_json.get(
+        "isManualPayment", False
+    )
 
     _update_user_account(organizer_id, is_test, match_id, match_with_stripe_payments)
 
@@ -843,7 +846,12 @@ def promote_user_from_waitlist_request(match_id):
 
 @firestore.transactional
 def _promote_user_from_waitlist_transaction(
-    transaction, match_doc_ref, user_stat_doc_ref, transactions_doc_ref, user_id, match_id
+    transaction,
+    match_doc_ref,
+    user_stat_doc_ref,
+    transactions_doc_ref,
+    user_id,
+    match_id,
 ):
     timestamp = datetime.now(tz)
 
@@ -862,9 +870,7 @@ def _promote_user_from_waitlist_transaction(
     transaction.set(
         match_doc_ref,
         {
-            "going": {
-                user_id: {"createdAt": timestamp}
-            },
+            "going": {user_id: {"createdAt": timestamp}},
             "goingPlayers": firestore.ArrayUnion([user_id]),
         },
         merge=True,
@@ -909,11 +915,7 @@ def _add_user_to_waitlist_transaction(transaction, match_doc_ref, user_id, match
 
     transaction.set(
         match_doc_ref,
-        {
-            "waitList": {
-                user_id: {"createdAt": timestamp}
-            }
-        },
+        {"waitList": {user_id: {"createdAt": timestamp}}},
         merge=True,
     )
 
@@ -1264,7 +1266,10 @@ def freeze_match_stats(match_id, notify=True, only_for_user=None):
         updates, error = _freeze_match_stats(match_id, match_data)
     except NotEnoughVotersError:
         app.db_client.collection("ratings").document(match_id).set(
-            {"ratings_not_computed_reason": RatingsNotComputedReason.NOT_ENOUGH_RATINGS}, merge=True
+            {
+                "ratings_not_computed_reason": RatingsNotComputedReason.NOT_ENOUGH_RATINGS
+            },
+            merge=True,
         )
         return {}, 200
 
@@ -1389,9 +1394,7 @@ def _close_rating_round_transaction(
     users_docs_ref,
 ):
     for u in user_updates:
-        transaction.update(
-            users_docs_ref[u], user_updates[u].to_user_document_update()
-        )
+        transaction.update(users_docs_ref[u], user_updates[u].to_user_document_update())
 
     for leaderboard in ["abs", yearmonth]:
         print("updating leaderboard {}".format(leaderboard))
