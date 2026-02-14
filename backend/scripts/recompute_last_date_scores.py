@@ -2,10 +2,14 @@
 One-off script to recompute `last_date_scores` for every user
 by scanning all rated matches and keeping the 10 most recent scores.
 """
+import sys, os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+
 import firebase_admin
 from firebase_admin import firestore
 from flask import Flask
 from collections import defaultdict
+from src.models._ratings import ratings_ref
 
 
 def recompute_last_date_scores(db, dry_run=True, only_user=None):
@@ -29,7 +33,7 @@ def recompute_last_date_scores(db, dry_run=True, only_user=None):
             continue
 
         # get final scores from ratings doc
-        ratings_doc = db.collection("ratings").document(m.id).get()
+        ratings_doc = ratings_ref(m.id, db).get()
         ratings_data = ratings_doc.to_dict() if ratings_doc.exists else None
         if not ratings_data or "finalScores" not in ratings_data:
             continue

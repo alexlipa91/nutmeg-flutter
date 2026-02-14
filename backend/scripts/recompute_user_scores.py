@@ -2,9 +2,13 @@
 One-off script to recompute `scores.number_of_scored_games` and `scores.total_sum`
 for every user by scanning all rated matches and their finalScores from ratings docs.
 """
+import sys, os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+
 import firebase_admin
 from firebase_admin import firestore
 from collections import defaultdict
+from src.models._ratings import ratings_ref
 
 
 def recompute_user_scores(db, dry_run=True, only_user=None):
@@ -29,7 +33,7 @@ def recompute_user_scores(db, dry_run=True, only_user=None):
             continue
 
         # get finalScores from ratings doc
-        ratings_doc = db.collection("ratings").document(m.id).get()
+        ratings_doc = ratings_ref(m.id, db).get()
         if not ratings_doc.exists:
             skipped["no_ratings_doc"] += 1
             continue

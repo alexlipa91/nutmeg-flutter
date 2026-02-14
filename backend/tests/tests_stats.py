@@ -7,6 +7,7 @@ from mockfirestore import MockFirestore
 from dateutil import tz
 
 from src import _create_app
+from src.models._ratings import ratings_ref
 
 def notification_mock(match_id, going_users, potms, sport_center):
     print("skipping notification")
@@ -60,7 +61,7 @@ class StatTests(unittest.TestCase):
             }
         })
         # add ratings
-        db.collection("ratings").document("match_one").set({
+        ratings_ref("match_one", db).set({
             "scores": {
                 "user_one": {
                     "user_two": 2,
@@ -72,7 +73,7 @@ class StatTests(unittest.TestCase):
                 }
             }
         })
-        db.collection("ratings").document("match_two").set({
+        ratings_ref("match_two", db).set({
             "scores": {
                 "user_one": {
                     "user_two": 1,

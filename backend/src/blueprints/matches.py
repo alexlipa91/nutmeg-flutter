@@ -37,6 +37,7 @@ from src.utils import (
     update_leaderboard,
 )
 from flask import current_app as app
+from src.models._ratings import ratings_ref
 
 bp = Blueprint("matches", __name__, url_prefix="/matches")
 bp_v2 = Blueprint("matches_v2", __name__, url_prefix="/v2/matches")
@@ -360,7 +361,7 @@ def get_match(match_id, is_local=False):
 @bp.route("/<match_id>/ratings", methods=["GET"])
 def get_ratings(match_id):
     ratings_data = (
-        app.db_client.collection("ratings").document(match_id).get().to_dict()
+        ratings_ref(match_id, app.db_client).get().to_dict()
     )
     if not ratings_data:
         return {}, 200
@@ -419,7 +420,7 @@ def _get_ratings_data_legacy(match_id, ratings_data):
 def add_rating(match_id):
     request_data = flask.request.get_json()
 
-    app.db_client.collection("ratings").document(match_id).set(
+    ratings_ref(match_id, app.db_client).set(
         {
             "scores": {
                 request_data["user_rated_id"]: {
@@ -443,7 +444,7 @@ def add_rating_multi(match_id):
     update = {"scores": {}}
     for receiver in request_data:
         update["scores"][receiver] = {flask.g.uid: request_data[receiver]}
-    app.db_client.collection("ratings").document(match_id).set(update, merge=True)
+    ratings_ref(match_id, app.db_client).set(update, merge=True)
     return {}
 
 
@@ -471,7 +472,7 @@ def add_match_awards(match_id):
         }
     }
 
-    app.db_client.collection("ratings").document(match_id).set(
+    ratings_ref(match_id, app.db_client).set(
         awards_update, merge=True
     )
     return {}, 200
@@ -486,7 +487,7 @@ def get_match_awards(match_id):
         return {"error": "Match not found"}, 404
 
     # Get the ratings document which contains awards
-    ratings_doc = app.db_client.collection("ratings").document(match_id).get()
+    ratings_doc = ratings_ref(match_id, app.db_client).get()
     if not ratings_doc.exists:
         return {"data": {"awards": {}}}, 200
 
@@ -514,7 +515,7 @@ def get_still_to_vote(match_id):
     match = MatchModel.get_by_id(match_id, app.db_client)
     all_going = match.going.keys() if match else []
     received_dict = (
-        app.db_client.collection("ratings").document(match_id).get().to_dict()
+        ratings_ref(match_id, app.db_client).get().to_dict()
     )
     received = received_dict.get("scores", {}) if received_dict else {}
 
@@ -532,7 +533,7 @@ def get_still_to_vote(match_id):
 @bp.route("/<match_id>/ratings/given", methods=["GET"])
 def get_ratings_given_by_user(match_id):
     """Return the ratings given by the authenticated user for this match."""
-    ratings_doc = app.db_client.collection("ratings").document(match_id).get()
+    ratings_doc = ratings_ref(match_id, app.db_client).get()
     if not ratings_doc.exists:
         return {"data": {}}, 200
 
@@ -553,7 +554,7 @@ def get_ratings_given_by_user(match_id):
 def get_user_given_awards(match_id):
     """Get awards given by the current user for this match."""
     # Get the ratings document which contains awards
-    ratings_doc = app.db_client.collection("ratings").document(match_id).get()
+    ratings_doc = ratings_ref(match_id, app.db_client).get()
     if not ratings_doc.exists:
         return {"data": {}}, 200
 
@@ -1243,7 +1244,7 @@ def freeze_match_stats(match_id, notify=True, only_for_user=None):
     try:
         updates, error = _freeze_match_stats(match_id, match)
     except NotEnoughVotersError:
-        app.db_client.collection("ratings").document(match_id).set(
+        ratings_ref(match_id, app.db_client).set(
             {
                 "ratings_not_computed_reason": RatingsNotComputedReason.NOT_ENOUGH_RATINGS
             },
@@ -1301,7 +1302,7 @@ def _freeze_match_stats(match_id, match: MatchModel):
         return None, "match_cancelled"
 
     # ratings
-    ratings_doc = app.db_client.collection("ratings").document(match_id).get()
+    ratings_doc = ratings_ref(match_id, app.db_client).get()
     ratings_data = ratings_doc.to_dict() if ratings_doc.exists else {}
     match_stats = MatchStats(
         match_id,
@@ -1313,7 +1314,7 @@ def _freeze_match_stats(match_id, match: MatchModel):
     )
 
     # store final scores
-    app.db_client.collection("ratings").document(match_id).update(
+    ratings_ref(match_id, app.db_client).update(
         {
             "finalScores": match_stats.user_scores,
             "finalPotms": match_stats.potms,
