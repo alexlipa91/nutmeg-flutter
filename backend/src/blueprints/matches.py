@@ -37,7 +37,7 @@ from src.utils import (
     update_leaderboard,
 )
 from flask import current_app as app
-from src.models._ratings import ratings_ref
+from src.models._ratings import Ratings
 
 bp = Blueprint("matches", __name__, url_prefix="/matches")
 bp_v2 = Blueprint("matches_v2", __name__, url_prefix="/v2/matches")
@@ -360,43 +360,34 @@ def get_match(match_id, is_local=False):
 
 @bp.route("/<match_id>/ratings", methods=["GET"])
 def get_ratings(match_id):
-    ratings_data = (
-        ratings_ref(match_id, app.db_client).get().to_dict()
-    )
-    if not ratings_data:
+    ratings = Ratings.get_by_match_id(match_id, app.db_client)
+    if not ratings:
         return {}, 200
 
-    if "ratings_not_computed_reason" in ratings_data:
-        distinct_score_voters = set()
-        for _, votes in ratings_data.get("scores", {}).items():
-            distinct_score_voters.update(votes.keys())
+    if ratings.ratings_not_computed_reason:
         return {
             "data": {
-                "ratings_not_computed_reason": ratings_data[
-                    "ratings_not_computed_reason"
-                ],
-                "num_distinct_score_voters": len(distinct_score_voters),
-                "num_distinct_award_voters": len(ratings_data.get("awardVotes", {})),
+                "ratings_not_computed_reason": ratings.ratings_not_computed_reason,
+                "num_distinct_score_voters": ratings.num_voters(),
+                "num_distinct_award_voters": len(ratings.award_votes),
             }
         }, 200
 
     # legacy version, keep supporting it
-    if not "finalScores" in ratings_data:
+    if not ratings.final_scores:
+        ratings_data = {
+            "scores": ratings.scores,
+            "skills": ratings.skills,
+        }
         resp = _get_ratings_data_legacy(match_id, ratings_data)
         return {"data": resp}, 200
 
-    distinct_score_voters = set()
-    for _, votes in ratings_data.get("scores", {}).items():
-        distinct_score_voters.update(votes.keys())
-
-    num_distinct_award_voters = len(ratings_data.get("awardVotes", {}))
-    
     resp = {
-        "scores": ratings_data["finalScores"],
-        "potms": ratings_data["finalPotms"],
-        "awards": ratings_data.get("finalAwards", {}),
-        "num_distinct_score_voters": len(distinct_score_voters),
-        "num_distinct_award_voters": num_distinct_award_voters,
+        "scores": ratings.final_scores,
+        "potms": ratings.final_potms,
+        "awards": ratings.final_awards,
+        "num_distinct_score_voters": ratings.num_voters(),
+        "num_distinct_award_voters": len(ratings.award_votes),
     }
     return {"data": resp}, 200
 
@@ -416,35 +407,10 @@ def _get_ratings_data_legacy(match_id, ratings_data):
     return {"scores": match_stats.user_scores, "potms": match_stats.potms}
 
 
-@bp.route("/<match_id>/ratings/add", methods=["POST"])
-def add_rating(match_id):
-    request_data = flask.request.get_json()
-
-    ratings_ref(match_id, app.db_client).set(
-        {
-            "scores": {
-                request_data["user_rated_id"]: {
-                    request_data["user_id"]: request_data["score"]
-                }
-            },
-            "skills": {
-                request_data["user_rated_id"]: {
-                    request_data["user_id"]: request_data.get("skills", [])
-                }
-            },
-        },
-        merge=True,
-    )
-    return {}
-
-
 @bp.route("/<match_id>/ratings/add_multi", methods=["POST"])
 def add_rating_multi(match_id):
     request_data = flask.request.get_json()
-    update = {"scores": {}}
-    for receiver in request_data:
-        update["scores"][receiver] = {flask.g.uid: request_data[receiver]}
-    ratings_ref(match_id, app.db_client).set(update, merge=True)
+    Ratings.add_scores(match_id, flask.g.uid, request_data, app.db_client)
     return {}
 
 
@@ -462,19 +428,7 @@ def add_match_awards(match_id):
     if flask.g.uid not in match.going:
         return {"error": "User not authorized"}, 403
 
-    # Store the awards
-    # voter -> award_id -> user_id
-    awards_update = {
-        "awardVotes": {
-            flask.g.uid: {
-                award_id: user_id for award_id, user_id in request_data.items()
-            }
-        }
-    }
-
-    ratings_ref(match_id, app.db_client).set(
-        awards_update, merge=True
-    )
+    Ratings.add_award_votes(match_id, flask.g.uid, request_data, app.db_client)
     return {}, 200
 
 
@@ -486,13 +440,11 @@ def get_match_awards(match_id):
     if not match_doc.exists:
         return {"error": "Match not found"}, 404
 
-    # Get the ratings document which contains awards
-    ratings_doc = ratings_ref(match_id, app.db_client).get()
-    if not ratings_doc.exists:
+    ratings = Ratings.get_by_match_id(match_id, app.db_client)
+    if not ratings:
         return {"data": {"awards": {}}}, 200
 
-    ratings_data = ratings_doc.to_dict()
-    awards_data = ratings_data.get("awards", {})
+    awards_data = ratings.awards
 
     # Format the response with vote counts
     formatted_awards = {}
@@ -514,16 +466,14 @@ def get_match_awards(match_id):
 def get_still_to_vote(match_id):
     match = MatchModel.get_by_id(match_id, app.db_client)
     all_going = match.going.keys() if match else []
-    received_dict = (
-        ratings_ref(match_id, app.db_client).get().to_dict()
-    )
-    received = received_dict.get("scores", {}) if received_dict else {}
+    ratings = Ratings.get_by_match_id(match_id, app.db_client)
+    scores = ratings.scores if ratings else {}
 
     user_id = flask.g.uid
     to_vote = set()
 
     for u in all_going:
-        received_by_u = received.get(u, {}).keys()
+        received_by_u = scores.get(u, {}).keys()
         if u != user_id and user_id not in received_by_u:
             to_vote.add(u)
 
@@ -533,42 +483,21 @@ def get_still_to_vote(match_id):
 @bp.route("/<match_id>/ratings/given", methods=["GET"])
 def get_ratings_given_by_user(match_id):
     """Return the ratings given by the authenticated user for this match."""
-    ratings_doc = ratings_ref(match_id, app.db_client).get()
-    if not ratings_doc.exists:
+    ratings = Ratings.get_by_match_id(match_id, app.db_client)
+    if not ratings:
         return {"data": {}}, 200
 
-    ratings_data = ratings_doc.to_dict()
-    scores = ratings_data.get("scores", {})
-    user_id = flask.g.uid
-
-    # Find all ratings where this user is the rater
-    given = {}
-    for user_rated_id, raters in scores.items():
-        if user_id in raters:
-            given[user_rated_id] = raters[user_id]
-
-    return {"data": given}, 200
+    return {"data": ratings.get_ratings_given_by(flask.g.uid)}, 200
 
 
 @bp.route("/<match_id>/awards/given", methods=["GET"])
 def get_user_given_awards(match_id):
     """Get awards given by the current user for this match."""
-    # Get the ratings document which contains awards
-    ratings_doc = ratings_ref(match_id, app.db_client).get()
-    if not ratings_doc.exists:
+    ratings = Ratings.get_by_match_id(match_id, app.db_client)
+    if not ratings:
         return {"data": {}}, 200
 
-    ratings_data = ratings_doc.to_dict()
-    awards_data = ratings_data.get("awardVotes", {})
-    user_id = flask.g.uid
-
-    # Find all awards where this user has voted
-    given_awards = {}
-
-    for award_id, user_id in awards_data.get(user_id, {}).items():
-        given_awards[award_id] = user_id
-
-    return {"data": given_awards}, 200
+    return {"data": ratings.award_votes.get(flask.g.uid, {})}, 200
 
 
 @bp.route("", methods=["POST"])
@@ -1244,11 +1173,8 @@ def freeze_match_stats(match_id, notify=True, only_for_user=None):
     try:
         updates, error = _freeze_match_stats(match_id, match)
     except NotEnoughVotersError:
-        ratings_ref(match_id, app.db_client).set(
-            {
-                "ratings_not_computed_reason": RatingsNotComputedReason.NOT_ENOUGH_RATINGS
-            },
-            merge=True,
+        Ratings.set_not_computed_reason(
+            match_id, RatingsNotComputedReason.NOT_ENOUGH_RATINGS, app.db_client,
         )
         return {}, 200
 
@@ -1302,24 +1228,20 @@ def _freeze_match_stats(match_id, match: MatchModel):
         return None, "match_cancelled"
 
     # ratings
-    ratings_doc = ratings_ref(match_id, app.db_client).get()
-    ratings_data = ratings_doc.to_dict() if ratings_doc.exists else {}
+    ratings = Ratings.get_by_match_id(match_id, app.db_client)
     match_stats = MatchStats(
         match_id,
         match.date_time,
         match.going or {},
-        ratings_data.get("scores", {}) if ratings_data else {},
-        ratings_data.get("skills", {}) if ratings_data else {},
-        ratings_data.get("awardVotes", {}) if ratings_data else {},
+        ratings.scores if ratings else {},
+        ratings.skills if ratings else {},
+        ratings.award_votes if ratings else {},
     )
 
     # store final scores
-    ratings_ref(match_id, app.db_client).update(
-        {
-            "finalScores": match_stats.user_scores,
-            "finalPotms": match_stats.potms,
-            "finalAwards": match_stats.award_votes,
-        }
+    Ratings.store_final_results(
+        match_id, match_stats.user_scores, match_stats.potms,
+        match_stats.award_votes, app.db_client,
     )
 
     # score - use Match model helpers
@@ -1964,6 +1886,7 @@ class RatingsNotComputedReason(str, Enum):
 
 class NotEnoughVotersError(Exception):
     """Raised when there are fewer than 2 voters for a match."""
+
     pass
 
 
