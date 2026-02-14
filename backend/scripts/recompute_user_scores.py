@@ -25,7 +25,8 @@ def recompute_user_scores(db, dry_run=True, only_user=None):
         match_data = m.to_dict()
 
         # skip unrated or cancelled matches
-        if "scoresComputedAt" not in match_data:
+        ratings_map = match_data.get("ratings", {}) or {}
+        if not ratings_map.get("computed_at") and "scoresComputedAt" not in match_data:
             skipped["no_scores_computed"] += 1
             continue
         if match_data.get("cancelledAt"):

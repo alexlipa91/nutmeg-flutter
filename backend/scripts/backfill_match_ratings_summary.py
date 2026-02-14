@@ -42,6 +42,10 @@ def backfill(db, dry_run=True):
         # build the summary
         summary = {}
 
+        # migrate scoresComputedAt -> ratings.computed_at
+        if match_data.get("scoresComputedAt"):
+            summary["computed_at"] = match_data["scoresComputedAt"]
+
         if "ratings_not_computed_reason" in r_data:
             summary["ratings_not_computed_reason"] = r_data["ratings_not_computed_reason"]
         elif "finalScores" in r_data:

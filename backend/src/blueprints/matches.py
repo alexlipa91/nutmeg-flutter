@@ -1292,10 +1292,9 @@ def _close_rating_round_transaction(
             {u: user_updates[u].to_leaderboard_document_update() for u in user_updates},
         )
 
-    transaction.set(
+    transaction.update(
         match_doc_ref,
-        {"scoresComputedAt": firestore.firestore.SERVER_TIMESTAMP},
-        merge=True,
+        {"ratings.computed_at": firestore.firestore.SERVER_TIMESTAMP},
     )
 
 
@@ -1652,7 +1651,9 @@ def _get_status(match_data):
     end = start + timedelta(minutes=match_data.get("duration", 60))
     rating_window_over = end + timedelta(days=1)
 
-    if "scoresComputedAt" in match_data:
+    # check new path first, fall back to legacy field
+    ratings_map = match_data.get("ratings", {}) or {}
+    if ratings_map.get("computed_at") or "scoresComputedAt" in match_data:
         return MatchStatus.RATED
 
     # cannot_leave_at  |  start  |  end  |  rating_window_over

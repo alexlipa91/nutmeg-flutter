@@ -175,7 +175,11 @@ class Match:
             return team_b, [], team_a
 
     def is_rated(self) -> bool:
-        return self.scores_computed_at is not None
+        if self.scores_computed_at is not None:
+            return True
+        if self.ratings_summary and self.ratings_summary.get("computed_at"):
+            return True
+        return False
 
     def is_cancelled(self) -> bool:
         return self.cancelled_at is not None

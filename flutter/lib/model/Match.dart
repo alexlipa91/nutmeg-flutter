@@ -130,7 +130,13 @@ class Match {
     if (jsonInput.containsKey("cancelledAt") &&
         jsonInput["cancelledAt"] != null)
       cancelledAt = DateTime.parse(jsonInput['cancelledAt']).toLocal();
-    if (jsonInput.containsKey("scoresComputedAt") &&
+    // read computed_at from ratings summary (new), fall back to legacy field
+    if (jsonInput.containsKey("ratings") &&
+        jsonInput["ratings"] != null &&
+        jsonInput["ratings"]["computed_at"] != null)
+      scoresComputedAt =
+          DateTime.parse(jsonInput['ratings']['computed_at']).toLocal();
+    else if (jsonInput.containsKey("scoresComputedAt") &&
         jsonInput["scoresComputedAt"] != null)
       scoresComputedAt =
           DateTime.parse(jsonInput['scoresComputedAt']).toLocal();
