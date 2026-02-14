@@ -52,6 +52,13 @@ def backfill(db, dry_run=True):
             summary["finalScores"] = r_data["finalScores"]
             summary["finalPotms"] = r_data.get("finalPotms", [])
             summary["finalAwards"] = r_data.get("finalAwards", {})
+            # compute voter counts from raw scores/awardVotes
+            raw_scores = r_data.get("scores", {})
+            voters = set()
+            for raters in raw_scores.values():
+                voters.update(raters.keys())
+            summary["num_distinct_score_voters"] = len(voters)
+            summary["num_distinct_award_voters"] = len(r_data.get("awardVotes", {}))
         else:
             # no final data yet, skip
             skipped_empty += 1
