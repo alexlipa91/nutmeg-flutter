@@ -293,9 +293,12 @@ List<Widget> getWidgets(
       ? TeamsWidget(matchId: match.documentId)
       : null;
 
-  var infoPlayersList = match.isMatchFinished()
+  // Show player list only for the organizer when teams aren't displayed
+  var infoPlayersList = (match.isMatchFinished() || teamsWidget != null)
       ? null
-      : PlayerList(match: match, withJoinButton: false);
+      : organizerView
+          ? PlayerList(match: match, withJoinButton: false)
+          : null;
 
   var waitListWidget =
       (!match.isMatchFinished() && match.numPlayersInWaitList() > 0)
