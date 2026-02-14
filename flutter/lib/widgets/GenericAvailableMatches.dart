@@ -68,7 +68,6 @@ class GenericAvailableMatchesListState
       MainAppBar(widget.appBarColor),
       Container(
         decoration: BoxDecoration(
-            // add this shadow so that the separator between appbar and top container is not visible
             boxShadow: [
               BoxShadow(
                 color: widget.appBarColor,
@@ -168,8 +167,6 @@ class GenericAvailableMatchesListState
                 return list[i];
               },
               itemCount: 3),
-          // refreshState: () => widget.refreshState(),
-          // initState: null),
           floatingActionButton: widget.floatingActionButton,
         ),
       ),

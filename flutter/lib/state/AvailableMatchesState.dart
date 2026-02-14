@@ -9,4 +9,3 @@ class AvailableMatchesUiState extends ChangeNotifier {
     notifyListeners();
   }
 }
-
