@@ -10,7 +10,6 @@ from google.cloud.logging.handlers import CloudLoggingHandler
 import os
 from src.blueprints import (
     feedback,
-    stats,
     sportcenters,
     locations,
     users,
@@ -33,7 +32,6 @@ def _create_app():
     app.register_blueprint(payments.bp)
     app.register_blueprint(users.bp)
     app.register_blueprint(sportcenters.bp)
-    app.register_blueprint(stats.bp)
     app.register_blueprint(locations.bp)
     app.register_blueprint(stripe_bp.bp)
     app.register_blueprint(feedback.bp)

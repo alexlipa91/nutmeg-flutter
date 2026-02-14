@@ -7,7 +7,6 @@ from firebase_admin import firestore
 
 from flask import Blueprint, Flask
 
-from src.blueprints.stats import recompute_stats
 from src.utils import build_dynamic_link
 from flask import current_app as app
 
@@ -154,6 +153,3 @@ if __name__ == '__main__':
     firebase_admin.initialize_app()
     app = Flask("test_app")
     app.db_client = firestore.client()
-
-    with app.app_context():
-        recompute_stats()

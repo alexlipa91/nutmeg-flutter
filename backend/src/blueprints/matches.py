@@ -1179,23 +1179,31 @@ def freeze_match_stats(match_id, notify=True, only_for_user=None):
         raise Exception(error)
 
     match_doc_ref = app.db_client.collection("matches").document(match_id)
-    users_collection = _get_users_collection_name(is_test=match.is_test)
-    users_doc_ref = {}
-    for u in updates:
-        ref = app.db_client.collection(users_collection).document(u)
-        if ref.get().exists:
-            users_doc_ref[u] = ref
-        else:
-            logging.warning(f"User {u} document not found, skipping stats update")
 
-    # write to db
-    _close_rating_round_transaction(
-        app.db_client.transaction(),
-        match.date_time.strftime("%Y%m"),
-        updates,
-        match_doc_ref,
-        users_doc_ref,
-    )
+    if match.is_test:
+        print(f"[SKIP] Test match {match_id} - not updating user stats or leaderboards")
+        # still mark match as scored
+        match_doc_ref.update({"ratings.computed_at": firestore.firestore.SERVER_TIMESTAMP})
+    else:
+        users_collection = _get_users_collection_name(is_test=match.is_test)
+        users_doc_ref = {}
+        for u in updates:
+            ref = app.db_client.collection(users_collection).document(u)
+            if ref.get().exists:
+                users_doc_ref[u] = ref
+            else:
+                logging.warning(f"User {u} document not found, skipping stats update")
+
+        # write to db
+        _close_rating_round_transaction(
+            app.db_client.transaction(),
+            match.date_time.strftime("%Y%m"),
+            updates,
+            match_doc_ref,
+            users_doc_ref,
+            going_user_ids=match.going_user_ids(),
+            organizer_id=match.organizer_id,
+        )
     if notify:
         try:
             _send_close_voting_notification(
@@ -1277,9 +1285,21 @@ def _close_rating_round_transaction(
     user_updates: Dict[str, UserUpdates],
     match_doc_ref,
     users_docs_ref,
+    going_user_ids: list,
+    organizer_id: str = None,
 ):
+    going_set = set(going_user_ids)
     for u in users_docs_ref:
-        transaction.update(users_docs_ref[u], user_updates[u].to_user_document_update())
+        update = user_updates[u].to_user_document_update()
+        # store co-players with match count
+        others = [uid for uid in going_set if uid != u]
+        for pid in others:
+            update[f"played_with.{pid}"] = firestore.Increment(1)
+        # if this user is the organizer, also update organizer_players counts
+        if u == organizer_id:
+            for pid in others:
+                update[f"organizer_players.{pid}"] = firestore.Increment(1)
+        transaction.update(users_docs_ref[u], update)
 
     for leaderboard in ["abs", yearmonth]:
         print("updating leaderboard {}".format(leaderboard))
@@ -1451,20 +1471,6 @@ def _add_user_to_match_firestore_transaction(
         },
     )
 
-    # track player for organizer (skip if the organizer is joining their own match)
-    organizer_id = match.get("organizerId")
-    if organizer_id and user_id != organizer_id:
-        organizer_data_ref = (
-            app.db_client.collection("users")
-            .document(organizer_id)
-            .collection("organizer")
-            .document("data")
-        )
-        transaction.set(
-            organizer_data_ref,
-            {"players_joined": {user_id: firestore.Increment(1)}},
-            merge=True,
-        )
 
 
 class MatchStatus(Enum):
