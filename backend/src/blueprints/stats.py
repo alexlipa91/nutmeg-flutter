@@ -9,6 +9,7 @@ from datetime import datetime
 
 
 from src.blueprints.matches import _freeze_match_stats, freeze_match_stats
+from src.models._matches import Match as MatchModel
 from src.utils import update_leaderboard
 from statistics.stats_utils import UserUpdates
 
@@ -72,8 +73,9 @@ def recompute_stats():
     # get match stats
     for m in db.collection("matches").get():
         print("Analyzing {}".format(m.id))
-        year_month = m.to_dict()["dateTime"].strftime("%Y%m")
-        user_updates, error = _freeze_match_stats(m.id, m.to_dict())
+        match = MatchModel.from_doc(m)
+        year_month = match.date_time.strftime("%Y%m")
+        user_updates, error = _freeze_match_stats(m.id, match)
         if error:
             log[error] = log.get(error, 0) + 1
         else:

@@ -123,7 +123,7 @@ class Match:
         kwargs: Dict[str, Any] = {"id": doc_id}
         mapping = cls._field_mapping()
         for firestore_key, attr_name in mapping.items():
-            if firestore_key in data:
+            if firestore_key in data and data[firestore_key] is not None:
                 kwargs[attr_name] = data[firestore_key]
         return cls(**kwargs)
 

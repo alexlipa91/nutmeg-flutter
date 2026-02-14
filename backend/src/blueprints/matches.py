@@ -23,6 +23,7 @@ from firebase_admin import firestore
 from flask import Blueprint, Flask
 
 from statistics.stats_utils import UserUpdates
+from src.models._matches import Match as MatchModel
 from src.blueprints.users import (
     ADMIN_IDS,
     _get_user_firestore,
@@ -452,14 +453,12 @@ def add_match_awards(match_id):
     request_data = flask.request.get_json()
 
     # Validate the match exists
-    match_doc = app.db_client.collection("matches").document(match_id).get()
-    if not match_doc.exists:
+    match = MatchModel.get_by_id(match_id, app.db_client)
+    if not match:
         return {"error": "Match not found"}, 404
 
-    match_data = match_doc.to_dict()
-
     # Validate the user is part of the match
-    if flask.g.uid not in match_data.get("going", {}):
+    if flask.g.uid not in match.going:
         return {"error": "User not authorized"}, 403
 
     # Store the awards
@@ -512,14 +511,8 @@ def get_match_awards(match_id):
 
 @bp.route("/<match_id>/ratings/to_vote", methods=["GET"])
 def get_still_to_vote(match_id):
-    all_going = (
-        app.db_client.collection("matches")
-        .document(match_id)
-        .get()
-        .to_dict()
-        .get("going", {})
-        .keys()
-    )
+    match = MatchModel.get_by_id(match_id, app.db_client)
+    all_going = match.going.keys() if match else []
     received_dict = (
         app.db_client.collection("ratings").document(match_id).get().to_dict()
     )
@@ -597,14 +590,8 @@ def create_match():
 
 @bp.route("/<match_id>/teams/<algorithm>", methods=["GET"])
 def get_teams(match_id, algorithm="balanced"):
-    going = list(
-        app.db_client.collection("matches")
-        .document(match_id)
-        .get()
-        .to_dict()
-        .get("going", {})
-        .keys()
-    )
+    match = MatchModel.get_by_id(match_id, app.db_client)
+    going = match.going_user_ids() if match else []
     scores = {}
 
     for u in going:
@@ -691,13 +678,8 @@ def add_user_to_match(match_id, user_id, payment_intent=None):
 
 
 def _get_user_stat_doc_ref(user_id, match_id):
-    if (
-        app.db_client.collection("matches")
-        .document(match_id)
-        .get()
-        .to_dict()
-        .get("isTest", False)
-    ):
+    match = MatchModel.get_by_id(match_id, app.db_client)
+    if match and match.is_test:
         return (
             app.db_client.collection("users")
             .document(user_id)
@@ -736,20 +718,18 @@ def remove_other_user_from_match_request(match_id):
     if not user_id:
         return {"error": "Missing user_id"}, 400
 
-    match_doc_ref = app.db_client.collection("matches").document(match_id)
-    match_doc = match_doc_ref.get()
-    if not match_doc.exists:
+    match = MatchModel.get_by_id(match_id, app.db_client)
+    if not match:
         return {"error": "Match not found"}, 404
 
-    match_data = match_doc.to_dict()
     requester_id = flask.g.uid
 
     is_admin = requester_id in ADMIN_IDS
-    is_organizer = match_data.get("organizerId", None) == requester_id
+    is_organizer = match.organizer_id == requester_id
     if not (is_admin or is_organizer):
         return {"error": "User not authorized"}, 403
 
-    if user_id == match_data.get("organizerId", None):
+    if user_id == match.organizer_id:
         return {"error": "Cannot remove organizer"}, 400
 
     _remove_user_from_match(match_id, user_id)
@@ -781,16 +761,16 @@ def add_user_to_waitlist_request(match_id):
 def remove_user_from_waitlist_request(match_id):
     user_id = flask.g.uid
 
-    match_doc_ref = app.db_client.collection("matches").document(match_id)
-    match_data = match_doc_ref.get().to_dict()
-
-    if not match_data:
+    match = MatchModel.get_by_id(match_id, app.db_client)
+    if not match:
         return {"error": "Match not found"}, 404
 
-    if user_id not in match_data.get("waitList", {}):
+    if user_id not in match.wait_list:
         return {"error": "User is not in the waitlist"}, 400
 
-    match_doc_ref.update({"waitList." + user_id: firestore.DELETE_FIELD})
+    app.db_client.collection("matches").document(match_id).update(
+        {"waitList." + user_id: firestore.DELETE_FIELD}
+    )
 
     return {"data": {}}, 200
 
@@ -803,25 +783,24 @@ def promote_user_from_waitlist_request(match_id):
     if not user_id:
         return {"error": "Missing user_id"}, 400
 
-    match_doc_ref = app.db_client.collection("matches").document(match_id)
-    match_data = match_doc_ref.get().to_dict()
-
-    if not match_data:
+    match = MatchModel.get_by_id(match_id, app.db_client)
+    if not match:
         return {"error": "Match not found"}, 404
 
     requester_id = flask.g.uid
     is_admin = requester_id in ADMIN_IDS
-    is_organizer = match_data.get("organizerId", None) == requester_id
+    is_organizer = match.organizer_id == requester_id
     if not (is_admin or is_organizer):
         return {"error": "User not authorized"}, 403
 
-    if user_id not in match_data.get("waitList", {}):
+    if user_id not in match.wait_list:
         return {"error": "User is not in the waitlist"}, 400
 
-    if len(match_data.get("going", {})) >= match_data.get("maxPlayers", 0):
+    if len(match.going) >= (match.max_players or 0):
         return {"error": "Match is full"}, 400
 
     user_stat_doc_ref = _get_user_stat_doc_ref(user_id, match_id)
+    match_doc_ref = app.db_client.collection("matches").document(match_id)
     transactions_doc_ref = (
         app.db_client.collection("matches")
         .document(match_id)
@@ -922,15 +901,14 @@ def _add_user_to_waitlist_transaction(transaction, match_doc_ref, user_id, match
 
 @bp.route("/<match_id>/cancel", methods=["GET"])
 def cancel_match(match_id, trigger="manual"):
-    match_doc_ref = app.db_client.collection("matches").document(match_id)
+    match = MatchModel.get_by_id(match_id, app.db_client)
 
-    match_data = match_doc_ref.get().to_dict()
-
-    if match_data.get("cancelledAt", None):
+    if not match or match.cancelled_at:
         raise Exception("Match has already been cancelled")
 
+    match_doc_ref = app.db_client.collection("matches").document(match_id)
     users_stats_docs = {}
-    for u in match_data.get("going", {}).keys():
+    for u in match.going_user_ids():
         users_stats_docs[u] = (
             app.db_client.collection("users")
             .document(u)
@@ -943,7 +921,7 @@ def cancel_match(match_id, trigger="manual"):
         match_doc_ref,
         users_stats_docs,
         match_id,
-        match_data["isTest"],
+        match.is_test,
         trigger,
     )
     return {}
@@ -951,9 +929,9 @@ def cancel_match(match_id, trigger="manual"):
 
 @bp.route("/<match_id>/confirm", methods=["GET"])
 def confirm_match(match_id):
-    match_data = app.db_client.collection("matches").document(match_id).get().to_dict()
+    match = MatchModel.get_by_id(match_id, app.db_client)
 
-    if len(match_data.get("going", {}).keys()) < match_data["minPlayers"]:
+    if len(match.going) < (match.min_players or 0):
         print("canceling match")
         cancel_match(match_id, "automatic")
     else:
@@ -967,14 +945,14 @@ def confirm_match(match_id):
 
 @bp.route("/<match_id>/tasks/prematch", methods=["GET"])
 def run_prematch_tasks(match_id):
-    match = app.db_client.collection("matches").document(match_id).get().to_dict()
-    if not match or match.get("cancelledAt", None) is not None:
+    match = MatchModel.get_by_id(match_id, app.db_client)
+    if not match or match.cancelled_at is not None:
         print("match not existing or cancelled...skipping")
         return {"status": "skipped", "reason": "cancelled"}
 
-    users = match.get("going", {}).keys()
-    sport_center = match["sportCenter"]
-    date_time_local = match["dateTime"].astimezone(
+    users = match.going_user_ids()
+    sport_center = match.sport_center
+    date_time_local = match.date_time.astimezone(
         pytz.timezone(sport_center["timeZoneId"])
     )
 
@@ -996,15 +974,15 @@ def run_prematch_tasks(match_id):
 
 @bp.route("/<match_id>/tasks/precancellation", methods=["GET"])
 def run_precancellation_tasks(match_id):
-    match = app.db_client.collection("matches").document(match_id).get().to_dict()
+    match = MatchModel.get_by_id(match_id, app.db_client)
 
-    if not match or "cancelledAt" in match:
+    if not match or match.cancelled_at is not None:
         print("match has been cancelled or removed from the db...skipping")
         return {"status": "skipped", "reason": "removed"}
 
-    organizer_id = match["organizerId"]
-    num_going = len(match.get("going", {}))
-    min_players = match["minPlayers"]
+    organizer_id = match.organizer_id
+    num_going = len(match.going)
+    min_players = match.min_players or 0
 
     if num_going < min_players:
         send_notification_to_users(
@@ -1027,17 +1005,17 @@ def run_precancellation_tasks(match_id):
 
 @bp.route("/<match_id>/tasks/postmatch", methods=["GET"])
 def run_post_match_tasks(match_id):
-    match_data = app.db_client.collection("matches").document(match_id).get().to_dict()
+    match = MatchModel.get_by_id(match_id, app.db_client)
 
-    if not match_data:
+    if not match:
         print("match deleted...skipping")
         return {"status": "skipped", "reason": "deleted"}
-    if match_data.get("cancelledAt", None) is not None:
+    if match.cancelled_at is not None:
         print("match cancelled...skipping")
         return {"status": "skipped", "reason": "cancelled"}
 
-    going_users = match_data.get("going", {}).keys()
-    organiser_id = match_data.get("organizerId", None)
+    going_users = match.going_user_ids()
+    organiser_id = match.organizer_id
 
     send_notification_to_users(
         db=app.db_client,
@@ -1077,27 +1055,27 @@ def run_post_match_tasks(match_id):
 def create_organizer_payout(match_id):
     # attempt = flask.request.args.get("attempt", 1)
     attempt = 1
-    match_data = app.db_client.collection("matches").document(match_id).get().to_dict()
+    match = MatchModel.get_by_id(match_id, app.db_client)
 
-    if not match_data:
+    if not match:
         print("Cannot find match...skipping")
         return {"status": "skipped", "reason": "deleted"}
 
-    if "payout_id" in match_data:
+    if match.payout_id:
         print("Already paid out")
         return {"status": "skipped", "reason": "deleted"}
 
-    amount = _get_stripe_price_amount(match_data, "base") * len(
-        match_data.get("going", {})
-    )
+    # _get_stripe_price_amount still expects a dict
+    match_data_dict = {"price": match.price, "isManualPayment": match.is_manual_payment}
+    amount = _get_stripe_price_amount(match_data_dict, "base") * len(match.going)
     if amount == 0:
         print("Nothing to payout...skipping")
         return {"status": "skipped", "reason": "no_players"}
 
-    is_test = match_data["isTest"]
+    is_test = match.is_test
     organizer_account = (
         app.db_client.collection("users")
-        .document(match_data["organizerId"])
+        .document(match.organizer_id)
         .get()
         .to_dict()[
             "stripeConnectedAccountTestId" if is_test else "stripeConnectedAccountId"
@@ -1129,14 +1107,14 @@ def create_organizer_payout(match_id):
             db=app.db_client,
             title="Your money is on the way! " + "\U0001f4b5",
             body="The amount of € {:.2f} for the match on {} is on its way to your bank account".format(
-                amount / 100, datetime.strftime(match_data["dateTime"], "%B %-d, %Y")
+                amount / 100, datetime.strftime(match.date_time, "%B %-d, %Y")
             ),
             data={
                 "click_action": "FLUTTER_NOTIFICATION_CLICK",
                 "route": "/match/" + match_id,
                 "match_id": match_id,
             },
-            users=[match_data["organizerId"]],
+            users=[match.organizer_id],
         )
         return {"status": "success"}
     else:
@@ -1261,9 +1239,9 @@ Updates = namedtuple("Updates", "match_updates users_updates users_match_stats_u
 @bp.route("/<match_id>/stats/freeze", methods=["POST"])
 def freeze_match_stats(match_id, notify=True, only_for_user=None):
     # only_for_user can be used to apply match stats only to a certain user
-    match_data = get_match(match_id, is_local=True)
+    match = MatchModel.get_by_id(match_id, app.db_client)
     try:
-        updates, error = _freeze_match_stats(match_id, match_data)
+        updates, error = _freeze_match_stats(match_id, match)
     except NotEnoughVotersError:
         app.db_client.collection("ratings").document(match_id).set(
             {
@@ -1283,7 +1261,7 @@ def freeze_match_stats(match_id, notify=True, only_for_user=None):
     match_doc_ref = app.db_client.collection("matches").document(match_id)
     users_doc_ref = {
         u: app.db_client.collection(
-            _get_users_collection_name(is_test=match_data.get("isTest", False))
+            _get_users_collection_name(is_test=match.is_test)
         ).document(u)
         for u in updates
     }
@@ -1291,7 +1269,7 @@ def freeze_match_stats(match_id, notify=True, only_for_user=None):
     # write to db
     _close_rating_round_transaction(
         app.db_client.transaction(),
-        match_data["dateTime"].strftime("%Y%m"),
+        match.date_time.strftime("%Y%m"),
         updates,
         match_doc_ref,
         users_doc_ref,
@@ -1300,9 +1278,9 @@ def freeze_match_stats(match_id, notify=True, only_for_user=None):
         try:
             _send_close_voting_notification(
                 match_doc_ref.id,
-                list(match_data.get("going", {}).keys()),
+                match.going_user_ids(),
                 [u for u in updates if updates[u].num_potms == 1],
-                match_data.get("sportCenter", None),
+                match.sport_center,
             )
         except Exception as e:
             logging.error(
@@ -1316,21 +1294,22 @@ def freeze_match_stats(match_id, notify=True, only_for_user=None):
     return {}
 
 
-def _freeze_match_stats(match_id, match_data):
-    if not match_data:
+def _freeze_match_stats(match_id, match: MatchModel):
+    if not match:
         return None, "match_not_found"
-    if match_data.get("cancelledAt", None):
+    if match.is_cancelled():
         return None, "match_cancelled"
 
     # ratings
     ratings_doc = app.db_client.collection("ratings").document(match_id).get()
+    ratings_data = ratings_doc.to_dict() if ratings_doc.exists else {}
     match_stats = MatchStats(
         match_id,
-        match_data.get("dateTime"),
-        match_data.get("going", {}),
-        ratings_doc.to_dict().get("scores", {}) if ratings_doc.to_dict() else {},
-        ratings_doc.to_dict().get("skills", {}) if ratings_doc.to_dict() else {},
-        ratings_doc.to_dict().get("awardVotes", {}) if ratings_doc.to_dict() else {},
+        match.date_time,
+        match.going or {},
+        ratings_data.get("scores", {}) if ratings_data else {},
+        ratings_data.get("skills", {}) if ratings_data else {},
+        ratings_data.get("awardVotes", {}) if ratings_data else {},
     )
 
     # store final scores
@@ -1342,30 +1321,15 @@ def _freeze_match_stats(match_id, match_data):
         }
     )
 
-    # score
-    user_won = []
-    user_draw = []
-    user_lost = []
-    if "score" in match_data and len(match_data["score"]) == 2:
-        score_delta = match_data["score"][0] - match_data["score"][1]
-        team_logic = "manual" if match_data.get("hasManualTeams", False) else "balanced"
-        teams = match_data["teams"][team_logic]["players"]
-
-        if score_delta > 0:
-            user_won = teams["a"]
-            user_lost = teams["b"]
-        elif score_delta == 0:
-            user_draw = teams["a"] + teams["b"]
-        else:
-            user_won = teams["b"]
-            user_lost = teams["a"]
+    # score - use Match model helpers
+    user_won, user_draw, user_lost = match.get_win_draw_loss()
 
     user_updates = {}
 
     # create updates
-    for u in match_data.get("going", {}).keys():
+    for u in match.going_user_ids():
         user_updates[u] = UserUpdates.from_single_game(
-            date=match_data["dateTime"],
+            date=match.date_time,
             score=match_stats.user_scores.get(u, None),
             wdl=(
                 "w"
