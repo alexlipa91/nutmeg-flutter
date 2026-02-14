@@ -1,4 +1,4 @@
-name: Playstore Deployment
+name: Android Deployment
 
 on:
   push:
@@ -7,8 +7,8 @@ on:
 
 jobs:
   deploy_android:
-    name: Deploy build to Playstore
-    if: contains(github.event.head_commit.message, '[deploy]')
+    name: Build & Deploy Android
+    if: contains(github.event.head_commit.message, '[deploy_test]') || contains(github.event.head_commit.message, '[deploy_prod]')
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -49,4 +49,12 @@ jobs:
         uses: maierj/fastlane-action@v3.1.0
         with:
           lane: "playstoreInternalTest"
+          subdirectory: "flutter/android"
+
+      # --- prod: promote to production ---
+      - name: Promote to Production
+        if: contains(github.event.head_commit.message, '[deploy_prod]')
+        uses: maierj/fastlane-action@v3.1.0
+        with:
+          lane: "promoteToProduction"
           subdirectory: "flutter/android"

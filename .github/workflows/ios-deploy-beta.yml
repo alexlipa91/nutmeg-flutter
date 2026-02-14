@@ -1,4 +1,4 @@
-name: Appstore Deployment
+name: iOS Deployment
 
 on:
   push:
@@ -7,8 +7,8 @@ on:
 
 jobs:
   deploy_ios:
-    name: Deploy build to TestFlight
-    if: contains(github.event.head_commit.message, '[deploy]')
+    name: Build & Deploy iOS
+    if: contains(github.event.head_commit.message, '[deploy_test]') || contains(github.event.head_commit.message, '[deploy_prod]')
     runs-on: macOS-latest
     defaults:
       run:
@@ -74,5 +74,26 @@ jobs:
         env:
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
           GIT_AUTH_TOKEN: ${{ secrets.GIT_AUTH_TOKEN }}
+          KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+
+      # --- prod: submit for App Store review ---
+      - name: Read version from pubspec.yaml
+        if: contains(github.event.head_commit.message, '[deploy_prod]')
+        id: version
+        run: |
+          VERSION_LINE=$(grep '^version:' pubspec.yaml | head -1)
+          APP_VERSION=$(echo "$VERSION_LINE" | sed 's/version: *//;s/+.*//')
+          BUILD_NUMBER=$(echo "$VERSION_LINE" | sed 's/.*+//')
+          echo "app_version=$APP_VERSION" >> $GITHUB_OUTPUT
+          echo "build_number=$BUILD_NUMBER" >> $GITHUB_OUTPUT
+          echo "Parsed version: $APP_VERSION+$BUILD_NUMBER"
+      - name: Submit for App Store review
+        if: contains(github.event.head_commit.message, '[deploy_prod]')
+        uses: maierj/fastlane-action@v3.1.0
+        with:
+          lane: "submit_for_review build_number:${{ steps.version.outputs.build_number }} version:${{ steps.version.outputs.app_version }}"
+          subdirectory: 'flutter/ios'
+        env:
           KEY_ID: ${{ secrets.ASC_KEY_ID }}
           ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
