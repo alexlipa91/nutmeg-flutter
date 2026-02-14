@@ -322,6 +322,9 @@ List<Widget> getWidgets(
       SportCenterDetails(match: match, sportCenter: sportCenter);
 
   var rules = (bool large) {
+    // Payment policy only applies when payment is handled by Nutmeg
+    if (match.isManualPayment) return null;
+
     var rules = [];
 
     if (match.cancelBefore != null) {
@@ -771,6 +774,7 @@ class MatchInfo extends StatelessWidget {
               ),
             if (isOrganizerView &&
                 match.price != null &&
+                !match.isManualPayment &&
                 match.isMatchFinished() &&
                 match.cancelledAt == null &&
                 match.going.length > 0)
