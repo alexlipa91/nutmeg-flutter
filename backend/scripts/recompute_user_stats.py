@@ -2,7 +2,7 @@
 Recompute all user stats from match history in a single pass:
   - num_matches_joined
   - scores.number_of_scored_games, scores.total_sum
-  - potm_count
+  - potm_dates
   - record.num_win, record.num_draw, record.num_loss
   - last_date_scores (10 most recent)
   - played_with (set of all co-players)
@@ -24,7 +24,7 @@ def _empty_stats():
         "num_matches_joined": 0,
         "num_scored_games": 0,
         "total_sum": 0.0,
-        "potm_count": 0,
+        "potm_dates": {},  # {datetime: True}
         "num_win": 0,
         "num_draw": 0,
         "num_loss": 0,
@@ -102,7 +102,8 @@ def recompute(db, dry_run=True, only_user=None):
                     user_stats[uid]["date_scores"].append((match_date, score))
 
         for uid in potms:
-            user_stats[uid]["potm_count"] += 1
+            if match_date:
+                user_stats[uid]["potm_dates"][match_date] = True
 
         # -- win/draw/loss --
         match_score = data.get("score")
@@ -187,11 +188,12 @@ def _write_user_stats(db, users_to_process, dry_run):
             diffs.append(f"scored_games: {cur_games}->{computed['num_scored_games']}")
             diffs.append(f"total_sum: {cur_sum:.2f}->{computed['total_sum']:.2f}")
 
-        # potm_count
-        cur_potm = current.get("potm_count", 0)
-        if cur_potm != computed["potm_count"]:
-            update["potm_count"] = computed["potm_count"]
-            diffs.append(f"potm: {cur_potm}->{computed['potm_count']}")
+        # potm_dates
+        new_potm_dates = {d.strftime("%Y%m%d%H%M%S"): True for d in computed["potm_dates"]}
+        cur_potm_dates = current.get("potm_dates", {})
+        if new_potm_dates != cur_potm_dates:
+            update["potm_dates"] = new_potm_dates
+            diffs.append(f"potm_dates: {len(cur_potm_dates)}->{len(new_potm_dates)}")
 
         # record
         new_record = {

@@ -176,6 +176,16 @@ class PerformanceGraph extends StatelessWidget {
         .map((e) => MapEntry(e.key, double.parse(e.value.toStringAsFixed(2))))
         .toList();
 
+    // Build a set of indices where the score date matches a POTM date
+    final potmDates = userDetails.potmDates ?? {};
+    final scoreDates = userDetails.lastScoreDates ?? [];
+    final potmIndices = <int>{};
+    for (var i = 0; i < scoreDates.length; i++) {
+      if (potmDates.containsKey(scoreDates[i])) {
+        potmIndices.add(i);
+      }
+    }
+
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 4),
       child: Row(children: [
@@ -225,6 +235,27 @@ class PerformanceGraph extends StatelessWidget {
                   tooltipPadding: EdgeInsets.all(8),
                 ),
                 getTouchLineEnd: (a, b) => 0,
+                getTouchedSpotIndicator: (barData, spotIndexes) {
+                  return spotIndexes.map((i) {
+                    return TouchedSpotIndicatorData(
+                      FlLine(color: Colors.transparent),
+                      FlDotData(
+                        show: true,
+                        getDotPainter: (spot, percent, bar, index) {
+                          if (potmIndices.contains(i)) {
+                            return _PotmDotPainter();
+                          }
+                          return FlDotCirclePainter(
+                            radius: 5,
+                            color: Colors.white,
+                            strokeWidth: 3,
+                            strokeColor: Palette.primary,
+                          );
+                        },
+                      ),
+                    );
+                  }).toList();
+                },
               ),
               gridData: FlGridData(
                 show: true,
@@ -248,13 +279,17 @@ class PerformanceGraph extends StatelessWidget {
                   isStrokeCapRound: true,
                   dotData: FlDotData(
                     show: true,
-                    getDotPainter: (spot, percent, barData, index) =>
-                        FlDotCirclePainter(
-                      radius: 5,
-                      color: Colors.white,
-                      strokeWidth: 3,
-                      strokeColor: Palette.primary,
-                    ),
+                    getDotPainter: (spot, percent, barData, index) {
+                      if (potmIndices.contains(index)) {
+                        return _PotmDotPainter();
+                      }
+                      return FlDotCirclePainter(
+                        radius: 5,
+                        color: Colors.white,
+                        strokeWidth: 3,
+                        strokeColor: Palette.primary,
+                      );
+                    },
                   ),
                   belowBarData: BarAreaData(
                     show: false,
@@ -270,4 +305,89 @@ class PerformanceGraph extends StatelessWidget {
       ]),
     );
   }
+}
+
+class _PotmDotPainter extends FlDotPainter {
+  static const double _hexW = 22;
+  static const double _hexH = 24;
+
+  static final _iconPainter = TextPainter(
+    text: TextSpan(
+      text: String.fromCharCode(Icons.emoji_events.codePoint),
+      style: TextStyle(
+        fontSize: 12,
+        fontFamily: Icons.emoji_events.fontFamily,
+        package: Icons.emoji_events.fontPackage,
+        color: Colors.white,
+        shadows: [Shadow(color: Colors.black26, blurRadius: 2, offset: Offset(0, 1))],
+      ),
+    ),
+    textDirection: TextDirection.ltr,
+  )..layout();
+
+  static Path _buildHexagonPath(double w, double h) {
+    final r = w * 0.08;
+    final points = [
+      Offset(w * 0.5, 0),
+      Offset(w, h * 0.25),
+      Offset(w, h * 0.75),
+      Offset(w * 0.5, h),
+      Offset(0, h * 0.75),
+      Offset(0, h * 0.25),
+    ];
+    final path = Path();
+    for (var i = 0; i < points.length; i++) {
+      final prev = points[(i - 1 + points.length) % points.length];
+      final curr = points[i];
+      final next = points[(i + 1) % points.length];
+      final inFromPrev = Offset(
+        curr.dx + (prev.dx - curr.dx) * r / (curr - prev).distance,
+        curr.dy + (prev.dy - curr.dy) * r / (curr - prev).distance,
+      );
+      final inToNext = Offset(
+        curr.dx + (next.dx - curr.dx) * r / (curr - next).distance,
+        curr.dy + (next.dy - curr.dy) * r / (curr - next).distance,
+      );
+      if (i == 0) {
+        path.moveTo(inFromPrev.dx, inFromPrev.dy);
+      } else {
+        path.lineTo(inFromPrev.dx, inFromPrev.dy);
+      }
+      path.quadraticBezierTo(curr.dx, curr.dy, inToNext.dx, inToNext.dy);
+    }
+    path.close();
+    return path;
+  }
+
+  @override
+  void draw(Canvas canvas, FlSpot spot, Offset offsetInCanvas) {
+    // Draw the hexagon centered on the data point (replaces the dot)
+    final hexLeft = offsetInCanvas.dx - _hexW / 2;
+    final hexTop = offsetInCanvas.dy - _hexH / 2;
+
+    canvas.save();
+    canvas.translate(hexLeft, hexTop);
+    final hexPath = _buildHexagonPath(_hexW, _hexH);
+    canvas.drawPath(hexPath, Paint()..color = Palette.accent);
+    canvas.restore();
+
+    // Draw the trophy icon centered inside the hexagon
+    final iconOffset = Offset(
+      hexLeft + (_hexW - _iconPainter.width) / 2,
+      hexTop + (_hexH - _iconPainter.height) / 2,
+    );
+    _iconPainter.paint(canvas, iconOffset);
+  }
+
+  @override
+  Size getSize(FlSpot spot) => const Size(_hexW, _hexH);
+
+  @override
+  FlDotPainter lerp(FlDotPainter a, FlDotPainter b, double t) => this;
+
+  @override
+  Color get mainColor => Palette.accent;
+
+  @override
+  List<Object?> get props => [];
 }

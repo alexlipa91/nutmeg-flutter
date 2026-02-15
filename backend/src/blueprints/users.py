@@ -113,6 +113,11 @@ def _get_user_firestore(user_id):
         )
         data["delta_from_last_score"] = data["avg_score"] - previous_avg_score
 
+    # derive potm_count from potm_dates for backwards compatibility
+    potm_dates = data.get("potm_dates", {})
+    if potm_dates:
+        data["potm_count"] = len(potm_dates)
+
     return data
 
 

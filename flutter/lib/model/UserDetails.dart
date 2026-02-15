@@ -16,12 +16,13 @@ class UserDetails {
   double? averageScore;
   double? deltaFromLastScore;
   List<double>? lastScores;
+  List<String>? lastScoreDates;
   Map<String, int>? skillsCount;
 
   List<String>? createdMatches;
   List<String>? createdTestMatches;
 
-  int? potmCount;
+  Map<String, bool>? potmDates;
 
   bool? chargesEnabledOnStripe;
   bool? chargesEnabledOnStripeTest;
@@ -54,10 +55,17 @@ class UserDetails {
         averageScore = json["avg_score"] ?? null,
         numRatedMatches = (json["scores"] ?? {})["number_of_scored_games"] ?? 0,
         sumTotalRates = ((json["scores"] ?? {})["total_sum"] ?? 0).toDouble(),
-        potmCount = json["potm_count"] ?? 0,
+        potmDates = json["potm_dates"] != null
+            ? Map<String, bool>.from(
+                (json["potm_dates"] as Map).map((k, v) => MapEntry(k.toString(), true)))
+            : null,
         lastScores = (json["last_date_scores"] == null)
             ? []
             : _readLastScores(
+                Map<String, double>.from(json["last_date_scores"])),
+        lastScoreDates = (json["last_date_scores"] == null)
+            ? []
+            : _readLastScoreDates(
                 Map<String, double>.from(json["last_date_scores"])),
         deltaFromLastScore = json["delta_from_last_score"],
         skillsCount = Map<String, int>.from((json["skills_count"] ?? {})),
@@ -95,6 +103,11 @@ class UserDetails {
     return sortedKeys.map((d) => lastDateScores[d]!).toList();
   }
 
+  static List<String> _readLastScoreDates(Map<String, double> lastDateScores) {
+    var sortedKeys = lastDateScores.keys.toList()..sort();
+    return sortedKeys;
+  }
+
   Map<String, dynamic> toJson() => {
         'isAdmin': isAdmin,
         'image': image,
@@ -111,7 +124,7 @@ class UserDetails {
 
   List<double> getLastScores() => lastScores ?? [];
 
-  int getNumManOfTheMatch() => potmCount ?? 0;
+  int getNumManOfTheMatch() => potmDates?.length ?? 0;
 
   String? getStripeId() => stripeId;
 

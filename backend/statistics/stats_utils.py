@@ -17,7 +17,8 @@ class UserUpdates:
             num_loss=1 if wdl == "l" else 0,
             num_scored_games=1 if score else 0,
             num_matches_joined=1,
-            num_potms=1 if is_potm else 0
+            num_potms=1 if is_potm else 0,
+            potm_dates={date: True} if is_potm and date else {},
         )
 
     def __init__(self,
@@ -28,7 +29,8 @@ class UserUpdates:
                  num_draw,
                  num_loss,
                  num_scored_games,
-                 num_matches_joined):
+                 num_matches_joined,
+                 potm_dates: Dict = None):
         self.num_matches_joined = num_matches_joined
         self.num_scored_games = num_scored_games
         self.total_sum_score = total_sum_score
@@ -37,6 +39,7 @@ class UserUpdates:
         self.num_win = num_win
         self.num_draw = num_draw
         self.num_loss = num_loss
+        self.potm_dates = potm_dates or {}
 
     def to_user_document_update(self):
         # Uses dot notation for nested fields because this is passed to
@@ -46,7 +49,6 @@ class UserUpdates:
             "num_matches_joined": firestore.firestore.Increment(self.num_matches_joined),
             "scores.number_of_scored_games": firestore.firestore.Increment(self.num_scored_games),
             "scores.total_sum": firestore.firestore.Increment(self.total_sum_score),
-            "potm_count": firestore.firestore.Increment(self.num_potms),
             "record.num_win": firestore.firestore.Increment(self.num_win),
             "record.num_draw": firestore.firestore.Increment(self.num_draw),
             "record.num_loss": firestore.firestore.Increment(self.num_loss),
@@ -54,6 +56,8 @@ class UserUpdates:
         for d, v in self.date_score.items():
             if v:
                 fields["last_date_scores." + d.strftime("%Y%m%d%H%M%S")] = v
+        for d in self.potm_dates:
+            fields["potm_dates." + d.strftime("%Y%m%d%H%M%S")] = True
         return fields
 
     def to_leaderboard_document_update(self):
@@ -65,7 +69,6 @@ class UserUpdates:
                 "number_of_scored_games": firestore.firestore.Increment(self.num_scored_games),
                 "total_sum": firestore.firestore.Increment(self.total_sum_score)
             },
-            "potm_count": firestore.firestore.Increment(self.num_potms),
             "record": {
                 "num_win": firestore.firestore.Increment(self.num_win),
                 "num_draw": firestore.firestore.Increment(self.num_draw),
@@ -78,6 +81,9 @@ class UserUpdates:
         base_updates["last_date_scores"] = {
             d.strftime("%Y%m%d%H%M%S"): v for d, v in self.date_score.items() if v
         }
+        base_updates["potm_dates"] = {
+            d.strftime("%Y%m%d%H%M%S"): True for d in self.potm_dates
+        }
         return base_updates
 
     def to_absolute_leaderboard_doc_update(self):
@@ -87,7 +93,6 @@ class UserUpdates:
                 "number_of_scored_games": self.num_scored_games,
                 "total_sum": self.total_sum_score,
             },
-            'potm_count': self.num_potms,
             "record": {
                 "num_win": self.num_win,
                 "num_draw": self.num_draw,
@@ -114,7 +119,8 @@ class UserUpdates:
             num_matches_joined=a.num_matches_joined + b.num_matches_joined,
             num_scored_games=a.num_scored_games + b.num_scored_games,
             total_sum_score=a.total_sum_score + b.total_sum_score,
-            num_potms=a.num_potms + b.num_potms
+            num_potms=a.num_potms + b.num_potms,
+            potm_dates=dict(list(a.potm_dates.items()) + list(b.potm_dates.items())),
         )
 
     @staticmethod
@@ -127,7 +133,8 @@ class UserUpdates:
             num_scored_games=0,
             num_matches_joined=0,
             total_sum_score=0,
-            num_potms=0
+            num_potms=0,
+            potm_dates={},
         )
 
     def __repr__(self):
