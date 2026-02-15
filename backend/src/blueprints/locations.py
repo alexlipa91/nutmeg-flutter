@@ -1,8 +1,8 @@
-import os
-
 import flask
 import requests
 from flask import Blueprint
+
+from src.secrets import Secrets
 
 
 bp = Blueprint('locations', __name__, url_prefix='/locations')
@@ -13,7 +13,7 @@ def get_location_predictions_from_query():
     query = flask.request.args.get("query", None)
 
     url = 'https://maps.googleapis.com/maps/api/place/autocomplete/json?'
-    req = requests.get(url + 'input=' + query + '&key=' + os.environ["GOOGLE_MAPS_API_KEY"]
+    req = requests.get(url + 'input=' + query + '&key=' + Secrets.GOOGLE_MAPS_API_KEY
                        + '&fields=formatted_address')
     resp = req.json()
 
@@ -34,7 +34,7 @@ def get_city_from_query():
     query = flask.request.args.get("query", None)
 
     url = 'https://maps.googleapis.com/maps/api/place/autocomplete/json?'
-    req = requests.get(url + 'input=' + query + '&key=' + os.environ["GOOGLE_MAPS_API_KEY"]
+    req = requests.get(url + 'input=' + query + '&key=' + Secrets.GOOGLE_MAPS_API_KEY
                        + '&types=(cities)'
                        + '&fields=formatted_address')
     resp = req.json()
@@ -60,7 +60,7 @@ def get_location_details():
     url = "https://maps.googleapis.com/maps/api/geocode/json?"
     response = requests.get(url
                             + "latlng={},{}".format(lat, lng)
-                            + "&key={}".format(os.environ["GOOGLE_MAPS_API_KEY"])
+                            + "&key={}".format(Secrets.GOOGLE_MAPS_API_KEY)
                             + "&result_type=locality")
     results = response.json()["results"]
 
@@ -87,7 +87,7 @@ def get_place_location_info(place_id):
     url = "https://maps.googleapis.com/maps/api/place/details/json?place_id={}&fields={}&key={}".format(
         place_id,
         "%2C".join(["name", "formatted_address", "geometry", "utc_offset", "address_components"]),
-        os.environ["GOOGLE_MAPS_API_KEY"]
+        Secrets.GOOGLE_MAPS_API_KEY
     )
 
     response = requests.request("GET", url, headers={}, data={})

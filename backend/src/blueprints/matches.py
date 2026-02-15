@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 import logging
-import os
 import random
 import traceback
 from collections import namedtuple
@@ -29,6 +28,7 @@ from src.blueprints.users import (
     _get_user_firestore,
     _get_users_collection_name,
 )
+from src.secrets import Secrets
 from src.utils import (
     _serialize_dates,
     build_dynamic_link,
@@ -1004,7 +1004,7 @@ def create_organizer_payout(match_id):
         .to_dict()
     )
     organizer_account = organizer_data.get(prefix, {}).get("connected_account_id")
-    stripe.api_key = os.environ["STRIPE_KEY" if not is_test else "STRIPE_KEY_TEST"]
+    stripe.api_key = Secrets.STRIPE_KEY if not is_test else Secrets.STRIPE_KEY_TEST
 
     # check if enough balance
     balance = stripe.Balance.retrieve(stripe_account=organizer_account)
@@ -1056,7 +1056,7 @@ def create_organizer_payout(match_id):
 def _cancel_match_firestore_transactional(
     transaction, match_doc_ref, users_stats_docs, match_id, is_test, trigger
 ):
-    stripe.api_key = os.environ["STRIPE_KEY_TEST" if is_test else "STRIPE_KEY"]
+    stripe.api_key = Secrets.STRIPE_KEY_TEST if is_test else Secrets.STRIPE_KEY
 
     match = get_match(match_id, is_local=True)
     to_refund = None
@@ -1406,9 +1406,7 @@ def _remove_user_from_match_stripe_refund_firestore_transaction(
 
     if payment_intent:
         # issue_refund
-        stripe.api_key = os.environ[
-            "STRIPE_KEY_TEST" if match["isTest"] else "STRIPE_KEY"
-        ]
+        stripe.api_key = Secrets.STRIPE_KEY_TEST if match["isTest"] else Secrets.STRIPE_KEY
         refund_amount = _get_stripe_price_amount(match, "base")
         refund = stripe.Refund.create(
             payment_intent=payment_intent, amount=refund_amount, reverse_transfer=True
@@ -1596,9 +1594,7 @@ def _format_match_data_v2(match_id, match_data, version, add_organizer_info=Fals
     if add_organizer_info:
         try:
             if "payout_id" in match_data:
-                stripe.api_key = os.environ[
-                    "STRIPE_KEY_TEST" if match_data["isTest"] else "STRIPE_KEY"
-                ]
+                stripe.api_key = Secrets.STRIPE_KEY_TEST if match_data["isTest"] else Secrets.STRIPE_KEY
                 prefix = "stripe_test" if match_data["isTest"] else "stripe"
                 org_data = (
                     app.db_client.collection("users")
@@ -1690,9 +1686,7 @@ def _add_match_firestore(match_data):
             match_data["unpublished_reason"] = "organizer_not_onboarded"
 
         # create stripe object
-        stripe.api_key = os.environ[
-            "STRIPE_KEY_TEST" if match_data["isTest"] else "STRIPE_KEY"
-        ]
+        stripe.api_key = Secrets.STRIPE_KEY_TEST if match_data["isTest"] else Secrets.STRIPE_KEY
         response = stripe.Product.create(
             name="Nutmeg Match - {} - {}".format(
                 match_data["sportCenter"]["name"], match_data["dateTime"]
@@ -1838,7 +1832,7 @@ def delete_tests():
 
 
 def _update_user_account(user_id, is_test, match_id, manage_payments):
-    stripe.api_key = os.environ["STRIPE_KEY_TEST" if is_test else "STRIPE_KEY"]
+    stripe.api_key = Secrets.STRIPE_KEY_TEST if is_test else Secrets.STRIPE_KEY
     prefix = "stripe_test" if is_test else "stripe"
 
     # add to created matches

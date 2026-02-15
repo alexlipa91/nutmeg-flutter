@@ -1,4 +1,3 @@
-import os
 import time
 
 import flask
@@ -7,6 +6,7 @@ from flask import Blueprint
 from flask import current_app as app
 
 from src.blueprints.locations import get_place_location_info
+from src.secrets import Secrets
 
 
 bp = Blueprint('sportcenters', __name__, url_prefix='/sportcenters')
@@ -65,7 +65,7 @@ def _get_timezone_id(lat, lng):
         lat,
         lng,
         int(time.time()),
-        os.environ["GOOGLE_MAPS_API_KEY"]
+        Secrets.GOOGLE_MAPS_API_KEY
     )
     response = requests.request("GET", url, headers={}, data={})
 

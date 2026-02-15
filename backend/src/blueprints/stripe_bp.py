@@ -1,5 +1,3 @@
-import os
-
 import flask
 
 import stripe
@@ -7,6 +5,7 @@ from flask import Blueprint
 from flask import current_app as app
 from google.cloud.firestore_v1 import DELETE_FIELD
 
+from src.secrets import Secrets
 from src.utils import build_dynamic_link
 from src.blueprints.matches import add_user_to_match
 
@@ -29,7 +28,7 @@ def _stripe_prefix(is_test):
 
 
 def _setup_stripe_key(is_test):
-    stripe.api_key = os.environ["STRIPE_KEY_TEST" if is_test else "STRIPE_KEY"]
+    stripe.api_key = Secrets.STRIPE_KEY_TEST if is_test else Secrets.STRIPE_KEY
 
 
 @bp.route("/checkout_webhook", methods=["POST"])
@@ -37,7 +36,7 @@ def stripe_checkout_webhook():
     is_test = _get_is_test()
     sig_header = flask.request.headers['STRIPE_SIGNATURE']
 
-    secret = os.environ["STRIPE_CHECKOUT_WEBHOOK_SECRET" if not is_test else "STRIPE_CHECKOUT_WEBHOOK_SECRET_TEST"]
+    secret = Secrets.STRIPE_CHECKOUT_WEBHOOK_SECRET if not is_test else Secrets.STRIPE_CHECKOUT_WEBHOOK_SECRET_TEST
 
     try:
         event = stripe.Webhook.construct_event(flask.request.data, sig_header, secret)
@@ -165,8 +164,7 @@ def stripe_connect_account_updated_webhook():
     is_test = _get_is_test()
     sig_header = flask.request.headers['STRIPE_SIGNATURE']
 
-    secret = os.environ[
-        "STRIPE_CONNECT_UPDATED_WEBHOOK_SECRET" if not is_test else "STRIPE_CONNECT_UPDATED_WEBHOOK_SECRET_TEST"]
+    secret = Secrets.STRIPE_CONNECT_UPDATED_WEBHOOK_SECRET if not is_test else Secrets.STRIPE_CONNECT_UPDATED_WEBHOOK_SECRET_TEST
 
     try:
         event = stripe.Webhook.construct_event(flask.request.data, sig_header, secret)

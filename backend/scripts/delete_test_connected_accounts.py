@@ -9,11 +9,11 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from src.secrets import load_secrets
+from src.secrets import Secrets, load_secrets
 
 load_secrets()
 
-stripe.api_key = os.environ["STRIPE_KEY_TEST"]
+stripe.api_key = Secrets.STRIPE_KEY_TEST
 
 accounts = stripe.Account.list(limit=100)
 count = 0

@@ -7,7 +7,8 @@ from firebase_admin import messaging
 from google.cloud import tasks_v2
 from google.protobuf import timestamp_pb2
 import requests
-from os import environ
+
+from src.secrets import Secrets
 
 
 def _serialize_dates(data):
@@ -70,7 +71,7 @@ def schedule_app_engine_call(
 
 def build_dynamic_link(link):
     resp = requests.post(
-        url=f'https://firebasedynamiclinks.googleapis.com/v1/shortLinks?key={environ["DYNAMIC_LINK_API_KEY"]}',
+        url=f'https://firebasedynamiclinks.googleapis.com/v1/shortLinks?key={Secrets.DYNAMIC_LINK_API_KEY}',
         headers={"Content-Type": "application/json"},
         data=json.dumps(
             {

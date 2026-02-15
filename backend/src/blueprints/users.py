@@ -1,11 +1,11 @@
-import os
-
 import firebase_admin
 import flask
 import stripe
 from firebase_admin import firestore
 from flask import Blueprint, Flask
 from flask import current_app as app
+
+from src.secrets import Secrets
 
 
 ADMIN_IDS = [
@@ -73,7 +73,7 @@ def _add_user(user_id, data, create_stripe_customer=True):
 
     if create_stripe_customer:
         # create stripe customer
-        stripe.api_key = os.environ["STRIPE_KEY"]
+        stripe.api_key = Secrets.STRIPE_KEY
         response = stripe.Customer.create(
             email=data.get("email", None), name=data.get("name", None)
         )
