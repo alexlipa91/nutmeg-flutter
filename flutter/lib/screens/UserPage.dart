@@ -23,6 +23,7 @@ import 'package:shimmer/shimmer.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:nutmeg/l10n/app_localizations.dart';
 import 'package:nutmeg/utils/navigate_url.dart';
+import 'package:nutmeg/widgets/StripeSetupWidget.dart';
 
 import '../state/UserState.dart';
 import '../state/UsersState.dart';
@@ -908,81 +909,8 @@ class _PaymentMethodsCardState extends State<_PaymentMethodsCard> {
     );
   }
 
-  void _showHowItWorksModal(BuildContext context) {
-    ModalBottomSheet.showNutmegModalBottomSheet(
-      context,
-      Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(AppLocalizations.of(context)!.howPayWithNutmegWorks, style: TextPalette.h2),
-          SizedBox(height: 20),
-          _stepRow("1", AppLocalizations.of(context)!.stripeStep1),
-          SizedBox(height: 14),
-          _stepRow("2", AppLocalizations.of(context)!.stripeStep2),
-          SizedBox(height: 14),
-          _stepRow("3", AppLocalizations.of(context)!.stripeStep3),
-          SizedBox(height: 14),
-          _stepRow("4", AppLocalizations.of(context)!.stripeStep4),
-          SizedBox(height: 16),
-          _infoRow(AppLocalizations.of(context)!.stripeInfoRefund),
-          SizedBox(height: 10),
-          _infoRow(AppLocalizations.of(context)!.stripeInfoFee),
-          SizedBox(height: 24),
-          Row(children: [
-            Expanded(
-                child: GenericButtonWithLoader(
-                    AppLocalizations.of(context)!.setupStripeIntegration, (_) async {
-              await completeAccountAction(context, AppConfig.testMode);
-              Navigator.pop(context);
-            }, Primary()))
-          ]),
-        ],
-      ),
-    );
-  }
-
-  static Widget _stepRow(String number, String text) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          width: 24,
-          height: 24,
-          decoration: BoxDecoration(
-            color: Palette.primary,
-            shape: BoxShape.circle,
-          ),
-          child: Center(
-            child: Text(number, style: TextPalette.getH3(Palette.white)),
-          ),
-        ),
-        SizedBox(width: 12),
-        Expanded(
-          child: Text(text, style: TextPalette.bodyText),
-        ),
-      ],
-    );
-  }
-
-  static Widget _infoRow(String text) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SizedBox(
-          width: 24,
-          height: 24,
-          child: Center(
-            child: Icon(Icons.info_outline, color: Palette.greyLight, size: 22),
-          ),
-        ),
-        SizedBox(width: 12),
-        Expanded(
-          child: Text(text, style: TextPalette.bodyText),
-        ),
-      ],
-    );
-  }
+  void _showHowItWorksModal(BuildContext context) =>
+      showStripeHowItWorksModal(context);
 
   void _showEditPaymentInfoModal(BuildContext context) {
     var controller =

@@ -749,4 +749,15 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get stripeVerificationPending =>
       'Your account is set up but verification is still in progress. You\'ll be able to receive payments once Stripe completes the review.';
+
+  @override
+  String get stripeSetupRequired =>
+      'You need to set up Stripe before creating a paid game. Complete the setup first.';
+
+  @override
+  String get stripeNutmegFeeLabel => 'Nutmeg service fee';
+
+  @override
+  String get stripePayoutExplanation =>
+      'Money is transferred to your Stripe account 24h after the game, then Stripe pays it out to your bank.';
 }

@@ -374,5 +374,8 @@
     "stripeSetupInProgress": "Setup in progress. Tap to continue.",
     "stripeVerifying": "Verifying your Stripe account…",
     "stripeVerified": "All good! Your Stripe integration is active.",
-    "stripeVerificationPending": "Your account is set up but verification is still in progress. You'll be able to receive payments once Stripe completes the review."
+    "stripeVerificationPending": "Your account is set up but verification is still in progress. You'll be able to receive payments once Stripe completes the review.",
+    "stripeSetupRequired": "You need to set up Stripe before creating a paid game. Complete the setup first.",
+    "stripeNutmegFeeLabel": "Nutmeg service fee",
+    "stripePayoutExplanation": "Money is transferred to your Stripe account 24h after the game, then Stripe pays it out to your bank."
 }

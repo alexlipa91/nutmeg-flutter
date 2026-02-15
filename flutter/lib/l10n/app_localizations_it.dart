@@ -756,4 +756,15 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String get stripeVerificationPending =>
       'Il tuo account è configurato ma la verifica è ancora in corso. Potrai ricevere pagamenti quando Stripe completerà la revisione.';
+
+  @override
+  String get stripeSetupRequired =>
+      'Devi configurare Stripe prima di creare una partita a pagamento. Completa la configurazione.';
+
+  @override
+  String get stripeNutmegFeeLabel => 'Commissione Nutmeg';
+
+  @override
+  String get stripePayoutExplanation =>
+      'Il denaro viene trasferito sul tuo account Stripe 24h dopo la partita, poi Stripe lo invia al tuo conto bancario.';
 }

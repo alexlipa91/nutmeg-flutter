@@ -1,6 +1,5 @@
 import 'package:decimal/decimal.dart';
 import 'package:dotted_border/dotted_border.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -17,14 +16,15 @@ import 'package:nutmeg/utils/LocationUtils.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
-import 'package:nutmeg/widgets/Containers.dart';
 import 'package:nutmeg/widgets/PageTemplate.dart';
 import 'package:nutmeg/widgets/Section.dart';
 import 'package:nutmeg/widgets/Skeletons.dart';
 import 'package:provider/provider.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:timezone/timezone.dart' as tz;
+import 'package:nutmeg/config/app_config.dart';
 import 'package:nutmeg/l10n/app_localizations.dart';
+import 'package:nutmeg/utils/navigate_url.dart';
+import 'package:nutmeg/widgets/StripeSetupWidget.dart';
 
 import '../../state/LoadOnceState.dart';
 import '../state/MatchesState.dart';
@@ -192,6 +192,13 @@ class CreateMatchState extends State<CreateMatch> {
     startTimefocusNode.addListener(
         () => unfocusIfNoValue(startTimefocusNode, startTimeEditingController));
 
+    // Refresh user details when returning from Stripe onboarding (web)
+    listenForStripeReturn(() {
+      if (mounted) {
+        context.read<UserState>().fetchLoggedUserDetails();
+      }
+    });
+
     initAsync();
   }
 
@@ -273,8 +280,6 @@ class CreateMatchState extends State<CreateMatch> {
     initControllers();
 
     var requiredError = AppLocalizations.of(context)!.requiredError;
-    var organiserId =
-        context.read<UserState>().getLoggedUserDetails()!.documentId;
     var dateFormat =
         DateFormat("dd-MM-yyyy", getLanguageLocaleWatch(context).countryCode);
 
@@ -742,17 +747,22 @@ class CreateMatchState extends State<CreateMatch> {
             ),
             // Pay through Nutmeg: Stripe content
             if (!showPaymentInfo && ConfigsUtils.allowNutmegManagedPayments()) ...[
+              Builder(builder: (context) {
+                var ud = context.watch<UserState>().getLoggedUserDetails();
+                var stripeReady = ud?.areChargesEnabled(AppConfig.testMode) ?? false;
+                if (!stripeReady) {
+                  var hasAccount = ud?.getStripeInfo(AppConfig.testMode).connectedAccountId != null;
+                  return Padding(
+                    padding: EdgeInsets.only(top: 12),
+                    child: StripeSetupBanner(
+                      hasAccount: hasAccount,
+                      message: AppLocalizations.of(context)!.stripeSetupRequired,
+                    ),
+                  );
+                }
+                return SizedBox.shrink();
+              }),
               if (paymentsPossible) ...[
-                if (ConfigsUtils.feesOnOrganiser(organiserId))
-                  Padding(
-                    padding: EdgeInsets.only(top: 8),
-                    child: Row(children: [
-                      Text(
-                          AppLocalizations.of(context)!
-                              .nutmegFeeInfo(formatCurrency(50)),
-                          style: TextPalette.bodyText),
-                    ]),
-                  ),
                 SizedBox(height: 16),
                 Row(children: [
                   Text(AppLocalizations.of(context)!.youWillGetLabel,
@@ -760,75 +770,29 @@ class CreateMatchState extends State<CreateMatch> {
                   Spacer(),
                   Builder(builder: (BuildContext buildContext) {
                     var price = Decimal.tryParse(priceController.text);
-                    if (price != null &&
-                        ConfigsUtils.feesOnOrganiser(organiserId))
-                      price = price - Decimal.parse("0.5");
+                    var net = (price != null)
+                        ? (price - Decimal.parse("0.5"))
+                        : null;
+                    if (net != null && net < Decimal.zero) net = Decimal.zero;
                     return Text(
-                        (price == null)
+                        net == null
                             ? "€ --"
-                            : "€ " +
-                                (price.toDouble() *
-                                        numberOfPeopleRangeValues.start)
-                                    .toStringAsFixed(2) +
-                                " - " +
-                                "€ " +
-                                (price.toDouble() *
-                                        numberOfPeopleRangeValues.end)
-                                    .toStringAsFixed(2),
+                            : "€ ${net.toDouble().toStringAsFixed(2)}",
                         style: TextPalette.h3);
                   }),
                 ]),
                 SizedBox(height: 8),
                 Row(children: [
-                  Text(AppLocalizations.of(context)!.usersWillPayLabel,
+                  Text(AppLocalizations.of(context)!.stripeNutmegFeeLabel,
                       style: TextPalette.bodyText),
                   Spacer(),
-                  Builder(builder: (BuildContext buildContext) {
-                    var price = Decimal.tryParse(priceController.text);
-                    if (price != null && organiserWithFee)
-                      price = price + Decimal.parse("0.5");
-                    return Text(
-                        (price == null)
-                            ? "€ --"
-                            : "€ ${price.toDouble().toStringAsFixed(2)}",
-                        style: TextPalette.bodyText);
-                  }),
+                  Text("€ 0.50", style: TextPalette.bodyText),
                 ]),
-                if (organiserWithFee)
-                  Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-                    Text(AppLocalizations.of(context)!.usersWillPayText,
-                        style: GoogleFonts.roboto(
-                            color: Palette.greyDark,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w400,
-                            height: 1.6)),
-                  ]),
-                SizedBox(height: 16),
-                NutmegDivider(horizontal: true),
-                RichText(
-                    textAlign: TextAlign.start,
-                    text: TextSpan(
-                      children: [
-                        TextSpan(
-                            text: AppLocalizations.of(context)!
-                                .paymentExplanationText,
-                            style: TextPalette.bodyText),
-                        TextSpan(
-                            text: " Stripe.",
-                            recognizer: TapGestureRecognizer()
-                              ..onTap = () async {
-                                final url = 'https://stripe.com';
-                                if (await canLaunchUrl(Uri.parse(url))) {
-                                  await launchUrl(
-                                    Uri.parse(url),
-                                  );
-                                }
-                              },
-                            style: TextPalette.bodyText.copyWith(
-                                color: Palette.primary,
-                                decoration: TextDecoration.underline))
-                      ],
-                    )),
+                SizedBox(height: 12),
+                Text(
+                  AppLocalizations.of(context)!.stripePayoutExplanation,
+                  style: TextPalette.getBodyText(Palette.greyDark),
+                ),
               ],
               if (!paymentsPossible)
                 Padding(
@@ -1024,6 +988,24 @@ class CreateMatchState extends State<CreateMatch> {
                           : AppLocalizations.of(context)!.confirmButtonText,
                       (BuildContext context) async {
                     context.read<GenericButtonWithLoaderState>().change(true);
+
+                    // Block creation if Pay through Nutmeg is selected but Stripe isn't ready
+                    if (!showPaymentInfo && ConfigsUtils.allowNutmegManagedPayments()) {
+                      var ud = context.read<UserState>().getLoggedUserDetails();
+                      var stripeReady = ud?.areChargesEnabled(AppConfig.testMode) ?? false;
+                      if (!stripeReady) {
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          backgroundColor: Palette.warning,
+                          content: Text(
+                            AppLocalizations.of(context)!.stripeSetupRequired,
+                            style: TextStyle(color: Palette.black),
+                          ),
+                        ));
+                        context.read<GenericButtonWithLoaderState>().change(false);
+                        return;
+                      }
+                    }
+
                     bool? v = _formKey.currentState?.validate();
                     if (v != null && v) {
                       try {

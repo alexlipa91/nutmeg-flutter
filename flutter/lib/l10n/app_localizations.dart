@@ -1439,6 +1439,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your account is set up but verification is still in progress. You\'ll be able to receive payments once Stripe completes the review.'**
   String get stripeVerificationPending;
+
+  /// No description provided for @stripeSetupRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'You need to set up Stripe before creating a paid game. Complete the setup first.'**
+  String get stripeSetupRequired;
+
+  /// No description provided for @stripeNutmegFeeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Nutmeg service fee'**
+  String get stripeNutmegFeeLabel;
+
+  /// No description provided for @stripePayoutExplanation.
+  ///
+  /// In en, this message translates to:
+  /// **'Money is transferred to your Stripe account 24h after the game, then Stripe pays it out to your bank.'**
+  String get stripePayoutExplanation;
 }
 
 class _AppLocalizationsDelegate
