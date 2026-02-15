@@ -1169,7 +1169,7 @@ class _AddPlayerCard extends StatelessWidget {
             strokeWidth: 1.5,
             dashPattern: [4],
             child: CircleAvatar(
-              radius: 29,
+              radius: 30,
               child: Icon(Icons.person_add, color: Palette.green, size: 22),
               backgroundColor: Colors.transparent,
             ),
