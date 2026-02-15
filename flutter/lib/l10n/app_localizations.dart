@@ -1337,6 +1337,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Paid'**
   String get paid;
+
+  /// No description provided for @comingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'COMING SOON'**
+  String get comingSoon;
 }
 
 class _AppLocalizationsDelegate

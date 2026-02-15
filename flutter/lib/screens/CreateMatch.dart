@@ -700,13 +700,31 @@ class CreateMatchState extends State<CreateMatch> {
             ],
             SizedBox(height: 8),
             RadioListTile<bool>(
-              title: Text(
-                AppLocalizations.of(context)!.payThroughNutmeg,
-                style: TextPalette.bodyText.copyWith(
-                  color: ConfigsUtils.allowNutmegManagedPayments()
-                      ? null
-                      : Palette.greyDark,
-                ),
+              title: Row(
+                children: [
+                  Text(
+                    AppLocalizations.of(context)!.payThroughNutmeg,
+                    style: TextPalette.bodyText.copyWith(
+                      color: ConfigsUtils.allowNutmegManagedPayments()
+                          ? null
+                          : Palette.greyDark,
+                    ),
+                  ),
+                  if (!ConfigsUtils.allowNutmegManagedPayments()) ...[
+                    SizedBox(width: 8),
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Palette.accent,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        AppLocalizations.of(context)!.comingSoon,
+                        style: TextPalette.getH3(Palette.white).copyWith(fontSize: 11),
+                      ),
+                    ),
+                  ],
+                ],
               ),
               value: false,
               groupValue: showPaymentInfo,

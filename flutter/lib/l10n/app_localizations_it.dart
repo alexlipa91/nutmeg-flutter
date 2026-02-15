@@ -695,4 +695,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get paid => 'Pagato';
+
+  @override
+  String get comingSoon => 'IN ARRIVO';
 }

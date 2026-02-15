@@ -698,4 +698,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get paid => 'Pago';
+
+  @override
+  String get comingSoon => 'EM BREVE';
 }
