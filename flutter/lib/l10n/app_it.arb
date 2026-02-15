@@ -206,5 +206,21 @@
     "payOutsideNutmeg": "Paga fuori da Nutmeg",
     "payThroughNutmeg": "Paga tramite Nutmeg",
     "paid": "Pagato",
-    "comingSoon": "IN ARRIVO"
+    "comingSoon": "IN ARRIVO",
+    "payOutsideNutmegTitle": "Paga fuori da Nutmeg",
+    "payWithNutmegTitle": "Paga con Nutmeg",
+    "stripeIntegrationActive": "Integrazione Stripe attiva",
+    "payWithNutmegNotConfigured": "Non configurato. Tocca per saperne di più.",
+    "howPayWithNutmegWorks": "Come funziona Paga con Nutmeg",
+    "stripeStep1": "Crea un account Stripe Connected con i tuoi dati bancari.",
+    "stripeStep2": "Crea una partita con un prezzo (es. 5 €). I giocatori pagano tramite Stripe per partecipare.",
+    "stripeStep3": "Dopo la partita, Nutmeg trasferisce i pagamenti meno una commissione di 0,50 € per giocatore sul tuo account Stripe. Es. 10 giocatori pagano 5 €, ricevi 45 €.",
+    "stripeStep4": "Stripe invia il denaro alla tua banca entro pochi giorni.",
+    "stripeInfoRefund": "I giocatori possono cancellare e ottenere un rimborso completo fino a 24h prima della partita.",
+    "stripeInfoFee": "La commissione Nutmeg aiuta a coprire i costi di transazione di Stripe.",
+    "setupStripeIntegration": "CONFIGURA INTEGRAZIONE STRIPE",
+    "stripeSetupInProgress": "Configurazione in corso. Tocca per continuare.",
+    "stripeVerifying": "Verifica del tuo account Stripe in corso…",
+    "stripeVerified": "Tutto a posto! La tua integrazione Stripe è attiva.",
+    "stripeVerificationPending": "Il tuo account è configurato ma la verifica è ancora in corso. Potrai ricevere pagamenti quando Stripe completerà la revisione."
 }

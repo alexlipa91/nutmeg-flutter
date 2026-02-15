@@ -738,6 +738,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get setupStripeIntegration => 'SETUP STRIPE INTEGRATION';
 
   @override
+  String get stripeSetupInProgress => 'Setup in progress. Tap to continue.';
+
+  @override
   String get stripeVerifying => 'Verifying your Stripe account…';
 
   @override

@@ -1,3 +1,5 @@
+import os
+
 import flask
 
 import stripe
@@ -36,7 +38,9 @@ def stripe_checkout_webhook():
     is_test = _get_is_test()
     sig_header = flask.request.headers['STRIPE_SIGNATURE']
 
-    secret = Secrets.STRIPE_CHECKOUT_WEBHOOK_SECRET if not is_test else Secrets.STRIPE_CHECKOUT_WEBHOOK_SECRET_TEST
+    secret = os.environ.get("STRIPE_CHECKOUT_WEBHOOK") or (
+        Secrets.STRIPE_CHECKOUT_WEBHOOK_SECRET if not is_test else Secrets.STRIPE_CHECKOUT_WEBHOOK_SECRET_TEST
+    )
 
     try:
         event = stripe.Webhook.construct_event(flask.request.data, sig_header, secret)
@@ -164,7 +168,9 @@ def stripe_connect_account_updated_webhook():
     is_test = _get_is_test()
     sig_header = flask.request.headers['STRIPE_SIGNATURE']
 
-    secret = Secrets.STRIPE_CONNECT_UPDATED_WEBHOOK_SECRET if not is_test else Secrets.STRIPE_CONNECT_UPDATED_WEBHOOK_SECRET_TEST
+    secret = os.environ.get("STRIPE_CHECKOUT_WEBHOOK") or (
+        Secrets.STRIPE_CONNECT_UPDATED_WEBHOOK_SECRET if not is_test else Secrets.STRIPE_CONNECT_UPDATED_WEBHOOK_SECRET_TEST
+    )
 
     try:
         event = stripe.Webhook.construct_event(flask.request.data, sig_header, secret)
@@ -194,31 +200,3 @@ def stripe_connect_account_updated_webhook():
         print("event not handled")
 
     return {}
-
-
-@bp.route("/account/status")
-def check_account_status():
-    """Check connected account status on Stripe and sync to Firestore."""
-    is_test = _get_is_test()
-    _setup_stripe_key(is_test)
-    prefix = _stripe_prefix(is_test)
-
-    user_id = flask.request.args["user_id"]
-    user_ref = app.db_client.collection('users').document(user_id)
-    user_data = user_ref.get().to_dict()
-
-    account_id = user_data.get(prefix, {}).get("connected_account_id")
-    if not account_id:
-        return {"data": {"has_account": False, "charges_enabled": False}}
-
-    account = stripe.Account.retrieve(account_id)
-    charges_enabled = account.charges_enabled
-
-    # Sync to Firestore if changed
-    if charges_enabled and not user_data.get(prefix, {}).get("charges_enabled", False):
-        user_ref.update({"{}.charges_enabled".format(prefix): True})
-
-    return {"data": {
-        "has_account": True,
-        "charges_enabled": charges_enabled,
-    }}

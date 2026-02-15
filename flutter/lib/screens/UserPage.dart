@@ -22,6 +22,7 @@ import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:nutmeg/l10n/app_localizations.dart';
+import 'package:nutmeg/utils/navigate_url.dart';
 
 import '../state/UserState.dart';
 import '../state/UsersState.dart';
@@ -669,33 +670,40 @@ class _PaymentMethodsCardState extends State<_PaymentMethodsCard> {
   @override
   void initState() {
     super.initState();
-    if (widget.stripeOnboardingComplete) {
-      _checkStripeStatus();
+    // Only show return banners if Stripe wasn't already active
+    var alreadyEnabled = widget.userDetails.areChargesEnabled(AppConfig.testMode);
+    if (!alreadyEnabled) {
+      // Listen for postMessage from the Stripe return tab (web)
+      listenForStripeReturn(() {
+        if (mounted) _checkStripeStatus();
+      });
+      // Also handle direct navigation with ?stripe_onboarding=complete (fallback)
+      if (widget.stripeOnboardingComplete) {
+        _checkStripeStatus();
+      }
     }
   }
 
   Future<void> _checkStripeStatus() async {
     setState(() => _isVerifying = true);
     try {
-      var userId = widget.userDetails.documentId;
-      var result = await CloudFunctionsClient().get(
-        'stripe/account/status',
-        args: {'user_id': userId},
-      );
-      var chargesEnabled = result?['charges_enabled'] == true;
-      setState(() {
-        _stripeVerificationResult = chargesEnabled;
-        _isVerifying = false;
-      });
-      // Refresh user details so the rest of the UI updates
-      if (chargesEnabled && mounted) {
-        context.read<UserState>().fetchLoggedUserDetails();
+      // Refresh user details from Firestore (webhook may have already updated charges_enabled)
+      await context.read<UserState>().fetchLoggedUserDetails();
+      var updated = context.read<UserState>().getLoggedUserDetails();
+      var chargesEnabled = updated?.areChargesEnabled(AppConfig.testMode) ?? false;
+      if (mounted) {
+        setState(() {
+          _stripeVerificationResult = chargesEnabled;
+          _isVerifying = false;
+        });
       }
     } catch (e) {
-      setState(() {
-        _stripeVerificationResult = false;
-        _isVerifying = false;
-      });
+      if (mounted) {
+        setState(() {
+          _stripeVerificationResult = false;
+          _isVerifying = false;
+        });
+      }
     }
   }
 
@@ -704,7 +712,9 @@ class _PaymentMethodsCardState extends State<_PaymentMethodsCard> {
     var userDetails = widget.userDetails;
     var hasPaymentInfo = userDetails.paymentInfo != null &&
         userDetails.paymentInfo!.isNotEmpty;
-    var stripeEnabled = userDetails.areChargesEnabled(AppConfig.testMode);
+    var stripeInfo = userDetails.getStripeInfo(AppConfig.testMode);
+    var stripeEnabled = stripeInfo.chargesEnabled;
+    var hasAccount = stripeInfo.connectedAccountId != null;
 
     return InfoContainer(
       child: Column(
@@ -756,7 +766,11 @@ class _PaymentMethodsCardState extends State<_PaymentMethodsCard> {
           ),
           if (ConfigsUtils.allowNutmegManagedPayments())
             InkWell(
-              onTap: stripeEnabled ? null : () => _showHowItWorksModal(context),
+              onTap: stripeEnabled
+                  ? null
+                  : hasAccount
+                      ? () => completeAccountAction(context, AppConfig.testMode)
+                      : () => _showHowItWorksModal(context),
               child: Row(
                 children: [
                   Icon(Icons.credit_card_outlined,
@@ -775,6 +789,10 @@ class _PaymentMethodsCardState extends State<_PaymentMethodsCard> {
                         if (stripeEnabled)
                           Text(AppLocalizations.of(context)!.stripeIntegrationActive,
                               style: TextPalette.getBodyText(Palette.green))
+                        else if (hasAccount)
+                          Text(
+                              AppLocalizations.of(context)!.stripeSetupInProgress,
+                              style: TextPalette.getBodyText(Palette.primary))
                         else
                           Text(
                               AppLocalizations.of(context)!.payWithNutmegNotConfigured,
@@ -783,16 +801,16 @@ class _PaymentMethodsCardState extends State<_PaymentMethodsCard> {
                       ],
                     ),
                   ),
-                  if (!stripeEnabled) ...[
-                    SizedBox(width: 8),
+                  SizedBox(width: 8),
+                  if (stripeEnabled)
+                    Icon(Icons.check_circle,
+                        color: Palette.green, size: 20)
+                  else if (hasAccount)
+                    Icon(Icons.arrow_forward,
+                        color: Palette.primary, size: 20)
+                  else
                     Icon(Icons.info_outline,
                         color: Palette.primary, size: 20),
-                  ],
-                  if (stripeEnabled) ...[
-                    SizedBox(width: 8),
-                    Icon(Icons.check_circle,
-                        color: Palette.green, size: 20),
-                  ],
                 ],
               ),
             )

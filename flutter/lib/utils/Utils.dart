@@ -9,7 +9,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:tuple/tuple.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:nutmeg/utils/navigate_url.dart';
 import 'package:version/version.dart';
 import 'package:timezone/timezone.dart' as tz;
 
@@ -131,9 +131,7 @@ String getStripeUrl(bool isTest, String userId, String? matchId) {
 
 Future<void> completeAccountAction(BuildContext context, bool isTest,
         {String? matchId}) =>
-    launchUrl(
-        Uri.parse(getStripeUrl(
-            isTest,
-            context.read<UserState>().getLoggedUserDetails()!.documentId,
-            matchId)),
-        mode: LaunchMode.externalApplication);
+    navigateToUrl(getStripeUrl(
+        isTest,
+        context.read<UserState>().getLoggedUserDetails()!.documentId,
+        matchId));

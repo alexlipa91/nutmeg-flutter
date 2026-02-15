@@ -1416,6 +1416,12 @@ abstract class AppLocalizations {
   /// **'SETUP STRIPE INTEGRATION'**
   String get setupStripeIntegration;
 
+  /// No description provided for @stripeSetupInProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Setup in progress. Tap to continue.'**
+  String get stripeSetupInProgress;
+
   /// No description provided for @stripeVerifying.
   ///
   /// In en, this message translates to:

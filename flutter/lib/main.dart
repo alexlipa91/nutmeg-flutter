@@ -26,6 +26,7 @@ import '../state/MatchesState.dart';
 import '../state/UserState.dart';
 import '../utils/LocationUtils.dart';
 import 'package:nutmeg/l10n/app_localizations.dart';
+import 'package:nutmeg/utils/navigate_url.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 final scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
@@ -149,6 +150,10 @@ void main() async {
   ErrorWidget.builder = (errorDetails) => Container();
 
   usePathUrlStrategy();
+
+  // If this is the Stripe return tab, notify the opener and close — don't run the app
+  if (handleStripeReturnTab()) return;
+
   runApp(
     MultiProvider(
       providers: [

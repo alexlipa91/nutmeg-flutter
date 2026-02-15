@@ -703,54 +703,60 @@ class AppLocalizationsPt extends AppLocalizations {
   String get comingSoon => 'EM BREVE';
 
   @override
-  String get payOutsideNutmegTitle => 'Pay outside Nutmeg';
+  String get payOutsideNutmegTitle => 'Pagar fora do Nutmeg';
 
   @override
-  String get payWithNutmegTitle => 'Pay with Nutmeg';
+  String get payWithNutmegTitle => 'Pagar com Nutmeg';
 
   @override
-  String get stripeIntegrationActive => 'Stripe integration active';
+  String get stripeIntegrationActive => 'Integração Stripe ativa';
 
   @override
-  String get payWithNutmegNotConfigured => 'Not configured. Tap to learn more.';
+  String get payWithNutmegNotConfigured =>
+      'Não configurado. Toque para saber mais.';
 
   @override
-  String get howPayWithNutmegWorks => 'How Pay with Nutmeg works';
+  String get howPayWithNutmegWorks => 'Como funciona Pagar com Nutmeg';
 
   @override
   String get stripeStep1 =>
-      'Create a Stripe Connected account with your bank details.';
+      'Crie uma conta Stripe Connected com os seus dados bancários.';
 
   @override
   String get stripeStep2 =>
-      'Create a game with a price (e.g. €5). Players pay via Stripe to join.';
+      'Crie um jogo com um preço (ex. 5 €). Os jogadores pagam via Stripe para participar.';
 
   @override
   String get stripeStep3 =>
-      'After the game, Nutmeg transfers payments minus a €0.50 fee per player to your Stripe account. E.g. 10 players pay €5, you get €45.';
+      'Após o jogo, o Nutmeg transfere os pagamentos menos uma taxa de 0,50 € por jogador para a sua conta Stripe. Ex. 10 jogadores pagam 5 €, recebe 45 €.';
 
   @override
   String get stripeStep4 =>
-      'Stripe sends the money to your bank within a few days.';
+      'O Stripe envia o dinheiro para o seu banco em poucos dias.';
 
   @override
   String get stripeInfoRefund =>
-      'Players can cancel and get a full refund up to 24h before the game.';
+      'Os jogadores podem cancelar e obter reembolso total até 24h antes do jogo.';
 
   @override
   String get stripeInfoFee =>
-      'The Nutmeg service fee helps cover Stripe transaction costs.';
+      'A taxa do Nutmeg ajuda a cobrir os custos de transação do Stripe.';
 
   @override
-  String get setupStripeIntegration => 'SETUP STRIPE INTEGRATION';
+  String get setupStripeIntegration => 'CONFIGURAR INTEGRAÇÃO STRIPE';
 
   @override
-  String get stripeVerifying => 'Verifying your Stripe account…';
+  String get stripeSetupInProgress =>
+      'Configuração em curso. Toque para continuar.';
 
   @override
-  String get stripeVerified => 'All good! Your Stripe integration is active.';
+  String get stripeVerifying => 'A verificar a sua conta Stripe…';
+
+  @override
+  String get stripeVerified =>
+      'Tudo pronto! A sua integração Stripe está ativa.';
 
   @override
   String get stripeVerificationPending =>
-      'Your account is set up but verification is still in progress. You\'ll be able to receive payments once Stripe completes the review.';
+      'A sua conta está configurada mas a verificação ainda está em curso. Poderá receber pagamentos quando o Stripe concluir a revisão.';
 }
