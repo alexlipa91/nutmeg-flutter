@@ -3,6 +3,7 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:nutmeg/config/app_config.dart';
 import 'package:nutmeg/controller/LaunchController.dart';
 import 'package:nutmeg/screens/AvailableMatches.dart';
 import 'package:nutmeg/screens/CreateMatch.dart';
@@ -190,7 +191,13 @@ void main() async {
               highlightColor: Colors.transparent,
             ),
             builder: (context, child) {
-              return child ?? const SizedBox.shrink();
+              if (!AppConfig.testMode) return child ?? const SizedBox.shrink();
+              return Banner(
+                message: "TEST",
+                location: BannerLocation.topEnd,
+                color: Colors.red,
+                child: child ?? const SizedBox.shrink(),
+              );
             },
           );
         },

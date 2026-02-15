@@ -1,6 +1,5 @@
 import 'dart:math';
 
-import 'package:badges/badges.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -20,7 +19,6 @@ import 'package:nutmeg/l10n/app_localizations.dart';
 import '../state/AvailableMatchesState.dart';
 import '../state/UserState.dart';
 import '../utils/LocationUtils.dart';
-import 'Badges.dart';
 import 'Skeletons.dart';
 
 class GenericAvailableMatchesList extends StatefulWidget {
@@ -354,7 +352,6 @@ class GenericMatchInfo extends StatelessWidget {
               radius: 14,
               backgroundColor: Palette.primary),
         ),
-      if (match.isTest) TestBadge()
     ];
 
     var p = 0.0;
@@ -452,10 +449,7 @@ class GenericMatchInfoPast extends StatelessWidget {
     return InkWell(
         child: Padding(
           padding: EdgeInsets.only(top: topMargin),
-          child: match.isTest
-              ? badgeIt(child, TestBadge(),
-                  BadgePosition.bottomEnd(bottom: 8, end: 8))
-              : child,
+          child: child,
         ),
         onTap: () => onTap(context, match.documentId));
   }

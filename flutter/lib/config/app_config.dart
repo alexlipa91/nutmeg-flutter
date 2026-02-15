@@ -10,4 +10,9 @@ class AppConfig {
   /// Production builds do not pass this, so it is always false in prod.
   static const bool testModeOrganizer =
       bool.fromEnvironment('TEST_MODE_ORGANIZER', defaultValue: false);
+
+  /// When true, test matches are fetched and shown alongside production matches.
+  /// Override with: --dart-define=TEST_MODE=true
+  static const bool testMode =
+      bool.fromEnvironment('TEST_MODE', defaultValue: false);
 }

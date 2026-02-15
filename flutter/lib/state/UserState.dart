@@ -1,6 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
@@ -8,6 +7,7 @@ import 'package:nutmeg/model/LocationInfo.dart';
 import 'package:nutmeg/utils/CrashlyticsLogger.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
+import '../config/app_config.dart';
 import '../model/SportCenter.dart';
 import '../model/UserDetails.dart';
 import '../screens/EnterDetails.dart';
@@ -27,7 +27,7 @@ class UserState extends ChangeNotifier {
 
   UserDetails? _previousUserDetails;
 
-  bool _isTestMode = false;
+  bool _isTestMode = AppConfig.testMode;
 
   UserDetails? getLoggedUserDetails() => _usersDetails;
 
@@ -62,9 +62,6 @@ class UserState extends ChangeNotifier {
   }
 
   void _setCurrentUserDetails(UserDetails? u) {
-    if (u?.getIsAdmin() ?? false) {
-      _isTestMode = true;
-    }
     _previousUserDetails = _usersDetails;
     _usersDetails = u;
     notifyListeners(reason: "setCurrentUserDetails");

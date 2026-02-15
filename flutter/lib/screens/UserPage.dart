@@ -482,40 +482,6 @@ class UserPageState extends State<UserPage> {
             ),
           ])),
         ),
-        if (userDetails.getIsAdmin())
-          Section(
-            title: "ADMIN COMMANDS",
-            body: InfoContainer(
-                child: Column(children: [
-              Row(
-                children: [
-                  Expanded(
-                      child: GenericButtonWithLoader(
-                    "ADMIN AREA",
-                    (BuildContext context) async =>
-                        GoRouter.of(context).go("/admin"),
-                    Primary(),
-                  ))
-                ],
-              ),
-              verticalSpace,
-              Row(
-                children: [
-                  Text("Test Mode"),
-                  SizedBox(width: 10),
-                  Switch(
-                    value: context.watch<UserState>().isTestMode,
-                    onChanged: (value) =>
-                        userState.setTestMode(!userState.isTestMode),
-                    activeTrackColor: Colors.red,
-                    activeColor: Colors.red,
-                  ),
-                  Expanded(
-                      child: Text("It allows to see in the UI test matches"))
-                ],
-              ),
-            ])),
-          ),
         if (appVersion != null)
           Padding(
             padding: EdgeInsets.only(top: 8),

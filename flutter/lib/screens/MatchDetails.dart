@@ -274,15 +274,6 @@ List<Widget> getWidgets(
     ];
   }
 
-  var testInfo = isTest
-      ? InfoContainer(
-          backgroundColor: Palette.accent,
-          child: SelectableText(
-            "Test match: " + match!.documentId,
-            style: TextPalette.getBodyText(Palette.black),
-          ))
-      : null;
-
   var matchInfo = MatchInfo(match!, sportCenter);
 
   var teamsWidget = match.going.length > 1 && match.hasTeams()
@@ -388,7 +379,6 @@ List<Widget> getWidgets(
     widgets = interleave([
       // title
       // info box
-      if (testInfo != null) testInfo,
       matchInfo,
       // stats
       if (infoPlayersList != null) infoPlayersList,
@@ -403,7 +393,6 @@ List<Widget> getWidgets(
     ], SizedBox(height: 16));
   } else {
     widgets = [
-      if (testInfo != null) testInfo,
       // match info full width at the top
       Center(
         child: Container(

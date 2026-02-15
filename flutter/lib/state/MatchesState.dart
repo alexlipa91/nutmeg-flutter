@@ -141,10 +141,11 @@ class MatchesState extends ChangeNotifier {
   }
 
   bool shouldShow(Match match) {
-    if (match.isTest) {
-      return userState?.isTestMode ?? false;
+    var testMode = userState?.isTestMode ?? false;
+    if (testMode) {
+      return match.isTest;
     }
-    return true;
+    return !match.isTest;
   }
 
   Future<void> fetchGoingMatches() async {

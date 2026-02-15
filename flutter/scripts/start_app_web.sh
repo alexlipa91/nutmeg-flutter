@@ -48,6 +48,6 @@ fvm flutter run \
     $PARAMETRICS_ARGS \
     --web-port=7357 \
     --dart-define-from-file="$ENV_FILE" \
-    --dart-define=COMMIT_SHA=$(git rev-parse HEAD) \
     --dart-define=BUILD_TIMESTAMP=$(date "+%Y%m%d-%H%M%S") \
+    --dart-define=TEST_MODE=true \
     $BACKEND_URL_ARG
