@@ -209,6 +209,12 @@ class UserState extends ChangeNotifier {
         logger.info('FCM token obtained: ${token.substring(0, 5)}...');
         await storeUserToken(token);
       }
+
+      // Listen for token refreshes so the backend always has the latest token
+      FirebaseMessaging.instance.onTokenRefresh.listen((newToken) {
+        logger.info('FCM token refreshed: ${newToken.substring(0, 5)}...');
+        storeUserToken(newToken);
+      });
     }
   }
 

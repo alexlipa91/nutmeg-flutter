@@ -67,14 +67,14 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyDfYYeH1-57PAeasukpaajWq3cR0sGO9qY',
-    appId: '1:956073807168:ios:25818a16a5ea2cd2a6fea5',
+    apiKey: 'AIzaSyBPrmFO6jmlPHnbuHryxUkFWVP0SUYMspc',
+    appId: '1:956073807168:ios:4376e32d70223682a6fea5',
     messagingSenderId: '956073807168',
     projectId: 'nutmeg-9099c',
     databaseURL: 'https://nutmeg-9099c-default-rtdb.europe-west1.firebasedatabase.app',
     storageBucket: 'nutmeg-9099c.appspot.com',
     androidClientId: '956073807168-0k19bq5mee448tc61qvfk6e1e9psjke4.apps.googleusercontent.com',
-    iosClientId: '956073807168-4gia0lo6ggju7f1kiin9j2ibn3q5b9qd.apps.googleusercontent.com',
-    iosBundleId: 'com.nutmeg.app',
+    iosClientId: '956073807168-aj48msgdf4dui06u70onpfs9ko2qqjo6.apps.googleusercontent.com',
+    iosBundleId: 'com.nutmegfootball.app',
   );
 }
