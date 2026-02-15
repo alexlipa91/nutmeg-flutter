@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
+import 'package:nutmeg/config/app_config.dart';
 import 'package:nutmeg/controller/LaunchController.dart';
 import 'package:nutmeg/utils/CrashlyticsLogger.dart';
 
@@ -27,7 +28,8 @@ class CloudFunctionsClient {
       'Content-Type': 'application/json; charset=UTF-8',
       if (token != null) 'Authorization': 'Bearer ' + token,
       if (LaunchController.appVersion != null)
-        'App-Version': LaunchController.appVersion ?? "n/a"
+        'App-Version': LaunchController.appVersion ?? "n/a",
+      'X-Test-Mode': AppConfig.testMode.toString(),
     };
   }
 

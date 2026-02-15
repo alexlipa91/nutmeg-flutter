@@ -1,5 +1,26 @@
 import 'package:nutmeg/model/LocationInfo.dart';
 
+class StripeInfo {
+  String? connectedAccountId;
+  bool chargesEnabled;
+  String? customerId;
+
+  StripeInfo({
+    this.connectedAccountId,
+    this.chargesEnabled = false,
+    this.customerId,
+  });
+
+  factory StripeInfo.fromJson(Map<String, dynamic>? json) {
+    if (json == null) return StripeInfo();
+    return StripeInfo(
+      connectedAccountId: json["connected_account_id"],
+      chargesEnabled: json["charges_enabled"] ?? false,
+      customerId: json["customer_id"],
+    );
+  }
+}
+
 class UserDetails {
   String documentId;
 
@@ -7,7 +28,6 @@ class UserDetails {
   String? image;
   String? name;
   String? email;
-  String? stripeId;
   int? creditsInCents;
 
   int? numJoinedMatches;
@@ -24,8 +44,8 @@ class UserDetails {
 
   Map<String, bool>? potmDates;
 
-  bool? chargesEnabledOnStripe;
-  bool? chargesEnabledOnStripeTest;
+  StripeInfo stripeInfo;
+  StripeInfo stripeTestInfo;
 
   int? numWin;
   int? numDraw;
@@ -42,7 +62,9 @@ class UserDetails {
   UserDetails(this.documentId, this.isAdmin, this.image, this.name, this.email)
       : numRatedMatches = 0,
         sumTotalRates = 0,
-        creditsInCents = 0;
+        creditsInCents = 0,
+        stripeInfo = StripeInfo(),
+        stripeTestInfo = StripeInfo();
 
   UserDetails.fromJson(Map<String, dynamic> json, String documentId)
       : isAdmin = (json["isAdmin"] == null) ? false : json["isAdmin"],
@@ -50,7 +72,10 @@ class UserDetails {
         name = json["name"],
         email = json["email"],
         creditsInCents = json["credits"],
-        stripeId = json["stripeId"] ?? null,
+        stripeInfo = StripeInfo.fromJson(
+            json["stripe"] as Map<String, dynamic>?),
+        stripeTestInfo = StripeInfo.fromJson(
+            json["stripe_test"] as Map<String, dynamic>?),
         numJoinedMatches = json["num_matches_joined"] ?? 0,
         averageScore = json["avg_score"] ?? null,
         numRatedMatches = (json["scores"] ?? {})["number_of_scored_games"] ?? 0,
@@ -69,9 +94,6 @@ class UserDetails {
                 Map<String, double>.from(json["last_date_scores"])),
         deltaFromLastScore = json["delta_from_last_score"],
         skillsCount = Map<String, int>.from((json["skills_count"] ?? {})),
-        chargesEnabledOnStripe = json["chargesEnabledOnStripe"] ?? false,
-        chargesEnabledOnStripeTest =
-            json["chargesEnabledOnStripeTest"] ?? false,
         createdMatches =
             Map<String, dynamic>.from(json["created_matches"] ?? {})
                 .keys
@@ -126,9 +148,7 @@ class UserDetails {
 
   int getNumManOfTheMatch() => potmDates?.length ?? 0;
 
-  String? getStripeId() => stripeId;
-
-  void setStripeId(String stripeId) => stripeId = stripeId;
+  StripeInfo getStripeInfo(bool isTest) => isTest ? stripeTestInfo : stripeInfo;
 
   String? getPhotoUrl() => image;
 
@@ -144,9 +164,7 @@ class UserDetails {
   }
 
   bool areChargesEnabled(bool isTest) {
-    return isTest
-        ? chargesEnabledOnStripeTest ?? false
-        : chargesEnabledOnStripe ?? false;
+    return getStripeInfo(isTest).chargesEnabled;
   }
 
   double getDeltaFromLastScore() => deltaFromLastScore ?? 0;

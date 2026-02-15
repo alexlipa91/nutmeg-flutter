@@ -996,14 +996,14 @@ def create_organizer_payout(match_id):
         return {"status": "skipped", "reason": "no_players"}
 
     is_test = match.is_test
-    organizer_account = (
+    prefix = "stripe_test" if is_test else "stripe"
+    organizer_data = (
         app.db_client.collection("users")
         .document(match.organizer_id)
         .get()
-        .to_dict()[
-            "stripeConnectedAccountTestId" if is_test else "stripeConnectedAccountId"
-        ]
+        .to_dict()
     )
+    organizer_account = organizer_data.get(prefix, {}).get("connected_account_id")
     stripe.api_key = os.environ["STRIPE_KEY" if not is_test else "STRIPE_KEY_TEST"]
 
     # check if enough balance
@@ -1599,17 +1599,14 @@ def _format_match_data_v2(match_id, match_data, version, add_organizer_info=Fals
                 stripe.api_key = os.environ[
                     "STRIPE_KEY_TEST" if match_data["isTest"] else "STRIPE_KEY"
                 ]
-                field_name = (
-                    "stripeConnectedAccountId"
-                    if not match_data["isTest"]
-                    else "stripeConnectedAccountTestId"
-                )
-                stripe_connected_account_id = (
+                prefix = "stripe_test" if match_data["isTest"] else "stripe"
+                org_data = (
                     app.db_client.collection("users")
                     .document(match_data["organizerId"])
-                    .get(field_paths={field_name})
-                    .to_dict()[field_name]
+                    .get(field_paths={prefix})
+                    .to_dict()
                 )
+                stripe_connected_account_id = org_data.get(prefix, {}).get("connected_account_id")
                 info = stripe.Payout.retrieve(
                     match_data["payout_id"], stripe_account=stripe_connected_account_id
                 )
@@ -1687,9 +1684,9 @@ def _add_match_firestore(match_data):
             .to_dict()
         )
 
-        if organizer_data.get("stripe_status", "") != "onboarded":
-            print("{} is False on organizer account: set match as unpublished")
-            # add it as draft
+        prefix = "stripe_test" if match_data["isTest"] else "stripe"
+        if not organizer_data.get(prefix, {}).get("charges_enabled", False):
+            print("charges not enabled on organizer account: set match as unpublished")
             match_data["unpublished_reason"] = "organizer_not_onboarded"
 
         # create stripe object
@@ -1842,9 +1839,7 @@ def delete_tests():
 
 def _update_user_account(user_id, is_test, match_id, manage_payments):
     stripe.api_key = os.environ["STRIPE_KEY_TEST" if is_test else "STRIPE_KEY"]
-    organizer_id_field_name = (
-        "stripeConnectedAccountId" if not is_test else "stripeConnectedAccountTestId"
-    )
+    prefix = "stripe_test" if is_test else "stripe"
 
     # add to created matches
     user_doc_ref = app.db_client.collection("users").document(user_id)
@@ -1860,12 +1855,12 @@ def _update_user_account(user_id, is_test, match_id, manage_payments):
     if manage_payments:
         # check if we need to create a stripe connected account
         user_data = user_doc_ref.get().to_dict()
-        if organizer_id_field_name in user_data:
-            print("{} already created".format(organizer_id_field_name))
+        existing_account = user_data.get(prefix, {}).get("connected_account_id")
+        if existing_account:
+            print("{}.connected_account_id already created".format(prefix))
         else:
             response = stripe.Account.create(
                 type="express",
-                country="NL",
                 capabilities={
                     "transfers": {"requested": True},
                 },
@@ -1879,8 +1874,7 @@ def _update_user_account(user_id, is_test, match_id, manage_payments):
                     }
                 },
             )
-            user_updates[organizer_id_field_name] = response.id
-            user_updates["stripe_status"] = "needs_onboarding"
+            user_updates["{}.connected_account_id".format(prefix)] = response.id
 
     user_doc_ref.update(user_updates)
 

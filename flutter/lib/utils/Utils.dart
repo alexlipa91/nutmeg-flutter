@@ -117,12 +117,12 @@ class ConfigsUtils {
   static bool allowUsersToMarkPayments() =>
       FirebaseRemoteConfig.instance.getBool("allow_users_to_mark_payments");
 
-  static bool allowNutmegManagedPayments() =>
-      FirebaseRemoteConfig.instance.getBool("allow_nutmeg_managed_payments");
+  static bool allowNutmegManagedPayments() => true;
 }
 
 String getStripeUrl(bool isTest, String userId, String? matchId) {
-  var path = "stripe/account/onboard?is_test=$isTest&user_id=$userId";
+  var redirectUrl = Uri.encodeComponent(Uri.base.origin);
+  var path = "stripe/account/onboard?is_test=$isTest&user_id=$userId&redirect_url=$redirectUrl";
   if (matchId != null) {
     path = path + "&match_id=$matchId";
   }

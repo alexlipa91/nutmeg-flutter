@@ -1415,6 +1415,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'SETUP STRIPE INTEGRATION'**
   String get setupStripeIntegration;
+
+  /// No description provided for @stripeVerifying.
+  ///
+  /// In en, this message translates to:
+  /// **'Verifying your Stripe account…'**
+  String get stripeVerifying;
+
+  /// No description provided for @stripeVerified.
+  ///
+  /// In en, this message translates to:
+  /// **'All good! Your Stripe integration is active.'**
+  String get stripeVerified;
+
+  /// No description provided for @stripeVerificationPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account is set up but verification is still in progress. You\'ll be able to receive payments once Stripe completes the review.'**
+  String get stripeVerificationPending;
 }
 
 class _AppLocalizationsDelegate

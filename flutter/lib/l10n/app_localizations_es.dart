@@ -743,4 +743,14 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get setupStripeIntegration => 'SETUP STRIPE INTEGRATION';
+
+  @override
+  String get stripeVerifying => 'Verifying your Stripe account…';
+
+  @override
+  String get stripeVerified => 'All good! Your Stripe integration is active.';
+
+  @override
+  String get stripeVerificationPending =>
+      'Your account is set up but verification is still in progress. You\'ll be able to receive payments once Stripe completes the review.';
 }

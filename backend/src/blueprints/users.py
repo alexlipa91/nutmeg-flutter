@@ -77,7 +77,7 @@ def _add_user(user_id, data, create_stripe_customer=True):
         response = stripe.Customer.create(
             email=data.get("email", None), name=data.get("name", None)
         )
-        data["stripeId"] = response["id"]
+        data["stripe"] = {"customer_id": response["id"]}
 
     doc_ref = app.db_client.collection("users").document(user_id)
     doc_ref.set(data)

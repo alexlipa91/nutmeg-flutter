@@ -50,7 +50,9 @@ final appRouter = GoRouter(
           GoRoute(path: 'login', builder: (context, state) => Login()),
           GoRoute(
               path: 'user',
-              builder: (context, state) => UserPage(),
+              builder: (context, state) => UserPage(
+                stripeOnboardingComplete: state.uri.queryParameters['stripe_onboarding'] == 'complete',
+              ),
               routes: [
                 GoRoute(path: 'login', builder: (context, state) => Login())
               ]),

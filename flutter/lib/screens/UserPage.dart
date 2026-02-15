@@ -2,9 +2,9 @@ import 'package:badges/badges.dart';
 import 'package:circle_flags/circle_flags.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart' hide Badge;
-import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
+import 'package:nutmeg/config/app_config.dart';
 import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/model/UserDetails.dart';
 import 'package:nutmeg/utils/CrashlyticsLogger.dart';
@@ -31,6 +31,10 @@ import '../widgets/ModalBottomSheet.dart';
 final logger = CrashlyticsLogger('UserPage');
 
 class UserPage extends StatefulWidget {
+  final bool stripeOnboardingComplete;
+
+  const UserPage({Key? key, this.stripeOnboardingComplete = false}) : super(key: key);
+
   @override
   State<StatefulWidget> createState() {
     return UserPageState();
@@ -263,29 +267,22 @@ class UserPageState extends State<UserPage> {
                       int n = userDetails.createdMatches!.length;
                       var dashboardWidgets = List<Widget>.from([]);
 
-                      void addGotoDashboard(bool isTest) {
-                        if (userDetails.isOrganiser(isTest) &&
-                            userDetails.areChargesEnabled(isTest))
-                          dashboardWidgets.addAll([
-                            if (dashboardWidgets.isNotEmpty) verticalSpace,
-                            Row(children: [
-                              Expanded(
-                                  child: GenericButtonWithLoader(
-                                      AppLocalizations.of(context)!
-                                              .goToStripeDashboardText +
-                                          (isTest ? " TEST" : ""), (_) async {
-                                var url = CloudFunctionsClient().getUrl(
-                                    "stripe/account?is_test?$isTest&user_id=${userDetails.documentId}");
+                      if (userDetails.isOrganiser(AppConfig.testMode) &&
+                          userDetails.areChargesEnabled(AppConfig.testMode))
+                        dashboardWidgets.addAll([
+                          Row(children: [
+                            Expanded(
+                                child: GenericButtonWithLoader(
+                                    AppLocalizations.of(context)!
+                                        .goToStripeDashboardText, (_) async {
+                              var url = CloudFunctionsClient().getUrl(
+                                  "stripe/account?is_test=${AppConfig.testMode}&user_id=${userDetails.documentId}");
 
-                                await launchUrl(Uri.parse(url),
-                                    mode: LaunchMode.externalApplication);
-                              }, Primary()))
-                            ]),
-                          ]);
-                      }
-
-                      addGotoDashboard(true);
-                      addGotoDashboard(false);
+                              await launchUrl(Uri.parse(url),
+                                  mode: LaunchMode.externalApplication);
+                            }, Primary()))
+                          ]),
+                        ]);
 
                       return UserInfoBox(
                         content: (loadSkeleton) ? null : n.toString(),
@@ -303,7 +300,10 @@ class UserPageState extends State<UserPage> {
 
               widgets.addAll([
                 verticalSpace,
-                _PaymentMethodsCard(userDetails: userDetails),
+                _PaymentMethodsCard(
+                  userDetails: userDetails,
+                  stripeOnboardingComplete: widget.stripeOnboardingComplete,
+                ),
               ]);
 
               return Column(children: widgets);
@@ -647,17 +647,64 @@ class UserScoreBox extends StatelessWidget {
 }
 
 
-class _PaymentMethodsCard extends StatelessWidget {
+class _PaymentMethodsCard extends StatefulWidget {
   final UserDetails userDetails;
+  final bool stripeOnboardingComplete;
 
-  const _PaymentMethodsCard({Key? key, required this.userDetails})
-      : super(key: key);
+  const _PaymentMethodsCard({
+    Key? key,
+    required this.userDetails,
+    this.stripeOnboardingComplete = false,
+  }) : super(key: key);
+
+  @override
+  State<_PaymentMethodsCard> createState() => _PaymentMethodsCardState();
+}
+
+class _PaymentMethodsCardState extends State<_PaymentMethodsCard> {
+  /// null = not checking, true = verified, false = still pending
+  bool? _stripeVerificationResult;
+  bool _isVerifying = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.stripeOnboardingComplete) {
+      _checkStripeStatus();
+    }
+  }
+
+  Future<void> _checkStripeStatus() async {
+    setState(() => _isVerifying = true);
+    try {
+      var userId = widget.userDetails.documentId;
+      var result = await CloudFunctionsClient().get(
+        'stripe/account/status',
+        args: {'user_id': userId},
+      );
+      var chargesEnabled = result?['charges_enabled'] == true;
+      setState(() {
+        _stripeVerificationResult = chargesEnabled;
+        _isVerifying = false;
+      });
+      // Refresh user details so the rest of the UI updates
+      if (chargesEnabled && mounted) {
+        context.read<UserState>().fetchLoggedUserDetails();
+      }
+    } catch (e) {
+      setState(() {
+        _stripeVerificationResult = false;
+        _isVerifying = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    var userDetails = widget.userDetails;
     var hasPaymentInfo = userDetails.paymentInfo != null &&
         userDetails.paymentInfo!.isNotEmpty;
-    var stripeEnabled = userDetails.areChargesEnabled(false);
+    var stripeEnabled = userDetails.areChargesEnabled(AppConfig.testMode);
 
     return InfoContainer(
       child: Column(
@@ -769,6 +816,75 @@ class _PaymentMethodsCard extends StatelessWidget {
                 ),
               ],
             ),
+
+          // --- Verification banner (shown after returning from Stripe) ---
+          if (_isVerifying || _stripeVerificationResult != null) ...[
+            SizedBox(height: 12),
+            _buildVerificationBanner(context),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildVerificationBanner(BuildContext context) {
+    if (_isVerifying) {
+      return Container(
+        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: Colors.blue.shade50,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.blue),
+            ),
+            SizedBox(width: 10),
+            Text(AppLocalizations.of(context)!.stripeVerifying,
+                style: TextPalette.getBodyText(Colors.blue.shade700)),
+          ],
+        ),
+      );
+    }
+
+    if (_stripeVerificationResult == true) {
+      return Container(
+        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: Colors.green.shade50,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.check_circle, color: Palette.green, size: 18),
+            SizedBox(width: 10),
+            Expanded(
+              child: Text(AppLocalizations.of(context)!.stripeVerified,
+                  style: TextPalette.getBodyText(Palette.green)),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // charges not yet enabled
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.orange.shade50,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.hourglass_top, color: Colors.orange.shade700, size: 18),
+          SizedBox(width: 10),
+          Expanded(
+            child: Text(AppLocalizations.of(context)!.stripeVerificationPending,
+                style: TextPalette.getBodyText(Colors.orange.shade700)),
+          ),
         ],
       ),
     );
@@ -799,7 +915,7 @@ class _PaymentMethodsCard extends StatelessWidget {
             Expanded(
                 child: GenericButtonWithLoader(
                     AppLocalizations.of(context)!.setupStripeIntegration, (_) async {
-              await completeAccountAction(context, false);
+              await completeAccountAction(context, AppConfig.testMode);
               Navigator.pop(context);
             }, Primary()))
           ]),
@@ -852,7 +968,7 @@ class _PaymentMethodsCard extends StatelessWidget {
 
   void _showEditPaymentInfoModal(BuildContext context) {
     var controller =
-        TextEditingController(text: userDetails.paymentInfo ?? "");
+        TextEditingController(text: widget.userDetails.paymentInfo ?? "");
 
     ModalBottomSheet.showNutmegModalBottomSheet(
       context,

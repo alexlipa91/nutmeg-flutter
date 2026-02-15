@@ -57,33 +57,35 @@ def _get_stripe_customer_id(user_id, test_mode):
 
     doc = app.db_client.collection('users').document(user_id)
 
+    prefix = "stripe_test" if test_mode else "stripe"
+
     data = doc.get(
-        field_paths={"name", "email", "stripeId", "stripeTestId"}) \
+        field_paths={"name", "email", prefix}) \
         .to_dict()
 
-    field_name = "stripeId" if not test_mode else "stripeTestId"
+    stripe_data = data.get(prefix, {})
+    customer_id = stripe_data.get("customer_id")
 
-    if field_name not in data:
-        print("missing " + field_name + " for user " + user_id + ". Creating it...")
+    if not customer_id:
+        print("missing {}.customer_id for user {}. Creating it...".format(prefix, user_id))
         response = stripe.Customer.create(
             email=data["email"],
             name=data["name"]
         )
-        stripe_id = response["id"]
-        doc.update({field_name: stripe_id})
-        return stripe_id
+        customer_id = response["id"]
+        doc.update({"{}.customer_id".format(prefix): customer_id})
 
-    return data[field_name]
+    return customer_id
 
 
 def _get_stripe_connected_account_id(organizer_id, test_mode):
     doc = app.db_client.collection('users').document(organizer_id)
 
-    data = doc.get(
-        field_paths={"stripeConnectedAccountId", "stripeConnectedAccountTestId"}) \
-        .to_dict()
+    prefix = "stripe_test" if test_mode else "stripe"
 
-    return data["stripeConnectedAccountId" if not test_mode else "stripeConnectedAccountTestId"]
+    data = doc.get(field_paths={prefix}).to_dict()
+
+    return data.get(prefix, {}).get("connected_account_id")
 
 
 # application_fee_amount includes stripe fees
