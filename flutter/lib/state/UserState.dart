@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
@@ -202,10 +203,26 @@ class UserState extends ChangeNotifier {
         currentSettings.authorizationStatus == AuthorizationStatus.provisional) {
       logger.info('Requesting FCM token');
 
-      const vapidKey = String.fromEnvironment('FIREBASE_VAPID_KEY');
+      // On iOS, ensure the APNS token is available before requesting FCM token
+      if (!kIsWeb) {
+        String? apnsToken = await FirebaseMessaging.instance.getAPNSToken();
+        logger.info('APNS token: ${apnsToken != null ? "obtained" : "null"}');
+        if (apnsToken == null) {
+          // Wait briefly and retry — APNS token can take a moment on first launch
+          await Future.delayed(Duration(seconds: 2));
+          apnsToken = await FirebaseMessaging.instance.getAPNSToken();
+          logger.info('APNS token retry: ${apnsToken != null ? "obtained" : "still null"}');
+        }
+      }
+
+      // vapidKey is only needed for web; pass null on native platforms
+      final String? vapidKey = kIsWeb
+          ? const String.fromEnvironment('FIREBASE_VAPID_KEY')
+          : null;
+
       String? token = await FirebaseMessaging.instance
           .getToken(vapidKey: vapidKey)
-          .timeout(Duration(seconds: 5), onTimeout: () {
+          .timeout(Duration(seconds: 10), onTimeout: () {
         logger.info("FCM token request took too long, skipping");
         return null;
       });
@@ -213,7 +230,17 @@ class UserState extends ChangeNotifier {
       if (token != null) {
         logger.info('FCM token obtained: ${token.substring(0, 5)}...');
         await storeUserToken(token);
+      } else {
+        logger.warning('FCM token was null — notifications will not work');
       }
+
+      // Show notifications as banners on iOS even when app is in foreground
+      await FirebaseMessaging.instance
+          .setForegroundNotificationPresentationOptions(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
 
       // Listen for token refreshes so the backend always has the latest token
       FirebaseMessaging.instance.onTokenRefresh.listen((newToken) {
