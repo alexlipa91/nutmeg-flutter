@@ -377,5 +377,12 @@
     "stripeVerificationPending": "Your account is set up but verification is still in progress. You'll be able to receive payments once Stripe completes the review.",
     "stripeSetupRequired": "You need to set up Stripe before creating a paid game. Complete the setup first.",
     "stripeNutmegFeeLabel": "Nutmeg service fee",
-    "stripePayoutExplanation": "Money is transferred to your Stripe account 24h after the game, then Stripe pays it out to your bank."
+    "stripePayoutExplanation": "Money is transferred to your Stripe account 24h after the game, then Stripe pays it out to your bank.",
+    "deleteCourtTitle": "Remove court",
+    "deleteCourtConfirmation": "Are you sure you want to remove this court from your list?",
+    "deleteCourt": "Remove",
+    "playersPerSideLabel": "Players per side",
+    "customOption": "Custom",
+    "customPlayersPerSideHint": "Enter number of players per side",
+    "totalPlayersLabel": "players total"
 }

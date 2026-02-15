@@ -760,4 +760,26 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get stripePayoutExplanation =>
       'Money is transferred to your Stripe account 24h after the game, then Stripe pays it out to your bank.';
+
+  @override
+  String get deleteCourtTitle => 'Remove court';
+
+  @override
+  String get deleteCourtConfirmation =>
+      'Are you sure you want to remove this court from your list?';
+
+  @override
+  String get deleteCourt => 'Remove';
+
+  @override
+  String get playersPerSideLabel => 'Players per side';
+
+  @override
+  String get customOption => 'Custom';
+
+  @override
+  String get customPlayersPerSideHint => 'Enter number of players per side';
+
+  @override
+  String get totalPlayersLabel => 'players total';
 }

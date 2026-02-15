@@ -60,6 +60,13 @@ def add_sportcenter():
     return {}, 200
 
 
+@bp.route("/<sportcenter_id>", methods=["DELETE"])
+def delete_sportcenter(sportcenter_id):
+    app.db_client.collection("users").document(flask.g.uid) \
+        .collection("sportCenters").document(sportcenter_id).delete()
+    return {}, 200
+
+
 def _get_timezone_id(lat, lng):
     url = "https://maps.googleapis.com/maps/api/timezone/json?location={}%2C{}&timestamp={}&key={}".format(
         lat,

@@ -1457,6 +1457,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Money is transferred to your Stripe account 24h after the game, then Stripe pays it out to your bank.'**
   String get stripePayoutExplanation;
+
+  /// No description provided for @deleteCourtTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove court'**
+  String get deleteCourtTitle;
+
+  /// No description provided for @deleteCourtConfirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to remove this court from your list?'**
+  String get deleteCourtConfirmation;
+
+  /// No description provided for @deleteCourt.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get deleteCourt;
+
+  /// No description provided for @playersPerSideLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Players per side'**
+  String get playersPerSideLabel;
+
+  /// No description provided for @customOption.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom'**
+  String get customOption;
+
+  /// No description provided for @customPlayersPerSideHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter number of players per side'**
+  String get customPlayersPerSideHint;
+
+  /// No description provided for @totalPlayersLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'players total'**
+  String get totalPlayersLabel;
 }
 
 class _AppLocalizationsDelegate

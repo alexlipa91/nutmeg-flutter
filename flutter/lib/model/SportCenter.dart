@@ -75,7 +75,7 @@ class SportCenter {
             .first,
         hasChangingRooms = json['hasChangingRooms'],
         timezoneId = json["timeZoneId"] ?? "Europe/Amsterdam",
-        courtType = json['courtType']!,
+        courtType = json['courtType'] ?? '5v5',
         _thumbnailUrl = json['thumbnailUrl'],
         _imagesUrls = json["largeImageUrls"] == null
             ? null

@@ -22,7 +22,6 @@ class CreateCourt extends StatefulWidget {
 
 class CreateCourtState extends State<CreateCourt> {
   final TextEditingController surfaceController = TextEditingController();
-  final TextEditingController courtTypeController = TextEditingController();
   final TextEditingController textEditingController = TextEditingController();
 
   final _formKey = GlobalKey<FormState>();
@@ -37,7 +36,6 @@ class CreateCourtState extends State<CreateCourt> {
   double? lng;
 
   Surface? surface;
-  String? courtType;
 
   @override
   Widget build(BuildContext context) {
@@ -187,39 +185,6 @@ class CreateCourtState extends State<CreateCourt> {
                             )),
                           ],
                         ),
-                        SizedBox(height: 16),
-                        Row(
-                          children: [
-                            Expanded(
-                                child: TextFormField(
-                              readOnly: true,
-                              controller: courtTypeController,
-                              decoration:
-                                  CreateMatchState.getTextFormDecoration(
-                                      AppLocalizations.of(context)!.sizeTitle,
-                                      isDropdown: true),
-                              onTap: () async {
-                                var sizes = ["5v5", "6v6", "7v7", "11v11"];
-
-                                int? i = await CreateMatchState
-                                    .showMultipleChoiceSheetWithText(
-                                        context,
-                                        AppLocalizations.of(context)!.sizeTitle,
-                                        sizes);
-
-                                if (i != null) {
-                                  courtTypeController.text = sizes[i];
-                                }
-                              },
-                              validator: (v) {
-                                if (v == null || v.isEmpty)
-                                  return AppLocalizations.of(context)!
-                                      .requiredError;
-                                return null;
-                              },
-                            )),
-                          ],
-                        ),
                       ])),
                   Section(
                       title: AppLocalizations.of(context)!.facilitiesTitle,
@@ -278,7 +243,7 @@ class CreateCourtState extends State<CreateCourt> {
                       "place_id": placeId!,
                       "surface": surface!.getDbName(),
                       "hasChangingRooms": changeRoomsAvailable,
-                      "courtType": courtTypeController.text
+                      "courtType": "5v5"
                     });
                     List<SportCenter> sportCenters =
                         await context.read<UserState>().getSportCenters()!;

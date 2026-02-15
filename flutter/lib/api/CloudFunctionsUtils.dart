@@ -98,5 +98,19 @@ class CloudFunctionsClient {
     return Map<String, dynamic>.from(jsonDecode(r.body));
   }
 
+  Future<void> delete(String name) async {
+    logger.info("DELETE $name");
+
+    var r = await http.delete(
+      Uri.parse("$appEngineBaseUrl/$name"),
+      headers: await _headers(),
+    );
+
+    if (r.statusCode == 500) {
+      logger.severe("Server error (500) on DELETE $name: ${r.body}");
+      throw Exception(r.body);
+    }
+  }
+
   String getUrl(String path) => "$appEngineBaseUrl/$path";
 }

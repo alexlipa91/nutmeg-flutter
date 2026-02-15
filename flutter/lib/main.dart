@@ -190,8 +190,12 @@ void main() async {
             debugShowCheckedModeBanner: false,
             backButtonDispatcher: RootBackButtonDispatcher(),
             theme: ThemeData(
-              colorScheme: ColorScheme.light().copyWith(
+              useMaterial3: true,
+              colorScheme: ColorScheme.light(
                 primary: Palette.primary,
+                onPrimary: Colors.white,
+                surface: Colors.white,
+                onSurface: Palette.black,
               ),
               hoverColor: Colors.transparent,
               splashColor: Colors.transparent,

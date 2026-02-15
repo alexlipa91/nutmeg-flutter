@@ -66,7 +66,7 @@ class CreateMatchState extends State<CreateMatch> {
       // fixme why we need this?
       suffixIconConstraints: BoxConstraints.expand(width: 50.0, height: 30.0),
       suffixIcon: isDropdown ? Icon(Icons.arrow_drop_down) : null,
-      contentPadding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 4),
+      contentPadding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
       filled: true,
       focusColor: (focusColor == null) ? Palette.greyLighter : focusColor,
       fillColor: fill ? Palette.greyLighter : Palette.greyLight,
@@ -82,7 +82,7 @@ class CreateMatchState extends State<CreateMatch> {
   TimeOfDay? startTime, endTime;
   SportCenter? sportCenter;
   bool isSavedSportCenter = false;
-  bool isTest = false;
+  bool isTest = AppConfig.testMode;
   bool paymentsPossible = true;
   bool hasPrice = false;
   bool showPaymentInfo = true;
@@ -92,7 +92,9 @@ class CreateMatchState extends State<CreateMatch> {
   int repeatsForWeeks = 1;
   bool organiserWithFee = false;
   String? courtNumber;
-  RangeValues numberOfPeopleRangeValues = RangeValues(8, 10);
+  int playersPerSide = 5;
+  bool customPlayersPerSide = false;
+  RangeValues numberOfPeopleRangeValues = RangeValues(10, 10);
   String? price;
 
   final _formKey = GlobalKey<FormState>();
@@ -105,6 +107,7 @@ class CreateMatchState extends State<CreateMatch> {
   TextEditingController repeatWeeklyEditingController = TextEditingController();
   TextEditingController courtNumberEditingController = TextEditingController();
   TextEditingController priceController = TextEditingController();
+  TextEditingController playersPerSideController = TextEditingController();
   TextEditingController cancelTimeEditingController = TextEditingController();
   FocusNode sportCenterfocusNode = FocusNode();
   FocusNode datefocusNode = FocusNode();
@@ -224,6 +227,15 @@ class CreateMatchState extends State<CreateMatch> {
           match.price == null ? null : formatCurrency(match.price!.basePrice);
       numberOfPeopleRangeValues =
           RangeValues(match.minPlayers.toDouble(), match.maxPlayers.toDouble());
+      var perSide = match.maxPlayers ~/ 2;
+      if ([5, 7, 8, 11].contains(perSide)) {
+        playersPerSide = perSide;
+        customPlayersPerSide = false;
+      } else {
+        playersPerSide = perSide;
+        customPlayersPerSide = true;
+        playersPerSideController.text = perSide.toString();
+      }
     }
 
     refreshState();
@@ -508,6 +520,77 @@ class CreateMatchState extends State<CreateMatch> {
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            TextFormField(
+              readOnly: true,
+              controller: TextEditingController(
+                  text: customPlayersPerSide
+                      ? AppLocalizations.of(context)!.customOption
+                      : "$playersPerSide"),
+              decoration: getTextFormDecoration(
+                  AppLocalizations.of(context)!.playersPerSideLabel,
+                  isDropdown: true),
+              onTap: () async {
+                var options = [5, 7, 8, 11];
+                var labels = [
+                  ...options.map((n) => "$n"),
+                  AppLocalizations.of(context)!.customOption,
+                ];
+
+                int? i = await showMultipleChoiceSheetWithText(
+                    context,
+                    AppLocalizations.of(context)!.playersPerSideLabel,
+                    labels);
+
+                if (i != null) {
+                  setState(() {
+                    if (i < options.length) {
+                      playersPerSide = options[i];
+                      customPlayersPerSide = false;
+                      var total = playersPerSide * 2;
+                      numberOfPeopleRangeValues = RangeValues(
+                          total.toDouble(), total.toDouble());
+                    } else {
+                      customPlayersPerSide = true;
+                      playersPerSideController.text =
+                          playersPerSide.toString();
+                    }
+                  });
+                }
+              },
+              validator: (v) {
+                if (v == null || v.isEmpty)
+                  return AppLocalizations.of(context)!.requiredError;
+                return null;
+              },
+            ),
+            if (customPlayersPerSide) ...[
+              SizedBox(height: 16),
+              TextFormField(
+                controller: playersPerSideController,
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                decoration: getTextFormDecoration(
+                    AppLocalizations.of(context)!.customPlayersPerSideHint),
+                onChanged: (v) {
+                  var n = int.tryParse(v);
+                  if (n != null && n >= 1) {
+                    setState(() {
+                      playersPerSide = n;
+                      var total = n * 2;
+                      numberOfPeopleRangeValues = RangeValues(
+                          total.toDouble(), total.toDouble());
+                    });
+                  }
+                },
+                validator: (v) {
+                  var n = int.tryParse(v ?? "");
+                  if (n == null || n < 1)
+                    return AppLocalizations.of(context)!.requiredError;
+                  return null;
+                },
+              ),
+            ],
+            SizedBox(height: 16),
             Row(
               children: [
                 Text(numberOfPeopleRangeValues.start.toStringAsFixed(0),
@@ -524,35 +607,41 @@ class CreateMatchState extends State<CreateMatch> {
                       showValueIndicator: ShowValueIndicator.never,
                       inactiveTrackColor: Palette.greyLighter,
                     ),
-                    child: RangeSlider(
-                      values: numberOfPeopleRangeValues,
-                      max: 22,
-                      min: 6,
-                      divisions: 22 - 6,
-                      labels: RangeLabels(
-                        numberOfPeopleRangeValues.start.toString(),
-                        numberOfPeopleRangeValues.end.toString(),
-                      ),
-                      onChanged: (RangeValues values) {
-                        setState(() {
-                          numberOfPeopleRangeValues = values;
-                        });
-                      },
-                    ),
+                    child: Builder(builder: (context) {
+                      var total = playersPerSide * 2;
+                      var sliderMin = (total - 2).toDouble();
+                      var sliderMax = (total + 2).toDouble();
+                      // Clamp current values to the new range
+                      var clamped = RangeValues(
+                        numberOfPeopleRangeValues.start.clamp(sliderMin, sliderMax),
+                        numberOfPeopleRangeValues.end.clamp(sliderMin, sliderMax),
+                      );
+                      return RangeSlider(
+                        values: clamped,
+                        max: sliderMax,
+                        min: sliderMin,
+                        divisions: 4,
+                        labels: RangeLabels(
+                          clamped.start.toStringAsFixed(0),
+                          clamped.end.toStringAsFixed(0),
+                        ),
+                        onChanged: (RangeValues values) {
+                          setState(() {
+                            numberOfPeopleRangeValues = values;
+                          });
+                        },
+                      );
+                    }),
                   ),
                 )),
                 Text(numberOfPeopleRangeValues.end.toStringAsFixed(0),
                     style: TextPalette.bodyText),
               ],
             ),
-            SizedBox(
-              height: 16.0,
-            ),
+            SizedBox(height: 8),
             Text(AppLocalizations.of(context)!.numberOfPlayersInfo,
-                style: TextPalette.bodyText),
-            SizedBox(
-              height: 8.0,
-            )
+                style: TextPalette.getBodyText(Palette.greyDark)),
+            SizedBox(height: 8.0),
           ],
         ),
       ),
@@ -622,7 +711,7 @@ class CreateMatchState extends State<CreateMatch> {
                             fill: widget.existingMatch == null))),
               ],
             ),
-            SizedBox(height: 16),
+            SizedBox(height: 24),
             // Payment mode radio buttons
             RadioListTile<bool>(
               title: Text(AppLocalizations.of(context)!.payOutsideNutmeg,
@@ -913,31 +1002,6 @@ class CreateMatchState extends State<CreateMatch> {
             ),
           ]),
         ),
-      if (widget.existingMatch == null &&
-          context.read<UserState>().getLoggedUserDetails()!.isAdmin!)
-        Section(
-            title: "Admin",
-            titleType: "big",
-            body: Column(children: [
-              Row(
-                children: [
-                  Text("Select for test match", style: TextPalette.bodyText),
-                  Spacer(),
-                  Checkbox(
-                      value: isTest,
-                      activeColor: Palette.primary,
-                      onChanged: (v) {
-                        setState(() {
-                          isTest = v!;
-                        });
-                      })
-                ],
-              ),
-              SizedBox(height: 16),
-              Text(
-                  "A test match will be visible only to Admin users and it will use Stripe test environment (both for organizer account and for users' payments)",
-                  style: TextPalette.bodyText),
-            ]))
     ];
 
     return WillPopScope(
@@ -1185,25 +1249,72 @@ class SportCenterRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () => Navigator.pop(context, sportCenter),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          MatchThumbnail(image: sportCenter.getThumbnail(), height: 60),
-          SizedBox(width: 16),
-          Expanded(
-            child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(sportCenter.getName(), style: TextPalette.h3),
-                  SizedBox(
-                    height: 8,
-                  ),
-                  Text(sportCenter.address,
-                      style: TextPalette.getBodyText(Palette.greyDark)),
-                ]),
+    return Dismissible(
+      key: ValueKey(sportCenter.placeId),
+      direction: DismissDirection.endToStart,
+      background: Container(
+        alignment: Alignment.centerRight,
+        padding: EdgeInsets.only(right: 20),
+        color: Colors.red,
+        child: Icon(Icons.delete, color: Colors.white),
+      ),
+      confirmDismiss: (_) => _confirmDelete(context),
+      onDismissed: (_) {
+        context.read<UserState>().deleteSportCenter(sportCenter.placeId);
+      },
+      child: InkWell(
+        onTap: () => Navigator.pop(context, sportCenter),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            MatchThumbnail(image: sportCenter.getThumbnail(), height: 60),
+            SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(sportCenter.getName(), style: TextPalette.h3),
+                    SizedBox(height: 8),
+                    Text(sportCenter.address,
+                        style: TextPalette.getBodyText(Palette.greyDark)),
+                  ]),
+            ),
+            SizedBox(width: 8),
+            InkWell(
+              onTap: () async {
+                var confirmed = await _confirmDelete(context);
+                if (confirmed == true) {
+                  context
+                      .read<UserState>()
+                      .deleteSportCenter(sportCenter.placeId);
+                }
+              },
+              child: Icon(Icons.close, color: Palette.greyDark, size: 20),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<bool?> _confirmDelete(BuildContext context) {
+    return showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(AppLocalizations.of(context)!.deleteCourtTitle),
+        content: Text(AppLocalizations.of(context)!.deleteCourtConfirmation),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(AppLocalizations.of(context)!.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(
+              AppLocalizations.of(context)!.deleteCourt,
+              style: TextStyle(color: Colors.red),
+            ),
           ),
         ],
       ),
@@ -1219,22 +1330,10 @@ class LocationsBottomSheet extends StatelessWidget {
     if (userState.getSportCenters() == null)
       return ListOfMatchesSkeleton.withoutContainer(repeatFor: 2);
 
-    var popularCourtsSection = Section(
-        title: AppLocalizations.of(context)!.popularCourtsTitle,
-        topSpace: 0,
-        titleType: "big",
-        belowTitleSpace: 16,
-        body: Column(
-            children: interleave(
-                    (context.watch<LoadOnceState>().savedSportCenters ?? [])
-                        .map((e) => SportCenterRow(sportCenter: e))
-                        .toList(),
-                    SizedBox(height: 16))
-                .toList()));
     var yourCourts = Section(
         title: AppLocalizations.of(context)!.yourCourtsTitle,
         titleType: "big",
-        topSpace: 32,
+        topSpace: 0,
         belowTitleSpace: 16,
         body: Builder(
           builder: (context) {
@@ -1297,6 +1396,6 @@ class LocationsBottomSheet extends StatelessWidget {
 
     return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [popularCourtsSection, yourCourts]);
+        children: [yourCourts]);
   }
 }

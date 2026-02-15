@@ -769,4 +769,27 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get stripePayoutExplanation =>
       'El dinero se transfiere a tu cuenta Stripe 24h después del partido y luego Stripe lo envía a tu banco.';
+
+  @override
+  String get deleteCourtTitle => 'Eliminar cancha';
+
+  @override
+  String get deleteCourtConfirmation =>
+      '¿Estás seguro de que quieres eliminar esta cancha de tu lista?';
+
+  @override
+  String get deleteCourt => 'Eliminar';
+
+  @override
+  String get playersPerSideLabel => 'Jugadores por equipo';
+
+  @override
+  String get customOption => 'Personalizado';
+
+  @override
+  String get customPlayersPerSideHint =>
+      'Introduce el número de jugadores por equipo';
+
+  @override
+  String get totalPlayersLabel => 'jugadores en total';
 }

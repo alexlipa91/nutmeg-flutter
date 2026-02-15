@@ -136,6 +136,14 @@ class UserState extends ChangeNotifier {
     }
   }
 
+  Future<void> deleteSportCenter(String sportCenterId) async {
+    await CloudFunctionsClient().delete("sportcenters/$sportCenterId");
+    _sportCenters?.removeWhere((sc) => sc.placeId == sportCenterId);
+    if (_sportCenters != null) {
+      _setSportCenters(_sportCenters!);
+    }
+  }
+
   // GOOGLE SIGN IN
   GoogleSignIn googleSignIn = GoogleSignIn();
 

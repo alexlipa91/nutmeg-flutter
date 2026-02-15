@@ -225,5 +225,12 @@
     "stripeVerificationPending": "A sua conta está configurada mas a verificação ainda está em curso. Poderá receber pagamentos quando o Stripe concluir a revisão.",
     "stripeSetupRequired": "Precisa de configurar o Stripe antes de criar um jogo pago. Complete a configuração primeiro.",
     "stripeNutmegFeeLabel": "Taxa Nutmeg",
-    "stripePayoutExplanation": "O dinheiro é transferido para a sua conta Stripe 24h após o jogo, e depois o Stripe envia para o seu banco."
+    "stripePayoutExplanation": "O dinheiro é transferido para a sua conta Stripe 24h após o jogo, e depois o Stripe envia para o seu banco.",
+    "deleteCourtTitle": "Remover campo",
+    "deleteCourtConfirmation": "Tem certeza que deseja remover este campo da sua lista?",
+    "deleteCourt": "Remover",
+    "playersPerSideLabel": "Jogadores por equipa",
+    "customOption": "Personalizado",
+    "customPlayersPerSideHint": "Insira o número de jogadores por equipa",
+    "totalPlayersLabel": "jogadores no total"
 }

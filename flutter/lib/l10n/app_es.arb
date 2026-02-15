@@ -225,5 +225,12 @@
     "stripeVerificationPending": "Tu cuenta está configurada pero la verificación aún está en curso. Podrás recibir pagos cuando Stripe complete la revisión.",
     "stripeSetupRequired": "Necesitas configurar Stripe antes de crear un partido de pago. Completa la configuración primero.",
     "stripeNutmegFeeLabel": "Comisión Nutmeg",
-    "stripePayoutExplanation": "El dinero se transfiere a tu cuenta Stripe 24h después del partido y luego Stripe lo envía a tu banco."
+    "stripePayoutExplanation": "El dinero se transfiere a tu cuenta Stripe 24h después del partido y luego Stripe lo envía a tu banco.",
+    "deleteCourtTitle": "Eliminar cancha",
+    "deleteCourtConfirmation": "¿Estás seguro de que quieres eliminar esta cancha de tu lista?",
+    "deleteCourt": "Eliminar",
+    "playersPerSideLabel": "Jugadores por equipo",
+    "customOption": "Personalizado",
+    "customPlayersPerSideHint": "Introduce el número de jugadores por equipo",
+    "totalPlayersLabel": "jugadores en total"
 }
