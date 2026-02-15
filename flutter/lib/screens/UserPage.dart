@@ -18,7 +18,6 @@ import 'package:nutmeg/widgets/PageTemplate.dart';
 import 'package:nutmeg/widgets/PlayerBottomModal.dart';
 import 'package:nutmeg/widgets/Section.dart';
 import 'package:nutmeg/widgets/Skeletons.dart';
-import 'package:nutmeg/widgets/WarningWidget.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -257,22 +256,6 @@ class UserPageState extends State<UserPage> {
             body: Container(child: Builder(builder: (context) {
               var widgets = List<Widget>.from([]);
 
-              void addCompleteBanner(bool isTest) {
-                if (ConfigsUtils.allowNutmegManagedPayments() &&
-                    userDetails.isOrganiser(isTest) &&
-                    !userDetails.areChargesEnabled(isTest))
-                  widgets.addAll([
-                    Row(children: [
-                      Expanded(
-                          child: CompleteOrganiserAccountWidget(isTest: isTest))
-                    ]),
-                    verticalSpace
-                  ]);
-              }
-
-              addCompleteBanner(true);
-              addCompleteBanner(false);
-
               widgets.add(Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -320,7 +303,7 @@ class UserPageState extends State<UserPage> {
 
               widgets.addAll([
                 verticalSpace,
-                PaymentInfoEditor(userDetails: userDetails),
+                _PaymentMethodsCard(userDetails: userDetails),
               ]);
 
               return Column(children: widgets);
@@ -697,75 +680,211 @@ class UserScoreBox extends StatelessWidget {
   }
 }
 
-class CompleteOrganiserAccountWidget extends StatelessWidget {
-  final bool isTest;
 
-  const CompleteOrganiserAccountWidget({Key? key, required this.isTest})
-      : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return WarningWidget(
-      title: "Create your " + (this.isTest ? "Test " : "") + "Stripe account",
-      body:
-          "To start receiving payments, you need to create your Stripe account",
-      textAction: "GO TO STRIPE",
-      action: () => completeAccountAction(context, isTest),
-    );
-  }
-}
-
-class PaymentInfoEditor extends StatelessWidget {
+class _PaymentMethodsCard extends StatelessWidget {
   final UserDetails userDetails;
 
-  const PaymentInfoEditor({Key? key, required this.userDetails})
+  const _PaymentMethodsCard({Key? key, required this.userDetails})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     var hasPaymentInfo = userDetails.paymentInfo != null &&
         userDetails.paymentInfo!.isNotEmpty;
+    var stripeEnabled = userDetails.areChargesEnabled(false);
 
-    return InkWell(
-      onTap: () => _showEditModal(context),
-      child: InfoContainer(
-        child: Row(
-          children: [
-            Icon(Icons.payment_outlined, color: Palette.primary, size: 20),
-            SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+    return InfoContainer(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // --- Pay outside Nutmeg ---
+          InkWell(
+            onTap: () => _showEditPaymentInfoModal(context),
+            child: Row(
+              children: [
+                Icon(Icons.account_balance_wallet_outlined,
+                    color: Palette.primary, size: 20),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(AppLocalizations.of(context)!.payOutsideNutmegTitle, style: TextPalette.h3),
+                      SizedBox(height: 4),
+                      hasPaymentInfo
+                          ? buildLinkedText(
+                              userDetails.paymentInfo!,
+                              TextPalette.getBodyText(Palette.black),
+                            )
+                          : Text(
+                              AppLocalizations.of(context)!
+                                  .paymentInfoProfileDesc,
+                              style: TextPalette.getBodyText(Palette.greyDark),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                    ],
+                  ),
+                ),
+                SizedBox(width: 8),
+                Icon(
+                  hasPaymentInfo ? Icons.edit_outlined : Icons.add,
+                  color: Palette.primary,
+                  size: 20,
+                ),
+              ],
+            ),
+          ),
+
+          // --- Pay with Nutmeg ---
+          Padding(
+            padding: EdgeInsets.symmetric(vertical: 16),
+            child: Divider(height: 1, color: Palette.greyLighter),
+          ),
+          if (ConfigsUtils.allowNutmegManagedPayments())
+            InkWell(
+              onTap: stripeEnabled ? null : () => _showHowItWorksModal(context),
+              child: Row(
                 children: [
-                  Text(AppLocalizations.of(context)!.paymentInfoHeader, style: TextPalette.h3),
-                  SizedBox(height: 4),
-                  hasPaymentInfo
-                      ? buildLinkedText(
-                          userDetails.paymentInfo!,
-                          TextPalette.getBodyText(Palette.black),
-                        )
-                      : Text(
-                          AppLocalizations.of(context)!.paymentInfoProfileDesc,
-                          style: TextPalette.getBodyText(Palette.greyDark),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                  Icon(Icons.credit_card_outlined,
+                      color: stripeEnabled ? Palette.primary : Palette.greyLight,
+                      size: 20),
+                  SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(AppLocalizations.of(context)!.payWithNutmegTitle,
+                            style: TextPalette.getH3(stripeEnabled
+                                ? Palette.black
+                                : Palette.greyDark)),
+                        SizedBox(height: 4),
+                        if (stripeEnabled)
+                          Text(AppLocalizations.of(context)!.stripeIntegrationActive,
+                              style: TextPalette.getBodyText(Palette.green))
+                        else
+                          Text(
+                              AppLocalizations.of(context)!.payWithNutmegNotConfigured,
+                              style:
+                                  TextPalette.getBodyText(Palette.greyDark)),
+                      ],
+                    ),
+                  ),
+                  if (!stripeEnabled) ...[
+                    SizedBox(width: 8),
+                    Icon(Icons.info_outline,
+                        color: Palette.primary, size: 20),
+                  ],
+                  if (stripeEnabled) ...[
+                    SizedBox(width: 8),
+                    Icon(Icons.check_circle,
+                        color: Palette.green, size: 20),
+                  ],
                 ],
               ),
+            )
+          else
+            Row(
+              children: [
+                Icon(Icons.credit_card_outlined,
+                    color: Palette.greyLight, size: 20),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(AppLocalizations.of(context)!.payWithNutmegTitle,
+                          style: TextPalette.getH3(Palette.greyDark)),
+                      SizedBox(height: 4),
+                      Text(AppLocalizations.of(context)!.comingSoon,
+                          style: TextPalette.getBodyText(Palette.greyDark)),
+                    ],
+                  ),
+                ),
+              ],
             ),
-            SizedBox(width: 8),
-            Icon(
-              hasPaymentInfo ? Icons.edit_outlined : Icons.add,
-              color: Palette.primary,
-              size: 20,
-            ),
-          ],
-        ),
+        ],
       ),
     );
   }
 
-  void _showEditModal(BuildContext context) {
+  void _showHowItWorksModal(BuildContext context) {
+    ModalBottomSheet.showNutmegModalBottomSheet(
+      context,
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(AppLocalizations.of(context)!.howPayWithNutmegWorks, style: TextPalette.h2),
+          SizedBox(height: 20),
+          _stepRow("1", AppLocalizations.of(context)!.stripeStep1),
+          SizedBox(height: 14),
+          _stepRow("2", AppLocalizations.of(context)!.stripeStep2),
+          SizedBox(height: 14),
+          _stepRow("3", AppLocalizations.of(context)!.stripeStep3),
+          SizedBox(height: 14),
+          _stepRow("4", AppLocalizations.of(context)!.stripeStep4),
+          SizedBox(height: 16),
+          _infoRow(AppLocalizations.of(context)!.stripeInfoRefund),
+          SizedBox(height: 10),
+          _infoRow(AppLocalizations.of(context)!.stripeInfoFee),
+          SizedBox(height: 24),
+          Row(children: [
+            Expanded(
+                child: GenericButtonWithLoader(
+                    AppLocalizations.of(context)!.setupStripeIntegration, (_) async {
+              await completeAccountAction(context, false);
+              Navigator.pop(context);
+            }, Primary()))
+          ]),
+        ],
+      ),
+    );
+  }
+
+  static Widget _stepRow(String number, String text) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 24,
+          height: 24,
+          decoration: BoxDecoration(
+            color: Palette.primary,
+            shape: BoxShape.circle,
+          ),
+          child: Center(
+            child: Text(number, style: TextPalette.getH3(Palette.white)),
+          ),
+        ),
+        SizedBox(width: 12),
+        Expanded(
+          child: Text(text, style: TextPalette.bodyText),
+        ),
+      ],
+    );
+  }
+
+  static Widget _infoRow(String text) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 24,
+          height: 24,
+          child: Center(
+            child: Icon(Icons.info_outline, color: Palette.greyLight, size: 22),
+          ),
+        ),
+        SizedBox(width: 12),
+        Expanded(
+          child: Text(text, style: TextPalette.bodyText),
+        ),
+      ],
+    );
+  }
+
+  void _showEditPaymentInfoModal(BuildContext context) {
     var controller =
         TextEditingController(text: userDetails.paymentInfo ?? "");
 
@@ -775,7 +894,7 @@ class PaymentInfoEditor extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(AppLocalizations.of(context)!.paymentInfoHeader, style: TextPalette.h2),
+          Text(AppLocalizations.of(context)!.payOutsideNutmegTitle, style: TextPalette.h2),
           SizedBox(height: 8),
           Text(
             AppLocalizations.of(context)!.paymentInfoShownToPlayers,
@@ -804,7 +923,8 @@ class PaymentInfoEditor extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: GenericButtonWithLoader(AppLocalizations.of(context)!.save, (_) async {
+                child: GenericButtonWithLoader(
+                    AppLocalizations.of(context)!.save, (_) async {
                   var text = controller.text.trim();
                   await context.read<UserState>().editUser({
                     "paymentInfo": text.isEmpty ? null : text,

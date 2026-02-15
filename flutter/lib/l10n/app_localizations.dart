@@ -1343,6 +1343,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'COMING SOON'**
   String get comingSoon;
+
+  /// No description provided for @payOutsideNutmegTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay outside Nutmeg'**
+  String get payOutsideNutmegTitle;
+
+  /// No description provided for @payWithNutmegTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay with Nutmeg'**
+  String get payWithNutmegTitle;
+
+  /// No description provided for @stripeIntegrationActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Stripe integration active'**
+  String get stripeIntegrationActive;
+
+  /// No description provided for @payWithNutmegNotConfigured.
+  ///
+  /// In en, this message translates to:
+  /// **'Not configured. Tap to learn more.'**
+  String get payWithNutmegNotConfigured;
+
+  /// No description provided for @howPayWithNutmegWorks.
+  ///
+  /// In en, this message translates to:
+  /// **'How Pay with Nutmeg works'**
+  String get howPayWithNutmegWorks;
+
+  /// No description provided for @stripeStep1.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a Stripe Connected account with your bank details.'**
+  String get stripeStep1;
+
+  /// No description provided for @stripeStep2.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a game with a price (e.g. €5). Players pay via Stripe to join.'**
+  String get stripeStep2;
+
+  /// No description provided for @stripeStep3.
+  ///
+  /// In en, this message translates to:
+  /// **'After the game, Nutmeg transfers payments minus a €0.50 fee per player to your Stripe account. E.g. 10 players pay €5, you get €45.'**
+  String get stripeStep3;
+
+  /// No description provided for @stripeStep4.
+  ///
+  /// In en, this message translates to:
+  /// **'Stripe sends the money to your bank within a few days.'**
+  String get stripeStep4;
+
+  /// No description provided for @stripeInfoRefund.
+  ///
+  /// In en, this message translates to:
+  /// **'Players can cancel and get a full refund up to 24h before the game.'**
+  String get stripeInfoRefund;
+
+  /// No description provided for @stripeInfoFee.
+  ///
+  /// In en, this message translates to:
+  /// **'The Nutmeg service fee helps cover Stripe transaction costs.'**
+  String get stripeInfoFee;
+
+  /// No description provided for @setupStripeIntegration.
+  ///
+  /// In en, this message translates to:
+  /// **'SETUP STRIPE INTEGRATION'**
+  String get setupStripeIntegration;
 }
 
 class _AppLocalizationsDelegate

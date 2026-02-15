@@ -698,4 +698,46 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get comingSoon => 'IN ARRIVO';
+
+  @override
+  String get payOutsideNutmegTitle => 'Pay outside Nutmeg';
+
+  @override
+  String get payWithNutmegTitle => 'Pay with Nutmeg';
+
+  @override
+  String get stripeIntegrationActive => 'Stripe integration active';
+
+  @override
+  String get payWithNutmegNotConfigured => 'Not configured. Tap to learn more.';
+
+  @override
+  String get howPayWithNutmegWorks => 'How Pay with Nutmeg works';
+
+  @override
+  String get stripeStep1 =>
+      'Create a Stripe Connected account with your bank details.';
+
+  @override
+  String get stripeStep2 =>
+      'Create a game with a price (e.g. €5). Players pay via Stripe to join.';
+
+  @override
+  String get stripeStep3 =>
+      'After the game, Nutmeg transfers payments minus a €0.50 fee per player to your Stripe account. E.g. 10 players pay €5, you get €45.';
+
+  @override
+  String get stripeStep4 =>
+      'Stripe sends the money to your bank within a few days.';
+
+  @override
+  String get stripeInfoRefund =>
+      'Players can cancel and get a full refund up to 24h before the game.';
+
+  @override
+  String get stripeInfoFee =>
+      'The Nutmeg service fee helps cover Stripe transaction costs.';
+
+  @override
+  String get setupStripeIntegration => 'SETUP STRIPE INTEGRATION';
 }

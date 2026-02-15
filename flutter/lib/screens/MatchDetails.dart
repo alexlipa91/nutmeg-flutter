@@ -274,10 +274,6 @@ List<Widget> getWidgets(
     ];
   }
 
-  var completeOrganiserWidget = organizerView && match?.price != null && ConfigsUtils.allowNutmegManagedPayments()
-      ? CompleteOrganiserAccountWidget(isTest: isTest)
-      : null;
-
   var testInfo = isTest
       ? InfoContainer(
           backgroundColor: Palette.accent,
@@ -391,7 +387,6 @@ List<Widget> getWidgets(
   if (constraints.maxWidth < 800) {
     widgets = interleave([
       // title
-      if (completeOrganiserWidget != null) completeOrganiserWidget,
       // info box
       if (testInfo != null) testInfo,
       matchInfo,
@@ -408,7 +403,6 @@ List<Widget> getWidgets(
     ], SizedBox(height: 16));
   } else {
     widgets = [
-      if (completeOrganiserWidget != null) completeOrganiserWidget,
       if (testInfo != null) testInfo,
       // match info full width at the top
       Center(
