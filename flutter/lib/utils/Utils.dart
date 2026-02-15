@@ -117,12 +117,14 @@ class ConfigsUtils {
   static bool allowUsersToMarkPayments() =>
       FirebaseRemoteConfig.instance.getBool("allow_users_to_mark_payments");
 
-  static bool allowNutmegManagedPayments() => true;
+  static bool allowNutmegManagedPayments() =>
+      FirebaseRemoteConfig.instance.getBool("allow_nutmeg_managed_payments");
 }
 
 String getStripeUrl(bool isTest, String userId, String? matchId) {
   var redirectUrl = Uri.encodeComponent(Uri.base.origin);
-  var path = "stripe/account/onboard?is_test=$isTest&user_id=$userId&redirect_url=$redirectUrl";
+  var path =
+      "stripe/account/onboard?is_test=$isTest&user_id=$userId&redirect_url=$redirectUrl";
   if (matchId != null) {
     path = path + "&match_id=$matchId";
   }
@@ -131,7 +133,5 @@ String getStripeUrl(bool isTest, String userId, String? matchId) {
 
 Future<void> completeAccountAction(BuildContext context, bool isTest,
         {String? matchId}) =>
-    navigateToUrl(getStripeUrl(
-        isTest,
-        context.read<UserState>().getLoggedUserDetails()!.documentId,
-        matchId));
+    navigateToUrl(getStripeUrl(isTest,
+        context.read<UserState>().getLoggedUserDetails()!.documentId, matchId));
