@@ -169,84 +169,7 @@ class UserPageState extends State<UserPage> {
       widgets = [
         title,
         verticalSpace,
-        InfoContainer(
-            child: Row(
-          children: [
-            InkWell(
-                onTap: () async {
-                  try {
-                    await UserController.updloadPicture(context, userDetails);
-                  } catch (e, s) {
-                    logger.severe("Error updating profile picture", e, s);
-                  }
-                },
-                child: Badge(
-                    badgeContent: Icon(Icons.camera_alt_outlined,
-                        size: 16.0, color: Palette.white),
-                    showBadge: true,
-                    badgeStyle: BadgeStyle(
-                      badgeColor: Palette.primary,
-                    ),
-                    position: BadgePosition.custom(bottom: -5.0, end: -5.0),
-                    child: UserAvatar(30, userDetails))),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 30),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(userDetails.name ?? "N/A", style: TextPalette.h2),
-                  SizedBox(height: 10),
-                  Text(formatEmail(userDetails.email),
-                      style: TextPalette.bodyText)
-                ],
-              ),
-            )
-          ],
-        )),
-        verticalSpace,
-        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-          Expanded(
-            child: UserInfoBox(
-                content: userDetails.getNumJoinedMatches().toString(),
-                description: AppLocalizations.of(context)!.numMatchesTitle),
-          ),
-          SizedBox(width: 20),
-          Expanded(
-            child: UserScoreBox(userDetails: userDetails),
-          ),
-        ]),
-        verticalSpace,
-        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-          Expanded(
-            child: UserInfoBox(
-              content: userDetails.getNumManOfTheMatch().toString(),
-              description:
-                  AppLocalizations.of(context)!.numPlayersOfTheMatchBoxTitle,
-            ),
-          ),
-          SizedBox(width: 20),
-          Expanded(
-              child: UserInfoBox(
-                  content: (userDetails.numWin ?? 0).toString(),
-                  description:
-                      AppLocalizations.of(context)!.numMatchesWonBoxTitle)),
-        ]),
-        if (userDetails.numWin != null) verticalSpace,
-        if (userDetails.numWin != null)
-          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-            Expanded(
-                child: UserInfoBox(
-                    content: (userDetails.numDraw ?? 0).toString(),
-                    description:
-                        AppLocalizations.of(context)!.numMatchesDrawBoxTitle)),
-            SizedBox(width: 20),
-            Expanded(
-              child: UserInfoBox(
-                  content: (userDetails.numLoss ?? 0).toString(),
-                  description:
-                      AppLocalizations.of(context)!.numMatchesLostBoxTitle),
-            )
-          ]),
+        _UserProfileWithStats(userDetails: userDetails),
         if (userDetails.playedWith != null &&
             userDetails.playedWith!.isNotEmpty) ...[
           verticalSpace,
@@ -1042,4 +965,272 @@ class _PlayerCountsPageState extends State<_PlayerCountsPage> {
       ],
     );
   }
+}
+
+// --- Stats card widgets ---
+
+class _UserProfileWithStats extends StatelessWidget {
+  final UserDetails userDetails;
+  static const double _avatarRadius = 50;
+
+  const _UserProfileWithStats({required this.userDetails});
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      clipBehavior: Clip.none,
+      alignment: Alignment.topCenter,
+      children: [
+        // Stats card, pushed down to make room for the avatar
+        Padding(
+          padding: EdgeInsets.only(top: _avatarRadius),
+          child: InfoContainer(
+            padding: EdgeInsets.only(
+              top: _avatarRadius + 16,
+              left: 16,
+              right: 16,
+              bottom: 24,
+            ),
+            child: Column(
+              children: [
+                Text(userDetails.name ?? "N/A",
+                    style: TextPalette.getH2(Palette.black)),
+                if (userDetails.location != null) ...[
+                  SizedBox(height: 4),
+                  Text(userDetails.location!.getText(),
+                      style: TextPalette.bodyText),
+                ],
+                SizedBox(height: 24),
+                UserStatsCard.buildStatsContent(context, userDetails),
+              ],
+            ),
+          ),
+        ),
+        // Avatar overlapping the top edge
+        InkWell(
+          onTap: () async {
+            try {
+              await UserController.updloadPicture(context, userDetails);
+            } catch (e, s) {
+              logger.severe("Error updating profile picture", e, s);
+            }
+          },
+          child: Badge(
+            badgeContent: Icon(Icons.camera_alt_outlined,
+                size: 12.0, color: Palette.white),
+            showBadge: true,
+            badgeStyle: BadgeStyle(
+              badgeColor: Palette.primary,
+              padding: EdgeInsets.all(4),
+            ),
+            position: BadgePosition.custom(bottom: -2.0, end: -2.0),
+            child: UserAvatar(_avatarRadius, userDetails),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class UserStatsCard extends StatelessWidget {
+  final UserDetails userDetails;
+
+  const UserStatsCard({Key? key, required this.userDetails}) : super(key: key);
+
+  static Widget buildStatsContent(
+      BuildContext context, UserDetails userDetails) {
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: _StatItemWithIcon(
+                icon: Icons.sports_soccer,
+                backgroundColor: Color(0xFF4CAF50),
+                label: AppLocalizations.of(context)!.numMatchesTitle,
+                value: userDetails.getNumJoinedMatches().toString(),
+              ),
+            ),
+            Expanded(
+              child: _StatItemWithIcon(
+                icon: Icons.star,
+                backgroundColor: Palette.primary,
+                label: AppLocalizations.of(context)!.averageScoreBoxTitle,
+                value: (userDetails.getScoreMatches() == null)
+                    ? "-"
+                    : userDetails.getScoreMatches()!.toStringAsFixed(1),
+              ),
+            ),
+            Expanded(
+              child: _StatItemWithIcon(
+                icon: Icons.emoji_events,
+                backgroundColor: Palette.accent,
+                label:
+                    AppLocalizations.of(context)!.numPlayersOfTheMatchBoxTitle,
+                value: userDetails.getNumManOfTheMatch().toString(),
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: 28),
+        Row(
+          children: [
+            Expanded(
+              child: _SimpleStatItem(
+                label: AppLocalizations.of(context)!.numMatchesWonBoxTitle,
+                value: (userDetails.numWin ?? 0).toString(),
+              ),
+            ),
+            Expanded(
+              child: _SimpleStatItem(
+                label: AppLocalizations.of(context)!.numMatchesDrawBoxTitle,
+                value: (userDetails.numDraw ?? 0).toString(),
+              ),
+            ),
+            Expanded(
+              child: _SimpleStatItem(
+                label: AppLocalizations.of(context)!.numMatchesLostBoxTitle,
+                value: (userDetails.numLoss ?? 0).toString(),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return InfoContainer(
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      child: buildStatsContent(context, userDetails),
+    );
+  }
+}
+
+class _StatItemWithIcon extends StatelessWidget {
+  final IconData icon;
+  final Color backgroundColor;
+  final String label;
+  final String value;
+
+  const _StatItemWithIcon({
+    required this.icon,
+    required this.backgroundColor,
+    required this.label,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        CustomPaint(
+          painter: _HexagonPainter(color: backgroundColor),
+          child: SizedBox(
+            width: 52,
+            height: 56,
+            child: Center(
+              child: Icon(icon, color: Colors.white, size: 24,
+                  shadows: [Shadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2))]),
+            ),
+          ),
+        ),
+        SizedBox(height: 12),
+        Text(label, style: TextPalette.bodyText),
+        SizedBox(height: 4),
+        Text(
+          value,
+          style: GoogleFonts.roboto(
+            color: Palette.black,
+            fontSize: 28,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _SimpleStatItem extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _SimpleStatItem({
+    required this.label,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Text(label, style: TextPalette.bodyText),
+        SizedBox(height: 4),
+        Text(
+          value,
+          style: GoogleFonts.roboto(
+            color: Palette.black,
+            fontSize: 28,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _HexagonPainter extends CustomPainter {
+  final Color color;
+
+  _HexagonPainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
+
+    final w = size.width;
+    final h = size.height;
+    final r = w * 0.08; // corner radius
+
+    // Hexagon vertices (pointy-top)
+    final points = [
+      Offset(w * 0.5, 0),       // top
+      Offset(w, h * 0.25),      // top-right
+      Offset(w, h * 0.75),      // bottom-right
+      Offset(w * 0.5, h),       // bottom
+      Offset(0, h * 0.75),      // bottom-left
+      Offset(0, h * 0.25),      // top-left
+    ];
+
+    final path = Path();
+    for (var i = 0; i < points.length; i++) {
+      final prev = points[(i - 1 + points.length) % points.length];
+      final curr = points[i];
+      final next = points[(i + 1) % points.length];
+
+      // Points pulled inward along the edges by radius amount
+      final inFromPrev = _lerpOffset(curr, prev, r / (curr - prev).distance);
+      final inToNext = _lerpOffset(curr, next, r / (curr - next).distance);
+
+      if (i == 0) {
+        path.moveTo(inFromPrev.dx, inFromPrev.dy);
+      } else {
+        path.lineTo(inFromPrev.dx, inFromPrev.dy);
+      }
+      path.quadraticBezierTo(curr.dx, curr.dy, inToNext.dx, inToNext.dy);
+    }
+    path.close();
+
+    canvas.drawPath(path, paint);
+  }
+
+  Offset _lerpOffset(Offset a, Offset b, double t) {
+    return Offset(a.dx + (b.dx - a.dx) * t, a.dy + (b.dy - a.dy) * t);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

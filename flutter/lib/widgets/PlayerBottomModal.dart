@@ -2,10 +2,10 @@ import 'package:badges/badges.dart';
 import 'package:fl_chart/fl_chart.dart';
 
 import 'package:flutter/material.dart' hide Badge;
+import 'package:nutmeg/screens/UserPage.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/Skeletons.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../model/UserDetails.dart';
 import 'Avatar.dart';
@@ -42,7 +42,7 @@ class BottomModalWithTopImage extends StatelessWidget {
                         width: double.infinity,
                         child: Column(
                           children: [
-                            SizedBox(height: 44),
+                            SizedBox(height: 56),
                             (title != null)
                                 ? Text(title!, style: TextPalette.h2)
                                 : Skeletons.xlTextCenter,
@@ -57,12 +57,12 @@ class BottomModalWithTopImage extends StatelessWidget {
                           ],
                         )),
                     Positioned(
-                        top: -50,
+                        top: -54,
                         left: 0,
                         right: 0,
                         child: CircleAvatar(
                             backgroundColor: Palette.white,
-                            radius: 38,
+                            radius: 50,
                             child: topImage)),
                   ]),
             ],
@@ -89,7 +89,7 @@ class PlayerBottomModal extends StatelessWidget {
           title: title,
           subtitle: subtitle,
           content: content,
-          topImage: UserAvatar(34, userDetails)),
+          topImage: UserAvatar(46, userDetails)),
     );
   }
 }
@@ -150,47 +150,15 @@ class JoinedPlayerBottomModal extends StatelessWidget {
   Widget build(BuildContext context) {
     return PlayerBottomModal(
         userDetails,
-        Column(children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              Expanded(
-                flex: 2,
-                child: StatEntry(
-                  stat: userDetails.getNumJoinedMatches().toString(),
-                  description:
-                      AppLocalizations.of(context)!.numMatchesShortTitle,
-                ),
-              ),
-              Expanded(
-                flex: 3,
-                child: StatEntry(
-                  stat: (userDetails.getScoreMatches() == null)
-                      ? "-"
-                      : userDetails.getScoreMatches()!.toStringAsFixed(2),
-                  description:
-                      AppLocalizations.of(context)!.averageScoreBoxTitle,
-                  // rightBadge: UserScoreBox.deltaBadge(userDetails),
-                ),
-              ),
-              Expanded(
-                flex: 2,
-                child: StatEntry(
-                  stat: userDetails.getNumManOfTheMatch().toString(),
-                  description: "POTM",
-                ),
-              ),
-            ],
-          ),
-          if (userDetails.getLastScores().length > 0)
-            Padding(
-                padding: EdgeInsets.only(top: 24.0, left: 8, right: 8),
-                child: SizedBox(
-                    height: 150,
-                    child: PerformanceGraph(userDetails: userDetails)))
-        ]),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 8),
+          child: Column(children: [
+            UserStatsCard.buildStatsContent(context, userDetails),
+            SizedBox(height: 16),
+          ]),
+        ),
         UserDetails.getDisplayName(userDetails),
-        null);
+        userDetails.location?.getText());
   }
 }
 
@@ -278,8 +246,15 @@ class PerformanceGraph extends StatelessWidget {
                   color: Palette.primary,
                   barWidth: 5,
                   isStrokeCapRound: true,
-                  dotData: const FlDotData(
+                  dotData: FlDotData(
                     show: true,
+                    getDotPainter: (spot, percent, barData, index) =>
+                        FlDotCirclePainter(
+                      radius: 5,
+                      color: Colors.white,
+                      strokeWidth: 3,
+                      strokeColor: Palette.primary,
+                    ),
                   ),
                   belowBarData: BarAreaData(
                     show: false,
