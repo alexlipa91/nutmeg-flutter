@@ -9,7 +9,7 @@ import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:nutmeg/widgets/ModalBottomSheet.dart';
 import 'package:nutmeg/widgets/Section.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:nutmeg/l10n/app_localizations.dart';
 
 class MatchAwardsButton extends StatelessWidget {
   final String matchId;

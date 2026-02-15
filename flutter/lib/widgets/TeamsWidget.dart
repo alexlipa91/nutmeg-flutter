@@ -4,7 +4,7 @@ import 'package:nutmeg/model/Match.dart';
 import 'package:nutmeg/state/MatchState.dart';
 import 'package:nutmeg/state/UsersState.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:nutmeg/l10n/app_localizations.dart';
 
 import '../screens/CreateMatch.dart';
 import '../screens/MatchDetails.dart';

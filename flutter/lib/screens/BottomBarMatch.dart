@@ -10,7 +10,7 @@ import 'package:nutmeg/state/UserState.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:nutmeg/l10n/app_localizations.dart';
 
 class BottomBarMatch extends StatelessWidget {
   static Widget? getBottomBar(

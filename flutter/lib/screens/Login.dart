@@ -12,7 +12,7 @@ import 'package:nutmeg/widgets/Containers.dart';
 import 'package:nutmeg/widgets/GoogleSignInButton.dart';
 import 'package:provider/provider.dart';
 import '../state/LoginStatusChangeNotifier.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:nutmeg/l10n/app_localizations.dart';
 import 'package:nutmeg/utils/CrashlyticsLogger.dart';
 
 final logger = CrashlyticsLogger('Login');

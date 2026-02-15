@@ -7,7 +7,7 @@ import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:nutmeg/widgets/PageTemplate.dart';
 import 'package:nutmeg/widgets/Section.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:nutmeg/l10n/app_localizations.dart';
 
 import '../model/SportCenter.dart';
 import '../utils/LocationUtils.dart';

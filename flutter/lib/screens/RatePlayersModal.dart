@@ -9,7 +9,7 @@ import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:nutmeg/widgets/ModalBottomSheet.dart';
 import 'package:nutmeg/widgets/Section.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:nutmeg/l10n/app_localizations.dart';
 
 import '../rating_bar/RatingWidget.dart';
 import '../widgets/Avatar.dart';

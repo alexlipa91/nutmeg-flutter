@@ -6,7 +6,7 @@ import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:nutmeg/l10n/app_localizations.dart';
 
 import '../state/UserState.dart';
 

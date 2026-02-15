@@ -9,7 +9,7 @@ import 'package:nutmeg/widgets/Avatar.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:nutmeg/widgets/ModalPaymentDescriptionArea.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:nutmeg/l10n/app_localizations.dart';
 
 import '../state/MatchesState.dart';
 import '../state/UserState.dart';

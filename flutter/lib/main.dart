@@ -24,7 +24,7 @@ import '../state/LoadOnceState.dart';
 import '../state/MatchesState.dart';
 import '../state/UserState.dart';
 import '../utils/LocationUtils.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:nutmeg/l10n/app_localizations.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 final scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();

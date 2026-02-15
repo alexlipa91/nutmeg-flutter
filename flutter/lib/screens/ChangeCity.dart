@@ -6,7 +6,7 @@ import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/Containers.dart';
 import 'package:nutmeg/widgets/PageTemplate.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:nutmeg/l10n/app_localizations.dart';
 
 import '../utils/LocationUtils.dart';
 import 'CreateMatch.dart';

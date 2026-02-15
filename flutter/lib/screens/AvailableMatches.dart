@@ -11,7 +11,7 @@ import 'package:nutmeg/widgets/GenericAvailableMatches.dart';
 import 'package:nutmeg/widgets/Section.dart';
 import 'package:nutmeg/widgets/Texts.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:nutmeg/l10n/app_localizations.dart';
 import 'dart:math';
 
 import '../state/AvailableMatchesState.dart';

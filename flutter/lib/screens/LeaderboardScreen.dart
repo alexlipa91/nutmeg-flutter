@@ -5,7 +5,7 @@ import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/Avatar.dart';
 import 'package:nutmeg/widgets/Containers.dart';
 import 'package:data_table_2/data_table_2.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:nutmeg/l10n/app_localizations.dart';
 
 import '../model/Leaderboard.dart';
 import 'MatchDetails.dart';

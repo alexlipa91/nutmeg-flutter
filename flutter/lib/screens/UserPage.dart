@@ -22,7 +22,7 @@ import 'package:nutmeg/widgets/WarningWidget.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:nutmeg/l10n/app_localizations.dart';
 
 import '../state/UserState.dart';
 import '../state/UsersState.dart';
