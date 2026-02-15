@@ -280,12 +280,14 @@ List<Widget> getWidgets(
       ? TeamsWidget(matchId: match.documentId)
       : null;
 
-  // Show player list only for the organizer when teams aren't displayed
-  var infoPlayersList = (match.isMatchFinished() || teamsWidget != null)
-      ? null
-      : organizerView
-          ? PlayerList(match: match, withJoinButton: false)
-          : null;
+  // Organizers always see the player list (except when rated/frozen).
+  // Regular users see it when the match isn't finished and teams aren't shown.
+  var showPlayerList = organizerView
+      ? match.status != MatchStatus.rated
+      : !match.isMatchFinished() && teamsWidget == null;
+  var infoPlayersList = showPlayerList
+      ? PlayerList(match: match, withJoinButton: false)
+      : null;
 
   var waitListWidget =
       (!match.isMatchFinished() && match.numPlayersInWaitList() > 0)
@@ -461,9 +463,9 @@ class PlayerList extends StatelessWidget {
 
     var space = (min(475, MediaQuery.of(context).size.width) - 300) / 4.5;
     var isOrganizer = context.watch<MatchState>().isLoggedUserOrganizer();
-    var canRemovePlayers = isOrganizer &&
-        match.status != MatchStatus.cancelled &&
-        !match.isMatchFinished();
+    var isNotFrozen = match.status != MatchStatus.rated &&
+        match.status != MatchStatus.cancelled;
+    var canRemovePlayers = isOrganizer && isNotFrozen;
     var hasSpotsLeft = match.numPlayersGoing() < match.maxPlayers;
 
     List<Widget> cards = [];
@@ -473,10 +475,9 @@ class PlayerList extends StatelessWidget {
     match.getGoingUsersByTime().forEach((s) => cards.add(PlayerCard(
           s,
           matchId: match.documentId,
-          showRemove: canRemovePlayers && match.organizerId != s,
+          showRemove: canRemovePlayers,
         )));
-    if (isOrganizer && hasSpotsLeft && !match.isMatchFinished() &&
-        match.status != MatchStatus.cancelled) {
+    if (isOrganizer && hasSpotsLeft && isNotFrozen) {
       cards.add(_AddPlayerCard(matchId: match.documentId));
     }
 
@@ -954,7 +955,7 @@ class PlayerCard extends StatelessWidget {
 
     return Column(children: [
       Padding(
-        padding: EdgeInsets.only(top: hasOverlay ? 6 : 0, right: hasOverlay ? 6 : 0),
+        padding: EdgeInsets.only(top: 6, right: 6),
         child: Stack(
           clipBehavior: Clip.none,
           children: [
@@ -1159,16 +1160,19 @@ class _AddPlayerCard extends StatelessWidget {
         );
       },
       child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
-        DottedBorder(
-          padding: EdgeInsets.zero,
-          borderType: BorderType.Circle,
-          color: Palette.green,
-          strokeWidth: 1.5,
-          dashPattern: [4],
-          child: CircleAvatar(
-            radius: 29,
-            child: Icon(Icons.person_add, color: Palette.green, size: 22),
-            backgroundColor: Colors.transparent,
+        Padding(
+          padding: EdgeInsets.only(top: 6, right: 6),
+          child: DottedBorder(
+            padding: EdgeInsets.zero,
+            borderType: BorderType.Circle,
+            color: Palette.green,
+            strokeWidth: 1.5,
+            dashPattern: [4],
+            child: CircleAvatar(
+              radius: 29,
+              child: Icon(Icons.person_add, color: Palette.green, size: 22),
+              backgroundColor: Colors.transparent,
+            ),
           ),
         ),
         SizedBox(height: 10),
