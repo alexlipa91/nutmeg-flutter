@@ -44,6 +44,7 @@ flutter/web/firebase-messaging-sw.js
 # ==== Backend (backend/) ====
 backend/.firebase/
 backend/firebase-admin-sdk-sa-key.json
+backend/nutmeg-9099c-firebase-adminsdk.json
 
 # ==== Node ====
 node_modules/

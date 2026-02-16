@@ -190,8 +190,13 @@ def send_test_notification(db):
 
 if __name__ == "__main__":
     import sys
+    import os
     import firebase_admin
     from firebase_admin import firestore
+
+    sa_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "nutmeg-9099c-firebase-adminsdk.json")
+    if os.path.exists(sa_path):
+        os.environ.setdefault("GOOGLE_APPLICATION_CREDENTIALS", sa_path)
 
     firebase_admin.initialize_app()
     db = firestore.client()
