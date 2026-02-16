@@ -3,9 +3,6 @@ import 'package:nutmeg/model/LocationInfo.dart';
 import 'package:nutmeg/state/UserState.dart';
 import 'package:nutmeg/utils/CrashlyticsLogger.dart';
 import 'package:provider/provider.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-
 import '../api/CloudFunctionsUtils.dart';
 import '../config/app_config.dart';
 import '../state/LoadOnceState.dart';
@@ -83,27 +80,18 @@ Future<List<PredictionResult>> getCitiesPrediction(String query) async {
 }
 
 Future<LocationInfo?> getLocationFromIP() async {
-  final response = await _getLocationFromIPWho();
-  return response;
-}
-
-Future<LocationInfo?> _getLocationFromIPWho() async {
   try {
-    final response = await http.get(Uri.parse('https://ipwho.is'));
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      return LocationInfo(data['country_code'], data['city'], data['latitude'],
-          data['longitude']);
-    } else {
-      return null;
+    var data = await CloudFunctionsClient().get("locations/ip");
+    if (data != null) {
+      return LocationInfo(
+          data['country'], data['city'], data['lat'], data['lng']);
     }
+    return null;
   } catch (e, s) {
-    logger.severe("Error getting location from IPWho", e, s);
+    logger.severe("Error getting location from IP", e, s);
     return null;
   }
 }
-
-var blacklistedCountriesForPayments = ["CH", "BR"];
 
 Locale getLanguageLocaleWatch(BuildContext context) {
   var userSpecific =

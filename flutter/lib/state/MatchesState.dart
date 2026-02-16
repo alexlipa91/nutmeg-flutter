@@ -134,9 +134,24 @@ class MatchesState extends ChangeNotifier {
   }
 
   Future<void> fetchLocation() async {
-    var location = await getLocationFromIP();
-    _deviceLocationInfo =
-        location ?? LocationInfo("ES", "Barcelona", 41.385063, 2.173404);
+    // 1. Use the user's saved location if available
+    var userLocation = userState?.getLoggedUserDetails()?.location;
+    if (userLocation != null) {
+      _deviceLocationInfo = userLocation;
+      notifyListeners();
+      return;
+    }
+
+    // 2. Try to derive from IP
+    var ipLocation = await getLocationFromIP();
+    if (ipLocation != null) {
+      _deviceLocationInfo = ipLocation;
+      notifyListeners();
+      return;
+    }
+
+    // 3. Default to Barcelona
+    _deviceLocationInfo = LocationInfo("ES", "Barcelona", 41.385063, 2.173404);
     notifyListeners();
   }
 

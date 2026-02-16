@@ -8,6 +8,29 @@ from src.secrets import Secrets
 bp = Blueprint('locations', __name__, url_prefix='/locations')
 
 
+@bp.route("/ip", methods=["GET"])
+def get_location_from_ip():
+    # X-Forwarded-For is set by App Engine / reverse proxies
+    client_ip = flask.request.headers.get("X-Forwarded-For", flask.request.remote_addr)
+    if client_ip and "," in client_ip:
+        client_ip = client_ip.split(",")[0].strip()
+
+    try:
+        resp = requests.get(f"https://ipwho.is/{client_ip}", timeout=5)
+        data = resp.json()
+        if data.get("success", False):
+            return {"data": {
+                "country": data.get("country_code"),
+                "city": data.get("city"),
+                "lat": data.get("latitude"),
+                "lng": data.get("longitude"),
+            }}, 200
+    except Exception:
+        pass
+
+    return {"data": None}, 200
+
+
 @bp.route("/predictions", methods=["GET"])
 def get_location_predictions_from_query():
     query = flask.request.args.get("query", None)

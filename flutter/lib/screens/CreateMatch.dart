@@ -163,8 +163,6 @@ class CreateMatchState extends State<CreateMatch> {
           match.cancelBefore?.inHours.toString() ?? "";
       hasPrice = match.price != null;
       showPaymentInfo = match.isManualPayment;
-      paymentsPossible =
-          !blacklistedCountriesForPayments.contains(sportCenter!.country);
       start = match.getLocalizedTime();
       startTime = match.getLocalizedStart();
       endTime = match.getLocalizedEnd();
@@ -432,8 +430,6 @@ class CreateMatchState extends State<CreateMatch> {
                     if (sp != null) {
                       setState(() {
                         sportCenter = sp;
-                        paymentsPossible = !blacklistedCountriesForPayments
-                            .contains(sp.country.toUpperCase());
                       });
                     }
                   },
@@ -482,10 +478,8 @@ class CreateMatchState extends State<CreateMatch> {
                   AppLocalizations.of(context)!.customOption,
                 ];
 
-                int? i = await showMultipleChoiceSheetWithText(
-                    context,
-                    AppLocalizations.of(context)!.playersPerSideLabel,
-                    labels);
+                int? i = await showMultipleChoiceSheetWithText(context,
+                    AppLocalizations.of(context)!.playersPerSideLabel, labels);
 
                 if (i != null) {
                   setState(() {
@@ -493,12 +487,11 @@ class CreateMatchState extends State<CreateMatch> {
                       playersPerSide = options[i];
                       customPlayersPerSide = false;
                       var total = playersPerSide * 2;
-                      numberOfPeopleRangeValues = RangeValues(
-                          total.toDouble(), total.toDouble());
+                      numberOfPeopleRangeValues =
+                          RangeValues(total.toDouble(), total.toDouble());
                     } else {
                       customPlayersPerSide = true;
-                      playersPerSideController.text =
-                          playersPerSide.toString();
+                      playersPerSideController.text = playersPerSide.toString();
                     }
                   });
                 }
@@ -523,8 +516,8 @@ class CreateMatchState extends State<CreateMatch> {
                     setState(() {
                       playersPerSide = n;
                       var total = n * 2;
-                      numberOfPeopleRangeValues = RangeValues(
-                          total.toDouble(), total.toDouble());
+                      numberOfPeopleRangeValues =
+                          RangeValues(total.toDouble(), total.toDouble());
                     });
                   }
                 },
@@ -559,8 +552,10 @@ class CreateMatchState extends State<CreateMatch> {
                       var sliderMax = (total + 2).toDouble();
                       // Clamp current values to the new range
                       var clamped = RangeValues(
-                        numberOfPeopleRangeValues.start.clamp(sliderMin, sliderMax),
-                        numberOfPeopleRangeValues.end.clamp(sliderMin, sliderMax),
+                        numberOfPeopleRangeValues.start
+                            .clamp(sliderMin, sliderMax),
+                        numberOfPeopleRangeValues.end
+                            .clamp(sliderMin, sliderMax),
                       );
                       return RangeSlider(
                         values: clamped,
@@ -644,15 +639,13 @@ class CreateMatchState extends State<CreateMatch> {
                         controller: priceController,
                         keyboardType: TextInputType.numberWithOptions(
                             signed: true, decimal: true),
-                        autovalidateMode:
-                            AutovalidateMode.onUserInteraction,
+                        autovalidateMode: AutovalidateMode.onUserInteraction,
                         inputFormatters: [
                           FilteringTextInputFormatter.allow(
                               RegExp(r'^\d*\.?\d*$')),
                         ],
                         decoration: getTextFormDecoration(
-                            AppLocalizations.of(context)!
-                                .pricePerPlayerLabel,
+                            AppLocalizations.of(context)!.pricePerPlayerLabel,
                             prefixText: "€ ",
                             fill: widget.existingMatch == null))),
               ],
@@ -700,7 +693,8 @@ class CreateMatchState extends State<CreateMatch> {
               ),
             ),
             // Pay through Nutmeg: additional content
-            if (!showPaymentInfo && ConfigsUtils.allowNutmegManagedPayments()) ...[
+            if (!showPaymentInfo &&
+                ConfigsUtils.allowNutmegManagedPayments()) ...[
               if (paymentsPossible) ...[
                 SizedBox(height: 16),
                 Row(children: [
@@ -709,9 +703,8 @@ class CreateMatchState extends State<CreateMatch> {
                   Spacer(),
                   Builder(builder: (BuildContext buildContext) {
                     var price = Decimal.tryParse(priceController.text);
-                    var net = (price != null)
-                        ? (price - Decimal.parse("0.5"))
-                        : null;
+                    var net =
+                        (price != null) ? (price - Decimal.parse("0.5")) : null;
                     if (net != null && net < Decimal.zero) net = Decimal.zero;
                     return Text(
                         net == null
@@ -904,9 +897,11 @@ class CreateMatchState extends State<CreateMatch> {
                     context.read<GenericButtonWithLoaderState>().change(true);
 
                     // Block creation if Pay through Nutmeg is selected but Stripe isn't ready
-                    if (!showPaymentInfo && ConfigsUtils.allowNutmegManagedPayments()) {
+                    if (!showPaymentInfo &&
+                        ConfigsUtils.allowNutmegManagedPayments()) {
                       var ud = context.read<UserState>().getLoggedUserDetails();
-                      var stripeReady = ud?.areChargesEnabled(AppConfig.testMode) ?? false;
+                      var stripeReady =
+                          ud?.areChargesEnabled(AppConfig.testMode) ?? false;
                       if (!stripeReady) {
                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                           backgroundColor: Palette.warning,
@@ -915,7 +910,9 @@ class CreateMatchState extends State<CreateMatch> {
                             style: TextStyle(color: Palette.black),
                           ),
                         ));
-                        context.read<GenericButtonWithLoaderState>().change(false);
+                        context
+                            .read<GenericButtonWithLoaderState>()
+                            .change(false);
                         return;
                       }
                     }
@@ -1245,7 +1242,6 @@ class LocationsBottomSheet extends StatelessWidget {
         ));
 
     return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [yourCourts]);
+        crossAxisAlignment: CrossAxisAlignment.start, children: [yourCourts]);
   }
 }
