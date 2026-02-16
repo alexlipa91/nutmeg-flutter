@@ -24,7 +24,8 @@ import 'package:timezone/timezone.dart' as tz;
 import 'package:nutmeg/config/app_config.dart';
 import 'package:nutmeg/l10n/app_localizations.dart';
 import 'package:nutmeg/utils/navigate_url.dart';
-import 'package:nutmeg/widgets/StripeSetupWidget.dart';
+import 'package:nutmeg/widgets/PayOutsideNutmegRow.dart';
+import 'package:nutmeg/widgets/PayThroughNutmegRow.dart';
 
 import '../../state/LoadOnceState.dart';
 import '../state/MatchesState.dart';
@@ -114,61 +115,6 @@ class CreateMatchState extends State<CreateMatch> {
   FocusNode startTimefocusNode = FocusNode();
 
   final logger = CrashlyticsLogger('CreateMatch');
-
-  void _showEditPaymentInfoModal(BuildContext context) {
-    var userDetails = context.read<UserState>().getLoggedUserDetails();
-    var controller =
-        TextEditingController(text: userDetails?.paymentInfo ?? "");
-
-    ModalBottomSheet.showNutmegModalBottomSheet(
-      context,
-      Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(AppLocalizations.of(context)!.paymentInfoHeader, style: TextPalette.h2),
-          SizedBox(height: 8),
-          Text(
-            AppLocalizations.of(context)!.paymentInfoShownToPlayers,
-            style: TextPalette.bodyText,
-          ),
-          SizedBox(height: 16),
-          TextFormField(
-            controller: controller,
-            maxLines: 4,
-            minLines: 2,
-            autofocus: true,
-            decoration: InputDecoration(
-              hintText: AppLocalizations.of(context)!.paymentInfoPlaceholder,
-              hintStyle: TextPalette.getBodyText(Palette.greyDark),
-              filled: true,
-              fillColor: Palette.greyLighter,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide.none,
-              ),
-              contentPadding:
-                  EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            ),
-          ),
-          SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: GenericButtonWithLoader(AppLocalizations.of(context)!.save, (_) async {
-                  var text = controller.text.trim();
-                  await context.read<UserState>().editUser({
-                    "paymentInfo": text.isEmpty ? null : text,
-                  });
-                  Navigator.pop(context);
-                }, Primary()),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
 
   Future<void> refreshState() async {
     logger.info("refreshing state");
@@ -712,145 +658,49 @@ class CreateMatchState extends State<CreateMatch> {
               ],
             ),
             SizedBox(height: 24),
-            // Payment mode radio buttons
-            RadioListTile<bool>(
-              title: Text(AppLocalizations.of(context)!.payOutsideNutmeg,
-                  style: TextPalette.bodyText),
-              value: true,
-              groupValue: showPaymentInfo,
-              activeColor: Palette.primary,
-              contentPadding: EdgeInsets.zero,
-              dense: true,
-              onChanged: widget.existingMatch != null
+            // Pay outside Nutmeg
+            InkWell(
+              onTap: widget.existingMatch != null
                   ? null
-                  : (v) {
-                      setState(() {
-                        showPaymentInfo = v!;
-                      });
-                    },
-            ),
-            // Pay outside Nutmeg: show payment info card
-            if (showPaymentInfo) ...[
-              SizedBox(height: 12),
-              Builder(builder: (context) {
-                var userDetails =
-                    context.watch<UserState>().getLoggedUserDetails();
-                var hasPaymentInfo = userDetails?.paymentInfo != null &&
-                    userDetails!.paymentInfo!.isNotEmpty;
-
-                return Container(
-                  width: double.infinity,
-                  padding: EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Palette.greyLightest,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Palette.greyLight),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(Icons.payment_outlined,
-                              color: Palette.primary, size: 20),
-                          SizedBox(width: 8),
-                          Text(AppLocalizations.of(context)!.yourPaymentInfo,
-                              style: TextPalette.h2),
-                        ],
-                      ),
-                      SizedBox(height: 12),
-                      Text(
-                        hasPaymentInfo
-                            ? userDetails!.paymentInfo!
-                            : AppLocalizations.of(context)!.noPaymentInfoYet,
-                        style: TextPalette.getBodyText(
-                            hasPaymentInfo
-                                ? Palette.black
-                                : Palette.greyDark),
-                      ),
-                      SizedBox(height: 12),
-                      InkWell(
-                        onTap: () {
-                          _showEditPaymentInfoModal(context);
-                        },
-                        child: Text(
-                          hasPaymentInfo ? AppLocalizations.of(context)!.editAction : AppLocalizations.of(context)!.addPaymentInfo,
-                          style: TextPalette.linkStyle,
-                        ),
-                      ),
-                      if (!hasPaymentInfo)
-                        Padding(
-                          padding: EdgeInsets.only(top: 4),
-                          child: Text(
-                            AppLocalizations.of(context)!.paymentInfoPlayersHint,
-                            style: TextPalette.getBodyText(
-                                Palette.greyDark),
-                          ),
-                        ),
-                    ],
-                  ),
-                );
-              }),
-            ],
-            SizedBox(height: 8),
-            RadioListTile<bool>(
-              title: Row(
+                  : () => setState(() => showPaymentInfo = true),
+              child: Row(
                 children: [
-                  Text(
-                    AppLocalizations.of(context)!.payThroughNutmeg,
-                    style: TextPalette.bodyText.copyWith(
-                      color: ConfigsUtils.allowNutmegManagedPayments()
-                          ? null
-                          : Palette.greyDark,
-                    ),
+                  Radio<bool>(
+                    value: true,
+                    groupValue: showPaymentInfo,
+                    activeColor: Palette.primary,
+                    onChanged: widget.existingMatch != null
+                        ? null
+                        : (v) => setState(() => showPaymentInfo = v!),
                   ),
-                  if (!ConfigsUtils.allowNutmegManagedPayments()) ...[
-                    SizedBox(width: 8),
-                    Container(
-                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: Palette.accent,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        AppLocalizations.of(context)!.comingSoon,
-                        style: TextPalette.getH3(Palette.white).copyWith(fontSize: 11),
-                      ),
-                    ),
-                  ],
+                  Expanded(child: PayOutsideNutmegRow()),
                 ],
               ),
-              value: false,
-              groupValue: showPaymentInfo,
-              activeColor: Palette.primary,
-              contentPadding: EdgeInsets.zero,
-              dense: true,
-              onChanged: (widget.existingMatch != null ||
+            ),
+            SizedBox(height: 16),
+            // Pay through Nutmeg
+            InkWell(
+              onTap: (widget.existingMatch != null ||
                       !ConfigsUtils.allowNutmegManagedPayments())
                   ? null
-                  : (v) {
-                      setState(() {
-                        showPaymentInfo = v!;
-                      });
-                    },
+                  : () => setState(() => showPaymentInfo = false),
+              child: Row(
+                children: [
+                  Radio<bool>(
+                    value: false,
+                    groupValue: showPaymentInfo,
+                    activeColor: Palette.primary,
+                    onChanged: (widget.existingMatch != null ||
+                            !ConfigsUtils.allowNutmegManagedPayments())
+                        ? null
+                        : (v) => setState(() => showPaymentInfo = v!),
+                  ),
+                  Expanded(child: PayThroughNutmegRow()),
+                ],
+              ),
             ),
-            // Pay through Nutmeg: Stripe content
+            // Pay through Nutmeg: additional content
             if (!showPaymentInfo && ConfigsUtils.allowNutmegManagedPayments()) ...[
-              Builder(builder: (context) {
-                var ud = context.watch<UserState>().getLoggedUserDetails();
-                var stripeReady = ud?.areChargesEnabled(AppConfig.testMode) ?? false;
-                if (!stripeReady) {
-                  var hasAccount = ud?.getStripeInfo(AppConfig.testMode).connectedAccountId != null;
-                  return Padding(
-                    padding: EdgeInsets.only(top: 12),
-                    child: StripeSetupBanner(
-                      hasAccount: hasAccount,
-                      message: AppLocalizations.of(context)!.stripeSetupRequired,
-                    ),
-                  );
-                }
-                return SizedBox.shrink();
-              }),
               if (paymentsPossible) ...[
                 SizedBox(height: 16),
                 Row(children: [

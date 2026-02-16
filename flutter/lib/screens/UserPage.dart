@@ -23,7 +23,8 @@ import 'package:shimmer/shimmer.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:nutmeg/l10n/app_localizations.dart';
 import 'package:nutmeg/utils/navigate_url.dart';
-import 'package:nutmeg/widgets/StripeSetupWidget.dart';
+import 'package:nutmeg/widgets/PayOutsideNutmegRow.dart';
+import 'package:nutmeg/widgets/PayThroughNutmegRow.dart';
 
 import '../state/UserState.dart';
 import '../state/UsersState.dart';
@@ -710,131 +711,19 @@ class _PaymentMethodsCardState extends State<_PaymentMethodsCard> {
 
   @override
   Widget build(BuildContext context) {
-    var userDetails = widget.userDetails;
-    var hasPaymentInfo = userDetails.paymentInfo != null &&
-        userDetails.paymentInfo!.isNotEmpty;
-    var stripeInfo = userDetails.getStripeInfo(AppConfig.testMode);
-    var stripeEnabled = stripeInfo.chargesEnabled;
-    var hasAccount = stripeInfo.connectedAccountId != null;
-
     return InfoContainer(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // --- Pay outside Nutmeg ---
-          InkWell(
-            onTap: () => _showEditPaymentInfoModal(context),
-            child: Row(
-              children: [
-                Icon(Icons.account_balance_wallet_outlined,
-                    color: Palette.primary, size: 20),
-                SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(AppLocalizations.of(context)!.payOutsideNutmegTitle, style: TextPalette.h3),
-                      SizedBox(height: 4),
-                      hasPaymentInfo
-                          ? buildLinkedText(
-                              userDetails.paymentInfo!,
-                              TextPalette.getBodyText(Palette.black),
-                            )
-                          : Text(
-                              AppLocalizations.of(context)!
-                                  .paymentInfoProfileDesc,
-                              style: TextPalette.getBodyText(Palette.greyDark),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                    ],
-                  ),
-                ),
-                SizedBox(width: 8),
-                Icon(
-                  hasPaymentInfo ? Icons.edit_outlined : Icons.add,
-                  color: Palette.primary,
-                  size: 20,
-                ),
-              ],
-            ),
-          ),
+          PayOutsideNutmegRow(),
 
           // --- Pay with Nutmeg ---
           Padding(
             padding: EdgeInsets.symmetric(vertical: 16),
             child: Divider(height: 1, color: Palette.greyLighter),
           ),
-          if (ConfigsUtils.allowNutmegManagedPayments())
-            InkWell(
-              onTap: stripeEnabled
-                  ? null
-                  : hasAccount
-                      ? () => completeAccountAction(context, AppConfig.testMode)
-                      : () => _showHowItWorksModal(context),
-              child: Row(
-                children: [
-                  Icon(Icons.credit_card_outlined,
-                      color: stripeEnabled ? Palette.primary : Palette.greyLight,
-                      size: 20),
-                  SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(AppLocalizations.of(context)!.payWithNutmegTitle,
-                            style: TextPalette.getH3(stripeEnabled
-                                ? Palette.black
-                                : Palette.greyDark)),
-                        SizedBox(height: 4),
-                        if (stripeEnabled)
-                          Text(AppLocalizations.of(context)!.stripeIntegrationActive,
-                              style: TextPalette.getBodyText(Palette.green))
-                        else if (hasAccount)
-                          Text(
-                              AppLocalizations.of(context)!.stripeSetupInProgress,
-                              style: TextPalette.getBodyText(Palette.primary))
-                        else
-                          Text(
-                              AppLocalizations.of(context)!.payWithNutmegNotConfigured,
-                              style:
-                                  TextPalette.getBodyText(Palette.greyDark)),
-                      ],
-                    ),
-                  ),
-                  SizedBox(width: 8),
-                  if (stripeEnabled)
-                    Icon(Icons.check_circle,
-                        color: Palette.green, size: 20)
-                  else if (hasAccount)
-                    Icon(Icons.arrow_forward,
-                        color: Palette.primary, size: 20)
-                  else
-                    Icon(Icons.info_outline,
-                        color: Palette.primary, size: 20),
-                ],
-              ),
-            )
-          else
-            Row(
-              children: [
-                Icon(Icons.credit_card_outlined,
-                    color: Palette.greyLight, size: 20),
-                SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(AppLocalizations.of(context)!.payWithNutmegTitle,
-                          style: TextPalette.getH3(Palette.greyDark)),
-                      SizedBox(height: 4),
-                      Text(AppLocalizations.of(context)!.comingSoon,
-                          style: TextPalette.getBodyText(Palette.greyDark)),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+          PayThroughNutmegRow(),
 
           // --- Verification banner (shown after returning from Stripe) ---
           if (_isVerifying || _stripeVerificationResult != null) ...[
@@ -909,63 +798,6 @@ class _PaymentMethodsCardState extends State<_PaymentMethodsCard> {
     );
   }
 
-  void _showHowItWorksModal(BuildContext context) =>
-      showStripeHowItWorksModal(context);
-
-  void _showEditPaymentInfoModal(BuildContext context) {
-    var controller =
-        TextEditingController(text: widget.userDetails.paymentInfo ?? "");
-
-    ModalBottomSheet.showNutmegModalBottomSheet(
-      context,
-      Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(AppLocalizations.of(context)!.payOutsideNutmegTitle, style: TextPalette.h2),
-          SizedBox(height: 8),
-          Text(
-            AppLocalizations.of(context)!.paymentInfoShownToPlayers,
-            style: TextPalette.bodyText,
-          ),
-          SizedBox(height: 16),
-          TextFormField(
-            controller: controller,
-            maxLines: 4,
-            minLines: 2,
-            autofocus: true,
-            decoration: InputDecoration(
-              hintText: AppLocalizations.of(context)!.paymentInfoPlaceholder,
-              hintStyle: TextPalette.getBodyText(Palette.greyDark),
-              filled: true,
-              fillColor: Palette.greyLighter,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide.none,
-              ),
-              contentPadding:
-                  EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            ),
-          ),
-          SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: GenericButtonWithLoader(
-                    AppLocalizations.of(context)!.save, (_) async {
-                  var text = controller.text.trim();
-                  await context.read<UserState>().editUser({
-                    "paymentInfo": text.isEmpty ? null : text,
-                  });
-                  Navigator.pop(context);
-                }, Primary()),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
 }
 
 class _PlayersInYourGames extends StatelessWidget {
