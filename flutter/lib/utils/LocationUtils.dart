@@ -7,11 +7,12 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import '../api/CloudFunctionsUtils.dart';
+import '../config/app_config.dart';
 import '../state/LoadOnceState.dart';
 
 final logger = CrashlyticsLogger('LocationUtils');
 
-const placesApiKey = String.fromEnvironment('GOOGLE_API_KEY');
+const placesApiKey = AppConfig.googleApiKey;
 
 String buildMapUrl(double lat, double lng) =>
     "https://maps.googleapis.com/maps/api/staticmap?center=" +

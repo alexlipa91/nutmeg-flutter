@@ -11,8 +11,7 @@ final logger = CrashlyticsLogger('CloudFunctionsUtils');
 class CloudFunctionsClient {
   static final CloudFunctionsClient _singleton =
       CloudFunctionsClient._internal();
-  static const appEngineBaseUrl = String.fromEnvironment("BACKEND_URL",
-      defaultValue: "https://nutmeg-9099c.ew.r.appspot.com");
+  static const appEngineBaseUrl = AppConfig.backendUrl;
 
   factory CloudFunctionsClient() {
     return _singleton;

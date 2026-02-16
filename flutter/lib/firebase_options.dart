@@ -3,6 +3,7 @@
 import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, kIsWeb, TargetPlatform;
+import 'package:nutmeg/config/app_config.dart';
 
 /// Default [FirebaseOptions] for use with your Firebase apps.
 ///
@@ -47,7 +48,7 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: String.fromEnvironment("GOOGLE_API_KEY"),
+    apiKey: AppConfig.googleApiKey,
     appId: '1:956073807168:web:e8f41b530ab699a8a6fea5',
     messagingSenderId: '956073807168',
     projectId: 'nutmeg-9099c',

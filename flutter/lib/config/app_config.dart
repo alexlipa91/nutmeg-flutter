@@ -20,4 +20,17 @@ class AppConfig {
   /// Set via: INJECT_AUTH_TOKEN_UID=<uid> ./scripts/start_app_web.sh
   static const String injectAuthToken =
       String.fromEnvironment('INJECT_AUTH_TOKEN', defaultValue: '');
+
+  /// Backend URL. Override with: --dart-define=BACKEND_URL=http://localhost:8080
+  static const String backendUrl = String.fromEnvironment('BACKEND_URL',
+      defaultValue: 'https://nutmeg-9099c.ew.r.appspot.com');
+
+  /// Google Places API key. Set via: --dart-define=GOOGLE_API_KEY=...
+  static const String googleApiKey =
+      String.fromEnvironment('GOOGLE_API_KEY');
+
+  /// Firebase VAPID key for web push notifications.
+  /// Set via: --dart-define=FIREBASE_VAPID_KEY=...
+  static const String firebaseVapidKey =
+      String.fromEnvironment('FIREBASE_VAPID_KEY');
 }

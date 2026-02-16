@@ -217,7 +217,7 @@ class UserState extends ChangeNotifier {
 
       // vapidKey is only needed for web; pass null on native platforms
       final String? vapidKey = kIsWeb
-          ? const String.fromEnvironment('FIREBASE_VAPID_KEY')
+          ? AppConfig.firebaseVapidKey
           : null;
 
       String? token = await FirebaseMessaging.instance
