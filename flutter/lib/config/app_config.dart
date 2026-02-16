@@ -15,4 +15,9 @@ class AppConfig {
   /// Override with: --dart-define=TEST_MODE=true
   static const bool testMode =
       bool.fromEnvironment('TEST_MODE', defaultValue: false);
+
+  /// Custom auth token for debugging (sign in as another user).
+  /// Set via: INJECT_AUTH_TOKEN_UID=<uid> ./scripts/start_app_web.sh
+  static const String injectAuthToken =
+      String.fromEnvironment('INJECT_AUTH_TOKEN', defaultValue: '');
 }

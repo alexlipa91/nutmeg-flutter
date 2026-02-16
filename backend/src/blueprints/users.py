@@ -52,20 +52,6 @@ def get_organisers_with_fees():
     }, 200
 
 
-@bp.route("/<user_id>/organizer/players", methods=["GET"])
-def get_organizer_players(user_id):
-    organizer_doc = (
-        app.db_client.collection("users")
-        .document(user_id)
-        .collection("organizer")
-        .document("data")
-        .get()
-    )
-    if not organizer_doc.exists:
-        return {"data": {"players_joined": {}}}, 200
-    organizer_data = organizer_doc.to_dict()
-    return {"data": {"players_joined": organizer_data.get("players_joined", {})}}, 200
-
 
 def _add_user(user_id, data, create_stripe_customer=True):
     assert "email" in data, "Required field missing"

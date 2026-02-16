@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
@@ -136,6 +137,18 @@ void main() async {
     }
   } catch (e, stack) {
     Logger.root.severe('Error initializing Firebase', e, stack);
+  }
+
+  // Debug: sign in as another user via INJECT_AUTH_TOKEN_UID
+  if (AppConfig.injectAuthToken.isNotEmpty) {
+    logger.info('Injecting auth token: ${AppConfig.injectAuthToken}');
+    try {
+      await FirebaseAuth.instance
+          .signInWithCustomToken(AppConfig.injectAuthToken);
+      Logger.root.info('Signed in with injected auth token');
+    } catch (e, stack) {
+      Logger.root.severe('Failed to sign in with injected token', e, stack);
+    }
   }
 
   PlatformDispatcher.instance.onError = (error, stack) {

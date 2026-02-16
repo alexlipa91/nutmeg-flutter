@@ -22,7 +22,6 @@ import 'package:share_plus/share_plus.dart';
 import 'package:intl/intl.dart';
 import 'package:map_launcher/map_launcher.dart';
 import 'package:map_launcher/src/models.dart' as m;
-import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/model/Match.dart';
@@ -1207,23 +1206,19 @@ class _PlayerPickerSheetState extends State<_PlayerPickerSheet> {
   @override
   void initState() {
     super.initState();
-    _fetchPlayers();
+    _loadPlayers();
   }
 
-  Future<void> _fetchPlayers() async {
-    var resp = await CloudFunctionsClient()
-        .get("users/${widget.organizerId}/organizer/players");
-    if (resp != null && mounted) {
-      var raw = Map<String, dynamic>.from(resp["players_joined"] ?? {});
-      var counts = raw.map((k, v) => MapEntry(k, (v as num).toInt()));
-      // remove players already in the match
-      counts.removeWhere((k, _) => widget.alreadyGoingIds.contains(k));
-      setState(() => _playerCounts = counts);
-      // fetch user details
-      var usersState = context.read<UsersState>();
-      for (var id in counts.keys) {
-        usersState.fetchUserDetails(id);
-      }
+   void _loadPlayers() {
+    var userDetails = context.read<UserState>().getLoggedUserDetails();
+    var counts = Map<String, int>.from(userDetails?.organizerPlayers ?? {});
+    // remove players already in the match
+    counts.removeWhere((k, _) => widget.alreadyGoingIds.contains(k));
+    setState(() => _playerCounts = counts);
+    // fetch user details for display
+    var usersState = context.read<UsersState>();
+    for (var id in counts.keys) {
+      usersState.fetchUserDetails(id);
     }
   }
 
