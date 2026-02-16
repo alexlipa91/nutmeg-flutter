@@ -5,3 +5,6 @@ env-variables.yaml
 venv/*
 
 __pycache__/
+
+# Firebase service account key
+nutmeg-9099c-firebase-adminsdk.json
