@@ -245,11 +245,16 @@ class CreateCourtState extends State<CreateCourt> {
                       "hasChangingRooms": changeRoomsAvailable,
                       "courtType": "5v5"
                     });
+                    await context
+                        .read<UserState>()
+                        .fetchLoggedUserSportCenters();
                     List<SportCenter> sportCenters =
-                        await context.read<UserState>().getSportCenters()!;
+                        context.read<UserState>().getSportCenters() ?? [];
 
-                    Navigator.of(context).pop(
-                        sportCenters.firstWhere((s) => s.placeId == placeId!));
+                    var match = sportCenters
+                        .where((s) => s.placeId == placeId!)
+                        .firstOrNull;
+                    Navigator.of(context).pop(match);
                   }
                 }, Primary()),
               ),

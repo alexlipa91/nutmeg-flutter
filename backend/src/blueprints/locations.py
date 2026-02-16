@@ -1,16 +1,31 @@
+import logging
+
 import flask
+import googlemaps
 import requests
 from flask import Blueprint
 
 from src.secrets import Secrets
 
+logger = logging.getLogger(__name__)
 
 bp = Blueprint('locations', __name__, url_prefix='/locations')
 
 
+def _get_gmaps_client():
+    return googlemaps.Client(key=Secrets.GOOGLE_MAPS_API_KEY)
+
+
+def _format_predictions(predictions):
+    return [{
+        "description": p["description"],
+        "matched_substrings": p["matched_substrings"],
+        "place_id": p["place_id"],
+    } for p in predictions]
+
+
 @bp.route("/ip", methods=["GET"])
 def get_location_from_ip():
-    # X-Forwarded-For is set by App Engine / reverse proxies
     client_ip = flask.request.headers.get("X-Forwarded-For", flask.request.remote_addr)
     if client_ip and "," in client_ip:
         client_ip = client_ip.split(",")[0].strip()
@@ -34,65 +49,30 @@ def get_location_from_ip():
 @bp.route("/predictions", methods=["GET"])
 def get_location_predictions_from_query():
     query = flask.request.args.get("query", None)
-
-    url = 'https://maps.googleapis.com/maps/api/place/autocomplete/json?'
-    req = requests.get(url + 'input=' + query + '&key=' + Secrets.GOOGLE_MAPS_API_KEY
-                       + '&fields=formatted_address')
-    resp = req.json()
-
-    results = resp['predictions']
-    results_formatted = []
-
-    for r in results:
-        r_formatted = {}
-        for k in ('description', 'matched_substrings', 'place_id'):
-            r_formatted[k] = r[k]
-        results_formatted.append(r_formatted)
-
-    return {"data": {"predictions": results_formatted}}, 200
+    predictions = _get_gmaps_client().places_autocomplete(query)
+    return {"data": {"predictions": _format_predictions(predictions)}}, 200
 
 
 @bp.route("/cities", methods=["GET"])
 def get_city_from_query():
     query = flask.request.args.get("query", None)
-
-    url = 'https://maps.googleapis.com/maps/api/place/autocomplete/json?'
-    req = requests.get(url + 'input=' + query + '&key=' + Secrets.GOOGLE_MAPS_API_KEY
-                       + '&types=(cities)'
-                       + '&fields=formatted_address')
-    resp = req.json()
-
-    results = resp['predictions']
-    results_formatted = []
-
-    for r in results:
-        r_formatted = {}
-        for k in ('description', 'matched_substrings', 'place_id'):
-            r_formatted[k] = r[k]
-        results_formatted.append(r_formatted)
-
-    return {"data": {"predictions": results_formatted}}, 200
+    predictions = _get_gmaps_client().places_autocomplete(query, types="(cities)")
+    return {"data": {"predictions": _format_predictions(predictions)}}, 200
 
 
 @bp.route("/coordinates", methods=["GET"])
 def get_location_details():
     data = flask.request.args
+    lat = float(data["lat"])
+    lng = float(data["lng"])
 
-    lat = data["lat"]
-    lng = data["lng"]
-    url = "https://maps.googleapis.com/maps/api/geocode/json?"
-    response = requests.get(url
-                            + "latlng={},{}".format(lat, lng)
-                            + "&key={}".format(Secrets.GOOGLE_MAPS_API_KEY)
-                            + "&result_type=locality")
-    results = response.json()["results"]
+    results = _get_gmaps_client().reverse_geocode(
+        (lat, lng), result_type="locality"
+    )
 
     result = {}
-
-    if len(results) > 0:
-        address_components = results[0]["address_components"]
-
-        for a in address_components:
+    if results:
+        for a in results[0]["address_components"]:
             if "locality" in a["types"]:
                 result["city"] = a["long_name"]
             elif "country" in a["types"]:
@@ -107,21 +87,17 @@ def get_location_details():
 
 @bp.route("/place/<place_id>", methods=["GET"])
 def get_place_location_info(place_id):
-    url = "https://maps.googleapis.com/maps/api/place/details/json?place_id={}&fields={}&key={}".format(
+    place = _get_gmaps_client().place(
         place_id,
-        "%2C".join(["name", "formatted_address", "geometry", "utc_offset", "address_components"]),
-        Secrets.GOOGLE_MAPS_API_KEY
-    )
+        fields=["name", "formatted_address", "geometry", "utc_offset", "address_component"]
+    )["result"]
 
-    response = requests.request("GET", url, headers={}, data={})
-    result = response.json()["result"]
-
-    lat = result["geometry"]["location"]["lat"]
-    lng = result["geometry"]["location"]["lng"]
+    lat = place["geometry"]["location"]["lat"]
+    lng = place["geometry"]["location"]["lng"]
 
     country = None
     city = None
-    for a in result["address_components"]:
+    for a in place["address_components"]:
         if "country" in a["types"]:
             country = a["short_name"]
         elif "locality" in a["types"]:
@@ -129,15 +105,11 @@ def get_place_location_info(place_id):
 
     return {
         "data": {
-            "name": result["name"],
-            "formatted_address": result["formatted_address"],
+            "name": place["name"],
+            "formatted_address": place["formatted_address"],
             "country": country,
             "city": city,
             "lat": lat,
             "lng": lng,
         }
     }
-
-
-if __name__ == '__main__':
-    print(get_location_details())

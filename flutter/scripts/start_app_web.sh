@@ -24,5 +24,5 @@ fvm flutter run \
     -d web-server --web-hostname=0.0.0.0 --web-port=7357 \
     --dart-define-from-file="$ENV_FILE" \
     --dart-define=BUILD_TIMESTAMP=$(date "+%Y%m%d-%H%M%S") \
-    --dart-define=TEST_MODE=true \
-    $BACKEND_URL_ARG
+    --dart-define=BACKEND_URL=http://localhost:8080 \
+    --dart-define=TEST_MODE=true

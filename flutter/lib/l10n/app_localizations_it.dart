@@ -473,7 +473,7 @@ class AppLocalizationsIt extends AppLocalizations {
       'La tua posizione ci aiuta a migliorare la tua esperienza con consigli migliori sulle partite.';
 
   @override
-  String get manualSplitTeamCheckBoxLabel => 'Divisione manuale';
+  String get manualSplitTeamCheckBoxLabel => 'Manuale';
 
   @override
   String get teamStrenghtLabel => 'Forza della squadra';

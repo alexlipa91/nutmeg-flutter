@@ -1,7 +1,5 @@
-import time
-
 import flask
-import requests
+import googlemaps
 from flask import Blueprint
 from flask import current_app as app
 
@@ -68,12 +66,6 @@ def delete_sportcenter(sportcenter_id):
 
 
 def _get_timezone_id(lat, lng):
-    url = "https://maps.googleapis.com/maps/api/timezone/json?location={}%2C{}&timestamp={}&key={}".format(
-        lat,
-        lng,
-        int(time.time()),
-        Secrets.GOOGLE_MAPS_API_KEY
-    )
-    response = requests.request("GET", url, headers={}, data={})
-
-    return response.json()["timeZoneId"]
+    gmaps = googlemaps.Client(key=Secrets.GOOGLE_MAPS_API_KEY)
+    result = gmaps.timezone((lat, lng))
+    return result["timeZoneId"]

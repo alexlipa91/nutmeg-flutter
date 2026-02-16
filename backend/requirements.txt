@@ -12,6 +12,7 @@ Flask==3.1.0
 flask-cors==5.0.1
 geographiclib==2.0
 geopy==2.3.0
+googlemaps==4.10.0
 google-api-core==2.24.2
 google-api-python-client==2.168.0
 google-auth==2.38.0
