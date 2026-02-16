@@ -1,8 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:nutmeg/screens/CreateMatch.dart';
 import 'package:nutmeg/screens/Launch.dart';
 import 'package:nutmeg/state/UserState.dart';
-import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:nutmeg/widgets/Containers.dart';
@@ -145,27 +145,32 @@ class _EmailLoginFormState extends State<EmailLoginForm> {
                           controller: _emailController,
                           keyboardType: TextInputType.emailAddress,
                           autocorrect: false,
-                          decoration: InputDecoration(
-                            border: OutlineInputBorder(),
-                            hintText: 'Email',
-                            prefixIcon: Icon(Icons.email_outlined),
-                          ),
+                          style: TextPalette.getBodyText(Palette.black),
+                          decoration:
+                              CreateMatchState.getTextFormDecoration(null,
+                                  hintText: 'Email'),
                         ),
                         SizedBox(height: 12),
                         TextField(
                           controller: _passwordController,
                           obscureText: _obscurePassword,
-                          decoration: InputDecoration(
-                            border: OutlineInputBorder(),
-                            hintText: 'Password',
-                            prefixIcon: Icon(Icons.lock_outlined),
+                          style: TextPalette.getBodyText(Palette.black),
+                          decoration:
+                              CreateMatchState.getTextFormDecoration(null,
+                                      hintText: 'Password')
+                                  .copyWith(
                             suffixIcon: IconButton(
-                              icon: Icon(_obscurePassword
-                                  ? Icons.visibility_off
-                                  : Icons.visibility),
+                              icon: Icon(
+                                _obscurePassword
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
+                                color: Palette.greyDark,
+                                size: 20,
+                              ),
                               onPressed: () => setState(
                                   () => _obscurePassword = !_obscurePassword),
                             ),
+                            suffixIconConstraints: null,
                           ),
                         ),
                         if (_errorMessage != null) ...[
@@ -196,8 +201,7 @@ class _EmailLoginFormState extends State<EmailLoginForm> {
                             _isNewUser
                                 ? "Already have an account? Sign in"
                                 : "Don't have an account? Create one",
-                            style: TextPalette.bodyText
-                                .copyWith(color: Palette.primary),
+                            style: TextPalette.linkStyle,
                             textAlign: TextAlign.center,
                           ),
                         ),
