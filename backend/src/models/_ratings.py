@@ -10,9 +10,10 @@ from typing import Any, Dict, List, Optional
 from google.cloud.firestore_v1.client import Client
 
 
-def ratings_ref(match_id: str, db: Client):
+def ratings_ref(match_id: str, db: Client, is_test: bool = False):
     """Return a DocumentReference for matches/{matchId}/ratings/data."""
-    return db.collection("matches").document(match_id).collection("ratings").document("data")
+    coll = "matches_test" if is_test else "matches"
+    return db.collection(coll).document(match_id).collection("ratings").document("data")
 
 
 @dataclass
@@ -83,9 +84,9 @@ class Ratings:
         return cls.from_dict(doc.to_dict(), match_id)
 
     @classmethod
-    def get_by_match_id(cls, match_id: str, db: Client) -> Optional[Ratings]:
+    def get_by_match_id(cls, match_id: str, db: Client, is_test: bool = False) -> Optional[Ratings]:
         """Fetch a Ratings document from Firestore."""
-        doc = ratings_ref(match_id, db).get()
+        doc = ratings_ref(match_id, db, is_test=is_test).get()
         return cls.from_doc(doc, match_id)
 
     # ---- helpers ----
@@ -116,7 +117,7 @@ class Ratings:
     # ---- write operations ----
 
     @staticmethod
-    def add_scores(match_id: str, rater_id: str, scores: Dict[str, int], db: Client) -> None:
+    def add_scores(match_id: str, rater_id: str, scores: Dict[str, int], db: Client, is_test: bool = False) -> None:
         """Add scores from one rater to multiple rated users.
 
         scores: {rated_user_id: score}
@@ -124,23 +125,24 @@ class Ratings:
         update: Dict[str, Any] = {"scores": {}}
         for rated_user_id, score in scores.items():
             update["scores"][rated_user_id] = {rater_id: score}
-        ratings_ref(match_id, db).set(update, merge=True)
+        ratings_ref(match_id, db, is_test=is_test).set(update, merge=True)
 
     @staticmethod
-    def add_award_votes(match_id: str, voter_id: str, votes: Dict[str, str], db: Client) -> None:
+    def add_award_votes(match_id: str, voter_id: str, votes: Dict[str, str], db: Client, is_test: bool = False) -> None:
         """Add award votes from one voter.
 
         votes: {award_id: voted_for_user_id}
         """
-        ratings_ref(match_id, db).set(
+        ratings_ref(match_id, db, is_test=is_test).set(
             {"awardVotes": {voter_id: votes}},
             merge=True,
         )
 
     @staticmethod
-    def _write_match_summary(match_id: str, summary: Dict[str, Any], db: Client) -> None:
+    def _write_match_summary(match_id: str, summary: Dict[str, Any], db: Client, is_test: bool = False) -> None:
         """Write ratings summary to the main match document."""
-        db.collection("matches").document(match_id).update({"ratings": summary})
+        coll = "matches_test" if is_test else "matches"
+        db.collection(coll).document(match_id).update({"ratings": summary})
 
     @staticmethod
     def store_final_results(
@@ -151,10 +153,11 @@ class Ratings:
         num_score_voters: int,
         num_award_voters: int,
         db: Client,
+        is_test: bool = False,
     ) -> None:
         """Write computed final scores, POTMs, and awards."""
         # TODO drop it once all clients move to use match
-        ratings_ref(match_id, db).update({
+        ratings_ref(match_id, db, is_test=is_test).update({
             "finalScores": user_scores,
             "finalPotms": potms,
             "finalAwards": award_votes,
@@ -166,20 +169,20 @@ class Ratings:
             "finalAwards": award_votes,
             "num_distinct_score_voters": num_score_voters,
             "num_distinct_award_voters": num_award_voters,
-        }, db)
+        }, db, is_test=is_test)
 
     @staticmethod
-    def set_not_computed_reason(match_id: str, reason: str, db: Client) -> None:
+    def set_not_computed_reason(match_id: str, reason: str, db: Client, is_test: bool = False) -> None:
         """Mark ratings as not computable with a reason."""
         # TODO drop it once all clients move to use match
-        ratings_ref(match_id, db).set(
+        ratings_ref(match_id, db, is_test=is_test).set(
             {"ratings_not_computed_reason": reason},
             merge=True,
         )
         # also store summary on the main match doc for fast reads
         Ratings._write_match_summary(match_id, {
             "ratings_not_computed_reason": reason,
-        }, db)
+        }, db, is_test=is_test)
 
 
 if __name__ == "__main__":

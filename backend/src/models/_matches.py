@@ -139,9 +139,10 @@ class Match:
         return cls.from_dict(doc.to_dict(), doc.id)
 
     @classmethod
-    def get_by_id(cls, match_id: str, db) -> Optional[Match]:
+    def get_by_id(cls, match_id: str, db, is_test: bool = False) -> Optional[Match]:
         """Fetch a Match from Firestore by document ID."""
-        doc = db.collection("matches").document(match_id).get()
+        coll = "matches_test" if is_test else "matches"
+        doc = db.collection(coll).document(match_id).get()
         return cls.from_doc(doc)
 
     # ---- helpers ----

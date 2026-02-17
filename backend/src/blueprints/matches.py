@@ -44,6 +44,20 @@ bp_v2 = Blueprint("matches_v2", __name__, url_prefix="/v2/matches")
 tz = pytz.timezone("Europe/Amsterdam")
 
 
+def _get_matches_collection(is_test: bool = False) -> str:
+    """Return the Firestore collection name for matches."""
+    return "matches_test" if is_test else "matches"
+
+
+def _is_test_from_request() -> bool:
+    """Determine is_test from the request header or query param."""
+    if flask.request.headers.get("X-Test-Mode") == "true":
+        return True
+    if flask.request.args.get("is_test") == "true":
+        return True
+    return False
+
+
 @bp.route("", methods=["GET"])
 def get_matches():
     # when can have values: 'future', 'past'
@@ -56,6 +70,7 @@ def get_matches():
     version = int(flask.request.args.get("version", 1))
     user_id = flask.g.uid
 
+    is_test = _is_test_from_request()
     result = _get_matches_firestore(
         user_location=(lat, lng),
         when=when,
@@ -64,6 +79,7 @@ def get_matches():
         radius_km=radius_km,
         user_id=user_id,
         version=version,
+        is_test=is_test,
     )
 
     return {"data": result}, 200
@@ -102,10 +118,11 @@ def _get_matches(
     time_filter: Optional[MatchesTimeFilter] = None,
     location_filter: Optional[LocationFilter] = None,
     user_id: Optional[str] = None,
+    is_test: bool = False,
 ):
     now = datetime.now(tz=pytz.UTC)
 
-    query = app.db_client.collection("matches")
+    query = app.db_client.collection(_get_matches_collection(is_test))
     if time_filter == MatchesTimeFilter.PAST:
         query = query.where(filter=FieldFilter("dateTime", "<=", now))
     elif time_filter == MatchesTimeFilter.FUTURE:
@@ -131,10 +148,11 @@ def _get_user_matches(
     time_filter: Optional[MatchesTimeFilter],
     limit: Optional[int] = None,
     cursor: Optional[str] = None,
+    is_test: bool = False,
 ):
     now = datetime.now(tz=pytz.UTC)
 
-    query = app.db_client.collection("matches")
+    query = app.db_client.collection(_get_matches_collection(is_test))
     query = query.where(filter=FieldFilter("goingPlayers", "array_contains", user_id))
 
     if time_filter == MatchesTimeFilter.PAST:
@@ -175,10 +193,11 @@ def _get_organizer_matches(
     time_filter: Optional[MatchesTimeFilter] = None,
     limit: Optional[int] = None,
     cursor: Optional[str] = None,
+    is_test: bool = False,
 ):
     now = datetime.now(tz=pytz.UTC)
 
-    query = app.db_client.collection("matches")
+    query = app.db_client.collection(_get_matches_collection(is_test))
     query = query.where(filter=FieldFilter("organizerId", "==", organizer_id))
 
     if time_filter == MatchesTimeFilter.PAST:
@@ -261,8 +280,9 @@ def get_matches():
     location_filter: Optional[LocationFilter] = LocationFilter.from_arg(
         flask.request.args.get("location", None)
     )
+    is_test = _is_test_from_request()
     return {
-        "data": _get_matches(time_filter=time_filter, location_filter=location_filter)
+        "data": _get_matches(time_filter=time_filter, location_filter=location_filter, is_test=is_test)
     }, 200
 
 
@@ -274,9 +294,10 @@ def get_user_matches():
     limit_str = flask.request.args.get("limit", None)
     cursor = flask.request.args.get("cursor", None)
     limit = int(limit_str) if limit_str else None
+    is_test = _is_test_from_request()
 
     result = _get_user_matches(
-        user_id=flask.g.uid, time_filter=time_filter, limit=limit, cursor=cursor
+        user_id=flask.g.uid, time_filter=time_filter, limit=limit, cursor=cursor, is_test=is_test
     )
 
     if limit is not None:
@@ -298,9 +319,10 @@ def get_organizer_matches():
     limit_str = flask.request.args.get("limit", None)
     cursor = flask.request.args.get("cursor", None)
     limit = int(limit_str) if limit_str else None
+    is_test = _is_test_from_request()
 
     result = _get_organizer_matches(
-        organizer_id=flask.g.uid, time_filter=time_filter, limit=limit, cursor=cursor
+        organizer_id=flask.g.uid, time_filter=time_filter, limit=limit, cursor=cursor, is_test=is_test
     )
 
     if limit is not None:
@@ -317,12 +339,15 @@ def get_organizer_matches():
 ## V1 API
 @bp.route("/<match_id>", methods=["GET", "POST"])
 def get_match(match_id, is_local=False):
+    is_test = _is_test_from_request() if not is_local else False
+    coll = _get_matches_collection(is_test)
+
     if is_local:
-        return app.db_client.collection("matches").document(match_id).get().to_dict()
+        return app.db_client.collection(coll).document(match_id).get().to_dict()
 
     if flask.request.method == "GET":
         match_data = (
-            app.db_client.collection("matches").document(match_id).get().to_dict()
+            app.db_client.collection(coll).document(match_id).get().to_dict()
         )
         version = 2 if is_local else int(flask.request.args.get("version", 1))
 
@@ -345,7 +370,7 @@ def get_match(match_id, is_local=False):
 
             # update Cloud tasks related to the match
             tasks_scheduled = (
-                app.db_client.collection("matches")
+                app.db_client.collection(coll)
                 .document(match_id)
                 .get()
                 .to_dict()
@@ -353,14 +378,15 @@ def get_match(match_id, is_local=False):
             )
             for task_name in tasks_scheduled:
                 delete_task(task_name)
-            data["tasksScheduled"] = schedule_match_tasks(match_id, data)
-        app.db_client.collection("matches").document(match_id).update(data)
+            data["tasksScheduled"] = schedule_match_tasks(match_id, data, is_test=is_test)
+        app.db_client.collection(coll).document(match_id).update(data)
         return {}, 200
 
 
 @bp.route("/<match_id>/ratings", methods=["GET"])
 def get_ratings(match_id):
-    ratings = Ratings.get_by_match_id(match_id, app.db_client)
+    is_test = _is_test_from_request()
+    ratings = Ratings.get_by_match_id(match_id, app.db_client, is_test=is_test)
     if not ratings:
         return {}, 200
 
@@ -409,18 +435,20 @@ def _get_ratings_data_legacy(match_id, ratings_data):
 
 @bp.route("/<match_id>/ratings/add_multi", methods=["POST"])
 def add_rating_multi(match_id):
+    is_test = _is_test_from_request()
     request_data = flask.request.get_json()
-    Ratings.add_scores(match_id, flask.g.uid, request_data, app.db_client)
+    Ratings.add_scores(match_id, flask.g.uid, request_data, app.db_client, is_test=is_test)
     return {}
 
 
 @bp.route("/<match_id>/awards/add", methods=["POST"])
 def add_match_awards(match_id):
     """Add awards for a match. The request data should be a map of award_id -> user_id."""
+    is_test = _is_test_from_request()
     request_data = flask.request.get_json()
 
     # Validate the match exists
-    match = MatchModel.get_by_id(match_id, app.db_client)
+    match = MatchModel.get_by_id(match_id, app.db_client, is_test=is_test)
     if not match:
         return {"error": "Match not found"}, 404
 
@@ -428,19 +456,21 @@ def add_match_awards(match_id):
     if flask.g.uid not in match.going:
         return {"error": "User not authorized"}, 403
 
-    Ratings.add_award_votes(match_id, flask.g.uid, request_data, app.db_client)
+    Ratings.add_award_votes(match_id, flask.g.uid, request_data, app.db_client, is_test=is_test)
     return {}, 200
 
 
 @bp.route("/<match_id>/awards", methods=["GET"])
 def get_match_awards(match_id):
     """Get awards for a match with vote counts."""
+    is_test = _is_test_from_request()
+    coll = _get_matches_collection(is_test)
     # Get the match data
-    match_doc = app.db_client.collection("matches").document(match_id).get()
+    match_doc = app.db_client.collection(coll).document(match_id).get()
     if not match_doc.exists:
         return {"error": "Match not found"}, 404
 
-    ratings = Ratings.get_by_match_id(match_id, app.db_client)
+    ratings = Ratings.get_by_match_id(match_id, app.db_client, is_test=is_test)
     if not ratings:
         return {"data": {"awards": {}}}, 200
 
@@ -464,9 +494,10 @@ def get_match_awards(match_id):
 
 @bp.route("/<match_id>/ratings/to_vote", methods=["GET"])
 def get_still_to_vote(match_id):
-    match = MatchModel.get_by_id(match_id, app.db_client)
+    is_test = _is_test_from_request()
+    match = MatchModel.get_by_id(match_id, app.db_client, is_test=is_test)
     all_going = match.going.keys() if match else []
-    ratings = Ratings.get_by_match_id(match_id, app.db_client)
+    ratings = Ratings.get_by_match_id(match_id, app.db_client, is_test=is_test)
     scores = ratings.scores if ratings else {}
 
     user_id = flask.g.uid
@@ -483,7 +514,8 @@ def get_still_to_vote(match_id):
 @bp.route("/<match_id>/ratings/given", methods=["GET"])
 def get_ratings_given_by_user(match_id):
     """Return the ratings given by the authenticated user for this match."""
-    ratings = Ratings.get_by_match_id(match_id, app.db_client)
+    is_test = _is_test_from_request()
+    ratings = Ratings.get_by_match_id(match_id, app.db_client, is_test=is_test)
     if not ratings:
         return {"data": {}}, 200
 
@@ -493,7 +525,8 @@ def get_ratings_given_by_user(match_id):
 @bp.route("/<match_id>/awards/given", methods=["GET"])
 def get_user_given_awards(match_id):
     """Get awards given by the current user for this match."""
-    ratings = Ratings.get_by_match_id(match_id, app.db_client)
+    is_test = _is_test_from_request()
+    ratings = Ratings.get_by_match_id(match_id, app.db_client, is_test=is_test)
     if not ratings:
         return {"data": {}}, 200
 
@@ -519,8 +552,8 @@ def create_match():
 
 
 @bp.route("/<match_id>/teams/<algorithm>", methods=["GET"])
-def get_teams(match_id, algorithm="balanced"):
-    match = MatchModel.get_by_id(match_id, app.db_client)
+def get_teams(match_id, algorithm="balanced", is_test=False):
+    match = MatchModel.get_by_id(match_id, app.db_client, is_test=is_test)
     going = match.going_user_ids() if match else []
     scores = {}
 
@@ -558,7 +591,7 @@ def get_teams(match_id, algorithm="balanced"):
         "teams.balanced.players.a": teams[0],
         "teams.balanced.players.b": teams[1],
     }
-    app.db_client.collection("matches").document(match_id).update(match_updates)
+    app.db_client.collection(_get_matches_collection(is_test)).document(match_id).update(match_updates)
 
     print("teams: {}, total scores: {}".format(teams, teams_total_score))
     return {}
@@ -570,21 +603,23 @@ def add_user_to_match_request(match_id):
 
     user_id = data["user_id"]
     payment_intent = data.get("payment_intent", None)
+    is_test = _is_test_from_request()
 
-    add_user_to_match(match_id, user_id, payment_intent)
+    add_user_to_match(match_id, user_id, payment_intent, is_test=is_test)
 
     return {"data": {}}, 200
 
 
-def add_user_to_match(match_id, user_id, payment_intent=None):
+def add_user_to_match(match_id, user_id, payment_intent=None, is_test=False):
+    coll = _get_matches_collection(is_test)
     transactions_doc_ref = (
-        app.db_client.collection("matches")
+        app.db_client.collection(coll)
         .document(match_id)
         .collection("transactions")
         .document()
     )
-    user_stat_doc_ref = _get_user_stat_doc_ref(user_id, match_id)
-    match_doc_ref = app.db_client.collection("matches").document(match_id)
+    user_stat_doc_ref = _get_user_stat_doc_ref(user_id, match_id, is_test=is_test)
+    match_doc_ref = app.db_client.collection(coll).document(match_id)
 
     _add_user_to_match_firestore_transaction(
         app.db_client.transaction(),
@@ -597,11 +632,11 @@ def add_user_to_match(match_id, user_id, payment_intent=None):
     )
 
     # recompute teams
-    get_teams(match_id)
+    get_teams(match_id, is_test=is_test)
 
 
-def _get_user_stat_doc_ref(user_id, match_id):
-    match = MatchModel.get_by_id(match_id, app.db_client)
+def _get_user_stat_doc_ref(user_id, match_id, is_test=False):
+    match = MatchModel.get_by_id(match_id, app.db_client, is_test=is_test)
     if match and match.is_test:
         return (
             app.db_client.collection("users")
@@ -619,11 +654,12 @@ def _get_user_stat_doc_ref(user_id, match_id):
 
 @bp.route("/<match_id>/users/remove", methods=["POST"])
 def remove_user_from_match_request(match_id):
+    is_test = _is_test_from_request()
     user_id = flask.g.uid
-    _remove_user_from_match(match_id, user_id)
+    _remove_user_from_match(match_id, user_id, is_test=is_test)
 
     # recompute teams
-    get_teams(match_id)
+    get_teams(match_id, is_test=is_test)
 
     return {"data": {}}, 200
 
@@ -636,12 +672,13 @@ def remove_other_user_from_match_request(match_id):
     Authorization: only the match organizer (or an admin) can remove other users.
     Body: { "user_id": "<user_to_remove>" }
     """
+    is_test = _is_test_from_request()
     data = flask.request.get_json(silent=True) or {}
     user_id = data.get("user_id", None)
     if not user_id:
         return {"error": "Missing user_id"}, 400
 
-    match = MatchModel.get_by_id(match_id, app.db_client)
+    match = MatchModel.get_by_id(match_id, app.db_client, is_test=is_test)
     if not match:
         return {"error": "Match not found"}, 404
 
@@ -655,20 +692,22 @@ def remove_other_user_from_match_request(match_id):
     if user_id == match.organizer_id:
         return {"error": "Cannot remove organizer"}, 400
 
-    _remove_user_from_match(match_id, user_id)
+    _remove_user_from_match(match_id, user_id, is_test=is_test)
 
     # recompute teams
-    get_teams(match_id)
+    get_teams(match_id, is_test=is_test)
 
     return {"data": {}}, 200
 
 
 @bp.route("/<match_id>/waitlist/add", methods=["POST"])
 def add_user_to_waitlist_request(match_id):
+    is_test = _is_test_from_request()
+    coll = _get_matches_collection(is_test)
     data = flask.request.get_json(silent=True) or {}
     user_id = data.get("user_id", flask.g.uid)
 
-    match_doc_ref = app.db_client.collection("matches").document(match_id)
+    match_doc_ref = app.db_client.collection(coll).document(match_id)
 
     _add_user_to_waitlist_transaction(
         app.db_client.transaction(),
@@ -682,16 +721,18 @@ def add_user_to_waitlist_request(match_id):
 
 @bp.route("/<match_id>/waitlist/remove", methods=["POST"])
 def remove_user_from_waitlist_request(match_id):
+    is_test = _is_test_from_request()
+    coll = _get_matches_collection(is_test)
     user_id = flask.g.uid
 
-    match = MatchModel.get_by_id(match_id, app.db_client)
+    match = MatchModel.get_by_id(match_id, app.db_client, is_test=is_test)
     if not match:
         return {"error": "Match not found"}, 404
 
     if user_id not in match.wait_list:
         return {"error": "User is not in the waitlist"}, 400
 
-    app.db_client.collection("matches").document(match_id).update(
+    app.db_client.collection(coll).document(match_id).update(
         {"waitList." + user_id: firestore.DELETE_FIELD}
     )
 
@@ -701,12 +742,14 @@ def remove_user_from_waitlist_request(match_id):
 @bp.route("/<match_id>/waitlist/promote", methods=["POST"])
 def promote_user_from_waitlist_request(match_id):
     """Promote a user from the waitlist to going. Only organizer or admin can do this."""
+    is_test = _is_test_from_request()
+    coll = _get_matches_collection(is_test)
     data = flask.request.get_json(silent=True) or {}
     user_id = data.get("user_id", None)
     if not user_id:
         return {"error": "Missing user_id"}, 400
 
-    match = MatchModel.get_by_id(match_id, app.db_client)
+    match = MatchModel.get_by_id(match_id, app.db_client, is_test=is_test)
     if not match:
         return {"error": "Match not found"}, 404
 
@@ -722,10 +765,10 @@ def promote_user_from_waitlist_request(match_id):
     if len(match.going) >= (match.max_players or 0):
         return {"error": "Match is full"}, 400
 
-    user_stat_doc_ref = _get_user_stat_doc_ref(user_id, match_id)
-    match_doc_ref = app.db_client.collection("matches").document(match_id)
+    user_stat_doc_ref = _get_user_stat_doc_ref(user_id, match_id, is_test=is_test)
+    match_doc_ref = app.db_client.collection(coll).document(match_id)
     transactions_doc_ref = (
-        app.db_client.collection("matches")
+        app.db_client.collection(coll)
         .document(match_id)
         .collection("transactions")
         .document()
@@ -741,7 +784,7 @@ def promote_user_from_waitlist_request(match_id):
     )
 
     # recompute teams
-    get_teams(match_id)
+    get_teams(match_id, is_test=is_test)
 
     return {"data": {}}, 200
 
@@ -824,12 +867,14 @@ def _add_user_to_waitlist_transaction(transaction, match_doc_ref, user_id, match
 
 @bp.route("/<match_id>/cancel", methods=["GET"])
 def cancel_match(match_id, trigger="manual"):
-    match = MatchModel.get_by_id(match_id, app.db_client)
+    is_test = _is_test_from_request()
+    coll = _get_matches_collection(is_test)
+    match = MatchModel.get_by_id(match_id, app.db_client, is_test=is_test)
 
     if not match or match.cancelled_at:
         raise Exception("Match has already been cancelled")
 
-    match_doc_ref = app.db_client.collection("matches").document(match_id)
+    match_doc_ref = app.db_client.collection(coll).document(match_id)
     users_stats_docs = {}
     for u in match.going_user_ids():
         users_stats_docs[u] = (
@@ -852,14 +897,16 @@ def cancel_match(match_id, trigger="manual"):
 
 @bp.route("/<match_id>/confirm", methods=["GET"])
 def confirm_match(match_id):
-    match = MatchModel.get_by_id(match_id, app.db_client)
+    is_test = _is_test_from_request()
+    coll = _get_matches_collection(is_test)
+    match = MatchModel.get_by_id(match_id, app.db_client, is_test=is_test)
 
     if len(match.going) < (match.min_players or 0):
         print("canceling match")
         cancel_match(match_id, "automatic")
     else:
         print("confirming match")
-        app.db_client.collection("matches").document(match_id).update(
+        app.db_client.collection(coll).document(match_id).update(
             {"confirmedAt": datetime.now()}
         )
 
@@ -868,7 +915,8 @@ def confirm_match(match_id):
 
 @bp.route("/<match_id>/tasks/prematch", methods=["GET"])
 def run_prematch_tasks(match_id):
-    match = MatchModel.get_by_id(match_id, app.db_client)
+    is_test = _is_test_from_request()
+    match = MatchModel.get_by_id(match_id, app.db_client, is_test=is_test)
     if not match or match.cancelled_at is not None:
         print("match not existing or cancelled...skipping")
         return {"status": "skipped", "reason": "cancelled"}
@@ -897,7 +945,8 @@ def run_prematch_tasks(match_id):
 
 @bp.route("/<match_id>/tasks/precancellation", methods=["GET"])
 def run_precancellation_tasks(match_id):
-    match = MatchModel.get_by_id(match_id, app.db_client)
+    is_test = _is_test_from_request()
+    match = MatchModel.get_by_id(match_id, app.db_client, is_test=is_test)
 
     if not match or match.cancelled_at is not None:
         print("match has been cancelled or removed from the db...skipping")
@@ -928,7 +977,8 @@ def run_precancellation_tasks(match_id):
 
 @bp.route("/<match_id>/tasks/postmatch", methods=["GET"])
 def run_post_match_tasks(match_id):
-    match = MatchModel.get_by_id(match_id, app.db_client)
+    is_test = _is_test_from_request()
+    match = MatchModel.get_by_id(match_id, app.db_client, is_test=is_test)
 
     if not match:
         print("match deleted...skipping")
@@ -966,9 +1016,10 @@ def run_post_match_tasks(match_id):
         )
 
     # payout
+    qs = "&is_test=true" if is_test else ""
     schedule_app_engine_call(
         task_name="payout_organizer_for_match_{}_attempt_number_{}".format(match_id, 1),
-        endpoint="matches/{}/tasks/payout?attempt={}".format(match_id, 1),
+        endpoint="matches/{}/tasks/payout?attempt={}{}".format(match_id, 1, qs),
         date_time_to_execute=datetime.now() + timedelta(days=3),
     )
     return {"status": "success"}
@@ -978,7 +1029,9 @@ def run_post_match_tasks(match_id):
 def create_organizer_payout(match_id):
     # attempt = flask.request.args.get("attempt", 1)
     attempt = 1
-    match = MatchModel.get_by_id(match_id, app.db_client)
+    is_test = _is_test_from_request()
+    coll = _get_matches_collection(is_test)
+    match = MatchModel.get_by_id(match_id, app.db_client, is_test=is_test)
 
     if not match:
         print("Cannot find match...skipping")
@@ -1020,7 +1073,7 @@ def create_organizer_payout(match_id):
             metadata={"match_id": match_id, "attempt": attempt},
         )
         print("payout of {} created: {}".format(amount, payout.id))
-        app.db_client.collection("matches").document(match_id).update(
+        app.db_client.collection(coll).document(match_id).update(
             {
                 "paid_out_at": firestore.firestore.SERVER_TIMESTAMP,
                 "payout_id": payout.id,
@@ -1093,7 +1146,7 @@ def _cancel_match_firestore_transactional(
 
             # record transaction
             transaction_doc_ref = (
-                app.db_client.collection("matches")
+                app.db_client.collection(_get_matches_collection(is_test))
                 .document(match_id)
                 .collection("transactions")
                 .document()
@@ -1161,13 +1214,15 @@ Updates = namedtuple("Updates", "match_updates users_updates users_match_stats_u
 
 @bp.route("/<match_id>/stats/freeze", methods=["POST"])
 def freeze_match_stats(match_id, notify=True, only_for_user=None):
+    is_test = _is_test_from_request()
+    coll = _get_matches_collection(is_test)
     # only_for_user can be used to apply match stats only to a certain user
-    match = MatchModel.get_by_id(match_id, app.db_client)
+    match = MatchModel.get_by_id(match_id, app.db_client, is_test=is_test)
     try:
-        updates, error = _freeze_match_stats(match_id, match)
+        updates, error = _freeze_match_stats(match_id, match, is_test=is_test)
     except NotEnoughVotersError:
         Ratings.set_not_computed_reason(
-            match_id, RatingsNotComputedReason.NOT_ENOUGH_RATINGS, app.db_client,
+            match_id, RatingsNotComputedReason.NOT_ENOUGH_RATINGS, app.db_client, is_test=is_test,
         )
         return {}, 200
 
@@ -1178,7 +1233,7 @@ def freeze_match_stats(match_id, notify=True, only_for_user=None):
     if error:
         raise Exception(error)
 
-    match_doc_ref = app.db_client.collection("matches").document(match_id)
+    match_doc_ref = app.db_client.collection(coll).document(match_id)
 
     if match.is_test:
         print(f"[SKIP] Test match {match_id} - not updating user stats or leaderboards")
@@ -1224,14 +1279,14 @@ def freeze_match_stats(match_id, notify=True, only_for_user=None):
     return {}
 
 
-def _freeze_match_stats(match_id, match: MatchModel):
+def _freeze_match_stats(match_id, match: MatchModel, is_test=False):
     if not match:
         return None, "match_not_found"
     if match.is_cancelled():
         return None, "match_cancelled"
 
     # ratings
-    ratings = Ratings.get_by_match_id(match_id, app.db_client)
+    ratings = Ratings.get_by_match_id(match_id, app.db_client, is_test=is_test)
     match_stats = MatchStats(
         match_id,
         match.date_time,
@@ -1247,7 +1302,7 @@ def _freeze_match_stats(match_id, match: MatchModel):
     Ratings.store_final_results(
         match_id, match_stats.user_scores, match_stats.potms,
         match_stats.award_votes, num_score_voters, num_award_voters,
-        app.db_client,
+        app.db_client, is_test=is_test,
     )
 
     # score - use Match model helpers
@@ -1350,17 +1405,18 @@ def _send_close_voting_notification(match_id, going_users, potms, sport_center):
     )
 
 
-def _remove_user_from_match(match_id, user_id):
+def _remove_user_from_match(match_id, user_id, is_test=False):
     db = firestore.client()
+    coll = _get_matches_collection(is_test)
 
     transactions_doc_ref = (
-        db.collection("matches")
+        db.collection(coll)
         .document(match_id)
         .collection("transactions")
         .document()
     )
-    user_stat_doc_ref = _get_user_stat_doc_ref(user_id, match_id)
-    match_doc_ref = db.collection("matches").document(match_id)
+    user_stat_doc_ref = _get_user_stat_doc_ref(user_id, match_id, is_test=is_test)
+    match_doc_ref = db.collection(coll).document(match_id)
 
     _remove_user_from_match_stripe_refund_firestore_transaction(
         db.transaction(),
@@ -1491,11 +1547,12 @@ def _get_matches_firestore(
     radius_km=None,
     user_id=None,
     version=1,
+    is_test=False,
 ):
     now = datetime.now(tz=pytz.UTC)
     sport_centers_cache = {}
 
-    query = app.db_client.collection("matches")
+    query = app.db_client.collection(_get_matches_collection(is_test))
 
     # FIXME wait for index
     # if with_user:
@@ -1702,7 +1759,9 @@ def _add_match_firestore(match_data):
         )
         match_data["stripePriceId"] = response.id
 
-    doc_ref = app.db_client.collection("matches").document()
+    is_test = match_data.get("isTest", False)
+    coll = _get_matches_collection(is_test)
+    doc_ref = app.db_client.collection(coll).document()
     doc_ref.set(match_data)
 
     # POST CREATION
@@ -1711,9 +1770,9 @@ def _add_match_firestore(match_data):
         "http://web.nutmegapp.com/match/{}".format(doc_ref.id)
     )
 
-    tasks_scheduled = schedule_match_tasks(doc_ref.id, match_data)
+    tasks_scheduled = schedule_match_tasks(doc_ref.id, match_data, is_test=is_test)
 
-    app.db_client.collection("matches").document(doc_ref.id).update(
+    app.db_client.collection(coll).document(doc_ref.id).update(
         {
             "dynamicLink": dynamic_link,
             "tasksScheduled": tasks_scheduled,
@@ -1723,9 +1782,10 @@ def _add_match_firestore(match_data):
     return doc_ref.id
 
 
-def schedule_match_tasks(match_id, match_data):
+def schedule_match_tasks(match_id, match_data, is_test=False):
     tasks_scheduled = []
     current_epoch_str = str(int(datetime.now(tz=pytz.UTC).timestamp()))
+    qs = "?is_test=true" if is_test else ""
 
     # schedule cancellation check if required
     if "cancelHoursBefore" in match_data:
@@ -1735,7 +1795,7 @@ def schedule_match_tasks(match_id, match_data):
         task_name = "cancel_or_confirm_match_{}_{}".format(match_id, current_epoch_str)
         schedule_app_engine_call(
             task_name=task_name,
-            endpoint="matches/{}/confirm".format(match_id),
+            endpoint="matches/{}/confirm{}".format(match_id, qs),
             date_time_to_execute=cancellation_time,
         )
         tasks_scheduled.append(task_name)
@@ -1745,7 +1805,7 @@ def schedule_match_tasks(match_id, match_data):
         )
         schedule_app_engine_call(
             task_name=task_name,
-            endpoint="matches/{}/tasks/precancellation".format(match_id),
+            endpoint="matches/{}/tasks/precancellation{}".format(match_id, qs),
             date_time_to_execute=cancellation_time - timedelta(hours=1),
         )
         tasks_scheduled.append(task_name)
@@ -1754,7 +1814,7 @@ def schedule_match_tasks(match_id, match_data):
     task_name = "close_rating_round_{}_{}".format(match_id, current_epoch_str)
     schedule_app_engine_call(
         task_name=task_name,
-        endpoint="matches/{}/stats/freeze".format(match_id),
+        endpoint="matches/{}/stats/freeze{}".format(match_id, qs),
         method=tasks_v2.HttpMethod.POST,
         date_time_to_execute=match_data["dateTime"]
         + timedelta(minutes=int(match_data["duration"]))
@@ -1767,7 +1827,7 @@ def schedule_match_tasks(match_id, match_data):
     task_name = "send_prematch_notification_{}_{}".format(match_id, current_epoch_str)
     schedule_app_engine_call(
         task_name=task_name,
-        endpoint="matches/{}/tasks/prematch".format(match_id),
+        endpoint="matches/{}/tasks/prematch{}".format(match_id, qs),
         date_time_to_execute=match_data["dateTime"] - timedelta(hours=1),
     )
     tasks_scheduled.append(task_name)
@@ -1775,7 +1835,7 @@ def schedule_match_tasks(match_id, match_data):
     task_name = "run_post_match_tasks_{}_{}".format(match_id, current_epoch_str)
     schedule_app_engine_call(
         task_name=task_name,
-        endpoint="matches/{}/tasks/postmatch".format(match_id),
+        endpoint="matches/{}/tasks/postmatch{}".format(match_id, qs),
         date_time_to_execute=match_data["dateTime"]
         + timedelta(minutes=int(match_data["duration"]))
         + timedelta(hours=1),
@@ -1827,8 +1887,8 @@ def _get_stripe_price_amount(match_data, type):
 
 
 def delete_tests():
-    for m in app.db_client.collection("matches").where("isTest", "==", True).get():
-        app.db_client.collection("matches").document(m.id).delete()
+    for m in app.db_client.collection("matches_test").get():
+        app.db_client.collection("matches_test").document(m.id).delete()
 
 
 def _update_user_account(user_id, is_test, match_id, manage_payments):

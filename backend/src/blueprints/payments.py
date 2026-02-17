@@ -18,9 +18,9 @@ def checkout():
     match_id = request.args["match_id"]
     user_id = request.args["user_id"]
     version = request.args.get("v", 1)
+    is_test = request.args.get("is_test") == "true" or request.headers.get("X-Test-Mode") == "true"
 
-    match_info = _get_match_info(match_id)
-    is_test = match_info.get("isTest", False)
+    match_info = _get_match_info(match_id, is_test=is_test)
 
     if version == 1:
         session = _create_checkout_redirects_to_web(
@@ -46,8 +46,9 @@ def checkout():
     return flask.redirect(session.url)
 
 
-def _get_match_info(match_id):
-    data = app.db_client.collection('matches').document(match_id).get().to_dict()
+def _get_match_info(match_id, is_test=False):
+    coll = "matches_test" if is_test else "matches"
+    data = app.db_client.collection(coll).document(match_id).get().to_dict()
     return data
 
 
