@@ -471,7 +471,7 @@ abstract class AppLocalizations {
   /// No description provided for @cancelMatchSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'The players that joined will get a full refund.'**
+  /// **'If players paid with Nutmeg, they will get a full refund.'**
   String get cancelMatchSubtitle;
 
   /// No description provided for @serviceFee.

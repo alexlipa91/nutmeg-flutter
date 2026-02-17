@@ -1978,6 +1978,6 @@ if __name__ == "__main__":
     app.db_client = firestore.client()
 
     with app.app_context():
-        match_id = "XWvvqiYPJU7MvG3TcQXv"
+        match_id = "8HBcEQZvfBBYBjZS7itL"
         result = freeze_match_stats(match_id, notify=False)
         print(result)

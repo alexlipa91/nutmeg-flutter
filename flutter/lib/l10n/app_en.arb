@@ -117,7 +117,7 @@
    "paymentFailedSubtitle": "Please try again",
    "manageButton": "MANAGE",
    "cancelMatchTitle": "Are you sure you want to cancel the match?",
-    "cancelMatchSubtitle": "The players that joined will get a full refund.",
+    "cancelMatchSubtitle": "If players paid with Nutmeg, they will get a full refund.",
 
     "serviceFee": "Service Fee",
     "subtotal": "Subtotal",

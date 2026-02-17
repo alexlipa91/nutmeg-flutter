@@ -220,7 +220,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cancelMatchSubtitle =>
-      'The players that joined will get a full refund.';
+      'If players paid with Nutmeg, they will get a full refund.';
 
   @override
   String get serviceFee => 'Service Fee';

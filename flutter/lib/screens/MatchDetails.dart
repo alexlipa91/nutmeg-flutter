@@ -21,6 +21,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:intl/intl.dart';
 import 'package:map_launcher/map_launcher.dart';
 import 'package:map_launcher/src/models.dart' as m;
+import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/model/Match.dart';
 import 'package:nutmeg/model/SportCenter.dart';
@@ -726,7 +727,51 @@ class MatchInfo extends StatelessWidget {
                 NutmegDivider(horizontal: true),
                 SizedBox(height: 8),
                 matchWidget
-              ])
+              ]),
+            if (isOrganizerView &&
+                match.dateTime.isAfter(DateTime.now()) &&
+                match.status != MatchStatus.cancelled)
+              Padding(
+                padding: EdgeInsets.only(top: 16),
+                child: Row(children: [
+                  Expanded(
+                    child: GenericButtonWithLoaderAndErrorHandling(
+                      AppLocalizations.of(context)!
+                          .cancelMatchAction
+                          .toUpperCase(),
+                      (_) async {
+                        await GenericInfoModal(
+                          title: AppLocalizations.of(context)!.cancelMatchTitle,
+                          description:
+                              AppLocalizations.of(context)!.cancelMatchSubtitle,
+                          action: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Expanded(
+                                child: GenericButtonWithLoaderAndErrorHandling(
+                                  AppLocalizations.of(context)!
+                                      .confirmButtonText,
+                                  (_) async {
+                                    await MatchesController.cancelMatch(
+                                        match.documentId);
+                                    await context
+                                        .read<MatchesState>()
+                                        .getMatch(match.documentId)
+                                        .fetchMatch();
+                                    Navigator.pop(context);
+                                  },
+                                  Primary(),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ).show(context);
+                      },
+                      Destructive(),
+                    ),
+                  ),
+                ]),
+              ),
           ]),
         ),
       ],

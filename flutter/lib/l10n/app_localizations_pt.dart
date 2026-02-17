@@ -225,7 +225,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get cancelMatchSubtitle =>
-      'Os jogadores que se inscreveram receberão um reembolso total.';
+      'Se os jogadores pagaram com Nutmeg, receberão um reembolso total.';
 
   @override
   String get serviceFee => 'Taxa de serviço';

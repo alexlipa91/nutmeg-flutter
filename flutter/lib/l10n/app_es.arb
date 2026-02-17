@@ -60,7 +60,7 @@
     "paymentFailedSubtitle": "Por favor, inténtalo de nuevo",
     "manageButton": "ADMINISTRAR",
     "cancelMatchTitle": "¿Estás seguro que deseas cancelar el partido?",
-    "cancelMatchSubtitle": "Los jugadores que se unieron recibirán un reembolso completo.",
+    "cancelMatchSubtitle": "Si los jugadores pagaron con Nutmeg, recibirán un reembolso completo.",
     "serviceFee": "Tarifa de servicio",
     "subtotal": "Total parcial",
     "continueToPayment": "CONTINUAR CON EL PAGO",
