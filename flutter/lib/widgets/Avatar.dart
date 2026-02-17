@@ -88,16 +88,15 @@ class LoggedUserAvatarWithRedirectUserPage extends StatelessWidget {
       highlightColor: Colors.transparent,
       onTap: () async => context.go("/user"),
       child: Container(
-        height: 40,
-        width: 40,
+        height: 48,
+        width: 48,
         child: Center(
           child: Container(
-              height: 30,
-              width: 30,
-              // height and width nullify radius
+              height: 38,
+              width: 38,
               child: Center(
                   child: UserAvatar(
-                      15, context.watch<UserState>().getLoggedUserDetails()))),
+                      19, context.watch<UserState>().getLoggedUserDetails()))),
         ),
       ),
     );

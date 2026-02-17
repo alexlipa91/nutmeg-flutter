@@ -61,7 +61,7 @@ class MainAppBar extends StatelessWidget {
                   splashColor: Colors.transparent,
                   highlightColor: Colors.transparent,
                   onTap: () => context.go("/"),
-                  child: Image.asset('assets/nutmeg_white.png', height: 24)),
+                  child: Image.asset('assets/nutmeg_white.png', height: 32)),
               if (isLoggedIn)
                 Builder(
                     builder: (context) =>
