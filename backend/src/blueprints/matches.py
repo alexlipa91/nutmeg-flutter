@@ -1896,15 +1896,12 @@ def _update_user_account(user_id, is_test, match_id, manage_payments):
     prefix = "stripe_test" if is_test else "stripe"
 
     # add to created matches
-    user_doc_ref = app.db_client.collection("users").document(user_id)
-    organised_list_field_name = (
-        "created_matches" if not is_test else "created_test_matches"
-    )
-    user_updates = {
-        "{}.{}".format(
-            organised_list_field_name, match_id
-        ): firestore.firestore.SERVER_TIMESTAMP
-    }
+    if not is_test:
+        user_doc_ref = app.db_client.collection("users").document(user_id)
+        user_updates = {
+            "{}.{}".format("created_matches", match_id): firestore.firestore.SERVER_TIMESTAMP
+        }
+        user_doc_ref.update(user_updates)
 
     if manage_payments:
         # check if we need to create a stripe connected account
