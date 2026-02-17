@@ -1068,6 +1068,18 @@ abstract class AppLocalizations {
   /// **'Organized Matches'**
   String get organizedMatchesBoxTitle;
 
+  /// No description provided for @playedInYourGamesBoxTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Played in your games'**
+  String get playedInYourGamesBoxTitle;
+
+  /// No description provided for @playedWithYouBoxTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Played with you'**
+  String get playedWithYouBoxTitle;
+
   /// No description provided for @followOnIg.
   ///
   /// In en, this message translates to:

@@ -546,6 +546,12 @@ class AppLocalizationsIt extends AppLocalizations {
   String get organizedMatchesBoxTitle => 'Partite organizzate';
 
   @override
+  String get playedInYourGamesBoxTitle => 'Hanno giocato nelle tue partite';
+
+  @override
+  String get playedWithYouBoxTitle => 'Hanno giocato con te';
+
+  @override
   String get followOnIg => 'Seguici su Instagram';
 
   @override

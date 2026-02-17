@@ -549,6 +549,12 @@ class AppLocalizationsPt extends AppLocalizations {
   String get organizedMatchesBoxTitle => 'Partidas Organizadas';
 
   @override
+  String get playedInYourGamesBoxTitle => 'Jogaram nos seus jogos';
+
+  @override
+  String get playedWithYouBoxTitle => 'Jogaram consigo';
+
+  @override
   String get followOnIg => 'Siga-nos no Instagram';
 
   @override

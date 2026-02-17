@@ -548,6 +548,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get organizedMatchesBoxTitle => 'Partidos organizados';
 
   @override
+  String get playedInYourGamesBoxTitle => 'Jugaron en tus partidos';
+
+  @override
+  String get playedWithYouBoxTitle => 'Jugaron contigo';
+
+  @override
   String get followOnIg => 'Síguenos en Instagram';
 
   @override

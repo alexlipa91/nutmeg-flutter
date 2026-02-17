@@ -176,16 +176,13 @@ class UserPageState extends State<UserPage> {
         title,
         verticalSpace,
         _UserProfileWithStats(userDetails: userDetails),
-        if (userDetails.playedWith != null &&
-            userDetails.playedWith!.isNotEmpty) ...[
-          verticalSpace,
-          Row(children: [
-            Expanded(
-              child: _PlayersPlayedWithYou(
-                  playerCounts: userDetails.playedWith),
-            ),
-          ]),
-        ],
+        verticalSpace,
+        Row(children: [
+          Expanded(
+            child: _PlayersPlayedWithYou(
+                playerCounts: userDetails.playedWith),
+          ),
+        ]),
         if (userDetails.getLastScores().length > 0)
           Section(
               title: AppLocalizations.of(context)!.performanceTitle,
@@ -807,7 +804,7 @@ class _PlayersInYourGames extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var count = playerCounts?.length;
+    var count = playerCounts?.length ?? 0;
 
     return InkWell(
       onTap: (playerCounts != null && playerCounts!.isNotEmpty)
@@ -815,13 +812,13 @@ class _PlayersInYourGames extends StatelessWidget {
                 context,
                 MaterialPageRoute(
                     builder: (_) => _PlayerCountsPage(
-                        title: "PLAYED IN YOUR GAMES",
+                        title: AppLocalizations.of(context)!.playedInYourGamesBoxTitle.toUpperCase(),
                         playerCounts: playerCounts!)),
               )
           : null,
       child: UserInfoBox(
-        content: count?.toString(),
-        description: "Played in your games",
+        content: count.toString(),
+        description: AppLocalizations.of(context)!.playedInYourGamesBoxTitle,
         rightBadge: (playerCounts != null && playerCounts!.isNotEmpty)
             ? Icon(Icons.chevron_right, color: Palette.primary, size: 18)
             : null,
@@ -837,7 +834,7 @@ class _PlayersPlayedWithYou extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var count = playerCounts?.length;
+    var count = playerCounts?.length ?? 0;
 
     return InkWell(
       onTap: (playerCounts != null && playerCounts!.isNotEmpty)
@@ -845,13 +842,13 @@ class _PlayersPlayedWithYou extends StatelessWidget {
                 context,
                 MaterialPageRoute(
                     builder: (_) => _PlayerCountsPage(
-                        title: "PLAYED WITH YOU",
+                        title: AppLocalizations.of(context)!.playedWithYouBoxTitle.toUpperCase(),
                         playerCounts: playerCounts!)),
               )
           : null,
       child: UserInfoBox(
-        content: count?.toString(),
-        description: "Played with you",
+        content: count.toString(),
+        description: AppLocalizations.of(context)!.playedWithYouBoxTitle,
         rightBadge: (playerCounts != null && playerCounts!.isNotEmpty)
             ? Icon(Icons.chevron_right, color: Palette.primary, size: 18)
             : null,

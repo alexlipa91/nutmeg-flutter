@@ -160,6 +160,8 @@
     "organiserSectionTitle": "ORGANIZADOR",
     "goToStripeDashboardText": "IR A MI PANEL DE CONTROL DE STRIPE",
     "organizedMatchesBoxTitle": "Partidos organizados",
+    "playedInYourGamesBoxTitle": "Jugaron en tus partidos",
+    "playedWithYouBoxTitle": "Jugaron contigo",
     "followOnIg": "Síguenos en Instagram",
     "feedback": "Envíanos tus comentarios",
     "payoutInfoSuccessText": "El pago de {a} se ha transferido el {d}",

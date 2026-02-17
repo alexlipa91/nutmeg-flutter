@@ -543,6 +543,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get organizedMatchesBoxTitle => 'Organized Matches';
 
   @override
+  String get playedInYourGamesBoxTitle => 'Played in your games';
+
+  @override
+  String get playedWithYouBoxTitle => 'Played with you';
+
+  @override
   String get followOnIg => 'Follow us on Instagram';
 
   @override
