@@ -78,12 +78,7 @@ final appRouter = GoRouter(
                   ),
                 );
               },
-              routes: [
-                GoRoute(
-                    path: 'edit',
-                    builder: (context, state) =>
-                        CreateMatch.edit(state.pathParameters["id"]!))
-              ]),
+              ),
           GoRoute(
               path: 'leaderboard',
               builder: (context, state) => LeaderboardScreen()),

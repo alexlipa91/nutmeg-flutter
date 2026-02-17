@@ -11,7 +11,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:go_router/go_router.dart';
 import 'package:nutmeg/state/MatchState.dart';
 import 'package:nutmeg/state/UsersState.dart';
 import 'package:nutmeg/utils/CrashlyticsLogger.dart';
@@ -22,7 +21,6 @@ import 'package:share_plus/share_plus.dart';
 import 'package:intl/intl.dart';
 import 'package:map_launcher/map_launcher.dart';
 import 'package:map_launcher/src/models.dart' as m;
-import 'package:nutmeg/controller/MatchesController.dart';
 import 'package:nutmeg/controller/UserController.dart';
 import 'package:nutmeg/model/Match.dart';
 import 'package:nutmeg/model/SportCenter.dart';
@@ -653,88 +651,6 @@ class MatchInfo extends StatelessWidget {
             Title(match, sportCenter),
             SizedBox(height: 16),
             AddressRow(sportCenter: sportCenter),
-            if (isOrganizerView)
-              Padding(
-                padding: EdgeInsets.only(top: 16),
-                child: Row(children: [
-                  Expanded(
-                      child: GenericButtonWithLoader(
-                          AppLocalizations.of(context)!.manageButton, (_) {
-                    ModalBottomSheet.showNutmegModalBottomSheet(
-                        context,
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            InkWell(
-                                onTap: () async {
-                                  context.go("/match/${match.documentId}/edit");
-                                  Navigator.of(context).pop();
-                                },
-                                child: Text(
-                                    AppLocalizations.of(context)!.editAction,
-                                    style: TextPalette.listItem)),
-                            Padding(
-                              padding: EdgeInsets.only(top: 16),
-                              child: InkWell(
-                                  onTap: () async {
-                                    DynamicLinks.shareMatchFunction(
-                                        context, match);
-                                    Navigator.of(context).pop();
-                                  },
-                                  child: Text(
-                                      AppLocalizations.of(context)!.shareAction,
-                                      style: TextPalette.listItem)),
-                            ),
-                            if (match.dateTime.isAfter(DateTime.now()) &&
-                                match.status != MatchStatus.cancelled)
-                              Padding(
-                                padding: EdgeInsets.only(top: 16),
-                                child: InkWell(
-                                  onTap: () async {
-                                    await GenericInfoModal(
-                                        title: AppLocalizations.of(context)!
-                                            .cancelMatchTitle,
-                                        description:
-                                            AppLocalizations.of(context)!
-                                                .cancelMatchSubtitle,
-                                        action: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.end,
-                                          children: [
-                                            Expanded(
-                                              child:
-                                                  GenericButtonWithLoaderAndErrorHandling(
-                                                      AppLocalizations.of(
-                                                              context)!
-                                                          .confirmButtonText,
-                                                      (_) async {
-                                                await MatchesController
-                                                    .cancelMatch(
-                                                        match.documentId);
-                                                await context
-                                                    .read<MatchesState>()
-                                                    .getMatch(match.documentId)
-                                                    .fetchMatch();
-                                                Navigator.pop(context);
-                                              }, Primary()),
-                                            )
-                                          ],
-                                        )).show(context);
-
-                                    Navigator.pop(context);
-                                  },
-                                  child: Text(
-                                      AppLocalizations.of(context)!
-                                          .cancelMatchAction,
-                                      style: TextPalette.getListItem(
-                                          Palette.destructive)),
-                                ),
-                              ),
-                          ],
-                        ));
-                  }, Primary()))
-                ]),
-              ),
             SizedBox(height: 16),
             IconList.fromIcon({
               Icons.calendar_month_outlined:
