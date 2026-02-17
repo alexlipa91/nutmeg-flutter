@@ -205,9 +205,6 @@ def _get_organizer_matches(
     elif time_filter == MatchesTimeFilter.FUTURE:
         query = query.where(filter=FieldFilter("dateTime", ">", now))
 
-    if organizer_id not in ADMIN_IDS:
-        query = query.where(filter=FieldFilter("isTest", "==", False))
-
     if limit is not None:
         query = query.order_by("dateTime", direction=firestore.Query.DESCENDING)
         if cursor:
@@ -359,6 +356,7 @@ def get_match(match_id, is_local=False):
                 match_data,
                 version,
                 add_organizer_info=match_data.get("organizerId", None) == flask.g.uid,
+                is_test=is_test,
             )
         }
     elif flask.request.method == "POST":
@@ -636,8 +634,7 @@ def add_user_to_match(match_id, user_id, payment_intent=None, is_test=False):
 
 
 def _get_user_stat_doc_ref(user_id, match_id, is_test=False):
-    match = MatchModel.get_by_id(match_id, app.db_client, is_test=is_test)
-    if match and match.is_test:
+    if is_test:
         return (
             app.db_client.collection("users")
             .document(user_id)
@@ -889,7 +886,7 @@ def cancel_match(match_id, trigger="manual"):
         match_doc_ref,
         users_stats_docs,
         match_id,
-        match.is_test,
+        is_test,
         trigger,
     )
     return {}
@@ -1048,7 +1045,6 @@ def create_organizer_payout(match_id):
         print("Nothing to payout...skipping")
         return {"status": "skipped", "reason": "no_players"}
 
-    is_test = match.is_test
     prefix = "stripe_test" if is_test else "stripe"
     organizer_data = (
         app.db_client.collection("users")
@@ -1111,7 +1107,7 @@ def _cancel_match_firestore_transactional(
 ):
     stripe.api_key = Secrets.STRIPE_KEY_TEST if is_test else Secrets.STRIPE_KEY
 
-    match = get_match(match_id, is_local=True)
+    match = match_doc_ref.get(transaction=transaction).to_dict()
     to_refund = None
     if "price" in match:
         to_refund = match["price"]["basePrice"] + match["price"].get("userFee", 0)
@@ -1235,12 +1231,12 @@ def freeze_match_stats(match_id, notify=True, only_for_user=None):
 
     match_doc_ref = app.db_client.collection(coll).document(match_id)
 
-    if match.is_test:
+    if is_test:
         print(f"[SKIP] Test match {match_id} - not updating user stats or leaderboards")
         # still mark match as scored
         match_doc_ref.update({"ratings.computed_at": firestore.firestore.SERVER_TIMESTAMP})
     else:
-        users_collection = _get_users_collection_name(is_test=match.is_test)
+        users_collection = _get_users_collection_name(is_test=is_test)
         users_doc_ref = {}
         for u in updates:
             ref = app.db_client.collection(users_collection).document(u)
@@ -1425,6 +1421,7 @@ def _remove_user_from_match(match_id, user_id, is_test=False):
         transactions_doc_ref,
         user_id,
         match_id,
+        is_test,
     )
 
 
@@ -1436,6 +1433,7 @@ def _remove_user_from_match_stripe_refund_firestore_transaction(
     transaction_doc_ref,
     user_id,
     match_id,
+    is_test=False,
 ):
     timestamp = datetime.now(tz)
 
@@ -1462,7 +1460,7 @@ def _remove_user_from_match_stripe_refund_firestore_transaction(
 
     if payment_intent:
         # issue_refund
-        stripe.api_key = Secrets.STRIPE_KEY_TEST if match["isTest"] else Secrets.STRIPE_KEY
+        stripe.api_key = Secrets.STRIPE_KEY_TEST if is_test else Secrets.STRIPE_KEY
         refund_amount = _get_stripe_price_amount(match, "base")
         refund = stripe.Refund.create(
             payment_intent=payment_intent, amount=refund_amount, reverse_transfer=True
@@ -1574,7 +1572,7 @@ def _get_matches_firestore(
             num_fetched_matches += 1
 
             # time filter
-            data = _format_match_data_v2(m.id, raw_data, version)
+            data = _format_match_data_v2(m.id, raw_data, version, is_test=is_test)
 
             # FIXME use index instead
             if with_user:
@@ -1633,7 +1631,7 @@ def _get_matches_firestore(
 
 
 # DEPRECATED
-def _format_match_data_v2(match_id, match_data, version, add_organizer_info=False):
+def _format_match_data_v2(match_id, match_data, version, add_organizer_info=False, is_test=False):
     # add status
     match_data["status"] = _get_status(match_data).value
 
@@ -1651,8 +1649,8 @@ def _format_match_data_v2(match_id, match_data, version, add_organizer_info=Fals
     if add_organizer_info:
         try:
             if "payout_id" in match_data:
-                stripe.api_key = Secrets.STRIPE_KEY_TEST if match_data["isTest"] else Secrets.STRIPE_KEY
-                prefix = "stripe_test" if match_data["isTest"] else "stripe"
+                stripe.api_key = Secrets.STRIPE_KEY_TEST if is_test else Secrets.STRIPE_KEY
+                prefix = "stripe_test" if is_test else "stripe"
                 org_data = (
                     app.db_client.collection("users")
                     .document(match_data["organizerId"])
@@ -1737,13 +1735,13 @@ def _add_match_firestore(match_data):
             .to_dict()
         )
 
-        prefix = "stripe_test" if match_data["isTest"] else "stripe"
+        prefix = "stripe_test" if match_data.get("isTest", False) else "stripe"
         if not organizer_data.get(prefix, {}).get("charges_enabled", False):
             print("charges not enabled on organizer account: set match as unpublished")
             match_data["unpublished_reason"] = "organizer_not_onboarded"
 
         # create stripe object
-        stripe.api_key = Secrets.STRIPE_KEY_TEST if match_data["isTest"] else Secrets.STRIPE_KEY
+        stripe.api_key = Secrets.STRIPE_KEY_TEST if match_data.get("isTest", False) else Secrets.STRIPE_KEY
         response = stripe.Product.create(
             name="Nutmeg Match - {} - {}".format(
                 match_data["sportCenter"]["name"], match_data["dateTime"]
@@ -1761,6 +1759,8 @@ def _add_match_firestore(match_data):
 
     is_test = match_data.get("isTest", False)
     coll = _get_matches_collection(is_test)
+    if is_test:
+        match_data.pop("isTest", None)
     doc_ref = app.db_client.collection(coll).document()
     doc_ref.set(match_data)
 

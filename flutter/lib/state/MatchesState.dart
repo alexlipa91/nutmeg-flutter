@@ -156,11 +156,9 @@ class MatchesState extends ChangeNotifier {
   }
 
   bool shouldShow(Match match) {
-    var testMode = userState?.isTestMode ?? false;
-    if (testMode) {
-      return match.isTest;
-    }
-    return !match.isTest;
+    // Collection separation is handled server-side: the X-Test-Mode header
+    // directs queries to matches_test or matches. No client filtering needed.
+    return true;
   }
 
   Future<void> fetchGoingMatches() async {
