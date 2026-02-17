@@ -501,7 +501,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get ratePlayersButtonText => 'VALUTA I GIOCATORI';
 
   @override
-  String get updateRatesPlayersButtonText => 'VOTI DI CAMBIAMENTO';
+  String get updateRatesPlayersButtonText => 'CAMBIA I VOTI';
 
   @override
   String get submitRatesButtonText => 'INVIA';
@@ -534,7 +534,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get numMatchesLostBoxTitle => 'Sconfitte';
 
   @override
-  String get averageScoreBoxTitle => 'Media Punti';
+  String get averageScoreBoxTitle => 'Media Voto';
 
   @override
   String get organiserSectionTitle => 'ORGANIZZATORE';
