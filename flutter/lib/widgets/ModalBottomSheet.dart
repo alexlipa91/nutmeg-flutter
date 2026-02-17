@@ -18,18 +18,39 @@ class ModalBottomSheet {
             borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
           ),
           context: context,
-          builder: (BuildContext context) => SafeArea(
-              minimum: EdgeInsets.only(bottom: 16),
-              child: SingleChildScrollView(
-                  child: Padding(
-                      padding: EdgeInsets.only(
-                          bottom: MediaQuery.of(context).viewInsets.bottom,
-                          top: 16,
-                          right: 16,
-                          left: 16),
-                      child: Wrap(
-                          alignment: WrapAlignment.center,
-                          children: [Container(width: 1000, child: child)])))));
+          builder: (BuildContext context) => ConstrainedBox(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.85,
+              ),
+              child: SafeArea(
+                minimum: EdgeInsets.only(bottom: 16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(height: 12),
+                    Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Palette.greyLighter,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    Flexible(
+                      child: SingleChildScrollView(
+                        padding: EdgeInsets.only(
+                            bottom: MediaQuery.of(context).viewInsets.bottom,
+                            top: 12,
+                            right: 16,
+                            left: 16),
+                        child: Wrap(
+                            alignment: WrapAlignment.center,
+                            children: [Container(width: 1000, child: child)]),
+                      ),
+                    ),
+                  ],
+                ),
+              )));
     } else {
       returnValue = await showDialog(
           context: context,

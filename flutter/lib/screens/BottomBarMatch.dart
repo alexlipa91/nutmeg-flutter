@@ -6,7 +6,6 @@ import 'package:nutmeg/screens/RatePlayersModal.dart';
 import 'package:nutmeg/screens/WaitListModal.dart';
 import 'package:nutmeg/state/MatchState.dart';
 import 'package:nutmeg/state/UserRatings.dart';
-import 'package:nutmeg/state/UserState.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
 import 'package:provider/provider.dart';
@@ -63,9 +62,13 @@ class BottomBarMatch extends StatelessWidget {
       case MatchStatus.cancelled:
         break;
       case MatchStatus.unpublished:
-        if (matchState.isLoggedUserOrganizer())
-          bottomBar =
-              NotPublishedBottomBar(matchId: matchId, isTest: match.isTest);
+        if (isGoing) {
+          bottomBar = LeaveMatchBottomBar(matchId: matchId, enabled: true);
+        } else if (isFull) {
+          bottomBar = JoinWaitListBottomBar(matchId: matchId);
+        } else {
+          bottomBar = JoinMatchBottomBar(matchId: matchId, enabled: true);
+        }
     }
 
     return bottomBar;
@@ -237,26 +240,3 @@ class RatePlayersBottomBar extends StatelessWidget {
   }
 }
 
-class NotPublishedBottomBar extends StatelessWidget {
-  final String matchId;
-  final bool isTest;
-
-  const NotPublishedBottomBar(
-      {Key? key, required this.matchId, required this.isTest})
-      : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return BottomBarMatch(
-        matchId: matchId,
-        text: "Not Published",
-        subText:
-            "Complete your Stripe account to receive payments and publish this match",
-        button: InkWell(
-            onTap: () =>
-                completeAccountAction(context, isTest, matchId: matchId),
-            child: Padding(
-                padding: EdgeInsets.only(top: 8),
-                child: Text("GO TO STRIPE", style: TextPalette.linkStyle))));
-  }
-}

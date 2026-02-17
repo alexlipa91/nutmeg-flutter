@@ -159,7 +159,7 @@ abstract class AppLocalizations {
   /// No description provided for @notPublishedStatus.
   ///
   /// In en, this message translates to:
-  /// **'Not Published'**
+  /// **'Pending: not enough players'**
   String get notPublishedStatus;
 
   /// No description provided for @cancelledStatus.
@@ -329,6 +329,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Match is on'**
   String get matchOnStatus;
+
+  /// No description provided for @matchSavedStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Match Saved'**
+  String get matchSavedStatus;
 
   /// No description provided for @inProgressStatus.
   ///
@@ -743,6 +749,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'You left the match'**
   String get leftMatchTitle;
+
+  /// No description provided for @leftMatchContactOrganizerForRefund.
+  ///
+  /// In en, this message translates to:
+  /// **'Please contact the organizer for any refund'**
+  String get leftMatchContactOrganizerForRefund;
 
   /// No description provided for @finalScoreSubmitText.
   ///

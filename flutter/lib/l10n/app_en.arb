@@ -13,7 +13,7 @@
   "thisWeek": "THIS WEEK",
   "nextWeek": "NEXT WEEK",
   "moreThanTwoWeeks": "IN MORE THAN TWO WEEKS",
-  "notPublishedStatus": "Not Published",
+  "notPublishedStatus": "Pending: not enough players",
   "cancelledStatus": "Cancelled",
   "fullStatus": "Full",
   "votes": "votes",
@@ -66,8 +66,9 @@
     "courtNumber": "Court number {x}",
     "artificialGrass": "Grass",
     "matchOnStatus": "Match is on",
+    "matchSavedStatus": "Match Saved",
     "inProgressStatus": "In Progress",
-    "notPublishedStatus": "Not Published",
+    "notPublishedStatus": "Pending: not enough players",
     "waitingForPlayersStatus": "Waiting for {x} more players",
     "@waitingForPlayers": {
         "placeholders": {
@@ -198,6 +199,7 @@
     "youWantToLeaveTitle": "Are you sure you want to leave?",
     "youWantToLeaveSubtitle": "If you leave, all your unsaved changes will be lost.",
     "leftMatchTitle": "You left the match",
+    "leftMatchContactOrganizerForRefund": "Please contact the organizer for any refund",
 
     "finalScoreSubmitText": "What was the final score?",
     "submitScoreButton": "SUBMIT SCORE",

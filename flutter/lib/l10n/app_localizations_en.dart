@@ -38,7 +38,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get moreThanTwoWeeks => 'IN MORE THAN TWO WEEKS';
 
   @override
-  String get notPublishedStatus => 'Not Published';
+  String get notPublishedStatus => 'Pending: not enough players';
 
   @override
   String get cancelledStatus => 'Cancelled';
@@ -135,6 +135,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get matchOnStatus => 'Match is on';
+
+  @override
+  String get matchSavedStatus => 'Match Saved';
 
   @override
   String get inProgressStatus => 'In Progress';
@@ -375,6 +378,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get leftMatchTitle => 'You left the match';
+
+  @override
+  String get leftMatchContactOrganizerForRefund =>
+      'Please contact the organizer for any refund';
 
   @override
   String get finalScoreSubmitText => 'What was the final score?';

@@ -657,11 +657,9 @@ class MatchInfo extends StatelessWidget {
               Icons.calendar_month_outlined:
                   formatDay(match.getLocalizedTime(), context),
               Icons.access_time_outlined:
-                  "${MatchInfo.formatDayHour(match.getLocalizedTime(), context)} - "
-                          "${MatchInfo.formatDayHour(match.getLocalizedTime().add(match.duration), context)}" +
-                      " (" +
-                      gmtSuffix(sportCenter.timezoneId) +
-                      ")",
+                  "${DateFormat('HH:mm').format(match.getLocalizedTime())}"
+                      " (${gmtSuffix(sportCenter.timezoneId)})"
+                      " - ${match.duration.inMinutes} min",
               if (match.price != null)
                 Icons.local_offer_outlined:
                     formatCurrency(match.price!.getTotalPrice()),
@@ -791,6 +789,10 @@ class MatchInfo extends StatelessWidget {
       icon = Icons.history_toggle_off_outlined;
       color = Palette.greyDark;
       text = AppLocalizations.of(context)!.inProgressStatus;
+    } else if (match.status == MatchStatus.rated) {
+      icon = Icons.check_circle_outline;
+      color = Palette.greyDark;
+      text = AppLocalizations.of(context)!.matchSavedStatus;
     } else if (match.status == MatchStatus.cancelled) {
       icon = Icons.do_disturb_alt_outlined;
       color = Palette.destructive;
@@ -800,14 +802,13 @@ class MatchInfo extends StatelessWidget {
       color = Palette.darkWarning;
       text = AppLocalizations.of(context)!.notPublishedStatus;
     } else if (match.status == MatchStatus.open &&
-        match.cancelBefore != null &&
         match.getMissingPlayers() > 0) {
       icon = Icons.hourglass_empty_outlined;
       color = Palette.primary;
       text = AppLocalizations.of(context)!
           .waitingForPlayersStatus(match.getMissingPlayers());
     } else if (match.status == MatchStatus.open &&
-            (match.getMissingPlayers() == 0 || match.cancelBefore == null) ||
+            match.getMissingPlayers() == 0 ||
         (match.status == MatchStatus.pre_playing &&
             match.getMissingPlayers() == 0)) {
       icon = Icons.check_circle_outline;
@@ -1066,10 +1067,7 @@ class EmptyPlayerCard extends StatelessWidget {
     var matchesState = context.read<MatchesState>();
 
     return InkWell(
-      onTap:
-          context.watch<MatchState>().match?.status == MatchStatus.unpublished
-              ? null
-              : () => JoinModal.onJoinGameAction(
+      onTap: () => JoinModal.onJoinGameAction(
                   context, userState, matchState, matchesState),
       child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
         DottedBorder(
