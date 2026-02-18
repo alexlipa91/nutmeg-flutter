@@ -31,12 +31,26 @@ jobs:
         with:
           flutter-version: "3.41.0"
 
-      # --- web-specific ---
+      # --- web: production ---
       - run: ./scripts/build_web_app.sh
-      - name: Deploy to Firebase
+      - name: Deploy to Firebase (production)
         uses: w9jds/firebase-action@master
         with:
           args: deploy --only hosting
+        env:
+          GCP_SA_KEY: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_NUTMEG_9099C }}"
+          PROJECT_PATH: flutter
+
+      # --- web: test channel ---
+      - name: Create test env file
+        run: |
+          cp .env.prod .env.test
+          echo "TEST_MODE=true" >> .env.test
+      - run: ENV_FILE=.env.test ./scripts/build_web_app.sh
+      - name: Deploy to Firebase (test channel)
+        uses: w9jds/firebase-action@master
+        with:
+          args: hosting:channel:deploy test --only hosting
         env:
           GCP_SA_KEY: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_NUTMEG_9099C }}"
           PROJECT_PATH: flutter
