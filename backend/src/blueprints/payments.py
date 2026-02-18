@@ -22,6 +22,12 @@ def checkout():
 
     match_info = _get_match_info(match_id, is_test=is_test)
 
+    if not match_info:
+        return flask.jsonify({"error": "Match not found"}), 404
+
+    if "stripePriceId" not in match_info:
+        return flask.jsonify({"error": "This match does not support Nutmeg payments"}), 400
+
     if version == 1:
         session = _create_checkout_redirects_to_web(
             _get_stripe_customer_id(user_id, is_test),

@@ -663,8 +663,7 @@ class MatchInfo extends StatelessWidget {
                       " - ${match.duration.inMinutes} min",
               if (match.price != null)
                 Icons.local_offer_outlined:
-                    "${formatCurrency(match.price!.getTotalPrice())}"
-                        " · ${match.isManualPayment ? AppLocalizations.of(context)!.payOutsideNutmegTitle : AppLocalizations.of(context)!.payWithNutmegTitle}",
+                    formatCurrency(match.price!.getTotalPrice()),
               if (match.isPrivate)
                 Icons.lock_outline:
                     AppLocalizations.of(context)!.privateMatchDesc,
@@ -2024,8 +2023,10 @@ class _PaymentInfoCardState extends State<PaymentInfoCard> {
               color: Palette.greyLightest,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: buildLinkedText(
-                paymentInfo, TextPalette.getBodyText(Palette.black)),
+            child: SelectableText(
+              paymentInfo,
+              style: TextPalette.getBodyText(Palette.black),
+            ),
           ),
           SizedBox(height: 16),
           if (_hasPaid == true)
