@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:logging/logging.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
+import 'package:nutmeg/config/app_config.dart';
 import 'package:nutmeg/controller/MiscController.dart';
 import 'package:nutmeg/main.dart';
 import 'package:nutmeg/state/LoadOnceState.dart';
@@ -87,6 +88,7 @@ class LaunchController {
 
   static Future<void> loadData(BuildContext context, String? from) async {
     logger.info("start loading data function");
+    logger.info("TEST_MODE=${AppConfig.testMode}, BACKEND_URL=${AppConfig.backendUrl}");
 
     trackAppVersion();
 

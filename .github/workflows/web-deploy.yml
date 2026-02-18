@@ -44,7 +44,7 @@ jobs:
       # --- web: test channel ---
       - name: Create test env file
         run: |
-          cp .env.prod .env.test
+          grep -v '^TEST_MODE=' .env.prod > .env.test
           echo "TEST_MODE=true" >> .env.test
       - run: ENV_FILE=.env.test ./scripts/build_web_app.sh
       - name: Deploy to Firebase (test channel)
