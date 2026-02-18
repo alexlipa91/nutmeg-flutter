@@ -43,12 +43,18 @@ class PaymentDetailsDescription {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              CircleAvatar(
-                radius: 100,
-                backgroundColor: Palette.greyLighter,
-                backgroundImage: CachedNetworkImageProvider(
-                    (context.read<LoadOnceState>().getRandomGif())),
-              ),
+              Builder(builder: (context) {
+                var gif = context.read<LoadOnceState>().getRandomGif();
+                return CircleAvatar(
+                  radius: 100,
+                  backgroundColor: Palette.greyLighter,
+                  backgroundImage:
+                      gif != null ? CachedNetworkImageProvider(gif) : null,
+                  child: gif == null
+                      ? Icon(Icons.celebration, size: 60, color: Palette.primary)
+                      : null,
+                );
+              }),
               Padding(
                   padding: EdgeInsets.only(top: 30),
                   child: Text(

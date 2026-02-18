@@ -11,11 +11,12 @@ class LoadOnceState extends ChangeNotifier {
 
   Locale locale = Locale((localeStr == "") ? Platform.localeName.substring(0, 2) : localeStr);
   
-  late List<String> joinedGifs;
+  List<String> joinedGifs = [];
   List<SportCenter>? savedSportCenters;
 
-  String getRandomGif() {
-    joinedGifs..shuffle();
+  String? getRandomGif() {
+    if (joinedGifs.isEmpty) return null;
+    joinedGifs.shuffle();
     return joinedGifs.first;
   }
 

@@ -237,5 +237,6 @@
     "customOption": "Personalizado",
     "customPlayersPerSideHint": "Insira o número de jogadores por equipa",
     "totalPlayersLabel": "jogadores no total",
+    "addPlayerLabel": "Adicionar",
     "dontForgetToPay": "Não se esqueça de pagar {name}!"
 }

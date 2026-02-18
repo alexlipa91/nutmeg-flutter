@@ -1140,14 +1140,14 @@ class _AddPlayerCard extends StatelessWidget {
             strokeWidth: 1.5,
             dashPattern: [4],
             child: CircleAvatar(
-              radius: 30,
-              child: Icon(Icons.person_add, color: Palette.green, size: 22),
+              radius: 24,
+              child: Icon(Icons.person_add, color: Palette.green, size: 18),
               backgroundColor: Colors.transparent,
             ),
           ),
         ),
         SizedBox(height: 10),
-        Text("Add",
+        Text(AppLocalizations.of(context)!.addPlayerLabel,
             overflow: TextOverflow.ellipsis,
             style: TextPalette.getBodyText(Palette.green))
       ]),

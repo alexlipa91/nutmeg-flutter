@@ -1524,6 +1524,12 @@ abstract class AppLocalizations {
   /// **'players total'**
   String get totalPlayersLabel;
 
+  /// No description provided for @addPlayerLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get addPlayerLabel;
+
   /// No description provided for @dontForgetToPay.
   ///
   /// In en, this message translates to:
