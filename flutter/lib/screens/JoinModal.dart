@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:nutmeg/model/Match.dart';
 import 'package:nutmeg/screens/Login.dart';
 import 'package:nutmeg/screens/PaymentDetailsDescription.dart';
 import 'package:nutmeg/state/MatchState.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
-import 'package:nutmeg/widgets/Avatar.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
-import 'package:nutmeg/widgets/ModalPaymentDescriptionArea.dart';
 import 'package:provider/provider.dart';
 import 'package:nutmeg/l10n/app_localizations.dart';
 
@@ -41,7 +40,7 @@ class JoinButton extends StatelessWidget {
         var loaderState = context.read<GenericButtonWithLoaderState>();
         loaderState.change(true);
         await JoinModal.onJoinGameAction(context, userState, matchState, matchesState);
-        // loaderState.change(false);
+        loaderState.change(false);
       },
       Primary(),
     );
@@ -50,73 +49,23 @@ class JoinButton extends StatelessWidget {
 
 class JoinModal {
   static Widget getModalDescriptionArea(
-      BuildContext context, int basePrice, int userFee) {
-    int creditsUsed = 0;
-
-    var widgets = [
-      Row(children: [
-        Container(
-          height: 24,
-          width: 24,
-          child:
-              UserAvatar(15, context.read<UserState>().getLoggedUserDetails()),
-        ),
-        SizedBox(width: 10),
-        Text("1x ${AppLocalizations.of(context)!.player}",
-            style: TextPalette.h3),
-        Expanded(
-            child: Text(
-          formatCurrency(basePrice),
-          style: TextPalette.h3,
-          textAlign: TextAlign.end,
-        ))
-      ]),
-      if (userFee > 0)
-        Row(
-          children: [
-            // adding this here as a trick to align the rows
-            Container(height: 24, width: 24),
-            SizedBox(width: 10),
-            Text(AppLocalizations.of(context)!.serviceFee,
-                style: TextPalette.bodyText),
-            Expanded(
-                child: Text(
-              formatCurrency(userFee),
-              style: TextPalette.bodyText,
-              textAlign: TextAlign.end,
-            ))
-          ],
-        ),
-      if (creditsUsed > 0)
-        Row(
-          children: [
-            // adding this here as a trick to align the rows
-            Container(height: 24, width: 24),
-            SizedBox(width: 10),
-            Text('Credits', style: TextPalette.bodyText),
-            Expanded(
-                child: Text(
-              "- " + formatCurrency(creditsUsed),
-              style: TextPalette.bodyText,
-              textAlign: TextAlign.end,
-            ))
-          ],
-        ),
-    ];
-
-    var finalRow = Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      BuildContext context, Match match) {
+    var totalPrice = match.price!.getTotalPrice();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Text(AppLocalizations.of(context)!.subtotal, style: TextPalette.h3),
-        Text(
-          formatCurrency(basePrice + userFee - creditsUsed),
-          style: TextPalette.h3,
-        )
+        Divider(height: 1, color: Palette.greyLighter),
+        SizedBox(height: 16),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(AppLocalizations.of(context)!.totalLabel, style: TextPalette.h3),
+            Text(formatCurrency(totalPrice), style: TextPalette.h3),
+          ],
+        ),
       ],
     );
-
-    return ModalPaymentDescriptionArea(
-        rows: List<Widget>.from(widgets), finalRow: finalRow);
   }
 
   static var onJoinGameAction = (BuildContext context, UserState userState,
@@ -143,9 +92,8 @@ class JoinModal {
       // Stripe payment flow
       await GenericInfoModal(
           title: AppLocalizations.of(context)!.joinThisMatchTitle,
-          description: AppLocalizations.of(context)!.joinMatchInfo,
-          content: getModalDescriptionArea(
-              context, match.price!.basePrice, match.price!.userFee),
+          description: AppLocalizations.of(context)!.freeCancellationPolicy("24"),
+          content: getModalDescriptionArea(context, match),
           action: Row(children: [
             Expanded(
                 child:

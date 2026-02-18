@@ -192,29 +192,11 @@ abstract class AppLocalizations {
   /// **'The match will be automatically canceled on {date} at {hour} if less than {n} players have joined.'**
   String cancellationInfo(String date, String hour, int n);
 
-  /// No description provided for @fullRefund.
-  ///
-  /// In en, this message translates to:
-  /// **'a full refund'**
-  String get fullRefund;
-
-  /// No description provided for @refundWithoutFee.
-  ///
-  /// In en, this message translates to:
-  /// **'a refund (excluding Nutmeg service fee)'**
-  String get refundWithoutFee;
-
   /// No description provided for @paymentPolicyHeader.
   ///
   /// In en, this message translates to:
   /// **'Payment Policy'**
   String get paymentPolicyHeader;
-
-  /// No description provided for @refundInfo.
-  ///
-  /// In en, this message translates to:
-  /// **'If you leave the match you will get {info}.\nIf the match is cancelled you will get a full refund.\nIf you don\'t show up you won\'t get a refund.'**
-  String refundInfo(String info);
 
   /// No description provided for @organizedBy.
   ///
@@ -1523,6 +1505,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'players total'**
   String get totalPlayersLabel;
+
+  /// No description provided for @totalLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Total'**
+  String get totalLabel;
+
+  /// No description provided for @freeCancellationPolicy.
+  ///
+  /// In en, this message translates to:
+  /// **'Free cancellation up to {hours}h before the match'**
+  String freeCancellationPolicy(Object hours);
 
   /// No description provided for @addPlayerLabel.
   ///

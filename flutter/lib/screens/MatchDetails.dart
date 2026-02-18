@@ -335,11 +335,7 @@ List<Widget> getWidgets(
     }
 
     if (match.price != null) {
-      var refundString = (match.price!.userFee == 0)
-          ? AppLocalizations.of(context)!.fullRefund
-          : AppLocalizations.of(context)!.refundWithoutFee;
-
-      rules.add(AppLocalizations.of(context)!.refundInfo(refundString));
+      rules.add(AppLocalizations.of(context)!.freeCancellationPolicy("24"));
     }
 
     if (rules.length == 0) {
@@ -667,13 +663,32 @@ class MatchInfo extends StatelessWidget {
                   "${DateFormat('HH:mm').format(match.getLocalizedTime())}"
                       " (${gmtSuffix(sportCenter.timezoneId)})"
                       " - ${match.duration.inMinutes} min",
-              if (match.price != null)
-                Icons.local_offer_outlined:
-                    formatCurrency(match.price!.getTotalPrice()),
               if (match.isPrivate)
                 Icons.lock_outline:
                     AppLocalizations.of(context)!.privateMatchDesc,
             }),
+            if (match.price != null) ...[
+              SizedBox(height: 12),
+              Row(children: [
+                Icon(Icons.local_offer_outlined, color: Palette.black, size: 18),
+                SizedBox(width: 16),
+                Text(formatCurrency(match.price!.getTotalPrice()),
+                    style: TextPalette.listItem),
+                if (!match.isManualPayment) ...[
+                  Spacer(),
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: Palette.primary,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text("NUTMEG PAY",
+                        style: TextPalette.getBodyText(Palette.white)
+                            .copyWith(fontSize: 11, fontWeight: FontWeight.w600)),
+                  ),
+                ],
+              ]),
+            ],
             if (match.isManualPayment && match.organizerId != null)
               _PaymentInfoRow(
                 match: match,

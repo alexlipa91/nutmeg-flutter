@@ -59,18 +59,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get fullRefund => 'a full refund';
-
-  @override
-  String get refundWithoutFee => 'a refund (excluding Nutmeg service fee)';
-
-  @override
   String get paymentPolicyHeader => 'Payment Policy';
-
-  @override
-  String refundInfo(String info) {
-    return 'If you leave the match you will get $info.\nIf the match is cancelled you will get a full refund.\nIf you don\'t show up you won\'t get a refund.';
-  }
 
   @override
   String get organizedBy => 'Organized By';
@@ -795,6 +784,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get totalPlayersLabel => 'players total';
+
+  @override
+  String get totalLabel => 'Total';
+
+  @override
+  String freeCancellationPolicy(Object hours) {
+    return 'Free cancellation up to ${hours}h before the match';
+  }
 
   @override
   String get addPlayerLabel => 'Add';

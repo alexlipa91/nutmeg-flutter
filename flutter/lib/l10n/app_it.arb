@@ -14,10 +14,7 @@
     "votes": "voti",
     "matchDetailsScreen": "*****************************************************************************************************",
     "cancellationInfo": "La partita verrà automaticamente annullata il {date} alle {hour} se si saranno uniti meno di {n} giocatori.",
-    "fullRefund": "un rimborso completo",
-    "refundWithoutFee": "un rimborso (esclusa la commissione del servizio Nutmeg)",
     "paymentPolicyHeader": "Regole",
-    "refundInfo": "Se abbandoni la partita riceverai {info}.\nSe la partita viene annullata, riceverai un rimborso completo.\nSe non ti presenti, non riceverai alcun rimborso.",
     "organizedBy": "Organizzato da",
     "editAction": "Modificare",
     "shareAction": "Condividi",
@@ -237,6 +234,8 @@
     "customOption": "Personalizzato",
     "customPlayersPerSideHint": "Inserisci il numero di giocatori per squadra",
     "totalPlayersLabel": "giocatori totali",
+    "totalLabel": "Totale",
+    "freeCancellationPolicy": "Cancellazione gratuita fino a {hours}h prima della partita",
     "addPlayerLabel": "Aggiungi",
     "dontForgetToPay": "Non dimenticare di pagare {name}!"
 }

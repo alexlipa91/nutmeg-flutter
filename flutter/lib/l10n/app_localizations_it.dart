@@ -59,19 +59,7 @@ class AppLocalizationsIt extends AppLocalizations {
   }
 
   @override
-  String get fullRefund => 'un rimborso completo';
-
-  @override
-  String get refundWithoutFee =>
-      'un rimborso (esclusa la commissione del servizio Nutmeg)';
-
-  @override
   String get paymentPolicyHeader => 'Regole';
-
-  @override
-  String refundInfo(String info) {
-    return 'Se abbandoni la partita riceverai $info.\nSe la partita viene annullata, riceverai un rimborso completo.\nSe non ti presenti, non riceverai alcun rimborso.';
-  }
 
   @override
   String get organizedBy => 'Organizzato da';
@@ -803,6 +791,14 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get totalPlayersLabel => 'giocatori totali';
+
+  @override
+  String get totalLabel => 'Totale';
+
+  @override
+  String freeCancellationPolicy(Object hours) {
+    return 'Cancellazione gratuita fino a ${hours}h prima della partita';
+  }
 
   @override
   String get addPlayerLabel => 'Aggiungi';

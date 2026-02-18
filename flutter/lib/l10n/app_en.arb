@@ -32,16 +32,7 @@
         }
     },
 
-    "fullRefund": "a full refund",
-    "refundWithoutFee": "a refund (excluding Nutmeg service fee)",
-
     "paymentPolicyHeader": "Payment Policy",
-    "refundInfo":  "If you leave the match you will get {info}.\nIf the match is cancelled you will get a full refund.\nIf you don't show up you won't get a refund.",
-    "@refundInfo" : {
-        "placeholders": {
-            "info":  {"type": "String"}
-        }
-    },
     "organizedBy": "Organized By",
     "editAction": "Edit",
     "shareAction": "Share",
@@ -389,6 +380,13 @@
     "customOption": "Custom",
     "customPlayersPerSideHint": "Enter number of players per side",
     "totalPlayersLabel": "players total",
+    "totalLabel": "Total",
+    "freeCancellationPolicy": "Free cancellation up to {hours}h before the match",
+    "@freeCancellationPolicy": {
+        "placeholders": {
+            "hours": {}
+        }
+    },
     "addPlayerLabel": "Add",
     "dontForgetToPay": "Don't forget to pay {name}!",
     "@dontForgetToPay": {
