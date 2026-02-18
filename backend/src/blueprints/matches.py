@@ -1895,16 +1895,14 @@ def _update_user_account(user_id, is_test, match_id, manage_payments):
     stripe.api_key = Secrets.STRIPE_KEY_TEST if is_test else Secrets.STRIPE_KEY
     prefix = "stripe_test" if is_test else "stripe"
 
+    user_doc_ref = app.db_client.collection("users").document(user_id)
+    user_updates = {}
+
     # add to created matches
     if not is_test:
-        user_doc_ref = app.db_client.collection("users").document(user_id)
-        user_updates = {
-            "{}.{}".format("created_matches", match_id): firestore.firestore.SERVER_TIMESTAMP
-        }
-        user_doc_ref.update(user_updates)
+        user_updates["{}.{}".format("created_matches", match_id)] = firestore.firestore.SERVER_TIMESTAMP
 
     if manage_payments:
-        # check if we need to create a stripe connected account
         user_data = user_doc_ref.get().to_dict()
         existing_account = user_data.get(prefix, {}).get("connected_account_id")
         if existing_account:
@@ -1927,7 +1925,8 @@ def _update_user_account(user_id, is_test, match_id, manage_payments):
             )
             user_updates["{}.connected_account_id".format(prefix)] = response.id
 
-    user_doc_ref.update(user_updates)
+    if user_updates:
+        user_doc_ref.update(user_updates)
 
 
 class RatingsNotComputedReason(str, Enum):
