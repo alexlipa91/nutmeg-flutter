@@ -1,51 +1,13 @@
 import logging
-import traceback
 
-import flask
 import google.cloud.logging
 
 
-class CloudLoggingHandler(logging.Handler):
+def setup_cloud_logging():
+    """Set up Google Cloud Logging with trace-based correlation.
 
-    @staticmethod
-    def setup_logging():
-        logging.basicConfig(level=logging.INFO)
-        logger = logging.getLogger()
-        logger.setLevel(logging.INFO)
-
-        # Remove any existing handlers
-        for handler in logger.handlers[:]:
-            logger.removeHandler(handler)
-
-        # Add our custom Cloud Logging handler
-        handler = CloudLoggingHandler()
-        logger.addHandler(handler)
-
-    def __init__(self):
-        super().__init__()
-        self.logging_client = google.cloud.logging.Client()
-        self.logger = self.logging_client.logger("app")
-
-    def emit(self, record):
-        try:  # Create base structured log
-            message = record.getMessage()
-            if record.exc_info:
-                message += "\n" + "".join(traceback.format_exception(*record.exc_info))
-
-            structured_log = {
-                "message": message,
-                "severity": record.levelname,
-            }
-
-            if flask.has_request_context():
-                uid = getattr(flask.g, "uid", None)
-                if uid:
-                    structured_log["user_id"] = uid
-                structured_log["client_version"] = flask.request.headers.get(
-                    "App-Version", "unknown"
-                )
-
-            # Log using the Cloud Logging client
-            self.logger.log_struct(structured_log, severity=record.levelname)
-        except Exception:
-            self.handleError(record)
+    App logs will appear correlated with App Engine request logs in
+    Logs Explorer (nested under the request), not as separate entries.
+    """
+    client = google.cloud.logging.Client()
+    client.setup_logging(log_level=logging.INFO)

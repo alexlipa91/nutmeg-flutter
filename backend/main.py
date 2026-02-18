@@ -1,5 +1,5 @@
 from src import _create_app
-from src.common.cloud_logging import CloudLoggingHandler
+from src.common.cloud_logging import setup_cloud_logging
 import firebase_admin
 import os
 
@@ -11,7 +11,7 @@ def create_app():
     load_secrets()
 
     if "GAE_SERVICE" in os.environ:
-        CloudLoggingHandler.setup_logging()
+        setup_cloud_logging()
 
     return _create_app()
 

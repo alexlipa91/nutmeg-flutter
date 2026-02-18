@@ -6,7 +6,6 @@ import flask
 from firebase_admin import auth
 from flask import request
 from flask_cors import CORS
-from google.cloud.logging.handlers import CloudLoggingHandler
 import os
 from src.blueprints import (
     feedback,
@@ -49,12 +48,18 @@ def _create_app():
         else:
             flask.g.uid = None
 
+        logging.info(
+            f"[{request.method}] {request.path} "
+            f"user={flask.g.uid or 'anon'} "
+            f"client={request.headers.get('App-Version', 'unknown')}"
+        )
+
         if request.method == "POST":
             try:
                 body = request.get_data()
                 if body:
                     encoded = base64.b64encode(body).decode("utf-8")
-                    logging.info(f"Request body (base64): {encoded}, userId: {flask.g.uid}, path: {request.path}")
+                    logging.info(f"Request body (base64): {encoded}")
             except Exception as e:
                 logging.error(f"Error logging request body: {e}")
 
