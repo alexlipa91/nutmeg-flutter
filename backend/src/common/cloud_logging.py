@@ -37,11 +37,10 @@ class CloudLoggingHandler(logging.Handler):
                 "severity": record.levelname,
             }
 
-            # Only try to access Flask context if we're in an application context
-            if flask.has_app_context():
-                # Add user_id if available
-                if hasattr(flask.g, "uid"):
-                    structured_log["user_id"] = flask.g.uid
+            if flask.has_request_context():
+                uid = getattr(flask.g, "uid", None)
+                if uid:
+                    structured_log["user_id"] = uid
                 structured_log["client_version"] = flask.request.headers.get(
                     "App-Version", "unknown"
                 )
