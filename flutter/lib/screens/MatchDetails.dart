@@ -133,8 +133,12 @@ class MatchDetailsImplState extends State<MatchDetailsImpl> {
     // we need to wait to load all logged user info before building the UI
 
     var match = state.match!;
+    var usersState = context.read<UsersState>();
     match.going.forEach((key, value) {
-      context.read<UsersState>().fetchUserDetails(key);
+      usersState.fetchUserDetails(key);
+    });
+    match.waitList.forEach((key, value) {
+      usersState.fetchUserDetails(key);
     });
 
     Ratings? ratings = state.ratings;
@@ -384,8 +388,8 @@ List<Widget> getWidgets(
       matchInfo,
       // stats
       if (infoPlayersList != null) infoPlayersList,
-      if (waitListWidget != null) waitListWidget,
       if (teamsWidget != null) teamsWidget,
+      if (waitListWidget != null) waitListWidget,
       if (stats != null) stats,
       if (awards != null) awards,
       // horizontal players list or teams
@@ -416,8 +420,8 @@ List<Widget> getWidgets(
                   mainAxisSize: MainAxisSize.min,
                   children: interleave([
                     if (infoPlayersList != null) infoPlayersList,
-                    if (waitListWidget != null) waitListWidget,
                     if (teamsWidget != null) teamsWidget,
+                    if (waitListWidget != null) waitListWidget,
                     if (stats != null) stats,
                     if (awards != null) awards,
                   ], SizedBox(height: 16)),
@@ -537,6 +541,7 @@ class WaitListWidget extends StatelessWidget {
               matchId: match.documentId,
               showPromote: isOrganizer,
               isPromoteEnabled: isOrganizer && !isFull,
+              avatarRadius: 20,
             ))
         .toList();
 
@@ -903,12 +908,14 @@ class PlayerCard extends StatelessWidget {
   final bool showRemove;
   final bool showPromote;
   final bool isPromoteEnabled;
+  final double avatarRadius;
 
   PlayerCard(this.userId,
       {this.matchId,
       this.showRemove = false,
       this.showPromote = false,
-      this.isPromoteEnabled = false});
+      this.isPromoteEnabled = false,
+      this.avatarRadius = 30});
 
   @override
   Widget build(BuildContext context) {
@@ -921,7 +928,7 @@ class PlayerCard extends StatelessWidget {
         child: Stack(
           clipBehavior: Clip.none,
           children: [
-            UserAvatarWithBottomModal(userData: userData, radius: 30),
+            UserAvatarWithBottomModal(userData: userData, radius: avatarRadius),
             if (showRemove)
               Positioned(
                 right: -6,
