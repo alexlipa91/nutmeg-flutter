@@ -627,7 +627,7 @@ class CreateMatchState extends State<CreateMatch> {
                           if (f == null || f.end - f.start != v.length)
                             return AppLocalizations.of(context)!
                                 .invalidAmountError;
-                          if (double.parse(v) < 0.50)
+                          if (double.parse(v) < AppConfig.nutmegFeeEuros)
                             return AppLocalizations.of(context)!
                                 .minimumAmountError;
                           return null;
@@ -719,7 +719,7 @@ class CreateMatchState extends State<CreateMatch> {
                   Text(AppLocalizations.of(context)!.stripeNutmegFeeLabel,
                       style: TextPalette.bodyText),
                   Spacer(),
-                  Text("€ 0.50", style: TextPalette.bodyText),
+                  Text("€ ${AppConfig.nutmegFeeEuros.toStringAsFixed(2)}", style: TextPalette.bodyText),
                 ]),
                 SizedBox(height: 12),
                 Text(
@@ -984,7 +984,7 @@ class CreateMatchState extends State<CreateMatch> {
                                           .toDouble()
                                           .toInt(),
                                       (!showPaymentInfo && organiserWithFee)
-                                          ? 50
+                                          ? AppConfig.nutmegFeeCents
                                           : 0)
                                   : null,
                               endDateTime.difference(startDateTime),

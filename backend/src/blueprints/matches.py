@@ -35,6 +35,7 @@ from src.utils import (
     send_notification_to_users,
     schedule_app_engine_call,
     update_leaderboard,
+    NUTMEG_FEE_CENTS,
 )
 from flask import current_app as app
 from src.models._ratings import Ratings
@@ -1123,15 +1124,13 @@ def _cancel_match_firestore_transactional(
             users_stats_docs[u], {"joinedMatches." + match_id: firestore.DELETE_FIELD}
         )
 
-        # refund
+        # refund (no amount = full refund; Stripe splits reversal automatically)
         if to_refund and "payment_intent" in going[u]:
             payment_intent = going[u]["payment_intent"]
-            refund_amount = to_refund
             refund_id = None
             try:
                 refund = stripe.Refund.create(
                     payment_intent=payment_intent,
-                    amount=refund_amount,
                     reverse_transfer=True,
                     refund_application_fee=True,
                 )
@@ -1155,7 +1154,7 @@ def _cancel_match_firestore_transactional(
                     "createdAt": datetime.now(),
                     "paymentIntent": payment_intent,
                     "refund_id": refund_id,
-                    "moneyRefunded": refund_amount,
+                    "moneyRefunded": refund.amount if refund_id else 0,
                 },
             )
 
@@ -1459,15 +1458,15 @@ def _remove_user_from_match_stripe_refund_firestore_transaction(
     transaction_log = {"type": "user_left", "userId": user_id, "createdAt": timestamp}
 
     if payment_intent:
-        # issue_refund
         stripe.api_key = Secrets.STRIPE_KEY_TEST if is_test else Secrets.STRIPE_KEY
-        refund_amount = _get_stripe_price_amount(match, "base")
         refund = stripe.Refund.create(
-            payment_intent=payment_intent, amount=refund_amount, reverse_transfer=True
+            payment_intent=payment_intent,
+            reverse_transfer=True,
+            refund_application_fee=True,
         )
         transaction_log["paymentIntent"] = payment_intent
         transaction_log["refund_id"] = refund.id
-        transaction_log["moneyRefunded"] = refund_amount
+        transaction_log["moneyRefunded"] = refund.amount
 
     # record transaction
     transaction.set(transaction_doc_ref, transaction_log)
@@ -1675,8 +1674,8 @@ def _format_match_data_v2(match_id, match_data, version, add_organizer_info=Fals
     # todo support legacy
     if "pricePerPerson" in match_data:
         match_data["price"] = {
-            "basePrice": match_data["pricePerPerson"] - match_data.get("userFee", 50),
-            "userFee": match_data.get("userFee", 50),
+            "basePrice": match_data["pricePerPerson"] - match_data.get("userFee", NUTMEG_FEE_CENTS),
+            "userFee": match_data.get("userFee", NUTMEG_FEE_CENTS),
         }
 
     return match_data
@@ -1879,7 +1878,7 @@ def _get_stripe_price_amount(match_data, type):
     full_price = 0
     if "pricePerPerson" in match_data:
         base_price = match_data["pricePerPerson"]
-        full_price = base_price + 50
+        full_price = base_price + NUTMEG_FEE_CENTS
     elif "price" in match_data:
         base_price = match_data["price"]["basePrice"]
         full_price = match_data["price"]["basePrice"] + match_data["price"]["userFee"]

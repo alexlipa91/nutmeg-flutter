@@ -6,7 +6,7 @@ from firebase_admin import firestore
 from flask import Blueprint, Flask
 
 from src.secrets import Secrets
-from src.utils import build_dynamic_link
+from src.utils import build_dynamic_link, NUTMEG_FEE_CENTS
 from flask import current_app as app
 
 bp = Blueprint("payments", __name__, url_prefix="/payments")
@@ -34,6 +34,9 @@ def checkout():
             400,
         )
 
+    user_name = _get_user_name(user_id)
+    description = _build_payment_description(match_info, user_name)
+
     session = _create_checkout_session_with_deep_links(
         _get_stripe_customer_id(user_id, is_test),
         _get_stripe_connected_account_id(match_info["organizerId"], is_test),
@@ -41,9 +44,10 @@ def checkout():
         match_info["organizerId"],
         match_id,
         match_info["stripePriceId"],
-        50,
+        NUTMEG_FEE_CENTS,
         is_test,
         web_origin,
+        description,
     )
 
     return flask.redirect(session.url)
@@ -53,6 +57,43 @@ def _get_match_info(match_id, is_test=False):
     coll = "matches_test" if is_test else "matches"
     data = app.db_client.collection(coll).document(match_id).get().to_dict()
     return data
+
+
+def _get_user_name(user_id):
+    data = app.db_client.collection("users").document(user_id).get(
+        field_paths={"name"}).to_dict()
+    return data.get("name", "Unknown") if data else "Unknown"
+
+
+def _build_payment_description(match_info, user_name):
+    parts = []
+
+    sport_center = match_info.get("sportCenter", {})
+    venue = sport_center.get("name", "")
+    city = sport_center.get("city", "")
+    if venue and city:
+        parts.append("{}, {}".format(venue, city))
+    elif venue or city:
+        parts.append(venue or city)
+
+    dt = match_info.get("dateTime")
+    if dt:
+        try:
+            if hasattr(dt, "strftime"):
+                parts.append(dt.strftime("%a %d %b %H:%M"))
+            else:
+                from datetime import datetime
+                parsed = datetime.fromisoformat(str(dt).replace("Z", "+00:00"))
+                parts.append(parsed.strftime("%a %d %b %H:%M"))
+        except Exception:
+            pass
+
+    duration = match_info.get("duration")
+    if duration:
+        parts.append("{}min".format(duration))
+
+    match_line = " · ".join(parts) if parts else "Nutmeg match"
+    return "{} — paid by {}".format(match_line, user_name)
 
 
 def _get_stripe_customer_id(user_id, test_mode):
@@ -99,6 +140,7 @@ def _create_checkout_redirects_to_web(
     application_fee_amount,
     test_mode,
     web_origin="https://web.nutmegapp.com",
+    description=None,
 ):
     stripe.api_key = Secrets.STRIPE_KEY_TEST if test_mode else Secrets.STRIPE_KEY
 
@@ -109,7 +151,6 @@ def _create_checkout_redirects_to_web(
         cancel_url="{}/match/{}?payment_outcome={}".format(
             web_origin, match_id, "cancel"
         ),
-        payment_method_types=["card", "ideal"],
         line_items=[{"price": price_id, "quantity": 1}],
         payment_intent_data={
             "application_fee_amount": application_fee_amount,
@@ -117,6 +158,7 @@ def _create_checkout_redirects_to_web(
                 "destination": connected_account_id,
             },
             "metadata": {"user_id": user_id, "match_id": match_id},
+            **({"description": description} if description else {}),
         },
         mode="payment",
         customer=customer_id,
@@ -143,13 +185,13 @@ def _create_checkout_session_with_deep_links(
     application_fee_amount,
     test_mode,
     web_origin="https://web.nutmegapp.com",
+    description=None,
 ):
     stripe.api_key = Secrets.STRIPE_KEY_TEST if test_mode else Secrets.STRIPE_KEY
 
     session = stripe.checkout.Session.create(
         success_url=_build_redirect_url(web_origin, match_id, "success"),
         cancel_url=_build_redirect_url(web_origin, match_id, "cancel"),
-        payment_method_types=["card", "ideal"],
         line_items=[{"price": price_id, "quantity": 1}],
         payment_intent_data={
             "application_fee_amount": application_fee_amount,
@@ -157,6 +199,7 @@ def _create_checkout_session_with_deep_links(
                 "destination": connected_account_id,
             },
             "metadata": {"user_id": user_id, "match_id": match_id},
+            **({"description": description} if description else {}),
         },
         mode="payment",
         customer=customer_id,

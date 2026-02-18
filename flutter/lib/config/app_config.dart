@@ -39,6 +39,12 @@ class AppConfig {
   /// Valid values: ALL, FINEST, FINER, FINE, CONFIG, INFO, WARNING, SEVERE, OFF
   static const String logLevel =
       String.fromEnvironment('LOG_LEVEL', defaultValue: 'WARNING');
+
+  /// Nutmeg platform fee in cents charged per player per match.
+  static const int nutmegFeeCents = 50;
+
+  /// Nutmeg fee formatted as a currency amount (euros).
+  static double get nutmegFeeEuros => nutmegFeeCents / 100;
 }
 
 class ConfigsUtils {

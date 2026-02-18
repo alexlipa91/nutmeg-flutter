@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nutmeg/config/app_config.dart';
 import 'package:nutmeg/state/MatchState.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
@@ -77,7 +78,7 @@ class LeaveButtonDisabled extends StatelessWidget {
 
 class ConfirmLeaveMatchButton extends StatelessWidget {
   final MatchState matchState;
-  final int fee = 50;
+  final int fee = AppConfig.nutmegFeeCents;
 
   const ConfirmLeaveMatchButton({Key? key, required this.matchState})
       : super(key: key);

@@ -10,6 +10,9 @@ import requests
 
 from src.secrets import Secrets
 
+# Nutmeg platform fee in cents charged per player per match
+NUTMEG_FEE_CENTS = 50
+
 
 def _serialize_dates(data):
     for k in data:
