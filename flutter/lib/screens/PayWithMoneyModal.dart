@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
+import 'package:nutmeg/config/app_config.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -21,8 +22,14 @@ class PayWithMoneyButton extends StatelessWidget {
 
           var userState = context.read<UserState>();
 
+          var webOrigin = kIsWeb
+              ? Uri.base.origin
+              : "https://web.nutmegapp.com";
+
           var uri = Uri.parse(CloudFunctionsClient().getUrl("payments/checkout?"
-              "user_id=${userState.getLoggedUserId()!}&match_id=$matchId&v=2"));
+              "user_id=${userState.getLoggedUserId()!}&match_id=$matchId"
+              "&is_test=${AppConfig.testMode}"
+              "&web_origin=${Uri.encodeComponent(webOrigin)}"));
 
           if (kIsWeb)
             await launchUrl(uri, webOnlyWindowName: "_self");
