@@ -366,7 +366,7 @@
     "payOutsideNutmegTitle": "Pay outside Nutmeg",
     "payWithNutmegTitle": "Pay with Nutmeg",
     "stripeIntegrationActive": "Stripe integration active",
-    "payWithNutmegNotConfigured": "Not configured. Tap to learn more.",
+    "payWithNutmegNotConfigured": "Setup required. Tap to configure.",
     "howPayWithNutmegWorks": "How Pay with Nutmeg works",
     "stripeStep1": "Create a Stripe Connected account with your bank details.",
     "stripeStep2": "Create a game with a price (e.g. €5). Players pay via Stripe to join.",

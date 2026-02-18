@@ -1389,7 +1389,7 @@ abstract class AppLocalizations {
   /// No description provided for @payWithNutmegNotConfigured.
   ///
   /// In en, this message translates to:
-  /// **'Not configured. Tap to learn more.'**
+  /// **'Setup required. Tap to configure.'**
   String get payWithNutmegNotConfigured;
 
   /// No description provided for @howPayWithNutmegWorks.

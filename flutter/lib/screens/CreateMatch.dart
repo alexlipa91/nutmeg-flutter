@@ -19,6 +19,7 @@ import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:nutmeg/widgets/PageTemplate.dart';
 import 'package:nutmeg/widgets/Section.dart';
 import 'package:nutmeg/widgets/Skeletons.dart';
+import 'package:nutmeg/widgets/StripeSetupWidget.dart';
 import 'package:provider/provider.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:nutmeg/config/app_config.dart';
@@ -903,11 +904,36 @@ class CreateMatchState extends State<CreateMatch> {
                       var stripeReady =
                           ud?.areChargesEnabled(AppConfig.testMode) ?? false;
                       if (!stripeReady) {
+                        var hasAccount = ud?.getStripeInfo(AppConfig.testMode)
+                                ?.connectedAccountId !=
+                            null;
                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                           backgroundColor: Palette.warning,
-                          content: Text(
-                            AppLocalizations.of(context)!.stripeSetupRequired,
-                            style: TextStyle(color: Palette.black),
+                          content: InkWell(
+                            onTap: () {
+                              ScaffoldMessenger.of(context)
+                                  .hideCurrentSnackBar();
+                              if (hasAccount) {
+                                completeAccountAction(
+                                    context, AppConfig.testMode);
+                              } else {
+                                showStripeHowItWorksModal(context);
+                              }
+                            },
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    AppLocalizations.of(context)!
+                                        .stripeSetupRequired,
+                                    style: TextStyle(color: Palette.black),
+                                  ),
+                                ),
+                                SizedBox(width: 8),
+                                Icon(Icons.arrow_forward,
+                                    color: Palette.black, size: 20),
+                              ],
+                            ),
                           ),
                         ));
                         context

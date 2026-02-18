@@ -55,8 +55,11 @@ class PayThroughNutmegRow extends StatelessWidget {
               : () => showStripeHowItWorksModal(context),
       child: Row(
         children: [
-          Icon(Icons.credit_card_outlined,
-              color: stripeEnabled ? Palette.primary : Palette.greyLight,
+          Icon(
+              stripeEnabled
+                  ? Icons.credit_card_outlined
+                  : Icons.warning_amber_rounded,
+              color: stripeEnabled ? Palette.primary : Palette.darkWarning,
               size: 20),
           SizedBox(width: 12),
           Expanded(
@@ -72,21 +75,19 @@ class PayThroughNutmegRow extends StatelessWidget {
                       style: TextPalette.getBodyText(Palette.green))
                 else if (hasAccount)
                   Text(AppLocalizations.of(context)!.stripeSetupInProgress,
-                      style: TextPalette.getBodyText(Palette.primary))
+                      style: TextPalette.getBodyText(Palette.darkWarning))
                 else
                   Text(
                       AppLocalizations.of(context)!.payWithNutmegNotConfigured,
-                      style: TextPalette.getBodyText(Palette.greyDark)),
+                      style: TextPalette.getBodyText(Palette.darkWarning)),
               ],
             ),
           ),
           SizedBox(width: 8),
           if (stripeEnabled)
             Icon(Icons.open_in_new, color: Palette.primary, size: 20)
-          else if (hasAccount)
-            Icon(Icons.arrow_forward, color: Palette.primary, size: 20)
           else
-            Icon(Icons.info_outline, color: Palette.primary, size: 20),
+            Icon(Icons.arrow_forward, color: Palette.darkWarning, size: 20),
         ],
       ),
     );

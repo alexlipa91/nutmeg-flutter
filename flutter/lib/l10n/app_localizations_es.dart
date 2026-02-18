@@ -726,7 +726,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get payWithNutmegNotConfigured =>
-      'No configurado. Toca para saber más.';
+      'Configuración necesaria. Toca para configurar.';
 
   @override
   String get howPayWithNutmegWorks => 'Cómo funciona Pagar con Nutmeg';
