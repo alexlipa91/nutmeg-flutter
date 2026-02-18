@@ -114,7 +114,10 @@ final appRouter = GoRouter(
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  Logger.root.level = Level.ALL;
+  Logger.root.level = Level.LEVELS.firstWhere(
+    (l) => l.name == AppConfig.logLevel.toUpperCase(),
+    orElse: () => Level.SEVERE,
+  );
   Logger.root.onRecord.listen((record) {
     print('${record.level.name}: ${record.time}: ${record.message}');
   });

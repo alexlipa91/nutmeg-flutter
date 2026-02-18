@@ -34,6 +34,11 @@ class AppConfig {
   /// Set via: --dart-define=FIREBASE_VAPID_KEY=...
   static const String firebaseVapidKey =
       String.fromEnvironment('FIREBASE_VAPID_KEY');
+
+  /// Log level. Override with: --dart-define=LOG_LEVEL=ALL
+  /// Valid values: ALL, FINEST, FINER, FINE, CONFIG, INFO, WARNING, SEVERE, OFF
+  static const String logLevel =
+      String.fromEnvironment('LOG_LEVEL', defaultValue: 'WARNING');
 }
 
 class ConfigsUtils {
