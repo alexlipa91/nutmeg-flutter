@@ -674,7 +674,7 @@ class CreateMatchState extends State<CreateMatch> {
             // Pay through Nutmeg
             InkWell(
               onTap: (widget.existingMatch != null ||
-                      !ConfigsUtils.allowNutmegManagedPayments())
+                      !ConfigsUtils.allowNutmegManagedPayments)
                   ? null
                   : () => setState(() => showPaymentInfo = false),
               child: Row(
@@ -684,7 +684,7 @@ class CreateMatchState extends State<CreateMatch> {
                     groupValue: showPaymentInfo,
                     activeColor: Palette.primary,
                     onChanged: (widget.existingMatch != null ||
-                            !ConfigsUtils.allowNutmegManagedPayments())
+                            !ConfigsUtils.allowNutmegManagedPayments)
                         ? null
                         : (v) => setState(() => showPaymentInfo = v!),
                   ),
@@ -694,7 +694,7 @@ class CreateMatchState extends State<CreateMatch> {
             ),
             // Pay through Nutmeg: additional content
             if (!showPaymentInfo &&
-                ConfigsUtils.allowNutmegManagedPayments()) ...[
+                ConfigsUtils.allowNutmegManagedPayments) ...[
               if (paymentsPossible) ...[
                 SizedBox(height: 16),
                 Row(children: [
@@ -898,7 +898,7 @@ class CreateMatchState extends State<CreateMatch> {
 
                     // Block creation if Pay through Nutmeg is selected but Stripe isn't ready
                     if (!showPaymentInfo &&
-                        ConfigsUtils.allowNutmegManagedPayments()) {
+                        ConfigsUtils.allowNutmegManagedPayments) {
                       var ud = context.read<UserState>().getLoggedUserDetails();
                       var stripeReady =
                           ud?.areChargesEnabled(AppConfig.testMode) ?? false;

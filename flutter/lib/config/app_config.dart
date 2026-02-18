@@ -1,3 +1,5 @@
+import 'package:firebase_remote_config/firebase_remote_config.dart';
+
 /// Build-time and environment configuration.
 ///
 /// Flags that are only enabled when explicitly passed via --dart-define
@@ -26,11 +28,25 @@ class AppConfig {
       defaultValue: 'https://nutmeg-9099c.ew.r.appspot.com');
 
   /// Google Places API key. Set via: --dart-define=GOOGLE_API_KEY=...
-  static const String googleApiKey =
-      String.fromEnvironment('GOOGLE_API_KEY');
+  static const String googleApiKey = String.fromEnvironment('GOOGLE_API_KEY');
 
   /// Firebase VAPID key for web push notifications.
   /// Set via: --dart-define=FIREBASE_VAPID_KEY=...
   static const String firebaseVapidKey =
       String.fromEnvironment('FIREBASE_VAPID_KEY');
+}
+
+class ConfigsUtils {
+  ConfigsUtils._();
+
+  static bool get allowUsersToMarkPayments =>
+      FirebaseRemoteConfig.instance.getBool("allow_users_to_mark_payments");
+
+  /// Override with: --dart-define=ALLOW_NUTMEG_MANAGED_PAYMENTS=true
+  static const bool _allowNutmegManagedPaymentsOverride =
+      bool.fromEnvironment('ALLOW_NUTMEG_MANAGED_PAYMENTS');
+
+  static bool get allowNutmegManagedPayments =>
+      _allowNutmegManagedPaymentsOverride ||
+      FirebaseRemoteConfig.instance.getBool("allow_nutmeg_managed_payments");
 }

@@ -1,5 +1,4 @@
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
-import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -8,9 +7,7 @@ import 'package:nutmeg/model/Match.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:tuple/tuple.dart';
 import 'package:nutmeg/utils/navigate_url.dart';
-import 'package:version/version.dart';
 import 'package:timezone/timezone.dart' as tz;
 
 import '../state/UserState.dart';
@@ -106,19 +103,6 @@ Future<String> getVersion() async {
   }
   PackageInfo packageInfo = await PackageInfo.fromPlatform();
   return packageInfo.version + " + " + packageInfo.buildNumber;
-}
-
-class ConfigsUtils {
-  static bool removeCreditsFunctionality() => true;
-
-  // FirebaseRemoteConfig.instance.getBool("remove_credit_functionality");
-  static bool feesOnOrganiser(String orgId) => false;
-
-  static bool allowUsersToMarkPayments() =>
-      FirebaseRemoteConfig.instance.getBool("allow_users_to_mark_payments");
-
-  static bool allowNutmegManagedPayments() =>
-      FirebaseRemoteConfig.instance.getBool("allow_nutmeg_managed_payments");
 }
 
 String getStripeUrl(bool isTest, String userId, String? matchId) {

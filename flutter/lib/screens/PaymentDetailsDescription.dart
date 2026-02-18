@@ -5,7 +5,7 @@ import 'package:nutmeg/state/UsersState.dart';
 import 'package:nutmeg/state/UserState.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
-import 'package:nutmeg/utils/Utils.dart';
+import 'package:nutmeg/config/app_config.dart';
 import 'package:nutmeg/widgets/Buttons.dart';
 import 'package:nutmeg/widgets/ModalBottomSheet.dart';
 import 'package:provider/provider.dart';
@@ -33,7 +33,7 @@ class PaymentDetailsDescription {
     var showReminder = isManualPayment &&
         !isOrganizer &&
         match?.organizerId != null &&
-        ConfigsUtils.allowUsersToMarkPayments();
+        ConfigsUtils.allowUsersToMarkPayments;
 
     await ModalBottomSheet.showNutmegModalBottomSheet(
         context,

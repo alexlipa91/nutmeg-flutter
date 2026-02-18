@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:nutmeg/controller/MatchesController.dart';
-import 'package:nutmeg/model/Match.dart';
 import 'package:nutmeg/state/MatchState.dart';
-import 'package:nutmeg/state/UserState.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
@@ -47,11 +44,8 @@ class LeaveButton extends StatelessWidget {
                     finalRow: Row(
                       children: [
                         Text(
-                            ConfigsUtils.removeCreditsFunctionality()
-                                ? AppLocalizations.of(context)!
-                                    .leaveMatchRefundTitle
-                                : AppLocalizations.of(context)!
-                                    .leaveMatchCreditsRefundTitle,
+                            AppLocalizations.of(context)!
+                                .leaveMatchRefundTitle,
                             style: TextPalette.h3),
                         Expanded(
                             child: Text(
@@ -105,30 +99,14 @@ class ConfirmLeaveMatchButton extends StatelessWidget {
         if (match.price != null) {
           GenericInfoModal(
                   title: paidThroughNutmeg
-                      ? ConfigsUtils.removeCreditsFunctionality()
-                          ? "A refund of ${formatCurrency(match.price!.basePrice)} "
-                              "was issued "
-                          : formatCurrency(match.price!.basePrice) +
-                              " credits were added to your account"
+                      ? "A refund of ${formatCurrency(match.price!.basePrice)} "
+                          "was issued "
                       : AppLocalizations.of(context)!.leftMatchTitle,
                   description: paidThroughNutmeg
-                      ? (ConfigsUtils.removeCreditsFunctionality()
-                          ? "You will receive the money in 3 to 5 business days on the payment method you used."
-                          : "You can find your credits in your account page. Next time you join a game they will be automatically used.")
+                      ? "You will receive the money in 3 to 5 business days on the payment method you used."
                       : AppLocalizations.of(context)!
                             .leftMatchContactOrganizerForRefund,
-                  action: paidThroughNutmeg
-                      ? InkWell(
-                          onTap: () async {
-                            context.read<UserState>().fetchLoggedUserDetails();
-                          },
-                          child: ConfigsUtils.removeCreditsFunctionality()
-                              ? Container()
-                              : Padding(
-                                  padding: EdgeInsets.only(top: 8),
-                                  child: Text("GO TO MY ACCOUNT",
-                                      style: TextPalette.linkStyle)))
-                      : null)
+                  action: null)
               .show(context);
         }
       },

@@ -28,9 +28,9 @@ import 'package:nutmeg/model/SportCenter.dart';
 import 'package:nutmeg/model/UserDetails.dart';
 import 'package:nutmeg/screens/JoinModal.dart';
 import 'package:nutmeg/screens/RatePlayersModal.dart';
-import 'package:nutmeg/screens/UserPage.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
+import 'package:nutmeg/config/app_config.dart';
 import 'package:nutmeg/widgets/Avatar.dart';
 import 'package:nutmeg/widgets/Containers.dart';
 import 'package:nutmeg/widgets/PageTemplate.dart';
@@ -205,10 +205,12 @@ class MatchDetailsImplState extends State<MatchDetailsImpl> {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: Text(
-                                      AppLocalizations.of(context)!.linkCopiedToClipboard,
+                                      AppLocalizations.of(context)!
+                                          .linkCopiedToClipboard,
                                       style: TextStyle(color: Palette.greyDark),
                                     ),
-                                    backgroundColor: Palette.white.withOpacity(0.92),
+                                    backgroundColor:
+                                        Palette.white.withOpacity(0.92),
                                     behavior: SnackBarBehavior.floating,
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(12),
@@ -218,7 +220,8 @@ class MatchDetailsImplState extends State<MatchDetailsImpl> {
                                 );
                               }
                             } else {
-                              await DynamicLinks.shareMatchFunction(context, match);
+                              await DynamicLinks.shareMatchFunction(
+                                  context, match);
                             }
                           }, Palette.black, 25.0),
                         ),
@@ -283,9 +286,8 @@ List<Widget> getWidgets(
   var showPlayerList = organizerView
       ? match.status != MatchStatus.rated
       : !match.isMatchFinished() && teamsWidget == null;
-  var infoPlayersList = showPlayerList
-      ? PlayerList(match: match, withJoinButton: false)
-      : null;
+  var infoPlayersList =
+      showPlayerList ? PlayerList(match: match, withJoinButton: false) : null;
 
   var waitListWidget =
       (!match.isMatchFinished() && match.numPlayersInWaitList() > 0)
@@ -406,34 +408,34 @@ List<Widget> getWidgets(
         child: Container(
           constraints: BoxConstraints(maxWidth: 1100),
           child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Flexible(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: interleave([
-                  if (infoPlayersList != null) infoPlayersList,
-                  if (waitListWidget != null) waitListWidget,
-                  if (teamsWidget != null) teamsWidget,
-                  if (stats != null) stats,
-                  if (awards != null) awards,
-                ], SizedBox(height: 16)),
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Flexible(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: interleave([
+                    if (infoPlayersList != null) infoPlayersList,
+                    if (waitListWidget != null) waitListWidget,
+                    if (teamsWidget != null) teamsWidget,
+                    if (stats != null) stats,
+                    if (awards != null) awards,
+                  ], SizedBox(height: 16)),
+                ),
               ),
-            ),
-            SizedBox(width: 20),
-            Flexible(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: interleave([
-                  sportCenterDetails,
-                  if (organiserBadge != null) organiserBadge,
-                  if (rules(true) != null) rules(true)!,
-                ], SizedBox(height: 16)),
+              SizedBox(width: 20),
+              Flexible(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: interleave([
+                    sportCenterDetails,
+                    if (organiserBadge != null) organiserBadge,
+                    if (rules(true) != null) rules(true)!,
+                  ], SizedBox(height: 16)),
+                ),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
         ),
       ),
     ];
@@ -549,8 +551,7 @@ class WaitListWidget extends StatelessWidget {
         children: [
           Padding(
               padding: EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                  "Waitlist (${match.numPlayersInWaitList()})",
+              child: Text("Waitlist (${match.numPlayersInWaitList()})",
                   style: TextPalette.h2)),
           SizedBox(height: 24),
           LayoutBuilder(builder: (context, constraints) {
@@ -662,7 +663,8 @@ class MatchInfo extends StatelessWidget {
                       " - ${match.duration.inMinutes} min",
               if (match.price != null)
                 Icons.local_offer_outlined:
-                    formatCurrency(match.price!.getTotalPrice()),
+                    "${formatCurrency(match.price!.getTotalPrice())}"
+                        " · ${match.isManualPayment ? AppLocalizations.of(context)!.payOutsideNutmegTitle : AppLocalizations.of(context)!.payWithNutmegTitle}",
               if (match.isPrivate)
                 Icons.lock_outline:
                     AppLocalizations.of(context)!.privateMatchDesc,
@@ -926,63 +928,65 @@ class PlayerCard extends StatelessWidget {
                 right: -6,
                 top: -6,
                 child: InkWell(
-                onTap: () async {
-                  if (matchId == null) return;
+                  onTap: () async {
+                    if (matchId == null) return;
 
-                  var name =
-                      (userData?.name ?? "Player").split(" ").first.trim();
-                  if (name.isEmpty) name = "Player";
+                    var name =
+                        (userData?.name ?? "Player").split(" ").first.trim();
+                    if (name.isEmpty) name = "Player";
 
-                  var match = context.read<MatchState>().match;
-                  var refundInfo = (match?.price != null && ConfigsUtils.allowNutmegManagedPayments())
-                      ? ("\n\n" +
-                          AppLocalizations.of(context)!.removePlayerRefundInfo)
-                      : "";
+                    var match = context.read<MatchState>().match;
+                    var refundInfo = (match?.price != null &&
+                            ConfigsUtils.allowNutmegManagedPayments)
+                        ? ("\n\n" +
+                            AppLocalizations.of(context)!
+                                .removePlayerRefundInfo)
+                        : "";
 
-                  await GenericInfoModal(
-                    title: AppLocalizations.of(context)!.removePlayerTitle,
-                    description: AppLocalizations.of(context)!
-                            .removePlayerSubtitle(name) +
-                        refundInfo,
-                    action: Row(
-                      children: [
-                        Expanded(
-                          child: GenericButtonWithLoaderAndErrorHandling(
-                            AppLocalizations.of(context)!.confirmButtonText,
-                            (_) async {
-                              await context
-                                  .read<MatchState>()
-                                  .removeUserFromMatch(userId);
-                              Navigator.of(context).pop(true);
-                            },
-                            Destructive(),
-                          ),
+                    await GenericInfoModal(
+                      title: AppLocalizations.of(context)!.removePlayerTitle,
+                      description: AppLocalizations.of(context)!
+                              .removePlayerSubtitle(name) +
+                          refundInfo,
+                      action: Row(
+                        children: [
+                          Expanded(
+                            child: GenericButtonWithLoaderAndErrorHandling(
+                              AppLocalizations.of(context)!.confirmButtonText,
+                              (_) async {
+                                await context
+                                    .read<MatchState>()
+                                    .removeUserFromMatch(userId);
+                                Navigator.of(context).pop(true);
+                              },
+                              Destructive(),
+                            ),
+                          )
+                        ],
+                      ),
+                    ).show(context);
+                  },
+                  child: Container(
+                    padding: EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      color: Palette.white,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          blurRadius: 6,
+                          color: Colors.black.withOpacity(0.15),
+                          offset: Offset(0, 2),
                         )
                       ],
                     ),
-                  ).show(context);
-                },
-                child: Container(
-                  padding: EdgeInsets.all(2),
-                  decoration: BoxDecoration(
-                    color: Palette.white,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        blurRadius: 6,
-                        color: Colors.black.withOpacity(0.15),
-                        offset: Offset(0, 2),
-                      )
-                    ],
-                  ),
-                  child: Icon(
-                    Icons.remove_circle,
-                    color: Palette.destructive,
-                    size: 20,
+                    child: Icon(
+                      Icons.remove_circle,
+                      color: Palette.destructive,
+                      size: 20,
+                    ),
                   ),
                 ),
               ),
-            ),
             if (showPromote)
               Positioned(
                 right: -6,
@@ -993,8 +997,10 @@ class PlayerCard extends StatelessWidget {
                           if (matchId == null) return;
 
                           var matchState = context.read<MatchState>();
-                          var name =
-                              (userData?.name ?? "Player").split(" ").first.trim();
+                          var name = (userData?.name ?? "Player")
+                              .split(" ")
+                              .first
+                              .trim();
                           if (name.isEmpty) name = "Player";
 
                           await GenericInfoModal(
@@ -1004,8 +1010,10 @@ class PlayerCard extends StatelessWidget {
                             action: Row(
                               children: [
                                 Expanded(
-                                  child: GenericButtonWithLoaderAndErrorHandling(
-                                    AppLocalizations.of(context)!.confirmButtonText,
+                                  child:
+                                      GenericButtonWithLoaderAndErrorHandling(
+                                    AppLocalizations.of(context)!
+                                        .confirmButtonText,
                                     (_) async {
                                       await matchState
                                           .promoteUserFromWaitList(userId);
@@ -1068,7 +1076,7 @@ class EmptyPlayerCard extends StatelessWidget {
 
     return InkWell(
       onTap: () => JoinModal.onJoinGameAction(
-                  context, userState, matchState, matchesState),
+          context, userState, matchState, matchesState),
       child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
         DottedBorder(
           padding: EdgeInsets.zero,
@@ -1168,7 +1176,7 @@ class _PlayerPickerSheetState extends State<_PlayerPickerSheet> {
     _loadPlayers();
   }
 
-   void _loadPlayers() {
+  void _loadPlayers() {
     var userDetails = context.read<UserState>().getLoggedUserDetails();
     var counts = Map<String, int>.from(userDetails?.organizerPlayers ?? {});
     // remove players already in the match
@@ -1244,8 +1252,8 @@ class _PlayerPickerSheetState extends State<_PlayerPickerSheet> {
       return Padding(
         padding: EdgeInsets.symmetric(vertical: 24),
         child: Center(
-          child: Text("No players available to add",
-              style: TextPalette.bodyText),
+          child:
+              Text("No players available to add", style: TextPalette.bodyText),
         ),
       );
     }
@@ -1750,20 +1758,17 @@ class _PaymentInfoRowState extends State<_PaymentInfoRow> {
   @override
   Widget build(BuildContext context) {
     var match = context.watch<MatchState>().match ?? widget.match;
-    var organizerDetails = context
-        .watch<UsersState>()
-        .getUserDetail(match.organizerId!);
+    var organizerDetails =
+        context.watch<UsersState>().getUserDetail(match.organizerId!);
     var paymentInfo = organizerDetails?.paymentInfo;
     if (paymentInfo == null || paymentInfo.isEmpty) return SizedBox.shrink();
 
     var loggedUserId = context.read<UserState>().getLoggedUserId();
     var hasPaid = match.hasUserPaid(loggedUserId ?? "");
 
-    var playerIds = match.going.keys
-        .where((id) => id != match.organizerId)
-        .toList();
-    var paidCount =
-        playerIds.where((id) => match.hasUserPaid(id)).length;
+    var playerIds =
+        match.going.keys.where((id) => id != match.organizerId).toList();
+    var paidCount = playerIds.where((id) => match.hasUserPaid(id)).length;
     var totalPlayers = playerIds.length;
 
     return Column(children: [
@@ -1774,7 +1779,9 @@ class _PaymentInfoRowState extends State<_PaymentInfoRow> {
         Expanded(
           child: buildLinkedText(paymentInfo, TextPalette.listItem),
         ),
-        if (!widget.isOrganizerView && widget.isUserGoing && ConfigsUtils.allowUsersToMarkPayments()) ...[
+        if (!widget.isOrganizerView &&
+            widget.isUserGoing &&
+            ConfigsUtils.allowUsersToMarkPayments) ...[
           SizedBox(width: 8),
           InkWell(
             onTap: () => _togglePaymentStatus(context),
@@ -1796,8 +1803,7 @@ class _PaymentInfoRowState extends State<_PaymentInfoRow> {
                   if (hasPaid)
                     Padding(
                       padding: EdgeInsets.only(right: 4),
-                      child:
-                          Icon(Icons.check, color: Palette.green, size: 14),
+                      child: Icon(Icons.check, color: Palette.green, size: 14),
                     ),
                   Text(
                     hasPaid
@@ -1812,7 +1818,9 @@ class _PaymentInfoRowState extends State<_PaymentInfoRow> {
             ),
           ),
         ],
-        if (widget.isOrganizerView && totalPlayers > 0 && ConfigsUtils.allowUsersToMarkPayments()) ...[
+        if (widget.isOrganizerView &&
+            totalPlayers > 0 &&
+            ConfigsUtils.allowUsersToMarkPayments) ...[
           SizedBox(width: 8),
           InkWell(
             onTap: () => setState(
@@ -1847,7 +1855,9 @@ class _PaymentInfoRowState extends State<_PaymentInfoRow> {
           ),
         ],
       ]),
-      if (widget.isOrganizerView && _isPlayerPaymentsExpanded && ConfigsUtils.allowUsersToMarkPayments())
+      if (widget.isOrganizerView &&
+          _isPlayerPaymentsExpanded &&
+          ConfigsUtils.allowUsersToMarkPayments)
         Padding(
           padding: EdgeInsets.only(top: 8),
           child: Container(
@@ -1884,8 +1894,9 @@ class _PaymentInfoRowState extends State<_PaymentInfoRow> {
                                 : Colors.transparent,
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color:
-                                  playerPaid ? Palette.green : Palette.greyLight,
+                              color: playerPaid
+                                  ? Palette.green
+                                  : Palette.greyLight,
                             ),
                           ),
                           child: Row(
@@ -1901,10 +1912,9 @@ class _PaymentInfoRowState extends State<_PaymentInfoRow> {
                                 playerPaid
                                     ? AppLocalizations.of(context)!.paid
                                     : AppLocalizations.of(context)!.notYet,
-                                style: TextPalette.getBodyText(
-                                        playerPaid
-                                            ? Palette.green
-                                            : Palette.greyDark)
+                                style: TextPalette.getBodyText(playerPaid
+                                        ? Palette.green
+                                        : Palette.greyDark)
                                     .copyWith(
                                         fontSize: 11,
                                         fontWeight: FontWeight.w600),
@@ -1920,7 +1930,9 @@ class _PaymentInfoRowState extends State<_PaymentInfoRow> {
             ),
           ),
         ),
-      if (widget.isOrganizerView && _isPlayerPaymentsExpanded && ConfigsUtils.allowUsersToMarkPayments())
+      if (widget.isOrganizerView &&
+          _isPlayerPaymentsExpanded &&
+          ConfigsUtils.allowUsersToMarkPayments)
         Padding(
           padding: EdgeInsets.only(top: 6, left: 34),
           child: Row(
@@ -1995,7 +2007,8 @@ class _PaymentInfoCardState extends State<PaymentInfoCard> {
             children: [
               Icon(Icons.payment_outlined, color: Palette.primary, size: 20),
               SizedBox(width: 8),
-              Text(AppLocalizations.of(context)!.paymentInfoHeader, style: TextPalette.h2),
+              Text(AppLocalizations.of(context)!.paymentInfoHeader,
+                  style: TextPalette.h2),
             ],
           ),
           SizedBox(height: 12),
@@ -2011,7 +2024,8 @@ class _PaymentInfoCardState extends State<PaymentInfoCard> {
               color: Palette.greyLightest,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: buildLinkedText(paymentInfo, TextPalette.getBodyText(Palette.black)),
+            child: buildLinkedText(
+                paymentInfo, TextPalette.getBodyText(Palette.black)),
           ),
           SizedBox(height: 16),
           if (_hasPaid == true)
@@ -2109,9 +2123,14 @@ class _ShareableStatsState extends State<ShareableStats> {
 
   Future<void> _captureAndShare(BuildContext context) async {
     try {
-      final key = _current == 0 ? _statsKey : (_current == 1 ? _teamsKey : (_current == 2 ? _potmKey : _awardsKey));
-      final boundary = key.currentContext?.findRenderObject() as RenderRepaintBoundary?;
-      
+      final key = _current == 0
+          ? _statsKey
+          : (_current == 1
+              ? _teamsKey
+              : (_current == 2 ? _potmKey : _awardsKey));
+      final boundary =
+          key.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+
       if (boundary == null) {
         print('Failed to find render boundary');
         return;
@@ -2119,7 +2138,7 @@ class _ShareableStatsState extends State<ShareableStats> {
 
       final image = await boundary.toImage(pixelRatio: 2.0);
       final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-      
+
       if (byteData == null) {
         print('Failed to convert image to byte data');
         return;
@@ -2148,7 +2167,8 @@ class _ShareableStatsState extends State<ShareableStats> {
     // Calculate the total number of pages
     int totalPages = 1; // Stats page is always present
     if (widget.match.going.length > 1 && widget.match.hasTeams()) totalPages++;
-    if (widget.ratings.potms != null && widget.ratings.potms!.isNotEmpty) totalPages++;
+    if (widget.ratings.potms != null && widget.ratings.potms!.isNotEmpty)
+      totalPages++;
     totalPages++; // Awards page is always present
 
     return Column(
@@ -2191,7 +2211,8 @@ class _ShareableStatsState extends State<ShareableStats> {
               _buildStatsPage(context),
               if (widget.match.going.length > 1 && widget.match.hasTeams())
                 _buildTeamsPage(context),
-              if (widget.ratings.potms != null && widget.ratings.potms!.isNotEmpty)
+              if (widget.ratings.potms != null &&
+                  widget.ratings.potms!.isNotEmpty)
                 _buildPotmPage(context),
               _buildAwardsPage(context),
             ],
@@ -2226,7 +2247,8 @@ class _ShareableStatsState extends State<ShareableStats> {
                   color: _current == 1 ? Palette.primary : Palette.greyLighter,
                 ),
               ),
-            if (widget.ratings.potms != null && widget.ratings.potms!.isNotEmpty)
+            if (widget.ratings.potms != null &&
+                widget.ratings.potms!.isNotEmpty)
               Container(
                 width: 8,
                 height: 8,
@@ -2242,7 +2264,9 @@ class _ShareableStatsState extends State<ShareableStats> {
               margin: EdgeInsets.symmetric(horizontal: 4),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: _current == totalPages - 1 ? Palette.primary : Palette.greyLighter,
+                color: _current == totalPages - 1
+                    ? Palette.primary
+                    : Palette.greyLighter,
               ),
             ),
             IconButton(
@@ -2415,7 +2439,8 @@ class _ShareableStatsState extends State<ShareableStats> {
                 style: TextPalette.getH2(Palette.white),
               ),
               const SizedBox(height: 24),
-              if (widget.ratings.potms != null && widget.ratings.potms!.isNotEmpty)
+              if (widget.ratings.potms != null &&
+                  widget.ratings.potms!.isNotEmpty)
                 ...widget.ratings.potms!.map((potmId) {
                   final user = userState.getUserDetail(potmId);
                   return Column(
@@ -2495,7 +2520,8 @@ class _ShareableStatsState extends State<ShareableStats> {
               // const SizedBox(height: 12),
               ChangeNotifierProvider.value(
                 value: context.read<MatchState>(),
-                child: TeamsWidget(matchId: widget.match.documentId, shareableVersion: true),
+                child: TeamsWidget(
+                    matchId: widget.match.documentId, shareableVersion: true),
               ),
               const Spacer(),
               Center(
@@ -2573,7 +2599,7 @@ class _ShareableStatsState extends State<ShareableStats> {
               textAlign: TextAlign.center,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-            ),            
+            ),
             const SizedBox(height: 2),
             Text(
               winner?.getShortName() ?? "Unknown",

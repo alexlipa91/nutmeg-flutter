@@ -13,7 +13,7 @@ class PayThroughNutmegRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (!ConfigsUtils.allowNutmegManagedPayments()) {
+    if (!ConfigsUtils.allowNutmegManagedPayments) {
       return Row(
         children: [
           Icon(Icons.credit_card_outlined, color: Palette.greyLight, size: 20),
