@@ -130,7 +130,7 @@ class _PaymentReminderState extends State<_PaymentReminder> {
                 SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    "Don't forget to pay $organizerName!",
+                    AppLocalizations.of(context)!.dontForgetToPay(organizerName),
                     style: TextPalette.bodyText
                         .copyWith(fontWeight: FontWeight.w600),
                   ),

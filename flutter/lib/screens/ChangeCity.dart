@@ -91,9 +91,7 @@ class ChangeCityState extends State<ChangeCity> {
                               ],
                             )));
                       },
-                      // noItemsFoundBuilder: (value) => Container(
-                      //   height: 0,
-                      // ),
+                      emptyBuilder: (_) => SizedBox.shrink(),
                       onSelected: (suggestion) async {
                         cityController.text = suggestion.description;
                         var resp = await CloudFunctionsClient()

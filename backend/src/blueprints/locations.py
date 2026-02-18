@@ -24,12 +24,21 @@ def _format_predictions(predictions):
     } for p in predictions]
 
 
+def _get_default_location():
+    return {
+        "country": "NL",
+        "city": "Amsterdam",
+        "lat": 52.370216,
+        "lng": 4.895168,
+    }
+
 @bp.route("/ip", methods=["GET"])
 def get_location_from_ip():
     client_ip = flask.request.headers.get("X-Forwarded-For", flask.request.remote_addr)
     if client_ip and "," in client_ip:
         client_ip = client_ip.split(",")[0].strip()
 
+    logger.info(f"Getting location from IP: {client_ip}")
     try:
         resp = requests.get(f"https://ipwho.is/{client_ip}", timeout=5)
         data = resp.json()
@@ -40,10 +49,11 @@ def get_location_from_ip():
                 "lat": data.get("latitude"),
                 "lng": data.get("longitude"),
             }}, 200
-    except Exception:
-        pass
+    except Exception as e:
+        flask.abort(500, description="Could not determine location from IP: " + str(e))
 
-    return {"data": None}, 200
+    logger.error(f"Could not determine location from IP: {client_ip}. Falling back to default location.")
+    return {"data": _get_default_location()}, 200
 
 
 @bp.route("/predictions", methods=["GET"])

@@ -689,16 +689,16 @@ class AppLocalizationsIt extends AppLocalizations {
   }
 
   @override
-  String get markedAsPaid => 'Hai segnato come pagato';
+  String get markedAsPaid => 'Pagato';
 
   @override
   String get undo => 'Annulla';
 
   @override
-  String get iPaid => 'Segna come pagato';
+  String get iPaid => 'Pagato';
 
   @override
-  String get notYet => 'Non ancora';
+  String get notYet => 'Non pagato';
 
   @override
   String get payOutsideNutmeg => 'Paga fuori da Nutmeg';
@@ -803,4 +803,9 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get totalPlayersLabel => 'giocatori totali';
+
+  @override
+  String dontForgetToPay(Object name) {
+    return 'Non dimenticare di pagare $name!';
+  }
 }

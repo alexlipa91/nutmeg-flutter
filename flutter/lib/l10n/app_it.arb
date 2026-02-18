@@ -203,10 +203,10 @@
     "paymentInfoProfileDesc": "Aggiungi i tuoi dati di pagamento (es. Revolut, IBAN) per far sapere ai giocatori come pagarti",
     "save": "Salva",
     "sharedPaymentDetails": "{name} ha condiviso queste info di pagamento:",
-    "markedAsPaid": "Hai segnato come pagato",
+    "markedAsPaid": "Pagato",
     "undo": "Annulla",
-    "iPaid": "Segna come pagato",
-    "notYet": "Non ancora",
+    "iPaid": "Pagato",
+    "notYet": "Non pagato",
     "payOutsideNutmeg": "Paga fuori da Nutmeg",
     "payThroughNutmeg": "Paga tramite Nutmeg",
     "paid": "Pagato",
@@ -236,5 +236,6 @@
     "playersPerSideLabel": "Giocatori per squadra",
     "customOption": "Personalizzato",
     "customPlayersPerSideHint": "Inserisci il numero di giocatori per squadra",
-    "totalPlayersLabel": "giocatori totali"
+    "totalPlayersLabel": "giocatori totali",
+    "dontForgetToPay": "Non dimenticare di pagare {name}!"
 }

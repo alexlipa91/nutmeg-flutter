@@ -805,4 +805,9 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get totalPlayersLabel => 'jugadores en total';
+
+  @override
+  String dontForgetToPay(Object name) {
+    return '¡No te olvides de pagar a $name!';
+  }
 }

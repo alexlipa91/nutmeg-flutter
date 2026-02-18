@@ -1523,6 +1523,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'players total'**
   String get totalPlayersLabel;
+
+  /// No description provided for @dontForgetToPay.
+  ///
+  /// In en, this message translates to:
+  /// **'Don\'t forget to pay {name}!'**
+  String dontForgetToPay(Object name);
 }
 
 class _AppLocalizationsDelegate

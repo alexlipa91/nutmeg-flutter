@@ -236,5 +236,6 @@
     "playersPerSideLabel": "Jugadores por equipo",
     "customOption": "Personalizado",
     "customPlayersPerSideHint": "Introduce el número de jugadores por equipo",
-    "totalPlayersLabel": "jugadores en total"
+    "totalPlayersLabel": "jugadores en total",
+    "dontForgetToPay": "¡No te olvides de pagar a {name}!"
 }

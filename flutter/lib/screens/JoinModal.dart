@@ -130,8 +130,10 @@ class JoinModal {
           context, MaterialPageRoute(builder: (context) => Login()));
 
     if (userState.isLoggedIn()) {
-      // Free match or manual payment: join directly
-      if (match!.price == null || match.isManualPayment) {
+      var isOrganizer = match!.organizerId == userState.getLoggedUserId();
+
+      // Free match, manual payment, or organizer: join directly
+      if (match.price == null || match.isManualPayment || isOrganizer) {
         await matchState.addLoggedInUserToMatch();
         matchesState.addToGoingMatches(matchId!);
         await PaymentDetailsDescription.communicateSuccessToUser(context, matchId);

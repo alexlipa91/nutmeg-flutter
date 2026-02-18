@@ -388,5 +388,11 @@
     "playersPerSideLabel": "Players per side",
     "customOption": "Custom",
     "customPlayersPerSideHint": "Enter number of players per side",
-    "totalPlayersLabel": "players total"
+    "totalPlayersLabel": "players total",
+    "dontForgetToPay": "Don't forget to pay {name}!",
+    "@dontForgetToPay": {
+        "placeholders": {
+            "name": {}
+        }
+    }
 }
