@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 import 'package:nutmeg/config/app_config.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/StripeSetupWidget.dart';
 import 'package:provider/provider.dart';
 import 'package:nutmeg/l10n/app_localizations.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../state/UserState.dart';
 
@@ -39,9 +41,15 @@ class PayThroughNutmegRow extends StatelessWidget {
     var stripeEnabled = stripeInfo?.chargesEnabled ?? false;
     var hasAccount = stripeInfo?.connectedAccountId != null;
 
+    var userId = userDetails?.documentId;
+
     return InkWell(
       onTap: stripeEnabled
-          ? null
+          ? () {
+              var url = CloudFunctionsClient().getUrl(
+                  "stripe/account?is_test=${AppConfig.testMode}&user_id=$userId");
+              launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+            }
           : hasAccount
               ? () => completeAccountAction(context, AppConfig.testMode)
               : () => showStripeHowItWorksModal(context),
@@ -74,7 +82,7 @@ class PayThroughNutmegRow extends StatelessWidget {
           ),
           SizedBox(width: 8),
           if (stripeEnabled)
-            Icon(Icons.check_circle, color: Palette.green, size: 20)
+            Icon(Icons.open_in_new, color: Palette.primary, size: 20)
           else if (hasAccount)
             Icon(Icons.arrow_forward, color: Palette.primary, size: 20)
           else
