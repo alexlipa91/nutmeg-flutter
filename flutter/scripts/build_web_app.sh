@@ -15,11 +15,13 @@ fi
 
 if [ "$MODE" == "prod" ]; then
     $FLUTTER_CMD build web \
+        --web-renderer html \
         --dart-define-from-file=$ENV_FILE \
         --pwa-strategy=none \
         --release
 else
     $FLUTTER_CMD build web \
+        --web-renderer html \
         --debug \
         --dart-define-from-file=$ENV_FILE \
         --pwa-strategy=none \
