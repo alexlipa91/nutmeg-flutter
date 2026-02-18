@@ -53,6 +53,8 @@ def stripe_checkout_webhook():
 
     event_data = event["data"]["object"]
 
+    print(f"Stripe checkout webhook event: {event['type']}")
+
     # Handle the event
     if event["type"] == "checkout.session.completed":
         is_test = event_data["metadata"].get("is_test") == "true"
@@ -62,8 +64,6 @@ def stripe_checkout_webhook():
             event_data["payment_intent"],
             is_test=is_test,
         )
-    else:
-        print("checkout not successful")
 
     return {}
 

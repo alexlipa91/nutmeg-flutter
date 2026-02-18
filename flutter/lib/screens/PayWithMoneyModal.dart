@@ -22,9 +22,8 @@ class PayWithMoneyButton extends StatelessWidget {
 
           var userState = context.read<UserState>();
 
-          var webOrigin = kIsWeb
-              ? Uri.base.origin
-              : "https://web.nutmegapp.com";
+          var webOrigin =
+              kIsWeb ? Uri.base.origin : "https://web.nutmegapp.com";
 
           var uri = Uri.parse(CloudFunctionsClient().getUrl("payments/checkout?"
               "user_id=${userState.getLoggedUserId()!}&match_id=$matchId"

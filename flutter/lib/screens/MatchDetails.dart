@@ -107,25 +107,37 @@ class MatchDetailsImplState extends State<MatchDetailsImpl> {
   @override
   void initState() {
     super.initState();
+    _handlePaymentOutcome();
     myInitState();
   }
 
-  Future<void> myInitState() async {
-    // check if payment outcome
+  @override
+  void didUpdateWidget(MatchDetailsImpl oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.paymentOutcome != oldWidget.paymentOutcome) {
+      _handlePaymentOutcome();
+    }
+  }
+
+  void _handlePaymentOutcome() {
+    if (widget.paymentOutcome == null) return;
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (widget.paymentOutcome != null) {
-        if (ModalBottomSheet.isOpen) Navigator.of(context).pop();
-        if (widget.paymentOutcome! == "success") {
-          await PaymentDetailsDescription.communicateSuccessToUser(
-              context, widget.matchId);
-        } else
-          GenericInfoModal(
-                  title: AppLocalizations.of(context)!.paymentFailedTitle,
-                  description:
-                      AppLocalizations.of(context)!.paymentFailedSubtitle)
-              .show(context);
+      if (!mounted) return;
+      if (ModalBottomSheet.isOpen) Navigator.of(context).pop();
+      if (widget.paymentOutcome == "success") {
+        await PaymentDetailsDescription.communicateSuccessToUser(
+            context, widget.matchId);
+      } else {
+        GenericInfoModal(
+                title: AppLocalizations.of(context)!.paymentFailedTitle,
+                description:
+                    AppLocalizations.of(context)!.paymentFailedSubtitle)
+            .show(context);
       }
     });
+  }
+
+  Future<void> myInitState() async {
 
     var state = context.read<MatchState>();
 

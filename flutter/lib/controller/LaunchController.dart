@@ -28,6 +28,12 @@ class LaunchController {
   static bool loadingDone = false;
   static var apiClient = CloudFunctionsClient();
   static String? appVersion;
+
+  /// Notifies GoRouter to re-evaluate redirects after loading completes.
+  static final ValueNotifier<bool> loadingNotifier = ValueNotifier(false);
+
+  /// The original URL the user intended to visit before being redirected to /launch.
+  static String? pendingRedirect;
   static Future<void> handleLink(Uri deepLink) async {
     logger.info("Handling dynamic link " + deepLink.toString());
     var fullPath =
@@ -86,7 +92,7 @@ class LaunchController {
     logger.info("Logged app_started event with version ${packageInfo.version}");
   }
 
-  static Future<void> loadData(BuildContext context, String? from) async {
+  static Future<void> loadData(BuildContext context) async {
     logger.info("start loading data function");
     logger.info("TEST_MODE=${AppConfig.testMode}, BACKEND_URL=${AppConfig.backendUrl}");
 
@@ -208,15 +214,13 @@ class LaunchController {
     // navigate to next screen
     if (deepLink != null) {
       logger.info("navigating with deep link:" + deepLink.toString());
-      // trace.putAttribute("coming_from_deeplink", true.toString());
       handleLink(deepLink);
     } else if (initialMessage != null) {
-      logger
-          .info("navigating with initial message:" + initialMessage.toString());
-      // trace.putAttribute("coming_from_notification", true.toString());
+      logger.info("navigating with initial message:" + initialMessage.toString());
       _handleMessageFromNotification(initialMessage);
     } else {
-      context.go(from ?? "/");
+      // Trigger GoRouter to re-evaluate redirects; it will navigate to pendingRedirect
+      loadingNotifier.value = !loadingNotifier.value;
     }
 
     // trace.setMetric("duration_ms", stopwatch.elapsed.inMilliseconds);

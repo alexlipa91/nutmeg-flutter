@@ -35,13 +35,12 @@ final logger = CrashlyticsLogger("Main");
 
 final appRouter = GoRouter(
   debugLogDiagnostics: true,
-  // urlPathStrategy: UrlPathStrategy.path,
+  refreshListenable: LaunchController.loadingNotifier,
   errorBuilder: (context, state) => AvailableMatches(),
   routes: [
     GoRoute(
       path: '/launch',
-      builder: (context, state) =>
-          LaunchWidget(from: state.uri.queryParameters["from"]),
+      builder: (context, state) => LaunchWidget(),
     ),
     GoRoute(
         path: '/',
@@ -66,6 +65,7 @@ final appRouter = GoRouter(
               path: 'match/:id',
               builder: (context, state) {
                 final matchId = state.pathParameters["id"]!;
+                final paymentOutcome = state.uri.queryParameters["payment_outcome"];
                 final matchState =
                     context.read<MatchesState>().getMatch(matchId);
 
@@ -74,7 +74,7 @@ final appRouter = GoRouter(
                   child: MatchDetails(
                     key: ValueKey("MatchDetails-$matchId"),
                     matchId: matchId,
-                    paymentOutcome: state.pathParameters["payment_outcome"],
+                    paymentOutcome: paymentOutcome,
                   ),
                 );
               },
@@ -84,18 +84,20 @@ final appRouter = GoRouter(
               builder: (context, state) => LeaderboardScreen()),
         ]),
   ],
-  // redirect to the launch page
   redirect: (context, state) {
     var redirectUrl;
     var userState = navigatorKey.currentContext!.read<UserState>();
 
-    if (!LaunchController.loadingDone && state.matchedLocation != "/launch") {
-      // the loading
-      var from =
-          state.matchedLocation == '/' ? '' : '?from=${state.matchedLocation}';
-      redirectUrl = "/launch$from";
+    if (!LaunchController.loadingDone) {
+      if (state.matchedLocation != "/launch") {
+        LaunchController.pendingRedirect = state.uri.toString();
+        redirectUrl = "/launch";
+      }
+    } else if (state.matchedLocation == "/launch") {
+      // Loading finished — go to the original URL or home
+      redirectUrl = LaunchController.pendingRedirect ?? "/";
+      LaunchController.pendingRedirect = null;
     } else if (!userState.isLoggedIn()) {
-      // the pages that need login
       if ({"/createMatch", "/user", "/admin"}.contains(state.matchedLocation))
         redirectUrl = "/login?from=${state.matchedLocation}";
     } else if (!(userState.getLoggedUserDetails()!.isAdmin ?? false) &&
@@ -104,7 +106,7 @@ final appRouter = GoRouter(
     }
 
     if (redirectUrl != null) {
-      logger.info("redirecting from ${state.matchedLocation} to $redirectUrl");
+      logger.info("redirecting from ${state.uri} to $redirectUrl");
     }
 
     return redirectUrl;

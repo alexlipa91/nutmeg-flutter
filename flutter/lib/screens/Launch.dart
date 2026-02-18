@@ -9,10 +9,7 @@ import 'package:nutmeg/utils/CrashlyticsLogger.dart';
 final logger = CrashlyticsLogger('Launch');
 
 class LaunchWidget extends StatefulWidget {
-  final String? from;
-  final Map<String, String>? queryParams;
-
-  const LaunchWidget({Key? key, this.from, this.queryParams}) : super(key: key);
+  const LaunchWidget({Key? key}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => LaunchWidgetState();
@@ -22,7 +19,7 @@ class LaunchWidgetState extends State<LaunchWidget> {
   @override
   void initState() {
     super.initState();
-    LaunchController.loadData(context, widget.from)
+    LaunchController.loadData(context)
         .catchError((e, s) => logger.severe("Error loading data", e, s));
   }
 
