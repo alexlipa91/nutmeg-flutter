@@ -72,10 +72,10 @@ class TeamsWidgetState extends State<TeamsWidget> {
         teams[index].map((e) {
           var ud = context.watch<UsersState>().getUserDetail(e);
 
-          var avatar = UserAvatar(20, ud);
+          var avatar = UserAvatar(24, ud);
           var name = UserNameWidget(userDetails: ud);
           var userRow = SizedBox(
-            height: 40,
+            height: 48,
             child: LayoutBuilder(builder: (context, constraints) {
               return isLeftColumn
                   ? Row(

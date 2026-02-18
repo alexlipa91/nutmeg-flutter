@@ -388,8 +388,8 @@ List<Widget> getWidgets(
       matchInfo,
       // stats
       if (infoPlayersList != null) infoPlayersList,
-      if (teamsWidget != null) teamsWidget,
       if (waitListWidget != null) waitListWidget,
+      if (teamsWidget != null) teamsWidget,
       if (stats != null) stats,
       if (awards != null) awards,
       // horizontal players list or teams
@@ -420,8 +420,8 @@ List<Widget> getWidgets(
                   mainAxisSize: MainAxisSize.min,
                   children: interleave([
                     if (infoPlayersList != null) infoPlayersList,
-                    if (teamsWidget != null) teamsWidget,
                     if (waitListWidget != null) waitListWidget,
+                    if (teamsWidget != null) teamsWidget,
                     if (stats != null) stats,
                     if (awards != null) awards,
                   ], SizedBox(height: 16)),
@@ -480,6 +480,7 @@ class PlayerList extends StatelessWidget {
           s,
           matchId: match.documentId,
           showRemove: canRemovePlayers,
+          avatarRadius: 24,
         )));
     if (isOrganizer && hasSpotsLeft && isNotFrozen) {
       cards.add(_AddPlayerCard(matchId: match.documentId));
@@ -541,7 +542,7 @@ class WaitListWidget extends StatelessWidget {
               matchId: match.documentId,
               showPromote: isOrganizer,
               isPromoteEnabled: isOrganizer && !isFull,
-              avatarRadius: 20,
+              avatarRadius: 24,
             ))
         .toList();
 
@@ -738,8 +739,7 @@ class MatchInfo extends StatelessWidget {
               Padding(
                 padding: EdgeInsets.only(top: 16),
                 child: Row(children: [
-                  Expanded(
-                    child: GenericButtonWithLoaderAndErrorHandling(
+                  GenericButtonWithLoaderAndErrorHandling(
                       AppLocalizations.of(context)!
                           .cancelMatchAction
                           .toUpperCase(),
@@ -772,7 +772,6 @@ class MatchInfo extends StatelessWidget {
                         ).show(context);
                       },
                       Destructive(),
-                    ),
                   ),
                 ]),
               ),
@@ -931,8 +930,8 @@ class PlayerCard extends StatelessWidget {
             UserAvatarWithBottomModal(userData: userData, radius: avatarRadius),
             if (showRemove)
               Positioned(
-                right: -6,
-                top: -6,
+                right: -5.5,
+                top: -3,
                 child: InkWell(
                   onTap: () async {
                     if (matchId == null) return;
@@ -973,30 +972,30 @@ class PlayerCard extends StatelessWidget {
                     ).show(context);
                   },
                   child: Container(
-                    padding: EdgeInsets.all(2),
+                    padding: EdgeInsets.all(1),
                     decoration: BoxDecoration(
                       color: Palette.white,
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          blurRadius: 6,
-                          color: Colors.black.withOpacity(0.15),
-                          offset: Offset(0, 2),
+                          blurRadius: 4,
+                          color: Colors.black.withOpacity(0.12),
+                          offset: Offset(0, 1),
                         )
                       ],
                     ),
                     child: Icon(
                       Icons.remove_circle,
                       color: Palette.destructive,
-                      size: 20,
+                      size: 19,
                     ),
                   ),
                 ),
               ),
             if (showPromote)
               Positioned(
-                right: -6,
-                top: -6,
+                right: -5.5,
+                top: -3,
                 child: InkWell(
                   onTap: isPromoteEnabled
                       ? () async {
@@ -1034,7 +1033,7 @@ class PlayerCard extends StatelessWidget {
                         }
                       : null,
                   child: Container(
-                    padding: EdgeInsets.all(4),
+                    padding: EdgeInsets.all(2),
                     decoration: BoxDecoration(
                       color: isPromoteEnabled
                           ? Palette.primary
@@ -1042,16 +1041,16 @@ class PlayerCard extends StatelessWidget {
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          blurRadius: 6,
-                          color: Colors.black.withOpacity(0.15),
-                          offset: Offset(0, 2),
+                          blurRadius: 4,
+                          color: Colors.black.withOpacity(0.12),
+                          offset: Offset(0, 1),
                         )
                       ],
                     ),
                     child: Icon(
                       Icons.arrow_upward,
                       color: Palette.white,
-                      size: 16,
+                      size: 14,
                     ),
                   ),
                 ),
