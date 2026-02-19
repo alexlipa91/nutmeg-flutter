@@ -685,27 +685,10 @@ class MatchInfo extends StatelessWidget {
                     style: TextPalette.listItem),
                 if (!match.isManualPayment) ...[
                   Spacer(),
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: Palette.primary,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text("NUTMEG PAY",
-                        style: TextPalette.getBodyText(Palette.white)
-                            .copyWith(fontSize: 11, fontWeight: FontWeight.w600)),
-                  ),
+                  _NutmegPayBadge(match: match, isOrganizerView: isOrganizerView),
                 ],
               ]),
             ],
-            if (isOrganizerView &&
-                match.price != null &&
-                !match.isManualPayment &&
-                match.going.isNotEmpty)
-              _CollectedAmountRow(
-                matchId: match.documentId,
-                goingCount: match.going.length,
-              ),
             if (match.isManualPayment && match.organizerId != null)
               _PaymentInfoRow(
                 match: match,
@@ -2670,141 +2653,163 @@ class _ShareableStatsState extends State<ShareableStats> {
   }
 }
 
-class _CollectedAmountRow extends StatefulWidget {
-  final String matchId;
-  final int goingCount;
+class _NutmegPayBadge extends StatefulWidget {
+  final Match match;
+  final bool isOrganizerView;
 
-  const _CollectedAmountRow({
-    required this.matchId,
-    required this.goingCount,
-  });
+  const _NutmegPayBadge({required this.match, required this.isOrganizerView});
 
   @override
-  State<_CollectedAmountRow> createState() => _CollectedAmountRowState();
+  State<_NutmegPayBadge> createState() => _NutmegPayBadgeState();
 }
 
-class _CollectedAmountRowState extends State<_CollectedAmountRow> {
+class _NutmegPayBadgeState extends State<_NutmegPayBadge> {
   Map<String, dynamic>? _data;
-  bool _loading = true;
+  int _lastGoingCount = 0;
 
   @override
   void initState() {
     super.initState();
-    _fetch();
+    _lastGoingCount = widget.match.going.length;
+    if (widget.isOrganizerView) _fetch();
   }
 
   @override
-  void didUpdateWidget(covariant _CollectedAmountRow oldWidget) {
+  void didUpdateWidget(covariant _NutmegPayBadge oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.goingCount != widget.goingCount) {
+    if (widget.isOrganizerView &&
+        widget.match.going.length != _lastGoingCount) {
+      _lastGoingCount = widget.match.going.length;
       _fetch();
     }
   }
 
   Future<void> _fetch() async {
-    if (!_loading && mounted) setState(() { _loading = true; });
     try {
       var result = await CloudFunctionsClient()
-          .getFullResponse("matches/${widget.matchId}/collected");
-      if (mounted) setState(() { _data = result; _loading = false; });
-    } catch (e) {
-      if (mounted) setState(() { _loading = false; });
+          .getFullResponse("matches/${widget.match.documentId}/collected");
+      if (mounted) setState(() { _data = result; });
+    } catch (_) {}
+  }
+
+  void _showPaymentBreakdown(BuildContext context) {
+    final match = widget.match;
+    final usersState = context.read<UsersState>();
+    final goingIds = match.going.keys.toList();
+    final l10n = AppLocalizations.of(context)!;
+
+    final total = _data?["total"] as int? ?? 0;
+    final playersPaid = _data?["players_paid"] as int? ?? 0;
+    final totalPlayers = _data?["total_players"] as int? ?? 0;
+    final releaseStatus = _data?["release_status"] as String?;
+    final releaseAmount = _data?["release_amount"] as int?;
+    final releaseAt = _data?["release_at"] as String?;
+
+    Widget? releaseRow;
+    if (releaseStatus == "released" && releaseAmount != null) {
+      releaseRow = Row(children: [
+        Icon(Icons.check_circle_outline, color: Palette.green, size: 18),
+        SizedBox(width: 8),
+        Expanded(child: Text(
+          l10n.releaseCompletedText(formatCurrency(releaseAmount)),
+          style: TextPalette.getListItem(Palette.green),
+        )),
+      ]);
+    } else if (releaseAt != null && total > 0) {
+      final releaseDate = DateTime.parse(releaseAt).toLocal();
+      final formattedDate = DateFormat.yMMMd().add_Hm().format(releaseDate);
+      releaseRow = Row(children: [
+        Icon(Icons.schedule, color: Palette.greyDark, size: 18),
+        SizedBox(width: 8),
+        Expanded(child: Text(
+          l10n.releaseScheduledText(formattedDate),
+          style: TextPalette.getListItem(Palette.greyDark),
+        )),
+      ]);
     }
+
+    GenericInfoModal(
+      title: l10n.payThroughNutmeg,
+      content: Column(
+        children: [
+          ...goingIds.map((userId) {
+            final ud = usersState.getUserDetail(userId);
+            final hasPaid = match.hasPaymentIntent(userId);
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Row(children: [
+                UserAvatar(14, ud),
+                SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    ud?.name ?? "Unknown",
+                    style: TextPalette.bodyText.copyWith(color: Palette.black),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                if (hasPaid)
+                  Row(mainAxisSize: MainAxisSize.min, children: [
+                    Icon(Icons.check_circle, color: Palette.green, size: 14),
+                    SizedBox(width: 4),
+                    Text(
+                      formatCurrency(match.price?.basePrice ?? 0),
+                      style: TextPalette.getBodyText(Palette.green),
+                    ),
+                  ])
+                else
+                  Text("—", style: TextPalette.getBodyText(Palette.greyDark)),
+              ]),
+            );
+          }),
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: NutmegDivider(horizontal: true),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 6),
+            child: Row(children: [
+              Text("Total",
+                  style: TextPalette.bodyText.copyWith(
+                      color: Palette.black, fontWeight: FontWeight.w600)),
+              Spacer(),
+              Text(formatCurrency(total),
+                  style: TextPalette.getBodyText(Palette.black)
+                      .copyWith(fontWeight: FontWeight.w600)),
+            ]),
+          ),
+          if (releaseRow != null) ...[
+            NutmegDivider(horizontal: true),
+            Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: releaseRow,
+            ),
+          ],
+        ],
+      ),
+    ).show(context);
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) {
-      return Padding(
-        padding: const EdgeInsets.only(top: 12),
-        child: Row(children: [
-          Icon(Icons.account_balance_wallet_outlined, color: Palette.black, size: 18),
-          SizedBox(width: 16),
-          SizedBox(
-            width: 14, height: 14,
-            child: CircularProgressIndicator(strokeWidth: 2),
-          ),
+    final canTap = widget.isOrganizerView && _data != null;
+
+    return GestureDetector(
+      onTap: canTap ? () => _showPaymentBreakdown(context) : null,
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        decoration: BoxDecoration(
+          color: canTap ? Palette.primary : Palette.primary,
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Row(mainAxisSize: MainAxisSize.min, children: [
+          Text("INFO",
+              style: TextPalette.getBodyText(Palette.white)
+                  .copyWith(fontSize: 11, fontWeight: FontWeight.w600)),
+          SizedBox(width: 4),
+          Icon(Icons.chevron_right, color: Palette.white, size: 14),
         ]),
-      );
-    }
-
-    if (_data == null) return const SizedBox.shrink();
-
-    final total = _data!["total"] as int? ?? 0;
-    final playersPaid = _data!["players_paid"] as int? ?? 0;
-    final totalPlayers = _data!["total_players"] as int? ?? 0;
-    final payoutStatus = _data!["payout_status"] as String?;
-    final payoutReason = _data!["payout_reason"] as String?;
-    final payoutSentAt = _data!["payout_sent_at"] as String?;
-    final payoutAmount = _data!["payout_amount"] as int?;
-    final payoutAttempt = _data!["payout_attempt"] as int?;
-
-    final rows = <Widget>[];
-
-    rows.add(Padding(
-      padding: const EdgeInsets.only(top: 12),
-      child: Row(children: [
-        Icon(Icons.account_balance_wallet_outlined, color: Palette.black, size: 18),
-        SizedBox(width: 16),
-        Expanded(child: Text(
-          AppLocalizations.of(context)!.collectedAmountText(
-            formatCurrency(total),
-            playersPaid.toString(),
-            totalPlayers.toString(),
-          ),
-          style: TextPalette.listItem,
-        )),
-      ]),
-    ));
-
-    if (payoutStatus == "sent" || payoutStatus == "retry" || payoutStatus == "failed") {
-      final l10n = AppLocalizations.of(context)!;
-      IconData icon;
-      Color color;
-      String text;
-
-      switch (payoutStatus) {
-        case "sent":
-          icon = Icons.check_circle_outline;
-          color = Palette.green;
-          final sentDate = DateTime.parse(payoutSentAt!).toLocal();
-          text = l10n.payoutSentText(
-            formatCurrency(payoutAmount!),
-            DateFormat.yMMMd().add_Hm().format(sentDate),
-          );
-          break;
-        case "retry":
-          icon = Icons.schedule;
-          color = Palette.darkWarning;
-          text = l10n.payoutRetryText(
-            formatCurrency(payoutAmount ?? 0),
-            DateFormat.yMMMd().format(DateTime.now().add(Duration(days: 1))),
-          );
-          break;
-        case "failed":
-        default:
-          icon = Icons.error_outline;
-          color = Palette.destructive;
-          text = l10n.payoutFailedText(
-            formatCurrency(payoutAmount ?? 0),
-            (payoutAttempt ?? 0).toString(),
-          );
-          break;
-      }
-
-      rows.add(Padding(
-        padding: const EdgeInsets.only(top: 12),
-        child: Row(children: [
-          Icon(icon, color: color, size: 18),
-          SizedBox(width: 16),
-          Expanded(child: Text(text, style: TextPalette.getListItem(color))),
-        ]),
-      ));
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: rows,
+      ),
     );
   }
 }

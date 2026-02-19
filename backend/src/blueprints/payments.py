@@ -35,23 +35,27 @@ def checkout():
         )
 
     user_name = _get_user_name(user_id)
-    description = _build_payment_description(match_info, user_name)
+    product_name = _build_product_name(match_info)
+    product_description = _build_product_description(match_info, user_name)
+    pi_description = _build_payment_description(match_info, user_name)
     statement_suffix = _build_statement_descriptor_suffix(match_info)
+    transfer_metadata = _build_transfer_metadata(match_info, user_name, match_id)
 
     price_amount = match_info["price"]["basePrice"] + match_info["price"].get("userFee", NUTMEG_FEE_CENTS)
 
     session = _create_checkout_session_with_deep_links(
         _get_stripe_customer_id(user_id, is_test),
-        _get_stripe_connected_account_id(match_info["organizerId"], is_test),
         user_id,
         match_info["organizerId"],
         match_id,
         price_amount,
-        NUTMEG_FEE_CENTS,
         is_test,
         web_origin,
-        description,
-        statement_suffix,
+        product_name=product_name,
+        product_description=product_description,
+        pi_description=pi_description,
+        statement_suffix=statement_suffix,
+        transfer_metadata=transfer_metadata,
     )
 
     return flask.redirect(session.url)
@@ -69,7 +73,52 @@ def _get_user_name(user_id):
     return data.get("name", "Unknown") if data else "Unknown"
 
 
+def _parse_match_datetime(match_info):
+    dt = match_info.get("dateTime")
+    if dt is None:
+        return None
+    if hasattr(dt, "strftime"):
+        return dt
+    try:
+        from datetime import datetime
+        return datetime.fromisoformat(str(dt).replace("Z", "+00:00"))
+    except Exception:
+        return None
+
+
+def _build_product_name(match_info):
+    """Short, venue-focused label shown in the Express dashboard payment detail."""
+    sport_center = match_info.get("sportCenter", {})
+    venue = sport_center.get("name", "")
+    dt = _parse_match_datetime(match_info)
+    date_str = dt.strftime("%b %-d") if dt else ""
+
+    if venue and date_str:
+        return "Match @ {} · {}".format(venue, date_str)
+    if venue:
+        return "Match @ {}".format(venue)
+    if date_str:
+        return "Nutmeg Match · {}".format(date_str)
+    return "Nutmeg Match"
+
+
+def _build_product_description(match_info, user_name):
+    """Longer detail line shown under the product name in payment detail."""
+    parts = []
+    dt = _parse_match_datetime(match_info)
+    if dt:
+        parts.append(dt.strftime("%a %d %b %H:%M"))
+    duration = match_info.get("duration")
+    if duration:
+        parts.append("{}min".format(duration))
+    detail = " · ".join(parts) if parts else ""
+    if detail:
+        return "{} — paid by {}".format(detail, user_name)
+    return "Paid by {}".format(user_name)
+
+
 def _build_payment_description(match_info, user_name):
+    """Full description stored on the PaymentIntent (visible in Stripe Dashboard)."""
     parts = []
 
     sport_center = match_info.get("sportCenter", {})
@@ -80,17 +129,9 @@ def _build_payment_description(match_info, user_name):
     elif venue or city:
         parts.append(venue or city)
 
-    dt = match_info.get("dateTime")
+    dt = _parse_match_datetime(match_info)
     if dt:
-        try:
-            if hasattr(dt, "strftime"):
-                parts.append(dt.strftime("%a %d %b %H:%M"))
-            else:
-                from datetime import datetime
-                parsed = datetime.fromisoformat(str(dt).replace("Z", "+00:00"))
-                parts.append(parsed.strftime("%a %d %b %H:%M"))
-        except Exception:
-            pass
+        parts.append(dt.strftime("%a %d %b %H:%M"))
 
     duration = match_info.get("duration")
     if duration:
@@ -98,6 +139,19 @@ def _build_payment_description(match_info, user_name):
 
     match_line = " · ".join(parts) if parts else "Nutmeg match"
     return "{} — paid by {}".format(match_line, user_name)
+
+
+def _build_transfer_metadata(match_info, user_name, match_id):
+    """Metadata attached to the auto-created transfer for programmatic lookups."""
+    meta = {"match_id": match_id, "player_name": user_name}
+    sport_center = match_info.get("sportCenter", {})
+    venue = sport_center.get("name", "")
+    if venue:
+        meta["venue"] = venue
+    dt = _parse_match_datetime(match_info)
+    if dt:
+        meta["match_date"] = dt.strftime("%Y-%m-%d %H:%M")
+    return meta
 
 
 def _build_statement_descriptor_suffix(match_info):
@@ -135,31 +189,30 @@ def _get_stripe_customer_id(user_id, test_mode):
     return customer_id
 
 
-def _get_stripe_connected_account_id(organizer_id, test_mode):
-    doc = app.db_client.collection("users").document(organizer_id)
 
-    prefix = "stripe_test" if test_mode else "stripe"
-
-    data = doc.get(field_paths={prefix}).to_dict()
-
-    return data.get(prefix, {}).get("connected_account_id")
-
-
-# application_fee_amount includes stripe fees
 def _create_checkout_redirects_to_web(
     customer_id,
-    connected_account_id,
     user_id,
     organizer_id,
     match_id,
     price_amount,
-    application_fee_amount,
     test_mode,
     web_origin="https://web.nutmegapp.com",
-    description=None,
+    product_name=None,
+    product_description=None,
+    pi_description=None,
     statement_suffix=None,
+    transfer_metadata=None,
 ):
     stripe.api_key = Secrets.STRIPE_KEY_TEST if test_mode else Secrets.STRIPE_KEY
+
+    product_data = {"name": product_name or "Nutmeg Match"}
+    if product_description:
+        product_data["description"] = product_description
+
+    pi_metadata = {"user_id": user_id, "match_id": match_id}
+    if transfer_metadata:
+        pi_metadata.update(transfer_metadata)
 
     session = stripe.checkout.Session.create(
         success_url="{}/match/{}?payment_outcome={}".format(
@@ -172,19 +225,13 @@ def _create_checkout_redirects_to_web(
             "price_data": {
                 "currency": "eur",
                 "unit_amount": price_amount,
-                "product_data": {
-                    "name": description or "Nutmeg Match",
-                },
+                "product_data": product_data,
             },
             "quantity": 1,
         }],
         payment_intent_data={
-            "application_fee_amount": application_fee_amount,
-            "transfer_data": {
-                "destination": connected_account_id,
-            },
-            "metadata": {"user_id": user_id, "match_id": match_id},
-            **({"description": description} if description else {}),
+            "metadata": pi_metadata,
+            **({"description": pi_description} if pi_description else {}),
             **({"statement_descriptor_suffix": statement_suffix} if statement_suffix else {}),
         },
         mode="payment",
@@ -204,18 +251,27 @@ def _build_redirect_url(web_origin, match_id, outcome):
 
 def _create_checkout_session_with_deep_links(
     customer_id,
-    connected_account_id,
     user_id,
     organizer_id,
     match_id,
     price_amount,
-    application_fee_amount,
     test_mode,
     web_origin="https://web.nutmegapp.com",
-    description=None,
+    product_name=None,
+    product_description=None,
+    pi_description=None,
     statement_suffix=None,
+    transfer_metadata=None,
 ):
     stripe.api_key = Secrets.STRIPE_KEY_TEST if test_mode else Secrets.STRIPE_KEY
+
+    product_data = {"name": product_name or "Nutmeg Match"}
+    if product_description:
+        product_data["description"] = product_description
+
+    pi_metadata = {"user_id": user_id, "match_id": match_id}
+    if transfer_metadata:
+        pi_metadata.update(transfer_metadata)
 
     session = stripe.checkout.Session.create(
         success_url=_build_redirect_url(web_origin, match_id, "success"),
@@ -224,19 +280,13 @@ def _create_checkout_session_with_deep_links(
             "price_data": {
                 "currency": "eur",
                 "unit_amount": price_amount,
-                "product_data": {
-                    "name": description or "Nutmeg Match",
-                },
+                "product_data": product_data,
             },
             "quantity": 1,
         }],
         payment_intent_data={
-            "application_fee_amount": application_fee_amount,
-            "transfer_data": {
-                "destination": connected_account_id,
-            },
-            "metadata": {"user_id": user_id, "match_id": match_id},
-            **({"description": description} if description else {}),
+            "metadata": pi_metadata,
+            **({"description": pi_description} if pi_description else {}),
             **({"statement_descriptor_suffix": statement_suffix} if statement_suffix else {}),
         },
         mode="payment",

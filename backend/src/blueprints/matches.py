@@ -1011,13 +1011,6 @@ def _run_post_match_tasks(db, match_id, is_test):
             },
         )
 
-    # payout: try right away, then retry every 24h if balance not yet available
-    qs = "&is_test=true" if is_test else ""
-    schedule_app_engine_call(
-        task_name="payout_organizer_for_match_{}_attempt_number_{}".format(match_id, 1),
-        endpoint="matches/{}/tasks/payout?attempt={}{}".format(match_id, 1, qs),
-        date_time_to_execute=datetime.now() + timedelta(minutes=5),
-    )
     return {"status": "success"}
 
 
@@ -1026,89 +1019,106 @@ def run_post_match_tasks(match_id):
     return _run_post_match_tasks(app.db_client, match_id, _is_test_from_request())
 
 
-def _create_organizer_payout(db, match_id, is_test, attempt=1, max_attempts=5):
+def _calculate_release_amount(match, verify_with_stripe=False):
+    """Calculate how much to transfer to the organizer for this match.
+
+    With verify_with_stripe=False (default), uses the match document only.
+    With verify_with_stripe=True, confirms each charge is still valid in Stripe.
+    Returns {"total": int, "players_paid": int}.
+    """
+    base_price = match.price.get("basePrice", 0) if match.price else 0
+    total = 0
+    players_paid = 0
+
+    for user_id, going_data in match.going.items():
+        pi_id = going_data.get("payment_intent") if isinstance(going_data, dict) else None
+        if not pi_id:
+            continue
+        if verify_with_stripe:
+            try:
+                pi = stripe.PaymentIntent.retrieve(pi_id, expand=["latest_charge"])
+                charge = pi.latest_charge
+                if not (charge and charge.status == "succeeded" and charge.amount_refunded == 0):
+                    continue
+            except Exception as e:
+                logging.warning("Release: failed to verify PI %s: %s", pi_id, e)
+                continue
+        total += base_price
+        players_paid += 1
+
+    return {"total": total, "players_paid": players_paid}
+
+
+def _release_match_money(db, match_id, is_test):
+    """Transfer collected payments to the organizer's connected Stripe account."""
     coll = _get_matches_collection(is_test)
     match_ref = db.collection(coll).document(match_id)
     match = MatchModel.get_by_id(match_id, db, is_test=is_test)
 
-    def _save_payout(status, reason=None, **extra):
-        payout_data = {
-            "status": status,
-            "attempt": attempt,
-            "updated_at": firestore.firestore.SERVER_TIMESTAMP,
-        }
-        if reason:
-            payout_data["reason"] = reason
-        payout_data.update(extra)
-        match_ref.update({"payout": payout_data})
-
     if not match:
-        logging.info("Payout for %s: match not found, skipping", match_id)
+        logging.info("Release %s: match not found, skipping", match_id)
         return {"status": "skipped", "reason": "deleted"}
 
-    if match.payout_id:
-        logging.info("Payout for %s: already paid out", match_id)
-        return {"status": "skipped", "reason": "already_paid"}
+    if match.cancelled_at:
+        logging.info("Release %s: match cancelled, skipping", match_id)
+        return {"status": "skipped", "reason": "cancelled"}
+
+    raw = match_ref.get().to_dict()
+    if raw.get("release", {}).get("status") == "released":
+        logging.info("Release %s: already released", match_id)
+        return {"status": "skipped", "reason": "already_released"}
 
     prefix = "stripe_test" if is_test else "stripe"
     organizer_data = (
-        db.collection("users")
-        .document(match.organizer_id)
-        .get()
-        .to_dict()
+        db.collection("users").document(match.organizer_id).get().to_dict()
     )
     organizer_account = organizer_data.get(prefix, {}).get("connected_account_id")
     if not organizer_account:
-        logging.error("Payout for %s: organizer has no connected account", match_id)
+        logging.error("Release %s: organizer has no connected account", match_id)
+        match_ref.update({"release": {
+            "status": "skipped",
+            "reason": "no_connected_account",
+            "updated_at": firestore.firestore.SERVER_TIMESTAMP,
+        }})
         return {"status": "skipped", "reason": "no_connected_account"}
 
     stripe.api_key = Secrets.STRIPE_KEY if not is_test else Secrets.STRIPE_KEY_TEST
 
-    amount = _get_match_payout_amount(match, organizer_account)
-    if amount <= 0:
-        logging.info("Payout for %s: nothing to pay out (amount=%d)", match_id, amount)
+    info = _calculate_release_amount(match, verify_with_stripe=True)
+    transfer_total = info["total"]
+    players_paid = info["players_paid"]
+
+    if transfer_total <= 0:
+        logging.info("Release %s: nothing to transfer", match_id)
+        match_ref.update({"release": {
+            "status": "skipped",
+            "reason": "no_amount",
+            "updated_at": firestore.firestore.SERVER_TIMESTAMP,
+        }})
         return {"status": "skipped", "reason": "no_amount"}
 
-    balance = stripe.Balance.retrieve(stripe_account=organizer_account)
-    available_amount = balance["available"][0]["amount"]
-
-    logging.info("Payout for %s attempt %d: match amount %d, available balance %d",
-                 match_id, attempt, amount, available_amount)
-
-    if available_amount < amount:
-        if attempt < max_attempts:
-            logging.info("Payout for %s: insufficient balance, retry in 24h (attempt %d/%d)",
-                         match_id, attempt, max_attempts)
-            qs = "&is_test=true" if is_test else ""
-            schedule_app_engine_call(
-                task_name="payout_organizer_for_match_{}_attempt_number_{}".format(match_id, attempt + 1),
-                endpoint="matches/{}/tasks/payout?attempt={}{}".format(match_id, attempt + 1, qs),
-                date_time_to_execute=datetime.now() + timedelta(days=1),
-            )
-            _save_payout("retry", reason="not_enough_balance",
-                         amount=amount, available_balance=available_amount)
-            return {"status": "retry", "reason": "not_enough_balance"}
-        else:
-            logging.error("Payout for %s: gave up after %d attempts", match_id, max_attempts)
-            _save_payout("failed", reason="max_attempts_reached",
-                         amount=amount, available_balance=available_amount)
-            return {"status": "failed", "reason": "max_attempts_reached"}
-
-    payout = stripe.Payout.create(
-        amount=amount,
+    transfer = stripe.Transfer.create(
+        amount=transfer_total,
         currency="eur",
-        stripe_account=organizer_account,
-        metadata={"match_id": match_id, "attempt": attempt},
+        destination=organizer_account,
+        metadata={"match_id": match_id, "players": str(players_paid)},
     )
-    logging.info("Payout for %s: created %s for %d cents", match_id, payout.id, amount)
+    logging.info("Release %s: transferred %d cents (%d players) -> %s",
+                 match_id, transfer_total, players_paid, transfer.id)
 
-    _save_payout("sent", amount=amount, payout_id=payout.id,
-                  sent_at=firestore.firestore.SERVER_TIMESTAMP)
+    match_ref.update({"release": {
+        "status": "released",
+        "amount": transfer_total,
+        "transfer_id": transfer.id,
+        "players": players_paid,
+        "released_at": firestore.firestore.SERVER_TIMESTAMP,
+    }})
+
     send_notification_to_users(
         db=db,
-        title="Your money is on the way! " + "\U0001f4b5",
-        body="€ {:.2f} for your match on {} is on its way to your bank account".format(
-            amount / 100, datetime.strftime(match.date_time, "%B %-d, %Y")
+        title="Money transferred! " + "\U0001f4b0",
+        body="\u20ac {:.2f} for your match has been transferred to your Stripe account".format(
+            transfer_total / 100
         ),
         data={
             "click_action": "FLUTTER_NOTIFICATION_CLICK",
@@ -1117,42 +1127,25 @@ def _create_organizer_payout(db, match_id, is_test, attempt=1, max_attempts=5):
         },
         users=[match.organizer_id],
     )
-    return {"status": "success", "payout_id": payout.id, "amount": amount}
+    return {"status": "success", "transfer_id": transfer.id, "amount": transfer_total}
 
 
-@bp.route("/<match_id>/tasks/payout", methods=["GET"])
-def create_organizer_payout(match_id):
-    attempt = int(flask.request.args.get("attempt", 1))
-    return _create_organizer_payout(
-        app.db_client, match_id, _is_test_from_request(), attempt=attempt,
-    )
+@bp.route("/<match_id>/tasks/release", methods=["GET"])
+def release_match_money(match_id):
+    return _release_match_money(app.db_client, match_id, _is_test_from_request())
 
 
 def _get_match_collected_info(match):
-    """Get per-player transfer info for this match from Stripe."""
-    total = 0
-    players_paid = 0
-    for user_id, going_data in match.going.items():
-        pi_id = going_data.get("payment_intent") if isinstance(going_data, dict) else None
-        if not pi_id:
-            continue
-        try:
-            pi = stripe.PaymentIntent.retrieve(pi_id, expand=["latest_charge.transfer"])
-            charge = pi.latest_charge
-            if charge and charge.transfer:
-                transfer = charge.transfer
-                net = transfer.amount - transfer.amount_reversed
-                if net > 0:
-                    total += net
-                    players_paid += 1
-        except Exception as e:
-            logging.warning("Payout: failed to retrieve transfer for PI %s: %s", pi_id, e)
-    return {"total": total, "players_paid": players_paid}
+    """Calculate collected amount from match data (no Stripe API calls)."""
+    return _calculate_release_amount(match, verify_with_stripe=False)
 
 
-def _get_match_payout_amount(match, organizer_account):
-    """Sum the net transfer amounts for this match from Stripe."""
-    return _get_match_collected_info(match)["total"]
+def _get_release_at(match):
+    """Return the scheduled release datetime (dateTime + duration + 24h)."""
+    if not match.date_time:
+        return None
+    duration = match.duration or 60
+    return match.date_time + timedelta(minutes=duration) + timedelta(hours=24)
 
 
 @bp.route("/<match_id>/collected", methods=["GET"])
@@ -1167,29 +1160,18 @@ def get_match_collected(match_id):
     match = MatchModel.from_doc(doc)
     raw = doc.to_dict()
 
-    prefix = "stripe_test" if is_test else "stripe"
-    organizer_data = (
-        app.db_client.collection("users")
-        .document(match.organizer_id)
-        .get()
-        .to_dict()
-    )
-    organizer_account = organizer_data.get(prefix, {}).get("connected_account_id")
-    if not organizer_account:
-        return flask.jsonify({"total": 0, "players_paid": 0, "payout_sent_at": None})
-
-    stripe.api_key = Secrets.STRIPE_KEY if not is_test else Secrets.STRIPE_KEY_TEST
-
     info = _get_match_collected_info(match)
     info["total_players"] = len(match.going)
 
-    payout_data = raw.get("payout", {})
-    payout_sent_at = payout_data.get("sent_at")
-    info["payout_status"] = payout_data.get("status")
-    info["payout_reason"] = payout_data.get("reason")
-    info["payout_sent_at"] = payout_sent_at.isoformat() if payout_sent_at else None
-    info["payout_amount"] = payout_data.get("amount")
-    info["payout_attempt"] = payout_data.get("attempt")
+    release_data = raw.get("release", {})
+    info["release_status"] = release_data.get("status")
+    info["release_amount"] = release_data.get("amount")
+
+    released_at = release_data.get("released_at")
+    info["released_at"] = released_at.isoformat() if released_at else None
+
+    release_at = _get_release_at(match)
+    info["release_at"] = release_at.isoformat() if release_at else None
 
     return flask.jsonify(info)
 
@@ -1932,6 +1914,18 @@ def schedule_match_tasks(match_id, match_data, is_test=False):
         + timedelta(hours=1),
     )
     tasks_scheduled.append(task_name)
+
+    # release collected payments to organizer 24h after match end
+    if match_data.get("price") and not match_data.get("isManualPayment"):
+        task_name = "release_match_money_{}_{}".format(match_id, current_epoch_str)
+        schedule_app_engine_call(
+            task_name=task_name,
+            endpoint="matches/{}/tasks/release{}".format(match_id, qs),
+            date_time_to_execute=match_data["dateTime"]
+            + timedelta(minutes=int(match_data["duration"]))
+            + timedelta(hours=24),
+        )
+        tasks_scheduled.append(task_name)
 
     return tasks_scheduled
 

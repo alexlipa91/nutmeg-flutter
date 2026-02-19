@@ -53,8 +53,6 @@ class Match {
   int maxPlayers;
   DateTime? cancelledAt;
   DateTime? scoresComputedAt;
-  DateTime? paidOutAt;
-
   Map<String, DateTime> going;
   Map<String, String> goingPaymentStatus; // userId -> manualPaymentStatus
   Set<String> goingWithPaymentIntent;
@@ -69,8 +67,6 @@ class Match {
   List<int>? score;
 
   String? dynamicLink;
-
-  Payout? payout;
 
   Ratings? ratingSummary;
 
@@ -126,10 +122,7 @@ class Match {
                 Map<String, dynamic>.from(jsonInput["sportCenter"]),
                 jsonInput["sportCenter"]["placeId"]),
         isPrivate = jsonInput["isPrivate"] ?? false,
-        isManualPayment = jsonInput["isManualPayment"] ?? false,
-        payout = jsonInput["payout"] != null
-            ? Payout.fromJson(jsonInput["payout"])
-            : null {
+        isManualPayment = jsonInput["isManualPayment"] ?? false {
     sportCenterSubLocation = jsonInput['sportCenterSubLocation'];
     if (jsonInput.containsKey("cancelledAt") &&
         jsonInput["cancelledAt"] != null)
@@ -155,9 +148,6 @@ class Match {
 
     status =
         MatchStatus.values.firstWhere((e) => e.name == jsonInput["status"]);
-
-    if (jsonInput.containsKey("paid_out_at"))
-      paidOutAt = DateTime.parse(jsonInput['paid_out_at']).toLocal();
 
     // parse ratings summary embedded on the match doc
     if (jsonInput.containsKey("ratings") && jsonInput["ratings"] != null) {
@@ -344,25 +334,3 @@ class Ratings {
         ratingsNotComputedReason = jsonInput["ratings_not_computed_reason"];
 }
 
-class Payout {
-  String status;
-  int? amount;
-  String? reason;
-  int? attempt;
-  DateTime? sentAt;
-
-  Payout.fromJson(Map<String, dynamic> json)
-      : status = json["status"] ?? "unknown",
-        amount = json["amount"],
-        reason = json["reason"],
-        attempt = json["attempt"],
-        sentAt = json["sent_at"] != null
-            ? (json["sent_at"] is String
-                ? DateTime.parse(json["sent_at"])
-                : DateTime.fromMillisecondsSinceEpoch(
-                    json["sent_at"]["_seconds"] * 1000))
-            : (json["arrival_date"] != null
-                ? DateTime.fromMillisecondsSinceEpoch(
-                    json["arrival_date"] * 1000)
-                : null);
-}

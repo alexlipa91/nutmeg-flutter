@@ -563,33 +563,13 @@ class AppLocalizationsIt extends AppLocalizations {
   }
 
   @override
-  String payoutSentText(String amount, String date) {
-    return '$amount inviati al tuo conto bancario il $date';
+  String releaseScheduledText(String date) {
+    return 'Sarà trasferito sul tuo account Stripe il $date';
   }
 
   @override
-  String payoutRetryText(String amount, String date) {
-    return 'Pagamento di $amount in attesa, prossimo tentativo il $date';
-  }
-
-  @override
-  String payoutFailedText(String amount, String attempts) {
-    return 'Pagamento di $amount fallito dopo $attempts tentativi';
-  }
-
-  @override
-  String payoutSkippedText(String reason) {
-    return 'Pagamento saltato: $reason';
-  }
-
-  @override
-  String payoutInfoSuccessText(String a, String d) {
-    return 'Il pagamento di $a è stato trasferito il $d';
-  }
-
-  @override
-  String payoutInfoOnItsWayText(String a, String d) {
-    return 'Il pagamento di $a è in arrivo e dovrebbe arrivare il $d';
+  String releaseCompletedText(String amount) {
+    return '$amount trasferiti sul tuo account Stripe';
   }
 
   @override

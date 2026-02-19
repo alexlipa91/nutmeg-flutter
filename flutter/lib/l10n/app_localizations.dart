@@ -1098,41 +1098,17 @@ abstract class AppLocalizations {
   /// **'{amount} collected ({count}/{total} paid)'**
   String collectedAmountText(String amount, String count, String total);
 
-  /// No description provided for @payoutSentText.
+  /// No description provided for @releaseScheduledText.
   ///
   /// In en, this message translates to:
-  /// **'{amount} sent to your bank account on {date}'**
-  String payoutSentText(String amount, String date);
+  /// **'Will be transferred to your Stripe account on {date}'**
+  String releaseScheduledText(String date);
 
-  /// No description provided for @payoutRetryText.
+  /// No description provided for @releaseCompletedText.
   ///
   /// In en, this message translates to:
-  /// **'Payout of {amount} pending, next attempt on {date}'**
-  String payoutRetryText(String amount, String date);
-
-  /// No description provided for @payoutFailedText.
-  ///
-  /// In en, this message translates to:
-  /// **'Payout of {amount} failed after {attempts} attempts'**
-  String payoutFailedText(String amount, String attempts);
-
-  /// No description provided for @payoutSkippedText.
-  ///
-  /// In en, this message translates to:
-  /// **'Payout skipped: {reason}'**
-  String payoutSkippedText(String reason);
-
-  /// No description provided for @payoutInfoSuccessText.
-  ///
-  /// In en, this message translates to:
-  /// **'Payment of {a} has been transferred on {d}'**
-  String payoutInfoSuccessText(String a, String d);
-
-  /// No description provided for @payoutInfoOnItsWayText.
-  ///
-  /// In en, this message translates to:
-  /// **'Payment of {a} is on its way and should arrive on {d}'**
-  String payoutInfoOnItsWayText(String a, String d);
+  /// **'{amount} transferred to your Stripe account'**
+  String releaseCompletedText(String amount);
 
   /// No description provided for @changeLanguageButton.
   ///

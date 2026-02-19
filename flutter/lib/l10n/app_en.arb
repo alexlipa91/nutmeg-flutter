@@ -286,47 +286,16 @@
                 "total":  {"type": "String"}
             }
         },
-
-    "payoutSentText": "{amount} sent to your bank account on {date}",
-    "@payoutSentText": {
+    "releaseScheduledText": "Will be transferred to your Stripe account on {date}",
+    "@releaseScheduledText": {
             "placeholders": {
-                "amount":  {"type": "String"},
                 "date":  {"type": "String"}
             }
         },
-    "payoutRetryText": "Payout of {amount} pending, next attempt on {date}",
-    "@payoutRetryText": {
+    "releaseCompletedText": "{amount} transferred to your Stripe account",
+    "@releaseCompletedText": {
             "placeholders": {
-                "amount":  {"type": "String"},
-                "date":  {"type": "String"}
-            }
-        },
-    "payoutFailedText": "Payout of {amount} failed after {attempts} attempts",
-    "@payoutFailedText": {
-            "placeholders": {
-                "amount":  {"type": "String"},
-                "attempts":  {"type": "String"}
-            }
-        },
-    "payoutSkippedText": "Payout skipped: {reason}",
-    "@payoutSkippedText": {
-            "placeholders": {
-                "reason":  {"type": "String"}
-            }
-        },
-
-    "payoutInfoSuccessText": "Payment of {a} has been transferred on {d}",
-    "@payoutInfoSuccessText": {
-            "placeholders": {
-                "a":  {"type": "String"},
-                "d":  {"type": "String"}
-            }
-        },
-    "payoutInfoOnItsWayText": "Payment of {a} is on its way and should arrive on {d}",
-    "@payoutInfoOnItsWayText": {
-            "placeholders": {
-                "a":  {"type": "String"},
-                "d":  {"type": "String"}
+                "amount":  {"type": "String"}
             }
         },
 

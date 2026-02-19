@@ -30,8 +30,6 @@ class GenericInfoModal<T> {
     // change space depending if description is there
     var spaceBeforeAction = verticalSpaceBetweenElements;
     if (content != null) {
-      spaceBeforeAction = spaceBeforeAction - 8;
-      widgets.add(SizedBox(height: 8));
       widgets.add(content!);
     }
     if (action != null) {

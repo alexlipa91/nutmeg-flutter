@@ -566,33 +566,13 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
-  String payoutSentText(String amount, String date) {
-    return '$amount sent to your bank account on $date';
+  String releaseScheduledText(String date) {
+    return 'Will be transferred to your Stripe account on $date';
   }
 
   @override
-  String payoutRetryText(String amount, String date) {
-    return 'Payout of $amount pending, next attempt on $date';
-  }
-
-  @override
-  String payoutFailedText(String amount, String attempts) {
-    return 'Payout of $amount failed after $attempts attempts';
-  }
-
-  @override
-  String payoutSkippedText(String reason) {
-    return 'Payout skipped: $reason';
-  }
-
-  @override
-  String payoutInfoSuccessText(String a, String d) {
-    return 'O pagamento de $a foi transferido em $d';
-  }
-
-  @override
-  String payoutInfoOnItsWayText(String a, String d) {
-    return 'O pagamento de $a está a caminho e deve chegar em $d';
+  String releaseCompletedText(String amount) {
+    return '$amount transferred to your Stripe account';
   }
 
   @override
