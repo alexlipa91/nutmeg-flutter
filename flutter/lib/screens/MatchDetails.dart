@@ -474,7 +474,6 @@ class PlayerList extends StatelessWidget {
   Widget build(BuildContext context) {
     List<Widget> widgets = [];
 
-    var space = (min(475, MediaQuery.of(context).size.width) - 300) / 4.5;
     var isOrganizer = context.watch<MatchState>().isLoggedUserOrganizer();
     var isNotFrozen = match.status != MatchStatus.rated &&
         match.status != MatchStatus.cancelled;
@@ -489,17 +488,16 @@ class PlayerList extends StatelessWidget {
           s,
           matchId: match.documentId,
           showRemove: canRemovePlayers,
-          avatarRadius: 24,
+          avatarRadius: 26,
         )));
     if (isOrganizer && hasSpotsLeft && isNotFrozen) {
       cards.add(_AddPlayerCard(matchId: match.documentId));
     }
 
     widgets.add(SizedBox(width: 16));
-    widgets.addAll(interleave(cards, SizedBox(width: space)));
+    widgets.addAll(interleave(cards, SizedBox(width: 4)));
     widgets.add(SizedBox(width: 16));
 
-    // we need to copy this instead of using InfoContainerWithTitle so we can play with the padding and the scrolling
     return InfoContainer(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -507,7 +505,7 @@ class PlayerList extends StatelessWidget {
           Padding(
               padding: EdgeInsets.symmetric(horizontal: 16),
               child: Text(getTitle(context, match), style: TextPalette.h2)),
-          SizedBox(height: 24),
+          SizedBox(height: 16),
           LayoutBuilder(builder: (context, constraints) {
             if (MediaQuery.of(context).size.width < 800)
               return SingleChildScrollView(
@@ -543,21 +541,19 @@ class WaitListWidget extends StatelessWidget {
     var isOrganizer = context.watch<MatchState>().isLoggedUserOrganizer();
     var isFull = match.isFull();
 
-    var space = (min(475, MediaQuery.of(context).size.width) - 300) / 4.5;
-
     List<Widget> cards = waitListUsers
         .map((userId) => PlayerCard(
               userId,
               matchId: match.documentId,
               showPromote: isOrganizer,
               isPromoteEnabled: isOrganizer && !isFull,
-              avatarRadius: 24,
+              avatarRadius: 26,
             ))
         .toList();
 
     List<Widget> widgets = [];
     widgets.add(SizedBox(width: 16));
-    widgets.addAll(interleave(cards, SizedBox(width: space)));
+    widgets.addAll(interleave(cards, SizedBox(width: 4)));
     widgets.add(SizedBox(width: 16));
 
     return InfoContainer(
@@ -568,7 +564,7 @@ class WaitListWidget extends StatelessWidget {
               padding: EdgeInsets.symmetric(horizontal: 16),
               child: Text("Waitlist (${match.numPlayersInWaitList()})",
                   style: TextPalette.h2)),
-          SizedBox(height: 24),
+          SizedBox(height: 16),
           LayoutBuilder(builder: (context, constraints) {
             if (MediaQuery.of(context).size.width < 800)
               return SingleChildScrollView(
@@ -890,7 +886,7 @@ class SportCenterImageCarouselState extends State<SportCenterImageCarousel> {
 
 // single player card
 class PlayerCard extends StatelessWidget {
-  static var width = 80.0;
+  static var width = 88.0;
 
   final String userId;
   final String? matchId;
@@ -911,7 +907,9 @@ class PlayerCard extends StatelessWidget {
     var userData = context.watch<UsersState>().getUserDetail(userId);
     var hasOverlay = showRemove || showPromote;
 
-    return Column(children: [
+    return SizedBox(
+      width: width,
+      child: Column(children: [
       Padding(
         padding: EdgeInsets.only(top: 6, right: 6),
         child: Stack(
@@ -1085,8 +1083,10 @@ class PlayerCard extends StatelessWidget {
           ? Skeletons.sText
           : Text((userData.name ?? "Player").split(" ").first,
               overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+              textAlign: TextAlign.center,
               style: TextPalette.getBodyText(Palette.black))
-    ]);
+    ]));
   }
 }
 
@@ -1101,7 +1101,9 @@ class EmptyPlayerCard extends StatelessWidget {
     var matchState = context.read<MatchState>();
     var matchesState = context.read<MatchesState>();
 
-    return InkWell(
+    return SizedBox(
+      width: PlayerCard.width,
+      child: InkWell(
       onTap: () => JoinModal.onJoinGameAction(
           context, userState, matchState, matchesState),
       child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
@@ -1120,9 +1122,11 @@ class EmptyPlayerCard extends StatelessWidget {
         SizedBox(height: 10),
         Text(AppLocalizations.of(context)!.joinAction,
             overflow: TextOverflow.ellipsis,
+            maxLines: 1,
+            textAlign: TextAlign.center,
             style: TextPalette.getBodyText(Palette.primary))
       ]),
-    );
+    ));
   }
 }
 
@@ -1133,7 +1137,9 @@ class _AddPlayerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
+    return SizedBox(
+      width: PlayerCard.width,
+      child: InkWell(
       onTap: () {
         var organizerId = context.read<UserState>().getLoggedUserId()!;
         var matchState = context.read<MatchState>();
@@ -1170,9 +1176,11 @@ class _AddPlayerCard extends StatelessWidget {
         SizedBox(height: 10),
         Text(AppLocalizations.of(context)!.addPlayerLabel,
             overflow: TextOverflow.ellipsis,
+            maxLines: 1,
+            textAlign: TextAlign.center,
             style: TextPalette.getBodyText(Palette.green))
       ]),
-    );
+    ));
   }
 }
 
