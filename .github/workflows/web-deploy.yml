@@ -51,7 +51,7 @@ jobs:
       - name: Deploy to Firebase (test channel)
         uses: w9jds/firebase-action@master
         with:
-          args: hosting:channel:deploy test --target staging
+          args: hosting:channel:deploy test --only staging
         env:
           GCP_SA_KEY: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_NUTMEG_9099C }}"
           PROJECT_PATH: flutter
