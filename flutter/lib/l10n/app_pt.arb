@@ -49,6 +49,7 @@
     "removePlayerTitle": "Remover jogador?",
     "removePlayerSubtitle": "Isto irá remover {name} do jogo.",
     "removePlayerRefundInfo": "Se o jogador pagou, será emitido um reembolso.",
+    "removePlayerRefundMessage": "{name} será reembolsado no método de pagamento utilizado.",
     "leaveMatchRefundTitle": "Reembolso",
     "leaveMatchCreditsRefundTitle": "Reembolso de Créditos",
     "leaveMatchInfo": "Nós reembolsaremos você no método de pagamento que você utilizou.",
@@ -236,6 +237,10 @@
     "totalPlayersLabel": "jogadores no total",
     "totalLabel": "Total",
     "freeCancellationPolicy": "Cancelamento gratuito até {hours}h antes do jogo",
-    "addPlayerLabel": "Adicionar",
+    "addPlayerLabel": "ADICIONAR",
+    "pickFromPlayersSubtitle": "Escolha entre os jogadores com quem já jogou",
+    "searchByNameHint": "Pesquisar por nome",
+    "noPlayersAvailable": "Nenhum jogador disponível para adicionar",
+    "noResults": "Sem resultados",
     "dontForgetToPay": "Não se esqueça de pagar {name}!"
 }

@@ -180,6 +180,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'If the player paid, a refund will be issued.';
 
   @override
+  String removePlayerRefundMessage(String name) {
+    return '$name will be refunded on the payment method they used to pay.';
+  }
+
+  @override
   String get leaveMatchRefundTitle => 'Refund';
 
   @override
@@ -794,7 +799,19 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get addPlayerLabel => 'Add';
+  String get addPlayerLabel => 'ADD';
+
+  @override
+  String get pickFromPlayersSubtitle => 'Pick from players who played with you';
+
+  @override
+  String get searchByNameHint => 'Search by name';
+
+  @override
+  String get noPlayersAvailable => 'No players available to add';
+
+  @override
+  String get noResults => 'No results';
 
   @override
   String dontForgetToPay(Object name) {

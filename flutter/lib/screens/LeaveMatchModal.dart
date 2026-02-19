@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:nutmeg/config/app_config.dart';
 import 'package:nutmeg/state/MatchState.dart';
+import 'package:nutmeg/state/UserState.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
@@ -20,11 +21,12 @@ class LeaveButton extends StatelessWidget {
       AppLocalizations.of(context)!.leaveButtonText,
       (BuildContext context) async {
         var state = context.read<MatchState>();
-        var match = state.match;
-        var paidThroughNutmeg = match!.price != null && !match.isManualPayment;
-        // fixme make it parametric
+        var match = state.match!;
+        var userId = context.read<UserState>().getLoggedUserId();
+        var hasPayment = userId != null && match.hasPaymentIntent(userId);
+
         var leaveMatchText;
-        if (paidThroughNutmeg) {
+        if (hasPayment) {
           leaveMatchText = AppLocalizations.of(context)!.leaveMatchInfo;
           if (match.price!.userFee > 0) {
             leaveMatchText = leaveMatchText +
@@ -39,7 +41,7 @@ class LeaveButton extends StatelessWidget {
         await GenericInfoModal(
             title: AppLocalizations.of(context)!.leaveThisMatchTitle,
             description: leaveMatchText,
-            content: paidThroughNutmeg
+            content: hasPayment
                 ? ModalPaymentDescriptionArea(
                     rows: [],
                     finalRow: Row(
@@ -86,8 +88,8 @@ class ConfirmLeaveMatchButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var match = matchState.match!;
-
-    var paidThroughNutmeg = match.price != null && !match.isManualPayment;
+    var userId = context.read<UserState>().getLoggedUserId();
+    var hasPayment = userId != null && match.hasPaymentIntent(userId);
 
     return GenericButtonWithLoader(
       AppLocalizations.of(context)!.confirmButtonText,
@@ -97,16 +99,12 @@ class ConfirmLeaveMatchButton extends StatelessWidget {
         await matchState.removeLoggedInUserFromMatch();
         Navigator.of(context).pop(true);
 
-        if (match.price != null) {
+        if (hasPayment) {
           GenericInfoModal(
-                  title: paidThroughNutmeg
-                      ? "A refund of ${formatCurrency(match.price!.basePrice)} "
-                          "was issued "
-                      : AppLocalizations.of(context)!.leftMatchTitle,
-                  description: paidThroughNutmeg
-                      ? "You will receive the money in 3 to 5 business days on the payment method you used."
-                      : AppLocalizations.of(context)!
-                            .leftMatchContactOrganizerForRefund,
+                  title: "A refund of ${formatCurrency(match.price!.basePrice)} "
+                      "was issued ",
+                  description:
+                      "You will receive the money in 3 to 5 business days on the payment method you used.",
                   action: null)
               .show(context);
         }

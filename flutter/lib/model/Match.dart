@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:nutmeg/config/app_config.dart';
 import 'package:nutmeg/model/SportCenter.dart';
 import 'package:nutmeg/state/UserState.dart';
 import 'package:timezone/timezone.dart' as tz;
@@ -56,6 +57,7 @@ class Match {
 
   Map<String, DateTime> going;
   Map<String, String> goingPaymentStatus; // userId -> manualPaymentStatus
+  Set<String> goingWithPaymentIntent;
   Map<String, DateTime> waitList;
 
   List<List<String>> computedTeams;
@@ -89,6 +91,7 @@ class Match {
       this.organizerId,
       this.going,
       this.goingPaymentStatus,
+      this.goingWithPaymentIntent,
       this.waitList,
       this.computedTeams,
       this.manualTeams,
@@ -105,6 +108,7 @@ class Match {
         maxPlayers = jsonInput['maxPlayers'],
         going = _readGoing(jsonInput),
         goingPaymentStatus = _readGoingPaymentStatus(jsonInput),
+        goingWithPaymentIntent = _readGoingWithPaymentIntent(jsonInput),
         waitList = _readWaitList(jsonInput),
         computedTeams = _readComputedTeams(jsonInput),
         manualTeams = _readManualTeams(jsonInput),
@@ -169,6 +173,17 @@ class Match {
     return map
         .map((key, value) => MapEntry(key, DateTime.parse(value["createdAt"])));
   }
+
+  static Set<String> _readGoingWithPaymentIntent(Map<String, dynamic> json) {
+    var map = Map<String, dynamic>.from(json["going"] ?? {});
+    return map.entries
+        .where((e) => e.value is Map && e.value["payment_intent"] != null)
+        .map((e) => e.key)
+        .toSet();
+  }
+
+  bool hasPaymentIntent(String userId) =>
+      goingWithPaymentIntent.contains(userId);
 
   static Map<String, String> _readGoingPaymentStatus(Map<String, dynamic> json) {
     var map = Map<String, dynamic>.from(json["going"] ?? {});
@@ -237,7 +252,7 @@ class Match {
   bool isUserGoing(UserDetails? user) =>
       user != null && going.containsKey(user.documentId);
 
-  int getServiceFee() => 50;
+  int getServiceFee() => AppConfig.nutmegFeeCents;
 
   List<String> getGoingUsersByTime() {
     var entries = going.entries.toList()

@@ -53,7 +53,7 @@ import '../utils/web_url.dart';
 import '../widgets/TeamsWidget.dart';
 import 'BottomBarMatch.dart';
 import 'PaymentDetailsDescription.dart';
-import 'package:nutmeg/screens/Launch.dart';
+import 'package:nutmeg/widgets/ModalPaymentDescriptionArea.dart';
 
 final logger = CrashlyticsLogger('MatchDetails');
 
@@ -967,31 +967,63 @@ class PlayerCard extends StatelessWidget {
                         (userData?.name ?? "Player").split(" ").first.trim();
                     if (name.isEmpty) name = "Player";
 
-                    var match = context.read<MatchState>().match;
-                    var refundInfo = (match?.price != null &&
-                            ConfigsUtils.allowNutmegManagedPayments)
-                        ? ("\n\n" +
-                            AppLocalizations.of(context)!
-                                .removePlayerRefundInfo)
-                        : "";
+                    var match = context.read<MatchState>().match!;
+                    var hasPayment = match.hasPaymentIntent(userId);
+
+                    var descriptionText = AppLocalizations.of(context)!
+                        .removePlayerSubtitle(name);
+                    if (hasPayment) {
+                      descriptionText += "\n" +
+                          AppLocalizations.of(context)!
+                              .removePlayerRefundMessage(name);
+                    }
 
                     await GenericInfoModal(
                       title: AppLocalizations.of(context)!.removePlayerTitle,
-                      description: AppLocalizations.of(context)!
-                              .removePlayerSubtitle(name) +
-                          refundInfo,
+                      description: descriptionText,
+                      content: hasPayment
+                          ? ModalPaymentDescriptionArea(
+                              rows: [],
+                              finalRow: Row(
+                                children: [
+                                  Text(
+                                      AppLocalizations.of(context)!
+                                          .leaveMatchRefundTitle,
+                                      style: TextPalette.h3),
+                                  Expanded(
+                                      child: Text(
+                                    formatCurrency(match.price!.basePrice) +
+                                        " euro",
+                                    style: TextPalette.h3,
+                                    textAlign: TextAlign.end,
+                                  ))
+                                ],
+                              ),
+                            )
+                          : null,
                       action: Row(
                         children: [
                           Expanded(
                             child: GenericButtonWithLoaderAndErrorHandling(
-                              AppLocalizations.of(context)!.confirmButtonText,
+                              AppLocalizations.of(context)!.removePlayerTitle.toUpperCase(),
                               (_) async {
                                 await context
                                     .read<MatchState>()
                                     .removeUserFromMatch(userId);
                                 Navigator.of(context).pop(true);
+
+                                if (hasPayment) {
+                                  GenericInfoModal(
+                                    title:
+                                        "A refund of ${formatCurrency(match.price!.basePrice)} "
+                                        "was issued for $name",
+                                    description:
+                                        "They will receive the money in 3 to 5 business days.",
+                                    action: null,
+                                  ).show(context);
+                                }
                               },
-                              Destructive(),
+                              Primary(),
                             ),
                           )
                         ],
@@ -1151,7 +1183,6 @@ class _AddPlayerCard extends StatelessWidget {
             organizerId: organizerId,
             alreadyGoingIds: alreadyGoingIds,
             onPlayerSelected: (String playerId) async {
-              Navigator.pop(context);
               await matchState.addUserToMatch(playerId);
             },
           ),
@@ -1199,7 +1230,7 @@ class _PlayerPickerSheet extends StatefulWidget {
 
 class _PlayerPickerSheetState extends State<_PlayerPickerSheet> {
   Map<String, int>? _playerCounts;
-  bool _adding = false;
+  String? _addingPlayerId;
   String _searchQuery = "";
 
   @override
@@ -1223,13 +1254,19 @@ class _PlayerPickerSheetState extends State<_PlayerPickerSheet> {
 
   Widget _buildPlayerRow(MapEntry<String, int> entry, UserDetails? ud) {
     var isLoading = ud == null;
+    var isAddingThis = _addingPlayerId == entry.key;
+    var isAddingAny = _addingPlayerId != null;
 
     return InkWell(
-      onTap: (_adding || isLoading)
+      onTap: (isAddingAny || isLoading)
           ? null
           : () async {
-              setState(() => _adding = true);
-              await widget.onPlayerSelected(entry.key);
+              setState(() => _addingPlayerId = entry.key);
+              try {
+                await widget.onPlayerSelected(entry.key);
+              } finally {
+                if (mounted) Navigator.of(context).pop();
+              }
             },
       child: Padding(
         padding: EdgeInsets.symmetric(vertical: 8),
@@ -1253,15 +1290,28 @@ class _PlayerPickerSheetState extends State<_PlayerPickerSheet> {
                       overflow: TextOverflow.ellipsis,
                     ),
             ),
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              decoration: BoxDecoration(
-                color: Palette.greyLighter,
-                borderRadius: BorderRadius.circular(12),
+            if (isAddingThis)
+              SizedBox(
+                width: 20, height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Palette.primary,
+                ),
+              )
+            else
+              Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(
+                  color: Palette.primary,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.add,
+                  size: 18,
+                  color: Palette.white,
+                ),
               ),
-              child: Text("${entry.value}x",
-                  style: TextPalette.getBodyText(Palette.greyDark)),
-            ),
           ],
         ),
       ),
@@ -1284,8 +1334,8 @@ class _PlayerPickerSheetState extends State<_PlayerPickerSheet> {
       return Padding(
         padding: EdgeInsets.symmetric(vertical: 24),
         child: Center(
-          child:
-              Text("No players available to add", style: TextPalette.bodyText),
+          child: Text(AppLocalizations.of(context)!.noPlayersAvailable,
+              style: TextPalette.bodyText),
         ),
       );
     }
@@ -1308,15 +1358,15 @@ class _PlayerPickerSheetState extends State<_PlayerPickerSheet> {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text("ADD PLAYER", style: TextPalette.h4),
+          Text(AppLocalizations.of(context)!.addPlayerLabel, style: TextPalette.h4),
           SizedBox(height: 4),
-          Text("Pick from players who played with you",
+          Text(AppLocalizations.of(context)!.pickFromPlayersSubtitle,
               style: TextPalette.bodyText),
           SizedBox(height: 12),
           TextField(
             onChanged: (v) => setState(() => _searchQuery = v),
             decoration: InputDecoration(
-              hintText: "Search by name",
+              hintText: AppLocalizations.of(context)!.searchByNameHint,
               hintStyle: TextPalette.getBodyText(Palette.greyDark),
               prefixIcon: Icon(Icons.search, color: Palette.greyDark, size: 20),
               filled: true,
@@ -1336,7 +1386,7 @@ class _PlayerPickerSheetState extends State<_PlayerPickerSheet> {
                 ? Center(
                     child: Padding(
                       padding: EdgeInsets.symmetric(vertical: 16),
-                      child: Text("No matches",
+                      child: Text(AppLocalizations.of(context)!.noResults,
                           style: TextPalette.getBodyText(Palette.greyDark)),
                     ),
                   )

@@ -95,6 +95,12 @@
         }
     },
     "removePlayerRefundInfo": "If the player paid, a refund will be issued.",
+    "removePlayerRefundMessage": "{name} will be refunded on the payment method they used to pay.",
+    "@removePlayerRefundMessage": {
+        "placeholders": {
+            "name": { "type": "String" }
+        }
+    },
     "leaveMatchRefundTitle": "Refund",
     "leaveMatchCreditsRefundTitle": "Credits Refund",
     "leaveMatchInfo": "We will refund you on the payment method you used to pay.",
@@ -387,7 +393,11 @@
             "hours": {}
         }
     },
-    "addPlayerLabel": "Add",
+    "addPlayerLabel": "ADD",
+    "pickFromPlayersSubtitle": "Pick from players who played with you",
+    "searchByNameHint": "Search by name",
+    "noPlayersAvailable": "No players available to add",
+    "noResults": "No results",
     "dontForgetToPay": "Don't forget to pay {name}!",
     "@dontForgetToPay": {
         "placeholders": {

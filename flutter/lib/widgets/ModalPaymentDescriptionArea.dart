@@ -14,18 +14,18 @@ class ModalPaymentDescriptionArea extends StatelessWidget {
     var rowWidgets = [];
     if (rows.isNotEmpty) {
       rowWidgets.add(NutmegDivider(horizontal: true));
-      rowWidgets.add(SizedBox(height: 16));
+      rowWidgets.add(SizedBox(height: 8));
       rowWidgets.addAll(rows.map((r) => Padding(
             padding: EdgeInsets.only(top: 4, bottom: 4),
             child: r,
           )));
-      rowWidgets.add(SizedBox(height: 16));
+      rowWidgets.add(SizedBox(height: 8));
     }
     rowWidgets.add(NutmegDivider(horizontal: true));
     if (finalRow != null) {
-      rowWidgets.add(SizedBox(height: 16));
+      rowWidgets.add(SizedBox(height: 8));
       rowWidgets.add(finalRow);
-      rowWidgets.add(SizedBox(height: 16));
+      rowWidgets.add(SizedBox(height: 8));
     }
 
     return Container(

@@ -181,6 +181,11 @@ class AppLocalizationsEs extends AppLocalizations {
       'Si el jugador pagó, se emitirá un reembolso.';
 
   @override
+  String removePlayerRefundMessage(String name) {
+    return '$name será reembolsado en el método de pago que utilizó.';
+  }
+
+  @override
   String get leaveMatchRefundTitle => 'Reembolso';
 
   @override
@@ -803,7 +808,20 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get addPlayerLabel => 'Añadir';
+  String get addPlayerLabel => 'AÑADIR';
+
+  @override
+  String get pickFromPlayersSubtitle =>
+      'Elige entre los jugadores con los que has jugado';
+
+  @override
+  String get searchByNameHint => 'Buscar por nombre';
+
+  @override
+  String get noPlayersAvailable => 'No hay jugadores disponibles para añadir';
+
+  @override
+  String get noResults => 'Sin resultados';
 
   @override
   String dontForgetToPay(Object name) {

@@ -402,6 +402,12 @@ abstract class AppLocalizations {
   /// **'If the player paid, a refund will be issued.'**
   String get removePlayerRefundInfo;
 
+  /// No description provided for @removePlayerRefundMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} will be refunded on the payment method they used to pay.'**
+  String removePlayerRefundMessage(String name);
+
   /// No description provided for @leaveMatchRefundTitle.
   ///
   /// In en, this message translates to:
@@ -1521,8 +1527,32 @@ abstract class AppLocalizations {
   /// No description provided for @addPlayerLabel.
   ///
   /// In en, this message translates to:
-  /// **'Add'**
+  /// **'ADD'**
   String get addPlayerLabel;
+
+  /// No description provided for @pickFromPlayersSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick from players who played with you'**
+  String get pickFromPlayersSubtitle;
+
+  /// No description provided for @searchByNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search by name'**
+  String get searchByNameHint;
+
+  /// No description provided for @noPlayersAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No players available to add'**
+  String get noPlayersAvailable;
+
+  /// No description provided for @noResults.
+  ///
+  /// In en, this message translates to:
+  /// **'No results'**
+  String get noResults;
 
   /// No description provided for @dontForgetToPay.
   ///
