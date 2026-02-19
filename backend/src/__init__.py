@@ -67,6 +67,11 @@ def _create_app():
     def routes():
         return ["%s" % rule for rule in app.url_map.iter_rules()], 200
 
+    @app.errorhandler(Exception)
+    def handle_exception(e):
+        logging.exception("Unhandled exception")
+        return {"error": str(e)}, 500
+
     @app.route("/_ah/warmup", methods=["GET"])
     def warmup():
         return {}, 200

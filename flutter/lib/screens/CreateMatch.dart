@@ -275,7 +275,8 @@ class CreateMatchState extends State<CreateMatch> {
                               initialDate:
                                   DateTime.now().add(Duration(hours: 12)),
                               firstDate: DateTime.now(),
-                              lastDate: DateTime(2035),
+                              lastDate:
+                                  DateTime.now().add(Duration(days: 28)),
                               context: context);
                           if (d != null) {
                             setState(() {
@@ -1046,6 +1047,14 @@ class CreateMatchState extends State<CreateMatch> {
                         context.go("/match/${ids.first}");
                       } on Exception catch (e, s) {
                         logger.severe("error creating match", e, s);
+                        if (mounted) {
+                          GenericInfoModal(
+                            title: AppLocalizations.of(context)!
+                                .genericErrorMessage,
+                            description: AppLocalizations.of(context)!
+                                .genericErrorDesc,
+                          ).show(context);
+                        }
                       }
                     } else {
                       logger.severe("validation error");

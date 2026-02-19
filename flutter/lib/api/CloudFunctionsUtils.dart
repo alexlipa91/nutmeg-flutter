@@ -8,6 +8,16 @@ import 'package:nutmeg/utils/CrashlyticsLogger.dart';
 
 final logger = CrashlyticsLogger('CloudFunctionsUtils');
 
+class ServerException implements Exception {
+  final int statusCode;
+  final String message;
+
+  ServerException(this.statusCode, this.message);
+
+  @override
+  String toString() => 'ServerException($statusCode): $message';
+}
+
 class CloudFunctionsClient {
   static final CloudFunctionsClient _singleton =
       CloudFunctionsClient._internal();
@@ -19,6 +29,16 @@ class CloudFunctionsClient {
 
   CloudFunctionsClient._internal() {
     logger.info("Backend URL: $appEngineBaseUrl");
+  }
+
+  String _extractErrorMessage(String body) {
+    try {
+      var decoded = jsonDecode(body);
+      if (decoded is Map) {
+        return decoded["error"] ?? decoded["message"] ?? body;
+      }
+    } catch (_) {}
+    return body;
   }
 
   Future<Map<String, String>> _headers() async {
@@ -53,9 +73,10 @@ class CloudFunctionsClient {
     // trace.setMetric("duration_ms", stopwatch.elapsed.inMilliseconds);
     // trace.stop();
 
-    if (r.statusCode == 500) {
-      logger.severe("Server error (500) on POST $name: ${r.body}");
-      throw Exception(r.body);
+    if (r.statusCode >= 400) {
+      var errorMsg = _extractErrorMessage(r.body);
+      logger.severe("Server error (${r.statusCode}) on POST $name: $errorMsg");
+      throw ServerException(r.statusCode, errorMsg);
     }
 
     var responseBody = r.body;
@@ -64,7 +85,7 @@ class CloudFunctionsClient {
     } catch (e) {
       var message = "Failed to decode response body: $responseBody";
       logger.severe(message, e);
-      throw Exception(message);
+      throw ServerException(500, message);
     }
   }
 
@@ -89,9 +110,10 @@ class CloudFunctionsClient {
     }
 
     var r = await http.get(uri, headers: await _headers());
-    if (r.statusCode == 500) {
-      logger.severe("Server error (500) on GET $name: ${r.body}");
-      throw Exception(r.body);
+    if (r.statusCode >= 400) {
+      var errorMsg = _extractErrorMessage(r.body);
+      logger.severe("Server error (${r.statusCode}) on GET $name: $errorMsg");
+      throw ServerException(r.statusCode, errorMsg);
     }
 
     return Map<String, dynamic>.from(jsonDecode(r.body));
@@ -105,9 +127,11 @@ class CloudFunctionsClient {
       headers: await _headers(),
     );
 
-    if (r.statusCode == 500) {
-      logger.severe("Server error (500) on DELETE $name: ${r.body}");
-      throw Exception(r.body);
+    if (r.statusCode >= 400) {
+      var errorMsg = _extractErrorMessage(r.body);
+      logger.severe(
+          "Server error (${r.statusCode}) on DELETE $name: $errorMsg");
+      throw ServerException(r.statusCode, errorMsg);
     }
   }
 
