@@ -1013,12 +1013,12 @@ def run_post_match_tasks(match_id):
             },
         )
 
-    # payout
+    # payout: try right away, then retry every 24h if balance not yet available
     qs = "&is_test=true" if is_test else ""
     schedule_app_engine_call(
         task_name="payout_organizer_for_match_{}_attempt_number_{}".format(match_id, 1),
         endpoint="matches/{}/tasks/payout?attempt={}{}".format(match_id, 1, qs),
-        date_time_to_execute=datetime.now() + timedelta(days=3),
+        date_time_to_execute=datetime.now() + timedelta(minutes=5),
     )
     return {"status": "success"}
 
