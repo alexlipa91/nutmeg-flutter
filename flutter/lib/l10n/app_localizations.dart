@@ -1350,6 +1350,12 @@ abstract class AppLocalizations {
   /// **'Pay through Nutmeg'**
   String get payThroughNutmeg;
 
+  /// No description provided for @payWithStripe.
+  ///
+  /// In en, this message translates to:
+  /// **'PAY WITH STRIPE'**
+  String get payWithStripe;
+
   /// No description provided for @paid.
   ///
   /// In en, this message translates to:

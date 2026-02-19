@@ -705,6 +705,9 @@ class AppLocalizationsIt extends AppLocalizations {
   String get payThroughNutmeg => 'Paga tramite Nutmeg';
 
   @override
+  String get payWithStripe => 'PAGA CON STRIPE';
+
+  @override
   String get paid => 'Pagato';
 
   @override

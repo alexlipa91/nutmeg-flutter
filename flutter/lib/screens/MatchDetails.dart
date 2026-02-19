@@ -2792,24 +2792,36 @@ class _NutmegPayBadgeState extends State<_NutmegPayBadge> {
 
   @override
   Widget build(BuildContext context) {
-    final canTap = widget.isOrganizerView && _data != null;
-
-    return GestureDetector(
-      onTap: canTap ? () => _showPaymentBreakdown(context) : null,
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-        decoration: BoxDecoration(
-          color: canTap ? Palette.primary : Palette.primary,
-          borderRadius: BorderRadius.circular(4),
+    if (widget.isOrganizerView) {
+      final canTap = _data != null;
+      return GestureDetector(
+        onTap: canTap ? () => _showPaymentBreakdown(context) : null,
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          decoration: BoxDecoration(
+            color: Palette.primary,
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Row(mainAxisSize: MainAxisSize.min, children: [
+            Text("INFO",
+                style: TextPalette.getBodyText(Palette.white)
+                    .copyWith(fontSize: 11, fontWeight: FontWeight.w600)),
+            SizedBox(width: 4),
+            Icon(Icons.chevron_right, color: Palette.white, size: 14),
+          ]),
         ),
-        child: Row(mainAxisSize: MainAxisSize.min, children: [
-          Text("INFO",
-              style: TextPalette.getBodyText(Palette.white)
-                  .copyWith(fontSize: 11, fontWeight: FontWeight.w600)),
-          SizedBox(width: 4),
-          Icon(Icons.chevron_right, color: Palette.white, size: 14),
-        ]),
+      );
+    }
+
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        border: Border.all(color: Palette.greyLight, width: 1),
+        borderRadius: BorderRadius.circular(4),
       ),
+      child: Text(AppLocalizations.of(context)!.payWithStripe,
+          style: TextPalette.getBodyText(Palette.black)
+              .copyWith(fontSize: 11, fontWeight: FontWeight.w500)),
     );
   }
 }

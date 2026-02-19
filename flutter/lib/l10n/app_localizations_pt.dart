@@ -708,6 +708,9 @@ class AppLocalizationsPt extends AppLocalizations {
   String get payThroughNutmeg => 'Pagar pelo Nutmeg';
 
   @override
+  String get payWithStripe => 'PAGAR COM STRIPE';
+
+  @override
   String get paid => 'Pago';
 
   @override
