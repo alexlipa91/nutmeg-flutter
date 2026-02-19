@@ -362,7 +362,7 @@
     "undo": "Undo",
     "iPaid": "Mark as Paid",
     "notYet": "Not yet",
-    "payOutsideNutmeg": "Pay outside Nutmeg",
+    "payOutsideNutmeg": "MANUAL PAYMENT",
     "payThroughNutmeg": "Nutmeg Pay",
     "payWithStripe": "PAY WITH STRIPE",
     "paid": "Paid",

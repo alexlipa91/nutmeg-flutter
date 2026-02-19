@@ -206,7 +206,7 @@
     "undo": "Deshacer",
     "iPaid": "Marcar como pagado",
     "notYet": "Aún no",
-    "payOutsideNutmeg": "Pagar fuera de Nutmeg",
+    "payOutsideNutmeg": "PAGO MANUAL",
     "payThroughNutmeg": "Nutmeg Pay",
     "payWithStripe": "PAGAR CON STRIPE",
     "paid": "Pagado",

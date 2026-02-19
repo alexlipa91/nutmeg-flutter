@@ -4,10 +4,11 @@ Script to fill a match with test users until it's full.
 
 Usage:
     cd app-engine
-    python scripts/fill_match.py <match_id>
+    python scripts/fill_match.py <match_id> [--test]
 """
 import sys
 import os
+import argparse
 
 # Add parent directory to path so we can import from src
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
@@ -27,36 +28,34 @@ from src.blueprints.matches import add_user_to_match
 
 
 def main():
-    if len(sys.argv) < 2:
-        print("Error: match_id is required")
-        print("Usage: python scripts/fill_match.py <match_id>")
-        sys.exit(1)
-    
-    match_id = sys.argv[1]
-    
-    # Use existing test users (test_0 through test_9)
+    parser = argparse.ArgumentParser(description="Fill a match with test users")
+    parser.add_argument("match_id", help="The match ID to fill")
+    parser.add_argument("--test", action="store_true", help="Use matches_test collection")
+    args = parser.parse_args()
+
+    match_id = args.match_id
+    collection = "matches_test" if args.test else "matches"
+
     test_user_ids = [f"test_{i}" for i in range(10)]
     
     with app.app_context():
-        # Get match data to check capacity
-        match_ref = app.db_client.collection("matches").document(match_id)
+        match_ref = app.db_client.collection(collection).document(match_id)
         match_data = match_ref.get().to_dict()
         
         if match_data is None:
-            print(f"Error: match {match_id} not found")
+            print(f"Error: match {match_id} not found in {collection}")
             sys.exit(1)
         
         max_players = match_data.get("maxPlayers", 0)
         going = match_data.get("going", {})
         current_count = len(going)
         
-        print(f"\n=== Filling match {match_id} ({current_count}/{max_players} players) ===\n")
+        print(f"\n=== Filling match {match_id} in {collection} ({current_count}/{max_players} players) ===\n")
         
         if current_count >= max_players:
             print("Match is already full!")
         else:
             for user_id in test_user_ids:
-                # Re-read match data to get updated count
                 match_data = match_ref.get().to_dict()
                 going = match_data.get("going", {})
                 
@@ -69,9 +68,8 @@ def main():
                     continue
                 
                 print(f"  Adding {user_id}...")
-                add_user_to_match(match_id, user_id)
+                add_user_to_match(match_id, user_id, is_test=args.test)
         
-        # Show final state
         match_data = match_ref.get().to_dict()
         going = match_data.get("going", {})
         print(f"\n=== Match now has {len(going)}/{max_players} players ===")

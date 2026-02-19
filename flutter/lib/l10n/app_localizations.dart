@@ -1341,7 +1341,7 @@ abstract class AppLocalizations {
   /// No description provided for @payOutsideNutmeg.
   ///
   /// In en, this message translates to:
-  /// **'Pay outside Nutmeg'**
+  /// **'MANUAL PAYMENT'**
   String get payOutsideNutmeg;
 
   /// No description provided for @payThroughNutmeg.

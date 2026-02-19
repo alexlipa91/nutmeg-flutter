@@ -203,7 +203,7 @@
     "undo": "Desfazer",
     "iPaid": "Marcar como pago",
     "notYet": "Ainda não",
-    "payOutsideNutmeg": "Pagar fora do Nutmeg",
+    "payOutsideNutmeg": "PAGAMENTO MANUAL",
     "payThroughNutmeg": "Nutmeg Pay",
     "payWithStripe": "PAGAR COM STRIPE",
     "paid": "Pago",

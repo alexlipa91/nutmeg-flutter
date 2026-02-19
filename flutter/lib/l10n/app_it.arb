@@ -206,7 +206,7 @@
     "undo": "Annulla",
     "iPaid": "Pagato",
     "notYet": "Non pagato",
-    "payOutsideNutmeg": "Paga fuori da Nutmeg",
+    "payOutsideNutmeg": "PAGAMENTO MANUALE",
     "payThroughNutmeg": "Nutmeg Pay",
     "payWithStripe": "PAGA CON STRIPE",
     "paid": "Pagato",

@@ -699,7 +699,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get notYet => 'Non pagato';
 
   @override
-  String get payOutsideNutmeg => 'Paga fuori da Nutmeg';
+  String get payOutsideNutmeg => 'PAGAMENTO MANUALE';
 
   @override
   String get payThroughNutmeg => 'Nutmeg Pay';

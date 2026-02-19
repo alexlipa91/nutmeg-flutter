@@ -696,7 +696,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notYet => 'Not yet';
 
   @override
-  String get payOutsideNutmeg => 'Pay outside Nutmeg';
+  String get payOutsideNutmeg => 'MANUAL PAYMENT';
 
   @override
   String get payThroughNutmeg => 'Nutmeg Pay';

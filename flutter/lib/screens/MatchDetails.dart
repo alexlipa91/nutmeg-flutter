@@ -683,18 +683,13 @@ class MatchInfo extends StatelessWidget {
                 SizedBox(width: 16),
                 Text(formatCurrency(match.price!.getTotalPrice()),
                     style: TextPalette.listItem),
-                if (!match.isManualPayment) ...[
-                  Spacer(),
+                Spacer(),
+                if (!match.isManualPayment)
                   _NutmegPayBadge(match: match, isOrganizerView: isOrganizerView),
-                ],
+                if (match.isManualPayment)
+                  _ManualPayBadge(match: match, isOrganizerView: isOrganizerView),
               ]),
             ],
-            if (match.isManualPayment && match.organizerId != null)
-              _PaymentInfoRow(
-                match: match,
-                isOrganizerView: isOrganizerView,
-                isUserGoing: match.isUserGoing(loggedUser),
-              ),
             if (matchWidget != null)
               Column(children: [
                 SizedBox(height: 16),
@@ -1757,173 +1752,76 @@ class IconList extends StatelessWidget {
   }
 }
 
-class _PaymentInfoRow extends StatefulWidget {
+class _ManualPayBadge extends StatelessWidget {
   final Match match;
   final bool isOrganizerView;
-  final bool isUserGoing;
 
-  const _PaymentInfoRow({
-    Key? key,
-    required this.match,
-    required this.isOrganizerView,
-    required this.isUserGoing,
-  }) : super(key: key);
+  const _ManualPayBadge(
+      {required this.match, required this.isOrganizerView});
 
-  @override
-  State<_PaymentInfoRow> createState() => _PaymentInfoRowState();
-}
+  void _showManualPaymentBreakdown(BuildContext context) {
+    final usersState = context.read<UsersState>();
+    final matchState = context.read<MatchState>();
+    final l10n = AppLocalizations.of(context)!;
 
-class _PaymentInfoRowState extends State<_PaymentInfoRow> {
-  bool _isPlayerPaymentsExpanded = false;
-
-  Future<void> _togglePaymentStatus(BuildContext context) async {
-    var matchState = context.read<MatchState>();
-    var userId = context.read<UserState>().getLoggedUserId()!;
-    var currentStatus = widget.match.getPaymentStatus(userId);
-    var newStatus = currentStatus == "paid" ? "not_yet_paid" : "paid";
-    await matchState.setManualPaymentStatus(userId, newStatus);
-  }
-
-  Future<void> _togglePlayerPayment(BuildContext context, String userId) async {
-    var matchState = context.read<MatchState>();
-    var currentStatus = widget.match.getPaymentStatus(userId);
-    var newStatus = currentStatus == "paid" ? "not_yet_paid" : "paid";
-    await matchState.setManualPaymentStatus(userId, newStatus);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    var match = context.watch<MatchState>().match ?? widget.match;
-    var organizerDetails =
-        context.watch<UsersState>().getUserDetail(match.organizerId!);
-    var paymentInfo = organizerDetails?.paymentInfo;
-    if (paymentInfo == null || paymentInfo.isEmpty) return SizedBox.shrink();
-
-    var loggedUserId = context.read<UserState>().getLoggedUserId();
-    var hasPaid = match.hasUserPaid(loggedUserId ?? "");
-
-    var playerIds =
+    final playerIds =
         match.going.keys.where((id) => id != match.organizerId).toList();
-    var paidCount = playerIds.where((id) => match.hasUserPaid(id)).length;
-    var totalPlayers = playerIds.length;
 
-    return Column(children: [
-      SizedBox(height: 12),
-      Row(children: [
-        Icon(Icons.payment_outlined, color: Palette.black, size: 18),
-        SizedBox(width: 16),
-        Expanded(
-          child: buildLinkedText(paymentInfo, TextPalette.listItem),
-        ),
-        if (!widget.isOrganizerView &&
-            widget.isUserGoing &&
-            ConfigsUtils.allowUsersToMarkPayments) ...[
-          SizedBox(width: 8),
-          InkWell(
-            onTap: () => _togglePaymentStatus(context),
-            borderRadius: BorderRadius.circular(16),
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-              decoration: BoxDecoration(
-                color: hasPaid
-                    ? Palette.green.withOpacity(0.15)
-                    : Palette.greyLightest,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: hasPaid ? Palette.green : Palette.greyLight,
-                ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (hasPaid)
-                    Padding(
-                      padding: EdgeInsets.only(right: 4),
-                      child: Icon(Icons.check, color: Palette.green, size: 14),
-                    ),
-                  Text(
-                    hasPaid
-                        ? AppLocalizations.of(context)!.paid
-                        : AppLocalizations.of(context)!.iPaid,
-                    style: TextPalette.getBodyText(
-                            hasPaid ? Palette.green : Palette.greyDark)
-                        .copyWith(fontSize: 12, fontWeight: FontWeight.w600),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-        if (widget.isOrganizerView &&
-            totalPlayers > 0 &&
-            ConfigsUtils.allowUsersToMarkPayments) ...[
-          SizedBox(width: 8),
-          InkWell(
-            onTap: () => setState(
-                () => _isPlayerPaymentsExpanded = !_isPlayerPaymentsExpanded),
-            borderRadius: BorderRadius.circular(16),
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-              decoration: BoxDecoration(
-                color: Palette.greyLightest,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Palette.greyLight),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    "$paidCount/$totalPlayers ${AppLocalizations.of(context)!.paid}",
-                    style: TextPalette.getBodyText(Palette.greyDark)
-                        .copyWith(fontSize: 12, fontWeight: FontWeight.w600),
-                  ),
-                  SizedBox(width: 4),
-                  Icon(
-                    _isPlayerPaymentsExpanded
-                        ? Icons.expand_less
-                        : Icons.expand_more,
-                    color: Palette.greyDark,
-                    size: 16,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ]),
-      if (widget.isOrganizerView &&
-          _isPlayerPaymentsExpanded &&
-          ConfigsUtils.allowUsersToMarkPayments)
-        Padding(
-          padding: EdgeInsets.only(top: 8),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Palette.greyLightest,
-              borderRadius: BorderRadius.circular(8),
-            ),
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => ChangeNotifierProvider.value(
+        value: matchState,
+        child: Builder(builder: (context) {
+          final currentMatch =
+              context.watch<MatchState>().match ?? match;
+          final paidCount =
+              playerIds.where((id) => currentMatch.hasUserPaid(id)).length;
+
+          return Padding(
+            padding: EdgeInsets.fromLTRB(16, 16, 16, 32),
             child: Column(
-              children: playerIds.map((userId) {
-                var ud = context.watch<UsersState>().getUserDetail(userId);
-                var playerPaid = match.hasUserPaid(userId);
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(l10n.payOutsideNutmeg, style: TextPalette.h2),
+                SizedBox(height: 8),
+                Text("$paidCount/${playerIds.length} ${l10n.paid}",
+                    style: TextPalette.bodyText),
+                SizedBox(height: 16),
+                ...playerIds.map((userId) {
+                  final ud = usersState.getUserDetail(userId);
+                  final playerPaid = currentMatch.hasUserPaid(userId);
 
-                return InkWell(
-                  onTap: () => _togglePlayerPayment(context, userId),
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    child: Row(
-                      children: [
+                  return InkWell(
+                    onTap: isOrganizerView
+                        ? () async {
+                            final newStatus =
+                                playerPaid ? "not_yet_paid" : "paid";
+                            await matchState.setManualPaymentStatus(
+                                userId, newStatus);
+                          }
+                        : null,
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 8),
+                      child: Row(children: [
                         UserAvatar(14, ud),
                         SizedBox(width: 10),
                         Expanded(
                           child: Text(
                             ud?.name ?? "...",
-                            style: TextPalette.bodyText,
+                            style: TextPalette.bodyText
+                                .copyWith(color: Palette.black),
+                            maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         Container(
-                          padding:
-                              EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 3),
                           decoration: BoxDecoration(
                             color: playerPaid
                                 ? Palette.green.withOpacity(0.15)
@@ -1945,9 +1843,7 @@ class _PaymentInfoRowState extends State<_PaymentInfoRow> {
                                       color: Palette.green, size: 12),
                                 ),
                               Text(
-                                playerPaid
-                                    ? AppLocalizations.of(context)!.paid
-                                    : AppLocalizations.of(context)!.notYet,
+                                playerPaid ? l10n.paid : l10n.notYet,
                                 style: TextPalette.getBodyText(playerPaid
                                         ? Palette.green
                                         : Palette.greyDark)
@@ -1958,34 +1854,50 @@ class _PaymentInfoRowState extends State<_PaymentInfoRow> {
                             ],
                           ),
                         ),
-                      ],
+                      ]),
                     ),
-                  ),
-                );
-              }).toList(),
+                  );
+                }),
+              ],
             ),
+          );
+        }),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (isOrganizerView) {
+      return GestureDetector(
+        onTap: () => _showManualPaymentBreakdown(context),
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          decoration: BoxDecoration(
+            color: Palette.primary,
+            borderRadius: BorderRadius.circular(4),
           ),
+          child: Row(mainAxisSize: MainAxisSize.min, children: [
+            Text("INFO",
+                style: TextPalette.getBodyText(Palette.white)
+                    .copyWith(fontSize: 11, fontWeight: FontWeight.w600)),
+            SizedBox(width: 4),
+            Icon(Icons.chevron_right, color: Palette.white, size: 14),
+          ]),
         ),
-      if (widget.isOrganizerView &&
-          _isPlayerPaymentsExpanded &&
-          ConfigsUtils.allowUsersToMarkPayments)
-        Padding(
-          padding: EdgeInsets.only(top: 6, left: 34),
-          child: Row(
-            children: [
-              Icon(Icons.info_outline, color: Palette.greyDark, size: 13),
-              SizedBox(width: 4),
-              Flexible(
-                child: Text(
-                  "This only shows what users marked. Please double check your bank account.",
-                  style: TextPalette.getBodyText(Palette.greyDark)
-                      .copyWith(fontSize: 11, fontStyle: FontStyle.italic),
-                ),
-              ),
-            ],
-          ),
-        ),
-    ]);
+      );
+    }
+
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        border: Border.all(color: Palette.greyLight, width: 1),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(AppLocalizations.of(context)!.payOutsideNutmeg,
+          style: TextPalette.getBodyText(Palette.black)
+              .copyWith(fontSize: 11, fontWeight: FontWeight.w500)),
+    );
   }
 }
 
