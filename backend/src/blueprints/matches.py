@@ -1022,15 +1022,20 @@ def run_post_match_tasks(match_id):
 def _calculate_release_amount(match, verify_with_stripe=False):
     """Calculate how much to transfer to the organizer for this match.
 
+    The organizer receives basePrice minus the Nutmeg service fee per player.
+
     With verify_with_stripe=False (default), uses the match document only.
     With verify_with_stripe=True, confirms each charge is still valid in Stripe.
-    Returns {"total": int, "players_paid": int}.
+    Returns {"total": int, "players_paid": int, "fee_total": int}.
     """
     base_price = match.price.get("basePrice", 0) if match.price else 0
+    user_fee = match.price.get("userFee", NUTMEG_FEE_CENTS) if match.price else 0
+    payout_per_player = base_price - user_fee
     total = 0
+    fee_total = 0
     players_paid = 0
 
-    for user_id, going_data in match.going.items():
+    for _, going_data in match.going.items():
         pi_id = going_data.get("payment_intent") if isinstance(going_data, dict) else None
         if not pi_id:
             continue
@@ -1043,10 +1048,11 @@ def _calculate_release_amount(match, verify_with_stripe=False):
             except Exception as e:
                 logging.warning("Release: failed to verify PI %s: %s", pi_id, e)
                 continue
-        total += base_price
+        total += payout_per_player
+        fee_total += user_fee
         players_paid += 1
 
-    return {"total": total, "players_paid": players_paid}
+    return {"total": total, "players_paid": players_paid, "fee_total": fee_total}
 
 
 def _release_match_money(db, match_id, is_test):
@@ -1086,6 +1092,7 @@ def _release_match_money(db, match_id, is_test):
 
     info = _calculate_release_amount(match, verify_with_stripe=True)
     transfer_total = info["total"]
+    fee_total = info["fee_total"]
     players_paid = info["players_paid"]
 
     if transfer_total <= 0:
@@ -1101,14 +1108,16 @@ def _release_match_money(db, match_id, is_test):
         amount=transfer_total,
         currency="eur",
         destination=organizer_account,
+        description=match.describe(),
         metadata={"match_id": match_id, "players": str(players_paid)},
     )
-    logging.info("Release %s: transferred %d cents (%d players) -> %s",
-                 match_id, transfer_total, players_paid, transfer.id)
+    logging.info("Release %s: transferred %d cents, kept %d cents fee (%d players) -> %s",
+                 match_id, transfer_total, fee_total, players_paid, transfer.id)
 
     match_ref.update({"release": {
         "status": "released",
         "amount": transfer_total,
+        "fee": fee_total,
         "transfer_id": transfer.id,
         "players": players_paid,
         "released_at": firestore.firestore.SERVER_TIMESTAMP,
@@ -1127,7 +1136,7 @@ def _release_match_money(db, match_id, is_test):
         },
         users=[match.organizer_id],
     )
-    return {"status": "success", "transfer_id": transfer.id, "amount": transfer_total}
+    return {"status": "success", "transfer_id": transfer.id, "amount": transfer_total, "fee": fee_total}
 
 
 @bp.route("/<match_id>/tasks/release", methods=["GET"])

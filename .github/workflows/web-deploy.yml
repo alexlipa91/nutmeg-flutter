@@ -51,7 +51,6 @@ jobs:
         run: rm -rf build/web
       - run: ENV_FILE=.env.test ./scripts/build_web_app.sh
 
-      - run: cat .env.test
       - name: Deploy to Firebase (test channel)
         uses: w9jds/firebase-action@master
         with:

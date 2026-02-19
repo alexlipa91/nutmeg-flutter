@@ -191,6 +191,23 @@ class Match:
             return []
         return list(self.going.keys())
 
+    def describe(self) -> str:
+        """Human-readable one-liner: 'Match @ Venue · Mon 05 Jan 14:00 · 60min'."""
+        parts: List[str] = []
+        venue = (self.sport_center or {}).get("name", "")
+        city = (self.sport_center or {}).get("city", "")
+        if venue and city:
+            parts.append("{}, {}".format(venue, city))
+        elif venue or city:
+            parts.append(venue or city)
+        if self.date_time:
+            parts.append(self.date_time.strftime("%a %d %b %H:%M"))
+        if self.duration:
+            parts.append("{}min".format(self.duration))
+        if parts:
+            return "Match · " + " · ".join(parts)
+        return "Nutmeg Match"
+
 
 if __name__ == "__main__":
     import argparse

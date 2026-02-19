@@ -5,6 +5,7 @@ from firebase_admin import firestore
 
 from flask import Blueprint, Flask
 
+from src.models._matches import Match as MatchModel
 from src.secrets import Secrets
 from src.utils import build_dynamic_link, NUTMEG_FEE_CENTS
 from flask import current_app as app
@@ -34,10 +35,12 @@ def checkout():
             400,
         )
 
+    match = MatchModel.from_dict(match_info, match_id)
     user_name = _get_user_name(user_id)
-    product_name = _build_product_name(match_info)
-    product_description = _build_product_description(match_info, user_name)
-    pi_description = _build_payment_description(match_info, user_name)
+    match_desc = match.describe()
+    product_name = match_desc
+    product_description = "{} — paid by {}".format(match_desc, user_name)
+    pi_description = "{} — paid by {}".format(match_desc, user_name)
     statement_suffix = _build_statement_descriptor_suffix(match_info)
     transfer_metadata = _build_transfer_metadata(match_info, user_name, match_id)
 
@@ -84,61 +87,6 @@ def _parse_match_datetime(match_info):
         return datetime.fromisoformat(str(dt).replace("Z", "+00:00"))
     except Exception:
         return None
-
-
-def _build_product_name(match_info):
-    """Short, venue-focused label shown in the Express dashboard payment detail."""
-    sport_center = match_info.get("sportCenter", {})
-    venue = sport_center.get("name", "")
-    dt = _parse_match_datetime(match_info)
-    date_str = dt.strftime("%b %-d") if dt else ""
-
-    if venue and date_str:
-        return "Match @ {} · {}".format(venue, date_str)
-    if venue:
-        return "Match @ {}".format(venue)
-    if date_str:
-        return "Nutmeg Match · {}".format(date_str)
-    return "Nutmeg Match"
-
-
-def _build_product_description(match_info, user_name):
-    """Longer detail line shown under the product name in payment detail."""
-    parts = []
-    dt = _parse_match_datetime(match_info)
-    if dt:
-        parts.append(dt.strftime("%a %d %b %H:%M"))
-    duration = match_info.get("duration")
-    if duration:
-        parts.append("{}min".format(duration))
-    detail = " · ".join(parts) if parts else ""
-    if detail:
-        return "{} — paid by {}".format(detail, user_name)
-    return "Paid by {}".format(user_name)
-
-
-def _build_payment_description(match_info, user_name):
-    """Full description stored on the PaymentIntent (visible in Stripe Dashboard)."""
-    parts = []
-
-    sport_center = match_info.get("sportCenter", {})
-    venue = sport_center.get("name", "")
-    city = sport_center.get("city", "")
-    if venue and city:
-        parts.append("{}, {}".format(venue, city))
-    elif venue or city:
-        parts.append(venue or city)
-
-    dt = _parse_match_datetime(match_info)
-    if dt:
-        parts.append(dt.strftime("%a %d %b %H:%M"))
-
-    duration = match_info.get("duration")
-    if duration:
-        parts.append("{}min".format(duration))
-
-    match_line = " · ".join(parts) if parts else "Nutmeg match"
-    return "{} — paid by {}".format(match_line, user_name)
 
 
 def _build_transfer_metadata(match_info, user_name, match_id):
