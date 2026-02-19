@@ -1341,7 +1341,7 @@ abstract class AppLocalizations {
   /// No description provided for @payOutsideNutmeg.
   ///
   /// In en, this message translates to:
-  /// **'MANUAL PAYMENT'**
+  /// **'Manual Payment'**
   String get payOutsideNutmeg;
 
   /// No description provided for @payThroughNutmeg.
@@ -1383,7 +1383,7 @@ abstract class AppLocalizations {
   /// No description provided for @stripeIntegrationActive.
   ///
   /// In en, this message translates to:
-  /// **'Stripe integration active'**
+  /// **'Go to your Stripe dashboard'**
   String get stripeIntegrationActive;
 
   /// No description provided for @payWithNutmegNotConfigured.

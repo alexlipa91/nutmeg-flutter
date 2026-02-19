@@ -241,5 +241,8 @@
     "searchByNameHint": "Pesquisar por nome",
     "noPlayersAvailable": "Nenhum jogador disponível para adicionar",
     "noResults": "Sem resultados",
-    "dontForgetToPay": "Não se esqueça de pagar {name}!"
+    "dontForgetToPay": "Não se esqueça de pagar {name}!",
+    "collectedAmountText": "{amount} recolhidos ({count}/{total} pagos)",
+    "releaseScheduledText": "O dinheiro será transferido para a sua conta Stripe em {date}",
+    "releaseCompletedText": "{amount} transferidos para a sua conta Stripe"
 }

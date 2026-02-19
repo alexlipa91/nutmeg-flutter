@@ -696,7 +696,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notYet => 'Not yet';
 
   @override
-  String get payOutsideNutmeg => 'MANUAL PAYMENT';
+  String get payOutsideNutmeg => 'Manual Payment';
 
   @override
   String get payThroughNutmeg => 'Nutmeg Pay';
@@ -717,7 +717,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get payWithNutmegTitle => 'Pay with Nutmeg';
 
   @override
-  String get stripeIntegrationActive => 'Stripe integration active';
+  String get stripeIntegrationActive => 'Go to your Stripe dashboard';
 
   @override
   String get payWithNutmegNotConfigured => 'Setup required. Tap to configure.';

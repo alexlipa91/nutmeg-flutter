@@ -562,17 +562,17 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String collectedAmountText(String amount, String count, String total) {
-    return '$amount collected ($count/$total paid)';
+    return '$amount recolhidos ($count/$total pagos)';
   }
 
   @override
   String releaseScheduledText(String date) {
-    return 'Money will be transferred to your Stripe account on $date';
+    return 'O dinheiro será transferido para a sua conta Stripe em $date';
   }
 
   @override
   String releaseCompletedText(String amount) {
-    return '$amount transferred to your Stripe account';
+    return '$amount transferidos para a sua conta Stripe';
   }
 
   @override
@@ -702,7 +702,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get notYet => 'Ainda não';
 
   @override
-  String get payOutsideNutmeg => 'PAGAMENTO MANUAL';
+  String get payOutsideNutmeg => 'Pagamento Manual';
 
   @override
   String get payThroughNutmeg => 'Nutmeg Pay';
@@ -723,7 +723,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get payWithNutmegTitle => 'Pagar com Nutmeg';
 
   @override
-  String get stripeIntegrationActive => 'Integração Stripe ativa';
+  String get stripeIntegrationActive => 'Ir para o painel do Stripe';
 
   @override
   String get payWithNutmegNotConfigured =>
