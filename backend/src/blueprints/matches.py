@@ -1203,11 +1203,7 @@ def _cancel_match_firestore_transactional(
             payment_intent = going[u]["payment_intent"]
             refund_id = None
             try:
-                refund = stripe.Refund.create(
-                    payment_intent=payment_intent,
-                    reverse_transfer=True,
-                    refund_application_fee=True,
-                )
+                refund = stripe.Refund.create(payment_intent=payment_intent)
                 refund_id = refund.id
             except Exception as e:
                 logging.error("Failed to send refund to {}".format(u), e)
@@ -1533,11 +1529,7 @@ def _remove_user_from_match_stripe_refund_firestore_transaction(
 
     if payment_intent:
         stripe.api_key = Secrets.STRIPE_KEY_TEST if is_test else Secrets.STRIPE_KEY
-        refund = stripe.Refund.create(
-            payment_intent=payment_intent,
-            reverse_transfer=True,
-            refund_application_fee=True,
-        )
+        refund = stripe.Refund.create(payment_intent=payment_intent)
         transaction_log["paymentIntent"] = payment_intent
         transaction_log["refund_id"] = refund.id
         transaction_log["moneyRefunded"] = refund.amount

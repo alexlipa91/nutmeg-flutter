@@ -702,7 +702,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get payOutsideNutmeg => 'Paga fuori da Nutmeg';
 
   @override
-  String get payThroughNutmeg => 'Paga tramite Nutmeg';
+  String get payThroughNutmeg => 'Nutmeg Pay';
 
   @override
   String get payWithStripe => 'PAGA CON STRIPE';

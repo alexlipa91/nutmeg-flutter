@@ -562,7 +562,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String releaseScheduledText(String date) {
-    return 'Will be transferred to your Stripe account on $date';
+    return 'Money will be transferred to your Stripe account on $date';
   }
 
   @override
@@ -699,7 +699,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get payOutsideNutmeg => 'Pay outside Nutmeg';
 
   @override
-  String get payThroughNutmeg => 'Pay through Nutmeg';
+  String get payThroughNutmeg => 'Nutmeg Pay';
 
   @override
   String get payWithStripe => 'PAY WITH STRIPE';

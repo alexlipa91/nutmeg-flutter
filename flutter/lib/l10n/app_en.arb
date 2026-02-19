@@ -286,7 +286,7 @@
                 "total":  {"type": "String"}
             }
         },
-    "releaseScheduledText": "Will be transferred to your Stripe account on {date}",
+    "releaseScheduledText": "Money will be transferred to your Stripe account on {date}",
     "@releaseScheduledText": {
             "placeholders": {
                 "date":  {"type": "String"}
@@ -363,7 +363,7 @@
     "iPaid": "Mark as Paid",
     "notYet": "Not yet",
     "payOutsideNutmeg": "Pay outside Nutmeg",
-    "payThroughNutmeg": "Pay through Nutmeg",
+    "payThroughNutmeg": "Nutmeg Pay",
     "payWithStripe": "PAY WITH STRIPE",
     "paid": "Paid",
     "comingSoon": "COMING SOON",

@@ -1101,7 +1101,7 @@ abstract class AppLocalizations {
   /// No description provided for @releaseScheduledText.
   ///
   /// In en, this message translates to:
-  /// **'Will be transferred to your Stripe account on {date}'**
+  /// **'Money will be transferred to your Stripe account on {date}'**
   String releaseScheduledText(String date);
 
   /// No description provided for @releaseCompletedText.
@@ -1347,7 +1347,7 @@ abstract class AppLocalizations {
   /// No description provided for @payThroughNutmeg.
   ///
   /// In en, this message translates to:
-  /// **'Pay through Nutmeg'**
+  /// **'Nutmeg Pay'**
   String get payThroughNutmeg;
 
   /// No description provided for @payWithStripe.

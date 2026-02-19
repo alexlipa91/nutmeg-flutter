@@ -2700,7 +2700,7 @@ class _NutmegPayBadgeState extends State<_NutmegPayBadge> {
 
     final total = _data?["total"] as int? ?? 0;
     final playersPaid = _data?["players_paid"] as int? ?? 0;
-    final totalPlayers = _data?["total_players"] as int? ?? 0;
+    final nutmegFees = playersPaid * AppConfig.nutmegFeeCents;
     final releaseStatus = _data?["release_status"] as String?;
     final releaseAmount = _data?["release_amount"] as int?;
     final releaseAt = _data?["release_at"] as String?;
@@ -2708,22 +2708,22 @@ class _NutmegPayBadgeState extends State<_NutmegPayBadge> {
     Widget? releaseRow;
     if (releaseStatus == "released" && releaseAmount != null) {
       releaseRow = Row(children: [
-        Icon(Icons.check_circle_outline, color: Palette.green, size: 18),
-        SizedBox(width: 8),
+        Icon(Icons.check_circle_outline, color: Palette.green, size: 16),
+        SizedBox(width: 6),
         Expanded(child: Text(
           l10n.releaseCompletedText(formatCurrency(releaseAmount)),
-          style: TextPalette.getListItem(Palette.green),
+          style: TextPalette.getBodyText(Palette.green).copyWith(fontSize: 12),
         )),
       ]);
     } else if (releaseAt != null && total > 0) {
       final releaseDate = DateTime.parse(releaseAt).toLocal();
       final formattedDate = DateFormat.yMMMd().add_Hm().format(releaseDate);
       releaseRow = Row(children: [
-        Icon(Icons.schedule, color: Palette.greyDark, size: 18),
-        SizedBox(width: 8),
+        Icon(Icons.schedule, color: Palette.greyDark, size: 16),
+        SizedBox(width: 6),
         Expanded(child: Text(
           l10n.releaseScheduledText(formattedDate),
-          style: TextPalette.getListItem(Palette.greyDark),
+          style: TextPalette.getBodyText(Palette.greyDark).copyWith(fontSize: 12),
         )),
       ]);
     }
@@ -2736,7 +2736,7 @@ class _NutmegPayBadgeState extends State<_NutmegPayBadge> {
             final ud = usersState.getUserDetail(userId);
             final hasPaid = match.hasPaymentIntent(userId);
             return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
+              padding: const EdgeInsets.symmetric(vertical: 6),
               child: Row(children: [
                 UserAvatar(14, ud),
                 SizedBox(width: 8),
@@ -2763,17 +2763,40 @@ class _NutmegPayBadgeState extends State<_NutmegPayBadge> {
             );
           }),
           Padding(
-            padding: const EdgeInsets.only(top: 8),
+            padding: const EdgeInsets.only(top: 10),
             child: NutmegDivider(horizontal: true),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 6),
+            padding: const EdgeInsets.symmetric(vertical: 8),
             child: Row(children: [
               Text("Total",
+                  style: TextPalette.bodyText
+                      .copyWith(color: Palette.black)),
+              Spacer(),
+              Text(formatCurrency(total),
+                  style: TextPalette.getBodyText(Palette.black)),
+            ]),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Row(children: [
+              Text(l10n.stripeNutmegFeeLabel,
+                  style: TextPalette.bodyText
+                      .copyWith(color: Palette.black)),
+              Spacer(),
+              Text("- ${formatCurrency(nutmegFees)}",
+                  style: TextPalette.getBodyText(Palette.black)),
+            ]),
+          ),
+          NutmegDivider(horizontal: true),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Row(children: [
+              Text(l10n.youWillGetLabel,
                   style: TextPalette.bodyText.copyWith(
                       color: Palette.black, fontWeight: FontWeight.w600)),
               Spacer(),
-              Text(formatCurrency(total),
+              Text(formatCurrency(total - nutmegFees),
                   style: TextPalette.getBodyText(Palette.black)
                       .copyWith(fontWeight: FontWeight.w600)),
             ]),
