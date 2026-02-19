@@ -36,7 +36,7 @@ jobs:
       - name: Deploy to Firebase (production)
         uses: w9jds/firebase-action@master
         with:
-          args: deploy --only hosting
+          args: deploy --only hosting:live
         env:
           GCP_SA_KEY: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_NUTMEG_9099C }}"
           PROJECT_PATH: flutter
@@ -51,7 +51,7 @@ jobs:
       - name: Deploy to Firebase (test channel)
         uses: w9jds/firebase-action@master
         with:
-          args: hosting:channel:deploy test --only staging
+          args: deploy --only hosting:staging
         env:
           GCP_SA_KEY: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_NUTMEG_9099C }}"
           PROJECT_PATH: flutter
