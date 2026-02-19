@@ -47,7 +47,11 @@ jobs:
           grep -v '^TEST_MODE=' .env.prod > .env.test
           echo "TEST_MODE=true" >> .env.test
           echo "LOG_LEVEL=INFO" >> .env.test
+      - name: Clean before test build
+        run: rm -rf build/web
       - run: ENV_FILE=.env.test ./scripts/build_web_app.sh
+
+      - run: cat .env.test
       - name: Deploy to Firebase (test channel)
         uses: w9jds/firebase-action@master
         with:
