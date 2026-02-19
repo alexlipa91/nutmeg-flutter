@@ -165,6 +165,7 @@
     "followOnIg": "Seguici su Instagram",
     "feedback": "Dacci un feedback",
     "collectedAmountText": "{amount} raccolti ({count}/{total} hanno pagato)",
+    "payoutSentText": "{amount} inviati al tuo conto bancario il {date}",
     "payoutInfoSuccessText": "Il pagamento di {a} è stato trasferito il {d}",
     "payoutInfoOnItsWayText": "Il pagamento di {a} è in arrivo e dovrebbe arrivare il {d}",
     "changeLanguageButton": "CAMBIA LINGUA",

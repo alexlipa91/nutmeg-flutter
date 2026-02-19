@@ -563,6 +563,11 @@ class AppLocalizationsIt extends AppLocalizations {
   }
 
   @override
+  String payoutSentText(String amount, String date) {
+    return '$amount inviati al tuo conto bancario il $date';
+  }
+
+  @override
   String payoutInfoSuccessText(String a, String d) {
     return 'Il pagamento di $a è stato trasferito il $d';
   }

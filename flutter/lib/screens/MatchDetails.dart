@@ -716,52 +716,6 @@ class MatchInfo extends StatelessWidget {
                 isOrganizerView: isOrganizerView,
                 isUserGoing: match.isUserGoing(loggedUser),
               ),
-            if (isOrganizerView &&
-                match.price != null &&
-                !match.isManualPayment &&
-                match.isMatchFinished() &&
-                match.cancelledAt == null &&
-                match.going.length > 0)
-              Builder(builder: (context) {
-                var date = match.payout != null
-                    ? match.payout!.arrivalDate
-                    : match.dateTime.add(Duration(days: 7));
-                var amount = formatCurrency(match.payout?.amount ??
-                    match.price!.basePrice * match.going.length);
-                var success =
-                    match.payout != null && match.payout!.status == "paid";
-                var color = success ? Palette.green : Palette.darkWarning;
-
-                return Column(
-                  children: [
-                    NutmegDivider(horizontal: true),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Container(
-                            child: Icon(Icons.monetization_on_outlined,
-                                color: color, size: 18)),
-                        SizedBox(width: 16),
-                        Expanded(
-                          child: Container(
-                            child: Text(
-                                success
-                                    ? AppLocalizations.of(context)!
-                                        .payoutInfoSuccessText(
-                                            amount, formatDay(date, context))
-                                    : AppLocalizations.of(context)!
-                                        .payoutInfoOnItsWayText(
-                                            amount, formatDay(date, context)),
-                                maxLines: 2,
-                                softWrap: true,
-                                style: TextPalette.getListItem(color)),
-                          ),
-                        )
-                      ],
-                    ),
-                  ],
-                );
-              }),
             if (matchWidget != null)
               Column(children: [
                 SizedBox(height: 16),
@@ -2771,21 +2725,49 @@ class _CollectedAmountRowState extends State<_CollectedAmountRow> {
     final total = _data!["total"] as int? ?? 0;
     final playersPaid = _data!["players_paid"] as int? ?? 0;
     final totalPlayers = _data!["total_players"] as int? ?? 0;
+    final payoutSentAt = _data!["payout_sent_at"] as String?;
+    final payoutAmount = _data!["payout_amount"] as int?;
 
-    return Padding(
+    final rows = <Widget>[];
+
+    rows.add(Padding(
       padding: const EdgeInsets.only(top: 12),
       child: Row(children: [
         Icon(Icons.account_balance_wallet_outlined, color: Palette.black, size: 18),
         SizedBox(width: 16),
-        Text(
+        Expanded(child: Text(
           AppLocalizations.of(context)!.collectedAmountText(
             formatCurrency(total),
             playersPaid.toString(),
             totalPlayers.toString(),
           ),
           style: TextPalette.listItem,
-        ),
+        )),
       ]),
+    ));
+
+    if (payoutSentAt != null && payoutAmount != null) {
+      final sentDate = DateTime.parse(payoutSentAt).toLocal();
+      final formattedDate = DateFormat.yMMMd().add_Hm().format(sentDate);
+      rows.add(Padding(
+        padding: const EdgeInsets.only(top: 12),
+        child: Row(children: [
+          Icon(Icons.check_circle_outline, color: Palette.green, size: 18),
+          SizedBox(width: 16),
+          Expanded(child: Text(
+            AppLocalizations.of(context)!.payoutSentText(
+              formatCurrency(payoutAmount),
+              formattedDate,
+            ),
+            style: TextPalette.getListItem(Palette.green),
+          )),
+        ]),
+      ));
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: rows,
     );
   }
 }

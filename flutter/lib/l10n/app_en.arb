@@ -287,6 +287,14 @@
             }
         },
 
+    "payoutSentText": "{amount} sent to your bank account on {date}",
+    "@payoutSentText": {
+            "placeholders": {
+                "amount":  {"type": "String"},
+                "date":  {"type": "String"}
+            }
+        },
+
     "payoutInfoSuccessText": "Payment of {a} has been transferred on {d}",
     "@payoutInfoSuccessText": {
             "placeholders": {

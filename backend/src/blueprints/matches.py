@@ -1094,6 +1094,8 @@ def create_organizer_payout(match_id):
             "paid_out_at": firestore.firestore.SERVER_TIMESTAMP,
             "payout_id": payout.id,
             "payout_amount": amount,
+            "payments.payout_sent_at": firestore.firestore.SERVER_TIMESTAMP,
+            "payments.payout_amount": amount,
         }
     )
     send_notification_to_users(
@@ -1142,10 +1144,14 @@ def _get_match_payout_amount(match, organizer_account):
 @bp.route("/<match_id>/collected", methods=["GET"])
 def get_match_collected(match_id):
     is_test = _is_test_from_request()
-    match = MatchModel.get_by_id(match_id, app.db_client, is_test=is_test)
+    coll = "matches_test" if is_test else "matches"
+    doc = app.db_client.collection(coll).document(match_id).get()
 
-    if not match:
+    if not doc.exists:
         return flask.jsonify({"error": "Match not found"}), 404
+
+    match = MatchModel.from_doc(doc)
+    raw = doc.to_dict()
 
     prefix = "stripe_test" if is_test else "stripe"
     organizer_data = (
@@ -1156,13 +1162,17 @@ def get_match_collected(match_id):
     )
     organizer_account = organizer_data.get(prefix, {}).get("connected_account_id")
     if not organizer_account:
-        return flask.jsonify({"total": 0, "players_paid": 0, "payout": None})
+        return flask.jsonify({"total": 0, "players_paid": 0, "payout_sent_at": None})
 
     stripe.api_key = Secrets.STRIPE_KEY if not is_test else Secrets.STRIPE_KEY_TEST
 
     info = _get_match_collected_info(match)
-    info["payout_id"] = match.payout_id
     info["total_players"] = len(match.going)
+
+    payments = raw.get("payments", {})
+    payout_sent_at = payments.get("payout_sent_at")
+    info["payout_sent_at"] = payout_sent_at.isoformat() if payout_sent_at else None
+    info["payout_amount"] = payments.get("payout_amount")
 
     return flask.jsonify(info)
 

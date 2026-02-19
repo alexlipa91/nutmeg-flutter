@@ -1098,6 +1098,12 @@ abstract class AppLocalizations {
   /// **'{amount} collected ({count}/{total} paid)'**
   String collectedAmountText(String amount, String count, String total);
 
+  /// No description provided for @payoutSentText.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} sent to your bank account on {date}'**
+  String payoutSentText(String amount, String date);
+
   /// No description provided for @payoutInfoSuccessText.
   ///
   /// In en, this message translates to:
