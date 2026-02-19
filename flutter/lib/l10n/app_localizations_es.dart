@@ -21,7 +21,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get past => 'Pasados';
 
   @override
-  String get myMatches => 'Mis coincidencias';
+  String get myMatches => 'Mis partidos';
 
   @override
   String spotsLeft(int numSpots) {
