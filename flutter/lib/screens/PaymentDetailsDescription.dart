@@ -45,14 +45,37 @@ class PaymentDetailsDescription {
             children: [
               Builder(builder: (context) {
                 var gif = context.read<LoadOnceState>().getRandomGif();
-                return CircleAvatar(
-                  radius: 100,
-                  backgroundColor: Palette.greyLighter,
-                  backgroundImage:
-                      gif != null ? CachedNetworkImageProvider(gif) : null,
-                  child: gif == null
-                      ? Icon(Icons.celebration, size: 60, color: Palette.primary)
-                      : null,
+                return ClipOval(
+                  child: Container(
+                    width: 200,
+                    height: 200,
+                    color: Palette.greyLighter,
+                    child: gif != null
+                        ? Image.network(
+                            gif,
+                            fit: BoxFit.cover,
+                            width: 200,
+                            height: 200,
+                            loadingBuilder: (context, child, progress) {
+                              if (progress == null) return child;
+                              return Center(
+                                child: CircularProgressIndicator(
+                                  color: Palette.primary,
+                                  value: progress.expectedTotalBytes != null
+                                      ? progress.cumulativeBytesLoaded /
+                                          progress.expectedTotalBytes!
+                                      : null,
+                                ),
+                              );
+                            },
+                            errorBuilder: (_, __, ___) => Icon(
+                              Icons.celebration,
+                              size: 60,
+                              color: Palette.primary,
+                            ),
+                          )
+                        : Icon(Icons.celebration, size: 60, color: Palette.primary),
+                  ),
                 );
               }),
               Padding(

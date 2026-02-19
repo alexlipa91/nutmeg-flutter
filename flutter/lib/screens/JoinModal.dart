@@ -40,7 +40,7 @@ class JoinButton extends StatelessWidget {
         var loaderState = context.read<GenericButtonWithLoaderState>();
         loaderState.change(true);
         await JoinModal.onJoinGameAction(context, userState, matchState, matchesState);
-        loaderState.change(false);
+        if (context.mounted) loaderState.change(false);
       },
       Primary(),
     );

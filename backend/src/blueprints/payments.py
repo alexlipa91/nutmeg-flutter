@@ -28,7 +28,7 @@ def checkout():
     if not match_info:
         return flask.jsonify({"error": "Match not found"}), 404
 
-    if "stripePriceId" not in match_info:
+    if not match_info.get("price"):
         return (
             flask.jsonify({"error": "This match does not support Nutmeg payments"}),
             400,
@@ -36,6 +36,9 @@ def checkout():
 
     user_name = _get_user_name(user_id)
     description = _build_payment_description(match_info, user_name)
+    statement_suffix = _build_statement_descriptor_suffix(match_info)
+
+    price_amount = match_info["price"]["basePrice"] + match_info["price"].get("userFee", NUTMEG_FEE_CENTS)
 
     session = _create_checkout_session_with_deep_links(
         _get_stripe_customer_id(user_id, is_test),
@@ -43,11 +46,12 @@ def checkout():
         user_id,
         match_info["organizerId"],
         match_id,
-        match_info["stripePriceId"],
+        price_amount,
         NUTMEG_FEE_CENTS,
         is_test,
         web_origin,
         description,
+        statement_suffix,
     )
 
     return flask.redirect(session.url)
@@ -96,6 +100,18 @@ def _build_payment_description(match_info, user_name):
     return "{} — paid by {}".format(match_line, user_name)
 
 
+def _build_statement_descriptor_suffix(match_info):
+    """Max 22 chars for Stripe statement_descriptor_suffix."""
+    sport_center = match_info.get("sportCenter", {})
+    venue = sport_center.get("name", "")
+    if venue:
+        return venue[:22]
+    city = sport_center.get("city", "")
+    if city:
+        return city[:22]
+    return "Match"
+
+
 def _get_stripe_customer_id(user_id, test_mode):
     stripe.api_key = Secrets.STRIPE_KEY_TEST if test_mode else Secrets.STRIPE_KEY
 
@@ -136,11 +152,12 @@ def _create_checkout_redirects_to_web(
     user_id,
     organizer_id,
     match_id,
-    price_id,
+    price_amount,
     application_fee_amount,
     test_mode,
     web_origin="https://web.nutmegapp.com",
     description=None,
+    statement_suffix=None,
 ):
     stripe.api_key = Secrets.STRIPE_KEY_TEST if test_mode else Secrets.STRIPE_KEY
 
@@ -151,7 +168,16 @@ def _create_checkout_redirects_to_web(
         cancel_url="{}/match/{}?payment_outcome={}".format(
             web_origin, match_id, "cancel"
         ),
-        line_items=[{"price": price_id, "quantity": 1}],
+        line_items=[{
+            "price_data": {
+                "currency": "eur",
+                "unit_amount": price_amount,
+                "product_data": {
+                    "name": description or "Nutmeg Match",
+                },
+            },
+            "quantity": 1,
+        }],
         payment_intent_data={
             "application_fee_amount": application_fee_amount,
             "transfer_data": {
@@ -159,6 +185,7 @@ def _create_checkout_redirects_to_web(
             },
             "metadata": {"user_id": user_id, "match_id": match_id},
             **({"description": description} if description else {}),
+            **({"statement_descriptor_suffix": statement_suffix} if statement_suffix else {}),
         },
         mode="payment",
         customer=customer_id,
@@ -181,18 +208,28 @@ def _create_checkout_session_with_deep_links(
     user_id,
     organizer_id,
     match_id,
-    price_id,
+    price_amount,
     application_fee_amount,
     test_mode,
     web_origin="https://web.nutmegapp.com",
     description=None,
+    statement_suffix=None,
 ):
     stripe.api_key = Secrets.STRIPE_KEY_TEST if test_mode else Secrets.STRIPE_KEY
 
     session = stripe.checkout.Session.create(
         success_url=_build_redirect_url(web_origin, match_id, "success"),
         cancel_url=_build_redirect_url(web_origin, match_id, "cancel"),
-        line_items=[{"price": price_id, "quantity": 1}],
+        line_items=[{
+            "price_data": {
+                "currency": "eur",
+                "unit_amount": price_amount,
+                "product_data": {
+                    "name": description or "Nutmeg Match",
+                },
+            },
+            "quantity": 1,
+        }],
         payment_intent_data={
             "application_fee_amount": application_fee_amount,
             "transfer_data": {
@@ -200,6 +237,7 @@ def _create_checkout_session_with_deep_links(
             },
             "metadata": {"user_id": user_id, "match_id": match_id},
             **({"description": description} if description else {}),
+            **({"statement_descriptor_suffix": statement_suffix} if statement_suffix else {}),
         },
         mode="payment",
         customer=customer_id,
