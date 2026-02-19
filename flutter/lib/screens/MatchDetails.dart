@@ -30,6 +30,7 @@ import 'package:nutmeg/screens/JoinModal.dart';
 import 'package:nutmeg/screens/RatePlayersModal.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
+import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 import 'package:nutmeg/config/app_config.dart';
 import 'package:nutmeg/widgets/Avatar.dart';
 import 'package:nutmeg/widgets/Containers.dart';
@@ -701,6 +702,14 @@ class MatchInfo extends StatelessWidget {
                 ],
               ]),
             ],
+            if (isOrganizerView &&
+                match.price != null &&
+                !match.isManualPayment &&
+                match.going.isNotEmpty)
+              _CollectedAmountRow(
+                matchId: match.documentId,
+                goingCount: match.going.length,
+              ),
             if (match.isManualPayment && match.organizerId != null)
               _PaymentInfoRow(
                 match: match,
@@ -2695,6 +2704,88 @@ class _ShareableStatsState extends State<ShareableStats> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _CollectedAmountRow extends StatefulWidget {
+  final String matchId;
+  final int goingCount;
+
+  const _CollectedAmountRow({
+    required this.matchId,
+    required this.goingCount,
+  });
+
+  @override
+  State<_CollectedAmountRow> createState() => _CollectedAmountRowState();
+}
+
+class _CollectedAmountRowState extends State<_CollectedAmountRow> {
+  Map<String, dynamic>? _data;
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetch();
+  }
+
+  @override
+  void didUpdateWidget(covariant _CollectedAmountRow oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.goingCount != widget.goingCount) {
+      _fetch();
+    }
+  }
+
+  Future<void> _fetch() async {
+    if (!_loading && mounted) setState(() { _loading = true; });
+    try {
+      var result = await CloudFunctionsClient()
+          .getFullResponse("matches/${widget.matchId}/collected");
+      if (mounted) setState(() { _data = result; _loading = false; });
+    } catch (e) {
+      if (mounted) setState(() { _loading = false; });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_loading) {
+      return Padding(
+        padding: const EdgeInsets.only(top: 12),
+        child: Row(children: [
+          Icon(Icons.account_balance_wallet_outlined, color: Palette.black, size: 18),
+          SizedBox(width: 16),
+          SizedBox(
+            width: 14, height: 14,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+        ]),
+      );
+    }
+
+    if (_data == null) return const SizedBox.shrink();
+
+    final total = _data!["total"] as int? ?? 0;
+    final playersPaid = _data!["players_paid"] as int? ?? 0;
+    final totalPlayers = _data!["total_players"] as int? ?? 0;
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: Row(children: [
+        Icon(Icons.account_balance_wallet_outlined, color: Palette.black, size: 18),
+        SizedBox(width: 16),
+        Text(
+          AppLocalizations.of(context)!.collectedAmountText(
+            formatCurrency(total),
+            playersPaid.toString(),
+            totalPlayers.toString(),
+          ),
+          style: TextPalette.listItem,
+        ),
+      ]),
     );
   }
 }

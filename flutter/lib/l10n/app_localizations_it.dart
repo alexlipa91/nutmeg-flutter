@@ -558,6 +558,11 @@ class AppLocalizationsIt extends AppLocalizations {
   String get feedback => 'Dacci un feedback';
 
   @override
+  String collectedAmountText(String amount, String count, String total) {
+    return '$amount raccolti ($count/$total hanno pagato)';
+  }
+
+  @override
   String payoutInfoSuccessText(String a, String d) {
     return 'Il pagamento di $a è stato trasferito il $d';
   }

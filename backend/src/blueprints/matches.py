@@ -1025,26 +1025,19 @@ def run_post_match_tasks(match_id):
 
 @bp.route("/<match_id>/tasks/payout", methods=["GET"])
 def create_organizer_payout(match_id):
-    # attempt = flask.request.args.get("attempt", 1)
-    attempt = 1
+    attempt = int(flask.request.args.get("attempt", 1))
+    max_attempts = 5
     is_test = _is_test_from_request()
     coll = _get_matches_collection(is_test)
     match = MatchModel.get_by_id(match_id, app.db_client, is_test=is_test)
 
     if not match:
-        print("Cannot find match...skipping")
+        logging.info("Payout for %s: match not found, skipping", match_id)
         return {"status": "skipped", "reason": "deleted"}
 
     if match.payout_id:
-        print("Already paid out")
-        return {"status": "skipped", "reason": "deleted"}
-
-    # _get_stripe_price_amount still expects a dict
-    match_data_dict = {"price": match.price, "isManualPayment": match.is_manual_payment}
-    amount = _get_stripe_price_amount(match_data_dict, "base") * len(match.going)
-    if amount == 0:
-        print("Nothing to payout...skipping")
-        return {"status": "skipped", "reason": "no_players"}
+        logging.info("Payout for %s: already paid out", match_id)
+        return {"status": "skipped", "reason": "already_paid"}
 
     prefix = "stripe_test" if is_test else "stripe"
     organizer_data = (
@@ -1054,52 +1047,124 @@ def create_organizer_payout(match_id):
         .to_dict()
     )
     organizer_account = organizer_data.get(prefix, {}).get("connected_account_id")
+    if not organizer_account:
+        logging.error("Payout for %s: organizer has no connected account", match_id)
+        return {"status": "skipped", "reason": "no_connected_account"}
+
     stripe.api_key = Secrets.STRIPE_KEY if not is_test else Secrets.STRIPE_KEY_TEST
 
-    # check if enough balance
+    # Calculate the exact amount owed for THIS match by looking up actual transfers
+    amount = _get_match_payout_amount(match, organizer_account)
+    if amount <= 0:
+        logging.info("Payout for %s: nothing to pay out (amount=%d)", match_id, amount)
+        return {"status": "skipped", "reason": "no_amount"}
+
+    # Check available balance
     balance = stripe.Balance.retrieve(stripe_account=organizer_account)
     available_amount = balance["available"][0]["amount"]
 
-    print("trying to payout: {}, current balance {}".format(amount, available_amount))
+    logging.info("Payout for %s attempt %d: match amount %d, available balance %d",
+                 match_id, attempt, amount, available_amount)
 
-    if available_amount >= amount:
-        payout = stripe.Payout.create(
-            amount=amount,
-            currency="eur",
-            stripe_account=organizer_account,
-            metadata={"match_id": match_id, "attempt": attempt},
-        )
-        print("payout of {} created: {}".format(amount, payout.id))
-        app.db_client.collection(coll).document(match_id).update(
-            {
-                "paid_out_at": firestore.firestore.SERVER_TIMESTAMP,
-                "payout_id": payout.id,
-            }
-        )
-        send_notification_to_users(
-            db=app.db_client,
-            title="Your money is on the way! " + "\U0001f4b5",
-            body="The amount of € {:.2f} for the match on {} is on its way to your bank account".format(
-                amount / 100, datetime.strftime(match.date_time, "%B %-d, %Y")
-            ),
-            data={
-                "click_action": "FLUTTER_NOTIFICATION_CLICK",
-                "route": "/match/" + match_id,
-                "match_id": match_id,
-            },
-            users=[match.organizer_id],
-        )
-        return {"status": "success"}
-    else:
-        print("not enough balance...retry in 24 hours")
-        schedule_app_engine_call(
-            task_name="payout_organizer_for_match_{}_attempt_number_{}".format(
-                match_id, attempt + 1
-            ),
-            endpoint="matches/{}/payout?attempt={}".format(match_id, attempt + 1),
-            date_time_to_execute=datetime.now() + timedelta(days=1),
-        )
-        return {"status": "retry", "reason": "not_enough_balance"}
+    if available_amount < amount:
+        if attempt < max_attempts:
+            logging.info("Payout for %s: insufficient balance, retry in 24h (attempt %d/%d)",
+                         match_id, attempt, max_attempts)
+            qs = "&is_test=true" if is_test else ""
+            schedule_app_engine_call(
+                task_name="payout_organizer_for_match_{}_attempt_number_{}".format(match_id, attempt + 1),
+                endpoint="matches/{}/tasks/payout?attempt={}{}".format(match_id, attempt + 1, qs),
+                date_time_to_execute=datetime.now() + timedelta(days=1),
+            )
+            return {"status": "retry", "reason": "not_enough_balance"}
+        else:
+            logging.error("Payout for %s: gave up after %d attempts", match_id, max_attempts)
+            return {"status": "failed", "reason": "max_attempts_reached"}
+
+    payout = stripe.Payout.create(
+        amount=amount,
+        currency="eur",
+        stripe_account=organizer_account,
+        metadata={"match_id": match_id, "attempt": attempt},
+    )
+    logging.info("Payout for %s: created %s for %d cents", match_id, payout.id, amount)
+
+    app.db_client.collection(coll).document(match_id).update(
+        {
+            "paid_out_at": firestore.firestore.SERVER_TIMESTAMP,
+            "payout_id": payout.id,
+            "payout_amount": amount,
+        }
+    )
+    send_notification_to_users(
+        db=app.db_client,
+        title="Your money is on the way! " + "\U0001f4b5",
+        body="€ {:.2f} for your match on {} is on its way to your bank account".format(
+            amount / 100, datetime.strftime(match.date_time, "%B %-d, %Y")
+        ),
+        data={
+            "click_action": "FLUTTER_NOTIFICATION_CLICK",
+            "route": "/match/" + match_id,
+            "match_id": match_id,
+        },
+        users=[match.organizer_id],
+    )
+    return {"status": "success", "payout_id": payout.id, "amount": amount}
+
+
+def _get_match_collected_info(match):
+    """Get per-player transfer info for this match from Stripe."""
+    total = 0
+    players_paid = 0
+    for user_id, going_data in match.going.items():
+        pi_id = going_data.get("payment_intent") if isinstance(going_data, dict) else None
+        if not pi_id:
+            continue
+        try:
+            pi = stripe.PaymentIntent.retrieve(pi_id, expand=["latest_charge.transfer"])
+            charge = pi.latest_charge
+            if charge and charge.transfer:
+                transfer = charge.transfer
+                net = transfer.amount - transfer.amount_reversed
+                if net > 0:
+                    total += net
+                    players_paid += 1
+        except Exception as e:
+            logging.warning("Payout: failed to retrieve transfer for PI %s: %s", pi_id, e)
+    return {"total": total, "players_paid": players_paid}
+
+
+def _get_match_payout_amount(match, organizer_account):
+    """Sum the net transfer amounts for this match from Stripe."""
+    return _get_match_collected_info(match)["total"]
+
+
+@bp.route("/<match_id>/collected", methods=["GET"])
+def get_match_collected(match_id):
+    is_test = _is_test_from_request()
+    match = MatchModel.get_by_id(match_id, app.db_client, is_test=is_test)
+
+    if not match:
+        return flask.jsonify({"error": "Match not found"}), 404
+
+    prefix = "stripe_test" if is_test else "stripe"
+    organizer_data = (
+        app.db_client.collection("users")
+        .document(match.organizer_id)
+        .get()
+        .to_dict()
+    )
+    organizer_account = organizer_data.get(prefix, {}).get("connected_account_id")
+    if not organizer_account:
+        return flask.jsonify({"total": 0, "players_paid": 0, "payout": None})
+
+    stripe.api_key = Secrets.STRIPE_KEY if not is_test else Secrets.STRIPE_KEY_TEST
+
+    info = _get_match_collected_info(match)
+    info["payout_id"] = match.payout_id
+    info["total_players"] = len(match.going)
+
+    return flask.jsonify(info)
 
 
 @firestore.transactional

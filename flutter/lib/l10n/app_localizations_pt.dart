@@ -561,6 +561,11 @@ class AppLocalizationsPt extends AppLocalizations {
   String get feedback => 'Dê-nos um feedback';
 
   @override
+  String collectedAmountText(String amount, String count, String total) {
+    return '$amount collected ($count/$total paid)';
+  }
+
+  @override
   String payoutInfoSuccessText(String a, String d) {
     return 'O pagamento de $a foi transferido em $d';
   }

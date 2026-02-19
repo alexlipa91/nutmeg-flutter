@@ -164,6 +164,7 @@
     "playedWithYouBoxTitle": "Jugaron contigo",
     "followOnIg": "Síguenos en Instagram",
     "feedback": "Envíanos tus comentarios",
+    "collectedAmountText": "{amount} recaudados ({count}/{total} pagaron)",
     "payoutInfoSuccessText": "El pago de {a} se ha transferido el {d}",
     "payoutInfoOnItsWayText": "El pago de {a} está en camino y debería llegar el {d}",
     "changeLanguageButton": "CAMBIAR IDIOMA",

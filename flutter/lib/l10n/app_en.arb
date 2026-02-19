@@ -278,6 +278,15 @@
 
     "submitRatesButtonText": "SUBMIT",
 
+    "collectedAmountText": "{amount} collected ({count}/{total} paid)",
+    "@collectedAmountText": {
+            "placeholders": {
+                "amount":  {"type": "String"},
+                "count":  {"type": "String"},
+                "total":  {"type": "String"}
+            }
+        },
+
     "payoutInfoSuccessText": "Payment of {a} has been transferred on {d}",
     "@payoutInfoSuccessText": {
             "placeholders": {

@@ -1092,6 +1092,12 @@ abstract class AppLocalizations {
   /// **'Give us feedback'**
   String get feedback;
 
+  /// No description provided for @collectedAmountText.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} collected ({count}/{total} paid)'**
+  String collectedAmountText(String amount, String count, String total);
+
   /// No description provided for @payoutInfoSuccessText.
   ///
   /// In en, this message translates to:
