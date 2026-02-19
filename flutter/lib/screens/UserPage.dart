@@ -260,8 +260,9 @@ class UserPageState extends State<UserPage> {
             body: Container(child: Builder(builder: (context) {
               var widgets = List<Widget>.from([]);
 
-              widgets.add(Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              widgets.add(IntrinsicHeight(
+                  child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Expanded(child: Builder(builder: (BuildContext context) {
                       int n = userDetails.createdMatches!.length;
@@ -296,7 +297,7 @@ class UserPageState extends State<UserPage> {
                       child: _PlayersInYourGames(
                           playerCounts: userDetails.organizerPlayers),
                     ),
-                  ]));
+                  ])));
 
               widgets.addAll([
                 verticalSpace,
@@ -596,7 +597,9 @@ class UserInfoBox extends StatelessWidget {
                     ),
         ]),
         SizedBox(height: 4),
-        Text(description!, style: TextPalette.bodyText),
+        Text(description!,
+            style: TextPalette.bodyText,
+            textAlign: TextAlign.center),
         if (bottom != null) SizedBox(height: 4),
         if (bottom != null) bottom!
       ],
@@ -1018,36 +1021,39 @@ class UserStatsCard extends StatelessWidget {
       BuildContext context, UserDetails userDetails) {
     return Column(
       children: [
-        Row(
-          children: [
-            Expanded(
-              child: _StatItemWithIcon(
-                icon: Icons.sports_soccer,
-                backgroundColor: Color(0xFF4CAF50),
-                label: AppLocalizations.of(context)!.numMatchesTitle,
-                value: userDetails.getNumJoinedMatches().toString(),
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: _StatItemWithIcon(
+                  icon: Icons.sports_soccer,
+                  backgroundColor: Color(0xFF4CAF50),
+                  label: AppLocalizations.of(context)!.numMatchesTitle,
+                  value: userDetails.getNumJoinedMatches().toString(),
+                ),
               ),
-            ),
-            Expanded(
-              child: _StatItemWithIcon(
-                icon: Icons.star,
-                backgroundColor: Palette.primary,
-                label: AppLocalizations.of(context)!.averageScoreBoxTitle,
-                value: (userDetails.getScoreMatches() == null)
-                    ? "-"
-                    : userDetails.getScoreMatches()!.toStringAsFixed(1),
+              Expanded(
+                child: _StatItemWithIcon(
+                  icon: Icons.star,
+                  backgroundColor: Palette.primary,
+                  label: AppLocalizations.of(context)!.averageScoreBoxTitle,
+                  value: (userDetails.getScoreMatches() == null)
+                      ? "-"
+                      : userDetails.getScoreMatches()!.toStringAsFixed(1),
+                ),
               ),
-            ),
-            Expanded(
-              child: _StatItemWithIcon(
-                icon: Icons.emoji_events,
-                backgroundColor: Palette.accent,
-                label:
-                    AppLocalizations.of(context)!.numPlayersOfTheMatchBoxTitle,
-                value: userDetails.getNumManOfTheMatch().toString(),
+              Expanded(
+                child: _StatItemWithIcon(
+                  icon: Icons.emoji_events,
+                  backgroundColor: Palette.accent,
+                  label: AppLocalizations.of(context)!
+                      .numPlayersOfTheMatchBoxTitle,
+                  value: userDetails.getNumManOfTheMatch().toString(),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
         SizedBox(height: 28),
         Row(
@@ -1114,7 +1120,14 @@ class _StatItemWithIcon extends StatelessWidget {
           ),
         ),
         SizedBox(height: 12),
-        Text(label, style: TextPalette.bodyText),
+        Expanded(
+          child: Align(
+            alignment: Alignment.topCenter,
+            child: Text(label,
+                style: TextPalette.bodyText,
+                textAlign: TextAlign.center),
+          ),
+        ),
         SizedBox(height: 4),
         Text(
           value,
