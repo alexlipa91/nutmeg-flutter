@@ -1104,6 +1104,24 @@ abstract class AppLocalizations {
   /// **'{amount} sent to your bank account on {date}'**
   String payoutSentText(String amount, String date);
 
+  /// No description provided for @payoutRetryText.
+  ///
+  /// In en, this message translates to:
+  /// **'Payout of {amount} pending, next attempt on {date}'**
+  String payoutRetryText(String amount, String date);
+
+  /// No description provided for @payoutFailedText.
+  ///
+  /// In en, this message translates to:
+  /// **'Payout of {amount} failed after {attempts} attempts'**
+  String payoutFailedText(String amount, String attempts);
+
+  /// No description provided for @payoutSkippedText.
+  ///
+  /// In en, this message translates to:
+  /// **'Payout skipped: {reason}'**
+  String payoutSkippedText(String reason);
+
   /// No description provided for @payoutInfoSuccessText.
   ///
   /// In en, this message translates to:

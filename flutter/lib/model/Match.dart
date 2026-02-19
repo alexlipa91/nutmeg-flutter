@@ -346,12 +346,23 @@ class Ratings {
 
 class Payout {
   String status;
-  int amount;
-  DateTime arrivalDate;
+  int? amount;
+  String? reason;
+  int? attempt;
+  DateTime? sentAt;
 
   Payout.fromJson(Map<String, dynamic> json)
-      : status = json["status"],
-        arrivalDate =
-            DateTime.fromMillisecondsSinceEpoch(json["arrival_date"] * 1000),
-        amount = json["amount"];
+      : status = json["status"] ?? "unknown",
+        amount = json["amount"],
+        reason = json["reason"],
+        attempt = json["attempt"],
+        sentAt = json["sent_at"] != null
+            ? (json["sent_at"] is String
+                ? DateTime.parse(json["sent_at"])
+                : DateTime.fromMillisecondsSinceEpoch(
+                    json["sent_at"]["_seconds"] * 1000))
+            : (json["arrival_date"] != null
+                ? DateTime.fromMillisecondsSinceEpoch(
+                    json["arrival_date"] * 1000)
+                : null);
 }

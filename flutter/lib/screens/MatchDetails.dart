@@ -2733,8 +2733,11 @@ class _CollectedAmountRowState extends State<_CollectedAmountRow> {
     final total = _data!["total"] as int? ?? 0;
     final playersPaid = _data!["players_paid"] as int? ?? 0;
     final totalPlayers = _data!["total_players"] as int? ?? 0;
+    final payoutStatus = _data!["payout_status"] as String?;
+    final payoutReason = _data!["payout_reason"] as String?;
     final payoutSentAt = _data!["payout_sent_at"] as String?;
     final payoutAmount = _data!["payout_amount"] as int?;
+    final payoutAttempt = _data!["payout_attempt"] as int?;
 
     final rows = <Widget>[];
 
@@ -2754,21 +2757,47 @@ class _CollectedAmountRowState extends State<_CollectedAmountRow> {
       ]),
     ));
 
-    if (payoutSentAt != null && payoutAmount != null) {
-      final sentDate = DateTime.parse(payoutSentAt).toLocal();
-      final formattedDate = DateFormat.yMMMd().add_Hm().format(sentDate);
+    if (payoutStatus == "sent" || payoutStatus == "retry" || payoutStatus == "failed") {
+      final l10n = AppLocalizations.of(context)!;
+      IconData icon;
+      Color color;
+      String text;
+
+      switch (payoutStatus) {
+        case "sent":
+          icon = Icons.check_circle_outline;
+          color = Palette.green;
+          final sentDate = DateTime.parse(payoutSentAt!).toLocal();
+          text = l10n.payoutSentText(
+            formatCurrency(payoutAmount!),
+            DateFormat.yMMMd().add_Hm().format(sentDate),
+          );
+          break;
+        case "retry":
+          icon = Icons.schedule;
+          color = Palette.darkWarning;
+          text = l10n.payoutRetryText(
+            formatCurrency(payoutAmount ?? 0),
+            DateFormat.yMMMd().format(DateTime.now().add(Duration(days: 1))),
+          );
+          break;
+        case "failed":
+        default:
+          icon = Icons.error_outline;
+          color = Palette.destructive;
+          text = l10n.payoutFailedText(
+            formatCurrency(payoutAmount ?? 0),
+            (payoutAttempt ?? 0).toString(),
+          );
+          break;
+      }
+
       rows.add(Padding(
         padding: const EdgeInsets.only(top: 12),
         child: Row(children: [
-          Icon(Icons.check_circle_outline, color: Palette.green, size: 18),
+          Icon(icon, color: color, size: 18),
           SizedBox(width: 16),
-          Expanded(child: Text(
-            AppLocalizations.of(context)!.payoutSentText(
-              formatCurrency(payoutAmount),
-              formattedDate,
-            ),
-            style: TextPalette.getListItem(Palette.green),
-          )),
+          Expanded(child: Text(text, style: TextPalette.getListItem(color))),
         ]),
       ));
     }

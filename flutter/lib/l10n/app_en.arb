@@ -294,6 +294,26 @@
                 "date":  {"type": "String"}
             }
         },
+    "payoutRetryText": "Payout of {amount} pending, next attempt on {date}",
+    "@payoutRetryText": {
+            "placeholders": {
+                "amount":  {"type": "String"},
+                "date":  {"type": "String"}
+            }
+        },
+    "payoutFailedText": "Payout of {amount} failed after {attempts} attempts",
+    "@payoutFailedText": {
+            "placeholders": {
+                "amount":  {"type": "String"},
+                "attempts":  {"type": "String"}
+            }
+        },
+    "payoutSkippedText": "Payout skipped: {reason}",
+    "@payoutSkippedText": {
+            "placeholders": {
+                "reason":  {"type": "String"}
+            }
+        },
 
     "payoutInfoSuccessText": "Payment of {a} has been transferred on {d}",
     "@payoutInfoSuccessText": {

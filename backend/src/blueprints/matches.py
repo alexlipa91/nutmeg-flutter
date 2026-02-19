@@ -973,23 +973,21 @@ def run_precancellation_tasks(match_id):
     return {"status": "skipped", "reason": "enough_players"}
 
 
-@bp.route("/<match_id>/tasks/postmatch", methods=["GET"])
-def run_post_match_tasks(match_id):
-    is_test = _is_test_from_request()
-    match = MatchModel.get_by_id(match_id, app.db_client, is_test=is_test)
+def _run_post_match_tasks(db, match_id, is_test):
+    match = MatchModel.get_by_id(match_id, db, is_test=is_test)
 
     if not match:
-        print("match deleted...skipping")
+        logging.info("Post-match %s: match deleted, skipping", match_id)
         return {"status": "skipped", "reason": "deleted"}
     if match.cancelled_at is not None:
-        print("match cancelled...skipping")
+        logging.info("Post-match %s: match cancelled, skipping", match_id)
         return {"status": "skipped", "reason": "cancelled"}
 
     going_users = match.going_user_ids()
     organiser_id = match.organizer_id
 
     send_notification_to_users(
-        db=app.db_client,
+        db=db,
         title="Rate players! " + "\u2b50\ufe0f",
         body="You have 24h to rate the players of today's match.",
         users=going_users,
@@ -1002,10 +1000,10 @@ def run_post_match_tasks(match_id):
 
     if organiser_id:
         send_notification_to_users(
-            db=app.db_client,
+            db=db,
             title="Add match result! " + "\u2b50\ufe0f",
             body="Add the final score for your match.",
-            users=organiser_id,
+            users=[organiser_id],
             data={
                 "click_action": "FLUTTER_NOTIFICATION_CLICK",
                 "route": "/match/" + match_id,
@@ -1023,13 +1021,26 @@ def run_post_match_tasks(match_id):
     return {"status": "success"}
 
 
-@bp.route("/<match_id>/tasks/payout", methods=["GET"])
-def create_organizer_payout(match_id):
-    attempt = int(flask.request.args.get("attempt", 1))
-    max_attempts = 5
-    is_test = _is_test_from_request()
+@bp.route("/<match_id>/tasks/postmatch", methods=["GET"])
+def run_post_match_tasks(match_id):
+    return _run_post_match_tasks(app.db_client, match_id, _is_test_from_request())
+
+
+def _create_organizer_payout(db, match_id, is_test, attempt=1, max_attempts=5):
     coll = _get_matches_collection(is_test)
-    match = MatchModel.get_by_id(match_id, app.db_client, is_test=is_test)
+    match_ref = db.collection(coll).document(match_id)
+    match = MatchModel.get_by_id(match_id, db, is_test=is_test)
+
+    def _save_payout(status, reason=None, **extra):
+        payout_data = {
+            "status": status,
+            "attempt": attempt,
+            "updated_at": firestore.firestore.SERVER_TIMESTAMP,
+        }
+        if reason:
+            payout_data["reason"] = reason
+        payout_data.update(extra)
+        match_ref.update({"payout": payout_data})
 
     if not match:
         logging.info("Payout for %s: match not found, skipping", match_id)
@@ -1041,7 +1052,7 @@ def create_organizer_payout(match_id):
 
     prefix = "stripe_test" if is_test else "stripe"
     organizer_data = (
-        app.db_client.collection("users")
+        db.collection("users")
         .document(match.organizer_id)
         .get()
         .to_dict()
@@ -1053,13 +1064,11 @@ def create_organizer_payout(match_id):
 
     stripe.api_key = Secrets.STRIPE_KEY if not is_test else Secrets.STRIPE_KEY_TEST
 
-    # Calculate the exact amount owed for THIS match by looking up actual transfers
     amount = _get_match_payout_amount(match, organizer_account)
     if amount <= 0:
         logging.info("Payout for %s: nothing to pay out (amount=%d)", match_id, amount)
         return {"status": "skipped", "reason": "no_amount"}
 
-    # Check available balance
     balance = stripe.Balance.retrieve(stripe_account=organizer_account)
     available_amount = balance["available"][0]["amount"]
 
@@ -1076,9 +1085,13 @@ def create_organizer_payout(match_id):
                 endpoint="matches/{}/tasks/payout?attempt={}{}".format(match_id, attempt + 1, qs),
                 date_time_to_execute=datetime.now() + timedelta(days=1),
             )
+            _save_payout("retry", reason="not_enough_balance",
+                         amount=amount, available_balance=available_amount)
             return {"status": "retry", "reason": "not_enough_balance"}
         else:
             logging.error("Payout for %s: gave up after %d attempts", match_id, max_attempts)
+            _save_payout("failed", reason="max_attempts_reached",
+                         amount=amount, available_balance=available_amount)
             return {"status": "failed", "reason": "max_attempts_reached"}
 
     payout = stripe.Payout.create(
@@ -1089,17 +1102,10 @@ def create_organizer_payout(match_id):
     )
     logging.info("Payout for %s: created %s for %d cents", match_id, payout.id, amount)
 
-    app.db_client.collection(coll).document(match_id).update(
-        {
-            "paid_out_at": firestore.firestore.SERVER_TIMESTAMP,
-            "payout_id": payout.id,
-            "payout_amount": amount,
-            "payments.payout_sent_at": firestore.firestore.SERVER_TIMESTAMP,
-            "payments.payout_amount": amount,
-        }
-    )
+    _save_payout("sent", amount=amount, payout_id=payout.id,
+                  sent_at=firestore.firestore.SERVER_TIMESTAMP)
     send_notification_to_users(
-        db=app.db_client,
+        db=db,
         title="Your money is on the way! " + "\U0001f4b5",
         body="€ {:.2f} for your match on {} is on its way to your bank account".format(
             amount / 100, datetime.strftime(match.date_time, "%B %-d, %Y")
@@ -1112,6 +1118,14 @@ def create_organizer_payout(match_id):
         users=[match.organizer_id],
     )
     return {"status": "success", "payout_id": payout.id, "amount": amount}
+
+
+@bp.route("/<match_id>/tasks/payout", methods=["GET"])
+def create_organizer_payout(match_id):
+    attempt = int(flask.request.args.get("attempt", 1))
+    return _create_organizer_payout(
+        app.db_client, match_id, _is_test_from_request(), attempt=attempt,
+    )
 
 
 def _get_match_collected_info(match):
@@ -1169,10 +1183,13 @@ def get_match_collected(match_id):
     info = _get_match_collected_info(match)
     info["total_players"] = len(match.going)
 
-    payments = raw.get("payments", {})
-    payout_sent_at = payments.get("payout_sent_at")
+    payout_data = raw.get("payout", {})
+    payout_sent_at = payout_data.get("sent_at")
+    info["payout_status"] = payout_data.get("status")
+    info["payout_reason"] = payout_data.get("reason")
     info["payout_sent_at"] = payout_sent_at.isoformat() if payout_sent_at else None
-    info["payout_amount"] = payments.get("payout_amount")
+    info["payout_amount"] = payout_data.get("amount")
+    info["payout_attempt"] = payout_data.get("attempt")
 
     return flask.jsonify(info)
 

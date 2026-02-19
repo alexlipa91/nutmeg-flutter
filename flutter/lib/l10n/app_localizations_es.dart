@@ -570,6 +570,21 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String payoutRetryText(String amount, String date) {
+    return 'Pago de $amount pendiente, próximo intento el $date';
+  }
+
+  @override
+  String payoutFailedText(String amount, String attempts) {
+    return 'Pago de $amount falló después de $attempts intentos';
+  }
+
+  @override
+  String payoutSkippedText(String reason) {
+    return 'Pago omitido: $reason';
+  }
+
+  @override
   String payoutInfoSuccessText(String a, String d) {
     return 'El pago de $a se ha transferido el $d';
   }
