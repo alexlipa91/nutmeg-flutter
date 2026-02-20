@@ -11,7 +11,7 @@ from src.secrets import Secrets
 from src.utils import build_dynamic_link, setup_stripe
 from src.blueprints.matches import add_user_to_match
 
-bp = Blueprint('stripe', __name__, url_prefix='/stripe')
+bp = Blueprint("stripe", __name__, url_prefix="/stripe")
 
 
 def _get_is_test():
@@ -20,8 +20,12 @@ def _get_is_test():
     if header:
         return header == "true"
     # fallback to query params for backwards compat (webhooks, refresh links)
-    return flask.request.args.get("is_test",
-        flask.request.args.get("test", "false")).lower() == "true"
+    return (
+        flask.request.args.get(
+            "is_test", flask.request.args.get("test", "false")
+        ).lower()
+        == "true"
+    )
 
 
 def _stripe_prefix(is_test):
@@ -33,30 +37,14 @@ def _setup_stripe_key(is_test):
     setup_stripe(is_test)
 
 
-def _get_webhook_secrets(is_test):
-    """Return all known webhook signing secrets to try during verification."""
-    env_override = os.environ.get("STRIPE_CHECKOUT_WEBHOOK")
-    if env_override:
-        return [env_override]
-    if is_test:
-        return [
-            Secrets.STRIPE_WEBHOOK_SECRET_ES_TEST,
-        ]
-    return [
-        Secrets.STRIPE_WEBHOOK_SECRET_ES,
-    ]
-
-
 def _verify_webhook(payload, sig_header, is_test):
     """Try each known webhook secret until one verifies, or raise."""
-    secrets = _get_webhook_secrets(is_test)
-    last_error = None
-    for secret in secrets:
-        try:
-            return stripe.Webhook.construct_event(payload, sig_header, secret)
-        except stripe.error.SignatureVerificationError as e:
-            last_error = e
-    raise last_error
+    secret = (
+        Secrets.STRIPE_WEBHOOK_SECRET_ES_TEST
+        if is_test
+        else Secrets.STRIPE_WEBHOOK_SECRET_ES
+    )
+    return stripe.Webhook.construct_event(payload, sig_header, secret)
 
 
 @bp.route("/webhook", methods=["POST"])
@@ -81,9 +69,9 @@ def stripe_webhook():
     elif event_type == "account.updated" and event_data.get("charges_enabled"):
         user_id = event_data["metadata"]["userId"]
         prefix = _stripe_prefix(is_test)
-        app.db_client.collection("users").document(user_id).update({
-            "{}.charges_enabled".format(prefix): True
-        })
+        app.db_client.collection("users").document(user_id).update(
+            {"{}.charges_enabled".format(prefix): True}
+        )
         print("user {} can now receive payments on stripe".format(user_id))
 
     else:
@@ -99,7 +87,7 @@ def go_to_account_login_link():
     prefix = _stripe_prefix(is_test)
 
     user_id = flask.request.args.get("user_id")
-    user_data = app.db_client.collection('users').document(user_id).get().to_dict()
+    user_data = app.db_client.collection("users").document(user_id).get().to_dict()
     account_id = user_data.get(prefix, {}).get("connected_account_id")
 
     response = stripe.Account.create_login_link(account_id)
@@ -115,7 +103,7 @@ def go_to_onboard_connected_account():
     user_id = flask.request.args["user_id"]
     match_id = flask.request.args.get("match_id")
 
-    user_ref = app.db_client.collection('users').document(user_id)
+    user_ref = app.db_client.collection("users").document(user_id)
     user_data = user_ref.get().to_dict()
     account_id = user_data.get(prefix, {}).get("connected_account_id")
 
@@ -132,6 +120,7 @@ def go_to_onboard_connected_account():
             email=email or None,
             capabilities={
                 "transfers": {"requested": True},
+                "card_payments": {"requested": True},
             },
             business_type="individual",
             individual={
@@ -140,14 +129,14 @@ def go_to_onboard_connected_account():
                 "email": email or None,
             },
             business_profile={
+                "mcc": "7999",
                 "product_description": "Nutmeg football matches",
                 "name": "Nutmeg - {}".format(name) if name else "Nutmeg",
             },
             metadata={"userId": user_id},
             settings={
                 "payouts": {
-                    "debit_negative_balances": True,
-                    "schedule": {"interval": "manual"},
+                    "debit_negative_balances": True,                    
                 }
             },
         )
@@ -155,9 +144,13 @@ def go_to_onboard_connected_account():
         user_ref.update({"{}.connected_account_id".format(prefix): account_id})
 
     base_url = flask.request.host_url.rstrip("/")
-    frontend_url = flask.request.args.get("redirect_url", "https://web.nutmegapp.com").rstrip("/")
+    frontend_url = flask.request.args.get(
+        "redirect_url", "https://web.nutmegapp.com"
+    ).rstrip("/")
 
-    redirect_path = ("/match/" + match_id if match_id else "/user") + "?stripe_onboarding=complete"
+    redirect_path = (
+        "/match/" + match_id if match_id else "/user"
+    ) + "?stripe_onboarding=complete"
     redirect_link = frontend_url + redirect_path
 
     if "nutmegapp.com" in frontend_url:
@@ -168,8 +161,9 @@ def go_to_onboard_connected_account():
         user_ref.update({"{}.charges_enabled".format(prefix): True})
         return flask.redirect(redirect_link)
 
-    refresh_link = "{}/stripe/account/onboard?is_test={}&user_id={}"\
-        .format(base_url, is_test, user_id)
+    refresh_link = "{}/stripe/account/onboard?is_test={}&user_id={}".format(
+        base_url, is_test, user_id
+    )
 
     if match_id:
         refresh_link = refresh_link + "&match_id=" + match_id
