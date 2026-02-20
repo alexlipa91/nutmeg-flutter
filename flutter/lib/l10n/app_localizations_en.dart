@@ -687,6 +687,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get markedAsPaid => 'You marked this as paid';
 
   @override
+  String get manualPaymentDisclaimer =>
+      'Payment status is self-reported by players';
+
+  @override
   String get undo => 'Undo';
 
   @override

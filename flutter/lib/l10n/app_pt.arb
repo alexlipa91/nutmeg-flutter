@@ -200,6 +200,7 @@
     "save": "Salvar",
     "sharedPaymentDetails": "{name} compartilhou estas info de pagamento:",
     "markedAsPaid": "Você marcou como pago",
+    "manualPaymentDisclaimer": "O estado do pagamento é declarado pelos jogadores",
     "undo": "Desfazer",
     "iPaid": "Marcar como pago",
     "notYet": "Ainda não",

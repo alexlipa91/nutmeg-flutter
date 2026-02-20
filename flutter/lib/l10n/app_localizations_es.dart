@@ -693,6 +693,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get markedAsPaid => 'Marcaste como pagado';
 
   @override
+  String get manualPaymentDisclaimer =>
+      'El estado del pago es declarado por los jugadores';
+
+  @override
   String get undo => 'Deshacer';
 
   @override

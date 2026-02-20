@@ -1320,6 +1320,12 @@ abstract class AppLocalizations {
   /// **'You marked this as paid'**
   String get markedAsPaid;
 
+  /// No description provided for @manualPaymentDisclaimer.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment status is self-reported by players'**
+  String get manualPaymentDisclaimer;
+
   /// No description provided for @undo.
   ///
   /// In en, this message translates to:

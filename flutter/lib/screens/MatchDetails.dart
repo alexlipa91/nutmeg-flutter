@@ -1858,6 +1858,17 @@ class _ManualPayBadge extends StatelessWidget {
                     ),
                   );
                 }),
+                SizedBox(height: 16),
+                Row(children: [
+                  Icon(Icons.info_outline,
+                      color: Palette.greyLight, size: 16),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text(l10n.manualPaymentDisclaimer,
+                        style: TextPalette.getBodyText(Palette.greyDark)
+                            .copyWith(fontSize: 12)),
+                  ),
+                ]),
               ],
             ),
           );
@@ -1878,7 +1889,7 @@ class _ManualPayBadge extends StatelessWidget {
             borderRadius: BorderRadius.circular(4),
           ),
           child: Row(mainAxisSize: MainAxisSize.min, children: [
-            Text("INFO",
+            Text(AppLocalizations.of(context)!.payOutsideNutmeg.toUpperCase(),
                 style: TextPalette.getBodyText(Palette.white)
                     .copyWith(fontSize: 11, fontWeight: FontWeight.w600)),
             SizedBox(width: 4),
@@ -2616,14 +2627,19 @@ class _NutmegPayBadgeState extends State<_NutmegPayBadge> {
     final releaseStatus = _data?["release_status"] as String?;
     final releaseAmount = _data?["release_amount"] as int?;
     final releaseAt = _data?["release_at"] as String?;
+    final releasedAt = _data?["released_at"] as String?;
 
     Widget? releaseRow;
     if (releaseStatus == "released" && releaseAmount != null) {
+      final releasedDate = releasedAt != null
+          ? DateFormat.yMMMd().format(DateTime.parse(releasedAt).toLocal())
+          : null;
       releaseRow = Row(children: [
-        Icon(Icons.check_circle_outline, color: Palette.green, size: 16),
+        Icon(Icons.check_circle_outline, color: Palette.green, size: 14),
         SizedBox(width: 6),
         Expanded(child: Text(
-          l10n.releaseCompletedText(formatCurrency(releaseAmount)),
+          l10n.releaseCompletedText(formatCurrency(releaseAmount)) +
+              (releasedDate != null ? " · $releasedDate" : ""),
           style: TextPalette.getBodyText(Palette.green).copyWith(fontSize: 12),
         )),
       ]);
@@ -2631,7 +2647,7 @@ class _NutmegPayBadgeState extends State<_NutmegPayBadge> {
       final releaseDate = DateTime.parse(releaseAt).toLocal();
       final formattedDate = DateFormat.yMMMd().add_Hm().format(releaseDate);
       releaseRow = Row(children: [
-        Icon(Icons.schedule, color: Palette.greyDark, size: 16),
+        Icon(Icons.schedule, color: Palette.greyDark, size: 14),
         SizedBox(width: 6),
         Expanded(child: Text(
           l10n.releaseScheduledText(formattedDate),
@@ -2738,7 +2754,7 @@ class _NutmegPayBadgeState extends State<_NutmegPayBadge> {
             borderRadius: BorderRadius.circular(4),
           ),
           child: Row(mainAxisSize: MainAxisSize.min, children: [
-            Text("INFO",
+            Text(AppLocalizations.of(context)!.payThroughNutmeg.toUpperCase(),
                 style: TextPalette.getBodyText(Palette.white)
                     .copyWith(fontSize: 11, fontWeight: FontWeight.w600)),
             SizedBox(width: 4),
@@ -2754,7 +2770,7 @@ class _NutmegPayBadgeState extends State<_NutmegPayBadge> {
         border: Border.all(color: Palette.greyLight, width: 1),
         borderRadius: BorderRadius.circular(4),
       ),
-      child: Text(AppLocalizations.of(context)!.payWithStripe,
+      child: Text(AppLocalizations.of(context)!.payThroughNutmeg,
           style: TextPalette.getBodyText(Palette.black)
               .copyWith(fontSize: 11, fontWeight: FontWeight.w500)),
     );

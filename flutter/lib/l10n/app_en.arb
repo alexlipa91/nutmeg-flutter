@@ -359,6 +359,7 @@
         }
     },
     "markedAsPaid": "You marked this as paid",
+    "manualPaymentDisclaimer": "Payment status is self-reported by players",
     "undo": "Undo",
     "iPaid": "Mark as Paid",
     "notYet": "Not yet",
