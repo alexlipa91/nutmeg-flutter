@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 import 'package:nutmeg/config/app_config.dart';
 import 'package:nutmeg/l10n/app_localizations.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:nutmeg/widgets/ModalBottomSheet.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-/// Shows the "How Pay with Nutmeg works" modal with the setup button.
-void showStripeHowItWorksModal(BuildContext context) {
+/// Shows the "How Pay with Nutmeg works" modal.
+/// When [stripeEnabled] is true the CTA opens the Stripe dashboard instead of
+/// starting the setup flow.
+void showStripeHowItWorksModal(BuildContext context,
+    {bool stripeEnabled = false, String? userId}) {
   ModalBottomSheet.showNutmegModalBottomSheet(
     context,
     Column(
@@ -32,9 +37,18 @@ void showStripeHowItWorksModal(BuildContext context) {
         Row(children: [
           Expanded(
               child: GenericButtonWithLoader(
-                  AppLocalizations.of(context)!.setupStripeIntegration,
+                  stripeEnabled
+                      ? AppLocalizations.of(context)!.goToStripeDashboardButton
+                      : AppLocalizations.of(context)!.setupStripeIntegration,
                   (_) async {
-            await completeAccountAction(context, AppConfig.testMode);
+            if (stripeEnabled && userId != null) {
+              var url = CloudFunctionsClient().getUrl(
+                  "stripe/account?is_test=${AppConfig.testMode}&user_id=$userId");
+              launchUrl(Uri.parse(url),
+                  mode: LaunchMode.externalApplication);
+            } else {
+              await completeAccountAction(context, AppConfig.testMode);
+            }
             Navigator.pop(context);
           }, Primary()))
         ]),

@@ -1383,8 +1383,14 @@ abstract class AppLocalizations {
   /// No description provided for @stripeIntegrationActive.
   ///
   /// In en, this message translates to:
-  /// **'Go to your Stripe dashboard'**
+  /// **'See how it works'**
   String get stripeIntegrationActive;
+
+  /// No description provided for @goToStripeDashboardButton.
+  ///
+  /// In en, this message translates to:
+  /// **'GO TO YOUR STRIPE DASHBOARD'**
+  String get goToStripeDashboardButton;
 
   /// No description provided for @payWithNutmegNotConfigured.
   ///

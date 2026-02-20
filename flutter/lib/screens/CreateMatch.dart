@@ -694,6 +694,9 @@ class CreateMatchState extends State<CreateMatch> {
                 ],
               ),
             ),
+            if (!showPaymentInfo &&
+                ConfigsUtils.allowNutmegManagedPayments)
+              Divider(color: Palette.greyLight),
             // Pay through Nutmeg: additional content
             if (!showPaymentInfo &&
                 ConfigsUtils.allowNutmegManagedPayments) ...[

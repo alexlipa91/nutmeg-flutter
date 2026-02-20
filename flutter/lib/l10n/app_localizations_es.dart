@@ -723,7 +723,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get payWithNutmegTitle => 'Pagar con Nutmeg';
 
   @override
-  String get stripeIntegrationActive => 'Ir a tu panel de Stripe';
+  String get stripeIntegrationActive => 'Ver cómo funciona';
+
+  @override
+  String get goToStripeDashboardButton => 'IR A TU PANEL DE STRIPE';
 
   @override
   String get payWithNutmegNotConfigured =>

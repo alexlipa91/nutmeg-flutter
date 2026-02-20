@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 import 'package:nutmeg/config/app_config.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
-import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/StripeSetupWidget.dart';
 import 'package:provider/provider.dart';
 import 'package:nutmeg/l10n/app_localizations.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../state/UserState.dart';
 
@@ -44,15 +41,8 @@ class PayThroughNutmegRow extends StatelessWidget {
     var userId = userDetails?.documentId;
 
     return InkWell(
-      onTap: stripeEnabled
-          ? () {
-              var url = CloudFunctionsClient().getUrl(
-                  "stripe/account?is_test=${AppConfig.testMode}&user_id=$userId");
-              launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
-            }
-          : hasAccount
-              ? () => completeAccountAction(context, AppConfig.testMode)
-              : () => showStripeHowItWorksModal(context),
+      onTap: () => showStripeHowItWorksModal(context,
+          stripeEnabled: stripeEnabled, userId: userId),
       child: Row(
         children: [
           Icon(
@@ -72,7 +62,7 @@ class PayThroughNutmegRow extends StatelessWidget {
                 SizedBox(height: 4),
                 if (stripeEnabled)
                   Text(AppLocalizations.of(context)!.stripeIntegrationActive,
-                      style: TextPalette.getBodyText(Palette.green))
+                      style: TextPalette.getBodyText(Palette.greyDark))
                 else if (hasAccount)
                   Text(AppLocalizations.of(context)!.stripeSetupInProgress,
                       style: TextPalette.getBodyText(Palette.darkWarning))
