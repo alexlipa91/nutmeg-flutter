@@ -35,6 +35,7 @@ from src.utils import (
     send_notification_to_users,
     schedule_app_engine_call,
     update_leaderboard,
+    setup_stripe,
     NUTMEG_FEE_CENTS,
 )
 from flask import current_app as app
@@ -1088,7 +1089,7 @@ def _release_match_money(db, match_id, is_test):
         }})
         return {"status": "skipped", "reason": "no_connected_account"}
 
-    stripe.api_key = Secrets.STRIPE_KEY if not is_test else Secrets.STRIPE_KEY_TEST
+    setup_stripe(is_test)
 
     info = _calculate_release_amount(match, verify_with_stripe=True)
     transfer_total = info["total"]
@@ -1189,7 +1190,7 @@ def get_match_collected(match_id):
 def _cancel_match_firestore_transactional(
     transaction, match_doc_ref, users_stats_docs, match_id, is_test, trigger
 ):
-    stripe.api_key = Secrets.STRIPE_KEY_TEST if is_test else Secrets.STRIPE_KEY
+    setup_stripe(is_test)
 
     match = match_doc_ref.get(transaction=transaction).to_dict()
     to_refund = None
@@ -1537,7 +1538,7 @@ def _remove_user_from_match_stripe_refund_firestore_transaction(
     transaction_log = {"type": "user_left", "userId": user_id, "createdAt": timestamp}
 
     if payment_intent:
-        stripe.api_key = Secrets.STRIPE_KEY_TEST if is_test else Secrets.STRIPE_KEY
+        setup_stripe(is_test)
         refund = stripe.Refund.create(payment_intent=payment_intent)
         transaction_log["paymentIntent"] = payment_intent
         transaction_log["refund_id"] = refund.id
@@ -1723,7 +1724,7 @@ def _format_match_data_v2(match_id, match_data, version, add_organizer_info=Fals
     if add_organizer_info:
         try:
             if "payout_id" in match_data:
-                stripe.api_key = Secrets.STRIPE_KEY_TEST if is_test else Secrets.STRIPE_KEY
+                setup_stripe(is_test)
                 prefix = "stripe_test" if is_test else "stripe"
                 org_data = (
                     app.db_client.collection("users")
@@ -1949,7 +1950,7 @@ def delete_tests():
 
 
 def _update_user_account(user_id, is_test, match_id, manage_payments):
-    stripe.api_key = Secrets.STRIPE_KEY_TEST if is_test else Secrets.STRIPE_KEY
+    setup_stripe(is_test)
     prefix = "stripe_test" if is_test else "stripe"
 
     user_doc_ref = app.db_client.collection("users").document(user_id)

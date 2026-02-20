@@ -6,6 +6,7 @@ from flask import Blueprint, Flask
 from flask import current_app as app
 
 from src.secrets import Secrets
+from src.utils import setup_stripe
 
 
 ADMIN_IDS = [
@@ -58,8 +59,7 @@ def _add_user(user_id, data, create_stripe_customer=True):
     data["createdAt"] = firestore.firestore.SERVER_TIMESTAMP
 
     if create_stripe_customer:
-        # create stripe customer
-        stripe.api_key = Secrets.STRIPE_KEY
+        setup_stripe()
         response = stripe.Customer.create(
             email=data.get("email", None), name=data.get("name", None)
         )

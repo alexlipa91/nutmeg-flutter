@@ -8,7 +8,7 @@ from flask import current_app as app
 from google.cloud.firestore_v1 import DELETE_FIELD
 
 from src.secrets import Secrets
-from src.utils import build_dynamic_link
+from src.utils import build_dynamic_link, setup_stripe
 from src.blueprints.matches import add_user_to_match
 
 bp = Blueprint('stripe', __name__, url_prefix='/stripe')
@@ -30,7 +30,7 @@ def _stripe_prefix(is_test):
 
 
 def _setup_stripe_key(is_test):
-    stripe.api_key = Secrets.STRIPE_KEY_TEST if is_test else Secrets.STRIPE_KEY
+    setup_stripe(is_test)
 
 
 @bp.route("/checkout_webhook", methods=["POST"])

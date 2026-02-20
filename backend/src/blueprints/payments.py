@@ -7,7 +7,7 @@ from flask import Blueprint, Flask
 
 from src.models._matches import Match as MatchModel
 from src.secrets import Secrets
-from src.utils import build_dynamic_link, NUTMEG_FEE_CENTS
+from src.utils import build_dynamic_link, setup_stripe, NUTMEG_FEE_CENTS
 from flask import current_app as app
 
 bp = Blueprint("payments", __name__, url_prefix="/payments")
@@ -115,7 +115,7 @@ def _build_statement_descriptor_suffix(match_info):
 
 
 def _get_stripe_customer_id(user_id, test_mode):
-    stripe.api_key = Secrets.STRIPE_KEY_TEST if test_mode else Secrets.STRIPE_KEY
+    setup_stripe(test_mode)
 
     doc = app.db_client.collection("users").document(user_id)
 
@@ -152,7 +152,7 @@ def _create_checkout_redirects_to_web(
     statement_suffix=None,
     transfer_metadata=None,
 ):
-    stripe.api_key = Secrets.STRIPE_KEY_TEST if test_mode else Secrets.STRIPE_KEY
+    setup_stripe(test_mode)
 
     product_data = {"name": product_name or "Nutmeg Match"}
     if product_description:
@@ -211,7 +211,7 @@ def _create_checkout_session_with_deep_links(
     statement_suffix=None,
     transfer_metadata=None,
 ):
-    stripe.api_key = Secrets.STRIPE_KEY_TEST if test_mode else Secrets.STRIPE_KEY
+    setup_stripe(test_mode)
 
     product_data = {"name": product_name or "Nutmeg Match"}
     if product_description:
