@@ -38,12 +38,8 @@ def _setup_stripe_key(is_test):
 
 
 def _verify_webhook(payload, sig_header, is_test):
-    """Try each known webhook secret until one verifies, or raise."""
-    secret = (
-        Secrets.STRIPE_WEBHOOK_SECRET_ES_TEST
-        if is_test
-        else Secrets.STRIPE_WEBHOOK_SECRET_ES
-    )
+    print(f"is_test: {is_test}")
+    secret = Secrets.STRIPE_WEBHOOK_SECRET_ES_TEST if is_test else Secrets.STRIPE_WEBHOOK_SECRET_ES
     return stripe.Webhook.construct_event(payload, sig_header, secret)
 
 
@@ -66,7 +62,10 @@ def stripe_webhook():
             is_test=event_data["metadata"].get("is_test") == "true",
         )
 
-    elif event_type == "account.updated" and event_data.get("charges_enabled"):
+    elif event_type == "account.updated":
+        if not event_data.get("charges_enabled"):
+            print("user {} cannot receive payments on stripe, charges_enabled is False".format(event_data["metadata"]["userId"]))
+            return {}
         user_id = event_data["metadata"]["userId"]
         prefix = _stripe_prefix(is_test)
         app.db_client.collection("users").document(user_id).update(

@@ -672,14 +672,19 @@ class _PaymentMethodsCardState extends State<_PaymentMethodsCard> {
   @override
   void initState() {
     super.initState();
-    // Only show return banners if Stripe wasn't already active
     var alreadyEnabled = widget.userDetails.areChargesEnabled(AppConfig.testMode);
     if (!alreadyEnabled) {
-      // Listen for postMessage from the Stripe return tab (web)
+      var hasAccount = widget.userDetails
+              .getStripeInfo(AppConfig.testMode)
+              .connectedAccountId !=
+          null;
+      if (hasAccount) {
+        _stripeVerificationResult = false;
+      }
+
       listenForStripeReturn(() {
         if (mounted) _checkStripeStatus();
       });
-      // Also handle direct navigation with ?stripe_onboarding=complete (fallback)
       if (widget.stripeOnboardingComplete) {
         _checkStripeStatus();
       }
@@ -787,7 +792,7 @@ class _PaymentMethodsCardState extends State<_PaymentMethodsCard> {
       ),
       child: Row(
         children: [
-          Icon(Icons.hourglass_top, color: Colors.orange.shade700, size: 18),
+          Icon(Icons.warning_amber_rounded, color: Colors.orange.shade700, size: 18),
           SizedBox(width: 10),
           Expanded(
             child: Text(AppLocalizations.of(context)!.stripeVerificationPending,

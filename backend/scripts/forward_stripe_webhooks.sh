@@ -1,1 +1,1 @@
-stripe listen --forward-to http://localhost:8080/stripe/webhook
+stripe listen --forward-to http://localhost:8080/stripe/webhook?is_test=true --forward-connect-to http://localhost:8080/stripe/webhook?is_test=true

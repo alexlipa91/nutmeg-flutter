@@ -228,7 +228,7 @@
     "stripeSetupInProgress": "Configurazione in corso. Tocca per continuare.",
     "stripeVerifying": "Verifica del tuo account Stripe in corso…",
     "stripeVerified": "Tutto a posto! La tua integrazione Stripe è attiva.",
-    "stripeVerificationPending": "Il tuo account è configurato ma la verifica è ancora in corso. Potrai ricevere pagamenti quando Stripe completerà la revisione.",
+    "stripeVerificationPending": "La configurazione di Stripe non è completa. Tocca 'Paga con Nutmeg' qui sopra per completarla e iniziare a ricevere pagamenti.",
     "stripeSetupRequired": "Devi configurare Stripe prima di creare una partita a pagamento. Completa la configurazione.",
     "stripeNutmegFeeLabel": "Commissione Nutmeg",
     "stripePayoutExplanation": "Il denaro viene trasferito sul tuo account Stripe 24h dopo la partita, poi Stripe lo invia al tuo conto bancario.",
