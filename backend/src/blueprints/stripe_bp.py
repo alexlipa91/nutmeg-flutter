@@ -33,37 +33,61 @@ def _setup_stripe_key(is_test):
     setup_stripe(is_test)
 
 
-@bp.route("/checkout_webhook", methods=["POST"])
-def stripe_checkout_webhook():
+def _get_webhook_secrets(is_test):
+    """Return all known webhook signing secrets to try during verification."""
+    env_override = os.environ.get("STRIPE_CHECKOUT_WEBHOOK")
+    if env_override:
+        return [env_override]
+    if is_test:
+        return [
+            Secrets.STRIPE_WEBHOOK_SECRET_ES_TEST,
+        ]
+    return [
+        Secrets.STRIPE_WEBHOOK_SECRET_ES,
+    ]
+
+
+def _verify_webhook(payload, sig_header, is_test):
+    """Try each known webhook secret until one verifies, or raise."""
+    secrets = _get_webhook_secrets(is_test)
+    last_error = None
+    for secret in secrets:
+        try:
+            return stripe.Webhook.construct_event(payload, sig_header, secret)
+        except stripe.error.SignatureVerificationError as e:
+            last_error = e
+    raise last_error
+
+
+@bp.route("/webhook", methods=["POST"])
+def stripe_webhook():
     is_test = _get_is_test()
-    sig_header = flask.request.headers['STRIPE_SIGNATURE']
+    sig_header = flask.request.headers["STRIPE_SIGNATURE"]
+    event = _verify_webhook(flask.request.data, sig_header, is_test)
 
-    secret = os.environ.get("STRIPE_CHECKOUT_WEBHOOK") or (
-        Secrets.STRIPE_CHECKOUT_WEBHOOK_SECRET if not is_test else Secrets.STRIPE_CHECKOUT_WEBHOOK_SECRET_TEST
-    )
-
-    try:
-        event = stripe.Webhook.construct_event(flask.request.data, sig_header, secret)
-    except ValueError as e:
-        # Invalid payload
-        raise e
-    except stripe.error.SignatureVerificationError as e:
-        # Invalid signature
-        raise e
-
+    is_test = not event["livemode"]
     event_data = event["data"]["object"]
+    event_type = event["type"]
+    print(f"Stripe webhook event: {event_type}")
 
-    print(f"Stripe checkout webhook event: {event['type']}")
-
-    # Handle the event
-    if event["type"] == "checkout.session.completed":
-        is_test = event_data["metadata"].get("is_test") == "true"
+    if event_type == "checkout.session.completed":
         add_user_to_match(
             event_data["metadata"]["match_id"],
             event_data["metadata"]["user_id"],
             event_data["payment_intent"],
-            is_test=is_test,
+            is_test=event_data["metadata"].get("is_test") == "true",
         )
+
+    elif event_type == "account.updated" and event_data.get("charges_enabled"):
+        user_id = event_data["metadata"]["userId"]
+        prefix = _stripe_prefix(is_test)
+        app.db_client.collection("users").document(user_id).update({
+            "{}.charges_enabled".format(prefix): True
+        })
+        print("user {} can now receive payments on stripe".format(user_id))
+
+    else:
+        print(f"event {event_type} not handled")
 
     return {}
 
@@ -97,7 +121,6 @@ def go_to_onboard_connected_account():
 
     # Create a connected account if one doesn't exist yet
     if not account_id:
-        # Pre-fill with user info from Firestore
         name = user_data.get("name", "")
         email = user_data.get("email", "")
         name_parts = name.split(" ", 1) if name else ["", ""]
@@ -131,21 +154,17 @@ def go_to_onboard_connected_account():
         account_id = response.id
         user_ref.update({"{}.connected_account_id".format(prefix): account_id})
 
-    # Derive base URLs from the incoming request so it works for both local and remote
     base_url = flask.request.host_url.rstrip("/")
     frontend_url = flask.request.args.get("redirect_url", "https://web.nutmegapp.com").rstrip("/")
 
     redirect_path = ("/match/" + match_id if match_id else "/user") + "?stripe_onboarding=complete"
     redirect_link = frontend_url + redirect_path
 
-    # Only wrap in dynamic link for production frontend
     if "nutmegapp.com" in frontend_url:
         redirect_link = build_dynamic_link("http://web.nutmegapp.com" + redirect_path)
 
-    # If the account is already fully onboarded, skip Stripe and go straight back
     account = stripe.Account.retrieve(account_id)
     if account.charges_enabled:
-        # Sync to Firestore in case it wasn't already
         user_ref.update({"{}.charges_enabled".format(prefix): True})
         return flask.redirect(redirect_link)
 
@@ -163,42 +182,3 @@ def go_to_onboard_connected_account():
         collect="currently_due",
     )
     return flask.redirect(response.url)
-
-
-@bp.route("/connect_account_updated_webhook", methods=["POST"])
-def stripe_connect_account_updated_webhook():
-    is_test = _get_is_test()
-    sig_header = flask.request.headers['STRIPE_SIGNATURE']
-
-    secret = os.environ.get("STRIPE_CHECKOUT_WEBHOOK") or (
-        Secrets.STRIPE_CONNECT_UPDATED_WEBHOOK_SECRET if not is_test else Secrets.STRIPE_CONNECT_UPDATED_WEBHOOK_SECRET_TEST
-    )
-
-    try:
-        event = stripe.Webhook.construct_event(flask.request.data, sig_header, secret)
-    except ValueError as e:
-        # Invalid payload
-        raise e
-    except stripe.error.SignatureVerificationError as e:
-        # Invalid signature
-        raise e
-
-    is_test = not event["livemode"]
-    event_data = event["data"]["object"]
-    prefix = _stripe_prefix(is_test)
-
-    # Handle the event
-    if event["type"] == "account.updated" and event_data["charges_enabled"]:
-        user_id = event_data["metadata"]["userId"]
-
-        user_data = app.db_client.collection("users").document(user_id).get().to_dict()
-
-        app.db_client.collection("users").document(user_id).update({
-            "{}.charges_enabled".format(prefix): True
-        })
-        print("user {} can now receive payments on stripe".format(user_id))
-        
-    else:
-        print("event not handled")
-
-    return {}
