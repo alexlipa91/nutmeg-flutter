@@ -1814,23 +1814,6 @@ def _add_match_firestore(match_data):
             print("charges not enabled on organizer account: set match as unpublished")
             match_data["unpublished_reason"] = "organizer_not_onboarded"
 
-        # create stripe object
-        stripe.api_key = Secrets.STRIPE_KEY_TEST if match_data.get("isTest", False) else Secrets.STRIPE_KEY
-        response = stripe.Product.create(
-            name="Nutmeg Match - {} - {}".format(
-                match_data["sportCenter"]["name"], match_data["dateTime"]
-            ),
-            description="Address: " + match_data["sportCenter"]["address"],
-        )
-        match_data["stripeProductId"] = response["id"]
-        response = stripe.Price.create(
-            nickname="Standard Price",
-            unit_amount=_get_stripe_price_amount(match_data, "full"),
-            currency="eur",
-            product=match_data["stripeProductId"],
-        )
-        match_data["stripePriceId"] = response.id
-
     is_test = match_data.get("isTest", False)
     coll = _get_matches_collection(is_test)
     if is_test:
@@ -1958,18 +1941,6 @@ def delete_task(task_name):
         print(f"Error setting up task deletion: {str(e)}")
         # Don't raise the exception to allow the match update to proceed
         pass
-
-
-def _get_stripe_price_amount(match_data, type):
-    base_price = 0
-    full_price = 0
-    if "pricePerPerson" in match_data:
-        base_price = match_data["pricePerPerson"]
-        full_price = base_price + NUTMEG_FEE_CENTS
-    elif "price" in match_data:
-        base_price = match_data["price"]["basePrice"]
-        full_price = match_data["price"]["basePrice"] + match_data["price"]["userFee"]
-    return base_price if type == "base" else full_price
 
 
 def delete_tests():

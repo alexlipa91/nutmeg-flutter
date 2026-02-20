@@ -32,8 +32,6 @@ class Match:
     # --- pricing ---
     price: Optional[Dict[str, int]] = None  # {basePrice: int, userFee: int}
     is_manual_payment: bool = False
-    stripe_product_id: Optional[str] = None
-    stripe_price_id: Optional[str] = None
 
     # --- flags ---
     is_test: bool = False
@@ -97,8 +95,6 @@ class Match:
             "sportCenterSubLocation": "sport_center_sub_location",
             "price": "price",
             "isManualPayment": "is_manual_payment",
-            "stripeProductId": "stripe_product_id",
-            "stripePriceId": "stripe_price_id",
             "isTest": "is_test",
             "isPrivate": "is_private",
             "going": "going",
