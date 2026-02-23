@@ -794,65 +794,33 @@ def _promote_user_from_waitlist_transaction(
 ):
     timestamp = datetime.now(tz)
 
-    match = match_doc_ref.get(transaction=transaction).to_dict()
+    raw = match_doc_ref.get(transaction=transaction).to_dict()
+    match = MatchModel.from_dict(raw, match_doc_ref.id)
 
-    if user_id not in match.get("waitList", {}):
-        raise Exception("User is not in the waitlist")
+    match.validate_can_promote(user_id)
 
-    if len(match.get("going", {})) >= match.get("maxPlayers", 0):
-        raise Exception("Match is full")
-
-    # remove from waitlist
-    transaction.update(match_doc_ref, {"waitList." + user_id: firestore.DELETE_FIELD})
-
-    # add to going
-    transaction.set(
-        match_doc_ref,
-        {
-            "going": {user_id: {"createdAt": timestamp}},
-            "goingPlayers": firestore.ArrayUnion([user_id]),
-        },
-        merge=True,
-    )
-
-    # add match to user stats
-    transaction.set(
-        user_stat_doc_ref, {"joinedMatches": {match_id: match["dateTime"]}}, merge=True
-    )
-
-    # record transaction
-    transaction.set(
-        transactions_doc_ref,
-        {
-            "type": "promoted_from_waitlist",
-            "userId": user_id,
-            "createdAt": timestamp,
-        },
-    )
+    transaction.update(match_doc_ref, MatchModel.waitlist_remove_update(user_id))
+    transaction.set(match_doc_ref, match.going_update(user_id, timestamp), merge=True)
+    transaction.set(user_stat_doc_ref, {"joinedMatches": {match_id: raw["dateTime"]}}, merge=True)
+    transaction.set(transactions_doc_ref, MatchModel.promoted_transaction_log(user_id, timestamp))
 
 
 @firestore.transactional
 def _add_user_to_waitlist_transaction(transaction, match_doc_ref, user_id, match_id):
     timestamp = datetime.now(tz)
+    raw = match_doc_ref.get(transaction=transaction).to_dict()
 
-    match = match_doc_ref.get(transaction=transaction).to_dict()
-
-    if not match:
+    if not raw:
         raise Exception("Match not found")
 
-    # don't allow joining waitlist if user is already going
-    if user_id in match.get("going", {}):
-        raise Exception("User is already going to this match")
+    match = MatchModel.from_dict(raw, match_doc_ref.id)
 
-    # don't allow joining waitlist if user is already on it
-    if user_id in match.get("waitList", {}):
+    if match.is_in_waitlist(user_id):
         return
 
-    transaction.set(
-        match_doc_ref,
-        {"waitList": {user_id: {"createdAt": timestamp}}},
-        merge=True,
-    )
+    match.validate_can_join_waitlist(user_id)
+
+    transaction.set(match_doc_ref, MatchModel.waitlist_add_update(user_id, timestamp), merge=True)
 
 
 @bp.route("/<match_id>/cancel", methods=["GET"])
@@ -1550,46 +1518,14 @@ def _add_user_to_match_firestore_transaction(
     match_id,
 ):
     timestamp = datetime.now(tz)
+    raw = match_doc_ref.get(transaction=transaction).to_dict()
+    match = MatchModel.from_dict(raw, match_doc_ref.id)
 
-    match = match_doc_ref.get(transaction=transaction).to_dict()
+    match.validate_can_join(user_id)
 
-    if match.get("going", {}).get(user_id, None):
-        print("User already going")
-        return
-
-    if len(match.get("going", {})) >= match.get("maxPlayers", 0):
-        raise Exception("Match is full")
-
-    if len(match.get("waitList", {})) > 0 and user_id not in match.get("waitList", {}):
-        raise Exception("There are users in the waitlist. Join the waitlist instead")
-
-    # add user to list of going
-    transaction.set(
-        match_doc_ref,
-        {
-            "going": {
-                user_id: {"createdAt": timestamp, "payment_intent": payment_intent}
-            },
-            "goingPlayers": firestore.ArrayUnion([user_id]),
-        },
-        merge=True,
-    )
-
-    # add match to user
-    transaction.set(
-        user_stat_doc_ref, {"joinedMatches": {match_id: match["dateTime"]}}, merge=True
-    )
-
-    # record transaction
-    transaction.set(
-        transactions_doc_ref,
-        {
-            "type": "joined",
-            "userId": user_id,
-            "createdAt": timestamp,
-            "paymentIntent": payment_intent,
-        },
-    )
+    transaction.set(match_doc_ref, match.going_update(user_id, timestamp, payment_intent), merge=True)
+    transaction.set(user_stat_doc_ref, {"joinedMatches": {match_id: raw["dateTime"]}}, merge=True)
+    transaction.set(transactions_doc_ref, MatchModel.joined_transaction_log(user_id, timestamp, payment_intent))
 
 
 

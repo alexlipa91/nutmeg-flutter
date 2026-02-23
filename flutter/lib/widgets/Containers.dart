@@ -99,7 +99,7 @@ class InfoContainerWithTitleAndSubtitle extends StatelessWidget {
 
 class InfoContainerWithTitleAndSubtitleAndAction extends StatelessWidget {
   final String title;
-  final String subtitle;
+  final String? subtitle;
   final Widget body;
   final EdgeInsets padding;
   final IconData? actionIcon;
@@ -108,7 +108,7 @@ class InfoContainerWithTitleAndSubtitleAndAction extends StatelessWidget {
   const InfoContainerWithTitleAndSubtitleAndAction({
     Key? key,
     required this.title,
-    required this.subtitle,
+    this.subtitle,
     required this.body,
     this.padding = const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
     this.actionIcon,
@@ -132,8 +132,10 @@ class InfoContainerWithTitleAndSubtitleAndAction extends StatelessWidget {
                 ),
             ],
           ),
-          SizedBox(height: 8),
-          Text(subtitle, style: TextPalette.bodyText),
+          if (subtitle != null) ...[
+            SizedBox(height: 8),
+            Text(subtitle!, style: TextPalette.bodyText),
+          ],
           SizedBox(height: 12),
           body
         ],

@@ -9,6 +9,8 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
 
+from firebase_admin import firestore as fb_firestore
+
 
 @dataclass
 class Match:
@@ -199,6 +201,79 @@ class Match:
         if parts:
             return "Match · " + " · ".join(parts)
         return "Nutmeg Match"
+
+    # ---- Firestore write helpers ----
+
+    def is_full(self) -> bool:
+        return len(self.going) >= (self.max_players or 0)
+
+    def has_waitlist(self) -> bool:
+        return len(self.wait_list) > 0
+
+    def validate_can_join(self, user_id: str) -> None:
+        """Raise if user cannot join the match directly."""
+        if user_id in self.going:
+            raise Exception("User already going")
+        if self.is_full():
+            raise Exception("Match is full")
+        if self.has_waitlist() and user_id not in self.wait_list:
+            raise Exception("There are users in the waitlist. Join the waitlist instead")
+
+    def validate_can_join_waitlist(self, user_id: str) -> None:
+        """Raise if user cannot join the waitlist."""
+        if user_id in self.going:
+            raise Exception("User is already going to this match")
+
+    def validate_can_promote(self, user_id: str) -> None:
+        """Raise if user cannot be promoted from waitlist."""
+        if user_id not in self.wait_list:
+            raise Exception("User is not in the waitlist")
+        if self.is_full():
+            raise Exception("Match is full")
+
+    def is_in_waitlist(self, user_id: str) -> bool:
+        return user_id in self.wait_list
+
+    def going_update(self, user_id: str, timestamp: datetime,
+                     payment_intent: Optional[str] = None) -> Dict[str, Any]:
+        """Return the Firestore merge-set dict to add a user to going."""
+        going_entry: Dict[str, Any] = {"createdAt": timestamp}
+        if payment_intent is not None:
+            going_entry["payment_intent"] = payment_intent
+        return {
+            "going": {user_id: going_entry},
+            "goingPlayers": fb_firestore.ArrayUnion([user_id]),
+        }
+
+    @staticmethod
+    def waitlist_add_update(user_id: str, timestamp: datetime) -> Dict[str, Any]:
+        """Return the Firestore merge-set dict to add a user to the waitlist."""
+        return {"waitList": {user_id: {"createdAt": timestamp}}}
+
+    @staticmethod
+    def waitlist_remove_update(user_id: str) -> Dict[str, Any]:
+        """Return the Firestore update dict to remove a user from the waitlist."""
+        return {"waitList." + user_id: fb_firestore.DELETE_FIELD}
+
+    @staticmethod
+    def joined_transaction_log(user_id: str, timestamp: datetime,
+                               payment_intent: Optional[str] = None) -> Dict[str, Any]:
+        log: Dict[str, Any] = {
+            "type": "joined",
+            "userId": user_id,
+            "createdAt": timestamp,
+        }
+        if payment_intent is not None:
+            log["paymentIntent"] = payment_intent
+        return log
+
+    @staticmethod
+    def promoted_transaction_log(user_id: str, timestamp: datetime) -> Dict[str, Any]:
+        return {
+            "type": "promoted_from_waitlist",
+            "userId": user_id,
+            "createdAt": timestamp,
+        }
 
 
 if __name__ == "__main__":

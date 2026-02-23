@@ -1677,8 +1677,10 @@ class Stats extends StatelessWidget {
 
     return InfoContainerWithTitleAndSubtitleAndAction(
       title: AppLocalizations.of(context)!.matchStatsTitle,
-      subtitle: AppLocalizations.of(context)!
-          .matchStatsSubTitle(ratings?.numDistinctScoreVoters ?? 0),
+      subtitle: match.status == MatchStatus.rated
+          ? AppLocalizations.of(context)!
+              .matchStatsSubTitle(ratings?.numDistinctScoreVoters ?? 0)
+          : null,
       body: child,
       actionIcon: match.status == MatchStatus.rated ? Icons.share : null,
       onActionPressed: match.status == MatchStatus.rated
