@@ -6,7 +6,6 @@ import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:logging/logging.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 import 'package:nutmeg/config/app_config.dart';
 import 'package:nutmeg/controller/MiscController.dart';
@@ -15,6 +14,7 @@ import 'package:nutmeg/state/LoadOnceState.dart';
 import 'package:nutmeg/screens/EnterDetails.dart';
 import 'package:nutmeg/state/MatchesState.dart';
 import 'package:nutmeg/utils/CrashlyticsLogger.dart';
+import 'package:nutmeg/utils/Utils.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:timezone/data/latest.dart' as tz;
@@ -66,7 +66,8 @@ class LaunchController {
 
     // Handle notification tap when app is in background (not terminated)
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      logger.info('Notification tapped (app was in background): ${message.data}');
+      logger
+          .info('Notification tapped (app was in background): ${message.data}');
       if (message.data.containsKey("route")) {
         _handleMessageFromNotification(message);
       }
@@ -100,9 +101,44 @@ class LaunchController {
     logger.info("Logged app_started event with version ${packageInfo.version}");
   }
 
+  static String _getPlatform() {
+    if (kIsWeb) return "web";
+    if (defaultTargetPlatform == TargetPlatform.iOS) return "ios";
+    if (defaultTargetPlatform == TargetPlatform.android) return "android";
+    return "unknown";
+  }
+
+  static Future<Map<String, dynamic>> _buildCurrentAppInfo() async {
+    PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    return {
+      "app_version": "${packageInfo.version}+${packageInfo.buildNumber}",
+      if (COMMIT_SHA.isNotEmpty) "commit_sha": COMMIT_SHA,
+      if (COMMIT_TIMESTAMP.isNotEmpty) "commit_timestamp": COMMIT_TIMESTAMP,
+      "last_updated": DateTime.now().toUtc().toIso8601String(),
+    };
+  }
+
+  static Future<void> storeAppInfo(UserState userState) async {
+    var userDetails = userState.getLoggedUserDetails();
+    if (userDetails == null) return;
+
+    var platform = _getPlatform();
+    var currentAppInfo = await _buildCurrentAppInfo();
+
+    logger.info("Storing app info for $platform: $currentAppInfo");
+    try {
+      await apiClient.post(
+          "users/${userDetails.documentId}",
+          {"app_info.$platform": currentAppInfo});
+    } catch (e, s) {
+      logger.severe("Failed to store app info", e, s);
+    }
+  }
+
   static Future<void> loadData(BuildContext context) async {
     logger.info("start loading data function");
-    logger.info("TEST_MODE=${AppConfig.testMode}, BACKEND_URL=${AppConfig.backendUrl}");
+    logger.info(
+        "TEST_MODE=${AppConfig.testMode}, BACKEND_URL=${AppConfig.backendUrl}");
 
     trackAppVersion();
 
@@ -115,6 +151,8 @@ class LaunchController {
 
     await userState.fetchLoggedUserDetails();
     await matchesState.fetchLocation();
+
+    storeAppInfo(userState);
 
     // preload GIFs for join-match celebration
     MiscController.getGifs(context.read<LoadOnceState>());
@@ -224,7 +262,8 @@ class LaunchController {
       logger.info("navigating with deep link:" + deepLink.toString());
       handleLink(deepLink);
     } else if (initialMessage != null) {
-      logger.info("navigating with initial message:" + initialMessage.toString());
+      logger
+          .info("navigating with initial message:" + initialMessage.toString());
       _handleMessageFromNotification(initialMessage);
     } else {
       // Trigger GoRouter to re-evaluate redirects; it will navigate to pendingRedirect

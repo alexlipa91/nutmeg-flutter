@@ -59,6 +59,8 @@ class UserDetails {
   Map<String, int>? playedWith;
   Map<String, int>? organizerPlayers;
 
+  Map<String, dynamic>? appInfo;
+
   UserDetails(this.documentId, this.isAdmin, this.image, this.name, this.email)
       : numRatedMatches = 0,
         sumTotalRates = 0,
@@ -117,6 +119,9 @@ class UserDetails {
         organizerPlayers = json["organizer_players"] != null
             ? Map<String, dynamic>.from(json["organizer_players"])
                 .map((k, v) => MapEntry(k, (v as num).toInt()))
+            : null,
+        appInfo = json["app_info"] != null
+            ? Map<String, dynamic>.from(json["app_info"])
             : null,
         documentId = documentId;
 

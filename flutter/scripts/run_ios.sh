@@ -38,5 +38,13 @@ echo "Booting $DEVICE..."
 xcrun simctl boot "$DEVICE" 2>/dev/null || true
 open -a Simulator
 
+./scripts/pre_build.sh "$ENV_FILE"
+
+COMMIT_SHA=$(git rev-parse --short HEAD 2>/dev/null || echo "")
+COMMIT_TIMESTAMP=$(git log -1 --format=%ci HEAD 2>/dev/null || echo "")
+
 echo "Running app on $DEVICE with $ENV_FILE..."
-flutter run -d "$DEVICE" --dart-define-from-file="$ENV_FILE"
+flutter run -d "$DEVICE" \
+    --dart-define-from-file="$ENV_FILE" \
+    --dart-define=COMMIT_SHA=$COMMIT_SHA \
+    --dart-define=COMMIT_TIMESTAMP="$COMMIT_TIMESTAMP"
