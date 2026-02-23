@@ -67,6 +67,7 @@ jobs:
       - run: flutter build ipa --release --export-options-plist ios/export.plist --dart-define-from-file=.env.prod
       - run: "ls -l build/ios/ipa"
       - name: Upload to TestFlight
+        if: contains(github.event.head_commit.message, '[deploy_test]')
         uses: maierj/fastlane-action@v3.0.0
         with:
           lane: 'closed_beta'
@@ -77,22 +78,12 @@ jobs:
           KEY_ID: ${{ secrets.ASC_KEY_ID }}
           ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
 
-      # --- prod: submit for App Store review ---
-      - name: Read version from pubspec.yaml
-        if: contains(github.event.head_commit.message, '[deploy_prod]')
-        id: version
-        run: |
-          VERSION_LINE=$(grep '^version:' pubspec.yaml | head -1)
-          APP_VERSION=$(echo "$VERSION_LINE" | sed 's/version: *//;s/+.*//')
-          BUILD_NUMBER=$(echo "$VERSION_LINE" | sed 's/.*+//')
-          echo "app_version=$APP_VERSION" >> $GITHUB_OUTPUT
-          echo "build_number=$BUILD_NUMBER" >> $GITHUB_OUTPUT
-          echo "Parsed version: $APP_VERSION+$BUILD_NUMBER"
-      - name: Submit for App Store review
+      # --- prod: upload directly to App Store and submit for review ---
+      - name: Release to App Store
         if: contains(github.event.head_commit.message, '[deploy_prod]')
         uses: maierj/fastlane-action@v3.1.0
         with:
-          lane: "submit_for_review build_number:${{ steps.version.outputs.build_number }} version:${{ steps.version.outputs.app_version }}"
+          lane: 'release'
           subdirectory: 'flutter/ios'
         env:
           KEY_ID: ${{ secrets.ASC_KEY_ID }}
