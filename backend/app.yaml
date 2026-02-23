@@ -1,5 +1,6 @@
 runtime: python312
 env: standard
+entrypoint: gunicorn -b :$PORT --workers 2 main:app
 instance_class: F4
 automatic_scaling:
   max_instances: 2

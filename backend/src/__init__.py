@@ -1,5 +1,7 @@
 import base64
 import logging
+import threading
+import time
 from firebase_admin import firestore
 
 import flask
@@ -21,6 +23,9 @@ from src.blueprints import (
 
 def _create_app():
     logging.info("Starting app")
+    boot_time = time.perf_counter()
+    first_request_lock = threading.Lock()
+    first_request_seen = False
 
     app: flask.Flask = flask.Flask(__name__)
     db: firestore.client = firestore.client()
@@ -40,6 +45,15 @@ def _create_app():
 
     @app.before_request
     def before_request_callback():
+        nonlocal first_request_seen
+
+        if not first_request_seen:
+            with first_request_lock:
+                if not first_request_seen:
+                    flask.g.is_boot_first_request = True
+                    flask.g.first_request_started_at = time.perf_counter()
+                    first_request_seen = True
+
         if "Authorization" in request.headers:
             decoded_token = auth.verify_id_token(
                 request.headers["Authorization"].split(" ")[1]
@@ -62,6 +76,21 @@ def _create_app():
                     logging.info(f"Request body (base64): {encoded}")
             except Exception as e:
                 logging.error(f"Error logging request body: {e}")
+
+    @app.after_request
+    def after_request_callback(response):
+        if getattr(flask.g, "is_boot_first_request", False):
+            now = time.perf_counter()
+            request_duration_ms = int((now - flask.g.first_request_started_at) * 1000)
+            since_boot_ms = int((now - boot_time) * 1000)
+            logging.info(
+                "First request after boot completed: "
+                f"[{request.method}] {request.path} "
+                f"status={response.status_code} "
+                f"duration_ms={request_duration_ms} "
+                f"since_boot_ms={since_boot_ms}"
+            )
+        return response
 
     @app.route("/routes", methods=["GET"])
     def routes():
