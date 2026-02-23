@@ -38,9 +38,6 @@ class AppLocalizationsIt extends AppLocalizations {
   String get moreThanTwoWeeks => 'IN PIÙ DI DUE SETTIMANE';
 
   @override
-  String get notPublishedStatus => 'In attesa: non abbastanza giocatori';
-
-  @override
   String get cancelledStatus => 'Annullato';
 
   @override
@@ -776,7 +773,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get stripeVerificationPending =>
-      'Il tuo account è configurato ma la verifica è ancora in corso. Potrai ricevere pagamenti quando Stripe completerà la revisione.';
+      'La configurazione di Stripe non è completa. Tocca \'Paga con Nutmeg\' qui sopra per completarla e iniziare a ricevere pagamenti.';
 
   @override
   String get stripeSetupRequired =>

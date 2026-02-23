@@ -120,7 +120,7 @@ class UserState extends ChangeNotifier {
 
   Future<void> storeUserToken(String token) async {
     logger.info('Storing user token: $token');
-    CloudFunctionsClient()
+    await CloudFunctionsClient()
         .post("users/${getLoggedUserId()!}/tokens", {"token": token});
   }
 

@@ -156,12 +156,6 @@ abstract class AppLocalizations {
   /// **'IN MORE THAN TWO WEEKS'**
   String get moreThanTwoWeeks;
 
-  /// No description provided for @notPublishedStatus.
-  ///
-  /// In en, this message translates to:
-  /// **'Pending: not enough players'**
-  String get notPublishedStatus;
-
   /// No description provided for @cancelledStatus.
   ///
   /// In en, this message translates to:
@@ -1473,7 +1467,7 @@ abstract class AppLocalizations {
   /// No description provided for @stripeVerificationPending.
   ///
   /// In en, this message translates to:
-  /// **'Your account is set up but verification is still in progress. You\'ll be able to receive payments once Stripe completes the review.'**
+  /// **'Your Stripe setup is incomplete. Tap \'Pay with Nutmeg\' above to finish the setup and start receiving payments.'**
   String get stripeVerificationPending;
 
   /// No description provided for @stripeSetupRequired.

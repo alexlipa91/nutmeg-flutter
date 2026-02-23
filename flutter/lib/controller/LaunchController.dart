@@ -64,6 +64,14 @@ class LaunchController {
     });
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
+    // Handle notification tap when app is in background (not terminated)
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      logger.info('Notification tapped (app was in background): ${message.data}');
+      if (message.data.containsKey("route")) {
+        _handleMessageFromNotification(message);
+      }
+    });
+
     if (!kIsWeb) {
       // Your existing mobile dynamic links setup
       Future<Null> Function(PendingDynamicLinkData? dynamicLink) future =
@@ -228,10 +236,8 @@ class LaunchController {
   }
 }
 
+@pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   logger.info(
       "Handling a background message: ${message.messageId} with data ${message.data.toString()}");
-  if (message.data.containsKey("route")) {
-    GoRouter.of(navigatorKey.currentContext!).go(message.data["route"]);
-  }
 }
