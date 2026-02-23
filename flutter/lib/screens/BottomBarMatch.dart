@@ -33,7 +33,7 @@ class BottomBarMatch extends StatelessWidget {
           bottomBar = LeaveMatchBottomBar(matchId: matchId, enabled: true);
         } else if (isInWaitList) {
           bottomBar = LeaveWaitListBottomBar(matchId: matchId);
-        } else if (isFull) {
+        } else if (isFull || match.numPlayersInWaitList() > 0) {
           bottomBar = JoinWaitListBottomBar(matchId: matchId);
         } else {
           bottomBar = JoinMatchBottomBar(matchId: matchId, enabled: true);
@@ -44,7 +44,7 @@ class BottomBarMatch extends StatelessWidget {
           bottomBar = LeaveMatchBottomBar(matchId: matchId, enabled: false);
         } else if (isInWaitList) {
           bottomBar = LeaveWaitListBottomBar(matchId: matchId);
-        } else if (isFull) {
+        } else if (isFull || match.numPlayersInWaitList() > 0) {
           bottomBar = JoinWaitListBottomBar(matchId: matchId);
         } else {
           bottomBar = JoinMatchBottomBar(matchId: matchId, enabled: true);
@@ -61,14 +61,6 @@ class BottomBarMatch extends StatelessWidget {
         break;
       case MatchStatus.cancelled:
         break;
-      case MatchStatus.unpublished:
-        if (isGoing) {
-          bottomBar = LeaveMatchBottomBar(matchId: matchId, enabled: true);
-        } else if (isFull) {
-          bottomBar = JoinWaitListBottomBar(matchId: matchId);
-        } else {
-          bottomBar = JoinMatchBottomBar(matchId: matchId, enabled: true);
-        }
     }
 
     return bottomBar;

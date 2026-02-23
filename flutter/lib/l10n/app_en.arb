@@ -13,7 +13,6 @@
   "thisWeek": "THIS WEEK",
   "nextWeek": "NEXT WEEK",
   "moreThanTwoWeeks": "IN MORE THAN TWO WEEKS",
-  "notPublishedStatus": "Pending: not enough players",
   "cancelledStatus": "Cancelled",
   "fullStatus": "Full",
   "votes": "votes",
@@ -59,7 +58,6 @@
     "matchOnStatus": "Match is on",
     "matchSavedStatus": "Match Saved",
     "inProgressStatus": "In Progress",
-    "notPublishedStatus": "Pending: not enough players",
     "waitingForPlayersStatus": "Waiting for {x} more players",
     "@waitingForPlayers": {
         "placeholders": {

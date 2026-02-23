@@ -15,7 +15,6 @@ enum MatchStatus {
   to_rate, // match is in the past and within rating window
   rated, // match is in the past and after rating window (man of the match is available)
   cancelled, // match is canceled
-  unpublished // match is created but not joinable by others
 }
 
 class Price {

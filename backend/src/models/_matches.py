@@ -65,9 +65,6 @@ class Match:
     # --- scheduling ---
     tasks_scheduled: Optional[List[str]] = None
 
-    # --- publishing ---
-    unpublished_reason: Optional[str] = None
-
     # --- payout ---
     paid_out_at: Optional[datetime] = None
     payout_id: Optional[str] = None
@@ -111,7 +108,6 @@ class Match:
             "cancelHoursBefore": "cancel_hours_before",
             "dynamicLink": "dynamic_link",
             "tasksScheduled": "tasks_scheduled",
-            "unpublished_reason": "unpublished_reason",
             "paid_out_at": "paid_out_at",
             "payout_id": "payout_id",
             "ratings": "ratings_summary",

@@ -17,11 +17,9 @@ class JoinWaitListButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GenericButtonWithLoader(
+    return GenericButtonWithLoaderAndErrorHandling(
       "JOIN WAITLIST",
       (BuildContext context) async {
-        var loaderState = context.read<GenericButtonWithLoaderState>();
-        loaderState.change(true);
         await WaitListModal.onJoinWaitListAction(context);
       },
       Secondary(),

@@ -249,11 +249,6 @@ def _run_match_query(query, user_id: str, exclude_private: bool = False):
 
             data = _format_match_data_v3(raw_data)
 
-            # status filter
-            skip_status = "organized_by" in data and data["status"] == "unpublished"
-            if skip_status:
-                continue
-
             if user_id not in ADMIN_IDS and data.get("isTest", False):
                 continue
 
@@ -852,10 +847,6 @@ def _add_user_to_waitlist_transaction(transaction, match_doc_ref, user_id, match
     # don't allow joining waitlist if user is already on it
     if user_id in match.get("waitList", {}):
         return
-
-    # don't allow joining waitlist if match is not full
-    if len(match.get("going", {})) < match.get("maxPlayers", 0):
-        raise Exception("Match is not full, join the match directly")
 
     transaction.set(
         match_doc_ref,
@@ -1566,9 +1557,11 @@ def _add_user_to_match_firestore_transaction(
         print("User already going")
         return
 
-    # check if match is full
     if len(match.get("going", {})) >= match.get("maxPlayers", 0):
         raise Exception("Match is full")
+
+    if len(match.get("waitList", {})) > 0 and user_id not in match.get("waitList", {}):
+        raise Exception("There are users in the waitlist. Join the waitlist instead")
 
     # add user to list of going
     transaction.set(
@@ -1609,7 +1602,6 @@ class MatchStatus(Enum):
     PLAYING = "playing"  # we are in between match start and end time
     PRE_PLAYING = "pre_playing"  # we are before match start time and match has been confirmed (automatic cancellation didn't happen)
     OPEN = "open"  # match is in the future and is open for users to join
-    UNPUBLISHED = "unpublished"  # match created but not visible to others
 
 
 def _get_matches_firestore(
@@ -1674,9 +1666,6 @@ def _get_matches_firestore(
                 distance = geopy.distance.geodesic(user_location, match_location).km
                 outside_radius = distance > radius_km
 
-            # status filter
-            skip_status = organized_by is None and data["status"] == "unpublished"
-
             # test filter
             is_admin = user_id is not None and user_id in ADMIN_IDS
             is_test = data.get("isTest", False)
@@ -1690,7 +1679,7 @@ def _get_matches_firestore(
             )
 
             if not (
-                skip_status or outside_radius or hide_test_match or hide_private_match
+                outside_radius or hide_test_match or hide_private_match
             ):
                 res[m.id] = data
 
@@ -1766,9 +1755,6 @@ def _format_match_data_v3(match_data):
 
 
 def _get_status(match_data):
-    if match_data.get("unpublished_reason", None):
-        return MatchStatus.UNPUBLISHED
-
     if match_data.get("cancelledAt", None):
         return MatchStatus.CANCELLED
 
@@ -1800,20 +1786,6 @@ def _add_match_firestore(match_data):
 
     match_data["dateTime"] = dateutil.parser.isoparse(match_data["dateTime"])
     match_data["createdAt"] = firestore.firestore.SERVER_TIMESTAMP
-
-    if "price" in match_data and not match_data.get("isManualPayment", False):
-        # check if organizer can receive payments and if not do not publish yet
-        organizer_data = (
-            app.db_client.collection("users")
-            .document(match_data["organizerId"])
-            .get()
-            .to_dict()
-        )
-
-        prefix = "stripe_test" if match_data.get("isTest", False) else "stripe"
-        if not organizer_data.get(prefix, {}).get("charges_enabled", False):
-            print("charges not enabled on organizer account: set match as unpublished")
-            match_data["unpublished_reason"] = "organizer_not_onboarded"
 
     is_test = match_data.get("isTest", False)
     coll = _get_matches_collection(is_test)

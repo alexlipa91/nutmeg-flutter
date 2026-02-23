@@ -273,13 +273,7 @@ class GenericMatchInfo extends StatelessWidget {
                             SizedBox(
                               height: 6,
                             ),
-                            (match.status == MatchStatus.unpublished)
-                                ? Text(
-                                    AppLocalizations.of(context)!
-                                        .notPublishedStatus,
-                                    style: TextPalette.getBodyText(
-                                        Palette.darkWarning))
-                                : (match.status == MatchStatus.cancelled)
+                            (match.status == MatchStatus.cancelled)
                                     ? Text(
                                         AppLocalizations.of(context)!
                                             .cancelledStatus,

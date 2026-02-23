@@ -34,13 +34,10 @@ class JoinButton extends StatelessWidget {
     var userState = context.read<UserState>();
     var matchesState = context.read<MatchesState>();
 
-    return GenericButtonWithLoader(
+    return GenericButtonWithLoaderAndErrorHandling(
       AppLocalizations.of(context)!.joinButtonText,
       (BuildContext context) async {
-        var loaderState = context.read<GenericButtonWithLoaderState>();
-        loaderState.change(true);
         await JoinModal.onJoinGameAction(context, userState, matchState, matchesState);
-        if (context.mounted) loaderState.change(false);
       },
       Primary(),
     );

@@ -766,10 +766,6 @@ class MatchInfo extends StatelessWidget {
       icon = Icons.do_disturb_alt_outlined;
       color = Palette.destructive;
       text = AppLocalizations.of(context)!.cancelledStatus;
-    } else if (match.status == MatchStatus.unpublished) {
-      icon = Icons.warning_amber_outlined;
-      color = Palette.darkWarning;
-      text = AppLocalizations.of(context)!.notPublishedStatus;
     } else if (match.status == MatchStatus.open &&
         match.getMissingPlayers() > 0) {
       icon = Icons.hourglass_empty_outlined;
