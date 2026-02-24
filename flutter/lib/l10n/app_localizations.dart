@@ -1577,6 +1577,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Don\'t forget to pay {name}!'**
   String dontForgetToPay(Object name);
+
+  /// No description provided for @androidInstallBannerMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Install the Nutmeg app for a better experience.'**
+  String get androidInstallBannerMessage;
+
+  /// No description provided for @androidInstallBannerDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'Download'**
+  String get androidInstallBannerDownload;
+
+  /// No description provided for @androidInstallBannerLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Later'**
+  String get androidInstallBannerLater;
 }
 
 class _AppLocalizationsDelegate

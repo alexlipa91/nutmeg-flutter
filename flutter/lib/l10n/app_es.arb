@@ -245,5 +245,8 @@
     "searchByNameHint": "Buscar por nombre",
     "noPlayersAvailable": "No hay jugadores disponibles para añadir",
     "noResults": "Sin resultados",
-    "dontForgetToPay": "¡No te olvides de pagar a {name}!"
+    "dontForgetToPay": "¡No te olvides de pagar a {name}!",
+    "androidInstallBannerMessage": "Instala la app de Nutmeg para disfrutar de una mejor experiencia.",
+    "androidInstallBannerDownload": "Descargar",
+    "androidInstallBannerLater": "Más tarde"
 }

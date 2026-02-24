@@ -410,5 +410,8 @@
         "placeholders": {
             "name": {}
         }
-    }
+    },
+    "androidInstallBannerMessage": "Install the Nutmeg app for a better experience.",
+    "androidInstallBannerDownload": "Download",
+    "androidInstallBannerLater": "Later"
 }

@@ -210,6 +210,9 @@ void main() async {
                 surface: Colors.white,
                 onSurface: Palette.black,
               ),
+              bannerTheme: MaterialBannerThemeData(
+                contentTextStyle: TextPalette.bodyText,
+              ),
               hoverColor: Colors.transparent,
               splashColor: Colors.transparent,
               highlightColor: Colors.transparent,

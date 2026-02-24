@@ -839,4 +839,14 @@ class AppLocalizationsEs extends AppLocalizations {
   String dontForgetToPay(Object name) {
     return '¡No te olvides de pagar a $name!';
   }
+
+  @override
+  String get androidInstallBannerMessage =>
+      'Instala la app de Nutmeg para disfrutar de una mejor experiencia.';
+
+  @override
+  String get androidInstallBannerDownload => 'Descargar';
+
+  @override
+  String get androidInstallBannerLater => 'Más tarde';
 }

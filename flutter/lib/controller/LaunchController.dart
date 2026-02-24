@@ -9,12 +9,13 @@ import 'package:go_router/go_router.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 import 'package:nutmeg/config/app_config.dart';
 import 'package:nutmeg/controller/MiscController.dart';
+import 'package:nutmeg/l10n/app_localizations.dart';
 import 'package:nutmeg/main.dart';
 import 'package:nutmeg/state/LoadOnceState.dart';
 import 'package:nutmeg/screens/EnterDetails.dart';
 import 'package:nutmeg/state/MatchesState.dart';
 import 'package:nutmeg/utils/CrashlyticsLogger.dart';
-import 'package:nutmeg/utils/Utils.dart';
+import 'package:nutmeg/utils/navigate_url.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:timezone/data/latest.dart' as tz;
@@ -28,6 +29,9 @@ class LaunchController {
   static bool loadingDone = false;
   static var apiClient = CloudFunctionsClient();
   static String? appVersion;
+  static const String _androidPlayStoreUrl =
+      "https://play.google.com/store/apps/details?id=com.nutmeg.nutmeg";
+  static bool _androidInstallBannerShown = false;
 
   /// Notifies GoRouter to re-evaluate redirects after loading completes.
   static final ValueNotifier<bool> loadingNotifier = ValueNotifier(false);
@@ -113,7 +117,8 @@ class LaunchController {
     return {
       "app_version": "${packageInfo.version}+${packageInfo.buildNumber}",
       if (AppConfig.commitSha.isNotEmpty) "commit_sha": AppConfig.commitSha,
-      if (AppConfig.commitTimestampEpoch.isNotEmpty) "commit_timestamp": AppConfig.commitTimestampEpoch,
+      if (AppConfig.commitTimestampEpoch.isNotEmpty)
+        "commit_timestamp": AppConfig.commitTimestampEpoch,
       "last_updated": DateTime.now().toUtc().toIso8601String(),
     };
   }
@@ -127,12 +132,43 @@ class LaunchController {
 
     logger.info("Storing app info for $platform: $currentAppInfo");
     try {
-      await apiClient.post(
-          "users/${userDetails.documentId}",
+      await apiClient.post("users/${userDetails.documentId}",
           {"app_info.$platform": currentAppInfo});
     } catch (e, s) {
       logger.severe("Failed to store app info", e, s);
     }
+  }
+
+  static void _maybeShowAndroidInstallBanner() {
+    if (_androidInstallBannerShown ||
+        !kIsWeb ||
+        defaultTargetPlatform != TargetPlatform.android) {
+      return;
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final messenger = scaffoldMessengerKey.currentState;
+      if (messenger == null || _androidInstallBannerShown) return;
+      final context = navigatorKey.currentContext;
+      final l10n = context != null ? AppLocalizations.of(context) : null;
+
+      _androidInstallBannerShown = true;
+      messenger.showMaterialBanner(MaterialBanner(
+        content: Text(l10n?.androidInstallBannerMessage ??
+            "Install the Nutmeg app for a better experience."),
+        leading: Icon(Icons.android),
+        actions: [
+          TextButton(
+            onPressed: () => navigateToUrl(_androidPlayStoreUrl),
+            child: Text(l10n?.androidInstallBannerDownload ?? "Download"),
+          ),
+          TextButton(
+            onPressed: messenger.hideCurrentMaterialBanner,
+            child: Text(l10n?.androidInstallBannerLater ?? "Later"),
+          ),
+        ],
+      ));
+    });
   }
 
   static Future<void> loadData(BuildContext context) async {
@@ -232,31 +268,6 @@ class LaunchController {
     logger.info("load data method is done");
     LaunchController.loadingDone = true;
 
-    // install/use app prompt
-    // if (kIsWeb &&
-    //     (defaultTargetPlatform == TargetPlatform.iOS ||
-    //         defaultTargetPlatform == TargetPlatform.android)) {
-    //   // todo check if app is installed or not
-    //   // print(GoRouter.of(context).location);
-
-    //   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-    //       duration: Duration(seconds: 3),
-    //       elevation: 0,
-    //       behavior: SnackBarBehavior.floating,
-    //       showCloseIcon: true,
-    //       closeIconColor: Palette.white,
-    //       padding: EdgeInsets.all(16),
-    //       content: Text('Use the native app for a better experience',
-    //           style: TextPalette.linkStyleInverted),
-    //       // backgroundColor: Colors.transparent,
-    //       action: SnackBarAction(
-    //         label: 'Use app',
-    //         textColor: Colors.blueAccent,
-    //         onPressed: () =>
-    //             launchUrl(Uri.parse("https://nutmegapp.page.link/store")),
-    //       )));
-    // }
-
     // navigate to next screen
     if (deepLink != null) {
       logger.info("navigating with deep link:" + deepLink.toString());
@@ -269,6 +280,8 @@ class LaunchController {
       // Trigger GoRouter to re-evaluate redirects; it will navigate to pendingRedirect
       loadingNotifier.value = !loadingNotifier.value;
     }
+
+    _maybeShowAndroidInstallBanner();
 
     // trace.setMetric("duration_ms", stopwatch.elapsed.inMilliseconds);
     // await trace.stop();

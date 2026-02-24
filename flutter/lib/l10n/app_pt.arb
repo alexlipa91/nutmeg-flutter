@@ -245,5 +245,8 @@
     "dontForgetToPay": "Não se esqueça de pagar {name}!",
     "collectedAmountText": "{amount} recolhidos ({count}/{total} pagos)",
     "releaseScheduledText": "O dinheiro será transferido para a sua conta Stripe em {date}",
-    "releaseCompletedText": "{amount} transferidos para a sua conta Stripe"
+    "releaseCompletedText": "{amount} transferidos para a sua conta Stripe",
+    "androidInstallBannerMessage": "Instale a app da Nutmeg para uma melhor experiência.",
+    "androidInstallBannerDownload": "Transferir",
+    "androidInstallBannerLater": "Mais tarde"
 }
