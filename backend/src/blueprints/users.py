@@ -1,6 +1,7 @@
 import firebase_admin
 import flask
 import stripe
+from datetime import datetime, timezone
 from firebase_admin import firestore
 from flask import Blueprint, Flask
 from flask import current_app as app
@@ -24,6 +25,7 @@ def get_user(user_id):
         return {"data": _get_user_firestore(user_id)}, 200
     elif flask.request.method == "POST":
         data = flask.request.get_json()
+        data = _normalize_app_info_timestamps(data)
         app.db_client.collection("users").document(user_id).update(data)
         return {}, 200
 
@@ -67,6 +69,33 @@ def _add_user(user_id, data, create_stripe_customer=True):
 
     doc_ref = app.db_client.collection("users").document(user_id)
     doc_ref.set(data)
+
+
+# TODO: remove this once we have a proper contract between backend and frontend
+def _normalize_app_info_timestamps(data):
+    """Convert app_info timestamps to Firestore-friendly date types."""
+    if not isinstance(data, dict):
+        return data
+
+    for key, value in data.items():
+        if not key.startswith("app_info.") or not isinstance(value, dict):
+            continue
+
+        epoch_value = value.get("commit_timestamp")
+        if epoch_value is not None:
+            try:
+                epoch_seconds = int(epoch_value)
+                value["commit_timestamp"] = datetime.fromtimestamp(
+                    epoch_seconds, tz=timezone.utc
+                )
+            except (TypeError, ValueError, OSError):
+                # Keep original value if parsing fails.
+                pass
+
+        # Always prefer server-side time for mutation timestamp.
+        value["last_updated"] = firestore.firestore.SERVER_TIMESTAMP
+
+    return data
 
 
 def _get_user_firestore(user_id):

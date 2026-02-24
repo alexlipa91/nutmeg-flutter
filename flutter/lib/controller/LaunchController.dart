@@ -112,8 +112,8 @@ class LaunchController {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
     return {
       "app_version": "${packageInfo.version}+${packageInfo.buildNumber}",
-      if (COMMIT_SHA.isNotEmpty) "commit_sha": COMMIT_SHA,
-      if (COMMIT_TIMESTAMP.isNotEmpty) "commit_timestamp": COMMIT_TIMESTAMP,
+      if (AppConfig.commitSha.isNotEmpty) "commit_sha": AppConfig.commitSha,
+      if (AppConfig.commitTimestampEpoch.isNotEmpty) "commit_timestamp": AppConfig.commitTimestampEpoch,
       "last_updated": DateTime.now().toUtc().toIso8601String(),
     };
   }
