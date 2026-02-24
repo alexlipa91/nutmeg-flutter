@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
+import 'package:nutmeg/config/app_config.dart';
 import 'package:nutmeg/model/Match.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
@@ -88,18 +89,12 @@ List<T> interleave<T>(List<T> elements, T e, [bool withTop = false]) {
   return result;
 }
 
-const String COMMIT_SHA =
-    String.fromEnvironment("COMMIT_SHA", defaultValue: "");
-
-const String COMMIT_TIMESTAMP =
-    String.fromEnvironment("COMMIT_TIMESTAMP", defaultValue: "");
-
 Future<String> getVersion() async {
-  if (COMMIT_TIMESTAMP.isNotEmpty) {
-    return COMMIT_TIMESTAMP;
+  if (AppConfig.commitTimestampEpoch.isNotEmpty) {
+    return AppConfig.commitTimestampEpoch;
   }
   if (kIsWeb) {
-    return COMMIT_SHA;
+    return AppConfig.commitSha;
   }
   PackageInfo packageInfo = await PackageInfo.fromPlatform();
   return packageInfo.version + " + " + packageInfo.buildNumber;

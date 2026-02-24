@@ -40,6 +40,22 @@ class AppConfig {
   static const String logLevel =
       String.fromEnvironment('LOG_LEVEL', defaultValue: 'WARNING');
 
+  /// Git commit SHA injected at build time.
+  static const String commitSha =
+      String.fromEnvironment('COMMIT_SHA', defaultValue: '');
+
+  /// Git commit timestamp (Unix epoch seconds) injected at build time.
+  static const String commitTimestampEpoch =
+      String.fromEnvironment('COMMIT_TIMESTAMP', defaultValue: '');
+
+  /// Parsed UTC commit timestamp, or null when not available/invalid.
+  static DateTime? get commitTimestampUtc {
+    if (commitTimestampEpoch.isEmpty) return null;
+    final epochSeconds = int.tryParse(commitTimestampEpoch);
+    if (epochSeconds == null) return null;
+    return DateTime.fromMillisecondsSinceEpoch(epochSeconds * 1000, isUtc: true);
+  }
+
   /// Nutmeg platform fee in cents charged per player per match.
   static const int nutmegFeeCents = 50;
 
