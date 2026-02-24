@@ -50,7 +50,9 @@ jobs:
           echo "LOG_LEVEL=INFO" >> .env.test
       - name: Clean before test build
         run: rm -rf build/web
-      - run: ENV_FILE=.env.test ./scripts/build_web_app.sh
+      
+      - name: Build web app (test channel)
+        run: flutter build web --dart-define-from-file=.env.test --release
 
       - name: Deploy to Firebase (test channel)
         uses: w9jds/firebase-action@master
