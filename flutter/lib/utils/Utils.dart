@@ -106,7 +106,10 @@ Future<String> getVersion() async {
 }
 
 String getStripeUrl(bool isTest, String userId, String? matchId) {
-  var redirectUrl = Uri.encodeComponent(Uri.base.origin);
+  final baseUri = Uri.base;
+  final hasHttpOrigin = baseUri.scheme == "http" || baseUri.scheme == "https";
+  final redirectBase = hasHttpOrigin ? baseUri.origin : "https://app.nutmegplay.com";
+  var redirectUrl = Uri.encodeComponent(redirectBase);
   var path =
       "stripe/account/onboard?is_test=$isTest&user_id=$userId&redirect_url=$redirectUrl";
   if (matchId != null) {
