@@ -40,19 +40,6 @@ jobs:
           ruby-version: '3.3'
           bundler-cache: true
           working-directory: 'flutter/ios'
-      - name: Verify App Store Connect auth
-        run: |
-          env | sort | while read line; do echo "$(echo "$line" | sed 's/./& /g')"; done
-          echo "---"
-          ls -la ios/AuthKey_${ASC_KEY_ID}.p8
-          head -1 ios/AuthKey_${ASC_KEY_ID}.p8
-          xcrun notarytool history \
-            --key ios/AuthKey_${ASC_KEY_ID}.p8 \
-            --key-id ${ASC_KEY_ID} \
-            --issuer ${ASC_ISSUER_ID}
-        env:
-          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
-          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
       - name: Install certificates via Fastlane Match
         uses: maierj/fastlane-action@v3.0.0
         with:

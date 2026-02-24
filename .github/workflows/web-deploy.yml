@@ -32,7 +32,8 @@ jobs:
           flutter-version: "3.41.0"
 
       # --- web: production ---
-      - run: ./scripts/build_web_app.sh
+      - name: Build web app
+        run: flutter build web --dart-define-from-file=.env.prod --release
       - name: Deploy to Firebase (production)
         uses: w9jds/firebase-action@master
         with:
