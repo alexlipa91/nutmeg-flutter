@@ -31,46 +31,6 @@ String formatEmail(String? email) {
   return email;
 }
 
-class DynamicLinks {
-  static var dayDateFormat = DateFormat("EEEE, MMM dd");
-
-  static shareMatchFunction(BuildContext context, Match match) async {
-    String link;
-    if (match.dynamicLink != null)
-      link = match.dynamicLink!;
-    else {
-      // todo slowly deprecate
-      var deepLinkUrl =
-          Uri.parse('https://web.nutmegapp.com/match/' + match.documentId);
-
-      final DynamicLinkParameters parameters = DynamicLinkParameters(
-          uriPrefix: 'https://nutmegapp.page.link',
-          link: deepLinkUrl,
-          androidParameters: AndroidParameters(
-            packageName: 'com.nutmeg.nutmeg',
-            minimumVersion: 0,
-            // fallbackUrl: deepLinkUrl
-          ),
-          iosParameters: IOSParameters(
-            bundleId: 'com.nutmeg.app',
-            minimumVersion: '1',
-            appStoreId: '1592985083',
-            // fallbackUrl: deepLinkUrl
-          ),
-          socialMetaTagParameters: SocialMetaTagParameters(
-            title: "Match on ${dayDateFormat.format(match.getLocalizedTime())} "
-                "${gmtSuffix(match.sportCenter?.timezoneId)}",
-            description: "Location: ${match.sportCenter?.name}",
-          ));
-      var url = await FirebaseDynamicLinks.instance.buildShortLink(parameters);
-      link = url.shortUrl.toString();
-    }
-
-    // fixme this doesn't wait
-    await Share.share("Checkout this match on Nutmeg!\n" + link);
-  }
-}
-
 DateTime getBeginningOfTheWeek(DateTime dateTime) {
   var currentDay = dateTime.weekday;
   return DateUtils.dateOnly(dateTime.subtract(Duration(days: currentDay - 1)));
@@ -103,7 +63,8 @@ Future<String> getVersion() async {
 String getStripeUrl(bool isTest, String userId, String? matchId) {
   final baseUri = Uri.base;
   final hasHttpOrigin = baseUri.scheme == "http" || baseUri.scheme == "https";
-  final redirectBase = hasHttpOrigin ? baseUri.origin : "https://app.nutmegplay.com";
+  final redirectBase =
+      hasHttpOrigin ? baseUri.origin : "https://app.nutmegplay.com";
   var redirectUrl = Uri.encodeComponent(redirectBase);
   var path =
       "stripe/account/onboard?is_test=$isTest&user_id=$userId&redirect_url=$redirectUrl";

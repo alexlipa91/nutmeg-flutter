@@ -8,7 +8,7 @@ from flask import current_app as app
 from google.cloud.firestore_v1 import DELETE_FIELD
 
 from src.secrets import Secrets
-from src.utils import build_dynamic_link, setup_stripe
+from src.utils import BASE_URL, setup_stripe
 from src.blueprints.matches import add_user_to_match
 
 bp = Blueprint("stripe", __name__, url_prefix="/stripe")
@@ -39,7 +39,11 @@ def _setup_stripe_key(is_test):
 
 def _verify_webhook(payload, sig_header, is_test):
     print(f"is_test: {is_test}")
-    secret = Secrets.STRIPE_WEBHOOK_SECRET_ES_TEST if is_test else Secrets.STRIPE_WEBHOOK_SECRET_ES
+    secret = (
+        Secrets.STRIPE_WEBHOOK_SECRET_ES_TEST
+        if is_test
+        else Secrets.STRIPE_WEBHOOK_SECRET_ES
+    )
     return stripe.Webhook.construct_event(payload, sig_header, secret)
 
 
@@ -64,7 +68,11 @@ def stripe_webhook():
 
     elif event_type == "account.updated":
         if not event_data.get("charges_enabled"):
-            print("user {} cannot receive payments on stripe, charges_enabled is False".format(event_data["metadata"]["userId"]))
+            print(
+                "user {} cannot receive payments on stripe, charges_enabled is False".format(
+                    event_data["metadata"]["userId"]
+                )
+            )
             return {}
         user_id = event_data["metadata"]["userId"]
         prefix = _stripe_prefix(is_test)
@@ -135,7 +143,7 @@ def go_to_onboard_connected_account():
             metadata={"userId": user_id},
             settings={
                 "payouts": {
-                    "debit_negative_balances": True,                    
+                    "debit_negative_balances": True,
                 }
             },
         )
@@ -143,17 +151,12 @@ def go_to_onboard_connected_account():
         user_ref.update({"{}.connected_account_id".format(prefix): account_id})
 
     base_url = flask.request.host_url.rstrip("/")
-    frontend_url = flask.request.args.get(
-        "redirect_url", "https://web.nutmegapp.com"
-    ).rstrip("/")
+    redirect_url = flask.request.args.get("redirect_url", BASE_URL).rstrip("/")
 
     redirect_path = (
         "/match/" + match_id if match_id else "/user"
     ) + "?stripe_onboarding=complete"
-    redirect_link = frontend_url + redirect_path
-
-    if "nutmegapp.com" in frontend_url:
-        redirect_link = build_dynamic_link("http://web.nutmegapp.com" + redirect_path)
+    redirect_link = redirect_url + redirect_path
 
     account = stripe.Account.retrieve(account_id)
     if account.charges_enabled:

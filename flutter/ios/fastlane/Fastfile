@@ -1,7 +1,7 @@
 default_platform(:ios)
 
 bundle_identifier = "com.nutmegfootball.app"
-app_id = ENV["APP_APPLE_ID"] || "1592985083"
+app_id = ENV["APP_APPLE_ID"]
 team_id = "CQD5MU7BCC"
 username = "jirachi155@gmail.com"
 

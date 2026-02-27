@@ -14,6 +14,8 @@ from src.secrets import Secrets
 # Nutmeg platform fee in cents charged per player per match
 NUTMEG_FEE_CENTS = 50
 
+BASE_URL = "https://app.nutmegplay.com"
+
 
 def setup_stripe(is_test=False):
     """Set the global Stripe API key for test or live mode."""
@@ -76,39 +78,6 @@ def schedule_app_engine_call(
     print(
         f"Created task {response.name} to call {endpoint} with params {function_payload} at {date_time_to_execute}"
     )
-
-
-def build_dynamic_link(link):
-    resp = requests.post(
-        url=f'https://firebasedynamiclinks.googleapis.com/v1/shortLinks?key={Secrets.DYNAMIC_LINK_API_KEY}',
-        headers={"Content-Type": "application/json"},
-        data=json.dumps(
-            {
-                "dynamicLinkInfo": {
-                    "domainUriPrefix": "https://nutmegapp.page.link",
-                    "link": link,
-                    "androidInfo": {
-                        "androidPackageName": "com.nutmeg.nutmeg",
-                        "androidMinPackageVersionCode": "1",
-                    },
-                    "iosInfo": {
-                        # "iosBundleId": "com.nutmeg.app",
-                        # "iosAppStoreId": '1592985083',
-                    },
-                    "socialMetaTagInfo": {
-                        "socialTitle": "Nutmeg",
-                        "socialDescription": "Play Football in your city",
-                        # "socialImageLink": string
-                    },
-                    "navigationInfo": {
-                        "enableForcedRedirect": True,
-                    },
-                }
-            }
-        ),
-    )
-    print(json.loads(resp.text))
-    return json.loads(resp.text)["shortLink"]
 
 
 def send_notification_to_users(db, title, body, data, users):

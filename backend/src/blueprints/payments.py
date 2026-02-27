@@ -7,7 +7,7 @@ from flask import Blueprint, Flask
 
 from src.models._matches import Match as MatchModel
 from src.secrets import Secrets
-from src.utils import build_dynamic_link, setup_stripe, NUTMEG_FEE_CENTS
+from src.utils import setup_stripe, NUTMEG_FEE_CENTS
 from flask import current_app as app
 
 bp = Blueprint("payments", __name__, url_prefix="/payments")
@@ -44,7 +44,9 @@ def checkout():
     statement_suffix = _build_statement_descriptor_suffix(match_info)
     transfer_metadata = _build_transfer_metadata(match_info, user_name, match_id)
 
-    price_amount = match_info["price"]["basePrice"] + match_info["price"].get("userFee", NUTMEG_FEE_CENTS)
+    price_amount = match_info["price"]["basePrice"] + match_info["price"].get(
+        "userFee", NUTMEG_FEE_CENTS
+    )
 
     session = _create_checkout_session_with_deep_links(
         _get_stripe_customer_id(user_id, is_test),
@@ -71,8 +73,12 @@ def _get_match_info(match_id, is_test=False):
 
 
 def _get_user_name(user_id):
-    data = app.db_client.collection("users").document(user_id).get(
-        field_paths={"name"}).to_dict()
+    data = (
+        app.db_client.collection("users")
+        .document(user_id)
+        .get(field_paths={"name"})
+        .to_dict()
+    )
     return data.get("name", "Unknown") if data else "Unknown"
 
 
@@ -84,6 +90,7 @@ def _parse_match_datetime(match_info):
         return dt
     try:
         from datetime import datetime
+
         return datetime.fromisoformat(str(dt).replace("Z", "+00:00"))
     except Exception:
         return None
@@ -137,7 +144,6 @@ def _get_stripe_customer_id(user_id, test_mode):
     return customer_id
 
 
-
 def _create_checkout_redirects_to_web(
     customer_id,
     user_id,
@@ -169,18 +175,24 @@ def _create_checkout_redirects_to_web(
         cancel_url="{}/match/{}?payment_outcome={}".format(
             web_origin, match_id, "cancel"
         ),
-        line_items=[{
-            "price_data": {
-                "currency": "eur",
-                "unit_amount": price_amount,
-                "product_data": product_data,
-            },
-            "quantity": 1,
-        }],
+        line_items=[
+            {
+                "price_data": {
+                    "currency": "eur",
+                    "unit_amount": price_amount,
+                    "product_data": product_data,
+                },
+                "quantity": 1,
+            }
+        ],
         payment_intent_data={
             "metadata": pi_metadata,
             **({"description": pi_description} if pi_description else {}),
-            **({"statement_descriptor_suffix": statement_suffix} if statement_suffix else {}),
+            **(
+                {"statement_descriptor_suffix": statement_suffix}
+                if statement_suffix
+                else {}
+            ),
         },
         mode="payment",
         customer=customer_id,
@@ -224,18 +236,24 @@ def _create_checkout_session_with_deep_links(
     session = stripe.checkout.Session.create(
         success_url=_build_redirect_url(web_origin, match_id, "success"),
         cancel_url=_build_redirect_url(web_origin, match_id, "cancel"),
-        line_items=[{
-            "price_data": {
-                "currency": "eur",
-                "unit_amount": price_amount,
-                "product_data": product_data,
-            },
-            "quantity": 1,
-        }],
+        line_items=[
+            {
+                "price_data": {
+                    "currency": "eur",
+                    "unit_amount": price_amount,
+                    "product_data": product_data,
+                },
+                "quantity": 1,
+            }
+        ],
         payment_intent_data={
             "metadata": pi_metadata,
             **({"description": pi_description} if pi_description else {}),
-            **({"statement_descriptor_suffix": statement_suffix} if statement_suffix else {}),
+            **(
+                {"statement_descriptor_suffix": statement_suffix}
+                if statement_suffix
+                else {}
+            ),
         },
         mode="payment",
         customer=customer_id,
@@ -251,6 +269,7 @@ def _create_checkout_session_with_deep_links(
 
 if __name__ == "__main__":
     from dotenv import load_dotenv
+
     load_dotenv("scripts/.env.local")
     firebase_admin.initialize_app()
     app = Flask("test_app")

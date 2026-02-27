@@ -31,7 +31,6 @@ from src.blueprints.users import (
 from src.secrets import Secrets
 from src.utils import (
     _serialize_dates,
-    build_dynamic_link,
     send_notification_to_users,
     schedule_app_engine_call,
     update_leaderboard,
@@ -276,7 +275,9 @@ def get_matches():
     )
     is_test = _is_test_from_request()
     return {
-        "data": _get_matches(time_filter=time_filter, location_filter=location_filter, is_test=is_test)
+        "data": _get_matches(
+            time_filter=time_filter, location_filter=location_filter, is_test=is_test
+        )
     }, 200
 
 
@@ -291,7 +292,11 @@ def get_user_matches():
     is_test = _is_test_from_request()
 
     result = _get_user_matches(
-        user_id=flask.g.uid, time_filter=time_filter, limit=limit, cursor=cursor, is_test=is_test
+        user_id=flask.g.uid,
+        time_filter=time_filter,
+        limit=limit,
+        cursor=cursor,
+        is_test=is_test,
     )
 
     if limit is not None:
@@ -316,7 +321,11 @@ def get_organizer_matches():
     is_test = _is_test_from_request()
 
     result = _get_organizer_matches(
-        organizer_id=flask.g.uid, time_filter=time_filter, limit=limit, cursor=cursor, is_test=is_test
+        organizer_id=flask.g.uid,
+        time_filter=time_filter,
+        limit=limit,
+        cursor=cursor,
+        is_test=is_test,
     )
 
     if limit is not None:
@@ -340,9 +349,7 @@ def get_match(match_id, is_local=False):
         return app.db_client.collection(coll).document(match_id).get().to_dict()
 
     if flask.request.method == "GET":
-        match_data = (
-            app.db_client.collection(coll).document(match_id).get().to_dict()
-        )
+        match_data = app.db_client.collection(coll).document(match_id).get().to_dict()
         version = 2 if is_local else int(flask.request.args.get("version", 1))
 
         if not match_data:
@@ -373,7 +380,9 @@ def get_match(match_id, is_local=False):
             )
             for task_name in tasks_scheduled:
                 delete_task(task_name)
-            data["tasksScheduled"] = schedule_match_tasks(match_id, data, is_test=is_test)
+            data["tasksScheduled"] = schedule_match_tasks(
+                match_id, data, is_test=is_test
+            )
         app.db_client.collection(coll).document(match_id).update(data)
         return {}, 200
 
@@ -432,7 +441,9 @@ def _get_ratings_data_legacy(match_id, ratings_data):
 def add_rating_multi(match_id):
     is_test = _is_test_from_request()
     request_data = flask.request.get_json()
-    Ratings.add_scores(match_id, flask.g.uid, request_data, app.db_client, is_test=is_test)
+    Ratings.add_scores(
+        match_id, flask.g.uid, request_data, app.db_client, is_test=is_test
+    )
     return {}
 
 
@@ -451,7 +462,9 @@ def add_match_awards(match_id):
     if flask.g.uid not in match.going:
         return {"error": "User not authorized"}, 403
 
-    Ratings.add_award_votes(match_id, flask.g.uid, request_data, app.db_client, is_test=is_test)
+    Ratings.add_award_votes(
+        match_id, flask.g.uid, request_data, app.db_client, is_test=is_test
+    )
     return {}, 200
 
 
@@ -586,7 +599,9 @@ def get_teams(match_id, algorithm="balanced", is_test=False):
         "teams.balanced.players.a": teams[0],
         "teams.balanced.players.b": teams[1],
     }
-    app.db_client.collection(_get_matches_collection(is_test)).document(match_id).update(match_updates)
+    app.db_client.collection(_get_matches_collection(is_test)).document(
+        match_id
+    ).update(match_updates)
 
     print("teams: {}, total scores: {}".format(teams, teams_total_score))
     return {}
@@ -801,8 +816,12 @@ def _promote_user_from_waitlist_transaction(
 
     transaction.update(match_doc_ref, MatchModel.waitlist_remove_update(user_id))
     transaction.set(match_doc_ref, match.going_update(user_id, timestamp), merge=True)
-    transaction.set(user_stat_doc_ref, {"joinedMatches": {match_id: raw["dateTime"]}}, merge=True)
-    transaction.set(transactions_doc_ref, MatchModel.promoted_transaction_log(user_id, timestamp))
+    transaction.set(
+        user_stat_doc_ref, {"joinedMatches": {match_id: raw["dateTime"]}}, merge=True
+    )
+    transaction.set(
+        transactions_doc_ref, MatchModel.promoted_transaction_log(user_id, timestamp)
+    )
 
 
 @firestore.transactional
@@ -820,7 +839,9 @@ def _add_user_to_waitlist_transaction(transaction, match_doc_ref, user_id, match
 
     match.validate_can_join_waitlist(user_id)
 
-    transaction.set(match_doc_ref, MatchModel.waitlist_add_update(user_id, timestamp), merge=True)
+    transaction.set(
+        match_doc_ref, MatchModel.waitlist_add_update(user_id, timestamp), merge=True
+    )
 
 
 @bp.route("/<match_id>/cancel", methods=["GET"])
@@ -996,14 +1017,20 @@ def _calculate_release_amount(match, verify_with_stripe=False):
     players_paid = 0
 
     for _, going_data in match.going.items():
-        pi_id = going_data.get("payment_intent") if isinstance(going_data, dict) else None
+        pi_id = (
+            going_data.get("payment_intent") if isinstance(going_data, dict) else None
+        )
         if not pi_id:
             continue
         if verify_with_stripe:
             try:
                 pi = stripe.PaymentIntent.retrieve(pi_id, expand=["latest_charge"])
                 charge = pi.latest_charge
-                if not (charge and charge.status == "succeeded" and charge.amount_refunded == 0):
+                if not (
+                    charge
+                    and charge.status == "succeeded"
+                    and charge.amount_refunded == 0
+                ):
                     continue
             except Exception as e:
                 logging.warning("Release: failed to verify PI %s: %s", pi_id, e)
@@ -1035,17 +1062,19 @@ def _release_match_money(db, match_id, is_test):
         return {"status": "skipped", "reason": "already_released"}
 
     prefix = "stripe_test" if is_test else "stripe"
-    organizer_data = (
-        db.collection("users").document(match.organizer_id).get().to_dict()
-    )
+    organizer_data = db.collection("users").document(match.organizer_id).get().to_dict()
     organizer_account = organizer_data.get(prefix, {}).get("connected_account_id")
     if not organizer_account:
         logging.error("Release %s: organizer has no connected account", match_id)
-        match_ref.update({"release": {
-            "status": "skipped",
-            "reason": "no_connected_account",
-            "updated_at": firestore.firestore.SERVER_TIMESTAMP,
-        }})
+        match_ref.update(
+            {
+                "release": {
+                    "status": "skipped",
+                    "reason": "no_connected_account",
+                    "updated_at": firestore.firestore.SERVER_TIMESTAMP,
+                }
+            }
+        )
         return {"status": "skipped", "reason": "no_connected_account"}
 
     setup_stripe(is_test)
@@ -1057,11 +1086,15 @@ def _release_match_money(db, match_id, is_test):
 
     if transfer_total <= 0:
         logging.info("Release %s: nothing to transfer", match_id)
-        match_ref.update({"release": {
-            "status": "skipped",
-            "reason": "no_amount",
-            "updated_at": firestore.firestore.SERVER_TIMESTAMP,
-        }})
+        match_ref.update(
+            {
+                "release": {
+                    "status": "skipped",
+                    "reason": "no_amount",
+                    "updated_at": firestore.firestore.SERVER_TIMESTAMP,
+                }
+            }
+        )
         return {"status": "skipped", "reason": "no_amount"}
 
     transfer = stripe.Transfer.create(
@@ -1071,17 +1104,27 @@ def _release_match_money(db, match_id, is_test):
         description=match.describe(),
         metadata={"match_id": match_id, "players": str(players_paid)},
     )
-    logging.info("Release %s: transferred %d cents, kept %d cents fee (%d players) -> %s",
-                 match_id, transfer_total, fee_total, players_paid, transfer.id)
+    logging.info(
+        "Release %s: transferred %d cents, kept %d cents fee (%d players) -> %s",
+        match_id,
+        transfer_total,
+        fee_total,
+        players_paid,
+        transfer.id,
+    )
 
-    match_ref.update({"release": {
-        "status": "released",
-        "amount": transfer_total,
-        "fee": fee_total,
-        "transfer_id": transfer.id,
-        "players": players_paid,
-        "released_at": firestore.firestore.SERVER_TIMESTAMP,
-    }})
+    match_ref.update(
+        {
+            "release": {
+                "status": "released",
+                "amount": transfer_total,
+                "fee": fee_total,
+                "transfer_id": transfer.id,
+                "players": players_paid,
+                "released_at": firestore.firestore.SERVER_TIMESTAMP,
+            }
+        }
+    )
 
     send_notification_to_users(
         db=db,
@@ -1096,7 +1139,12 @@ def _release_match_money(db, match_id, is_test):
         },
         users=[match.organizer_id],
     )
-    return {"status": "success", "transfer_id": transfer.id, "amount": transfer_total, "fee": fee_total}
+    return {
+        "status": "success",
+        "transfer_id": transfer.id,
+        "amount": transfer_total,
+        "fee": fee_total,
+    }
 
 
 @bp.route("/<match_id>/tasks/release", methods=["GET"])
@@ -1256,7 +1304,10 @@ def freeze_match_stats(match_id, notify=True, only_for_user=None):
         updates, error = _freeze_match_stats(match_id, match, is_test=is_test)
     except NotEnoughVotersError:
         Ratings.set_not_computed_reason(
-            match_id, RatingsNotComputedReason.NOT_ENOUGH_RATINGS, app.db_client, is_test=is_test,
+            match_id,
+            RatingsNotComputedReason.NOT_ENOUGH_RATINGS,
+            app.db_client,
+            is_test=is_test,
         )
         return {}, 200
 
@@ -1272,7 +1323,9 @@ def freeze_match_stats(match_id, notify=True, only_for_user=None):
     if is_test:
         print(f"[SKIP] Test match {match_id} - not updating user stats or leaderboards")
         # still mark match as scored
-        match_doc_ref.update({"ratings.computed_at": firestore.firestore.SERVER_TIMESTAMP})
+        match_doc_ref.update(
+            {"ratings.computed_at": firestore.firestore.SERVER_TIMESTAMP}
+        )
     else:
         users_collection = _get_users_collection_name(is_test=is_test)
         users_doc_ref = {}
@@ -1360,13 +1413,6 @@ def _freeze_match_stats(match_id, match: MatchModel, is_test=False):
     return user_updates, None
 
 
-@bp.route("/<match_id>/dynamicLink", methods=["GET"])
-def test_dynamic_link(match_id):
-    return flask.redirect(
-        build_dynamic_link("http://web.nutmegapp.com/match/{}".format(match_id))
-    )
-
-
 @firestore.transactional
 def _close_rating_round_transaction(
     transaction,
@@ -1444,10 +1490,7 @@ def _remove_user_from_match(match_id, user_id, is_test=False):
     coll = _get_matches_collection(is_test)
 
     transactions_doc_ref = (
-        db.collection(coll)
-        .document(match_id)
-        .collection("transactions")
-        .document()
+        db.collection(coll).document(match_id).collection("transactions").document()
     )
     user_stat_doc_ref = _get_user_stat_doc_ref(user_id, match_id, is_test=is_test)
     match_doc_ref = db.collection(coll).document(match_id)
@@ -1523,10 +1566,18 @@ def _add_user_to_match_firestore_transaction(
 
     match.validate_can_join(user_id)
 
-    transaction.set(match_doc_ref, match.going_update(user_id, timestamp, payment_intent), merge=True)
-    transaction.set(user_stat_doc_ref, {"joinedMatches": {match_id: raw["dateTime"]}}, merge=True)
-    transaction.set(transactions_doc_ref, MatchModel.joined_transaction_log(user_id, timestamp, payment_intent))
-
+    transaction.set(
+        match_doc_ref,
+        match.going_update(user_id, timestamp, payment_intent),
+        merge=True,
+    )
+    transaction.set(
+        user_stat_doc_ref, {"joinedMatches": {match_id: raw["dateTime"]}}, merge=True
+    )
+    transaction.set(
+        transactions_doc_ref,
+        MatchModel.joined_transaction_log(user_id, timestamp, payment_intent),
+    )
 
 
 class MatchStatus(Enum):
@@ -1614,9 +1665,7 @@ def _get_matches_firestore(
                 and data.get("isPrivate", False)
             )
 
-            if not (
-                outside_radius or hide_test_match or hide_private_match
-            ):
+            if not (outside_radius or hide_test_match or hide_private_match):
                 res[m.id] = data
 
         except Exception as e:
@@ -1631,7 +1680,9 @@ def _get_matches_firestore(
 
 
 # DEPRECATED
-def _format_match_data_v2(match_id, match_data, version, add_organizer_info=False, is_test=False):
+def _format_match_data_v2(
+    match_id, match_data, version, add_organizer_info=False, is_test=False
+):
     # add status
     match_data["status"] = _get_status(match_data).value
 
@@ -1657,7 +1708,9 @@ def _format_match_data_v2(match_id, match_data, version, add_organizer_info=Fals
                     .get(field_paths={prefix})
                     .to_dict()
                 )
-                stripe_connected_account_id = org_data.get(prefix, {}).get("connected_account_id")
+                stripe_connected_account_id = org_data.get(prefix, {}).get(
+                    "connected_account_id"
+                )
                 info = stripe.Payout.retrieve(
                     match_data["payout_id"], stripe_account=stripe_connected_account_id
                 )
@@ -1675,7 +1728,8 @@ def _format_match_data_v2(match_id, match_data, version, add_organizer_info=Fals
     # todo support legacy
     if "pricePerPerson" in match_data:
         match_data["price"] = {
-            "basePrice": match_data["pricePerPerson"] - match_data.get("userFee", NUTMEG_FEE_CENTS),
+            "basePrice": match_data["pricePerPerson"]
+            - match_data.get("userFee", NUTMEG_FEE_CENTS),
             "userFee": match_data.get("userFee", NUTMEG_FEE_CENTS),
         }
 
@@ -1866,7 +1920,9 @@ def _update_user_account(user_id, is_test, match_id, manage_payments):
 
     # add to created matches
     if not is_test:
-        user_updates["{}.{}".format("created_matches", match_id)] = firestore.firestore.SERVER_TIMESTAMP
+        user_updates["{}.{}".format("created_matches", match_id)] = (
+            firestore.firestore.SERVER_TIMESTAMP
+        )
 
     if manage_payments:
         user_data = user_doc_ref.get().to_dict()
