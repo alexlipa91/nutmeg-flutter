@@ -44,7 +44,6 @@ dependencies:
   readmore: ^3.0.0
   google_maps_flutter: ^2.0.6
   shimmer: ^3.0.0
-  firebase_dynamic_links: ^6.1.5
   cloud_functions: ^5.4.0
   firebase_crashlytics: ^4.3.5
   package_info_plus: ^8.3.0

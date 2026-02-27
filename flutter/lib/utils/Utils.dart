@@ -1,4 +1,3 @@
-import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -29,6 +28,13 @@ String formatEmail(String? email) {
   var parts = email.split("@");
   if (parts.length > 1 && parts[1] == "privaterelay.appleid.com") return "N/A";
   return email;
+}
+
+class DynamicLinks {
+  static Future<void> shareMatchFunction(BuildContext context, Match match) async {
+    final link = "https://app.nutmegplay.com/match/${match.documentId}";
+    await Share.share("Checkout this match on Nutmeg!\n$link");
+  }
 }
 
 DateTime getBeginningOfTheWeek(DateTime dateTime) {

@@ -49,14 +49,6 @@
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
-                <data android:host="nutmegapp.page.link" android:scheme="http"/>
-                <data android:host="nutmegapp.page.link" android:scheme="https"/>
-            </intent-filter>
-
-            <intent-filter android:autoVerify="true">
-                <action android:name="android.intent.action.VIEW"/>
-                <category android:name="android.intent.category.DEFAULT"/>
-                <category android:name="android.intent.category.BROWSABLE"/>
                 <data android:host="app.nutmegplay.com" android:scheme="https"/>
             </intent-filter>
         </activity>

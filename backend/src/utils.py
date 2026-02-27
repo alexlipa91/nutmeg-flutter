@@ -7,9 +7,6 @@ import stripe
 from firebase_admin import messaging
 from google.cloud import tasks_v2
 from google.protobuf import timestamp_pb2
-import requests
-
-from src.secrets import Secrets
 
 # Nutmeg platform fee in cents charged per player per match
 NUTMEG_FEE_CENTS = 50

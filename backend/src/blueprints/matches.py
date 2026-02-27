@@ -1784,17 +1784,10 @@ def _add_match_firestore(match_data):
     doc_ref = app.db_client.collection(coll).document()
     doc_ref.set(match_data)
 
-    # POST CREATION
-    # dynamic link
-    dynamic_link = build_dynamic_link(
-        "http://web.nutmegapp.com/match/{}".format(doc_ref.id)
-    )
-
     tasks_scheduled = schedule_match_tasks(doc_ref.id, match_data, is_test=is_test)
 
     app.db_client.collection(coll).document(doc_ref.id).update(
         {
-            "dynamicLink": dynamic_link,
             "tasksScheduled": tasks_scheduled,
         }
     )

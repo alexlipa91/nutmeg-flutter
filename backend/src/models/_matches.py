@@ -61,9 +61,6 @@ class Match:
     # --- cancellation policy ---
     cancel_hours_before: Optional[int] = None
 
-    # --- sharing ---
-    dynamic_link: Optional[str] = None
-
     # --- scheduling ---
     tasks_scheduled: Optional[List[str]] = None
 
@@ -108,7 +105,6 @@ class Match:
             "confirmedAt": "confirmed_at",
             "scoresComputedAt": "scores_computed_at",
             "cancelHoursBefore": "cancel_hours_before",
-            "dynamicLink": "dynamic_link",
             "tasksScheduled": "tasks_scheduled",
             "paid_out_at": "paid_out_at",
             "payout_id": "payout_id",
@@ -308,8 +304,6 @@ if __name__ == "__main__":
     print(f"  going:           {match.going_user_ids()}")
     print(f"  scores_computed: {match.scores_computed_at}")
     print(f"  cancelled_at:    {match.cancelled_at}")
-    print(f"  dynamic_link:    {match.dynamic_link}")
-
     team_a, team_b = match.get_team_players()
     print(f"  team_a:          {team_a}")
     print(f"  team_b:          {team_b}")

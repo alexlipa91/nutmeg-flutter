@@ -1,5 +1,3 @@
-import 'dart:async';
-import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:nutmeg/controller/LaunchController.dart';
@@ -21,23 +19,6 @@ class LaunchWidgetState extends State<LaunchWidget> {
     super.initState();
     LaunchController.loadData(context)
         .catchError((e, s) => logger.severe("Error loading data", e, s));
-  }
-
-  void initDynamicLinks() {
-    Future<Null> Function(PendingDynamicLinkData? dynamicLink) onSuccess =
-        (PendingDynamicLinkData? dynamicLink) async {
-      final Uri? deepLink = dynamicLink?.link;
-
-      if (deepLink != null) {
-        LaunchController.handleLink(deepLink);
-      }
-    };
-
-    FirebaseDynamicLinks.instance.onLink.listen((dynamicLinkData) {
-      onSuccess(dynamicLinkData);
-    }).onError((error) {
-      logger.severe("Error on dynamic link", error);
-    });
   }
 
   @override

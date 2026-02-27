@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:nutmeg/config/app_config.dart';
 import 'package:nutmeg/model/SportCenter.dart';
-import 'package:nutmeg/state/UserState.dart';
 import 'package:timezone/timezone.dart' as tz;
 
 import 'UserDetails.dart';
@@ -65,8 +64,6 @@ class Match {
 
   List<int>? score;
 
-  String? dynamicLink;
-
   Ratings? ratingSummary;
 
   bool isPrivate;
@@ -114,7 +111,6 @@ class Match {
         score = jsonInput["score"] == null
             ? null
             : List<int>.from(jsonInput["score"]),
-        dynamicLink = jsonInput["dynamicLink"],
         sportCenter = jsonInput["sportCenter"] == null
             ? null
             : SportCenter.fromJson(
@@ -227,7 +223,6 @@ class Match {
         if (cancelBefore != null) 'cancelHoursBefore': cancelBefore?.inHours,
         if (score != null) 'score': score,
         "isPrivate": isPrivate,
-        "dynamicLink": dynamicLink,
         'isTest': isTest,
         'isManualPayment': isManualPayment
       };

@@ -1,6 +1,5 @@
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
-import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/foundation.dart';
@@ -77,23 +76,6 @@ class LaunchController {
       }
     });
 
-    if (!kIsWeb) {
-      // Your existing mobile dynamic links setup
-      Future<Null> Function(PendingDynamicLinkData? dynamicLink) future =
-          (PendingDynamicLinkData? dynamicLink) async {
-        final Uri? deepLink = dynamicLink?.link;
-
-        if (deepLink != null) {
-          LaunchController.handleLink(deepLink);
-        }
-      };
-
-      FirebaseDynamicLinks.instance.onLink.listen((dynamicLinkData) {
-        future(dynamicLinkData);
-      }).onError((error) {
-        logger.severe("Error on dynamic link", error);
-      });
-    }
   }
 
   static Future<void> trackAppVersion() async {
@@ -245,16 +227,6 @@ class LaunchController {
     //   sound: true,
     // );
 
-    // check if coming from link
-    Uri? deepLink;
-
-    if (!kIsWeb) {
-      final PendingDynamicLinkData? data =
-          await FirebaseDynamicLinks.instance.getInitialLink();
-
-      deepLink = data?.link;
-    }
-
     // NOTIFICATIONS STUFF
     // check if coming from notification
     RemoteMessage? initialMessage =
@@ -269,10 +241,7 @@ class LaunchController {
     LaunchController.loadingDone = true;
 
     // navigate to next screen
-    if (deepLink != null) {
-      logger.info("navigating with deep link:" + deepLink.toString());
-      handleLink(deepLink);
-    } else if (initialMessage != null) {
+    if (initialMessage != null) {
       logger
           .info("navigating with initial message:" + initialMessage.toString());
       _handleMessageFromNotification(initialMessage);
