@@ -7,7 +7,7 @@ from flask import Blueprint, Flask
 
 from src.models._matches import Match as MatchModel
 from src.secrets import Secrets
-from src.utils import setup_stripe, NUTMEG_FEE_CENTS
+from src.utils import BASE_URL, setup_stripe, NUTMEG_FEE_CENTS
 from flask import current_app as app
 
 bp = Blueprint("payments", __name__, url_prefix="/payments")
@@ -22,7 +22,7 @@ def checkout():
         request.args.get("is_test") == "true"
         or request.headers.get("X-Test-Mode") == "true"
     )
-    web_origin = request.args.get("web_origin", "https://web.nutmegapp.com")
+    web_origin = request.args.get("web_origin", BASE_URL)
 
     match_info = _get_match_info(match_id, is_test=is_test)
 
@@ -151,7 +151,7 @@ def _create_checkout_redirects_to_web(
     match_id,
     price_amount,
     test_mode,
-    web_origin="https://web.nutmegapp.com",
+    web_origin=BASE_URL,
     product_name=None,
     product_description=None,
     pi_description=None,
