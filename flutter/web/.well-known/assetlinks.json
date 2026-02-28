@@ -7,8 +7,7 @@
       "namespace": "android_app",
       "package_name": "com.nutmeg.nutmeg",
       "sha256_cert_fingerprints": [
-        "02:70:4F:95:68:2E:4A:EB:BA:4C:80:F8:64:AB:45:C4:11:37:DE:A9:0C:B0:29:AD:CD:F2:34:64:D4:94:F8:AA",
-        "EB:50:94:2B:34:7E:8D:61:1F:24:07:AA:3F:5F:CD:51:1F:8D:1C:36:5B:D9:EE:BE:41:1C:D2:FC:89:EB:FE:BD"
+        "02:70:4F:95:68:2E:4A:EB:BA:4C:80:F8:64:AB:45:C4:11:37:DE:A9:0C:B0:29:AD:CD:F2:34:64:D4:94:F8:AA"
       ]
     }
   }
