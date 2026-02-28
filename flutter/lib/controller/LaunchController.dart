@@ -130,26 +130,62 @@ class LaunchController {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final messenger = scaffoldMessengerKey.currentState;
-      if (messenger == null || _androidInstallBannerShown) return;
       final context = navigatorKey.currentContext;
-      final l10n = context != null ? AppLocalizations.of(context) : null;
+      if (messenger == null || context == null || _androidInstallBannerShown) {
+        return;
+      }
+      final l10n = AppLocalizations.of(context)!;
 
       _androidInstallBannerShown = true;
-      messenger.showMaterialBanner(MaterialBanner(
-        content: Text(l10n?.androidInstallBannerMessage ??
-            "Install the Nutmeg app for a better experience."),
-        leading: Icon(Icons.android),
-        actions: [
-          TextButton(
-            onPressed: () => navigateToUrl(_androidPlayStoreUrl),
-            child: Text(l10n?.androidInstallBannerDownload ?? "Download"),
+      messenger.showSnackBar(
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
           ),
-          TextButton(
-            onPressed: messenger.hideCurrentMaterialBanner,
-            child: Text(l10n?.androidInstallBannerLater ?? "Later"),
+          backgroundColor: Colors.white.withOpacity(0.9),
+          duration: const Duration(days: 1),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.android, size: 18, color: Colors.black87),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      l10n.androidInstallBannerMessage,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  TextButton(
+                    onPressed: () {
+                      messenger.hideCurrentSnackBar();
+                      navigateToUrl(_androidPlayStoreUrl);
+                    },
+                    child: Text(l10n.androidInstallBannerDownload),
+                  ),
+                  const SizedBox(width: 8),
+                  TextButton(
+                    onPressed: messenger.hideCurrentSnackBar,
+                    child: Text(l10n.androidInstallBannerLater),
+                  ),
+                ],
+              ),
+            ],
           ),
-        ],
-      ));
+        ),
+      );
     });
   }
 
