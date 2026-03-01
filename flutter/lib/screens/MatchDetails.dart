@@ -389,6 +389,18 @@ List<Widget> getWidgets(
       : null;
 
   var widgets = List<Widget>.empty();
+  final primaryColumnWidgets = <Widget>[
+    if (infoPlayersList != null) infoPlayersList,
+    if (organizerView) ...[
+      if (waitListWidget != null) waitListWidget,
+      if (teamsWidget != null) teamsWidget,
+    ] else ...[
+      if (teamsWidget != null) teamsWidget,
+      if (waitListWidget != null) waitListWidget,
+    ],
+    if (stats != null) stats,
+    if (awards != null) awards,
+  ];
 
   if (constraints.maxWidth < 800) {
     widgets = interleave([
@@ -396,11 +408,7 @@ List<Widget> getWidgets(
       // info box
       matchInfo,
       // stats
-      if (infoPlayersList != null) infoPlayersList,
-      if (waitListWidget != null) waitListWidget,
-      if (teamsWidget != null) teamsWidget,
-      if (stats != null) stats,
-      if (awards != null) awards,
+      ...primaryColumnWidgets,
       // horizontal players list or teams
       sportCenterDetails,
       if (rules(false) != null) rules(false)!,
@@ -427,13 +435,8 @@ List<Widget> getWidgets(
               Flexible(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
-                  children: interleave([
-                    if (infoPlayersList != null) infoPlayersList,
-                    if (waitListWidget != null) waitListWidget,
-                    if (teamsWidget != null) teamsWidget,
-                    if (stats != null) stats,
-                    if (awards != null) awards,
-                  ], SizedBox(height: 16)),
+                  children:
+                      interleave(primaryColumnWidgets, SizedBox(height: 16)),
                 ),
               ),
               SizedBox(width: 20),
@@ -484,15 +487,15 @@ class PlayerList extends StatelessWidget {
     if (withJoinButton) {
       cards.add(EmptyPlayerCard(matchId: match.documentId));
     }
+    if (isOrganizer && hasSpotsLeft && isNotFrozen) {
+      cards.add(_AddPlayerCard(matchId: match.documentId));
+    }
     match.getGoingUsersByTime().forEach((s) => cards.add(PlayerCard(
           s,
           matchId: match.documentId,
           showRemove: canRemovePlayers,
           avatarRadius: 26,
         )));
-    if (isOrganizer && hasSpotsLeft && isNotFrozen) {
-      cards.add(_AddPlayerCard(matchId: match.documentId));
-    }
 
     widgets.add(SizedBox(width: 16));
     widgets.addAll(interleave(cards, SizedBox(width: 4)));
@@ -1209,8 +1212,23 @@ class _PlayerPickerSheetState extends State<_PlayerPickerSheet> {
               setState(() => _addingPlayerId = entry.key);
               try {
                 await widget.onPlayerSelected(entry.key);
-              } finally {
                 if (mounted) Navigator.of(context).pop();
+              } catch (e) {
+                if (!mounted) return;
+                final rawMessage = e.toString();
+                final errorMessage = rawMessage
+                    .replaceFirst(RegExp(r'^Exception:\s*'), '')
+                    .trim();
+                await GenericInfoModal(
+                  title: AppLocalizations.of(context)!.genericErrorMessage,
+                  description: errorMessage.isNotEmpty
+                      ? errorMessage
+                      : AppLocalizations.of(context)!.genericErrorDesc,
+                ).show(context);
+              } finally {
+                if (mounted) {
+                  setState(() => _addingPlayerId = null);
+                }
               }
             },
       child: Padding(

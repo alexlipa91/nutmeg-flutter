@@ -614,13 +614,22 @@ def add_user_to_match_request(match_id):
     user_id = data["user_id"]
     payment_intent = data.get("payment_intent", None)
     is_test = _is_test_from_request()
+    requester_id = flask.g.uid
 
-    add_user_to_match(match_id, user_id, payment_intent, is_test=is_test)
+    add_user_to_match(
+        match_id,
+        user_id,
+        payment_intent,
+        is_test=is_test,
+        requester_id=requester_id,
+    )
 
     return {"data": {}}, 200
 
 
-def add_user_to_match(match_id, user_id, payment_intent=None, is_test=False):
+def add_user_to_match(
+    match_id, user_id, payment_intent=None, is_test=False, requester_id=None
+):
     coll = _get_matches_collection(is_test)
     transactions_doc_ref = (
         app.db_client.collection(coll)
@@ -639,6 +648,7 @@ def add_user_to_match(match_id, user_id, payment_intent=None, is_test=False):
         payment_intent,
         user_id,
         match_id,
+        requester_id,
     )
 
     # recompute teams
@@ -1559,12 +1569,14 @@ def _add_user_to_match_firestore_transaction(
     payment_intent,
     user_id,
     match_id,
+    requester_id=None,
 ):
     timestamp = datetime.now(tz)
     raw = match_doc_ref.get(transaction=transaction).to_dict()
     match = MatchModel.from_dict(raw, match_doc_ref.id)
 
-    match.validate_can_join(user_id)
+    can_bypass_waitlist = requester_id == match.organizer_id
+    match.validate_can_join(user_id, allow_waitlist_bypass=can_bypass_waitlist)
 
     transaction.set(
         match_doc_ref,

@@ -206,13 +206,17 @@ class Match:
     def has_waitlist(self) -> bool:
         return len(self.wait_list) > 0
 
-    def validate_can_join(self, user_id: str) -> None:
+    def validate_can_join(self, user_id: str, allow_waitlist_bypass: bool = False) -> None:
         """Raise if user cannot join the match directly."""
         if user_id in self.going:
             raise Exception("User already going")
         if self.is_full():
             raise Exception("Match is full")
-        if self.has_waitlist() and user_id not in self.wait_list:
+        if (
+            self.has_waitlist()
+            and user_id not in self.wait_list
+            and not allow_waitlist_bypass
+        ):
             raise Exception("There are users in the waitlist. Join the waitlist instead")
 
     def validate_can_join_waitlist(self, user_id: str) -> None:

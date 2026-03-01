@@ -1,14 +1,20 @@
+import 'dart:ui' as ui;
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:intl/intl.dart';
 import 'package:nutmeg/model/Match.dart';
 import 'package:nutmeg/state/MatchState.dart';
 import 'package:nutmeg/state/UsersState.dart';
 import 'package:provider/provider.dart';
 import 'package:nutmeg/l10n/app_localizations.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../screens/CreateMatch.dart';
 import '../screens/MatchDetails.dart';
 import '../state/MatchesState.dart';
+import '../utils/LocationUtils.dart';
 import '../utils/UiUtils.dart'; 
 import '../utils/Utils.dart';
 import 'Avatar.dart';
@@ -31,6 +37,8 @@ enum TeamsWidgetScoreState { add, edit, submit }
 
 class TeamsWidgetState extends State<TeamsWidget> {
   final _scoreFormKey = GlobalKey<FormState>();
+  final GlobalKey _teamsContainerKey = GlobalKey();
+  final GlobalKey _shareableTeamsContainerKey = GlobalKey();
 
   late bool isOrganizerView;
   late bool manualSplit;
@@ -42,6 +50,157 @@ class TeamsWidgetState extends State<TeamsWidget> {
   List<List<String>> manualTeams = [];
 
   List<FocusNode> focusNodes = [FocusNode(), FocusNode()];
+
+  Widget _buildTeamsCaptureContainer(
+    BuildContext context, {
+    required Match? match,
+    required List<List<String>>? teams,
+    required UsersState usersState,
+    required bool showShareDecorations,
+    required bool showOrganizerStrength,
+    required String? matchHeader,
+  }) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(14, 14, 14, 10),
+      child: Column(
+        children: [
+          if (showShareDecorations) ...[
+            Image.asset(
+              "assets/nutmeg_white.png",
+              height: 22,
+              color: Palette.primary,
+              filterQuality: FilterQuality.high,
+              isAntiAlias: true,
+            ),
+            if (matchHeader != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                matchHeader,
+                textAlign: TextAlign.center,
+                style: TextPalette.bodyText,
+              ),
+            ],
+            const SizedBox(height: 12),
+          ],
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  AppLocalizations.of(context)!.teamNameLabelText("A"),
+                  style: TextPalette.h2,
+                  textAlign: TextAlign.left,
+                ),
+              ),
+              Expanded(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    match?.score == null
+                        ? Container()
+                        : Text(match?.score![0].toString() ?? "",
+                            textAlign: TextAlign.end,
+                            style: TextPalette.getStats(Palette.black)),
+                    Text("  vs  ", style: TextPalette.bodyText),
+                    match?.score == null
+                        ? Container()
+                        : Text(match?.score![1].toString() ?? "",
+                            textAlign: TextAlign.end,
+                            style: TextPalette.getStats(Palette.black))
+                  ],
+                ),
+              ),
+              Expanded(
+                child: Text(
+                  AppLocalizations.of(context)!.teamNameLabelText("B"),
+                  style: TextPalette.h2,
+                  textAlign: TextAlign.right,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 16),
+          IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                    child:
+                        getTeamColumn(context, MainAxisAlignment.start, teams ?? [], 0)),
+                NutmegDivider(horizontal: false),
+                Expanded(
+                    child:
+                        getTeamColumn(context, MainAxisAlignment.end, teams ?? [], 1)),
+              ],
+            ),
+          ),
+          if (showOrganizerStrength)
+            Padding(
+              padding: EdgeInsets.only(top: 20),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    teams![0]
+                        .map((u) => usersState.getUserDetail(u)?.averageScore ?? 3)
+                        .fold<double>(0, (a, b) => a + b)
+                        .toStringAsFixed(2),
+                    style: TextPalette.bodyText,
+                  ),
+                  Expanded(
+                    child: Text(
+                      AppLocalizations.of(context)!.teamStrenghtLabel,
+                      textAlign: TextAlign.center,
+                      style: TextPalette.bodyText,
+                    ),
+                  ),
+                  Text(
+                    teams[1]
+                        .map((u) => usersState.getUserDetail(u)?.averageScore ?? 3)
+                        .fold<double>(0, (a, b) => a + b)
+                        .toStringAsFixed(2),
+                    style: TextPalette.bodyText,
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _captureAndShareTeams(BuildContext context) async {
+    try {
+      final boundary =
+          _shareableTeamsContainerKey.currentContext?.findRenderObject()
+              as RenderRepaintBoundary?;
+      if (boundary == null) return;
+
+      final devicePixelRatio = View.of(context).devicePixelRatio;
+      final capturePixelRatio =
+          (devicePixelRatio * 2).clamp(2.5, 5.0).toDouble();
+      final image = await boundary.toImage(pixelRatio: capturePixelRatio);
+      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      if (byteData == null) return;
+
+      await SharePlus.instance.share(
+        ShareParams(
+          text: AppLocalizations.of(context)!.shareMatchStatsText,
+          files: [
+            XFile.fromData(
+              byteData.buffer.asUint8List(),
+              name: 'teams_${widget.matchId}.png',
+            ),
+          ],
+        ),
+      );
+    } catch (_) {
+      // Do not block user flow if screenshot sharing fails on specific platforms.
+    }
+  }
 
   @override
   void initState() {
@@ -189,95 +348,80 @@ class TeamsWidgetState extends State<TeamsWidget> {
     var usersState = context.watch<UsersState>();
 
     var teams = manualSplit ? manualTeams : match?.computedTeams;
+    final showStrengthRow = !widget.shareableVersion;
+    final showOrganizerShareAction = isOrganizerView && !widget.shareableVersion;
+    final showShareDecorations = widget.shareableVersion;
+    final formattedDate = match == null
+        ? null
+        : DateFormat(
+                "EEEE, MMM dd yyyy", getLanguageLocaleWatch(context).languageCode)
+            .format(match.getLocalizedTime());
+    final matchHeader = match == null
+        ? null
+        : "$formattedDate - ${match.sportCenter?.getName() ?? ''}";
 
     var content = Padding(
       padding: EdgeInsets.symmetric(horizontal: 8),
       child: Center(
           child: Column(
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          Stack(
+            clipBehavior: Clip.none,
             children: [
-              Text(
-                AppLocalizations.of(context)!.teamNameLabelText("A"),
-                style: TextPalette.h2,
-              ),
-              Expanded(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    match?.score == null
-                        ? Container()
-                        : Text(match?.score![0].toString() ?? "",
-                            textAlign: TextAlign.end,
-                            style: TextPalette.getStats(Palette.black)),
-                    Text("  vs  ", style: TextPalette.bodyText),
-                    match?.score == null
-                        ? Container()
-                        : Text(match?.score![1].toString() ?? "",
-                            textAlign: TextAlign.end,
-                            style: TextPalette.getStats(Palette.black))
-                  ],
+              RepaintBoundary(
+                key: _teamsContainerKey,
+                child: _buildTeamsCaptureContainer(
+                  context,
+                  match: match,
+                  teams: teams,
+                  usersState: usersState,
+                  showShareDecorations: showShareDecorations,
+                  showOrganizerStrength: showStrengthRow,
+                  matchHeader: matchHeader,
                 ),
               ),
-              Text(
-                AppLocalizations.of(context)!.teamNameLabelText("B"),
-                style: TextPalette.h2,
-              ),
+              if (showOrganizerShareAction)
+                Positioned(
+                  left: -10000,
+                  top: 0,
+                  child: IgnorePointer(
+                    child: SizedBox(
+                      width: MediaQuery.of(context).size.width - 48,
+                      child: RepaintBoundary(
+                        key: _shareableTeamsContainerKey,
+                        child: _buildTeamsCaptureContainer(
+                          context,
+                          match: match,
+                          teams: teams,
+                          usersState: usersState,
+                          showShareDecorations: true,
+                          showOrganizerStrength: showStrengthRow,
+                          matchHeader: matchHeader,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
             ],
           ),
-          SizedBox(height: 16),
-          IntrinsicHeight(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                    child: getTeamColumn(
-                        context, MainAxisAlignment.start, teams ?? [], 0)),
-                NutmegDivider(horizontal: false),
-                Expanded(
-                    child: getTeamColumn(
-                        context, MainAxisAlignment.end, teams ?? [], 1)),
-              ],
-            ),
-          ),
-          if (isOrganizerView && !widget.shareableVersion)
+          if (showOrganizerShareAction)
             Padding(
-              padding: EdgeInsets.only(top: 24),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    teams![0]
-                        .map((u) =>
-                            usersState.getUserDetail(u)?.averageScore ?? 3)
-                        .fold<double>(0, (a, b) => a + b)
-                        .toStringAsFixed(2),
-                    style: TextPalette.bodyText,
-                  ),
-                  Expanded(
-                    child: Text(AppLocalizations.of(context)!.teamStrenghtLabel,
-                        textAlign: TextAlign.center,
-                        style: TextPalette.bodyText),
-                  ),
-                  Text(
-                    teams[1]
-                        .map((u) =>
-                            usersState.getUserDetail(u)?.averageScore ?? 3)
-                        .fold<double>(0, (a, b) => a + b)
-                        .toStringAsFixed(2),
-                    style: TextPalette.bodyText,
-                  ),
-                ],
+              padding: EdgeInsets.only(top: 4),
+              child: Center(
+                child: IconButton(
+                  visualDensity: VisualDensity.compact,
+                  iconSize: 20,
+                  constraints: const BoxConstraints(),
+                  onPressed: () => _captureAndShareTeams(context),
+                  icon: const Icon(Icons.share),
+                  tooltip: AppLocalizations.of(context)!.shareAction,
+                ),
               ),
             ),
           if (state.isLoggedUserOrganizer() &&
               match?.status != MatchStatus.rated)
             Padding(
-              padding: EdgeInsets.only(top: 24),
+              padding: EdgeInsets.only(top: 8),
               child: Column(
                 children: [
                   NutmegDivider(horizontal: true),
@@ -354,7 +498,10 @@ class TeamsWidgetState extends State<TeamsWidget> {
       )),
     );
 
-    return Form(key: _scoreFormKey, child: InfoContainer(child: content));
+    return Form(
+      key: _scoreFormKey,
+      child: InfoContainer(child: content),
+    );
   }
 }
 
@@ -446,7 +593,7 @@ class EditScoreWidgetState extends State<EditScoreWidget> {
                           ];
                           await context
                               .read<MatchesState>()
-                              .getMatch(widget.matchId)!
+                              .getMatch(widget.matchId)
                               .editMatch({"score": score});
                           setState(() {
                             isSubmitMode = false;
@@ -474,7 +621,7 @@ class EditScoreWidgetState extends State<EditScoreWidget> {
                     )
                   ],
                 ),
-              if (isSubmitMode && state?.match?.score != null)
+              if (isSubmitMode && state.match?.score != null)
                 Row(
                   children: [
                     Expanded(
