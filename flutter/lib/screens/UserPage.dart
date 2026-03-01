@@ -48,6 +48,24 @@ class UserPageState extends State<UserPage> {
   final verticalSpace = SizedBox(height: 20);
 
   String? appVersion;
+  int _versionTapCount = 0;
+
+  void _onVersionTap() {
+    if (AppConfig.testMode) return;
+    _versionTapCount += 1;
+    if (_versionTapCount < 5) return;
+
+    AppConfig.setRuntimeTestMode(true);
+    context.read<UserState>().setTestMode(true);
+    _versionTapCount = 0;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text("Test mode enabled"),
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
 
   Future<void> myInitState() async {
     await FirebaseAnalytics.instance.logEvent(name: "open_user_page");
@@ -487,11 +505,14 @@ class UserPageState extends State<UserPage> {
           Padding(
             padding: EdgeInsets.only(top: 8),
             child: Center(
-              child: Container(
-                child: Text(
-                  "v $appVersion",
-                  style: TextPalette.bodyText,
-                  textAlign: TextAlign.right,
+              child: InkWell(
+                onTap: _onVersionTap,
+                child: Container(
+                  child: Text(
+                    "v $appVersion",
+                    style: TextPalette.bodyText,
+                    textAlign: TextAlign.right,
+                  ),
                 ),
               ),
             ),

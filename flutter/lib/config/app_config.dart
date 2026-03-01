@@ -13,10 +13,20 @@ class AppConfig {
   static const bool testModeOrganizer =
       bool.fromEnvironment('TEST_MODE_ORGANIZER', defaultValue: false);
 
-  /// When true, test matches are fetched and shown alongside production matches.
-  /// Override with: --dart-define=TEST_MODE=true
-  static const bool testMode =
+  /// Build-time test mode. Override with: --dart-define=TEST_MODE=true
+  static const bool _buildTimeTestMode =
       bool.fromEnvironment('TEST_MODE', defaultValue: false);
+
+  /// Runtime override enabled via hidden UI actions (e.g. debug tap gesture).
+  static bool _runtimeTestMode = false;
+
+  /// When true, test matches are fetched and shown alongside production matches.
+  /// This is true when either build-time TEST_MODE is set or runtime override is enabled.
+  static bool get testMode => _buildTimeTestMode || _runtimeTestMode;
+
+  static void setRuntimeTestMode(bool enabled) {
+    _runtimeTestMode = enabled;
+  }
 
   /// Custom auth token for debugging (sign in as another user).
   /// Set via: INJECT_AUTH_TOKEN_UID=<uid> ./scripts/start_app_web.sh
