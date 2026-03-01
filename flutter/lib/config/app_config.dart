@@ -1,4 +1,5 @@
 import 'package:firebase_remote_config/firebase_remote_config.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// Build-time and environment configuration.
 ///
@@ -19,17 +20,30 @@ class AppConfig {
 
   /// Runtime override enabled via hidden UI actions (e.g. debug tap gesture).
   static bool _runtimeTestMode = false;
+  static const String _runtimeTestModePrefKey = "runtime_test_mode_enabled";
 
   /// When true, test matches are fetched and shown alongside production matches.
   /// This is true when either build-time TEST_MODE is set or runtime override is enabled.
   static bool get testMode => _buildTimeTestMode || _runtimeTestMode;
+  static bool get runtimeTestMode => _runtimeTestMode;
 
   static void setRuntimeTestMode(bool enabled) {
     _runtimeTestMode = enabled;
   }
 
+  static Future<void> setRuntimeTestModePersisted(bool enabled) async {
+    _runtimeTestMode = enabled;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_runtimeTestModePrefKey, enabled);
+  }
+
+  static Future<void> loadRuntimeOverrides() async {
+    final prefs = await SharedPreferences.getInstance();
+    _runtimeTestMode = prefs.getBool(_runtimeTestModePrefKey) ?? false;
+  }
+
   /// Custom auth token for debugging (sign in as another user).
-  /// Set via: INJECT_AUTH_TOKEN_UID=<uid> ./scripts/start_app_web.sh
+  /// Set via: INJECT_AUTH_TOKEN=<uid> ./scripts/start_app_web.sh
   static const String injectAuthToken =
       String.fromEnvironment('INJECT_AUTH_TOKEN', defaultValue: '');
 

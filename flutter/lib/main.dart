@@ -115,6 +115,7 @@ final appRouter = GoRouter(
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await AppConfig.loadRuntimeOverrides();
 
   Logger.root.level = Level.LEVELS.firstWhere(
     (l) => l.name == AppConfig.logLevel.toUpperCase(),

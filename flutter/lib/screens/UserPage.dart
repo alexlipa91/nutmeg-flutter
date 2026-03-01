@@ -50,24 +50,29 @@ class UserPageState extends State<UserPage> {
   String? appVersion;
   int _versionTapCount = 0;
 
-  void _onVersionTap() {
-    if (AppConfig.testMode) return;
+  Future<void> _onVersionTap() async {
     _versionTapCount += 1;
     if (_versionTapCount < 5) return;
 
-    AppConfig.setRuntimeTestMode(true);
-    context.read<UserState>().setTestMode(true);
+    final nextRuntimeMode = !AppConfig.runtimeTestMode;
+
+    await AppConfig.setRuntimeTestModePersisted(nextRuntimeMode);
+    context.read<UserState>().setTestMode(AppConfig.testMode);
     _versionTapCount = 0;
 
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text("Test mode enabled"),
+        content: Text(nextRuntimeMode ? "Test mode enabled" : "Test mode disabled"),
         duration: Duration(seconds: 2),
       ),
     );
   }
 
   Future<void> myInitState() async {
+    await AppConfig.loadRuntimeOverrides();
+    context.read<UserState>().setTestMode(AppConfig.testMode);
+
     await FirebaseAnalytics.instance.logEvent(name: "open_user_page");
     appVersion = await getVersion();
     await refreshPageState();
@@ -506,7 +511,7 @@ class UserPageState extends State<UserPage> {
             padding: EdgeInsets.only(top: 8),
             child: Center(
               child: InkWell(
-                onTap: _onVersionTap,
+                onTap: () async => _onVersionTap(),
                 child: Container(
                   child: Text(
                     "v $appVersion",
