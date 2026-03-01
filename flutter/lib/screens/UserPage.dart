@@ -1029,7 +1029,7 @@ class _UserProfileWithStats extends StatelessWidget {
               badgeColor: Palette.primary,
               padding: EdgeInsets.all(4),
             ),
-            position: BadgePosition.custom(bottom: -2.0, end: -2.0),
+                    position: BadgePosition.custom(bottom: -2.0, end: 4.0),
             child: UserAvatar(_avatarRadius, userDetails),
           ),
         ),
