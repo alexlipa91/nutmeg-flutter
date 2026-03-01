@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:nutmeg/state/MatchState.dart';
 import 'package:nutmeg/state/UsersState.dart';
@@ -6,6 +5,7 @@ import 'package:nutmeg/state/UserState.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/config/app_config.dart';
+import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/Buttons.dart';
 import 'package:nutmeg/widgets/ModalBottomSheet.dart';
 import 'package:provider/provider.dart';
@@ -30,10 +30,18 @@ class PaymentDetailsDescription {
     var organizerName =
         organizerDetails?.name?.split(" ").first ?? "the organizer";
     var paymentInfo = organizerDetails?.paymentInfo;
+    var matchPrice = match?.price;
+    var formattedPrice = matchPrice == null
+        ? ""
+        : formatCurrency(matchPrice.getTotalPrice());
+    final allowUsersToMarkPayments = ConfigsUtils.allowUsersToMarkPayments;
     var showReminder = isManualPayment &&
         !isOrganizer &&
         match?.organizerId != null &&
-        ConfigsUtils.allowUsersToMarkPayments;
+        allowUsersToMarkPayments;
+
+    print(
+        "Payment reminder debug: isManualPayment=$isManualPayment, isOrganizer=$isOrganizer, organizerId=${match?.organizerId}, allowUsersToMarkPayments=$allowUsersToMarkPayments, showReminder=$showReminder");
 
     await ModalBottomSheet.showNutmegModalBottomSheet(
         context,
@@ -90,6 +98,7 @@ class PaymentDetailsDescription {
               if (showReminder)
                 _PaymentReminder(
                   organizerName: organizerName,
+                  formattedPrice: formattedPrice,
                   paymentInfo: paymentInfo,
                   onToggle: () async {
                     var currentStatus =
@@ -112,12 +121,14 @@ class PaymentDetailsDescription {
 
 class _PaymentReminder extends StatefulWidget {
   final String organizerName;
+  final String formattedPrice;
   final String? paymentInfo;
   final Future<void> Function() onToggle;
 
   const _PaymentReminder({
     Key? key,
     required this.organizerName,
+    required this.formattedPrice,
     required this.paymentInfo,
     required this.onToggle,
   }) : super(key: key);
@@ -139,6 +150,7 @@ class _PaymentReminderState extends State<_PaymentReminder> {
   @override
   Widget build(BuildContext context) {
     var organizerName = widget.organizerName;
+    var formattedPrice = widget.formattedPrice;
     var paymentInfo = widget.paymentInfo;
 
     return Padding(
@@ -159,7 +171,8 @@ class _PaymentReminderState extends State<_PaymentReminder> {
                 SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    AppLocalizations.of(context)!.dontForgetToPay(organizerName),
+                    AppLocalizations.of(context)!
+                        .dontForgetToPay(organizerName, formattedPrice),
                     style: TextPalette.bodyText
                         .copyWith(fontWeight: FontWeight.w600),
                   ),

@@ -405,10 +405,11 @@
     "searchByNameHint": "Search by name",
     "noPlayersAvailable": "No players available to add",
     "noResults": "No results",
-    "dontForgetToPay": "Don't forget to pay {name}!",
+    "dontForgetToPay": "Don't forget to pay {name} {amount}!",
     "@dontForgetToPay": {
         "placeholders": {
-            "name": {}
+            "name": {},
+            "amount": {}
         }
     },
     "androidInstallBannerMessage": "Install the Nutmeg app for a better experience.",

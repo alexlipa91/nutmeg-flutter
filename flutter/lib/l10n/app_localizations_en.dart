@@ -826,8 +826,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noResults => 'No results';
 
   @override
-  String dontForgetToPay(Object name) {
-    return 'Don\'t forget to pay $name!';
+  String dontForgetToPay(Object name, Object amount) {
+    return 'Don\'t forget to pay $name $amount!';
   }
 
   @override

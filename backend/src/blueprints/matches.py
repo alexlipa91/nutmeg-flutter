@@ -1916,10 +1916,7 @@ def delete_tests():
         app.db_client.collection("matches_test").document(m.id).delete()
 
 
-def _update_user_account(user_id, is_test, match_id, manage_payments):
-    setup_stripe(is_test)
-    prefix = "stripe_test" if is_test else "stripe"
-
+def _update_user_account(user_id, is_test, match_id, manage_payments):    
     user_doc_ref = app.db_client.collection("users").document(user_id)
     user_updates = {}
 
@@ -1930,6 +1927,9 @@ def _update_user_account(user_id, is_test, match_id, manage_payments):
         )
 
     if manage_payments:
+        setup_stripe(is_test)
+        prefix = "stripe_test" if is_test else "stripe"
+        
         user_data = user_doc_ref.get().to_dict()
         existing_account = user_data.get(prefix, {}).get("connected_account_id")
         if existing_account:

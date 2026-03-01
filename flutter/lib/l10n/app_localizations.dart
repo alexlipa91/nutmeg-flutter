@@ -1575,8 +1575,8 @@ abstract class AppLocalizations {
   /// No description provided for @dontForgetToPay.
   ///
   /// In en, this message translates to:
-  /// **'Don\'t forget to pay {name}!'**
-  String dontForgetToPay(Object name);
+  /// **'Don\'t forget to pay {name} {amount}!'**
+  String dontForgetToPay(Object name, Object amount);
 
   /// No description provided for @androidInstallBannerMessage.
   ///
