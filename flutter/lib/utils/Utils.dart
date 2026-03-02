@@ -31,9 +31,36 @@ String formatEmail(String? email) {
 }
 
 class DynamicLinks {
+  static Rect _shareOriginRect(BuildContext context) {
+    final renderBox = context.findRenderObject() as RenderBox?;
+    if (renderBox != null &&
+        renderBox.hasSize &&
+        renderBox.size.width > 0 &&
+        renderBox.size.height > 0) {
+      return renderBox.localToGlobal(Offset.zero) & renderBox.size;
+    }
+
+    final overlayBox =
+        Overlay.of(context).context.findRenderObject() as RenderBox?;
+    if (overlayBox != null &&
+        overlayBox.hasSize &&
+        overlayBox.size.width > 0 &&
+        overlayBox.size.height > 0) {
+      return Offset.zero & overlayBox.size;
+    }
+
+    final size = MediaQuery.of(context).size;
+    return Rect.fromLTWH(0, 0, size.width, size.height);
+  }
+
   static Future<void> shareMatchFunction(BuildContext context, Match match) async {
     final link = "https://app.nutmegplay.com/match/${match.documentId}";
-    await Share.share("Checkout this match on Nutmeg!\n$link");
+    await SharePlus.instance.share(
+      ShareParams(
+        text: "Checkout this match on Nutmeg!\n$link",
+        sharePositionOrigin: _shareOriginRect(context),
+      ),
+    );
   }
 }
 
