@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:nutmeg/screens/MatchAwardsModal.dart';
 import 'package:nutmeg/state/MatchesState.dart';
 import 'package:nutmeg/state/UserRatings.dart';
-import 'package:nutmeg/state/UserState.dart';
 import 'package:nutmeg/state/UsersState.dart';
 import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
@@ -70,7 +69,7 @@ class RatePlayerSingleSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var usersToRate =
-        context.watch<MatchesState>().getMatch(matchId)!.getUsersToRate();
+        context.watch<MatchesState>().getMatch(matchId).getUsersToRate();
 
     return Section(
         topSpace: 0,

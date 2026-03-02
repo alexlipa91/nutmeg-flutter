@@ -1,8 +1,9 @@
 #!/bin/bash
 
 # Default values
-DEVICE="iPhone 16 Pro Max"
+DEVICE="00008140-00113D5A2247001C"
 ENV_FILE=".env.prod"
+PHYSICAL_DEVICE=true
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
@@ -15,16 +16,21 @@ while [[ $# -gt 0 ]]; do
             ENV_FILE="$2"
             shift 2
             ;;
+        -p|--physical)
+            PHYSICAL_DEVICE=true
+            shift
+            ;;
         -h|--help)
             echo "Usage: ./scripts/run_ios.sh [options]"
             echo ""
             echo "Options:"
-            echo "  -d, --device   Simulator device name (default: iPhone 16 Pro Max)"
+            echo "  -d, --device   Device name/id (simulator by default)"
             echo "  -e, --env      Environment file (default: .env.prod)"
+            echo "  -p, --physical Run on connected physical iOS device"
             echo "  -h, --help     Show this help message"
             echo ""
-            echo "Available devices:"
-            xcrun simctl list devices available | grep -i "iphone\|ipad"
+            echo "Connected/available Flutter devices:"
+            flutter devices
             exit 0
             ;;
         *)
@@ -34,9 +40,13 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-echo "Booting $DEVICE..."
-xcrun simctl boot "$DEVICE" 2>/dev/null || true
-open -a Simulator
+if [[ "$PHYSICAL_DEVICE" == false ]]; then
+    echo "Booting simulator $DEVICE..."
+    xcrun simctl boot "$DEVICE" 2>/dev/null || true
+    open -a Simulator
+else
+    echo "Using physical iOS device target: $DEVICE"
+fi
 
 ./scripts/pre_build.sh "$ENV_FILE"
 

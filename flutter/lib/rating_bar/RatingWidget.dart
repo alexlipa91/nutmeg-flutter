@@ -16,15 +16,15 @@ class RatingBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SmoothStarRating(  
+    return SmoothStarRating(
         userId: userId,
         allowHalfRating: false,
         starCount: 5,
-        rating: context.watch<UserRatings>().getRating(userId) as double, 
+        rating: context.watch<UserRatings>().getRating(userId).toDouble(),
         size: 25.0,
         isReadOnly: false,
         color: Palette.accent,
-        defaultIconData: Icons.star,
+        defaultIconData: Icons.star_border,
         borderColor: Palette.greyLight,
         spacing: 8.0, onRated: (double rating) {  },
     );
