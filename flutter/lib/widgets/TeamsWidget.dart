@@ -15,7 +15,8 @@ import '../screens/CreateMatch.dart';
 import '../screens/MatchDetails.dart';
 import '../state/MatchesState.dart';
 import '../utils/LocationUtils.dart';
-import '../utils/UiUtils.dart'; 
+import '../utils/share_utils.dart';
+import '../utils/UiUtils.dart';
 import '../utils/Utils.dart';
 import 'Avatar.dart';
 import 'ButtonsWithLoader.dart';
@@ -27,7 +28,9 @@ class TeamsWidget extends StatefulWidget {
   final String matchId;
   final bool shareableVersion;
 
-  const TeamsWidget({Key? key, required this.matchId, this.shareableVersion = false}) : super(key: key);
+  const TeamsWidget(
+      {Key? key, required this.matchId, this.shareableVersion = false})
+      : super(key: key);
 
   @override
   State<StatefulWidget> createState() => TeamsWidgetState();
@@ -60,8 +63,10 @@ class TeamsWidgetState extends State<TeamsWidget> {
     required bool showOrganizerStrength,
     required String? matchHeader,
   }) {
+    final lateralPadding = showShareDecorations ? 14.0 : 0.0;
     return Container(
-      padding: const EdgeInsets.fromLTRB(14, 14, 14, 10),
+      color: showShareDecorations ? Colors.white : Colors.transparent,
+      padding: EdgeInsets.fromLTRB(lateralPadding, 14, lateralPadding, 10),
       child: Column(
         children: [
           if (showShareDecorations) ...[
@@ -127,12 +132,12 @@ class TeamsWidgetState extends State<TeamsWidget> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
-                    child:
-                        getTeamColumn(context, MainAxisAlignment.start, teams ?? [], 0)),
+                    child: getTeamColumn(
+                        context, MainAxisAlignment.start, teams ?? [], 0)),
                 NutmegDivider(horizontal: false),
                 Expanded(
-                    child:
-                        getTeamColumn(context, MainAxisAlignment.end, teams ?? [], 1)),
+                    child: getTeamColumn(
+                        context, MainAxisAlignment.end, teams ?? [], 1)),
               ],
             ),
           ),
@@ -145,7 +150,8 @@ class TeamsWidgetState extends State<TeamsWidget> {
                 children: [
                   Text(
                     teams![0]
-                        .map((u) => usersState.getUserDetail(u)?.averageScore ?? 3)
+                        .map((u) =>
+                            usersState.getUserDetail(u)?.averageScore ?? 3)
                         .fold<double>(0, (a, b) => a + b)
                         .toStringAsFixed(2),
                     style: TextPalette.bodyText,
@@ -159,7 +165,8 @@ class TeamsWidgetState extends State<TeamsWidget> {
                   ),
                   Text(
                     teams[1]
-                        .map((u) => usersState.getUserDetail(u)?.averageScore ?? 3)
+                        .map((u) =>
+                            usersState.getUserDetail(u)?.averageScore ?? 3)
                         .fold<double>(0, (a, b) => a + b)
                         .toStringAsFixed(2),
                     style: TextPalette.bodyText,
@@ -174,9 +181,8 @@ class TeamsWidgetState extends State<TeamsWidget> {
 
   Future<void> _captureAndShareTeams(BuildContext context) async {
     try {
-      final boundary =
-          _shareableTeamsContainerKey.currentContext?.findRenderObject()
-              as RenderRepaintBoundary?;
+      final boundary = _shareableTeamsContainerKey.currentContext
+          ?.findRenderObject() as RenderRepaintBoundary?;
       if (boundary == null) return;
 
       final devicePixelRatio = View.of(context).devicePixelRatio;
@@ -186,19 +192,19 @@ class TeamsWidgetState extends State<TeamsWidget> {
       final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
       if (byteData == null) return;
 
-      await SharePlus.instance.share(
-        ShareParams(
-          text: AppLocalizations.of(context)!.shareMatchStatsText,
-          files: [
-            XFile.fromData(
-              byteData.buffer.asUint8List(),
-              name: 'teams_${widget.matchId}.png',
-            ),
-          ],
-        ),
+      await shareWithOrigin(
+        context,
+        text: "Teams",
+        files: [
+          XFile.fromData(
+            byteData.buffer.asUint8List(),
+            name: 'teams_${widget.matchId}.png',
+            mimeType: 'image/png',
+          ),
+        ],
       );
-    } catch (_) {
-      // Do not block user flow if screenshot sharing fails on specific platforms.
+    } catch (e) {
+      print('Error sharing teams: $e');
     }
   }
 
@@ -349,12 +355,13 @@ class TeamsWidgetState extends State<TeamsWidget> {
 
     var teams = manualSplit ? manualTeams : match?.computedTeams;
     final showStrengthRow = !widget.shareableVersion;
-    final showOrganizerShareAction = isOrganizerView && !widget.shareableVersion;
+    final showOrganizerShareAction =
+        isOrganizerView && !widget.shareableVersion;
     final showShareDecorations = widget.shareableVersion;
     final formattedDate = match == null
         ? null
-        : DateFormat(
-                "EEEE, MMM dd yyyy", getLanguageLocaleWatch(context).languageCode)
+        : DateFormat("EEEE, MMM dd yyyy",
+                getLanguageLocaleWatch(context).languageCode)
             .format(match.getLocalizedTime());
     final matchHeader = match == null
         ? null

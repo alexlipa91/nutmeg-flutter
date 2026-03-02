@@ -44,6 +44,7 @@ import '../state/MatchesState.dart';
 import '../state/UserState.dart';
 import '../state/UserRatings.dart';
 import '../utils/InfoModals.dart';
+import '../utils/share_utils.dart';
 import '../widgets/Buttons.dart' as buttons;
 import '../widgets/ButtonsWithLoader.dart';
 import '../widgets/ModalBottomSheet.dart';
@@ -2121,14 +2122,13 @@ class _ShareableStatsState extends State<ShareableStats> {
         return;
       }
 
-      final params = ShareParams(
+      final result = await shareWithOrigin(
+        context,
         text: AppLocalizations.of(context)!.shareMatchStatsText,
         files: [
           XFile.fromData(byteData.buffer.asUint8List(), name: 'match_stats.png')
         ],
       );
-
-      final result = await SharePlus.instance.share(params);
 
       if (result.status != ShareResultStatus.success) {
         print('Failed to share the picture');

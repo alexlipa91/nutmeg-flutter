@@ -6,11 +6,11 @@ import 'package:nutmeg/config/app_config.dart';
 import 'package:nutmeg/model/Match.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:nutmeg/utils/navigate_url.dart';
 import 'package:timezone/timezone.dart' as tz;
 
 import '../state/UserState.dart';
+import 'share_utils.dart';
 
 String gmtSuffix(String? timeZoneId) {
   var tzLocation = timeZoneId == null ? tz.local : tz.getLocation(timeZoneId);
@@ -31,36 +31,9 @@ String formatEmail(String? email) {
 }
 
 class DynamicLinks {
-  static Rect _shareOriginRect(BuildContext context) {
-    final renderBox = context.findRenderObject() as RenderBox?;
-    if (renderBox != null &&
-        renderBox.hasSize &&
-        renderBox.size.width > 0 &&
-        renderBox.size.height > 0) {
-      return renderBox.localToGlobal(Offset.zero) & renderBox.size;
-    }
-
-    final overlayBox =
-        Overlay.of(context).context.findRenderObject() as RenderBox?;
-    if (overlayBox != null &&
-        overlayBox.hasSize &&
-        overlayBox.size.width > 0 &&
-        overlayBox.size.height > 0) {
-      return Offset.zero & overlayBox.size;
-    }
-
-    final size = MediaQuery.of(context).size;
-    return Rect.fromLTWH(0, 0, size.width, size.height);
-  }
-
   static Future<void> shareMatchFunction(BuildContext context, Match match) async {
     final link = "https://app.nutmegplay.com/match/${match.documentId}";
-    await SharePlus.instance.share(
-      ShareParams(
-        text: "Checkout this match on Nutmeg!\n$link",
-        sharePositionOrigin: _shareOriginRect(context),
-      ),
-    );
+    await shareWithOrigin(context, text: "Checkout this match on Nutmeg!\n$link");
   }
 }
 
