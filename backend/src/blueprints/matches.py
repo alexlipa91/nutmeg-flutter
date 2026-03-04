@@ -1066,94 +1066,135 @@ def _release_match_money(db, match_id, is_test):
         logging.info("Release %s: match cancelled, skipping", match_id)
         return {"status": "skipped", "reason": "cancelled"}
 
-    raw = match_ref.get().to_dict()
-    if raw.get("release", {}).get("status") == "released":
-        logging.info("Release %s: already released", match_id)
-        return {"status": "skipped", "reason": "already_released"}
-
     prefix = "stripe_test" if is_test else "stripe"
     organizer_data = db.collection("users").document(match.organizer_id).get().to_dict()
     organizer_account = organizer_data.get(prefix, {}).get("connected_account_id")
     if not organizer_account:
         logging.error("Release %s: organizer has no connected account", match_id)
-        match_ref.update(
-            {
-                "release": {
-                    "status": "skipped",
-                    "reason": "no_connected_account",
-                    "updated_at": firestore.firestore.SERVER_TIMESTAMP,
-                }
-            }
-        )
         return {"status": "skipped", "reason": "no_connected_account"}
 
     setup_stripe(is_test)
 
-    info = _calculate_release_amount(match, verify_with_stripe=True)
-    transfer_total = info["total"]
-    fee_total = info["fee_total"]
-    players_paid = info["players_paid"]
+    base_price = match.price.get("basePrice", 0) if match.price else 0
+    user_fee = match.price.get("userFee", NUTMEG_FEE_CENTS) if match.price else 0
+    payout_per_player = base_price - user_fee
+    if payout_per_player <= 0:
+        logging.info("Release %s: invalid payout per player (%d)", match_id, payout_per_player)
+        return {"status": "skipped", "reason": "invalid_payout"}
 
-    if transfer_total <= 0:
-        logging.info("Release %s: nothing to transfer", match_id)
-        match_ref.update(
-            {
-                "release": {
-                    "status": "skipped",
-                    "reason": "no_amount",
-                    "updated_at": firestore.firestore.SERVER_TIMESTAMP,
-                }
-            }
+    transfer_total = 0
+    fee_total = 0
+    players_paid = 0
+    transfer_ids = []
+    pending_ids = []
+    failed_ids = []
+    going_updates = {}
+
+    for user_id, going_data in match.going.items():
+        pi_id = (
+            going_data.get("payment_intent") if isinstance(going_data, dict) else None
         )
-        return {"status": "skipped", "reason": "no_amount"}
+        if not pi_id:
+            continue
 
-    transfer = stripe.Transfer.create(
-        amount=transfer_total,
-        currency="eur",
-        destination=organizer_account,
-        description=match.describe(),
-        metadata={"match_id": match_id, "players": str(players_paid)},
-    )
+        current_release = (
+            going_data.get("release", {}) if isinstance(going_data, dict) else {}
+        )
+        current_transfer_id = current_release.get("transfer_id")
+        if current_release.get("status") == "released" and current_transfer_id:
+            transfer_total += payout_per_player
+            fee_total += user_fee
+            players_paid += 1
+            transfer_ids.append(current_transfer_id)
+            continue
+
+        try:
+            pi = stripe.PaymentIntent.retrieve(
+                pi_id, expand=["latest_charge"]
+            )
+            charge = pi.latest_charge
+            is_ready = (
+                charge
+                and charge.status == "succeeded"
+                and charge.amount_refunded == 0
+            )
+            if not is_ready:
+                pending_ids.append(pi_id)
+                going_updates[
+                    "going.{}.release".format(user_id)
+                ] = {"status": "pending_funds", "transfer_id": None}
+                continue
+
+            transfer = stripe.Transfer.create(
+                amount=payout_per_player,
+                currency="eur",
+                destination=organizer_account,
+                source_transaction=charge.id,
+                description=match.describe(),
+                metadata={
+                    "match_id": match_id,
+                    "user_id": user_id,
+                    "payment_intent": pi_id,
+                },
+                idempotency_key="release:{}:{}".format(match_id, pi_id),
+            )
+            going_updates[
+                "going.{}.release".format(user_id)
+            ] = {"status": "released", "transfer_id": transfer.id}
+            transfer_ids.append(transfer.id)
+        except Exception as e:
+            logging.warning("Release %s: failed transfer for PI %s: %s", match_id, pi_id, e)
+            failed_ids.append(pi_id)
+            going_updates[
+                "going.{}.release".format(user_id)
+            ] = {"status": "failed", "transfer_id": None}
+            continue
+
+        transfer_total += payout_per_player
+        fee_total += user_fee
+        players_paid += 1
+
+    update_payload = {"release": {"amount": transfer_total, "fee": fee_total}}
+    update_payload.update(going_updates)
+    match_ref.update(update_payload)
+
     logging.info(
-        "Release %s: transferred %d cents, kept %d cents fee (%d players) -> %s",
+        "Release %s: transferred %d cents, kept %d cents fee (%d players, %d transfers)",
         match_id,
         transfer_total,
         fee_total,
         players_paid,
-        transfer.id,
+        len(transfer_ids),
     )
 
-    match_ref.update(
-        {
-            "release": {
-                "status": "released",
-                "amount": transfer_total,
-                "fee": fee_total,
-                "transfer_id": transfer.id,
-                "players": players_paid,
-                "released_at": firestore.firestore.SERVER_TIMESTAMP,
-            }
-        }
-    )
+    release_status = "released"
+    if pending_ids or failed_ids:
+        release_status = "partial"
+    elif transfer_total <= 0:
+        release_status = "skipped"
 
-    send_notification_to_users(
-        db=db,
-        title="Money transferred! " + "\U0001f4b0",
-        body="\u20ac {:.2f} for your match has been transferred to your Stripe account".format(
-            transfer_total / 100
-        ),
-        data={
-            "click_action": "FLUTTER_NOTIFICATION_CLICK",
-            "route": "/match/" + match_id,
-            "match_id": match_id,
-        },
-        users=[match.organizer_id],
-    )
+    if transfer_total > 0:
+        send_notification_to_users(
+            db=db,
+            title="Match released! " + "\U0001f4b0",
+            body="\u20ac {:.2f} from your released match has been transferred to your Stripe account".format(
+                transfer_total / 100
+            ),
+            data={
+                "click_action": "FLUTTER_NOTIFICATION_CLICK",
+                "route": "/match/" + match_id,
+                "match_id": match_id,
+            },
+            users=[match.organizer_id],
+        )
     return {
-        "status": "success",
-        "transfer_id": transfer.id,
+        "status": "success" if release_status == "released" else release_status,
+        "transfer_id": transfer_ids[0] if transfer_ids else None,
+        "transfer_ids": transfer_ids,
         "amount": transfer_total,
         "fee": fee_total,
+        "pending_payment_intents": pending_ids,
+        "failed_payment_intents": failed_ids,
     }
 
 

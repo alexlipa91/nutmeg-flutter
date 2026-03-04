@@ -11,14 +11,8 @@ import os
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import firebase_admin
-from firebase_admin import firestore
-
-firebase_admin.initialize_app()
-db = firestore.client()
-
-from src.secrets import load_secrets
-load_secrets()
+from src.bootstrap import init
+db = init()
 
 from src.blueprints.matches import _run_post_match_tasks, _release_match_money
 

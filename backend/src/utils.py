@@ -74,8 +74,12 @@ def schedule_app_engine_call(
 
     # Use the client to build and send the task.
     response = client.create_task(request={"parent": parent, "task": task})
-    print(
-        f"Created task {response.name} to call {endpoint} with params {function_payload} at {date_time_to_execute}"
+    logging.info(
+        "Created task %s to call %s with params %s at %s",
+        response.name,
+        endpoint,
+        function_payload,
+        date_time_to_execute,
     )
 
 
@@ -117,10 +121,13 @@ def send_notification_to_users(db, title, body, data, users):
         for i, send_response in enumerate(response.responses):
             if send_response.success:
                 logging.info(f"Notification sent to {tokens[i][:20]}...")
-            elif isinstance(send_response.exception, (
-                messaging.UnregisteredError,
-                messaging.SenderIdMismatchError,
-            )):
+            elif isinstance(
+                send_response.exception,
+                (
+                    messaging.UnregisteredError,
+                    messaging.SenderIdMismatchError,
+                ),
+            ):
                 logging.warning(f"Token {tokens[i][:20]}... is stale, removing")
                 stale_tokens.append(tokens[i])
             else:
@@ -160,9 +167,7 @@ def _get_user_basic_data(app, u):
 
 def send_test_notification(db):
     # send to admin a test notification
-    send_notification_to_users(
-        db, "test", "test", {}, ["IwrZWBFb4LZl3Kto1V3oUKPnCni1"]
-    )
+    send_notification_to_users(db, "test", "test", {}, ["IwrZWBFb4LZl3Kto1V3oUKPnCni1"])
 
 
 if __name__ == "__main__":
@@ -171,7 +176,10 @@ if __name__ == "__main__":
     import firebase_admin
     from firebase_admin import firestore
 
-    sa_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "nutmeg-9099c-firebase-adminsdk.json")
+    sa_path = os.path.join(
+        os.path.dirname(os.path.dirname(__file__)),
+        "nutmeg-9099c-firebase-adminsdk.json",
+    )
     if os.path.exists(sa_path):
         os.environ.setdefault("GOOGLE_APPLICATION_CREDENTIALS", sa_path)
 
@@ -182,5 +190,7 @@ if __name__ == "__main__":
     user_id = sys.argv[1] if len(sys.argv) > 1 else "IwrZWBFb4LZl3Kto1V3oUKPnCni1"
 
     print(f"Sending test notification to user: {user_id}")
-    send_notification_to_users(db, "Nutmeg Test", "If you see this, notifications work!", {}, [user_id])
+    send_notification_to_users(
+        db, "Nutmeg Test", "If you see this, notifications work!", {}, [user_id]
+    )
     print("Done!")

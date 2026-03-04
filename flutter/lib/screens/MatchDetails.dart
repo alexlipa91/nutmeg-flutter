@@ -2640,13 +2640,12 @@ class _NutmegPayBadgeState extends State<_NutmegPayBadge> {
     final total = _data?["total"] as int? ?? 0;
     final playersPaid = _data?["players_paid"] as int? ?? 0;
     final nutmegFees = playersPaid * AppConfig.nutmegFeeCents;
-    final releaseStatus = _data?["release_status"] as String?;
     final releaseAmount = _data?["release_amount"] as int?;
     final releaseAt = _data?["release_at"] as String?;
     final releasedAt = _data?["released_at"] as String?;
 
     Widget? releaseRow;
-    if (releaseStatus == "released" && releaseAmount != null) {
+    if (releaseAmount != null && releaseAmount > 0) {
       final releasedDate = releasedAt != null
           ? DateFormat.yMMMd().format(DateTime.parse(releasedAt).toLocal())
           : null;

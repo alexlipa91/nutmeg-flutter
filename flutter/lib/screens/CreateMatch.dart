@@ -92,7 +92,6 @@ class CreateMatchState extends State<CreateMatch> {
   bool privateMatch = false;
   Duration cancelBefore = Duration(hours: 24);
   int repeatsForWeeks = 1;
-  bool organiserWithFee = false;
   String? courtNumber;
   int playersPerSide = 5;
   bool customPlayersPerSide = false;
@@ -987,7 +986,7 @@ class CreateMatchState extends State<CreateMatch> {
                                               Decimal.parse("100"))
                                           .toDouble()
                                           .toInt(),
-                                      (!showPaymentInfo && organiserWithFee)
+                                      !showPaymentInfo
                                           ? AppConfig.nutmegFeeCents
                                           : 0)
                                   : null,

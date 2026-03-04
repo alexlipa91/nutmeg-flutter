@@ -1,17 +1,9 @@
 from src import _create_app
-from src.common.cloud_logging import setup_cloud_logging
-import firebase_admin
-import os
 
 
 def create_app():
-    firebase_admin.initialize_app()
-
-    from src.secrets import load_secrets
-    load_secrets()
-
-    if "GAE_SERVICE" in os.environ:
-        setup_cloud_logging()
+    from src.bootstrap import init
+    init()
 
     return _create_app()
 
