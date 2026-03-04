@@ -1,0 +1,35 @@
+---
+description: Core project standards for Flutter and backend changes
+alwaysApply: true
+---
+
+# Nutmeg Project Standards
+
+- Be concise in all responses.
+- Prefer short answers.
+- Avoid repetition.
+- Use bullet points instead of long paragraphs.
+- Do not explain obvious concepts.
+- Do not repeat the question when prompted.
+- Keep changes focused and minimal; avoid broad refactors unless requested.
+- Do not break existing API contracts between `flutter/` and `backend/`.
+- Reuse existing UI components and styles (`Palette`, `TextPalette`, shared widgets) before creating new ones.
+- Any user-facing text must be localized via `flutter/lib/l10n/*.arb` and regenerated with `flutter gen-l10n`.
+- Preserve current behavior unless the task explicitly asks for a behavior change.
+
+## Flutter/Dart
+
+- Follow existing screen patterns (`Section`, `PageTemplate`, form validation).
+- Prefer null-safe, straightforward state updates; avoid introducing unnecessary abstractions.
+- For visual changes, keep responsive layout behavior consistent with existing screens.
+
+## Backend/Python
+
+- Keep blueprint endpoints and payload shapes backward compatible.
+- Validate inputs and return clear HTTP status codes for failures.
+- Reuse shared utilities and avoid duplicate logic across blueprints.
+
+## Verification
+
+- After edits, run a quick lint/diagnostic check on touched files.
+- If localization keys are added or changed, regenerate localization outputs.

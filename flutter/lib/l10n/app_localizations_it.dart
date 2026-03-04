@@ -413,6 +413,9 @@ class AppLocalizationsIt extends AppLocalizations {
   String get yourCourtsTitle => 'I tuoi campi';
 
   @override
+  String get courtsTitle => 'Campi';
+
+  @override
   String get matchStatsTitle => 'Giocatori più performanti';
 
   @override

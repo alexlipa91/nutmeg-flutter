@@ -810,6 +810,12 @@ abstract class AppLocalizations {
   /// **'Your Courts'**
   String get yourCourtsTitle;
 
+  /// No description provided for @courtsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Courts'**
+  String get courtsTitle;
+
   /// No description provided for @matchStatsTitle.
   ///
   /// In en, this message translates to:

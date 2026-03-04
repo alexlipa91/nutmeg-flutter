@@ -26,6 +26,7 @@ import 'package:nutmeg/utils/navigate_url.dart';
 import 'package:nutmeg/widgets/PayOutsideNutmegRow.dart';
 import 'package:nutmeg/widgets/PayThroughNutmegRow.dart';
 
+import 'CreateMatch.dart';
 import '../state/UserState.dart';
 import '../state/UsersState.dart';
 import '../utils/InfoModals.dart';
@@ -78,8 +79,10 @@ class UserPageState extends State<UserPage> {
     await refreshPageState();
   }
 
-  Future<void> refreshPageState() async =>
-      context.read<UserState>().fetchLoggedUserDetails();
+  Future<void> refreshPageState() async => Future.wait([
+        context.read<UserState>().fetchLoggedUserDetails(),
+        context.read<UserState>().fetchLoggedUserSportCenters(),
+      ]);
 
   @override
   Widget build(BuildContext context) {
@@ -317,12 +320,20 @@ class UserPageState extends State<UserPage> {
                     })),
                     SizedBox(width: 20),
                     Expanded(
-                      child: _PlayersInYourGames(
-                          playerCounts: userDetails.organizerPlayers),
+                      child: _YourCourtsCard(),
                     ),
                   ])));
 
               widgets.addAll([
+                verticalSpace,
+                Row(
+                  children: [
+                    Expanded(
+                      child: _PlayersInYourGames(
+                          playerCounts: userDetails.organizerPlayers),
+                    ),
+                  ],
+                ),
                 verticalSpace,
                 _PaymentMethodsCard(
                   userDetails: userDetails,
@@ -846,7 +857,9 @@ class _PlayersInYourGames extends StatelessWidget {
                 context,
                 MaterialPageRoute(
                     builder: (_) => _PlayerCountsPage(
-                        title: AppLocalizations.of(context)!.playedInYourGamesBoxTitle.toUpperCase(),
+                        title: AppLocalizations.of(context)!
+                            .playedInYourGamesBoxTitle
+                            .toUpperCase(),
                         playerCounts: playerCounts!)),
               )
           : null,
@@ -856,6 +869,30 @@ class _PlayersInYourGames extends StatelessWidget {
         rightBadge: (playerCounts != null && playerCounts!.isNotEmpty)
             ? Icon(Icons.chevron_right, color: Palette.primary, size: 18)
             : null,
+      ),
+    );
+  }
+}
+
+class _YourCourtsCard extends StatelessWidget {
+  const _YourCourtsCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final userState = context.watch<UserState>();
+    final courts = userState.getSportCenters();
+    final count = courts?.length ?? 0;
+
+    return InkWell(
+      onTap: () async {
+        await context.read<UserState>().fetchLoggedUserSportCenters();
+        await ModalBottomSheet.showNutmegModalBottomSheet(
+            context, LocationsBottomSheet());
+      },
+      child: UserInfoBox(
+        content: count.toString(),
+        description: AppLocalizations.of(context)!.courtsTitle,
+        rightBadge: Icon(Icons.chevron_right, color: Palette.primary, size: 18),
       ),
     );
   }

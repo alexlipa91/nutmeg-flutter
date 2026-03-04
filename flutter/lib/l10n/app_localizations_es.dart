@@ -414,6 +414,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get yourCourtsTitle => 'Tus Tribunales';
 
   @override
+  String get courtsTitle => 'Tribunales';
+
+  @override
   String get matchStatsTitle => 'Jugadores de alto rendimiento';
 
   @override

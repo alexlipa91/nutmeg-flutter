@@ -117,6 +117,7 @@
     "confirmButtonText": "CONFERMARE",
     "popularCourtsTitle": "Campi popolari",
     "yourCourtsTitle": "I tuoi campi",
+    "courtsTitle": "Campi",
     "matchStatsTitle": "Giocatori più performanti",
     "matchStatsSubTitle": "{n} elettori",
     "createNewCourtText": "Crea nuovo campo",

@@ -416,6 +416,9 @@ class AppLocalizationsPt extends AppLocalizations {
   String get yourCourtsTitle => 'Seus campos / quadras';
 
   @override
+  String get courtsTitle => 'Campos / quadras';
+
+  @override
   String get matchStatsTitle => 'Jogadores de melhor desempenho';
 
   @override

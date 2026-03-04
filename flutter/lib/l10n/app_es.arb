@@ -117,6 +117,7 @@
     "confirmButtonText": "CONFIRMAR",
     "popularCourtsTitle": "Tribunales populares",
     "yourCourtsTitle": "Tus Tribunales",
+    "courtsTitle": "Tribunales",
     "matchStatsTitle": "Jugadores de alto rendimiento",
     "matchStatsSubTitle": "{n} votantes",
     "createNewCourtText": "Crear un nuevo Tribunal",

@@ -411,6 +411,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get yourCourtsTitle => 'Your Courts';
 
   @override
+  String get courtsTitle => 'Courts';
+
+  @override
   String get matchStatsTitle => 'Top Performing Players';
 
   @override

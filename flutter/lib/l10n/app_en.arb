@@ -212,6 +212,7 @@
 
     "popularCourtsTitle": "Popular Courts",
     "yourCourtsTitle": "Your Courts",
+    "courtsTitle": "Courts",
 
     "matchStatsTitle": "Top Performing Players",
     "matchStatsSubTitle": "{n} voters",
