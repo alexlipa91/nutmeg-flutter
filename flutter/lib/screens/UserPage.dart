@@ -768,7 +768,7 @@ class _PaymentMethodsCardState extends State<_PaymentMethodsCard> {
           PayThroughNutmegRow(),
 
           // --- Verification banner (shown after returning from Stripe) ---
-          if (_isVerifying || _stripeVerificationResult != null) ...[
+          if (_isVerifying || _stripeVerificationResult == true) ...[
             SizedBox(height: 12),
             _buildVerificationBanner(context),
           ],
@@ -820,24 +820,7 @@ class _PaymentMethodsCardState extends State<_PaymentMethodsCard> {
       );
     }
 
-    // charges not yet enabled
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: Colors.orange.shade50,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.warning_amber_rounded, color: Colors.orange.shade700, size: 18),
-          SizedBox(width: 10),
-          Expanded(
-            child: Text(AppLocalizations.of(context)!.stripeVerificationPending,
-                style: TextPalette.getBodyText(Colors.orange.shade700)),
-          ),
-        ],
-      ),
-    );
+    return SizedBox.shrink();
   }
 
 }
