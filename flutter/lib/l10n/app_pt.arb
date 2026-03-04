@@ -120,10 +120,21 @@
     "matchStatsTitle": "Jogadores de melhor desempenho",
     "matchStatsSubTitle": "{n} eleitores",
     "createNewCourtText": "Criar novo campo / quadra",
+    "pictureTitleText": "Imagem",
+    "informationTitleText": "Informações",
+    "typeTitleText": "Tipo",
     "courtInfoText": "Informações do campo / quadra",
     "courtLocationLabel": "Localização",
     "courtTypeTitleText": "Tipo",
     "surfaceLabelText": "Superfície",
+    "imageTooSmallError": "Imagem muito pequena. Use pelo menos {minWidth}x{minHeight}px.",
+    "@imageTooSmallError": {
+        "placeholders": {
+            "minWidth": {"type": "int"},
+            "minHeight": {"type": "int"}
+        }
+    },
+    "invalidImageRatioError": "Proporção de imagem inválida. Use uma imagem próxima de 2:1 (por exemplo 1200x600).",
     "indoorTitle": "Quadra",
     "indoorDesc": "Botas sem tachas",
     "grassTitle": "Grama",

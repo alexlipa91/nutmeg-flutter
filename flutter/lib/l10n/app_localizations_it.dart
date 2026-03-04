@@ -424,6 +424,15 @@ class AppLocalizationsIt extends AppLocalizations {
   String get createNewCourtText => 'Crea nuovo campo';
 
   @override
+  String get pictureTitleText => 'Immagine';
+
+  @override
+  String get informationTitleText => 'Informazioni';
+
+  @override
+  String get typeTitleText => 'Tipo';
+
+  @override
   String get courtInfoText => 'Informazioni sul campo';
 
   @override
@@ -434,6 +443,15 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get surfaceLabelText => 'Superficie';
+
+  @override
+  String imageTooSmallError(int minWidth, int minHeight) {
+    return 'Immagine troppo piccola. Usa almeno ${minWidth}x${minHeight}px.';
+  }
+
+  @override
+  String get invalidImageRatioError =>
+      'Formato immagine non valido. Usa un\'immagine vicina al rapporto 2:1 (ad esempio 1200x600).';
 
   @override
   String get indoorTitle => 'Indoor';

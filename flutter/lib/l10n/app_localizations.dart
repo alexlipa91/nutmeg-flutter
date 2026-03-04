@@ -828,6 +828,24 @@ abstract class AppLocalizations {
   /// **'Create new Court'**
   String get createNewCourtText;
 
+  /// No description provided for @pictureTitleText.
+  ///
+  /// In en, this message translates to:
+  /// **'Picture'**
+  String get pictureTitleText;
+
+  /// No description provided for @informationTitleText.
+  ///
+  /// In en, this message translates to:
+  /// **'Information'**
+  String get informationTitleText;
+
+  /// No description provided for @typeTitleText.
+  ///
+  /// In en, this message translates to:
+  /// **'Type'**
+  String get typeTitleText;
+
   /// No description provided for @courtInfoText.
   ///
   /// In en, this message translates to:
@@ -851,6 +869,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Surface'**
   String get surfaceLabelText;
+
+  /// No description provided for @imageTooSmallError.
+  ///
+  /// In en, this message translates to:
+  /// **'Image too small. Use at least {minWidth}x{minHeight}px.'**
+  String imageTooSmallError(int minWidth, int minHeight);
+
+  /// No description provided for @invalidImageRatioError.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid image ratio. Use an image close to 2:1 (for example 1200x600).'**
+  String get invalidImageRatioError;
 
   /// No description provided for @indoorTitle.
   ///

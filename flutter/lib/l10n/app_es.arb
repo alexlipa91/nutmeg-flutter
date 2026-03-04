@@ -120,10 +120,21 @@
     "matchStatsTitle": "Jugadores de alto rendimiento",
     "matchStatsSubTitle": "{n} votantes",
     "createNewCourtText": "Crear un nuevo Tribunal",
+    "pictureTitleText": "Imagen",
+    "informationTitleText": "Información",
+    "typeTitleText": "Tipo",
     "courtInfoText": "Información de la corte",
     "courtLocationLabel": "Ubicación de la corte",
     "courtTypeTitleText": "Tipo de corte",
     "surfaceLabelText": "Superficie",
+    "imageTooSmallError": "Imagen demasiado pequeña. Usa al menos {minWidth}x{minHeight}px.",
+    "@imageTooSmallError": {
+        "placeholders": {
+            "minWidth": {"type": "int"},
+            "minHeight": {"type": "int"}
+        }
+    },
+    "invalidImageRatioError": "Relación de imagen no válida. Usa una imagen cercana a 2:1 (por ejemplo 1200x600).",
     "indoorTitle": "Interior",
     "indoorDesc": "Botas sin tacos",
     "grassTitle": "Césped",

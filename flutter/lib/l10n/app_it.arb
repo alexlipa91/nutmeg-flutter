@@ -120,10 +120,21 @@
     "matchStatsTitle": "Giocatori più performanti",
     "matchStatsSubTitle": "{n} elettori",
     "createNewCourtText": "Crea nuovo campo",
+    "pictureTitleText": "Immagine",
+    "informationTitleText": "Informazioni",
+    "typeTitleText": "Tipo",
     "courtInfoText": "Informazioni sul campo",
     "courtLocationLabel": "Posizione del campo",
     "courtTypeTitleText": "Tipo di campo",
     "surfaceLabelText": "Superficie",
+    "imageTooSmallError": "Immagine troppo piccola. Usa almeno {minWidth}x{minHeight}px.",
+    "@imageTooSmallError": {
+        "placeholders": {
+            "minWidth": {"type": "int"},
+            "minHeight": {"type": "int"}
+        }
+    },
+    "invalidImageRatioError": "Formato immagine non valido. Usa un'immagine vicina al rapporto 2:1 (ad esempio 1200x600).",
     "indoorTitle": "Indoor",
     "indoorDesc": "Scarpette senza tacchetti",
     "grassTitle": "Erbetta",

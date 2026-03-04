@@ -222,10 +222,21 @@
     },
 
     "createNewCourtText": "Create new Court",
+    "pictureTitleText": "Picture",
+    "informationTitleText": "Information",
+    "typeTitleText": "Type",
     "courtInfoText": "Court Information",
     "courtLocationLabel": "Court Location",
     "courtTypeTitleText": "Court Type",
     "surfaceLabelText": "Surface",
+    "imageTooSmallError": "Image too small. Use at least {minWidth}x{minHeight}px.",
+    "@imageTooSmallError": {
+        "placeholders": {
+            "minWidth": {"type": "int"},
+            "minHeight": {"type": "int"}
+        }
+    },
+    "invalidImageRatioError": "Invalid image ratio. Use an image close to 2:1 (for example 1200x600).",
 
     "indoorTitle": "Indoor",
     "indoorDesc": "Boots without studs",

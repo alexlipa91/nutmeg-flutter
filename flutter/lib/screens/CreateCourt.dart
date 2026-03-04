@@ -1,5 +1,10 @@
+import 'dart:typed_data';
+import 'dart:ui' as ui;
+
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 import 'package:nutmeg/state/UserState.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
@@ -21,6 +26,11 @@ class CreateCourt extends StatefulWidget {
 }
 
 class CreateCourtState extends State<CreateCourt> {
+  static const int _minImageWidth = 600;
+  static const int _minImageHeight = 300;
+  static const double _minImageAspectRatio = 1.6;
+  static const double _maxImageAspectRatio = 2.4;
+
   final TextEditingController surfaceController = TextEditingController();
   final TextEditingController textEditingController = TextEditingController();
 
@@ -34,8 +44,65 @@ class CreateCourtState extends State<CreateCourt> {
   String? city;
   double? lat;
   double? lng;
+  Uint8List? courtImageBytes;
+  String? courtImageValidationError;
 
-  Surface? surface;
+  Surface? surface = Surface.grass;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (surfaceController.text.isEmpty && surface != null) {
+      surfaceController.text = surface!.getTitle(context);
+    }
+  }
+
+  Future<void> _pickCourtImage() async {
+    final XFile? original =
+        await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (original == null) return;
+
+    final Uint8List bytes = await original.readAsBytes();
+    final ui.Image decoded = await decodeImageFromList(bytes);
+    final int width = decoded.width;
+    final int height = decoded.height;
+    final double ratio = width / height;
+    decoded.dispose();
+
+    if (width < _minImageWidth || height < _minImageHeight) {
+      setState(() {
+        courtImageValidationError = AppLocalizations.of(context)!
+            .imageTooSmallError(_minImageWidth, _minImageHeight);
+        courtImageBytes = null;
+      });
+      return;
+    }
+
+    if (ratio < _minImageAspectRatio || ratio > _maxImageAspectRatio) {
+      setState(() {
+        courtImageValidationError =
+            AppLocalizations.of(context)!.invalidImageRatioError;
+        courtImageBytes = null;
+      });
+      return;
+    }
+
+    setState(() {
+      courtImageBytes = bytes;
+      courtImageValidationError = null;
+    });
+  }
+
+  Future<String?> _uploadCourtImageIfNeeded(String placeId) async {
+    if (courtImageBytes == null) return null;
+
+    final String objectPath =
+        "sportcenters/custom/$placeId/cover_${DateTime.now().millisecondsSinceEpoch}.jpg";
+    final uploaded = await FirebaseStorage.instance
+        .ref(objectPath)
+        .putData(courtImageBytes!);
+    return uploaded.ref.getDownloadURL();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +120,64 @@ class CreateCourtState extends State<CreateCourt> {
                   Text(AppLocalizations.of(context)!.createNewCourtText,
                       style: TextPalette.h1Default),
                   Section(
-                      title: AppLocalizations.of(context)!.courtInfoText,
+                      title: AppLocalizations.of(context)!.pictureTitleText,
+                      titleType: "big",
+                      body: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Stack(
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.all(Radius.circular(15)),
+                                child: courtImageBytes != null
+                                    ? Image.memory(
+                                        courtImageBytes!,
+                                        width: double.infinity,
+                                        height: 220,
+                                        fit: BoxFit.cover,
+                                      )
+                                    : Image.asset(
+                                        surface!.getImagePath(),
+                                        width: double.infinity,
+                                        height: 220,
+                                        fit: BoxFit.cover,
+                                      ),
+                              ),
+                              Positioned(
+                                right: 12,
+                                bottom: 12,
+                                child: InkWell(
+                                  onTap: _pickCourtImage,
+                                  borderRadius: BorderRadius.circular(100),
+                                  child: Container(
+                                    width: 44,
+                                    height: 44,
+                                    decoration: BoxDecoration(
+                                      color: Palette.primary,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Icon(
+                                      Icons.photo_library_outlined,
+                                      color: Palette.white,
+                                      size: 22,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          if (courtImageValidationError != null) ...[
+                            SizedBox(height: 8),
+                            Text(
+                              courtImageValidationError!,
+                              style: TextPalette.bodyText
+                                  .copyWith(color: Palette.destructive),
+                            ),
+                          ],
+                        ],
+                      )),
+                  Section(
+                      title: AppLocalizations.of(context)!.informationTitleText,
                       titleType: "big",
                       body: Column(
                         children: [
@@ -132,7 +256,7 @@ class CreateCourtState extends State<CreateCourt> {
                         ],
                       )),
                   Section(
-                      title: AppLocalizations.of(context)!.courtTypeTitleText,
+                      title: AppLocalizations.of(context)!.typeTitleText,
                       titleType: "big",
                       body: Column(children: [
                         Row(
@@ -239,11 +363,17 @@ class CreateCourtState extends State<CreateCourt> {
                         .toUpperCase(), (_) async {
                   bool? v = _formKey.currentState?.validate();
                   if (v != null && v) {
+                    final String? uploadedImageUrl =
+                        await _uploadCourtImageIfNeeded(placeId!);
                     await CloudFunctionsClient().post("/sportcenters/add", {
                       "place_id": placeId!,
                       "surface": surface!.getDbName(),
                       "hasChangingRooms": changeRoomsAvailable,
-                      "courtType": "5v5"
+                      "courtType": "5v5",
+                      if (uploadedImageUrl != null)
+                        "thumbnailUrl": uploadedImageUrl,
+                      if (uploadedImageUrl != null)
+                        "largeImageUrls": [uploadedImageUrl],
                     });
                     await context
                         .read<UserState>()

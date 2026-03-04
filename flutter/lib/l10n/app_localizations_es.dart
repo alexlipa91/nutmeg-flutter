@@ -425,6 +425,15 @@ class AppLocalizationsEs extends AppLocalizations {
   String get createNewCourtText => 'Crear un nuevo Tribunal';
 
   @override
+  String get pictureTitleText => 'Imagen';
+
+  @override
+  String get informationTitleText => 'Información';
+
+  @override
+  String get typeTitleText => 'Tipo';
+
+  @override
   String get courtInfoText => 'Información de la corte';
 
   @override
@@ -435,6 +444,15 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get surfaceLabelText => 'Superficie';
+
+  @override
+  String imageTooSmallError(int minWidth, int minHeight) {
+    return 'Imagen demasiado pequeña. Usa al menos ${minWidth}x${minHeight}px.';
+  }
+
+  @override
+  String get invalidImageRatioError =>
+      'Relación de imagen no válida. Usa una imagen cercana a 2:1 (por ejemplo 1200x600).';
 
   @override
   String get indoorTitle => 'Interior';
