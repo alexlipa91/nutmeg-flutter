@@ -63,9 +63,9 @@ def _delete_scheduled_tasks(snapshot: DocumentSnapshot | None, match_id: str | N
     )
 
 
-@on_document_written(document="matches/{matchId}")
-def on_match_document_written(
+def _handle_match_document_written(
     event: Event[Change[DocumentSnapshot | None]],
+    collection: str,
 ) -> None:
     match_id = event.params.get("matchId")
     before = event.data.before
@@ -81,8 +81,23 @@ def on_match_document_written(
     info(
         "Match document trigger fired",
         {
+            "collection": collection,
             "matchId": match_id,
             "operation": operation,
         },
     )
+
+
+@on_document_written(document="matches/{matchId}")
+def on_match_document_written(
+    event: Event[Change[DocumentSnapshot | None]],
+) -> None:
+    _handle_match_document_written(event, "matches")
+
+
+@on_document_written(document="matches_test/{matchId}")
+def on_match_test_document_written(
+    event: Event[Change[DocumentSnapshot | None]],
+) -> None:
+    _handle_match_document_written(event, "matches-test")
 
