@@ -1,6 +1,5 @@
 import 'dart:math';
 import 'dart:ui' as ui;
-import 'dart:convert';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
@@ -883,6 +882,9 @@ class PlayerCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var userData = context.watch<UsersState>().getUserDetail(userId);
+    if (userData == null) {
+      context.read<UsersState>().fetchUserDetails(userId);
+    }
     var hasOverlay = showRemove || showPromote;
 
     return SizedBox(
@@ -1133,7 +1135,30 @@ class _AddPlayerCard extends StatelessWidget {
               await matchState.addUserToMatch(playerId);
             },
           ),
-        );
+        ).then((result) async {
+          if (result != "open_add_guest") return;
+
+          final guestName = await ModalBottomSheet.showNutmegModalBottomSheet<String>(
+            context,
+            _AddGuestNameSheet(),
+          );
+          if (guestName == null || guestName.trim().isEmpty) return;
+
+          try {
+            await matchState.addGuestToMatch(guestName.trim());
+          } catch (e) {
+            if (!context.mounted) return;
+            final rawMessage = e.toString();
+            final errorMessage =
+                rawMessage.replaceFirst(RegExp(r'^Exception:\s*'), '').trim();
+            await GenericInfoModal(
+              title: AppLocalizations.of(context)!.genericErrorMessage,
+              description: errorMessage.isNotEmpty
+                  ? errorMessage
+                  : AppLocalizations.of(context)!.genericErrorDesc,
+            ).show(context);
+          }
+        });
       },
       child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
         Padding(
@@ -1180,6 +1205,7 @@ class _PlayerPickerSheet extends StatefulWidget {
 class _PlayerPickerSheetState extends State<_PlayerPickerSheet> {
   Map<String, int>? _playerCounts;
   String? _addingPlayerId;
+  bool _openingGuestModal = false;
   String _searchQuery = "";
 
   @override
@@ -1282,6 +1308,12 @@ class _PlayerPickerSheetState extends State<_PlayerPickerSheet> {
     );
   }
 
+  Future<void> _onAddGuestPressed() async {
+    if (_addingPlayerId != null || _openingGuestModal) return;
+    setState(() => _openingGuestModal = true);
+    Navigator.of(context).pop("open_add_guest");
+  }
+
   @override
   Widget build(BuildContext context) {
     var usersState = context.watch<UsersState>();
@@ -1291,16 +1323,6 @@ class _PlayerPickerSheetState extends State<_PlayerPickerSheet> {
       return Padding(
         padding: EdgeInsets.symmetric(vertical: 32),
         child: Center(child: CircularProgressIndicator()),
-      );
-    }
-
-    if (_playerCounts!.isEmpty) {
-      return Padding(
-        padding: EdgeInsets.symmetric(vertical: 24),
-        child: Center(
-          child: Text(AppLocalizations.of(context)!.noPlayersAvailable,
-              style: TextPalette.bodyText),
-        ),
       );
     }
 
@@ -1315,6 +1337,7 @@ class _PlayerPickerSheetState extends State<_PlayerPickerSheet> {
             var name = UserDetails.getDisplayName(ud).toLowerCase();
             return name.contains(_searchQuery.toLowerCase());
           }).toList();
+    final hasPlayers = sorted.isNotEmpty;
 
     return ConstrainedBox(
       constraints: BoxConstraints(maxHeight: maxHeight),
@@ -1326,31 +1349,37 @@ class _PlayerPickerSheetState extends State<_PlayerPickerSheet> {
           SizedBox(height: 4),
           Text(AppLocalizations.of(context)!.pickFromPlayersSubtitle,
               style: TextPalette.bodyText),
-          SizedBox(height: 12),
-          TextField(
-            onChanged: (v) => setState(() => _searchQuery = v),
-            decoration: InputDecoration(
-              hintText: AppLocalizations.of(context)!.searchByNameHint,
-              hintStyle: TextPalette.getBodyText(Palette.greyDark),
-              prefixIcon: Icon(Icons.search, color: Palette.greyDark, size: 20),
-              filled: true,
-              fillColor: Palette.greyLighter,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide.none,
+          if (hasPlayers) ...[
+            SizedBox(height: 12),
+            TextField(
+              onChanged: (v) => setState(() => _searchQuery = v),
+              decoration: InputDecoration(
+                hintText: AppLocalizations.of(context)!.searchByNameHint,
+                hintStyle: TextPalette.getBodyText(Palette.greyDark),
+                prefixIcon: Icon(Icons.search, color: Palette.greyDark, size: 20),
+                filled: true,
+                fillColor: Palette.greyLighter,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide.none,
+                ),
+                contentPadding: EdgeInsets.symmetric(vertical: 10),
+                isDense: true,
               ),
-              contentPadding: EdgeInsets.symmetric(vertical: 10),
-              isDense: true,
+              style: TextPalette.getBodyText(Palette.black),
             ),
-            style: TextPalette.getBodyText(Palette.black),
-          ),
-          SizedBox(height: 12),
+            SizedBox(height: 12),
+          ] else
+            SizedBox(height: 10),
           Flexible(
-            child: filtered.isEmpty
+            child: (!hasPlayers || filtered.isEmpty)
                 ? Center(
                     child: Padding(
                       padding: EdgeInsets.symmetric(vertical: 16),
-                      child: Text(AppLocalizations.of(context)!.noResults,
+                      child: Text(
+                          !hasPlayers
+                              ? AppLocalizations.of(context)!.noPlayersAvailable
+                              : AppLocalizations.of(context)!.noResults,
                           style: TextPalette.getBodyText(Palette.greyDark)),
                     ),
                   )
@@ -1364,9 +1393,81 @@ class _PlayerPickerSheetState extends State<_PlayerPickerSheet> {
                     },
                   ),
           ),
+          SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: GenericButtonWithLoader(
+              AppLocalizations.of(context)!.addGuestLabel.toUpperCase(),
+              (_addingPlayerId != null || _openingGuestModal)
+                  ? null
+                  : (BuildContext context) async => _onAddGuestPressed(),
+              Primary(),
+            ),
+          ),
         ],
       ),
     );
+  }
+}
+
+class _AddGuestNameSheet extends StatefulWidget {
+  @override
+  State<_AddGuestNameSheet> createState() => _AddGuestNameSheetState();
+}
+
+class _AddGuestNameSheetState extends State<_AddGuestNameSheet> {
+  final TextEditingController _controller = TextEditingController();
+  bool _isValid = true;
+
+  @override
+  Widget build(BuildContext context) {
+    return InfoContainer(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(AppLocalizations.of(context)!.addGuestTitle, style: TextPalette.h2),
+          SizedBox(height: 8),
+          Text(AppLocalizations.of(context)!.addGuestSubtitle,
+              style: TextPalette.bodyText),
+          SizedBox(height: 16),
+          TextField(
+            controller: _controller,
+            autofocus: true,
+            decoration: InputDecoration(
+              border: OutlineInputBorder(),
+              hintText: AppLocalizations.of(context)!.guestNameHint,
+              errorText:
+                  _isValid ? null : AppLocalizations.of(context)!.requiredError,
+            ),
+            textInputAction: TextInputAction.done,
+            onChanged: (v) {
+              if (!_isValid && v.trim().isNotEmpty) {
+                setState(() => _isValid = true);
+              }
+            },
+            onSubmitted: (_) => _submit(),
+          ),
+          SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: GenericButtonWithLoader(
+              AppLocalizations.of(context)!.confirmButtonText,
+              (BuildContext context) async => _submit(),
+              Primary(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _submit() {
+    final name = _controller.text.trim();
+    if (name.isEmpty) {
+      setState(() => _isValid = false);
+      return;
+    }
+    Navigator.of(context).pop(name);
   }
 }
 
@@ -1490,6 +1591,9 @@ class Stats extends StatelessWidget {
   static Widget userRow(BuildContext context, MapEntry<String, double?> e,
       int index, UsersState userState, Ratings ratings) {
     var userDetails = userState.getUserDetail(e.key);
+    if (userDetails == null) {
+      userState.fetchUserDetails(e.key);
+    }
     double? rate = e.value;
     bool isPotm = (ratings.potms ?? []).contains(e.key);
 
@@ -1811,6 +1915,9 @@ class _ManualPayBadge extends StatelessWidget {
                 SizedBox(height: 16),
                 ...playerIds.map((userId) {
                   final ud = usersState.getUserDetail(userId);
+                  if (ud == null) {
+                    usersState.fetchUserDetails(userId);
+                  }
                   final playerPaid = currentMatch.hasUserPaid(userId);
 
                   return InkWell(
@@ -1828,13 +1935,21 @@ class _ManualPayBadge extends StatelessWidget {
                         UserAvatar(14, ud),
                         SizedBox(width: 10),
                         Expanded(
-                          child: Text(
-                            ud?.name ?? "...",
-                            style: TextPalette.bodyText
-                                .copyWith(color: Palette.black),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
+                          child: ud == null
+                              ? Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: SizedBox(
+                                    width: 110,
+                                    child: Skeletons.sText,
+                                  ),
+                                )
+                              : Text(
+                                  ud.name ?? "Player",
+                                  style: TextPalette.bodyText
+                                      .copyWith(color: Palette.black),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                         ),
                         Container(
                           padding: EdgeInsets.symmetric(
@@ -2695,6 +2810,9 @@ class _NutmegPayBadgeState extends State<_NutmegPayBadge> {
           if (goingIds.isNotEmpty) const SizedBox(height: 8),
           ...goingIds.map((userId) {
             final ud = usersState.getUserDetail(userId);
+            if (ud == null) {
+              usersState.fetchUserDetails(userId);
+            }
             final hasPaid = match.hasPaymentIntent(userId);
             return Padding(
               padding: const EdgeInsets.symmetric(vertical: 6),
@@ -2702,12 +2820,17 @@ class _NutmegPayBadgeState extends State<_NutmegPayBadge> {
                 UserAvatar(14, ud),
                 SizedBox(width: 8),
                 Expanded(
-                  child: Text(
-                    ud?.name ?? "Unknown",
-                    style: TextPalette.bodyText.copyWith(color: Palette.black),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                  child: ud == null
+                      ? Align(
+                          alignment: Alignment.centerLeft,
+                          child: SizedBox(width: 110, child: Skeletons.sText),
+                        )
+                      : Text(
+                          ud.name ?? "Player",
+                          style: TextPalette.bodyText.copyWith(color: Palette.black),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                 ),
                 if (hasPaid)
                   Row(mainAxisSize: MainAxisSize.min, children: [

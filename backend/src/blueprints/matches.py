@@ -3,6 +3,7 @@ import logging
 import random
 import traceback
 import time
+import uuid
 from collections import namedtuple
 from datetime import datetime, timezone, timedelta
 from enum import Enum
@@ -626,12 +627,28 @@ def get_teams(match_id, algorithm="balanced", is_test=False):
 
 @bp.route("/<match_id>/users/add", methods=["POST"])
 def add_user_to_match_request(match_id):
-    data = flask.request.get_json(silent=True)
+    data = flask.request.get_json(silent=True) or {}
 
-    user_id = data["user_id"]
+    user_id = data.get("user_id")
+    guest_name = (data.get("guest_name") or "").strip()
     payment_intent = data.get("payment_intent", None)
     is_test = _is_test_from_request()
     requester_id = flask.g.uid
+
+    if guest_name:
+        match = MatchModel.get_by_id(match_id, app.db_client, is_test=is_test)
+        if not match:
+            return {"error": "Match not found"}, 404
+
+        is_admin = requester_id in ADMIN_IDS
+        is_organizer = match.organizer_id == requester_id
+        if not (is_admin or is_organizer):
+            return {"error": "User not authorized to add guest players"}, 403
+
+        user_id = _create_guest_user(guest_name, requester_id)
+
+    if not user_id:
+        return {"error": "Missing user_id or guest_name"}, 400
 
     add_user_to_match(
         match_id,
@@ -642,6 +659,19 @@ def add_user_to_match_request(match_id):
     )
 
     return {"data": {}}, 200
+
+
+def _create_guest_user(guest_name: str, creator_id: str) -> str:
+    guest_user_id = "guest_{}".format(uuid.uuid4().hex)
+    app.db_client.collection("users").document(guest_user_id).set(
+        {
+            "name": guest_name,
+            "guest": True,
+            "createdAt": firestore.firestore.SERVER_TIMESTAMP,
+            "createdBy": creator_id,
+        }
+    )
+    return guest_user_id
 
 
 def add_user_to_match(

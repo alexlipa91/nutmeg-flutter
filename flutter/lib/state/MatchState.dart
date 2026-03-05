@@ -57,6 +57,13 @@ class MatchState extends ChangeNotifier {
     await fetchMatch();
   }
 
+  Future<void> addGuestToMatch(String guestName) async {
+    await CloudFunctionsClient().post("matches/$_matchId/users/add", {
+      'guest_name': guestName,
+    });
+    await fetchMatch();
+  }
+
   Future<void> removeLoggedInUserFromMatch() async {
     await CloudFunctionsClient().post("matches/$_matchId/users/remove", {});
     await fetchMatch();

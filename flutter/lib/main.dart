@@ -140,7 +140,7 @@ void main() async {
     Logger.root.severe('Error initializing Firebase', e, stack);
   }
 
-  // Debug: sign in as another user via INJECT_AUTH_TOKEN_UID
+  // Debug: sign in as another user via INJECT_AUTH_TOKEN (Firebase custom token)
   if (AppConfig.injectAuthToken.isNotEmpty) {
     logger.info('Injecting auth token: ${AppConfig.injectAuthToken}');
     try {

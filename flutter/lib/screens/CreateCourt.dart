@@ -28,7 +28,7 @@ class CreateCourt extends StatefulWidget {
 class CreateCourtState extends State<CreateCourt> {
   static const int _minImageWidth = 600;
   static const int _minImageHeight = 300;
-  static const double _minImageAspectRatio = 1.6;
+  static const double _minImageAspectRatio = 1.25;
   static const double _maxImageAspectRatio = 2.4;
 
   final TextEditingController surfaceController = TextEditingController();

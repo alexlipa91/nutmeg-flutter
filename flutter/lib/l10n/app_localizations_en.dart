@@ -839,6 +839,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get addPlayerLabel => 'ADD';
 
   @override
+  String get addGuestLabel => 'Add guest';
+
+  @override
+  String get addGuestTitle => 'Add guest player';
+
+  @override
+  String get addGuestSubtitle => 'Enter the guest player\'s display name below';
+
+  @override
+  String get guestNameHint => 'Guest name';
+
+  @override
   String get pickFromPlayersSubtitle => 'Pick from players who played with you';
 
   @override

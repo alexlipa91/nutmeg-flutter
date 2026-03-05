@@ -846,6 +846,19 @@ class AppLocalizationsIt extends AppLocalizations {
   String get addPlayerLabel => 'AGGIUNGI';
 
   @override
+  String get addGuestLabel => 'Aggiungi ospite';
+
+  @override
+  String get addGuestTitle => 'Aggiungi giocatore ospite';
+
+  @override
+  String get addGuestSubtitle =>
+      'Inserisci il nome visualizzato del giocatore ospite';
+
+  @override
+  String get guestNameHint => 'Nome ospite';
+
+  @override
   String get pickFromPlayersSubtitle =>
       'Scegli tra i giocatori con cui hai giocato';
 

@@ -1590,6 +1590,30 @@ abstract class AppLocalizations {
   /// **'ADD'**
   String get addPlayerLabel;
 
+  /// No description provided for @addGuestLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Add guest'**
+  String get addGuestLabel;
+
+  /// No description provided for @addGuestTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add guest player'**
+  String get addGuestTitle;
+
+  /// No description provided for @addGuestSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the guest player's display name below'**
+  String get addGuestSubtitle;
+
+  /// No description provided for @guestNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Guest name'**
+  String get guestNameHint;
+
   /// No description provided for @pickFromPlayersSubtitle.
   ///
   /// In en, this message translates to:

@@ -414,6 +414,10 @@
         }
     },
     "addPlayerLabel": "ADD",
+    "addGuestLabel": "Add guest",
+    "addGuestTitle": "Add guest player",
+    "addGuestSubtitle": "Enter the guest player's display name below",
+    "guestNameHint": "Guest name",
     "pickFromPlayersSubtitle": "Pick from players who played with you",
     "searchByNameHint": "Search by name",
     "noPlayersAvailable": "No players available to add",
