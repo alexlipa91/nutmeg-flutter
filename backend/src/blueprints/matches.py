@@ -1899,20 +1899,11 @@ def _add_match_firestore(match_data):
     doc_ref = app.db_client.collection(coll).document()
     doc_ref.set(match_data)
     after_set_ms = int((time.perf_counter() - started_at) * 1000)
-
-    tasks_scheduled = schedule_match_tasks(doc_ref.id, match_data, is_test=is_test)
-    app.db_client.collection(coll).document(doc_ref.id).update(
-        {
-            "tasksScheduled": tasks_scheduled,
-        }
-    )
-    schedule_ms = int((time.perf_counter() - started_at) * 1000) - after_set_ms
     total_ms = int((time.perf_counter() - started_at) * 1000)
     logging.info(
-        "Add match timings: match_id=%s firestore_set_ms=%d schedule_ms=%d total_ms=%d",
+        "Add match timings: match_id=%s firestore_set_ms=%d total_ms=%d",
         doc_ref.id,
         after_set_ms,
-        schedule_ms,
         total_ms,
     )
 
@@ -2044,44 +2035,12 @@ def delete_tests():
         app.db_client.collection("matches_test").document(m.id).delete()
 
 
-def _update_user_account(user_id, is_test, match_id, manage_payments):    
-    user_doc_ref = app.db_client.collection("users").document(user_id)
-    user_updates = {}
-
-    # add to created matches
-    if not is_test:
-        user_updates["{}.{}".format("created_matches", match_id)] = (
-            firestore.firestore.SERVER_TIMESTAMP
-        )
-
-    if manage_payments:
-        setup_stripe(is_test)
-        prefix = "stripe_test" if is_test else "stripe"
-        
-        user_data = user_doc_ref.get().to_dict()
-        existing_account = user_data.get(prefix, {}).get("connected_account_id")
-        if existing_account:
-            print("{}.connected_account_id already created".format(prefix))
-        else:
-            response = stripe.Account.create(
-                type="express",
-                capabilities={
-                    "transfers": {"requested": True},
-                },
-                business_type="individual",
-                business_profile={"product_description": "Nutmeg football matches"},
-                metadata={"userId": user_id},
-                settings={
-                    "payouts": {
-                        "debit_negative_balances": True,
-                        "schedule": {"interval": "manual"},
-                    }
-                },
-            )
-            user_updates["{}.connected_account_id".format(prefix)] = response.id
-
-    if user_updates:
-        user_doc_ref.update(user_updates)
+def _update_user_account(user_id, is_test, match_id):    
+    if is_test:
+        return
+    app.db_client.collection("users").document(user_id).update(
+        {f"created_matches.{match_id}": firestore.firestore.SERVER_TIMESTAMP}
+    )
 
 
 class RatingsNotComputedReason(str, Enum):
