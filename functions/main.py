@@ -85,3 +85,4 @@ def on_match_document_written(
             "operation": operation,
         },
     )
+
