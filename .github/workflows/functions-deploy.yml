@@ -47,4 +47,4 @@ jobs:
       - name: Deploy to Firebase Functions
         run: |
           . functions/venv/bin/activate
-          firebase deploy --only functions --project nutmeg-9099c
+          firebase deploy --only functions --project nutmeg-9099c --force
