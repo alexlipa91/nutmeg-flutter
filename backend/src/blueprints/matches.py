@@ -560,11 +560,11 @@ def create_match():
     match_id = _add_match_firestore(request_json)
     after_add_ms = int((time.perf_counter() - started_at) * 1000)
 
-    match_with_stripe_payments = "price" in request_json and not request_json.get(
-        "isManualPayment", False
-    )
+    if not is_test:
+        app.db_client.collection("users").document(organizer_id).update(
+            {f"created_matches.{match_id}": firestore.firestore.SERVER_TIMESTAMP}
+        )
 
-    _update_user_account(organizer_id, is_test, match_id, match_with_stripe_payments)
     total_ms = int((time.perf_counter() - started_at) * 1000)
     logging.info(
         "Create match done: match_id=%s add_ms=%d total_ms=%d",
@@ -1096,7 +1096,9 @@ def _release_match_money(db, match_id, is_test):
     user_fee = match.price.get("userFee", NUTMEG_FEE_CENTS) if match.price else 0
     payout_per_player = base_price - user_fee
     if payout_per_player <= 0:
-        logging.info("Release %s: invalid payout per player (%d)", match_id, payout_per_player)
+        logging.info(
+            "Release %s: invalid payout per player (%d)", match_id, payout_per_player
+        )
         return {"status": "skipped", "reason": "invalid_payout"}
 
     transfer_total = 0
@@ -1126,20 +1128,17 @@ def _release_match_money(db, match_id, is_test):
             continue
 
         try:
-            pi = stripe.PaymentIntent.retrieve(
-                pi_id, expand=["latest_charge"]
-            )
+            pi = stripe.PaymentIntent.retrieve(pi_id, expand=["latest_charge"])
             charge = pi.latest_charge
             is_ready = (
-                charge
-                and charge.status == "succeeded"
-                and charge.amount_refunded == 0
+                charge and charge.status == "succeeded" and charge.amount_refunded == 0
             )
             if not is_ready:
                 pending_ids.append(pi_id)
-                going_updates[
-                    "going.{}.release".format(user_id)
-                ] = {"status": "pending_funds", "transfer_id": None}
+                going_updates["going.{}.release".format(user_id)] = {
+                    "status": "pending_funds",
+                    "transfer_id": None,
+                }
                 continue
 
             transfer = stripe.Transfer.create(
@@ -1155,16 +1154,20 @@ def _release_match_money(db, match_id, is_test):
                 },
                 idempotency_key="release:{}:{}".format(match_id, pi_id),
             )
-            going_updates[
-                "going.{}.release".format(user_id)
-            ] = {"status": "released", "transfer_id": transfer.id}
+            going_updates["going.{}.release".format(user_id)] = {
+                "status": "released",
+                "transfer_id": transfer.id,
+            }
             transfer_ids.append(transfer.id)
         except Exception as e:
-            logging.warning("Release %s: failed transfer for PI %s: %s", match_id, pi_id, e)
+            logging.warning(
+                "Release %s: failed transfer for PI %s: %s", match_id, pi_id, e
+            )
             failed_ids.append(pi_id)
-            going_updates[
-                "going.{}.release".format(user_id)
-            ] = {"status": "failed", "transfer_id": None}
+            going_updates["going.{}.release".format(user_id)] = {
+                "status": "failed",
+                "transfer_id": None,
+            }
             continue
 
         transfer_total += payout_per_player
@@ -1468,9 +1471,14 @@ def _freeze_match_stats(match_id, match: MatchModel, is_test=False):
     num_score_voters = ratings.num_voters() if ratings else 0
     num_award_voters = len(ratings.award_votes) if ratings else 0
     Ratings.store_final_results(
-        match_id, match_stats.user_scores, match_stats.potms,
-        match_stats.award_votes, num_score_voters, num_award_voters,
-        app.db_client, is_test=is_test,
+        match_id,
+        match_stats.user_scores,
+        match_stats.potms,
+        match_stats.award_votes,
+        num_score_voters,
+        num_award_voters,
+        app.db_client,
+        is_test=is_test,
     )
 
     # score - use Match model helpers
@@ -1884,9 +1892,11 @@ def _add_match_firestore(match_data):
             base_price,
             user_fee,
             base_price if isinstance(base_price, int) else None,
-            (base_price - user_fee)
-            if isinstance(base_price, int) and isinstance(user_fee, int)
-            else None,
+            (
+                (base_price - user_fee)
+                if isinstance(base_price, int) and isinstance(user_fee, int)
+                else None
+            ),
         )
 
     match_data["dateTime"] = dateutil.parser.isoparse(match_data["dateTime"])
@@ -2033,14 +2043,6 @@ def delete_task(task_name):
 def delete_tests():
     for m in app.db_client.collection("matches_test").get():
         app.db_client.collection("matches_test").document(m.id).delete()
-
-
-def _update_user_account(user_id, is_test, match_id):    
-    if is_test:
-        return
-    app.db_client.collection("users").document(user_id).update(
-        {f"created_matches.{match_id}": firestore.firestore.SERVER_TIMESTAMP}
-    )
 
 
 class RatingsNotComputedReason(str, Enum):
