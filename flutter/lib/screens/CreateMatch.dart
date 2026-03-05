@@ -985,10 +985,7 @@ class CreateMatchState extends State<CreateMatch> {
                                       (Decimal.parse(price!) *
                                               Decimal.parse("100"))
                                           .toDouble()
-                                          .toInt(),
-                                      !showPaymentInfo
-                                          ? AppConfig.nutmegFeeCents
-                                          : 0)
+                                          .toInt())
                                   : null,
                               endDateTime.difference(startDateTime),
                               isTest,

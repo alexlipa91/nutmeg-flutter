@@ -166,7 +166,7 @@ class JoinMatchBottomBar extends StatelessWidget {
         matchId: matchId,
         text: AppLocalizations.of(context)!.spotsLeft(match.getSpotsLeft()),
         subText: match.price != null
-            ? formatCurrency(match.price!.getTotalPrice())
+            ? formatCurrency(match.price!.basePrice)
             : null,
         button: enabled ? JoinButton(matchId: matchId) : JoinButtonDisabled());
   }

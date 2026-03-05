@@ -44,9 +44,8 @@ def checkout():
     statement_suffix = _build_statement_descriptor_suffix(match_info)
     transfer_metadata = _build_transfer_metadata(match_info, user_name, match_id)
 
-    price_amount = match_info["price"]["basePrice"] + match_info["price"].get(
-        "userFee", NUTMEG_FEE_CENTS
-    )
+    # basePrice is what players pay; fee is deducted later on release.
+    price_amount = match_info["price"]["basePrice"]
 
     session = _create_checkout_session_with_deep_links(
         _get_stripe_customer_id(user_id, is_test),

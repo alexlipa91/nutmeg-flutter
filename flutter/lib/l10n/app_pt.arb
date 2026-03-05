@@ -258,6 +258,7 @@
     "collectedAmountText": "{amount} recolhidos ({count}/{total} pagos)",
     "releaseScheduledText": "O dinheiro será transferido para a sua conta Stripe em {date}",
     "releaseCompletedText": "{amount} transferidos para a sua conta Stripe",
+    "nutmegPayCollectedSoFarSubtitle": "Este é o dinheiro recolhido até agora dos jogadores.",
     "androidInstallBannerMessage": "Instale a app da Nutmeg para uma melhor experiência.",
     "androidInstallBannerDownload": "Transferir",
     "androidInstallBannerLater": "Mais tarde"

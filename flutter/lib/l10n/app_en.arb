@@ -308,6 +308,7 @@
                 "amount":  {"type": "String"}
             }
         },
+    "nutmegPayCollectedSoFarSubtitle": "This is the money collected so far from players.",
 
     "changeLanguageButton": "CHANGE LANGUAGE",
     "languageModalTitle": "Language",

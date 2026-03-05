@@ -33,7 +33,7 @@ class PaymentDetailsDescription {
     var matchPrice = match?.price;
     var formattedPrice = matchPrice == null
         ? ""
-        : formatCurrency(matchPrice.getTotalPrice());
+        : formatCurrency(matchPrice.basePrice);
     final allowUsersToMarkPayments = ConfigsUtils.allowUsersToMarkPayments;
     var showReminder = isManualPayment &&
         !isOrganizer &&

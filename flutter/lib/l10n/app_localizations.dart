@@ -1140,6 +1140,12 @@ abstract class AppLocalizations {
   /// **'{amount} transferred to your Stripe account'**
   String releaseCompletedText(String amount);
 
+  /// No description provided for @nutmegPayCollectedSoFarSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'This is the money collected so far from players.'**
+  String get nutmegPayCollectedSoFarSubtitle;
+
   /// No description provided for @changeLanguageButton.
   ///
   /// In en, this message translates to:

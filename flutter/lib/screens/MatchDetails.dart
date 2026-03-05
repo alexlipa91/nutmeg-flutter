@@ -685,7 +685,7 @@ class MatchInfo extends StatelessWidget {
               Row(children: [
                 Icon(Icons.local_offer_outlined, color: Palette.black, size: 18),
                 SizedBox(width: 16),
-                Text(formatCurrency(match.price!.getTotalPrice()),
+                Text(formatCurrency(match.price!.basePrice),
                     style: TextPalette.listItem),
                 Spacer(),
                 if (!match.isManualPayment)
@@ -2637,9 +2637,14 @@ class _NutmegPayBadgeState extends State<_NutmegPayBadge> {
     final goingIds = match.going.keys.toList();
     final l10n = AppLocalizations.of(context)!;
 
-    final total = _data?["total"] as int? ?? 0;
     final playersPaid = _data?["players_paid"] as int? ?? 0;
-    final nutmegFees = playersPaid * AppConfig.nutmegFeeCents;
+    final basePrice = match.price?.basePrice ?? 0;
+    final feePerPlayer = match.isManualPayment
+        ? 0
+        : AppConfig.nutmegFeeCents;
+    final grossCollected = playersPaid * basePrice;
+    final nutmegFees = playersPaid * feePerPlayer;
+    final netCollected = grossCollected - nutmegFees;
     final releaseAmount = _data?["release_amount"] as int?;
     final releaseAt = _data?["release_at"] as String?;
     final releasedAt = _data?["released_at"] as String?;
@@ -2658,7 +2663,7 @@ class _NutmegPayBadgeState extends State<_NutmegPayBadge> {
           style: TextPalette.getBodyText(Palette.green).copyWith(fontSize: 12),
         )),
       ]);
-    } else if (releaseAt != null && total > 0) {
+    } else if (releaseAt != null && grossCollected > 0) {
       final releaseDate = DateTime.parse(releaseAt).toLocal();
       final formattedDate = DateFormat.yMMMd().add_Hm().format(releaseDate);
       releaseRow = Row(children: [
@@ -2675,6 +2680,19 @@ class _NutmegPayBadgeState extends State<_NutmegPayBadge> {
       title: l10n.payThroughNutmeg,
       content: Column(
         children: [
+          Padding(
+            padding: const EdgeInsets.only(bottom: 2),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                l10n.nutmegPayCollectedSoFarSubtitle,
+                textAlign: TextAlign.left,
+                style:
+                    TextPalette.getBodyText(Palette.greyDark).copyWith(fontSize: 12),
+              ),
+            ),
+          ),
+          if (goingIds.isNotEmpty) const SizedBox(height: 8),
           ...goingIds.map((userId) {
             final ud = usersState.getUserDetail(userId);
             final hasPaid = match.hasPaymentIntent(userId);
@@ -2716,7 +2734,7 @@ class _NutmegPayBadgeState extends State<_NutmegPayBadge> {
                   style: TextPalette.bodyText
                       .copyWith(color: Palette.black)),
               Spacer(),
-              Text(formatCurrency(total),
+              Text(formatCurrency(grossCollected),
                   style: TextPalette.getBodyText(Palette.black)),
             ]),
           ),
@@ -2739,7 +2757,7 @@ class _NutmegPayBadgeState extends State<_NutmegPayBadge> {
                   style: TextPalette.bodyText.copyWith(
                       color: Palette.black, fontWeight: FontWeight.w600)),
               Spacer(),
-              Text(formatCurrency(total - nutmegFees),
+              Text(formatCurrency(netCollected),
                   style: TextPalette.getBodyText(Palette.black)
                       .copyWith(fontWeight: FontWeight.w600)),
             ]),

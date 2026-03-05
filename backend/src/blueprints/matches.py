@@ -2,6 +2,7 @@ from dataclasses import dataclass
 import logging
 import random
 import traceback
+import time
 from collections import namedtuple
 from datetime import datetime, timezone, timedelta
 from enum import Enum
@@ -543,18 +544,34 @@ def get_user_given_awards(match_id):
 
 @bp.route("", methods=["POST"])
 def create_match():
+    started_at = time.perf_counter()
     request_json = flask.request.get_json(silent=True)
 
     is_test = request_json.get("isTest", False)
     organizer_id = request_json["organizerId"]
+    logging.info(
+        "Create match start: organizer=%s is_test=%s has_price=%s manual=%s",
+        organizer_id,
+        is_test,
+        "price" in request_json,
+        request_json.get("isManualPayment", False),
+    )
 
     match_id = _add_match_firestore(request_json)
+    after_add_ms = int((time.perf_counter() - started_at) * 1000)
 
     match_with_stripe_payments = "price" in request_json and not request_json.get(
         "isManualPayment", False
     )
 
     _update_user_account(organizer_id, is_test, match_id, match_with_stripe_payments)
+    total_ms = int((time.perf_counter() - started_at) * 1000)
+    logging.info(
+        "Create match done: match_id=%s add_ms=%d total_ms=%d",
+        match_id,
+        after_add_ms,
+        total_ms,
+    )
 
     return {"data": {"id": match_id}}, 200
 
@@ -1203,6 +1220,18 @@ def release_match_money(match_id):
     return _release_match_money(app.db_client, match_id, _is_test_from_request())
 
 
+@bp.route("/<match_id>/tasks/schedule", methods=["POST"])
+def schedule_match_tasks_endpoint(match_id):
+    is_test = _is_test_from_request()
+    force = flask.request.args.get("force") == "true"
+    result = _schedule_tasks_for_match_doc(
+        app.db_client, match_id, is_test=is_test, force=force
+    )
+    if result.get("reason") == "not_found":
+        return {"error": "Match not found"}, 404
+    return {"data": result}, 200
+
+
 def _get_match_collected_info(match):
     """Calculate collected amount from match data (no Stripe API calls)."""
     return _calculate_release_amount(match, verify_with_stripe=False)
@@ -1253,7 +1282,8 @@ def _cancel_match_firestore_transactional(
     match = match_doc_ref.get(transaction=transaction).to_dict()
     to_refund = None
     if "price" in match:
-        to_refund = match["price"]["basePrice"] + match["price"].get("userFee", 0)
+        # basePrice is the amount originally charged to the player.
+        to_refund = match["price"]["basePrice"]
 
     transaction.update(
         match_doc_ref, {"cancelledAt": datetime.now(), "cancelledReason": trigger}
@@ -1786,6 +1816,7 @@ def _format_match_data_v2(
             "userFee": match_data.get("userFee", NUTMEG_FEE_CENTS),
         }
 
+    _ensure_price_user_fee(match_data)
     return match_data
 
 
@@ -1794,7 +1825,18 @@ def _format_match_data_v3(match_data):
     match_data["status"] = _get_status(match_data).value
     # serialize dates
     match_data = _serialize_dates(match_data)
+    _ensure_price_user_fee(match_data)
     return match_data
+
+
+# eventually drop this function
+def _ensure_price_user_fee(match_data):
+    price = match_data.get("price")
+    if not isinstance(price, dict):
+        return
+    if "userFee" in price:
+        return
+    price["userFee"] = 0 if match_data.get("isManualPayment") else NUTMEG_FEE_CENTS
 
 
 def _get_status(match_data):
@@ -1823,9 +1865,29 @@ def _get_status(match_data):
 
 
 def _add_match_firestore(match_data):
+    started_at = time.perf_counter()
     assert match_data.get("maxPlayers", None) is not None, "Required field missing"
     assert match_data.get("dateTime", None) is not None, "Required field missing"
     assert match_data.get("duration", None) is not None, "Required field missing"
+
+    price_data = match_data.get("price") or {}
+    is_manual_payment = match_data.get("isManualPayment", False)
+    if price_data:
+        # Do not store userFee in Firestore; backend assumes default fee policy.
+        price_data.pop("userFee", None)
+        match_data["price"] = price_data
+
+        base_price = price_data.get("basePrice")
+        user_fee = 0 if is_manual_payment else NUTMEG_FEE_CENTS
+        logging.info(
+            "Create match pricing normalized: basePrice=%s assumedUserFee=%s charge=%s payout=%s",
+            base_price,
+            user_fee,
+            base_price if isinstance(base_price, int) else None,
+            (base_price - user_fee)
+            if isinstance(base_price, int) and isinstance(user_fee, int)
+            else None,
+        )
 
     match_data["dateTime"] = dateutil.parser.isoparse(match_data["dateTime"])
     match_data["createdAt"] = firestore.firestore.SERVER_TIMESTAMP
@@ -1836,16 +1898,41 @@ def _add_match_firestore(match_data):
         match_data.pop("isTest", None)
     doc_ref = app.db_client.collection(coll).document()
     doc_ref.set(match_data)
+    after_set_ms = int((time.perf_counter() - started_at) * 1000)
 
     tasks_scheduled = schedule_match_tasks(doc_ref.id, match_data, is_test=is_test)
-
     app.db_client.collection(coll).document(doc_ref.id).update(
         {
             "tasksScheduled": tasks_scheduled,
         }
     )
+    schedule_ms = int((time.perf_counter() - started_at) * 1000) - after_set_ms
+    total_ms = int((time.perf_counter() - started_at) * 1000)
+    logging.info(
+        "Add match timings: match_id=%s firestore_set_ms=%d schedule_ms=%d total_ms=%d",
+        doc_ref.id,
+        after_set_ms,
+        schedule_ms,
+        total_ms,
+    )
 
     return doc_ref.id
+
+
+def _schedule_tasks_for_match_doc(db, match_id, is_test=False, force=False):
+    coll = _get_matches_collection(is_test)
+    match_ref = db.collection(coll).document(match_id)
+    doc = match_ref.get()
+    if not doc.exists:
+        return {"status": "skipped", "reason": "not_found"}
+
+    raw = doc.to_dict() or {}
+    if raw.get("tasksScheduled") and not force:
+        return {"status": "skipped", "reason": "already_scheduled"}
+
+    tasks_scheduled = schedule_match_tasks(match_id, raw, is_test=is_test)
+    match_ref.update({"tasksScheduled": tasks_scheduled})
+    return {"status": "success", "tasksScheduled": tasks_scheduled}
 
 
 def schedule_match_tasks(match_id, match_data, is_test=False):

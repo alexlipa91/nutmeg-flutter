@@ -593,6 +593,10 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String get nutmegPayCollectedSoFarSubtitle =>
+      'Este es el dinero recaudado hasta ahora de los jugadores.';
+
+  @override
   String get changeLanguageButton => 'CAMBIAR IDIOMA';
 
   @override

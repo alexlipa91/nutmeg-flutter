@@ -178,6 +178,7 @@
     "collectedAmountText": "{amount} recaudados ({count}/{total} pagaron)",
     "releaseScheduledText": "Se transferirá a tu cuenta Stripe el {date}",
     "releaseCompletedText": "{amount} transferidos a tu cuenta Stripe",
+    "nutmegPayCollectedSoFarSubtitle": "Este es el dinero recaudado hasta ahora de los jugadores.",
     "changeLanguageButton": "CAMBIAR IDIOMA",
     "languageModalTitle": "Idioma",
     "preMatchNotificationTitle": "¿Listos para el partido? u\"⚽️",

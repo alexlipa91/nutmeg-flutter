@@ -18,18 +18,15 @@ enum MatchStatus {
 
 class Price {
   int basePrice;
-  int userFee;
 
-  Price(this.basePrice, this.userFee);
+  Price(this.basePrice);
 
-  Price.fromJson(Map<String, dynamic> json)
-      : basePrice = json["basePrice"],
-        userFee = json["userFee"];
+  Price.fromJson(Map<String, dynamic> json) : basePrice = json["basePrice"];
 
-  Map<String, dynamic> toJson() => {"basePrice": basePrice, "userFee": userFee};
+  Map<String, dynamic> toJson() => {"basePrice": basePrice};
 
   int getBasePrice() => basePrice;
-  int getTotalPrice() => basePrice + userFee;
+  int getTotalPrice() => basePrice + AppConfig.nutmegFeeCents;
 }
 
 class Match {

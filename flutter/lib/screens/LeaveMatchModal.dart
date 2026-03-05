@@ -28,11 +28,11 @@ class LeaveButton extends StatelessWidget {
         var leaveMatchText;
         if (hasPayment) {
           leaveMatchText = AppLocalizations.of(context)!.leaveMatchInfo;
-          if (match.price!.userFee > 0) {
+          if (!match.isManualPayment && AppConfig.nutmegFeeCents > 0) {
             leaveMatchText = leaveMatchText +
                 "\n" +
                 AppLocalizations.of(context)!.leaveMatchServiceFeeInfo(
-                    formatCurrency(match.price!.userFee));
+                    formatCurrency(AppConfig.nutmegFeeCents));
           }
         } else {
           leaveMatchText = AppLocalizations.of(context)!.leaveMatchNoMoneyInfo;

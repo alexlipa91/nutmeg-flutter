@@ -47,7 +47,7 @@ class JoinButton extends StatelessWidget {
 class JoinModal {
   static Widget getModalDescriptionArea(
       BuildContext context, Match match) {
-    var totalPrice = match.price!.getTotalPrice();
+    var totalPrice = match.price!.basePrice;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
