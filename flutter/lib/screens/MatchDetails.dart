@@ -1,11 +1,9 @@
-import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/rendering.dart';
@@ -139,7 +137,6 @@ class MatchDetailsImplState extends State<MatchDetailsImpl> {
   }
 
   Future<void> myInitState() async {
-
     var state = context.read<MatchState>();
 
     await refreshState();
@@ -682,15 +679,18 @@ class MatchInfo extends StatelessWidget {
             if (match.price != null) ...[
               SizedBox(height: 12),
               Row(children: [
-                Icon(Icons.local_offer_outlined, color: Palette.black, size: 18),
+                Icon(Icons.local_offer_outlined,
+                    color: Palette.black, size: 18),
                 SizedBox(width: 16),
                 Text(formatCurrency(match.price!.basePrice),
                     style: TextPalette.listItem),
                 Spacer(),
                 if (!match.isManualPayment)
-                  _NutmegPayBadge(match: match, isOrganizerView: isOrganizerView),
+                  _NutmegPayBadge(
+                      match: match, isOrganizerView: isOrganizerView),
                 if (match.isManualPayment)
-                  _ManualPayBadge(match: match, isOrganizerView: isOrganizerView),
+                  _ManualPayBadge(
+                      match: match, isOrganizerView: isOrganizerView),
               ]),
             ],
             if (matchWidget != null)
@@ -707,38 +707,37 @@ class MatchInfo extends StatelessWidget {
                 padding: EdgeInsets.only(top: 16),
                 child: Row(children: [
                   GenericButtonWithLoaderAndErrorHandling(
-                      AppLocalizations.of(context)!
-                          .cancelMatchAction
-                          .toUpperCase(),
-                      (_) async {
-                        await GenericInfoModal(
-                          title: AppLocalizations.of(context)!.cancelMatchTitle,
-                          description:
-                              AppLocalizations.of(context)!.cancelMatchSubtitle,
-                          action: Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              Expanded(
-                                child: GenericButtonWithLoaderAndErrorHandling(
-                                  AppLocalizations.of(context)!
-                                      .confirmButtonText,
-                                  (_) async {
-                                    await MatchesController.cancelMatch(
-                                        match.documentId);
-                                    await context
-                                        .read<MatchesState>()
-                                        .getMatch(match.documentId)
-                                        .fetchMatch();
-                                    Navigator.pop(context);
-                                  },
-                                  Primary(),
-                                ),
+                    AppLocalizations.of(context)!
+                        .cancelMatchAction
+                        .toUpperCase(),
+                    (_) async {
+                      await GenericInfoModal(
+                        title: AppLocalizations.of(context)!.cancelMatchTitle,
+                        description:
+                            AppLocalizations.of(context)!.cancelMatchSubtitle,
+                        action: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Expanded(
+                              child: GenericButtonWithLoaderAndErrorHandling(
+                                AppLocalizations.of(context)!.confirmButtonText,
+                                (_) async {
+                                  await MatchesController.cancelMatch(
+                                      match.documentId);
+                                  await context
+                                      .read<MatchesState>()
+                                      .getMatch(match.documentId)
+                                      .fetchMatch();
+                                  Navigator.pop(context);
+                                },
+                                Primary(),
                               ),
-                            ],
-                          ),
-                        ).show(context);
-                      },
-                      Destructive(),
+                            ),
+                          ],
+                        ),
+                      ).show(context);
+                    },
+                    Destructive(),
                   ),
                 ]),
               ),
@@ -888,185 +887,191 @@ class PlayerCard extends StatelessWidget {
     var hasOverlay = showRemove || showPromote;
 
     return SizedBox(
-      width: width,
-      child: Column(children: [
-      Padding(
-        padding: EdgeInsets.only(top: 6, right: 6),
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            UserAvatarWithBottomModal(userData: userData, radius: avatarRadius),
-            if (showRemove)
-              Positioned(
-                right: -5.5,
-                top: -3,
-                child: InkWell(
-                  onTap: () async {
-                    if (matchId == null) return;
+        width: width,
+        child: Column(children: [
+          Padding(
+            padding: EdgeInsets.only(top: 6, right: 6),
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                UserAvatarWithBottomModal(
+                    userData: userData, radius: avatarRadius),
+                if (showRemove)
+                  Positioned(
+                    right: -5.5,
+                    top: -3,
+                    child: InkWell(
+                      onTap: () async {
+                        if (matchId == null) return;
 
-                    var name =
-                        (userData?.name ?? "Player").split(" ").first.trim();
-                    if (name.isEmpty) name = "Player";
+                        var name = (userData?.name ?? "Player")
+                            .split(" ")
+                            .first
+                            .trim();
+                        if (name.isEmpty) name = "Player";
 
-                    var match = context.read<MatchState>().match!;
-                    var hasPayment = match.hasPaymentIntent(userId);
+                        var match = context.read<MatchState>().match!;
+                        var hasPayment = match.hasPaymentIntent(userId);
 
-                    var descriptionText = AppLocalizations.of(context)!
-                        .removePlayerSubtitle(name);
-                    if (hasPayment) {
-                      descriptionText += "\n" +
-                          AppLocalizations.of(context)!
-                              .removePlayerRefundMessage(name);
-                    }
+                        var descriptionText = AppLocalizations.of(context)!
+                            .removePlayerSubtitle(name);
+                        if (hasPayment) {
+                          descriptionText += "\n" +
+                              AppLocalizations.of(context)!
+                                  .removePlayerRefundMessage(name);
+                        }
 
-                    await GenericInfoModal(
-                      title: AppLocalizations.of(context)!.removePlayerTitle,
-                      description: descriptionText,
-                      content: hasPayment
-                          ? ModalPaymentDescriptionArea(
-                              rows: [],
-                              finalRow: Row(
-                                children: [
-                                  Text(
-                                      AppLocalizations.of(context)!
-                                          .leaveMatchRefundTitle,
-                                      style: TextPalette.h3),
-                                  Expanded(
-                                      child: Text(
-                                    formatCurrency(match.price!.basePrice) +
-                                        " euro",
-                                    style: TextPalette.h3,
-                                    textAlign: TextAlign.end,
-                                  ))
-                                ],
-                              ),
-                            )
-                          : null,
-                      action: Row(
-                        children: [
-                          Expanded(
-                            child: GenericButtonWithLoaderAndErrorHandling(
-                              AppLocalizations.of(context)!.removePlayerTitle.toUpperCase(),
-                              (_) async {
-                                await context
-                                    .read<MatchState>()
-                                    .removeUserFromMatch(userId);
-                                Navigator.of(context).pop(true);
-
-                                if (hasPayment) {
-                                  GenericInfoModal(
-                                    title:
-                                        "A refund of ${formatCurrency(match.price!.basePrice)} "
-                                        "was issued for $name",
-                                    description:
-                                        "They will receive the money in 3 to 5 business days.",
-                                    action: null,
-                                  ).show(context);
-                                }
-                              },
-                              Primary(),
-                            ),
-                          )
-                        ],
-                      ),
-                    ).show(context);
-                  },
-                  child: Container(
-                    padding: EdgeInsets.all(1),
-                    decoration: BoxDecoration(
-                      color: Palette.white,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          blurRadius: 4,
-                          color: Colors.black.withOpacity(0.12),
-                          offset: Offset(0, 1),
-                        )
-                      ],
-                    ),
-                    child: Icon(
-                      Icons.remove_circle,
-                      color: Palette.destructive,
-                      size: 19,
-                    ),
-                  ),
-                ),
-              ),
-            if (showPromote)
-              Positioned(
-                right: -5.5,
-                top: -3,
-                child: InkWell(
-                  onTap: isPromoteEnabled
-                      ? () async {
-                          if (matchId == null) return;
-
-                          var matchState = context.read<MatchState>();
-                          var name = (userData?.name ?? "Player")
-                              .split(" ")
-                              .first
-                              .trim();
-                          if (name.isEmpty) name = "Player";
-
-                          await GenericInfoModal(
-                            title: "Add to match",
-                            description:
-                                "Are you sure you want to move $name from the waitlist to the match?",
-                            action: Row(
-                              children: [
-                                Expanded(
-                                  child:
-                                      GenericButtonWithLoaderAndErrorHandling(
-                                    AppLocalizations.of(context)!
-                                        .confirmButtonText,
-                                    (_) async {
-                                      await matchState
-                                          .promoteUserFromWaitList(userId);
-                                      Navigator.of(context).pop(true);
-                                    },
-                                    Primary(),
+                        await GenericInfoModal(
+                          title:
+                              AppLocalizations.of(context)!.removePlayerTitle,
+                          description: descriptionText,
+                          content: hasPayment
+                              ? ModalPaymentDescriptionArea(
+                                  rows: [],
+                                  finalRow: Row(
+                                    children: [
+                                      Text(
+                                          AppLocalizations.of(context)!
+                                              .leaveMatchRefundTitle,
+                                          style: TextPalette.h3),
+                                      Expanded(
+                                          child: Text(
+                                        formatCurrency(match.price!.basePrice) +
+                                            " euro",
+                                        style: TextPalette.h3,
+                                        textAlign: TextAlign.end,
+                                      ))
+                                    ],
                                   ),
                                 )
-                              ],
-                            ),
-                          ).show(context);
-                        }
-                      : null,
-                  child: Container(
-                    padding: EdgeInsets.all(2),
-                    decoration: BoxDecoration(
-                      color: isPromoteEnabled
-                          ? Palette.primary
-                          : Palette.greyLighter,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          blurRadius: 4,
-                          color: Colors.black.withOpacity(0.12),
-                          offset: Offset(0, 1),
-                        )
-                      ],
-                    ),
-                    child: Icon(
-                      Icons.arrow_upward,
-                      color: Palette.white,
-                      size: 14,
+                              : null,
+                          action: Row(
+                            children: [
+                              Expanded(
+                                child: GenericButtonWithLoaderAndErrorHandling(
+                                  AppLocalizations.of(context)!
+                                      .removePlayerTitle
+                                      .toUpperCase(),
+                                  (_) async {
+                                    await context
+                                        .read<MatchState>()
+                                        .removeUserFromMatch(userId);
+                                    Navigator.of(context).pop(true);
+
+                                    if (hasPayment) {
+                                      GenericInfoModal(
+                                        title:
+                                            "A refund of ${formatCurrency(match.price!.basePrice)} "
+                                            "was issued for $name",
+                                        description:
+                                            "They will receive the money in 3 to 5 business days.",
+                                        action: null,
+                                      ).show(context);
+                                    }
+                                  },
+                                  Primary(),
+                                ),
+                              )
+                            ],
+                          ),
+                        ).show(context);
+                      },
+                      child: Container(
+                        padding: EdgeInsets.all(1),
+                        decoration: BoxDecoration(
+                          color: Palette.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              blurRadius: 4,
+                              color: Colors.black.withOpacity(0.12),
+                              offset: Offset(0, 1),
+                            )
+                          ],
+                        ),
+                        child: Icon(
+                          Icons.remove_circle,
+                          color: Palette.destructive,
+                          size: 19,
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ),
-          ],
-        ),
-      ),
-      SizedBox(height: 10),
-      (userData == null)
-          ? Skeletons.sText
-          : Text((userData.name ?? "Player").split(" ").first,
-              overflow: TextOverflow.ellipsis,
-              maxLines: 1,
-              textAlign: TextAlign.center,
-              style: TextPalette.getBodyText(Palette.black))
-    ]));
+                if (showPromote)
+                  Positioned(
+                    right: -5.5,
+                    top: -3,
+                    child: InkWell(
+                      onTap: isPromoteEnabled
+                          ? () async {
+                              if (matchId == null) return;
+
+                              var matchState = context.read<MatchState>();
+                              var name = (userData?.name ?? "Player")
+                                  .split(" ")
+                                  .first
+                                  .trim();
+                              if (name.isEmpty) name = "Player";
+
+                              await GenericInfoModal(
+                                title: "Add to match",
+                                description:
+                                    "Are you sure you want to move $name from the waitlist to the match?",
+                                action: Row(
+                                  children: [
+                                    Expanded(
+                                      child:
+                                          GenericButtonWithLoaderAndErrorHandling(
+                                        AppLocalizations.of(context)!
+                                            .confirmButtonText,
+                                        (_) async {
+                                          await matchState
+                                              .promoteUserFromWaitList(userId);
+                                          Navigator.of(context).pop(true);
+                                        },
+                                        Primary(),
+                                      ),
+                                    )
+                                  ],
+                                ),
+                              ).show(context);
+                            }
+                          : null,
+                      child: Container(
+                        padding: EdgeInsets.all(2),
+                        decoration: BoxDecoration(
+                          color: isPromoteEnabled
+                              ? Palette.primary
+                              : Palette.greyLighter,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              blurRadius: 4,
+                              color: Colors.black.withOpacity(0.12),
+                              offset: Offset(0, 1),
+                            )
+                          ],
+                        ),
+                        child: Icon(
+                          Icons.arrow_upward,
+                          color: Palette.white,
+                          size: 14,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          SizedBox(height: 10),
+          (userData == null)
+              ? Skeletons.sText
+              : Text((userData.name ?? "Player").split(" ").first,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                  textAlign: TextAlign.center,
+                  style: TextPalette.getBodyText(Palette.black))
+        ]));
   }
 }
 
@@ -1082,31 +1087,32 @@ class EmptyPlayerCard extends StatelessWidget {
     var matchesState = context.read<MatchesState>();
 
     return SizedBox(
-      width: PlayerCard.width,
-      child: InkWell(
-      onTap: () => JoinModal.onJoinGameAction(
-          context, userState, matchState, matchesState),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
-        DottedBorder(
-          padding: EdgeInsets.zero,
-          borderType: BorderType.Circle,
-          color: Palette.greyDark,
-          strokeWidth: 1,
-          dashPattern: [4],
-          child: CircleAvatar(
-            radius: 29,
-            child: Icon(Icons.add, color: Palette.greyDark, size: 24),
-            backgroundColor: Colors.transparent,
-          ),
-        ),
-        SizedBox(height: 10),
-        Text(AppLocalizations.of(context)!.joinAction,
-            overflow: TextOverflow.ellipsis,
-            maxLines: 1,
-            textAlign: TextAlign.center,
-            style: TextPalette.getBodyText(Palette.primary))
-      ]),
-    ));
+        width: PlayerCard.width,
+        child: InkWell(
+          onTap: () => JoinModal.onJoinGameAction(
+              context, userState, matchState, matchesState),
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
+            DottedBorder(
+              padding: EdgeInsets.zero,
+              borderType: BorderType.Circle,
+              color: Palette.greyDark,
+              strokeWidth: 1,
+              dashPattern: [4],
+              child: CircleAvatar(
+                radius: 29,
+                child: Icon(Icons.add, color: Palette.greyDark, size: 24),
+                backgroundColor: Colors.transparent,
+              ),
+            ),
+            SizedBox(height: 10),
+            Text(AppLocalizations.of(context)!.joinAction,
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+                textAlign: TextAlign.center,
+                style: TextPalette.getBodyText(Palette.primary))
+          ]),
+        ));
   }
 }
 
@@ -1118,72 +1124,75 @@ class _AddPlayerCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: PlayerCard.width,
-      child: InkWell(
-      onTap: () {
-        var organizerId = context.read<UserState>().getLoggedUserId()!;
-        var matchState = context.read<MatchState>();
-        var match = matchState.match!;
-        var alreadyGoingIds = match.going.keys.toSet();
+        width: PlayerCard.width,
+        child: InkWell(
+          onTap: () {
+            var organizerId = context.read<UserState>().getLoggedUserId()!;
+            var matchState = context.read<MatchState>();
+            var match = matchState.match!;
+            var alreadyGoingIds = match.going.keys.toSet();
 
-        ModalBottomSheet.showNutmegModalBottomSheet(
-          context,
-          _PlayerPickerSheet(
-            organizerId: organizerId,
-            alreadyGoingIds: alreadyGoingIds,
-            onPlayerSelected: (String playerId) async {
-              await matchState.addUserToMatch(playerId);
-            },
-          ),
-        ).then((result) async {
-          if (result != "open_add_guest") return;
+            ModalBottomSheet.showNutmegModalBottomSheet(
+              context,
+              _PlayerPickerSheet(
+                organizerId: organizerId,
+                alreadyGoingIds: alreadyGoingIds,
+                onPlayerSelected: (String playerId) async {
+                  await matchState.addUserToMatch(playerId);
+                },
+              ),
+            ).then((result) async {
+              if (result != "open_add_guest") return;
 
-          final guestName = await ModalBottomSheet.showNutmegModalBottomSheet<String>(
-            context,
-            _AddGuestNameSheet(),
-          );
-          if (guestName == null || guestName.trim().isEmpty) return;
+              final guestName =
+                  await ModalBottomSheet.showNutmegModalBottomSheet<String>(
+                context,
+                _AddGuestNameSheet(),
+              );
+              if (guestName == null || guestName.trim().isEmpty) return;
 
-          try {
-            await matchState.addGuestToMatch(guestName.trim());
-          } catch (e) {
-            if (!context.mounted) return;
-            final rawMessage = e.toString();
-            final errorMessage =
-                rawMessage.replaceFirst(RegExp(r'^Exception:\s*'), '').trim();
-            await GenericInfoModal(
-              title: AppLocalizations.of(context)!.genericErrorMessage,
-              description: errorMessage.isNotEmpty
-                  ? errorMessage
-                  : AppLocalizations.of(context)!.genericErrorDesc,
-            ).show(context);
-          }
-        });
-      },
-      child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
-        Padding(
-          padding: EdgeInsets.only(top: 6, right: 6),
-          child: DottedBorder(
-            padding: EdgeInsets.zero,
-            borderType: BorderType.Circle,
-            color: Palette.green,
-            strokeWidth: 1.5,
-            dashPattern: [4],
-            child: CircleAvatar(
-              radius: 24,
-              child: Icon(Icons.person_add, color: Palette.green, size: 18),
-              backgroundColor: Colors.transparent,
+              try {
+                await matchState.addGuestToMatch(guestName.trim());
+              } catch (e) {
+                if (!context.mounted) return;
+                final rawMessage = e.toString();
+                final errorMessage = rawMessage
+                    .replaceFirst(RegExp(r'^Exception:\s*'), '')
+                    .trim();
+                await GenericInfoModal(
+                  title: AppLocalizations.of(context)!.genericErrorMessage,
+                  description: errorMessage.isNotEmpty
+                      ? errorMessage
+                      : AppLocalizations.of(context)!.genericErrorDesc,
+                ).show(context);
+              }
+            });
+          },
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
+            Padding(
+              padding: EdgeInsets.only(top: 6, right: 6),
+              child: DottedBorder(
+                padding: EdgeInsets.zero,
+                borderType: BorderType.Circle,
+                color: Palette.green,
+                strokeWidth: 1.5,
+                dashPattern: [4],
+                child: CircleAvatar(
+                  radius: 24,
+                  child: Icon(Icons.person_add, color: Palette.green, size: 18),
+                  backgroundColor: Colors.transparent,
+                ),
+              ),
             ),
-          ),
-        ),
-        SizedBox(height: 10),
-        Text(AppLocalizations.of(context)!.addPlayerLabel,
-            overflow: TextOverflow.ellipsis,
-            maxLines: 1,
-            textAlign: TextAlign.center,
-            style: TextPalette.getBodyText(Palette.green))
-      ]),
-    ));
+            SizedBox(height: 10),
+            Text(AppLocalizations.of(context)!.addPlayerLabel,
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+                textAlign: TextAlign.center,
+                style: TextPalette.getBodyText(Palette.green))
+          ]),
+        ));
   }
 }
 
@@ -1282,7 +1291,8 @@ class _PlayerPickerSheetState extends State<_PlayerPickerSheet> {
             ),
             if (isAddingThis)
               SizedBox(
-                width: 20, height: 20,
+                width: 20,
+                height: 20,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
                   color: Palette.primary,
@@ -1345,7 +1355,8 @@ class _PlayerPickerSheetState extends State<_PlayerPickerSheet> {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(AppLocalizations.of(context)!.addPlayerLabel, style: TextPalette.h4),
+          Text(AppLocalizations.of(context)!.addPlayerLabel,
+              style: TextPalette.h4),
           SizedBox(height: 4),
           Text(AppLocalizations.of(context)!.pickFromPlayersSubtitle,
               style: TextPalette.bodyText),
@@ -1356,7 +1367,8 @@ class _PlayerPickerSheetState extends State<_PlayerPickerSheet> {
               decoration: InputDecoration(
                 hintText: AppLocalizations.of(context)!.searchByNameHint,
                 hintStyle: TextPalette.getBodyText(Palette.greyDark),
-                prefixIcon: Icon(Icons.search, color: Palette.greyDark, size: 20),
+                prefixIcon:
+                    Icon(Icons.search, color: Palette.greyDark, size: 20),
                 filled: true,
                 fillColor: Palette.greyLighter,
                 border: OutlineInputBorder(
@@ -1425,7 +1437,8 @@ class _AddGuestNameSheetState extends State<_AddGuestNameSheet> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(AppLocalizations.of(context)!.addGuestTitle, style: TextPalette.h2),
+          Text(AppLocalizations.of(context)!.addGuestTitle,
+              style: TextPalette.h2),
           SizedBox(height: 8),
           Text(AppLocalizations.of(context)!.addGuestSubtitle,
               style: TextPalette.bodyText),
@@ -1597,57 +1610,70 @@ class Stats extends StatelessWidget {
     double? rate = e.value;
     bool isPotm = (ratings.potms ?? []).contains(e.key);
 
-    var widgets = [
-      Container(
-          width: 18,
-          child: Text(index.toString(), style: TextPalette.bodyText)),
-      SizedBox(width: 8),
-      UserAvatar(16, userDetails),
-      const SizedBox(width: 16),
-      Padding(
-        padding: EdgeInsets.only(left: 16),
-        child: Row(
-          children: [
-            UserNameWidget(userDetails: userDetails),
-            SizedBox(width: 8),
-            if (userDetails != null && isPotm && rate != null)
-              Image.asset(
-                "assets/potm_badge.png",
-                width: 20,
-              )
-          ],
-        ),
-      ),
-      Spacer(),
-      Container(
-        height: 8,
-        width: 72,
-        child: ClipRRect(
-          borderRadius: BorderRadius.all(Radius.circular(10)),
-          child: LinearProgressIndicator(
-            value: (rate ?? 0) / 5.0,
-            color: Palette.primary,
-            backgroundColor: Palette.greyLighter,
-          ),
-        ),
-      ),
-      SizedBox(width: 16),
-      Container(
-        width: 22,
-        child: Text((rate == null) ? "  -" : rate.toStringAsFixed(1),
-            style: TextPalette.getBodyText(Palette.black)),
-      ),
-    ];
-
-    index++;
     return Padding(
-        padding: (index > 2) ? EdgeInsets.only(top: 16) : EdgeInsets.zero,
+        padding: (index >= 2) ? EdgeInsets.only(top: 16) : EdgeInsets.zero,
         child: InkWell(
             onTap: userDetails == null
                 ? null
                 : () => ModalBottomSheet.showNutmegModalBottomSheet(
                     context, JoinedPlayerBottomModal(userDetails)),
-            child: Row(children: widgets)));
+            child: Row(
+              children: [
+                SizedBox(
+                    width: 18,
+                    child: Text(index.toString(), style: TextPalette.bodyText)),
+                const SizedBox(width: 8),
+                UserAvatar(16, userDetails),
+                const SizedBox(width: 16),
+                Expanded(
+                  flex: 2,
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 16),
+                    child: Row(
+                      children: [
+                        Flexible(
+                          child: UserNameWidget(userDetails: userDetails),
+                        ),
+                        if (userDetails != null && isPotm && rate != null) ...[
+                          const SizedBox(width: 8),
+                          Image.asset(
+                            "assets/potm_badge.png",
+                            width: 20,
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  flex: 1,
+                  child: SizedBox(
+                    height: 8,
+                    child: ClipRRect(
+                      borderRadius: const BorderRadius.all(Radius.circular(10)),
+                      child: LinearProgressIndicator(
+                        value: (rate ?? 0) / 5.0,
+                        color: Palette.primary,
+                        backgroundColor: Palette.greyLighter,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                SizedBox(
+                  width: 28,
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: Text(
+                      (rate == null) ? "—" : rate.toStringAsFixed(1),
+                      style: TextPalette.getBodyText(Palette.black),
+                      textAlign: TextAlign.end,
+                    ),
+                  ),
+                ),
+              ],
+            )));
   }
 
   @override
@@ -1827,21 +1853,42 @@ class Stats extends StatelessWidget {
 
 class UserNameWidget extends StatelessWidget {
   final UserDetails? userDetails;
+  final TextAlign textAlign;
 
-  const UserNameWidget({Key? key, this.userDetails}) : super(key: key);
+  const UserNameWidget({
+    Key? key,
+    this.userDetails,
+    this.textAlign = TextAlign.start,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     // fixme text overflow
-    if (userDetails == null) return Skeletons.sText;
+    if (userDetails == null) {
+      if (textAlign == TextAlign.end || textAlign == TextAlign.right) {
+        return Align(
+          alignment: Alignment.centerRight,
+          child: Skeletons.sText,
+        );
+      }
+      return Skeletons.sText;
+    }
 
     var name = UserDetails.getDisplayName(userDetails).split(" ").first;
 
-    var n = name.substring(0, min(name.length, 11));
+    final text = Text(
+      name,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      textAlign: textAlign,
+      style: TextPalette.getBodyText(Palette.black),
+    );
 
-    return Text(n,
-        overflow: TextOverflow.ellipsis,
-        style: TextPalette.getBodyText(Palette.black));
+    // Fill horizontal space so [textAlign] applies (e.g. right team in TeamsWidget).
+    if (textAlign != TextAlign.start) {
+      return SizedBox(width: double.infinity, child: text);
+    }
+    return text;
   }
 }
 
@@ -1877,8 +1924,7 @@ class _ManualPayBadge extends StatelessWidget {
   final Match match;
   final bool isOrganizerView;
 
-  const _ManualPayBadge(
-      {required this.match, required this.isOrganizerView});
+  const _ManualPayBadge({required this.match, required this.isOrganizerView});
 
   void _showManualPaymentBreakdown(BuildContext context) {
     final usersState = context.read<UsersState>();
@@ -1897,8 +1943,7 @@ class _ManualPayBadge extends StatelessWidget {
       builder: (_) => ChangeNotifierProvider.value(
         value: matchState,
         child: Builder(builder: (context) {
-          final currentMatch =
-              context.watch<MatchState>().match ?? match;
+          final currentMatch = context.watch<MatchState>().match ?? match;
           final paidCount =
               playerIds.where((id) => currentMatch.hasUserPaid(id)).length;
 
@@ -1952,8 +1997,8 @@ class _ManualPayBadge extends StatelessWidget {
                                 ),
                         ),
                         Container(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 3),
+                          padding:
+                              EdgeInsets.symmetric(horizontal: 10, vertical: 3),
                           decoration: BoxDecoration(
                             color: playerPaid
                                 ? Palette.green.withOpacity(0.15)
@@ -1992,8 +2037,7 @@ class _ManualPayBadge extends StatelessWidget {
                 }),
                 SizedBox(height: 16),
                 Row(children: [
-                  Icon(Icons.info_outline,
-                      color: Palette.greyLight, size: 16),
+                  Icon(Icons.info_outline, color: Palette.greyLight, size: 16),
                   SizedBox(width: 8),
                   Expanded(
                     child: Text(l10n.manualPaymentDisclaimer,
@@ -2742,7 +2786,10 @@ class _NutmegPayBadgeState extends State<_NutmegPayBadge> {
     try {
       var result = await CloudFunctionsClient()
           .getFullResponse("matches/${widget.match.documentId}/collected");
-      if (mounted) setState(() { _data = result; });
+      if (mounted)
+        setState(() {
+          _data = result;
+        });
     } catch (_) {}
   }
 
@@ -2754,9 +2801,7 @@ class _NutmegPayBadgeState extends State<_NutmegPayBadge> {
 
     final playersPaid = _data?["players_paid"] as int? ?? 0;
     final basePrice = match.price?.basePrice ?? 0;
-    final feePerPlayer = match.isManualPayment
-        ? 0
-        : AppConfig.nutmegFeeCents;
+    final feePerPlayer = match.isManualPayment ? 0 : AppConfig.nutmegFeeCents;
     final grossCollected = playersPaid * basePrice;
     final nutmegFees = playersPaid * feePerPlayer;
     final netCollected = grossCollected - nutmegFees;
@@ -2772,7 +2817,8 @@ class _NutmegPayBadgeState extends State<_NutmegPayBadge> {
       releaseRow = Row(children: [
         Icon(Icons.check_circle_outline, color: Palette.green, size: 14),
         SizedBox(width: 6),
-        Expanded(child: Text(
+        Expanded(
+            child: Text(
           l10n.releaseCompletedText(formatCurrency(releaseAmount)) +
               (releasedDate != null ? " · $releasedDate" : ""),
           style: TextPalette.getBodyText(Palette.green).copyWith(fontSize: 12),
@@ -2784,9 +2830,11 @@ class _NutmegPayBadgeState extends State<_NutmegPayBadge> {
       releaseRow = Row(children: [
         Icon(Icons.schedule, color: Palette.greyDark, size: 14),
         SizedBox(width: 6),
-        Expanded(child: Text(
+        Expanded(
+            child: Text(
           l10n.releaseScheduledText(formattedDate),
-          style: TextPalette.getBodyText(Palette.greyDark).copyWith(fontSize: 12),
+          style:
+              TextPalette.getBodyText(Palette.greyDark).copyWith(fontSize: 12),
         )),
       ]);
     }
@@ -2802,8 +2850,8 @@ class _NutmegPayBadgeState extends State<_NutmegPayBadge> {
               child: Text(
                 l10n.nutmegPayCollectedSoFarSubtitle,
                 textAlign: TextAlign.left,
-                style:
-                    TextPalette.getBodyText(Palette.greyDark).copyWith(fontSize: 12),
+                style: TextPalette.getBodyText(Palette.greyDark)
+                    .copyWith(fontSize: 12),
               ),
             ),
           ),
@@ -2827,7 +2875,8 @@ class _NutmegPayBadgeState extends State<_NutmegPayBadge> {
                         )
                       : Text(
                           ud.name ?? "Player",
-                          style: TextPalette.bodyText.copyWith(color: Palette.black),
+                          style: TextPalette.bodyText
+                              .copyWith(color: Palette.black),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -2854,8 +2903,7 @@ class _NutmegPayBadgeState extends State<_NutmegPayBadge> {
             padding: const EdgeInsets.symmetric(vertical: 8),
             child: Row(children: [
               Text("Total",
-                  style: TextPalette.bodyText
-                      .copyWith(color: Palette.black)),
+                  style: TextPalette.bodyText.copyWith(color: Palette.black)),
               Spacer(),
               Text(formatCurrency(grossCollected),
                   style: TextPalette.getBodyText(Palette.black)),
@@ -2865,8 +2913,7 @@ class _NutmegPayBadgeState extends State<_NutmegPayBadge> {
             padding: const EdgeInsets.symmetric(vertical: 8),
             child: Row(children: [
               Text(l10n.stripeNutmegFeeLabel,
-                  style: TextPalette.bodyText
-                      .copyWith(color: Palette.black)),
+                  style: TextPalette.bodyText.copyWith(color: Palette.black)),
               Spacer(),
               Text("- ${formatCurrency(nutmegFees)}",
                   style: TextPalette.getBodyText(Palette.black)),

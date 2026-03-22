@@ -250,7 +250,10 @@ class TeamsWidgetState extends State<TeamsWidget> {
           }
 
           var avatar = UserAvatar(24, ud);
-          var name = UserNameWidget(userDetails: ud);
+          var name = UserNameWidget(
+            userDetails: ud,
+            textAlign: isLeftColumn ? TextAlign.start : TextAlign.end,
+          );
           var userRow = SizedBox(
             height: 48,
             child: LayoutBuilder(builder: (context, constraints) {
@@ -266,10 +269,10 @@ class TeamsWidgetState extends State<TeamsWidget> {
                                     color: Palette.greyLighter)),
                           avatar,
                           SizedBox(width: 12),
-                          name,
+                          Expanded(child: name),
                         ])
                   : Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-                      name,
+                      Expanded(child: name),
                       SizedBox(width: 12),
                       avatar,
                       if (draggable)

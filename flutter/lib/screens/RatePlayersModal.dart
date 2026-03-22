@@ -93,11 +93,12 @@ class RatePlayerSingleSheet extends StatelessWidget {
                                 SizedBox(
                                   width: 16,
                                 ),
-                                UserNameWidget(
-                                    userDetails: context
-                                        .watch<UsersState>()
-                                        .getUserDetail(e.value)),
-                                Spacer(),
+                                Expanded(
+                                  child: UserNameWidget(
+                                      userDetails: context
+                                          .watch<UsersState>()
+                                          .getUserDetail(e.value)),
+                                ),
                                 RatingBar(userId: e.value)
                               ],
                             ))
