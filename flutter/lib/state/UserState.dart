@@ -152,28 +152,65 @@ class UserState extends ChangeNotifier {
   // GOOGLE SIGN IN
   GoogleSignIn googleSignIn = GoogleSignIn();
 
+  /// Display name from Apple credential (given + family). Only non-empty on first Apple authorization.
+  static String? displayNameFromAppleCredential(
+      AuthorizationCredentialAppleID credential) {
+    final given = credential.givenName?.trim();
+    final family = credential.familyName?.trim();
+    final parts = <String>[];
+    if (given != null && given.isNotEmpty) parts.add(given);
+    if (family != null && family.isNotEmpty) parts.add(family);
+    if (parts.isEmpty) return null;
+    return parts.join(' ');
+  }
+
   Future<void> login(
-      UserCredential userCredential, BuildContext context) async {
+    UserCredential userCredential,
+    BuildContext context, {
+    /// Name from the identity provider (e.g. Apple fullName on first sign-in only).
+    String? oauthDisplayName,
+    /// Email from the identity provider (e.g. Apple on first sign-in only).
+    String? oauthEmail,
+  }) async {
     var uid = userCredential.user?.uid;
+    final firebaseUser = userCredential.user;
 
     UserDetails? userDetails = await UserState._fetchUserDetails(uid!);
 
     // check if first time
     if (userDetails == null) {
-      userDetails = new UserDetails(uid, false, userCredential.user?.photoURL,
-          userCredential.user?.displayName, userCredential.user?.email);
+      String? name = firebaseUser?.displayName?.trim();
+      if (name == null || name.isEmpty) {
+        final fromOauth = oauthDisplayName?.trim();
+        name = (fromOauth != null && fromOauth.isNotEmpty) ? fromOauth : null;
+      }
 
-      userDetails.name = "";
+      String? email = firebaseUser?.email?.trim();
+      if (email == null || email.isEmpty) {
+        final fromOauth = oauthEmail?.trim();
+        email = (fromOauth != null && fromOauth.isNotEmpty) ? fromOauth : null;
+      }
 
-      if (userDetails.name == null || userDetails.name == "") {
-        var name = await Navigator.of(context)
+      userDetails = UserDetails(
+        uid,
+        false,
+        firebaseUser?.photoURL,
+        name,
+        email,
+      );
+
+      // Only prompt when we still have no display name (Apple/Google may have provided one).
+      if (userDetails.name == null || userDetails.name!.trim().isEmpty) {
+        final entered = await Navigator.of(context)
             .push(MaterialPageRoute(builder: (context) => EnterDetails()));
-        if (name == null || name == "") {
-          // Navigator.pop(context);
-          return null;
-        } else {
-          userDetails.name = name;
+        if (entered == null || (entered is String && entered.trim().isEmpty)) {
+          await FirebaseAuth.instance.signOut();
+          if (await googleSignIn.isSignedIn()) {
+            await googleSignIn.disconnect();
+          }
+          return;
         }
+        userDetails.name = entered is String ? entered.trim() : '$entered';
       }
 
       await CloudFunctionsClient().post("users/$uid/add", userDetails.toJson());
@@ -299,12 +336,12 @@ class UserState extends ChangeNotifier {
       nonce: nonce,
     );
 
-    // TODO: Remove debug logging after Apple Sign-In is verified working
-    logger.info('Apple credential received - '
-        'identityToken null: ${appleCredential.identityToken == null}, '
-        'authorizationCode null: ${appleCredential.authorizationCode == null}, '
-        'email: ${appleCredential.email}, '
-        'userIdentifier: ${appleCredential.userIdentifier}');
+    final appleDisplayName =
+        UserState.displayNameFromAppleCredential(appleCredential);
+
+    logger.info('Apple sign-in credential received (identityToken set: '
+        '${appleCredential.identityToken != null}, fullName set: '
+        '${appleDisplayName != null})');
 
     // Create an `OAuthCredential` from the credential returned by Apple.
     final oauthCredential = OAuthProvider("apple.com").credential(
@@ -318,6 +355,26 @@ class UserState extends ChangeNotifier {
     final userCredential =
         await FirebaseAuth.instance.signInWithCredential(oauthCredential);
 
-    await login(userCredential, context);
+    final user = userCredential.user;
+    if (user != null &&
+        appleDisplayName != null &&
+        appleDisplayName.isNotEmpty) {
+      final existing = user.displayName?.trim();
+      if (existing == null || existing.isEmpty) {
+        try {
+          await user.updateDisplayName(appleDisplayName);
+          await user.reload();
+        } catch (e, st) {
+          logger.warning('updateDisplayName after Apple sign-in failed', e, st);
+        }
+      }
+    }
+
+    await login(
+      userCredential,
+      context,
+      oauthDisplayName: appleDisplayName,
+      oauthEmail: appleCredential.email,
+    );
   }
 }
