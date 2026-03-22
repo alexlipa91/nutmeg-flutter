@@ -32,10 +32,18 @@ class UsersState extends ChangeNotifier {
     }
 
     logger.info('Fetching user details for $uid');
-    var resp = await CloudFunctionsClient().get("users/$uid");
+    try {
+      var resp = await CloudFunctionsClient().get("users/$uid");
+      if (resp == null) {
+        logger.warning('User details response is null for $uid');
+        return;
+      }
 
-    var ud = (resp == null) ? null : UserDetails.fromJson(resp, uid);
-    if (ud != null) _setUserDetail(ud);
+      var ud = UserDetails.fromJson(resp, uid);
+      _setUserDetail(ud);
+    } catch (e, stack) {
+      logger.severe("Failed fetching user details for $uid", e, stack);
+    }
   }
 
   void updateBasedOnLoggedUser(UserState userState) {

@@ -51,6 +51,7 @@ class TeamsWidgetState extends State<TeamsWidget> {
   bool hasMovedAnyPlayer = false;
 
   List<List<String>> manualTeams = [];
+  final Set<String> _loggedMissingUsers = {};
 
   List<FocusNode> focusNodes = [FocusNode(), FocusNode()];
 
@@ -236,6 +237,17 @@ class TeamsWidgetState extends State<TeamsWidget> {
     var playersWidgets = interleave(
         teams[index].map((e) {
           var ud = context.watch<UsersState>().getUserDetail(e);
+          if (ud == null) {
+            // Team rows may include users that were not prefetched yet
+            // (e.g. newly added guest users). Trigger a fetch so skeletons resolve.
+            context.read<UsersState>().fetchUserDetails(e);
+            if (!_loggedMissingUsers.contains(e)) {
+              _loggedMissingUsers.add(e);
+              debugPrint("TeamsWidget unresolved user details for id=$e");
+            }
+          } else {
+            _loggedMissingUsers.remove(e);
+          }
 
           var avatar = UserAvatar(24, ud);
           var name = UserNameWidget(userDetails: ud);
