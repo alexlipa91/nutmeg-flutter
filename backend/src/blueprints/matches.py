@@ -1488,6 +1488,18 @@ def _freeze_match_stats(match_id, match: MatchModel, is_test=False):
 
     # ratings
     ratings = Ratings.get_by_match_id(match_id, app.db_client, is_test=is_test)
+    raw_scores = (ratings.scores if ratings else {}) or {}
+    going_ids = match.going_user_ids()
+    if going_ids and not MatchStats.every_going_player_has_min_positive_scores(
+        going_ids, raw_scores
+    ):
+        raise NotEnoughVotersError(
+            "Not all going players have at least {} positive score votes for match {}".format(
+                MatchStats.MIN_POSITIVE_SCORES_PER_PLAYER,
+                match_id,
+            )
+        )
+
     match_stats = MatchStats(
         match_id,
         match.date_time,
@@ -2080,7 +2092,7 @@ class RatingsNotComputedReason(str, Enum):
 
 
 class NotEnoughVotersError(Exception):
-    """Raised when there are fewer than 2 voters for a match."""
+    """Raised when ratings cannot be finalized (global or per-player minimums)."""
 
     pass
 
@@ -2088,6 +2100,24 @@ class NotEnoughVotersError(Exception):
 class MatchStats:
 
     MIN_VOTERS = 2
+    # Same threshold as compute_user_scores (needs >1 positive score → at least 2).
+    MIN_POSITIVE_SCORES_PER_PLAYER = 2
+
+    @classmethod
+    def every_going_player_has_min_positive_scores(
+        cls,
+        going_user_ids: List[str],
+        raw_scores: Dict[str, Dict[str, float]],
+    ) -> bool:
+        """True if each going player has at least MIN_POSITIVE_SCORES_PER_PLAYER scores > 0."""
+        if not going_user_ids:
+            return True
+        for uid in going_user_ids:
+            by_rater = raw_scores.get(uid, {}) or {}
+            n = sum(1 for v in by_rater.values() if v and v > 0)
+            if n < cls.MIN_POSITIVE_SCORES_PER_PLAYER:
+                return False
+        return True
 
     def __init__(
         self,
@@ -2124,7 +2154,7 @@ class MatchStats:
         user_scores = {}
         for u in self.raw_scores:
             positive_scores = [v for v in self.raw_scores[u].values() if v > 0]
-            if len(positive_scores) > 1:
+            if len(positive_scores) >= self.MIN_POSITIVE_SCORES_PER_PLAYER:
                 user_scores[u] = sum(positive_scores) / len(positive_scores)
         return user_scores
 
