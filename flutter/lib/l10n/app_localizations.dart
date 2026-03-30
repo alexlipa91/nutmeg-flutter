@@ -1605,7 +1605,7 @@ abstract class AppLocalizations {
   /// No description provided for @addGuestSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Enter the guest player's display name below'**
+  /// **'Enter the guest player\'s display name below'**
   String get addGuestSubtitle;
 
   /// No description provided for @guestNameHint.

@@ -46,6 +46,10 @@ Future<void> rateAction(BuildContext context, String matchId) async {
           ChangeNotifierProvider.value(
             value: userRatings,
             child: RatePlayerSingleSheet(matchId: matchId),
+          ),
+          stickyBottom: ChangeNotifierProvider.value(
+            value: userRatings,
+            child: RatePlayersSubmitSticky(),
           )) ??
       false;
 
@@ -106,20 +110,30 @@ class RatePlayerSingleSheet extends StatelessWidget {
                     SizedBox(
                       height: 18,
                     ))),
-            SizedBox(height: 24),
-            Row(
-              children: [
-                Expanded(
-                  child: GenericButtonWithLoaderAndErrorHandling(
-                      AppLocalizations.of(context)!.submitRatesButtonText,
-                      (BuildContext context) {
-                    context.read<UserRatings>().postRatings();
-                    Navigator.of(context).pop(true);
-                  }, Primary()),
-                )
-              ],
-            ),
           ],
         ));
+  }
+}
+
+/// Submit row pinned under the scroll area in the rate-players bottom sheet.
+class RatePlayersSubmitSticky extends StatelessWidget {
+  const RatePlayersSubmitSticky({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: GenericButtonWithLoaderAndErrorHandling(
+            AppLocalizations.of(context)!.submitRatesButtonText,
+            (BuildContext context) {
+              context.read<UserRatings>().postRatings();
+              Navigator.of(context).pop(true);
+            },
+            Primary(),
+          ),
+        ),
+      ],
+    );
   }
 }
