@@ -286,6 +286,9 @@ class Match {
 }
 
 class Ratings {
+  /// Stored in Firestore/API as `ratings_not_computed_reason` (see backend `RatingsNotComputedReason`).
+  static const String notEnoughRatingsReason = 'not_enough_ratings';
+
   Map<String, double> scores;
   List<String>? potms;
   // user_id -> {award_id -> number_of_votes}

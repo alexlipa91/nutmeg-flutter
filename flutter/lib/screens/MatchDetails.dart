@@ -1720,7 +1720,12 @@ class Stats extends StatelessWidget {
               ),
             ],
           ));
-    } else if (ratings?.ratingsNotComputedReason != null) {
+    } else if (ratings != null &&
+        ratings.ratingsNotComputedReason != null &&
+        ratings.ratingsNotComputedReason!.isNotEmpty) {
+      final loc = AppLocalizations.of(context)!;
+      final isNotEnough = ratings.ratingsNotComputedReason ==
+          Ratings.notEnoughRatingsReason;
       child = Container(
           width: double.infinity,
           child: Column(
@@ -1734,7 +1739,17 @@ class Stats extends StatelessWidget {
                   )),
               SizedBox(height: 16),
               Text(
-                AppLocalizations.of(context)!.statsNotEnoughRatings,
+                isNotEnough
+                    ? loc.statsNotEnoughRatingsTitle
+                    : loc.statsRatingsUnavailableTitle,
+                style: TextPalette.h2,
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 8),
+              Text(
+                isNotEnough
+                    ? loc.statsNotEnoughRatingsSubtitle
+                    : loc.statsRatingsUnavailableSubtitle,
                 style: TextPalette.bodyText,
                 textAlign: TextAlign.center,
               ),

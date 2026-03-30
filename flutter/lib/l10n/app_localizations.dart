@@ -270,6 +270,30 @@ abstract class AppLocalizations {
   /// **'Not enough ratings to compute stats'**
   String get statsNotEnoughRatings;
 
+  /// No description provided for @statsNotEnoughRatingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Scores weren’t calculated'**
+  String get statsNotEnoughRatingsTitle;
+
+  /// No description provided for @statsNotEnoughRatingsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'This match didn’t get enough ratings from every player to compute final scores.'**
+  String get statsNotEnoughRatingsSubtitle;
+
+  /// No description provided for @statsRatingsUnavailableSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Ratings for this match could not be finalized. Try again later or contact support if this persists.'**
+  String get statsRatingsUnavailableSubtitle;
+
+  /// No description provided for @statsRatingsUnavailableTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Stats unavailable'**
+  String get statsRatingsUnavailableTitle;
+
   /// No description provided for @statsAvailableAt.
   ///
   /// In en, this message translates to:

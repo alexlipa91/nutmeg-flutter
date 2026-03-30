@@ -101,6 +101,20 @@ class AppLocalizationsPt extends AppLocalizations {
       'Não há avaliações suficientes para calcular as estatísticas';
 
   @override
+  String get statsNotEnoughRatingsTitle => 'Pontuações não calculadas';
+
+  @override
+  String get statsNotEnoughRatingsSubtitle =>
+      'Esta partida não recebeu avaliações bastantes de todos os jogadores para calcular as pontuações finais.';
+
+  @override
+  String get statsRatingsUnavailableSubtitle =>
+      'As avaliações desta partida não puderam ser finalizadas. Tenta mais tarde ou contacta o suporte se continuar.';
+
+  @override
+  String get statsRatingsUnavailableTitle => 'Estatísticas indisponíveis';
+
+  @override
   String statsAvailableAt(String date) {
     return 'As estatísticas desta partida estarão disponíveis\n$date';
   }

@@ -170,6 +170,10 @@ class Match:
             return True
         if self.ratings_summary and self.ratings_summary.get("computed_at"):
             return True
+        if self.ratings_summary and self.ratings_summary.get(
+            "ratings_not_computed_reason"
+        ):
+            return True
         return False
 
     def is_cancelled(self) -> bool:

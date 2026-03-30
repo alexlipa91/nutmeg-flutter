@@ -1903,6 +1903,9 @@ def _get_status(match_data):
     ratings_map = match_data.get("ratings", {}) or {}
     if ratings_map.get("computed_at") or "scoresComputedAt" in match_data:
         return MatchStatus.RATED
+    # Rating round closed without computable scores (e.g. not enough ratings)
+    if ratings_map.get("ratings_not_computed_reason"):
+        return MatchStatus.RATED
 
     # cannot_leave_at  |  start  |  end  |  rating_window_over
     if now > end:

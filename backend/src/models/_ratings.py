@@ -174,15 +174,26 @@ class Ratings:
     @staticmethod
     def set_not_computed_reason(match_id: str, reason: str, db: Client, is_test: bool = False) -> None:
         """Mark ratings as not computable with a reason."""
+        ratings = Ratings.get_by_match_id(match_id, db, is_test=is_test)
+        num_score_voters = ratings.num_voters() if ratings else 0
+        num_award_voters = len(ratings.award_votes) if ratings else 0
+
         # TODO drop it once all clients move to use match
         ratings_ref(match_id, db, is_test=is_test).set(
             {"ratings_not_computed_reason": reason},
             merge=True,
         )
         # also store summary on the main match doc for fast reads
-        Ratings._write_match_summary(match_id, {
-            "ratings_not_computed_reason": reason,
-        }, db, is_test=is_test)
+        Ratings._write_match_summary(
+            match_id,
+            {
+                "ratings_not_computed_reason": reason,
+                "num_distinct_score_voters": num_score_voters,
+                "num_distinct_award_voters": num_award_voters,
+            },
+            db,
+            is_test=is_test,
+        )
 
 
 if __name__ == "__main__":

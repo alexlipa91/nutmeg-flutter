@@ -45,6 +45,10 @@
     "showLess": "SHOW LESS",
     "statsWaiting": "Stats available soon",
     "statsNotEnoughRatings": "Not enough ratings to compute stats",
+    "statsNotEnoughRatingsTitle": "Scores weren’t calculated",
+    "statsNotEnoughRatingsSubtitle": "This match didn’t get enough ratings from every player to compute final scores.",
+    "statsRatingsUnavailableSubtitle": "Ratings for this match could not be finalized. Try again later or contact support if this persists.",
+    "statsRatingsUnavailableTitle": "Stats unavailable",
     "statsAvailableAt": "Statistics for this match will be available\n{date}",
     "@statsAvailableAt": {
         "placeholders": {

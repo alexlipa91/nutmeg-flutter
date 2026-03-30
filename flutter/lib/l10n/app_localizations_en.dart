@@ -99,6 +99,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get statsNotEnoughRatings => 'Not enough ratings to compute stats';
 
   @override
+  String get statsNotEnoughRatingsTitle => 'Scores weren’t calculated';
+
+  @override
+  String get statsNotEnoughRatingsSubtitle =>
+      'This match didn’t get enough ratings from every player to compute final scores.';
+
+  @override
+  String get statsRatingsUnavailableSubtitle =>
+      'Ratings for this match could not be finalized. Try again later or contact support if this persists.';
+
+  @override
+  String get statsRatingsUnavailableTitle => 'Stats unavailable';
+
+  @override
   String statsAvailableAt(String date) {
     return 'Statistics for this match will be available\n$date';
   }
