@@ -54,6 +54,7 @@ class Match {
   Map<String, DateTime> waitList;
 
   List<List<String>> computedTeams;
+  List<double>? computedTeamsWeights;
   List<List<String>> manualTeams;
 
   String? organizerId;
@@ -100,6 +101,7 @@ class Match {
         goingWithPaymentIntent = _readGoingWithPaymentIntent(jsonInput),
         waitList = _readWaitList(jsonInput),
         computedTeams = _readComputedTeams(jsonInput),
+        computedTeamsWeights = _readComputedTeamsWeights(jsonInput),
         manualTeams = _readManualTeams(jsonInput),
         price = jsonInput["price"] == null
             ? null
@@ -192,6 +194,21 @@ class Match {
         List<String>.from(json["teams"]["balanced"]["players"]["b"]),
       ].toList();
     return List.empty();
+  }
+
+  static List<double>? _readComputedTeamsWeights(Map<String, dynamic> json) {
+    if (json.containsKey("teams") &&
+        json["teams"].containsKey("balanced") &&
+        json["teams"]["balanced"].containsKey("weights")) {
+      var weights = json["teams"]["balanced"]["weights"];
+      if (weights != null && weights["a"] != null && weights["b"] != null) {
+        return [
+          (weights["a"] as num).toDouble(),
+          (weights["b"] as num).toDouble(),
+        ];
+      }
+    }
+    return null;
   }
 
   static List<List<String>> _readManualTeams(Map<String, dynamic> json) {

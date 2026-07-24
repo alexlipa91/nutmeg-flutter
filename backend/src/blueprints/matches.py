@@ -45,6 +45,7 @@ from src.models._ratings import Ratings
 bp = Blueprint("matches", __name__, url_prefix="/matches")
 bp_v2 = Blueprint("matches_v2", __name__, url_prefix="/v2/matches")
 tz = pytz.timezone("Europe/Amsterdam")
+DEFAULT_USER_SCORE = 2.5
 
 
 def _get_matches_collection(is_test: bool = False) -> str:
@@ -584,7 +585,8 @@ def get_teams(match_id, algorithm="balanced", is_test=False):
     scores = {}
 
     for u in going:
-        scores[u] = _get_user_firestore(u).get("avg_score", 3)
+        user_data = _get_user_firestore(u) or {}
+        scores[u] = user_data.get("avg_score", DEFAULT_USER_SCORE)
 
     teams = [[], []]
     teams_total_score = [0, 0]

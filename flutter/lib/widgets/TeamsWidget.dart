@@ -143,38 +143,47 @@ class TeamsWidgetState extends State<TeamsWidget> {
             ),
           ),
           if (showOrganizerStrength)
-            Padding(
-              padding: EdgeInsets.only(top: 20),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    teams![0]
-                        .map((u) =>
-                            usersState.getUserDetail(u)?.averageScore ?? 3)
-                        .fold<double>(0, (a, b) => a + b)
-                        .toStringAsFixed(2),
-                    style: TextPalette.bodyText,
-                  ),
-                  Expanded(
-                    child: Text(
-                      AppLocalizations.of(context)!.teamStrenghtLabel,
-                      textAlign: TextAlign.center,
+            Builder(builder: (context) {
+              final team0Count = teams?[0].length ?? 0;
+              final team1Count = teams?[1].length ?? 0;
+              final team0Total = (!manualSplit && match?.computedTeamsWeights != null)
+                  ? match!.computedTeamsWeights![0]
+                  : (teams?[0] ?? [])
+                      .map((u) => usersState.getUserDetail(u)?.averageScore ?? 3)
+                      .fold<double>(0, (a, b) => a + b);
+              final team1Total = (!manualSplit && match?.computedTeamsWeights != null)
+                  ? match!.computedTeamsWeights![1]
+                  : (teams?[1] ?? [])
+                      .map((u) => usersState.getUserDetail(u)?.averageScore ?? 3)
+                      .fold<double>(0, (a, b) => a + b);
+              final team0Avg = team0Count > 0 ? team0Total / team0Count : 0.0;
+              final team1Avg = team1Count > 0 ? team1Total / team1Count : 0.0;
+
+              return Padding(
+                padding: EdgeInsets.only(top: 20),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      team0Avg.toStringAsFixed(2),
                       style: TextPalette.bodyText,
                     ),
-                  ),
-                  Text(
-                    teams[1]
-                        .map((u) =>
-                            usersState.getUserDetail(u)?.averageScore ?? 3)
-                        .fold<double>(0, (a, b) => a + b)
-                        .toStringAsFixed(2),
-                    style: TextPalette.bodyText,
-                  ),
-                ],
-              ),
-            ),
+                    Expanded(
+                      child: Text(
+                        AppLocalizations.of(context)!.teamStrenghtLabel,
+                        textAlign: TextAlign.center,
+                        style: TextPalette.bodyText,
+                      ),
+                    ),
+                    Text(
+                      team1Avg.toStringAsFixed(2),
+                      style: TextPalette.bodyText,
+                    ),
+                  ],
+                ),
+              );
+            }),
         ],
       ),
     );
