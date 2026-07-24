@@ -1,6 +1,6 @@
 # Nutmeg Flutter App
 
-Bump to deploy: 0
+Bump to deploy: 1
 
 ## Environment Setup
 
