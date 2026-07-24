@@ -1663,6 +1663,8 @@ def _remove_user_from_match_stripe_refund_firestore_transaction(
     transaction.update(
         match_doc_ref, {"goingPlayers": firestore.ArrayRemove([user_id])}
     )
+    # delete manual team split when a user is removed
+    transaction.update(match_doc_ref, {"teams.manual": firestore.DELETE_FIELD})
     # remove match in user list
     transaction.update(
         user_stat_doc_ref, {"joinedMatches." + match_id: firestore.DELETE_FIELD}
