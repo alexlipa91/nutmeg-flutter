@@ -13,7 +13,7 @@ from src.secrets import Secrets, load_secrets
 
 load_secrets()
 
-stripe.api_key = Secrets.STRIPE_KEY_TEST
+stripe.api_key = Secrets.STRIPE_KEY_TEST_ES
 
 accounts = stripe.Account.list(limit=100)
 count = 0

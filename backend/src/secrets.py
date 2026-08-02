@@ -6,10 +6,7 @@ from google.cloud import secretmanager
 GCP_PROJECT = "nutmeg-9099c"
 
 _SECRET_NAMES = [
-    "DYNAMIC_LINK_API_KEY",
     "GOOGLE_MAPS_API_KEY",
-    "STRIPE_KEY",
-    "STRIPE_KEY_TEST",
     "STRIPE_KEY_ES",
     "STRIPE_KEY_TEST_ES",
     "STRIPE_WEBHOOK_SECRET_ES",
@@ -18,10 +15,7 @@ _SECRET_NAMES = [
 
 
 class Secrets:
-    DYNAMIC_LINK_API_KEY: str = ""
     GOOGLE_MAPS_API_KEY: str = ""
-    STRIPE_KEY: str = ""
-    STRIPE_KEY_TEST: str = ""
     STRIPE_KEY_ES: str = ""
     STRIPE_KEY_TEST_ES: str = ""
     STRIPE_WEBHOOK_SECRET_ES: str = ""
