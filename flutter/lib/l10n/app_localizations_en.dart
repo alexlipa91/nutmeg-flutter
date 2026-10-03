@@ -44,9 +44,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fullStatus => 'Full';
 
   @override
-  String get votes => 'votes';
-
-  @override
   String get matchDetailsScreen =>
       '*****************************************************************************************************';
 
@@ -622,41 +619,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get leaderboardNoData => 'No available data';
-
-  @override
-  String get matchAwardsTitle => 'Match Awards';
-
-  @override
-  String get matchAwardsSubtitle =>
-      'Vote for outstanding performances of the match';
-
-  @override
-  String get selectPlayerText => 'Select player';
-
-  @override
-  String get bestGoalAwardName => 'Best Goal';
-
-  @override
-  String get bestGoalAwardDesc => 'Most impressive goal of the match';
-
-  @override
-  String get bestStrikerAwardName => 'Best Striker';
-
-  @override
-  String get bestStrikerAwardDesc => 'Most impactful attacking player';
-
-  @override
-  String get bestGoalkeeperAwardName => 'Best Goalkeeper';
-
-  @override
-  String get bestGoalkeeperAwardDesc =>
-      'Most crucial saves and defensive plays';
-
-  @override
-  String get bestDefenderAwardName => 'Best Defender';
-
-  @override
-  String get bestDefenderAwardDesc => 'Most solid defensive performance';
 
   @override
   String get ratePlayersThanksText => 'Thanks for rating!';
