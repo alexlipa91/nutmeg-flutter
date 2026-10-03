@@ -15,7 +15,6 @@
   "moreThanTwoWeeks": "IN MORE THAN TWO WEEKS",
   "cancelledStatus": "Cancelled",
   "fullStatus": "Full",
-  "votes": "votes",
 
 
 
@@ -327,22 +326,6 @@
     },
 
     "leaderboardNoData": "No available data",
-
-    "matchAwardsTitle": "Match Awards",
-    "matchAwardsSubtitle": "Vote for outstanding performances of the match",
-    "selectPlayerText": "Select player",
-    
-    "bestGoalAwardName": "Best Goal",
-    "bestGoalAwardDesc": "Most impressive goal of the match",
-    
-    "bestStrikerAwardName": "Best Striker",
-    "bestStrikerAwardDesc": "Most impactful attacking player",
-    
-    "bestGoalkeeperAwardName": "Best Goalkeeper",
-    "bestGoalkeeperAwardDesc": "Most crucial saves and defensive plays",
-    
-    "bestDefenderAwardName": "Best Defender",
-    "bestDefenderAwardDesc": "Most solid defensive performance",
 
     "ratePlayersThanksText": "Thanks for rating!",
     "ratePlayersTitleText": "Rate players",

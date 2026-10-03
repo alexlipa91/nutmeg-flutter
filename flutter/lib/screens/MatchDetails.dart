@@ -12,7 +12,6 @@ import 'package:nutmeg/state/MatchState.dart';
 import 'package:nutmeg/state/UsersState.dart';
 import 'package:nutmeg/utils/CrashlyticsLogger.dart';
 import 'package:nutmeg/utils/LocationUtils.dart';
-import 'package:nutmeg/widgets/UserAwardsReceived.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:intl/intl.dart';
@@ -314,16 +313,6 @@ List<Widget> getWidgets(
       ? Stats()
       : null;
 
-  var awards = null;
-
-  if (ratings != null && ratings.awards.isNotEmpty) {
-    // Compute the number of distinct voters for awards
-    awards = UserAwardsReceivedList(
-      awards: ratings.awards,
-      distinctVoters: ratings.numDistinctAwardVoters,
-    );
-  }
-
   var sportCenterDetails =
       SportCenterDetails(match: match, sportCenter: sportCenter);
 
@@ -396,7 +385,6 @@ List<Widget> getWidgets(
       if (waitListWidget != null) waitListWidget,
     ],
     if (stats != null) stats,
-    if (awards != null) awards,
   ];
 
   if (constraints.maxWidth < 800) {
@@ -2269,17 +2257,25 @@ class _ShareableStatsState extends State<ShareableStats> {
       CarouselSliderController();
   int _current = 0;
   final GlobalKey _statsKey = GlobalKey();
-  final GlobalKey _awardsKey = GlobalKey();
   final GlobalKey _potmKey = GlobalKey();
   final GlobalKey _teamsKey = GlobalKey();
 
+  bool get _hasTeamsPage =>
+      widget.match.going.length > 1 && widget.match.hasTeams();
+
+  bool get _hasPotmPage =>
+      widget.ratings.potms != null && widget.ratings.potms!.isNotEmpty;
+
+  /// Repaint keys of the carousel pages, in display order.
+  List<GlobalKey> get _pageKeys => [
+        _statsKey,
+        if (_hasTeamsPage) _teamsKey,
+        if (_hasPotmPage) _potmKey,
+      ];
+
   Future<void> _captureAndShare(BuildContext context) async {
     try {
-      final key = _current == 0
-          ? _statsKey
-          : (_current == 1
-              ? _teamsKey
-              : (_current == 2 ? _potmKey : _awardsKey));
+      final key = _pageKeys[_current];
       final boundary =
           key.currentContext?.findRenderObject() as RenderRepaintBoundary?;
 
@@ -2315,12 +2311,7 @@ class _ShareableStatsState extends State<ShareableStats> {
 
   @override
   Widget build(BuildContext context) {
-    // Calculate the total number of pages
-    int totalPages = 1; // Stats page is always present
-    if (widget.match.going.length > 1 && widget.match.hasTeams()) totalPages++;
-    if (widget.ratings.potms != null && widget.ratings.potms!.isNotEmpty)
-      totalPages++;
-    totalPages++; // Awards page is always present
+    final totalPages = _pageKeys.length;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -2360,12 +2351,8 @@ class _ShareableStatsState extends State<ShareableStats> {
             ),
             items: [
               _buildStatsPage(context),
-              if (widget.match.going.length > 1 && widget.match.hasTeams())
-                _buildTeamsPage(context),
-              if (widget.ratings.potms != null &&
-                  widget.ratings.potms!.isNotEmpty)
-                _buildPotmPage(context),
-              _buildAwardsPage(context),
+              if (_hasTeamsPage) _buildTeamsPage(context),
+              if (_hasPotmPage) _buildPotmPage(context),
             ],
           ),
         ),
@@ -2379,47 +2366,16 @@ class _ShareableStatsState extends State<ShareableStats> {
                   ? () => _carouselController.animateToPage(_current - 1)
                   : null,
             ),
-            Container(
-              width: 8,
-              height: 8,
-              margin: EdgeInsets.symmetric(horizontal: 4),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: _current == 0 ? Palette.primary : Palette.greyLighter,
-              ),
-            ),
-            if (widget.match.going.length > 1 && widget.match.hasTeams())
+            for (var i = 0; i < totalPages; i++)
               Container(
                 width: 8,
                 height: 8,
                 margin: EdgeInsets.symmetric(horizontal: 4),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: _current == 1 ? Palette.primary : Palette.greyLighter,
+                  color: _current == i ? Palette.primary : Palette.greyLighter,
                 ),
               ),
-            if (widget.ratings.potms != null &&
-                widget.ratings.potms!.isNotEmpty)
-              Container(
-                width: 8,
-                height: 8,
-                margin: EdgeInsets.symmetric(horizontal: 4),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: _current == 2 ? Palette.primary : Palette.greyLighter,
-                ),
-              ),
-            Container(
-              width: 8,
-              height: 8,
-              margin: EdgeInsets.symmetric(horizontal: 4),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: _current == totalPages - 1
-                    ? Palette.primary
-                    : Palette.greyLighter,
-              ),
-            ),
             IconButton(
               icon: Icon(Icons.arrow_forward_ios, color: Palette.greyDark),
               onPressed: _current < totalPages - 1
@@ -2484,82 +2440,6 @@ class _ShareableStatsState extends State<ShareableStats> {
               color: Palette.primary,
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAwardsPage(BuildContext context) {
-    var userState = context.watch<UsersState>();
-    var dateFormat = DateFormat(
-        "EEEE, MMM dd yyyy", getLanguageLocaleWatch(context).languageCode);
-    var formattedDate = dateFormat.format(widget.match.getLocalizedTime());
-
-    return RepaintBoundary(
-      key: _awardsKey,
-      child: Container(
-        width: 400,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(24),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisSize: MainAxisSize.max,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Text(
-                "$formattedDate - " +
-                    (widget.match.sportCenter?.getName() ?? ''),
-                style: TextPalette.h2,
-              ),
-              const SizedBox(height: 24),
-              LayoutBuilder(
-                builder: (context, constraints) {
-                  return Column(
-                    children: [
-                      for (var i = 0; i < awards.length; i += 2)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 8),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: _buildAwardBox(
-                                  context,
-                                  awards[i],
-                                  userState,
-                                  widget.ratings,
-                                ),
-                              ),
-                              if (i + 1 < awards.length) ...[
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: _buildAwardBox(
-                                    context,
-                                    awards[i + 1],
-                                    userState,
-                                    widget.ratings,
-                                  ),
-                                ),
-                              ],
-                            ],
-                          ),
-                        ),
-                    ],
-                  );
-                },
-              ),
-              Spacer(),
-              Center(
-                child: Image.asset(
-                  "assets/nutmeg_white.png",
-                  height: 24,
-                  color: Palette.primary,
-                ),
-              ),
-            ],
-          ),
         ),
       ),
     );
@@ -2684,82 +2564,6 @@ class _ShareableStatsState extends State<ShareableStats> {
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-
-  // Define awards with their names
-  static final List<Map<String, dynamic>> awards = [
-    {
-      'id': 'best_goal',
-      'name': (BuildContext context) =>
-          AppLocalizations.of(context)!.bestGoalAwardName,
-    },
-    {
-      'id': 'best_striker',
-      'name': (BuildContext context) =>
-          AppLocalizations.of(context)!.bestStrikerAwardName,
-    },
-    {
-      'id': 'best_goalkeeper',
-      'name': (BuildContext context) =>
-          AppLocalizations.of(context)!.bestGoalkeeperAwardName,
-    },
-    {
-      'id': 'best_defender',
-      'name': (BuildContext context) =>
-          AppLocalizations.of(context)!.bestDefenderAwardName,
-    },
-  ];
-
-  Widget _buildAwardBox(
-    BuildContext context,
-    Map<String, dynamic> award,
-    UsersState userState,
-    Ratings ratings,
-  ) {
-    final awardId = award['id']!;
-    final userVotes = ratings.awards[awardId] ?? {};
-    final sortedVotes = userVotes.entries.toList()
-      ..sort((a, b) => b.value.compareTo(a.value));
-
-    if (sortedVotes.isEmpty) return const SizedBox.shrink();
-
-    final winnerId = sortedVotes.first.key;
-    final winner = userState.getUserDetail(winnerId);
-
-    return Container(
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Palette.greyLighter,
-          width: 1,
-        ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          children: [
-            UserAvatar(28, winner),
-            const SizedBox(height: 16),
-            Text(
-              award['name'](context),
-              style: TextPalette.h3,
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 2),
-            Text(
-              winner?.getShortName() ?? "Unknown",
-              style: TextPalette.bodyText,
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
         ),
       ),
     );
