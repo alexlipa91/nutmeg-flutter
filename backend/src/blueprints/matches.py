@@ -770,7 +770,8 @@ def remove_other_user_from_match_request(match_id):
     if not (is_admin or is_organizer):
         return {"error": "User not authorized"}, 403
 
-    if user_id == match.organizer_id:
+    # the organizer can remove himself, but nobody else can remove the organizer
+    if user_id == match.organizer_id and user_id != requester_id:
         return {"error": "Cannot remove organizer"}, 400
 
     _remove_user_from_match(match_id, user_id, is_test=is_test)
