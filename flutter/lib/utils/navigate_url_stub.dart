@@ -9,5 +9,3 @@ void listenForStripeReturn(void Function() onComplete) {}
 
 /// No-op on non-web platforms
 bool handleStripeReturnTab() => false;
-
-void setPageBackgroundPlatform(String hex) {}

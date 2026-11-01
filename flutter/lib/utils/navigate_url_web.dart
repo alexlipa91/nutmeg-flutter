@@ -28,8 +28,3 @@ bool handleStripeReturnTab() {
   }
   return false;
 }
-
-void setPageBackgroundPlatform(String hex) {
-  html.document.documentElement?.style.backgroundColor = hex;
-  html.document.body?.style.backgroundColor = hex;
-}
