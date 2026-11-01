@@ -65,7 +65,9 @@ class _NavPill extends StatelessWidget {
     return SafeArea(
       top: false,
       child: Padding(
-        padding: EdgeInsets.fromLTRB(24, 8, 24, 12),
+        // The shadow reaches ~20px below the pill; keep that much room so it
+        // fades out instead of being cut off at the edge of the view.
+        padding: EdgeInsets.fromLTRB(24, 8, 24, 24),
         // heightFactor: the bottom bar slot allows the full screen height, and
         // a plain Center would expand to fill it.
         child: Align(
@@ -80,8 +82,8 @@ class _NavPill extends StatelessWidget {
                 boxShadow: [
                   BoxShadow(
                       color: Palette.black.withOpacity(0.16),
-                      blurRadius: 20,
-                      offset: Offset(0, 6)),
+                      blurRadius: 16,
+                      offset: Offset(0, 4)),
                 ],
               ),
               child: Row(children: [
