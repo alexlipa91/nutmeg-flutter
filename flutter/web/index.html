@@ -5,7 +5,7 @@
   body {
     margin: 0px;
     height: 100%;
-    background-color: #394BBB;
+    background-color: #F7F7F7;
   }
 </style>
 
@@ -55,18 +55,10 @@
 
   <title>nutmeg</title>
   <link rel="manifest" href="manifest.json">
-  <script>
-    // Blue is only the loading splash; once Flutter has drawn, use the app
-    // grey so the strip behind the Android gesture bar blends with the page.
-    window.addEventListener('flutter-first-frame', function () {
-      document.documentElement.style.backgroundColor = '#F7F7F7';
-      document.body.style.backgroundColor = '#F7F7F7';
-    });
-  </script>
 </head>
 
 <body>
-  <div style="position:fixed;top:0;left:0;z-index:2147483647;pointer-events:none;font:10px monospace;color:#fff;background:#d00;padding:1px 4px">bottom-fix-2</div>
+  <div style="position:fixed;top:0;left:0;z-index:2147483647;pointer-events:none;font:10px monospace;color:#fff;background:#d00;padding:1px 4px">bottom-fix-3</div>
   <script>
     // Unregister any previously installed service workers to avoid stale caches
     if ('serviceWorker' in navigator) {
