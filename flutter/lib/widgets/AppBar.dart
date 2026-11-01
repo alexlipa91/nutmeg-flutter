@@ -5,7 +5,6 @@ import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:provider/provider.dart';
 
 import '../state/UserState.dart';
-import 'Avatar.dart';
 
 
 class NutmegAppBar extends StatelessWidget {
@@ -62,11 +61,7 @@ class MainAppBar extends StatelessWidget {
                   highlightColor: Colors.transparent,
                   onTap: () => context.go("/"),
                   child: Image.asset('assets/nutmeg_white.png', height: 32)),
-              if (isLoggedIn)
-                Builder(
-                    builder: (context) =>
-                        LoggedUserAvatarWithRedirectUserPage(radius: 2))
-              else
+              if (!isLoggedIn)
                 InkWell(
                   onTap: () async {
                     context.go("/login");

@@ -13,6 +13,8 @@ class PageTemplate extends StatelessWidget {
   final Row? appBar;
   final Widget? bottomNavigationBar;
   final bool withBottomSafeArea;
+  /// false on top level tab pages: no app bar strip (and no back arrow).
+  final bool showTopBar;
 
   const PageTemplate({Key? key,
     this.refreshState,
@@ -20,7 +22,8 @@ class PageTemplate extends StatelessWidget {
     this.appBar,
     this.bottomNavigationBar,
     this.initState,
-    this.withBottomSafeArea = false
+    this.withBottomSafeArea = false,
+    this.showTopBar = true
   }) : super(key: key);
 
   @override
@@ -44,14 +47,17 @@ class PageTemplate extends StatelessWidget {
           child: refreshContainer(CustomScrollView(
               physics: AlwaysScrollableScrollPhysics(parent: ClampingScrollPhysics()),
               slivers: [
-                SliverAppBar(
-                  systemOverlayStyle: SystemUiOverlayStyle.dark,
-                  backgroundColor: Colors.transparent,
-                  automaticallyImplyLeading: false,
-                  centerTitle: false,
-                  titleSpacing: 0,
-                  title: appBar,
-                ),
+                if (showTopBar)
+                  SliverAppBar(
+                    systemOverlayStyle: SystemUiOverlayStyle.dark,
+                    backgroundColor: Colors.transparent,
+                    automaticallyImplyLeading: false,
+                    centerTitle: false,
+                    titleSpacing: 0,
+                    title: appBar,
+                  )
+                else
+                  SliverToBoxAdapter(child: SizedBox(height: 16)),
                 SliverPadding(
                   padding: EdgeInsets.only(left: 16, right: 16, bottom: bottomPadding),
                   sliver: SliverList(

@@ -18,6 +18,7 @@ from src.blueprints import (
     matches,
     payments,
     leaderboard,
+    groups,
 )
 
 
@@ -40,6 +41,7 @@ def _create_app():
     app.register_blueprint(stripe_bp.bp)
     app.register_blueprint(feedback.bp)
     app.register_blueprint(leaderboard.bp)
+    app.register_blueprint(groups.bp)
 
     CORS(app)
 

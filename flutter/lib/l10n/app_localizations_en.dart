@@ -893,4 +893,70 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get matchPreviewTitle => 'Match preview';
+
+  @override
+  String get groupStatsTitle => 'Monthly stats';
+
+  @override
+  String get groupStatsMatches => 'Matches';
+
+  @override
+  String get groupStatsMostWins => 'Most wins';
+
+  @override
+  String get groupStatsBestRating => 'Top rated';
+
+  @override
+  String get groupStatsMostLosses => 'Most losses';
+
+  @override
+  String get groupStatsChemistry => 'Best duo';
+
+  @override
+  String get groupStatsRepeatAwards => 'Awards';
+
+  @override
+  String get groupStatsAllPlayers => 'Table';
+
+  @override
+  String get groupStatsEmpty => 'No matches played this month';
+
+  @override
+  String get groupStatsPlayedShort => 'P';
+
+  @override
+  String get groupStatsWinsShort => 'W';
+
+  @override
+  String get groupStatsDrawsShort => 'D';
+
+  @override
+  String get groupStatsLossesShort => 'L';
+
+  @override
+  String get groupStatsRatingShort => 'Avg';
+
+  @override
+  String get groupStatsTogether => 'together';
+
+  @override
+  String get groupStatsPlayerOfMonth => 'Player of the month';
+
+  @override
+  String get groupStatsWinsWord => 'wins';
+
+  @override
+  String get groupStatsRatingWord => 'rating';
+
+  @override
+  String get navPlay => 'Play';
+
+  @override
+  String get navLeaderboard => 'Leaderboard';
+
+  @override
+  String get navProfile => 'Profile';
+
+  @override
+  String get groupStatsNoGames => 'Play your first game to see the monthly stats';
 }

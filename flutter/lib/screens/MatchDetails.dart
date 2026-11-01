@@ -2297,7 +2297,7 @@ class _ShareableStatsState extends State<ShareableStats> {
           key.currentContext?.findRenderObject() as RenderRepaintBoundary?;
 
       if (boundary == null) {
-        print('Failed to find render boundary');
+        logger.warning('Failed to find render boundary');
         return;
       }
 
@@ -2305,7 +2305,7 @@ class _ShareableStatsState extends State<ShareableStats> {
       final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
 
       if (byteData == null) {
-        print('Failed to convert image to byte data');
+        logger.warning('Failed to convert image to byte data');
         return;
       }
 
@@ -2318,11 +2318,10 @@ class _ShareableStatsState extends State<ShareableStats> {
       );
 
       if (result.status != ShareResultStatus.success) {
-        print('Failed to share the picture');
-        print(result.status);
+        logger.warning('Failed to share the picture: ${result.status}');
       }
     } catch (e) {
-      print('Error sharing image: $e');
+      logger.severe('Error sharing image', e);
     }
   }
 

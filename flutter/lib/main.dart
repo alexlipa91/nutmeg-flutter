@@ -9,6 +9,7 @@ import 'package:nutmeg/controller/LaunchController.dart';
 import 'package:nutmeg/screens/AvailableMatches.dart';
 import 'package:nutmeg/screens/CreateMatch.dart';
 import 'package:nutmeg/screens/Launch.dart';
+import 'package:nutmeg/screens/GroupMonthlyStats.dart';
 import 'package:nutmeg/screens/LeaderboardScreen.dart';
 import 'package:nutmeg/screens/Login.dart';
 import 'package:nutmeg/screens/MatchDetails.dart';
@@ -17,6 +18,7 @@ import 'package:nutmeg/state/MatchState.dart';
 import 'package:nutmeg/state/UsersState.dart';
 import 'package:nutmeg/utils/CrashlyticsLogger.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
+import 'package:nutmeg/widgets/MainBottomNav.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:logging/logging.dart';
@@ -34,7 +36,6 @@ final scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
 final logger = CrashlyticsLogger("Main");
 
 final appRouter = GoRouter(
-  debugLogDiagnostics: true,
   refreshListenable: LaunchController.loadingNotifier,
   errorBuilder: (context, state) => AvailableMatches(),
   routes: [
@@ -42,47 +43,71 @@ final appRouter = GoRouter(
       path: '/launch',
       builder: (context, state) => LaunchWidget(),
     ),
-    GoRoute(
-        path: '/',
-        builder: (context, state) {
-          return AvailableMatches();
-        },
-        routes: [
-          GoRoute(path: 'login', builder: (context, state) => Login()),
-          GoRoute(
-              path: 'user',
-              builder: (context, state) => UserPage(
-                stripeOnboardingComplete: state.uri.queryParameters['stripe_onboarding'] == 'complete',
+    ShellRoute(
+      builder: (context, state, child) =>
+          MainShell(path: state.uri.path, child: child),
+      routes: [
+        GoRoute(
+            path: '/',
+            builder: (context, state) {
+              return AvailableMatches();
+            },
+            routes: [
+              GoRoute(path: 'login', builder: (context, state) => Login()),
+              GoRoute(
+                  path: 'user',
+                  pageBuilder: (context, state) => NoTransitionPage(
+                      child: UserPage(
+                    stripeOnboardingComplete:
+                        state.uri.queryParameters['stripe_onboarding'] == 'complete',
+                  )),
+                  routes: [
+                    GoRoute(path: 'login', builder: (context, state) => Login())
+                  ]),
+              GoRoute(
+                path: 'createMatch',
+                builder: (context, state) => CreateMatch(),
               ),
-              routes: [
-                GoRoute(path: 'login', builder: (context, state) => Login())
-              ]),
-          GoRoute(
-            path: 'createMatch',
-            builder: (context, state) => CreateMatch(),
-          ),
-          GoRoute(
-              path: 'match/:id',
-              builder: (context, state) {
-                final matchId = state.pathParameters["id"]!;
-                final paymentOutcome = state.uri.queryParameters["payment_outcome"];
-                final matchState =
-                    context.read<MatchesState>().getMatch(matchId);
+              GoRoute(
+                  path: 'match/:id',
+                  builder: (context, state) {
+                    final matchId = state.pathParameters["id"]!;
+                    final paymentOutcome = state.uri.queryParameters["payment_outcome"];
+                    final matchState =
+                        context.read<MatchesState>().getMatch(matchId);
 
-                return ChangeNotifierProvider<MatchState>.value(
-                  value: matchState,
-                  child: MatchDetails(
-                    key: ValueKey("MatchDetails-$matchId"),
-                    matchId: matchId,
-                    paymentOutcome: paymentOutcome,
+                    return ChangeNotifierProvider<MatchState>.value(
+                      value: matchState,
+                      child: MatchDetails(
+                        key: ValueKey("MatchDetails-$matchId"),
+                        matchId: matchId,
+                        paymentOutcome: paymentOutcome,
+                      ),
+                    );
+                  },
                   ),
-                );
-              },
-              ),
-          GoRoute(
-              path: 'leaderboard',
-              builder: (context, state) => LeaderboardScreen()),
-        ]),
+              GoRoute(
+                  path: 'leaderboard',
+                  pageBuilder: (context, state) => NoTransitionPage(
+                      child: GroupMonthlyStats(
+                        organizerId: "mine",
+                        showBack: false,
+                        month: state.uri.queryParameters["month"],
+                      )),
+                  routes: [
+                    GoRoute(
+                        path: 'all-time',
+                        builder: (context, state) => LeaderboardScreen()),
+                  ]),
+              GoRoute(
+                  path: 'group/:organizerId/monthly',
+                  builder: (context, state) => GroupMonthlyStats(
+                        organizerId: state.pathParameters["organizerId"]!,
+                        month: state.uri.queryParameters["month"],
+                      )),
+            ]),
+      ],
+    ),
   ],
   redirect: (context, state) {
     var redirectUrl;
@@ -98,7 +123,7 @@ final appRouter = GoRouter(
       redirectUrl = LaunchController.pendingRedirect ?? "/";
       LaunchController.pendingRedirect = null;
     } else if (!userState.isLoggedIn()) {
-      if ({"/createMatch", "/user", "/admin"}.contains(state.matchedLocation))
+      if ({"/createMatch", "/user", "/admin", "/leaderboard"}.contains(state.matchedLocation))
         redirectUrl = "/login?from=${state.matchedLocation}";
     } else if (!(userState.getLoggedUserDetails()!.isAdmin ?? false) &&
         state.matchedLocation == "/admin") {
@@ -121,9 +146,12 @@ void main() async {
     (l) => l.name == AppConfig.logLevel.toUpperCase(),
     orElse: () => Level.SEVERE,
   );
-  Logger.root.onRecord.listen((record) {
-    print('${record.level.name}: ${record.time}: ${record.message}');
-  });
+  // Log records go to the console on mobile only; nothing is printed on web.
+  if (!kIsWeb) {
+    Logger.root.onRecord.listen((record) {
+      print('${record.level.name}: ${record.time}: ${record.message}');
+    });
+  }
 
   // Initialize Firebase with error handling
   try {

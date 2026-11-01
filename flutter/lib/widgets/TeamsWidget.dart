@@ -18,11 +18,14 @@ import '../utils/LocationUtils.dart';
 import '../utils/share_utils.dart';
 import '../utils/UiUtils.dart';
 import '../utils/Utils.dart';
+import '../utils/CrashlyticsLogger.dart';
 import 'Avatar.dart';
 import 'ButtonsWithLoader.dart';
 import 'Containers.dart';
 import 'ModalBottomSheet.dart';
 import 'PlayerBottomModal.dart';
+
+final _logger = CrashlyticsLogger('TeamsWidget');
 
 class TeamsWidget extends StatefulWidget {
   final String matchId;
@@ -214,7 +217,7 @@ class TeamsWidgetState extends State<TeamsWidget> {
         ],
       );
     } catch (e) {
-      print('Error sharing teams: $e');
+      _logger.severe('Error sharing teams', e);
     }
   }
 
@@ -252,7 +255,7 @@ class TeamsWidgetState extends State<TeamsWidget> {
             context.read<UsersState>().fetchUserDetails(e);
             if (!_loggedMissingUsers.contains(e)) {
               _loggedMissingUsers.add(e);
-              debugPrint("TeamsWidget unresolved user details for id=$e");
+              _logger.info("TeamsWidget unresolved user details for id=$e");
             }
           } else {
             _loggedMissingUsers.remove(e);

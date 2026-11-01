@@ -40,9 +40,6 @@ class PaymentDetailsDescription {
         match?.organizerId != null &&
         allowUsersToMarkPayments;
 
-    print(
-        "Payment reminder debug: isManualPayment=$isManualPayment, isOrganizer=$isOrganizer, organizerId=${match?.organizerId}, allowUsersToMarkPayments=$allowUsersToMarkPayments, showReminder=$showReminder");
-
     await ModalBottomSheet.showNutmegModalBottomSheet(
         context,
         Container(

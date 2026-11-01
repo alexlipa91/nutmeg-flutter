@@ -1691,6 +1691,138 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Match preview'**
   String get matchPreviewTitle;
+
+  /// No description provided for @groupStatsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly stats'**
+  String get groupStatsTitle;
+
+  /// No description provided for @groupStatsMatches.
+  ///
+  /// In en, this message translates to:
+  /// **'Matches'**
+  String get groupStatsMatches;
+
+  /// No description provided for @groupStatsMostWins.
+  ///
+  /// In en, this message translates to:
+  /// **'Most wins'**
+  String get groupStatsMostWins;
+
+  /// No description provided for @groupStatsBestRating.
+  ///
+  /// In en, this message translates to:
+  /// **'Top rated'**
+  String get groupStatsBestRating;
+
+  /// No description provided for @groupStatsMostLosses.
+  ///
+  /// In en, this message translates to:
+  /// **'Most losses'**
+  String get groupStatsMostLosses;
+
+  /// No description provided for @groupStatsChemistry.
+  ///
+  /// In en, this message translates to:
+  /// **'Best duo'**
+  String get groupStatsChemistry;
+
+  /// No description provided for @groupStatsRepeatAwards.
+  ///
+  /// In en, this message translates to:
+  /// **'Awards'**
+  String get groupStatsRepeatAwards;
+
+  /// No description provided for @groupStatsAllPlayers.
+  ///
+  /// In en, this message translates to:
+  /// **'Table'**
+  String get groupStatsAllPlayers;
+
+  /// No description provided for @groupStatsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No matches played this month'**
+  String get groupStatsEmpty;
+
+  /// No description provided for @groupStatsPlayedShort.
+  ///
+  /// In en, this message translates to:
+  /// **'P'**
+  String get groupStatsPlayedShort;
+
+  /// No description provided for @groupStatsWinsShort.
+  ///
+  /// In en, this message translates to:
+  /// **'W'**
+  String get groupStatsWinsShort;
+
+  /// No description provided for @groupStatsDrawsShort.
+  ///
+  /// In en, this message translates to:
+  /// **'D'**
+  String get groupStatsDrawsShort;
+
+  /// No description provided for @groupStatsLossesShort.
+  ///
+  /// In en, this message translates to:
+  /// **'L'**
+  String get groupStatsLossesShort;
+
+  /// No description provided for @groupStatsRatingShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Avg'**
+  String get groupStatsRatingShort;
+
+  /// No description provided for @groupStatsTogether.
+  ///
+  /// In en, this message translates to:
+  /// **'together'**
+  String get groupStatsTogether;
+
+  /// No description provided for @groupStatsPlayerOfMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Player of the month'**
+  String get groupStatsPlayerOfMonth;
+
+  /// No description provided for @groupStatsWinsWord.
+  ///
+  /// In en, this message translates to:
+  /// **'wins'**
+  String get groupStatsWinsWord;
+
+  /// No description provided for @groupStatsRatingWord.
+  ///
+  /// In en, this message translates to:
+  /// **'rating'**
+  String get groupStatsRatingWord;
+
+  /// No description provided for @navPlay.
+  ///
+  /// In en, this message translates to:
+  /// **'Play'**
+  String get navPlay;
+
+  /// No description provided for @navLeaderboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Leaderboard'**
+  String get navLeaderboard;
+
+  /// No description provided for @navProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get navProfile;
+
+  /// No description provided for @groupStatsNoGames.
+  ///
+  /// In en, this message translates to:
+  /// **'Play your first game to see the monthly stats'**
+  String get groupStatsNoGames;
 }
 
 class _AppLocalizationsDelegate

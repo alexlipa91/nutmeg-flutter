@@ -549,13 +549,8 @@ class UserPageState extends State<UserPage> {
       ]
       // widgets
       ,
-      appBar: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          BackButton(
-              color: Palette.black, onPressed: () => Navigator.pop(context)),
-        ],
-      ),
+      // top level tab: the bottom bar is the navigation, no back arrow
+      showTopBar: false,
     );
   }
 }
