@@ -9,3 +9,7 @@ void listenForStripeReturn(void Function() onComplete) =>
 
 /// If this is the Stripe return tab, notify opener and close. Returns true if closing.
 bool handleStripeReturnTab() => impl.handleStripeReturnTab();
+
+/// Colour of the page behind the Flutter view (web only). Browsers show it in
+/// the strip under the view, e.g. behind the Android gesture bar.
+void setPageBackground(String hex) => impl.setPageBackgroundPlatform(hex);

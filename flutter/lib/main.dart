@@ -138,8 +138,19 @@ final appRouter = GoRouter(
   },
 );
 
+/// Page colour behind the Flutter view for [path]: the strip under the view
+/// (e.g. behind the Android gesture bar) shows it. Blue only for the launch
+/// screen, the app grey everywhere else.
+String _pageBackgroundFor(String path) =>
+    path == '/launch' ? '#394BBB' : '#F7F7F7';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  if (kIsWeb) {
+    void syncPageBackground() => setPageBackground(_pageBackgroundFor(
+        appRouter.routerDelegate.currentConfiguration.uri.path));
+    appRouter.routerDelegate.addListener(syncPageBackground);
+  }
   await AppConfig.loadRuntimeOverrides();
 
   Logger.root.level = Level.LEVELS.firstWhere(
