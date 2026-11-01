@@ -1,0 +1,35 @@
+name: Web Staging Preview
+
+on:
+  push:
+    branches:
+      - staging-preview
+
+jobs:
+  deploy_staging:
+    name: Deploy staging only
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: flutter
+    steps:
+      - uses: actions/checkout@v2
+      - name: Create test env file
+        run: |
+          echo "${{ secrets.ENV_PROD }}" > .env.test
+          sed -i '/^TEST_MODE=/d' .env.test
+          echo "TEST_MODE=true" >> .env.test
+          echo "LOG_LEVEL=INFO" >> .env.test
+          echo "COMMIT_TIMESTAMP=$(git log -1 --format=%ct)" >> .env.test
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.41.0"
+      - name: Build web app
+        run: flutter build web --dart-define-from-file=.env.test --release
+      - name: Deploy to Firebase (staging only)
+        uses: w9jds/firebase-action@master
+        with:
+          args: deploy --only hosting:staging
+        env:
+          GCP_SA_KEY: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_NUTMEG_9099C }}"
+          PROJECT_PATH: flutter
