@@ -269,5 +269,6 @@
     "nutmegPayCollectedSoFarSubtitle": "Este é o dinheiro recolhido até agora dos jogadores.",
     "androidInstallBannerMessage": "Instale a app da Nutmeg para uma melhor experiência.",
     "androidInstallBannerDownload": "Transferir",
-    "androidInstallBannerLater": "Mais tarde"
+    "androidInstallBannerLater": "Mais tarde",
+    "matchPreviewTitle": "Antevisão do jogo"
 }

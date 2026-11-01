@@ -41,6 +41,7 @@ from src.utils import (
 )
 from flask import current_app as app
 from src.models._ratings import Ratings
+from src import match_preview, pair_stats
 
 bp = Blueprint("matches", __name__, url_prefix="/matches")
 bp_v2 = Blueprint("matches_v2", __name__, url_prefix="/v2/matches")
@@ -576,6 +577,18 @@ def create_match():
     )
 
     return {"data": {"id": match_id}}, 200
+
+
+@bp.route("/<match_id>/preview", methods=["GET"])
+def get_match_preview(match_id):
+    preview = match_preview.get_preview(
+        app.db_client,
+        match_id,
+        flask.request.args.get("lang", "en"),
+        _is_test_from_request(),
+        _get_user_firestore,
+    )
+    return {"data": preview}, 200
 
 
 @bp.route("/<match_id>/teams/<algorithm>", methods=["GET"])
@@ -1461,6 +1474,13 @@ def freeze_match_stats(match_id, notify=True, only_for_user=None):
             users_doc_ref,
             going_user_ids=match.going_user_ids(),
             organizer_id=match.organizer_id,
+            pair_stats_match=(
+                match
+                if only_for_user is None
+                and match.pair_stats_applied_at is None
+                and pair_stats.match_has_result(match)
+                else None
+            ),
         )
     if notify:
         try:
@@ -1555,6 +1575,7 @@ def _close_rating_round_transaction(
     users_docs_ref,
     going_user_ids: list,
     organizer_id: str = None,
+    pair_stats_match=None,
 ):
     going_set = set(going_user_ids)
     for u in users_docs_ref:
@@ -1578,10 +1599,13 @@ def _close_rating_round_transaction(
             {u: user_updates[u].to_leaderboard_document_update() for u in user_updates},
         )
 
-    transaction.update(
-        match_doc_ref,
-        {"ratings.computed_at": firestore.firestore.SERVER_TIMESTAMP},
-    )
+    match_update = {"ratings.computed_at": firestore.firestore.SERVER_TIMESTAMP}
+    if pair_stats_match is not None:
+        pair_stats.apply_match_to_pair_stats(
+            transaction, app.db_client, pair_stats_match
+        )
+        match_update["pairStatsAppliedAt"] = firestore.firestore.SERVER_TIMESTAMP
+    transaction.update(match_doc_ref, match_update)
 
 
 def _send_close_voting_notification(match_id, going_users, potms, sport_center):

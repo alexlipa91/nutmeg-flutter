@@ -1685,6 +1685,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Later'**
   String get androidInstallBannerLater;
+
+  /// No description provided for @matchPreviewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Match preview'**
+  String get matchPreviewTitle;
 }
 
 class _AppLocalizationsDelegate

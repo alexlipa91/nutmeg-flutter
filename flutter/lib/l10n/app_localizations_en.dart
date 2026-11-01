@@ -890,4 +890,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get androidInstallBannerLater => 'Later';
+
+  @override
+  String get matchPreviewTitle => 'Match preview';
 }

@@ -12,6 +12,8 @@ _SECRET_NAMES = [
     "STRIPE_WEBHOOK_SECRET_ES",
     "STRIPE_WEBHOOK_SECRET_ES_TEST",
 ]
+# Missing optional secrets are tolerated (the feature degrades gracefully).
+_OPTIONAL_SECRET_NAMES = ["GEMINI_API_KEY"]
 
 
 class Secrets:
@@ -20,6 +22,7 @@ class Secrets:
     STRIPE_KEY_TEST_ES: str = ""
     STRIPE_WEBHOOK_SECRET_ES: str = ""
     STRIPE_WEBHOOK_SECRET_ES_TEST: str = ""
+    GEMINI_API_KEY: str = ""
 
 
 def load_secrets():
@@ -38,6 +41,17 @@ def load_secrets():
 
     for name in _SECRET_NAMES:
         setattr(Secrets, name, values[name])
+
+    for name in _OPTIONAL_SECRET_NAMES:
+        value = os.environ.get(name, "")
+        if not value:
+            try:
+                secret_path = f"projects/{GCP_PROJECT}/secrets/{name}/versions/latest"
+                response = client.access_secret_version(request={"name": secret_path})
+                value = response.payload.data.decode("UTF-8")
+            except Exception:
+                logging.info("Optional secret %s not available", name)
+        setattr(Secrets, name, value)
 
     elapsed_ms = int((time.perf_counter() - started_at) * 1000)
     logging.info("Loaded %d secrets in %dms", len(_SECRET_NAMES), elapsed_ms)

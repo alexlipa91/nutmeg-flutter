@@ -902,4 +902,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get androidInstallBannerLater => 'Mais tarde';
+
+  @override
+  String get matchPreviewTitle => 'Antevisão do jogo';
 }

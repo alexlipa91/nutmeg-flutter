@@ -57,6 +57,7 @@ class Match:
     cancelled_reason: Optional[str] = None
     confirmed_at: Optional[datetime] = None
     scores_computed_at: Optional[datetime] = None
+    pair_stats_applied_at: Optional[datetime] = None
 
     # --- cancellation policy ---
     cancel_hours_before: Optional[int] = None
@@ -104,6 +105,7 @@ class Match:
             "cancelledReason": "cancelled_reason",
             "confirmedAt": "confirmed_at",
             "scoresComputedAt": "scores_computed_at",
+            "pairStatsAppliedAt": "pair_stats_applied_at",
             "cancelHoursBefore": "cancel_hours_before",
             "tasksScheduled": "tasks_scheduled",
             "paid_out_at": "paid_out_at",

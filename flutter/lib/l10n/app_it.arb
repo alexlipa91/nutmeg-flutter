@@ -269,5 +269,6 @@
     "dontForgetToPay": "Non dimenticare di pagare {name} {amount}!",
     "androidInstallBannerMessage": "Installa l'app Nutmeg per un'esperienza migliore.",
     "androidInstallBannerDownload": "Scarica",
-    "androidInstallBannerLater": "Dopo"
+    "androidInstallBannerLater": "Dopo",
+    "matchPreviewTitle": "Anteprima della partita"
 }

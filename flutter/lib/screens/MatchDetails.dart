@@ -49,6 +49,7 @@ import '../widgets/PlayerBottomModal.dart';
 import '../widgets/Skeletons.dart';
 
 import '../utils/web_url.dart';
+import '../widgets/MatchPreview.dart';
 import '../widgets/TeamsWidget.dart';
 import 'BottomBarMatch.dart';
 import 'PaymentDetailsDescription.dart';
@@ -295,6 +296,17 @@ List<Widget> getWidgets(
       ? TeamsWidget(matchId: match.documentId)
       : null;
 
+  // Only for a full match; the backend caches per team composition and
+  // regenerates when teams change, so refetch when they do.
+  var matchPreview = teamsWidget != null &&
+          !match.isMatchFinished() &&
+          match.going.length >= match.maxPlayers
+      ? MatchPreview(
+          key: ValueKey(
+              '${match.documentId}-${match.computedTeams}-${match.manualTeams}'),
+          matchId: match.documentId)
+      : null;
+
   // Organizers always see the player list (except when rated/frozen).
   // Regular users see it when the match isn't finished and teams aren't shown.
   var showPlayerList = organizerView
@@ -395,6 +407,7 @@ List<Widget> getWidgets(
       if (teamsWidget != null) teamsWidget,
       if (waitListWidget != null) waitListWidget,
     ],
+    if (matchPreview != null) matchPreview,
     if (stats != null) stats,
     if (awards != null) awards,
   ];
