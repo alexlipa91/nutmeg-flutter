@@ -138,8 +138,21 @@ final appRouter = GoRouter(
   },
 );
 
+/// Page colour behind the Flutter view for [path]: matches the colour at the
+/// bottom of that screen (splash blue, white bottom bar, or the app grey).
+String _pageBackgroundFor(String path) {
+  if (path == '/launch') return '#394BBB';
+  if (path.startsWith('/match/')) return '#FFFFFF';
+  return '#F7F7F7';
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  if (kIsWeb) {
+    void syncPageBackground() => setPageBackground(_pageBackgroundFor(
+        appRouter.routerDelegate.currentConfiguration.uri.path));
+    appRouter.routerDelegate.addListener(syncPageBackground);
+  }
   await AppConfig.loadRuntimeOverrides();
 
   Logger.root.level = Level.LEVELS.firstWhere(

@@ -55,14 +55,6 @@
 
   <title>nutmeg</title>
   <link rel="manifest" href="manifest.json">
-  <script>
-    // Blue is only the loading splash; once Flutter has drawn, use the app
-    // background so the strip behind the Android gesture bar isn't blue.
-    window.addEventListener('flutter-first-frame', function () {
-      document.documentElement.style.backgroundColor = '#F7F7F7';
-      document.body.style.backgroundColor = '#F7F7F7';
-    });
-  </script>
 </head>
 
 <body>
