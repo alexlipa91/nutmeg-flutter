@@ -62,7 +62,21 @@ class _NavPill extends StatelessWidget {
           )
         : null;
 
-    return SafeArea(
+    // Content scrolls underneath the floating pill; fade it into the page
+    // colour so it doesn't end in a hard cut at the bottom edge of the view.
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Palette.greyLightest.withOpacity(0),
+            Palette.greyLightest,
+          ],
+          stops: [0.0, 0.75],
+        ),
+      ),
+      child: SafeArea(
       top: false,
       child: Padding(
         // The shadow reaches ~20px below the pill; keep that much room so it
@@ -107,6 +121,7 @@ class _NavPill extends StatelessWidget {
             ),
           ),
         ),
+      ),
       ),
     );
   }
