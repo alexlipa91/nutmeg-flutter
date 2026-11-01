@@ -168,12 +168,6 @@ abstract class AppLocalizations {
   /// **'Full'**
   String get fullStatus;
 
-  /// No description provided for @votes.
-  ///
-  /// In en, this message translates to:
-  /// **'votes'**
-  String get votes;
-
   /// No description provided for @matchDetailsScreen.
   ///
   /// In en, this message translates to:
@@ -1199,72 +1193,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No available data'**
   String get leaderboardNoData;
-
-  /// No description provided for @matchAwardsTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Match Awards'**
-  String get matchAwardsTitle;
-
-  /// No description provided for @matchAwardsSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Vote for outstanding performances of the match'**
-  String get matchAwardsSubtitle;
-
-  /// No description provided for @selectPlayerText.
-  ///
-  /// In en, this message translates to:
-  /// **'Select player'**
-  String get selectPlayerText;
-
-  /// No description provided for @bestGoalAwardName.
-  ///
-  /// In en, this message translates to:
-  /// **'Best Goal'**
-  String get bestGoalAwardName;
-
-  /// No description provided for @bestGoalAwardDesc.
-  ///
-  /// In en, this message translates to:
-  /// **'Most impressive goal of the match'**
-  String get bestGoalAwardDesc;
-
-  /// No description provided for @bestStrikerAwardName.
-  ///
-  /// In en, this message translates to:
-  /// **'Best Striker'**
-  String get bestStrikerAwardName;
-
-  /// No description provided for @bestStrikerAwardDesc.
-  ///
-  /// In en, this message translates to:
-  /// **'Most impactful attacking player'**
-  String get bestStrikerAwardDesc;
-
-  /// No description provided for @bestGoalkeeperAwardName.
-  ///
-  /// In en, this message translates to:
-  /// **'Best Goalkeeper'**
-  String get bestGoalkeeperAwardName;
-
-  /// No description provided for @bestGoalkeeperAwardDesc.
-  ///
-  /// In en, this message translates to:
-  /// **'Most crucial saves and defensive plays'**
-  String get bestGoalkeeperAwardDesc;
-
-  /// No description provided for @bestDefenderAwardName.
-  ///
-  /// In en, this message translates to:
-  /// **'Best Defender'**
-  String get bestDefenderAwardName;
-
-  /// No description provided for @bestDefenderAwardDesc.
-  ///
-  /// In en, this message translates to:
-  /// **'Most solid defensive performance'**
-  String get bestDefenderAwardDesc;
 
   /// No description provided for @ratePlayersThanksText.
   ///
