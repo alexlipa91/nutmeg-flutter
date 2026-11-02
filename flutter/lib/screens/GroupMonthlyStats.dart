@@ -203,7 +203,12 @@ class _GroupMonthlyStatsState extends State<GroupMonthlyStats> {
     }
     var highlights = data["highlights"] as Map<String, dynamic>;
     var players = (data["players"] as List).cast<Map<String, dynamic>>();
-    var potm = data["player_of_the_month"] as Map<String, dynamic>?;
+    // the month in progress has no player of the month yet
+    var now = DateTime.now();
+    var isCurrentMonth =
+        (data["month"] as String?) == "${now.year}${now.month.toString().padLeft(2, '0')}";
+    var potm =
+        isCurrentMonth ? null : data["player_of_the_month"] as Map<String, dynamic>?;
     var runnersUp = (data["runners_up"] as List).cast<Map<String, dynamic>>();
 
     var mostWins = (highlights["most_wins"] as List).cast<Map<String, dynamic>>();
