@@ -14,7 +14,7 @@ import hashlib
 import json
 import logging
 import os
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import pytz
@@ -269,6 +269,18 @@ def _preview_ref(db, match_id: str, coll: str, lang: str):
     )
 
 
+def _is_concluded(match: Match) -> bool:
+    if match.score:
+        return True
+    if not match.date_time:
+        return False
+    end = match.date_time + timedelta(minutes=match.duration or 60)
+    now = datetime.now(timezone.utc)
+    if end.tzinfo is None:
+        end = end.replace(tzinfo=timezone.utc)
+    return now > end
+
+
 def get_preview(
     db,
     match_id: str,
@@ -284,18 +296,25 @@ def get_preview(
     lang = lang if lang in LANGUAGES else "en"
     coll = "matches_test" if is_test else "matches"
     match = Match.get_by_id(match_id, db, is_test=is_test)
-    if (
-        not match
-        or match.is_cancelled()
-        or match.score
-        or not lineup_ready(match)
-    ):
+    if not match or match.is_cancelled():
+        return None
+
+    ref = _preview_ref(db, match_id, coll, lang)
+    cached = ref.get()
+
+    if _is_concluded(match):
+        # Keep showing the preview written before the match, but never
+        # generate one afterwards: the pair stats would already include it.
+        if cached.exists:
+            c = cached.to_dict()
+            return {"headline": c["headline"], "body": c["body"]}
+        return None
+
+    if not lineup_ready(match):
         return None
 
     team_a, team_b = lineup_teams(match)
     key = teams_key(team_a, team_b)
-    ref = _preview_ref(db, match_id, coll, lang)
-    cached = ref.get()
     if cached.exists and cached.to_dict().get("teamsKey") == key:
         c = cached.to_dict()
         return {"headline": c["headline"], "body": c["body"]}

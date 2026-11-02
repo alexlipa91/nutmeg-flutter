@@ -297,9 +297,9 @@ List<Widget> getWidgets(
       : null;
 
   // Only for a full match; the backend caches per team composition and
-  // regenerates when teams change, so refetch when they do.
+  // regenerates when teams change, so refetch when they do. After the match
+  // it keeps returning the stored preview (or nothing).
   var matchPreview = teamsWidget != null &&
-          !match.isMatchFinished() &&
           match.going.length >= match.maxPlayers
       ? MatchPreview(
           key: ValueKey(
