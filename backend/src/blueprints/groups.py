@@ -42,4 +42,6 @@ def get_monthly_group_stats(organizer_id):
             return {"data": group_stats.monthly_group_stats([], month)}, 200
 
     matches = _matches_where("organizerId", "==", organizer_id)
-    return {"data": group_stats.monthly_group_stats(matches, month)}, 200
+    stats = group_stats.monthly_group_stats(matches, month)
+    stats["organizer_id"] = organizer_id
+    return {"data": stats}, 200

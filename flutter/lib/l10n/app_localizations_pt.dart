@@ -910,6 +910,11 @@ class AppLocalizationsPt extends AppLocalizations {
   String get groupStatsTitle => 'Estatísticas do mês';
 
   @override
+  String groupStatsGroupOf(String name) {
+    return 'Grupo do $name';
+  }
+
+  @override
   String get groupStatsMatches => 'Jogos';
 
   @override

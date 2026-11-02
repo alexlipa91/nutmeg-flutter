@@ -73,6 +73,8 @@ class _GroupMonthlyStatsState extends State<GroupMonthlyStats> {
 
   void _fetchUsers(Map<String, dynamic> data) {
     var usersState = context.read<UsersState>();
+    var organizerId = data["organizer_id"] as String?;
+    if (organizerId != null) usersState.fetchUserDetails(organizerId);
     for (var p in data["players"] as List) {
       usersState.fetchUserDetails(p["user_id"] as String);
     }
@@ -85,6 +87,17 @@ class _GroupMonthlyStatsState extends State<GroupMonthlyStats> {
         DateFormat("LLLL yyyy", Localizations.localeOf(context).toString())
             .format(date);
     return label[0].toUpperCase() + label.substring(1);
+  }
+
+  Widget _groupName(BuildContext context, AppLocalizations l10n) {
+    var organizerId = _data?["organizer_id"] as String?;
+    var name = organizerId == null
+        ? null
+        : context.watch<UsersState>().getUserDetail(organizerId)?.getShortName();
+    if (name == null) return SizedBox.shrink();
+    return Padding(
+        padding: EdgeInsets.only(top: 4),
+        child: Text(l10n.groupStatsGroupOf(name), style: TextPalette.bodyText));
   }
 
   void _goToMonth(String month) {
@@ -133,6 +146,7 @@ class _GroupMonthlyStatsState extends State<GroupMonthlyStats> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(l10n.groupStatsTitle, style: TextPalette.h1Default),
+                _groupName(context, l10n),
                 SizedBox(height: 16),
                 body,
                 SizedBox(height: 24),
