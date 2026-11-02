@@ -15,6 +15,7 @@ import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/Avatar.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:nutmeg/widgets/Containers.dart';
+import 'package:nutmeg/utils/AllTimeRow.dart';
 import 'package:nutmeg/widgets/FifaCard.dart';
 import 'package:nutmeg/widgets/FeedbackBottomModal.dart';
 import 'package:nutmeg/widgets/PageTemplate.dart';
@@ -1024,19 +1025,12 @@ class _UserProfileWithStatsState extends State<_UserProfileWithStats> {
   }
 
   Future<void> _loadScore() async {
-    try {
-      var r = await CloudFunctionsClient()
-          .get("users/${userDetails.documentId}/all_time_score");
-      if (mounted) {
-        setState(() {
-          _score = (r?["all_time_score"] as num?)?.toInt();
-          var played = (r?["played"] as num?)?.toInt() ?? 0;
-          var wins = (r?["wins"] as num?)?.toInt() ?? 0;
-          if (played > 0) _winPercent = (100 * wins / played).round();
-        });
-      }
-    } catch (e) {
-      logger.warning("Could not load the all time score: $e");
+    var row = await fetchAllTimeRow(userDetails.documentId);
+    if (mounted) {
+      setState(() {
+        _score = row.score;
+        _winPercent = row.winPercent;
+      });
     }
   }
 
@@ -1048,57 +1042,15 @@ class _UserProfileWithStatsState extends State<_UserProfileWithStats> {
     }
   }
 
-  /// The title of the card: a role from the player's best attribute, once they
-  /// have attributes and one clearly stands out; the app's name before that.
-  static const _roles = {
-    "PAC": "SPEEDSTER",
-    "SHO": "FINISHER",
-    "PAS": "PLAYMAKER",
-    "DRI": "DRIBBLER",
-    "DEF": "ROCK",
-    "PHY": "POWERHOUSE",
-    "GK": "KEEPER",
-  };
-  static const _minRoleValue = 65;
-
-  static String _title(Map<String, int> attributes) {
-    if (attributes.isEmpty) return "NUTMEG";
-    var best = attributes.entries.reduce((a, b) => b.value > a.value ? b : a);
-    return best.value >= _minRoleValue
-        ? _roles[best.key] ?? "NUTMEG"
-        : "NUTMEG";
-  }
-
-  /// Attributes in the order FIFA shows them, three to a line.
-  static const _attributes = ["PAC", "SHO", "PAS", "DRI", "DEF", "PHY"];
-
   FifaCard _card(BuildContext context,
-      {required double maxWidth, required bool editable}) {
-    final attributes = userDetails.traitAttributes ?? {};
-    final hasAttributes = attributes.isNotEmpty;
-    return FifaCard(
-      user: userDetails,
-      score: _score,
-      title: _title(attributes),
-      theme: FifaTheme.gold,
-      maxWidth: maxWidth,
-      layout: hasAttributes ? FifaStatsLayout.grid : FifaStatsLayout.columns,
-      stats: hasAttributes
-          ? [for (var a in _attributes) FifaStat(a, "${attributes[a] ?? "–"}")]
-          : [
-              FifaStat("MATCHES", "${userDetails.numJoinedMatches ?? 0}"),
-              FifaStat("WINS", "${userDetails.numWin ?? 0}"),
-              FifaStat(
-                  "AVG SCORE",
-                  userDetails.averageScore == null
-                      ? "–"
-                      : userDetails.averageScore!.toStringAsFixed(2)),
-            ],
-      // goalkeeping only shows for players who are given it
-      extra: attributes.containsKey("GK") ? "GK ${attributes["GK"]}" : null,
-      onPictureTap: !editable ? null : () => _changePicture(context),
-    );
-  }
+          {required double maxWidth, required bool editable}) =>
+      FifaCard.player(
+        user: userDetails,
+        score: _score,
+        theme: FifaTheme.gold,
+        maxWidth: maxWidth,
+        onPictureTap: !editable ? null : () => _changePicture(context),
+      );
 
   @override
   Widget build(BuildContext context) {

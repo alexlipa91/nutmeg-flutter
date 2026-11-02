@@ -2,6 +2,11 @@ import 'package:badges/badges.dart';
 import 'package:fl_chart/fl_chart.dart';
 
 import 'package:flutter/material.dart' hide Badge;
+import 'package:nutmeg/l10n/app_localizations.dart';
+import 'package:nutmeg/state/UserState.dart';
+import 'package:nutmeg/utils/AllTimeRow.dart';
+import 'package:nutmeg/widgets/FifaCard.dart';
+import 'package:provider/provider.dart';
 import 'package:nutmeg/screens/UserPage.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
@@ -141,24 +146,106 @@ class StatEntry extends StatelessWidget {
   }
 }
 
-class JoinedPlayerBottomModal extends StatelessWidget {
+/// Opens the popup of a player: a bottom sheet on a phone, a dialog on a wide
+/// screen. Both are see-through, the popup draws its own panel.
+Future<void> showPlayerPopup(BuildContext context, UserDetails user) {
+  if (MediaQuery.of(context).size.width > 700) {
+    return showDialog(
+      context: context,
+      builder: (_) => Dialog(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        insetPadding: EdgeInsets.all(24),
+        child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: 500),
+            child: JoinedPlayerBottomModal(user)),
+      ),
+    );
+  }
+  return showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (sheetContext) =>
+        SafeArea(top: false, child: JoinedPlayerBottomModal(user)),
+  );
+}
+
+/// What opens when you tap a player: a white panel with their card half above
+/// its top edge, a way to share the card, and their stats.
+class JoinedPlayerBottomModal extends StatefulWidget {
   final UserDetails userDetails;
 
   JoinedPlayerBottomModal(this.userDetails);
 
   @override
+  State<JoinedPlayerBottomModal> createState() =>
+      _JoinedPlayerBottomModalState();
+}
+
+class _JoinedPlayerBottomModalState extends State<JoinedPlayerBottomModal> {
+  static const _cardWidth = 220.0;
+  // the card's own shape is 576 by 800
+  static const _cardHeight = _cardWidth * 800 / 576;
+
+  // from the player's matches, so asked for once the popup is open
+  int? _score;
+  int? _winPercent;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    var row = await fetchAllTimeRow(widget.userDetails.documentId);
+    if (mounted) {
+      setState(() {
+        _score = row.score;
+        _winPercent = row.winPercent;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return PlayerBottomModal(
-        userDetails,
+    final user = widget.userDetails;
+    final wide = MediaQuery.of(context).size.width > 700;
+    final isMe = context.read<UserState>().getLoggedUserId() == user.documentId;
+    // gold for yourself, the others by their score
+    final theme = isMe ? FifaTheme.gold : FifaTheme.forScore(_score);
+    FifaCard card(double width) => FifaCard.player(
+        user: user, score: _score, theme: theme, maxWidth: width);
+    return SingleChildScrollView(
+      child: Stack(alignment: Alignment.topCenter, children: [
+        // the panel starts halfway down the card
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: 8),
-          child: Column(children: [
-            UserStatsCard.buildStatsContent(context, userDetails),
-            SizedBox(height: 16),
-          ]),
+          padding: EdgeInsets.only(top: _cardHeight / 2),
+          child: Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: Palette.white,
+              borderRadius: wide
+                  ? BorderRadius.circular(20)
+                  : BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            padding: EdgeInsets.fromLTRB(16, _cardHeight / 2 + 8, 16, 16),
+            child: Column(mainAxisSize: MainAxisSize.min, children: [
+              TextButton.icon(
+                onPressed: () => showFifaCard(context, card(260)),
+                icon: Icon(Icons.ios_share, size: 18),
+                label: Text(AppLocalizations.of(context)!.shareAction),
+              ),
+              SizedBox(height: 8),
+              UserStatsCard.buildStatsContent(context, user,
+                  winPercent: _winPercent),
+            ]),
+          ),
         ),
-        UserDetails.getDisplayName(userDetails),
-        userDetails.location?.getText());
+        card(_cardWidth),
+      ]),
+    );
   }
 }
 
@@ -319,7 +406,9 @@ class _PotmDotPainter extends FlDotPainter {
         fontFamily: Icons.emoji_events.fontFamily,
         package: Icons.emoji_events.fontPackage,
         color: Colors.white,
-        shadows: [Shadow(color: Colors.black26, blurRadius: 2, offset: Offset(0, 1))],
+        shadows: [
+          Shadow(color: Colors.black26, blurRadius: 2, offset: Offset(0, 1))
+        ],
       ),
     ),
     textDirection: TextDirection.ltr,

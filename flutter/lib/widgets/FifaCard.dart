@@ -194,6 +194,16 @@ class FifaTheme {
     ring: Color(0xFF7B8490),
   );
 
+  /// Gold above 80, silver above 70, bronze below; silver while the score is
+  /// not known.
+  static FifaTheme forScore(num? score) => score == null
+      ? silver
+      : score > 80
+          ? gold
+          : score > 70
+              ? silver
+              : bronze;
+
   static const bronze = FifaTheme(
     gradient: [
       Color(0xFFE8B48A),
@@ -441,6 +451,71 @@ class FifaCard extends StatelessWidget {
     );
   }
 
+  /// A player's card from their profile: OVR is `score`; the attributes come
+  /// with the player once enough teammates gave them traits (before that the
+  /// stats row shows matches, wins and average score); the title is a role from
+  /// the best attribute, and the app's name before that.
+  factory FifaCard.player({
+    Key? key,
+    required UserDetails user,
+    int? score,
+    required FifaTheme theme,
+    double maxWidth = 200,
+    VoidCallback? onPictureTap,
+  }) {
+    final attributes = user.traitAttributes ?? {};
+    final hasAttributes = attributes.isNotEmpty;
+    return FifaCard(
+      key: key,
+      user: user,
+      score: score,
+      title: _roleTitle(attributes),
+      theme: theme,
+      maxWidth: maxWidth,
+      layout: hasAttributes ? FifaStatsLayout.grid : FifaStatsLayout.columns,
+      stats: hasAttributes
+          ? [
+              for (var a in _attributeOrder)
+                FifaStat(a, "${attributes[a] ?? "–"}")
+            ]
+          : [
+              FifaStat("MATCHES", "${user.numJoinedMatches ?? 0}"),
+              FifaStat("WINS", "${user.numWin ?? 0}"),
+              FifaStat(
+                  "AVG SCORE",
+                  user.averageScore == null
+                      ? "–"
+                      : user.averageScore!.toStringAsFixed(2)),
+            ],
+      // goalkeeping only shows for players who are given it
+      extra: attributes.containsKey("GK") ? "GK ${attributes["GK"]}" : null,
+      onPictureTap: onPictureTap,
+    );
+  }
+
+  /// Attributes in the order FIFA shows them, three to a line.
+  static const _attributeOrder = ["PAC", "SHO", "PAS", "DRI", "DEF", "PHY"];
+
+  static const _roles = {
+    "PAC": "SPEEDSTER",
+    "SHO": "FINISHER",
+    "PAS": "PLAYMAKER",
+    "DRI": "DRIBBLER",
+    "DEF": "ROCK",
+    "PHY": "POWERHOUSE",
+    "GK": "KEEPER",
+  };
+  // a role only shows when the best attribute clearly stands out
+  static const _minRoleValue = 65;
+
+  static String _roleTitle(Map<String, int> attributes) {
+    if (attributes.isEmpty) return "NUTMEG";
+    var best = attributes.entries.reduce((a, b) => b.value > a.value ? b : a);
+    return best.value >= _minRoleValue
+        ? _roles[best.key] ?? "NUTMEG"
+        : "NUTMEG";
+  }
+
   /// Number and label side by side, sharing the line equally.
   Widget _inlineStat(FifaStat stat, double w) => Expanded(
         child: FittedBox(
@@ -597,7 +672,7 @@ class FifaCard extends StatelessWidget {
                       ),
                     ),
                   Positioned(
-                    top: h * 0.24,
+                    top: h * 0.225,
                     left: w * 0.08,
                     width: emphasizeChange ? w * 0.28 : w * 0.26,
                     // as tall as the picture, so the number sits level with it
@@ -645,7 +720,7 @@ class FifaCard extends StatelessWidget {
                     ),
                   ),
                   Positioned(
-                    top: h * 0.24,
+                    top: h * 0.225,
                     left: w * 0.38,
                     child: Container(
                       padding: EdgeInsets.all(w * 0.01),

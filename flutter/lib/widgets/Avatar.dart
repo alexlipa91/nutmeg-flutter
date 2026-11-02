@@ -7,7 +7,6 @@ import 'package:shimmer/shimmer.dart';
 
 import '../model/UserDetails.dart';
 import '../state/UserState.dart';
-import 'ModalBottomSheet.dart';
 import 'PlayerBottomModal.dart';
 
 class UserAvatar extends StatelessWidget {
@@ -130,8 +129,7 @@ class UserAvatarWithBottomModal extends StatelessWidget {
         onTap: (userData == null)
             ? null
             : () {
-                ModalBottomSheet.showNutmegModalBottomSheet(
-                    context, JoinedPlayerBottomModal(userData!));
+                showPlayerPopup(context, userData!);
               },
         child: UserAvatar(radius, userData));
   }

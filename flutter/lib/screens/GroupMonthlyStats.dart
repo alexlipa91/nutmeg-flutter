@@ -655,17 +655,8 @@ class _RankingTableState extends State<_RankingTable> {
     var user = context.read<UsersState>().getUserDetail(p["user_id"]);
     showFifaCard(
         context,
-        _rankingCard(
-            context,
-            p,
-            user,
-            widget.period,
-            // gold above 80, silver above 70, bronze below
-            (p["score"] as num) > 80
-                ? FifaTheme.gold
-                : (p["score"] as num) > 70
-                    ? FifaTheme.silver
-                    : FifaTheme.bronze,
+        _rankingCard(context, p, user, widget.period,
+            FifaTheme.forScore(p["score"] as num),
             maxWidth: 260));
   }
 

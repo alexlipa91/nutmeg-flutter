@@ -1616,8 +1616,7 @@ class Stats extends StatelessWidget {
         child: InkWell(
             onTap: userDetails == null
                 ? null
-                : () => ModalBottomSheet.showNutmegModalBottomSheet(
-                    context, JoinedPlayerBottomModal(userDetails)),
+                : () => showPlayerPopup(context, userDetails),
             child: Row(
               children: [
                 SizedBox(
@@ -1725,8 +1724,8 @@ class Stats extends StatelessWidget {
         ratings.ratingsNotComputedReason != null &&
         ratings.ratingsNotComputedReason!.isNotEmpty) {
       final loc = AppLocalizations.of(context)!;
-      final isNotEnough = ratings.ratingsNotComputedReason ==
-          Ratings.notEnoughRatingsReason;
+      final isNotEnough =
+          ratings.ratingsNotComputedReason == Ratings.notEnoughRatingsReason;
       child = Container(
           width: double.infinity,
           child: Column(

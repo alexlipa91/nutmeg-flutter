@@ -22,7 +22,6 @@ import '../utils/CrashlyticsLogger.dart';
 import 'Avatar.dart';
 import 'ButtonsWithLoader.dart';
 import 'Containers.dart';
-import 'ModalBottomSheet.dart';
 import 'PlayerBottomModal.dart';
 
 final _logger = CrashlyticsLogger('TeamsWidget');
@@ -149,15 +148,19 @@ class TeamsWidgetState extends State<TeamsWidget> {
             Builder(builder: (context) {
               final team0Count = teams?[0].length ?? 0;
               final team1Count = teams?[1].length ?? 0;
-              final team0Total = (!manualSplit && match?.computedTeamsWeights != null)
+              final team0Total = (!manualSplit &&
+                      match?.computedTeamsWeights != null)
                   ? match!.computedTeamsWeights![0]
                   : (teams?[0] ?? [])
-                      .map((u) => usersState.getUserDetail(u)?.averageScore ?? 3)
+                      .map(
+                          (u) => usersState.getUserDetail(u)?.averageScore ?? 3)
                       .fold<double>(0, (a, b) => a + b);
-              final team1Total = (!manualSplit && match?.computedTeamsWeights != null)
+              final team1Total = (!manualSplit &&
+                      match?.computedTeamsWeights != null)
                   ? match!.computedTeamsWeights![1]
                   : (teams?[1] ?? [])
-                      .map((u) => usersState.getUserDetail(u)?.averageScore ?? 3)
+                      .map(
+                          (u) => usersState.getUserDetail(u)?.averageScore ?? 3)
                       .fold<double>(0, (a, b) => a + b);
               final team0Avg = team0Count > 0 ? team0Total / team0Count : 0.0;
               final team1Avg = team1Count > 0 ? team1Total / team1Count : 0.0;
@@ -297,10 +300,7 @@ class TeamsWidgetState extends State<TeamsWidget> {
           );
 
           return InkWell(
-              onTap: ud == null
-                  ? null
-                  : () => ModalBottomSheet.showNutmegModalBottomSheet(
-                      context, JoinedPlayerBottomModal(ud)),
+              onTap: ud == null ? null : () => showPlayerPopup(context, ud),
               child: draggable
                   ? Draggable<String>(
                       child: userRow,
