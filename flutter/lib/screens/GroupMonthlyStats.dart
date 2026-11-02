@@ -1,4 +1,4 @@
-import 'dart:math' show min;
+import 'dart:math' show min, pi, sin;
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -41,6 +41,8 @@ class _GroupMonthlyStatsState extends State<GroupMonthlyStats> {
   String? _month;
   // 0 monthly, 1 this year, 2 everything
   int _tab = 0;
+  // kept across tabs, so the group name doesn't vanish while a tab loads
+  String? _organizerId;
 
   @override
   void initState() {
@@ -68,6 +70,7 @@ class _GroupMonthlyStatsState extends State<GroupMonthlyStats> {
       setState(() {
         _data = data;
         if (_tab == 0) _month = data?["month"];
+        _organizerId = data?["organizer_id"] ?? _organizerId;
         _failed = data == null;
       });
     } catch (e) {
@@ -97,7 +100,7 @@ class _GroupMonthlyStatsState extends State<GroupMonthlyStats> {
   }
 
   Widget _groupName(BuildContext context, AppLocalizations l10n) {
-    var organizerId = _data?["organizer_id"] as String?;
+    var organizerId = _organizerId;
     var name = organizerId == null
         ? null
         : context
@@ -285,11 +288,11 @@ class _GroupMonthlyStatsState extends State<GroupMonthlyStats> {
         : ranking.where((e) => e["user_id"] == improver["user_id"]).firstOrNull;
     var users = context.watch<UsersState>();
     // special cards, swiped sideways; only for a finished month
-    // (player, look, title, whether the card is about the change)
-    var specials = <(Map<String, dynamic>, _FifaTheme, String, bool)>[
-      if (potm != null) (potm, _FifaTheme.gold, "POTM", false),
+    // (player, look, title, whether it is about the change, moving effects)
+    var specials = <(Map<String, dynamic>, _FifaTheme, String, bool, bool)>[
+      if (potm != null) (potm, _FifaTheme.gold, "POTM", false, true),
       if (improverEntry != null)
-        (improverEntry, _FifaTheme.blue, "ON FIRE", true),
+        (improverEntry, _FifaTheme.blue, "ON FIRE", true, false),
     ];
 
     return Column(
@@ -325,6 +328,7 @@ class _GroupMonthlyStatsState extends State<GroupMonthlyStats> {
                   theme: specials[i].$2,
                   title: specials[i].$3,
                   emphasizeChange: specials[i].$4,
+                  effects: specials[i].$5,
                   maxWidth: width),
             );
           }),
@@ -492,6 +496,95 @@ class _SpecialCardsState extends State<_SpecialCards> {
   }
 }
 
+/// Moving effects for the best player's card: a light sweeping across it now
+/// and then and a pulsing glow behind the picture.
+class _GoldEffects extends StatefulWidget {
+  const _GoldEffects();
+
+  @override
+  State<_GoldEffects> createState() => _GoldEffectsState();
+}
+
+class _GoldEffectsState extends State<_GoldEffects>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller =
+      AnimationController(vsync: this, duration: Duration(seconds: 5));
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // keep still for people who asked for less motion
+    if (MediaQuery.disableAnimationsOf(context)) {
+      _controller.stop();
+    } else if (!_controller.isAnimating) {
+      _controller.repeat();
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) =>
+      CustomPaint(painter: _GoldEffectsPainter(_controller));
+}
+
+class _GoldEffectsPainter extends CustomPainter {
+  final Animation<double> t;
+
+  _GoldEffectsPainter(this.t) : super(repaint: t);
+
+  @override
+  void paint(Canvas canvas, Size s) {
+    final w = s.width, h = s.height, v = t.value;
+
+    // glow behind the picture, pulsing twice per cycle
+    final pulse = 0.5 + 0.5 * sin(2 * pi * v * 2);
+    final center = Offset(w * 0.57, h * 0.38);
+    canvas.drawCircle(
+        center,
+        w * 0.36,
+        Paint()
+          ..shader = RadialGradient(colors: [
+            Colors.transparent,
+            Color.fromRGBO(255, 244, 200, 0.3 + 0.35 * pulse),
+            Colors.transparent,
+          ], stops: [
+            0.45,
+            0.62,
+            1
+          ]).createShader(Rect.fromCircle(center: center, radius: w * 0.36)));
+
+    // a band of light sweeping across during the first part of the cycle
+    final e = (v / 0.4).clamp(0.0, 1.0);
+    if (e < 1) {
+      final p = -0.3 + 1.6 * Curves.easeInOut.transform(e);
+      canvas.drawRect(
+          Offset.zero & s,
+          Paint()
+            ..shader = LinearGradient(
+                begin: Alignment(-1, -0.7),
+                end: Alignment(1, 0.7),
+                colors: [
+                  Colors.transparent,
+                  Colors.white.withValues(alpha: 0.6),
+                  Colors.transparent,
+                ],
+                stops: [
+                  (p - 0.14).clamp(0.0, 1.0),
+                  p.clamp(0.0, 1.0),
+                  (p + 0.14).clamp(0.0, 1.0),
+                ]).createShader(Offset.zero & s));
+    }
+  }
+
+  @override
+  bool shouldRepaint(_) => false;
+}
+
 /// Colours and background effect of a card.
 class _FifaTheme {
   final List<Color> gradient;
@@ -642,6 +735,8 @@ class _FifaCard extends StatelessWidget {
   final double maxWidth;
   // the card is about the change since last month: show it big
   final bool emphasizeChange;
+  // moving effects and a golden halo, for the best player's card
+  final bool effects;
 
   const _FifaCard(
       {Key? key,
@@ -651,7 +746,8 @@ class _FifaCard extends StatelessWidget {
       required this.theme,
       this.title,
       this.maxWidth = 200,
-      this.emphasizeChange = false})
+      this.emphasizeChange = false,
+      this.effects = false})
       : super(key: key);
 
   Color get _ink => theme.ink;
@@ -749,8 +845,8 @@ class _FifaCard extends StatelessWidget {
                     child: PhysicalShape(
                       clipper: _FifaCardClipper(),
                       color: theme.gradient[1],
-                      elevation: 8,
-                      shadowColor: Colors.black87,
+                      elevation: effects ? 12 : 8,
+                      shadowColor: effects ? Color(0xFFFFB300) : Colors.black87,
                       clipBehavior: Clip.antiAlias,
                       child: Stack(fit: StackFit.expand, children: [
                         DecoratedBox(
@@ -781,6 +877,7 @@ class _FifaCard extends StatelessWidget {
                             ),
                           ),
                         ),
+                        if (effects) _GoldEffects(),
                         CustomPaint(painter: _InsetBorderPainter(_ink)),
                       ]),
                     ),
