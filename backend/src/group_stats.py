@@ -122,30 +122,82 @@ def player_of_the_month(
     ]
 
 
-# Ranking: wins count 60%, ratings 40%, then mapped to a FIFA-like 50-99 card.
+# --- Ranking score -----------------------------------------------------------
+#
+# A player's score is 60% wins and 40% match rating, shown as a FIFA-like card
+# number. Wins count every game; ratings only come from rated games.
 WINS_WEIGHT = 0.6
 RATING_WEIGHT = 0.4
-CARD_FLOOR = 50
-CARD_SPAN = 0.49
 # Rating used for a player with no rated game at all.
 NEUTRAL_RATING = 3.0
-# Games of rating history used when the month is not fully rated.
+# Games of rating history used when a month is not fully rated.
 HISTORY_GAMES = 5
-# For a year or everything, a player counts as having also played a few average
-# games (so one good game doesn't beat a long record), and a player needs a
-# share of what a regular has played, at least a few games, to be ranked.
+
+# A month is scored on the absolute scale: 0 points is 50 and 100 points is 99.
+CARD_FLOOR = 50
+CARD_SPAN = 0.49
+
+# --- A year or all time ------------------------------------------------------
+#
+# Over many games everyone drifts towards the average, so on the absolute scale
+# above all scores sit in a narrow band (about 70-85 in our group) and the weak
+# players don't look weak. Three choices keep the long tables readable:
+#
+# 1. Few games count for less. A player is treated as having also played
+#    SHRINK_GAMES average games (and SHRINK_RATED average rated ones), so one
+#    good game cannot beat a long record.
+# 2. A player needs a share of what a regular has played, never less than
+#    MIN_GAMES_FLOOR games, to be ranked at all (see `ranking`).
+# 3. The score is computed on FIXED RANGES: each part is stretched so that the
+#    results people really get fill its 0-100, instead of using the whole
+#    0-100 for results nobody reaches. A win rate of LONG_WINS_RANGE[0] or less
+#    counts as 0 and LONG_WINS_RANGE[1] or more as 100; the same for the average
+#    rating with LONG_RATING_RANGE. The result goes on a card scale of
+#    LONG_CARD_FLOOR..LONG_CARD_TOP.
+#
+# Why fixed ranges and not "compare each player with the group" (a z-score
+# around the group average): that would work too, but a player's number would
+# then depend on who else is in the table, and the same results would give a
+# different score next month. With fixed ranges a score depends only on the
+# player's own wins and ratings, and means the same on every tab and over time.
+#
+# The ranges are a judgement call, set from our group's all-time records, where
+# regular players' win rates run from about 30% to 70% and their average
+# ratings from about 2.5 to 4 stars; with them the weakest regulars land at
+# 60-65 and the best around 90. If the group changes a lot (a much stronger or
+# weaker league), revisit these numbers.
 SHRINK_GAMES = 5
 SHRINK_RATED = 3
 MIN_GAMES_SHARE = 0.3
-MIN_GAMES_FLOOR = 3
+MIN_GAMES_FLOOR = 4
 REGULAR_PERCENTILE = 0.75
+LONG_WINS_RANGE = (20.0, 70.0)  # win rate in percent: counts as 0 and as 100
+LONG_RATING_RANGE = (2.0, 4.2)  # average rating: counts as 0 and as 100
+LONG_CARD_FLOOR = 40
+LONG_CARD_TOP = 95
 
 
-def card_score(avg_rating: float, wins: int, draws: int, played: int) -> int:
+def card_score(avg_rating: float, wins: float, draws: float, played: float) -> int:
+    """Score of a month, on the absolute scale."""
     rating_part = (avg_rating - 1) / 4 * 100
     wins_part = (wins + 0.5 * draws) / played * 100
     points = WINS_WEIGHT * wins_part + RATING_WEIGHT * rating_part
     return int(CARD_FLOOR + CARD_SPAN * points + 0.5)
+
+
+def _stretch(value: float, low_high: Tuple[float, float]) -> float:
+    """0-100 between `low` (or less) and `high` (or more)."""
+    low, high = low_high
+    return max(0.0, min(1.0, (value - low) / (high - low))) * 100
+
+
+def long_period_score(avg_rating: float, wins: float, played: float) -> int:
+    """Score of a year or all time, on the fixed ranges (see above). `wins` is
+    the number of wins, a draw being half a win."""
+    wins_part = _stretch(wins / played * 100, LONG_WINS_RANGE)
+    rating_part = _stretch(avg_rating, LONG_RATING_RANGE)
+    points = WINS_WEIGHT * wins_part + RATING_WEIGHT * rating_part
+    return int(LONG_CARD_FLOOR + (LONG_CARD_TOP - LONG_CARD_FLOOR) * points / 100 + 0.5)
 
 
 def _recent_rating(history: Optional[Dict[str, float]], month: str) -> float:
@@ -194,8 +246,9 @@ def ranking(
     used; otherwise everyone's last rated games (`history`: user -> {date:
     rating}); no minimum. For a longer period each player's rated games in it
     are used (the last rated games only for a player with none), results and
-    ratings are pulled towards the middle for players with few games, and
-    players below the minimum are left out.
+    ratings are pulled towards the middle for players with few games, players
+    below the minimum are left out, and the score uses fixed ranges (see the
+    notes above `SHRINK_GAMES`).
     Best score first, ties on wins then rating.
     """
     acc: Dict[str, Dict[str, Any]] = {}
@@ -241,10 +294,9 @@ def ranking(
                 rated_avg = (p["rating_sum"] + SHRINK_RATED * NEUTRAL_RATING) / (
                     p["rated"] + SHRINK_RATED
                 )
-            score = card_score(
+            score = long_period_score(
                 rated_avg,
                 p["wins"] + 0.5 * p["draws"] + SHRINK_GAMES * 0.5,
-                0,
                 p["played"] + SHRINK_GAMES,
             )
         else:

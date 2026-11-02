@@ -253,20 +253,39 @@ class GroupStatsTests(unittest.TestCase):
         self.assertEqual(year["ranking_source"], "period")
         self.assertEqual(year["matches"], 6)
         by = {r["user_id"]: r for r in year["ranking"]}
-        # regulars played 6 games, so 3 are needed (30%, at least 3): e is left out
-        self.assertEqual(year["ranking_min_games"], 3)
+        # regulars played 6 games, so 4 are needed (30% is less, the floor is 4):
+        # e is left out
+        self.assertEqual(year["ranking_min_games"], 4)
         self.assertNotIn("e", by)
-        # 4 wins in 6 with 5 average games added: 6.5 / 11 = 59%, rating 3 -> 50:
-        # 0.6 * 59.09 + 0.4 * 50 = 55.45 -> 50 + 0.49 * 55.45
-        self.assertEqual((by["a"]["played"], by["a"]["wins"], by["a"]["score"]), (6, 4, 77))
-        # 2 wins in 6: 4.5 / 11 = 41%: 0.6 * 40.9 + 20 = 44.5 -> 72
-        self.assertEqual(by["c"]["score"], 72)
+        # 4 wins in 6 with 5 average games added: 6.5 / 11 = 59%, which is 78 on the
+        # 20-70% range; rating 3 is 45 on the 2.0-4.2 range:
+        # 0.6 * 78.2 + 0.4 * 45.5 = 65.1 -> 40 + 0.55 * 65.1
+        self.assertEqual((by["a"]["played"], by["a"]["wins"], by["a"]["score"]), (6, 4, 76))
+        # 2 wins in 6: 4.5 / 11 = 41% -> 41.8: 0.6 * 41.8 + 18.2 = 43.3 -> 64
+        self.assertEqual(by["c"]["score"], 64)
         self.assertIsNone(year["best_improver"])
         # no month-over-month change outside the monthly view
         self.assertTrue(all("change" not in r for r in year["ranking"]))
         everything = group_stats.monthly_group_stats(ms, "all")
         self.assertEqual(everything["matches"], 7)
         self.assertEqual({r["user_id"]: r["played"] for r in everything["ranking"]}["a"], 7)
+
+    def test_long_period_score_uses_fixed_ranges(self):
+        a = ["a%d" % i for i in range(5)]
+        b = ["b%d" % i for i in range(5)]
+        scores = {**{u: 4 for u in a}, **{u: 3 for u in b}}
+        # the a team wins four games out of six, the b team two
+        ms = [match(1, a, b, (2, 0), month=m, scores=scores) for m in (1, 2, 3, 4)]
+        ms += [match(1, a, b, (0, 2), month=m, scores=scores) for m in (5, 6)]
+        out = group_stats.monthly_group_stats(ms, "all")["ranking"]
+        by = {r["user_id"]: r["score"] for r in out}
+        # a: 6.5 / 11 = 59% -> 78.2 on 20-70%; rating (24 + 9) / 9 = 3.67 -> 75.8
+        # on 2.0-4.2: 0.6 * 78.2 + 0.4 * 75.8 = 77.2 -> 40 + 0.55 * 77.2
+        self.assertEqual({by[u] for u in a}, {82})
+        # b: 4.5 / 11 = 41% -> 41.8; rating 3.0 -> 45.5: 43.3 -> 64
+        self.assertEqual({by[u] for u in b}, {64})
+        # the score only depends on the player's own results, not on the others
+        self.assertEqual(group_stats.long_period_score(33 / 9, 6.5, 11), 82)
 
     def test_one_good_game_does_not_beat_a_long_record(self):
         ms = [match(d, ["long"] + list("bcd"), list("efgh"), (2, 0), month=m,
