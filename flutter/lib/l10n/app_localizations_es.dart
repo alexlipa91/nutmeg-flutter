@@ -529,6 +529,30 @@ class AppLocalizationsEs extends AppLocalizations {
   String get ratePlayersTitle => 'Califica a los jugadores';
 
   @override
+  String get traitFast => 'Rápido';
+
+  @override
+  String get traitShooter => 'Tirador';
+
+  @override
+  String get traitGreatPasser => 'Gran pasador';
+
+  @override
+  String get traitDribbler => 'Regateador';
+
+  @override
+  String get traitSolidDefender => 'Defensa sólido';
+
+  @override
+  String get traitStrong => 'Fuerte';
+
+  @override
+  String get traitGreatInGoal => 'Gran portero';
+
+  @override
+  String get traitsAdd => 'Añadir rasgos';
+
+  @override
   String get ratePlayersButtonText => 'CALIFICAR A LOS JUGADORES';
 
   @override

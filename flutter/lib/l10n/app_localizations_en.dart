@@ -525,6 +525,30 @@ class AppLocalizationsEn extends AppLocalizations {
   String get ratePlayersTitle => 'Rate Players';
 
   @override
+  String get traitFast => 'Fast';
+
+  @override
+  String get traitShooter => 'Shooter';
+
+  @override
+  String get traitGreatPasser => 'Great Passer';
+
+  @override
+  String get traitDribbler => 'Dribbler';
+
+  @override
+  String get traitSolidDefender => 'Solid Defender';
+
+  @override
+  String get traitStrong => 'Strong';
+
+  @override
+  String get traitGreatInGoal => 'Great in Goal';
+
+  @override
+  String get traitsAdd => 'Add traits';
+
+  @override
   String get ratePlayersButtonText => 'RATE PLAYERS';
 
   @override

@@ -266,6 +266,22 @@
     "genericErrorDesc": "Please contact us for support.",
 
     "ratePlayersTitle": "Rate Players",
+
+    "traitFast": "Fast",
+
+    "traitShooter": "Shooter",
+
+    "traitGreatPasser": "Great Passer",
+
+    "traitDribbler": "Dribbler",
+
+    "traitSolidDefender": "Solid Defender",
+
+    "traitStrong": "Strong",
+
+    "traitGreatInGoal": "Great in Goal",
+
+    "traitsAdd": "Add traits",
     "ratePlayersButtonText": "RATE PLAYERS",
     "updateRatesPlayersButtonText": "CHANGE VOTES",
     "submitRatesButtonText": "SUBMIT",

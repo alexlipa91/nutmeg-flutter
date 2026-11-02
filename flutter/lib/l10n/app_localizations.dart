@@ -1020,6 +1020,54 @@ abstract class AppLocalizations {
   /// **'Rate Players'**
   String get ratePlayersTitle;
 
+  /// No description provided for @traitFast.
+  ///
+  /// In en, this message translates to:
+  /// **'Fast'**
+  String get traitFast;
+
+  /// No description provided for @traitShooter.
+  ///
+  /// In en, this message translates to:
+  /// **'Shooter'**
+  String get traitShooter;
+
+  /// No description provided for @traitGreatPasser.
+  ///
+  /// In en, this message translates to:
+  /// **'Great Passer'**
+  String get traitGreatPasser;
+
+  /// No description provided for @traitDribbler.
+  ///
+  /// In en, this message translates to:
+  /// **'Dribbler'**
+  String get traitDribbler;
+
+  /// No description provided for @traitSolidDefender.
+  ///
+  /// In en, this message translates to:
+  /// **'Solid Defender'**
+  String get traitSolidDefender;
+
+  /// No description provided for @traitStrong.
+  ///
+  /// In en, this message translates to:
+  /// **'Strong'**
+  String get traitStrong;
+
+  /// No description provided for @traitGreatInGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Great in Goal'**
+  String get traitGreatInGoal;
+
+  /// No description provided for @traitsAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add traits'**
+  String get traitsAdd;
+
   /// No description provided for @ratePlayersButtonText.
   ///
   /// In en, this message translates to:
