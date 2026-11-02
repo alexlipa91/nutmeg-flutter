@@ -5,7 +5,10 @@ from datetime import datetime, timezone
 from firebase_admin import firestore
 from flask import Blueprint, Flask
 from flask import current_app as app
+from google.cloud.firestore_v1.base_query import FieldFilter
 
+from src import group_stats, player_traits
+from src.models._matches import Match
 from src.secrets import Secrets
 from src.utils import setup_stripe
 
@@ -28,6 +31,26 @@ def get_user(user_id):
         data = _normalize_app_info_timestamps(data)
         app.db_client.collection("users").document(user_id).update(data)
         return {}, 200
+
+
+@bp.route("/<user_id>/all_time_score", methods=["GET"])
+def get_all_time_score(user_id):
+    """The player's row of the All time table (score, games, wins), for the
+    profile. Not part of the user itself because it needs their matches."""
+    docs = (
+        app.db_client.collection("matches")
+        .where(filter=FieldFilter("goingPlayers", "array_contains", user_id))
+        .get()
+    )
+    matches = [Match.from_doc(d) for d in docs]
+    row = group_stats.player_all_time_row(matches, user_id) or {}
+    return {
+        "data": {
+            "all_time_score": row.get("score"),
+            "played": row.get("played"),
+            "wins": row.get("wins"),
+        }
+    }, 200
 
 
 @bp.route("/<user_id>/add", methods=["POST"])
@@ -127,6 +150,14 @@ def _get_user_firestore(user_id):
             data["scores"]["number_of_scored_games"] - 1
         )
         data["delta_from_last_score"] = data["avg_score"] - previous_avg_score
+
+    # the profile card: the attributes from the traits others gave
+    traits = data.get("traits") or {}
+    attributes = player_traits.attribute_values(
+        traits.get("votes") or {}, traits.get("raters") or 0
+    )
+    if attributes:
+        data["trait_attributes"] = attributes
 
     # derive potm_count from potm_dates for backwards compatibility
     potm_dates = data.get("potm_dates", {})

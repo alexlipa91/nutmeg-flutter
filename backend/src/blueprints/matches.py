@@ -40,6 +40,7 @@ from src.utils import (
     NUTMEG_FEE_CENTS,
 )
 from flask import current_app as app
+from src import player_traits
 from src.models._ratings import Ratings, clean_skills
 from src import match_preview, pair_stats
 
@@ -1585,6 +1586,9 @@ def _freeze_match_stats(match_id, match: MatchModel, is_test=False):
 
     # create updates
     for u in match.going_user_ids():
+        trait_votes, trait_raters = player_traits.trait_votes_for(
+            u, ratings.skills if ratings else {}
+        )
         user_updates[u] = UserUpdates.from_single_game(
             date=match.date_time,
             score=match_stats.user_scores.get(u, None),
@@ -1594,6 +1598,8 @@ def _freeze_match_stats(match_id, match: MatchModel, is_test=False):
                 else "d" if u in user_draw else "l" if u in user_lost else None
             ),
             is_potm=u in match_stats.potms,
+            trait_votes=trait_votes,
+            trait_raters=trait_raters,
         )
 
     return user_updates, None

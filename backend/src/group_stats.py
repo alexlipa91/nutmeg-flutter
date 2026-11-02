@@ -314,6 +314,33 @@ def ranking(
     return table, "month" if month_is_rated else "last_games", 0
 
 
+def player_all_time_row(
+    matches: List[Match],
+    user_id: str,
+    history: Optional[Dict[str, Dict[str, float]]] = None,
+) -> Optional[Dict[str, Any]]:
+    """
+    A player's row of the All time table of their group (score, games, wins,
+    average rating), worked out from the matches they played (`matches`): their
+    group is the organizer of the matches they played most, like on the
+    leaderboard, so the profile and the table agree. None if the table leaves
+    them out.
+    """
+    organizer = most_played_organizer(matches)
+    group = [m for m in matches if m and m.organizer_id == organizer]
+    ranked = monthly_group_stats(group, "all", history)["ranking"]
+    return next((r for r in ranked if r["user_id"] == user_id), None)
+
+
+def player_all_time_score(
+    matches: List[Match],
+    user_id: str,
+    history: Optional[Dict[str, Dict[str, float]]] = None,
+) -> Optional[int]:
+    row = player_all_time_row(matches, user_id, history)
+    return row["score"] if row else None
+
+
 def best_improver(
     current: List[Dict[str, Any]], previous: List[Dict[str, Any]]
 ) -> Optional[Dict[str, Any]]:

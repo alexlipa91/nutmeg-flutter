@@ -287,6 +287,23 @@ class GroupStatsTests(unittest.TestCase):
         # the score only depends on the player's own results, not on the others
         self.assertEqual(group_stats.long_period_score(33 / 9, 6.5, 11), 82)
 
+    def test_player_all_time_score_matches_the_all_time_table(self):
+        every = {"a": 3, "b": 3, "c": 3, "d": 3, "e": 3}
+        ms = [
+            match(1, ["a", "b", "e"], ["c", "d"], (2, 0), month=1, scores=every),
+            match(1, ["a", "b"], ["c", "d"], (2, 0), month=2, scores=every),
+            match(1, ["a", "b"], ["c", "d"], (2, 0), month=3, scores=every),
+            match(1, ["a", "b"], ["c", "d"], (2, 0), month=4, scores=every),
+            match(1, ["a", "b"], ["c", "d"], (0, 2), month=5, scores=every),
+            match(1, ["a", "b"], ["c", "d"], (0, 2), month=6, scores=every),
+        ]
+        table = {r["user_id"]: r["score"]
+                 for r in group_stats.monthly_group_stats(ms, "all")["ranking"]}
+        for player in ("a", "c"):
+            self.assertEqual(group_stats.player_all_time_score(ms, player), table[player])
+        # e played one game: not in the table, so no score
+        self.assertIsNone(group_stats.player_all_time_score(ms, "e"))
+
     def test_one_good_game_does_not_beat_a_long_record(self):
         ms = [match(d, ["long"] + list("bcd"), list("efgh"), (2, 0), month=m,
                     scores={"long": 3.5, "b": 3, "c": 3, "d": 3, "e": 3, "f": 3, "g": 3, "h": 3})

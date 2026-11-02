@@ -8,7 +8,7 @@ from firebase_admin import firestore
 class UserUpdates:
 
     @staticmethod
-    def from_single_game(date, score, wdl, is_potm):
+    def from_single_game(date, score, wdl, is_potm, trait_votes=None, trait_raters=0):
         return UserUpdates(
             date_score={date: score},
             total_sum_score=score if score else 0,
@@ -19,6 +19,8 @@ class UserUpdates:
             num_matches_joined=1,
             num_potms=1 if is_potm else 0,
             potm_dates={date: True} if is_potm and date else {},
+            trait_votes=trait_votes,
+            trait_raters=trait_raters,
         )
 
     def __init__(self,
@@ -30,7 +32,13 @@ class UserUpdates:
                  num_loss,
                  num_scored_games,
                  num_matches_joined,
-                 potm_dates: Dict = None):
+                 potm_dates: Dict = None,
+                 trait_votes: Dict = None,
+                 trait_raters: int = 0):
+        # traits others gave the player: votes per trait, and how many raters
+        # used traits for them (see src/player_traits.py)
+        self.trait_votes = trait_votes or {}
+        self.trait_raters = trait_raters
         self.num_matches_joined = num_matches_joined
         self.num_scored_games = num_scored_games
         self.total_sum_score = total_sum_score
@@ -58,6 +66,10 @@ class UserUpdates:
                 fields["last_date_scores." + d.strftime("%Y%m%d%H%M%S")] = v
         for d in self.potm_dates:
             fields["potm_dates." + d.strftime("%Y%m%d%H%M%S")] = True
+        if self.trait_raters:
+            fields["traits.raters"] = firestore.firestore.Increment(self.trait_raters)
+            for trait, votes in self.trait_votes.items():
+                fields["traits.votes." + trait] = firestore.firestore.Increment(votes)
         return fields
 
     def to_leaderboard_document_update(self):
@@ -84,6 +96,11 @@ class UserUpdates:
         base_updates["potm_dates"] = {
             d.strftime("%Y%m%d%H%M%S"): True for d in self.potm_dates
         }
+        if self.trait_raters:
+            base_updates["traits"] = {
+                "raters": self.trait_raters,
+                "votes": dict(self.trait_votes),
+            }
         return base_updates
 
     def to_absolute_leaderboard_doc_update(self):
@@ -121,6 +138,11 @@ class UserUpdates:
             total_sum_score=a.total_sum_score + b.total_sum_score,
             num_potms=a.num_potms + b.num_potms,
             potm_dates=dict(list(a.potm_dates.items()) + list(b.potm_dates.items())),
+            trait_votes={
+                t: a.trait_votes.get(t, 0) + b.trait_votes.get(t, 0)
+                for t in set(a.trait_votes) | set(b.trait_votes)
+            },
+            trait_raters=a.trait_raters + b.trait_raters,
         )
 
     @staticmethod
