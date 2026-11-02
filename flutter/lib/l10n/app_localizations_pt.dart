@@ -907,9 +907,6 @@ class AppLocalizationsPt extends AppLocalizations {
   String get matchPreviewTitle => 'Antevisão do jogo';
 
   @override
-  String get groupStatsTitle => 'Estatísticas do mês';
-
-  @override
   String groupStatsGroupOf(String name) {
     return 'Grupo do $name';
   }
@@ -954,6 +951,27 @@ class AppLocalizationsPt extends AppLocalizations {
   String get groupStatsRatingShort => 'Nota';
 
   @override
+  String get groupStatsInfoMonth =>
+      'OVR é a pontuação geral: 60% as tuas vitórias este mês, 40% as tuas notas dos jogos deste mês.';
+
+  @override
+  String get groupStatsInfoLastGames =>
+      'OVR é a pontuação geral: 60% as tuas vitórias este mês, 40% os teus últimos 5 jogos avaliados. As notas deste mês serão usadas quando todos no grupo tiverem sido avaliados.';
+
+  @override
+  String get groupStatsBestImprover => 'Maior evolução';
+
+  @override
+  String get groupStatsTabMonthly => 'Mensal';
+
+  @override
+  String get groupStatsTabAllTime => 'Sempre';
+
+  @override
+  String get groupStatsInfoPeriod =>
+      'OVR é a pontuação geral: 60% as tuas vitórias, 40% a tua nota média dos jogos neste período.';
+
+  @override
   String get groupStatsTogether => 'juntos';
 
   @override
@@ -975,5 +993,6 @@ class AppLocalizationsPt extends AppLocalizations {
   String get navProfile => 'Perfil';
 
   @override
-  String get groupStatsNoGames => 'Joga o teu primeiro jogo para ver as estatísticas do mês';
+  String get groupStatsNoGames =>
+      'Joga o teu primeiro jogo para ver as estatísticas do mês';
 }

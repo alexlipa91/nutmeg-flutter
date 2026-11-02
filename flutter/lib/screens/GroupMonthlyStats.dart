@@ -15,19 +15,15 @@ final _logger = CrashlyticsLogger("GroupMonthlyStats");
 final _gold = UiUtils.fromHex("#F5B83D");
 final _heroDark = UiUtils.fromHex("#1F2A7A");
 
-/// Monthly performance of the players in an organizer's matches: player of the
-/// month, most wins, best rated, most losses, strongest chemistry, repeated
-/// awards and a full table.
+/// Monthly ranking of the players in an organizer's matches: one table with
+/// each player's score, wins and average rating, over the rated games.
 class GroupMonthlyStats extends StatefulWidget {
   final String organizerId;
   final String? month; // yyyyMM, latest month with results when null
   final bool showBack;
 
   const GroupMonthlyStats(
-      {Key? key,
-      required this.organizerId,
-      this.month,
-      this.showBack = true})
+      {Key? key, required this.organizerId, this.month, this.showBack = true})
       : super(key: key);
 
   @override
@@ -39,6 +35,8 @@ class _GroupMonthlyStatsState extends State<GroupMonthlyStats> {
   bool _loading = true;
   bool _failed = false;
   String? _month;
+  // 0 monthly, 1 this year, 2 everything
+  int _tab = 0;
 
   @override
   void initState() {
@@ -53,14 +51,19 @@ class _GroupMonthlyStatsState extends State<GroupMonthlyStats> {
       _failed = false;
     });
     try {
+      var period = _tab == 1
+          ? "${DateTime.now().year}"
+          : _tab == 2
+              ? "all"
+              : _month;
       var data = await CloudFunctionsClient().get(
           "groups/${widget.organizerId}/monthly",
-          args: _month == null ? {} : {"month": _month});
+          args: period == null ? {} : {"month": period});
       if (data != null) _fetchUsers(data);
       if (!mounted) return;
       setState(() {
         _data = data;
-        _month = data?["month"];
+        if (_tab == 0) _month = data?["month"];
         _failed = data == null;
       });
     } catch (e) {
@@ -93,11 +96,55 @@ class _GroupMonthlyStatsState extends State<GroupMonthlyStats> {
     var organizerId = _data?["organizer_id"] as String?;
     var name = organizerId == null
         ? null
-        : context.watch<UsersState>().getUserDetail(organizerId)?.getShortName();
+        : context
+            .watch<UsersState>()
+            .getUserDetail(organizerId)
+            ?.getShortName();
     if (name == null) return SizedBox.shrink();
     return Padding(
         padding: EdgeInsets.only(top: 4),
         child: Text(l10n.groupStatsGroupOf(name), style: TextPalette.bodyText));
+  }
+
+  void _goToTab(int tab) {
+    if (tab == _tab) return;
+    setState(() {
+      _tab = tab;
+      _data = null;
+    });
+    _load();
+  }
+
+  Widget _periodTabs(AppLocalizations l10n) {
+    var labels = [
+      l10n.groupStatsTabMonthly,
+      "${DateTime.now().year}",
+      l10n.groupStatsTabAllTime
+    ];
+    return Container(
+      padding: EdgeInsets.all(4),
+      decoration: BoxDecoration(
+          color: Palette.white, borderRadius: BorderRadius.circular(24)),
+      child: Row(children: [
+        for (var i = 0; i < labels.length; i++)
+          Expanded(
+            child: GestureDetector(
+              onTap: () => _goToTab(i),
+              child: Container(
+                padding: EdgeInsets.symmetric(vertical: 8),
+                decoration: BoxDecoration(
+                    color: _tab == i ? Palette.primary : Colors.transparent,
+                    borderRadius: BorderRadius.circular(20)),
+                child: Text(labels[i],
+                    textAlign: TextAlign.center,
+                    style: TextPalette.getBodyText(
+                            _tab == i ? Colors.white : Palette.black)
+                        .copyWith(fontWeight: FontWeight.w600)),
+              ),
+            ),
+          ),
+      ]),
+    );
   }
 
   void _goToMonth(String month) {
@@ -145,8 +192,10 @@ class _GroupMonthlyStatsState extends State<GroupMonthlyStats> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(l10n.groupStatsTitle, style: TextPalette.h1Default),
+                Text(l10n.navLeaderboard, style: TextPalette.h1Default),
                 _groupName(context, l10n),
+                SizedBox(height: 16),
+                _periodTabs(l10n),
                 SizedBox(height: 16),
                 body,
                 SizedBox(height: 24),
@@ -158,8 +207,8 @@ class _GroupMonthlyStatsState extends State<GroupMonthlyStats> {
     );
   }
 
-  Widget _monthSelector(
-      BuildContext context, List<String> months, int matches, AppLocalizations l10n) {
+  Widget _monthSelector(BuildContext context, List<String> months, int matches,
+      AppLocalizations l10n) {
     var idx = months.indexOf(_month ?? "");
     // months are sorted newest first: next index is the previous month
     var older = idx >= 0 && idx + 1 < months.length ? months[idx + 1] : null;
@@ -194,6 +243,20 @@ class _GroupMonthlyStatsState extends State<GroupMonthlyStats> {
     ]);
   }
 
+  Widget _periodHeader(int matches, AppLocalizations l10n) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(vertical: 10),
+      decoration: BoxDecoration(
+        color: Palette.white,
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Text("${l10n.groupStatsMatches}: $matches",
+          textAlign: TextAlign.center,
+          style: TextPalette.getBodyText(Palette.greyDark)),
+    );
+  }
+
   Widget _content(
       BuildContext context, Map<String, dynamic> data, AppLocalizations l10n) {
     var months = (data["available_months"] as List).cast<String>();
@@ -201,107 +264,32 @@ class _GroupMonthlyStatsState extends State<GroupMonthlyStats> {
       // no finished matches in the group yet (e.g. a new user)
       return _EmptyState(text: l10n.groupStatsNoGames);
     }
-    var highlights = data["highlights"] as Map<String, dynamic>;
-    var players = (data["players"] as List).cast<Map<String, dynamic>>();
-    // the month in progress has no player of the month yet
+    var ranking =
+        ((data["ranking"] as List?) ?? []).cast<Map<String, dynamic>>();
+    // the month in progress has no winner yet
     var now = DateTime.now();
-    var isCurrentMonth =
-        (data["month"] as String?) == "${now.year}${now.month.toString().padLeft(2, '0')}";
+    var isCurrentMonth = (data["month"] as String?) ==
+        "${now.year}${now.month.toString().padLeft(2, '0')}";
+    var monthly = _tab == 0;
     var potm =
-        isCurrentMonth ? null : data["player_of_the_month"] as Map<String, dynamic>?;
-    var runnersUp = (data["runners_up"] as List).cast<Map<String, dynamic>>();
-
-    var mostWins = (highlights["most_wins"] as List).cast<Map<String, dynamic>>();
-    var bestRating =
-        (highlights["best_rating"] as List).cast<Map<String, dynamic>>();
-    var mostLosses =
-        (highlights["most_losses"] as List).cast<Map<String, dynamic>>();
-    var chemistry = highlights["chemistry"] as Map<String, dynamic>?;
-    var repeatAwards =
-        (highlights["repeat_awards"] as List).cast<Map<String, dynamic>>();
-
-    // Show at most 3 tied players, then "+N".
-    List<Widget> limited(List<Map<String, dynamic>> entries, Color color,
-        String Function(Map<String, dynamic>) value) {
-      return [
-        for (var e in entries.take(3))
-          _PlayerRow(userId: e["user_id"], value: value(e), color: color),
-        if (entries.length > 3)
-          Padding(
-              padding: EdgeInsets.only(top: 4),
-              child: Text("+${entries.length - 3}",
-                  style: TextPalette.getBodyText(Palette.greyDark))),
-      ];
-    }
-
-    var cards = <Widget>[
-      if (mostWins.isNotEmpty)
-        _HighlightCard(
-          title: l10n.groupStatsMostWins,
-          icon: Icons.emoji_events,
-          color: Palette.green,
-          rows: limited(mostWins, Palette.green,
-              (e) => "${e["wins"]}/${e["played"]}"),
-        ),
-      if (bestRating.isNotEmpty)
-        _HighlightCard(
-          title: l10n.groupStatsBestRating,
-          icon: Icons.star,
-          color: Palette.accent,
-          rows: limited(bestRating, Palette.accent,
-              (e) => (e["avg_rating"] as num).toStringAsFixed(2)),
-        ),
-      if (mostLosses.isNotEmpty)
-        _HighlightCard(
-          title: l10n.groupStatsMostLosses,
-          icon: Icons.trending_down,
-          color: Palette.destructive,
-          rows: limited(mostLosses, Palette.destructive,
-              (e) => "${e["losses"]}/${e["played"]}"),
-        ),
-      if (chemistry != null)
-        _HighlightCard(
-          title: l10n.groupStatsChemistry,
-          icon: Icons.handshake,
-          color: Palette.primary,
-          rows: [
-            Row(children: [
-              for (var uid in (chemistry["users"] as List).cast<String>()) ...[
-                Expanded(child: _PlayerName(userId: uid, radius: 18)),
-              ],
-            ]),
-            SizedBox(height: 10),
-            _Pill(
-                "${chemistry["wins"]}${l10n.groupStatsWinsShort} ${chemistry["draws"]}${l10n.groupStatsDrawsShort} ${chemistry["losses"]}${l10n.groupStatsLossesShort} ${l10n.groupStatsTogether}",
-                Palette.primary),
-          ],
-        ),
-      if (repeatAwards.isNotEmpty)
-        _HighlightCard(
-          title: l10n.groupStatsRepeatAwards,
-          icon: Icons.military_tech,
-          color: UiUtils.fromHex("#8E44AD"),
-          rows: [
-            for (var a in repeatAwards)
-              _PlayerRow(
-                  userId: a["user_id"],
-                  label: _awardName(l10n, a["award"]),
-                  value: "×${a["times"]}",
-                  color: UiUtils.fromHex("#8E44AD"))
-          ],
-        ),
-    ];
+        !monthly || isCurrentMonth || ranking.isEmpty ? null : ranking.first;
+    var improver = !monthly || isCurrentMonth
+        ? null
+        : data["best_improver"] as Map<String, dynamic>?;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _monthSelector(context, months, data["matches"] as int, l10n),
+        if (_tab == 0)
+          _monthSelector(context, months, data["matches"] as int, l10n)
+        else
+          _periodHeader(data["matches"] as int, l10n),
         if (_loading)
           Padding(
               padding: EdgeInsets.only(top: 8),
               child: LinearProgressIndicator(minHeight: 2)),
         SizedBox(height: 16),
-        if (players.isEmpty)
+        if (ranking.isEmpty)
           Padding(
               padding: EdgeInsets.only(top: 40),
               child: Center(child: Text(l10n.groupStatsEmpty))),
@@ -309,33 +297,34 @@ class _GroupMonthlyStatsState extends State<GroupMonthlyStats> {
           _PlayerOfTheMonthCard(
               key: ValueKey("potm-$_month"),
               potm: potm,
-              runnersUp: runnersUp,
+              runnersUp: ranking.skip(1).take(2).toList(),
               l10n: l10n),
           SizedBox(height: 16),
         ],
-        for (var c in cards) ...[c, SizedBox(height: 16)],
-        if (players.isNotEmpty)
-          _PlayersTable(
-              players: players,
-              potmId: potm?["user_id"] as String?,
+        if (improver != null) ...[
+          _BestImproverCard(improver: improver, l10n: l10n),
+          SizedBox(height: 16),
+        ],
+        if (ranking.isNotEmpty) ...[
+          _RankingTable(
+              // a new period starts again from the score order
+              key: ValueKey("ranking-$_tab-$_month"),
+              ranking: ranking,
+              highlightFirst: !monthly || !isCurrentMonth,
               l10n: l10n),
+          Padding(
+              padding: EdgeInsets.fromLTRB(4, 12, 4, 0),
+              child: Text(
+                  switch (data["ranking_source"]) {
+                    "month" => l10n.groupStatsInfoMonth,
+                    "last_games" => l10n.groupStatsInfoLastGames,
+                    _ => l10n.groupStatsInfoPeriod,
+                  },
+                  style: TextPalette.getBodyText(Palette.greyDark)
+                      .copyWith(fontSize: 12))),
+        ],
       ],
     );
-  }
-
-  static String _awardName(AppLocalizations l10n, String awardId) {
-    switch (awardId) {
-      case "best_goal":
-        return l10n.bestGoalAwardName;
-      case "best_striker":
-        return l10n.bestStrikerAwardName;
-      case "best_goalkeeper":
-        return l10n.bestGoalkeeperAwardName;
-      case "best_defender":
-        return l10n.bestDefenderAwardName;
-      default:
-        return awardId;
-    }
   }
 }
 
@@ -371,7 +360,9 @@ class _Pill extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: onDark ? Colors.white.withOpacity(0.18) : color.withOpacity(0.12),
+        color: onDark
+            ? Colors.white.withValues(alpha: 0.18)
+            : color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(text,
@@ -387,7 +378,10 @@ class _PlayerOfTheMonthCard extends StatelessWidget {
   final AppLocalizations l10n;
 
   const _PlayerOfTheMonthCard(
-      {Key? key, required this.potm, required this.runnersUp, required this.l10n})
+      {Key? key,
+      required this.potm,
+      required this.runnersUp,
+      required this.l10n})
       : super(key: key);
 
   @override
@@ -407,7 +401,7 @@ class _PlayerOfTheMonthCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-              color: Palette.primary.withOpacity(0.35),
+              color: Palette.primary.withValues(alpha: 0.35),
               blurRadius: 24,
               offset: Offset(0, 12)),
         ],
@@ -423,32 +417,29 @@ class _PlayerOfTheMonthCard extends StatelessWidget {
             shape: BoxShape.circle,
             border: Border.all(color: _gold, width: 3),
             boxShadow: [
-              BoxShadow(color: _gold.withOpacity(0.5), blurRadius: 22),
+              BoxShadow(color: _gold.withValues(alpha: 0.5), blurRadius: 22),
             ],
           ),
           child: UserAvatar(44, ud),
         ),
         SizedBox(height: 12),
         Text(name,
-            style: TextPalette.h1Default.copyWith(color: Colors.white, fontSize: 30)),
+            style: TextPalette.h1Default
+                .copyWith(color: Colors.white, fontSize: 30)),
         SizedBox(height: 12),
-        Wrap(spacing: 8, runSpacing: 8, alignment: WrapAlignment.center, children: [
-          _Pill("${potm["wins"]} ${l10n.groupStatsWinsWord}", Colors.white,
-              onDark: true),
-          _Pill(
-              "${(potm["avg_rating"] as num).toStringAsFixed(2)} ${l10n.groupStatsRatingWord}",
-              Colors.white,
-              onDark: true),
-        ]),
-        if (potm["most_wins"] == true || potm["best_rated"] == true) ...[
-          SizedBox(height: 8),
-          Wrap(spacing: 8, runSpacing: 8, alignment: WrapAlignment.center, children: [
-            if (potm["most_wins"] == true)
-              _Pill("🏆 ${l10n.groupStatsMostWins}", _gold),
-            if (potm["best_rated"] == true)
-              _Pill("⭐ ${l10n.groupStatsBestRating}", _gold),
-          ]),
-        ],
+        Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            alignment: WrapAlignment.center,
+            children: [
+              _Pill("${potm["score"]} OVR", Colors.white, onDark: true),
+              _Pill("${potm["wins"]} ${l10n.groupStatsWinsWord}", Colors.white,
+                  onDark: true),
+              _Pill(
+                  "${(potm["avg_rating"] as num).toStringAsFixed(2)} ${l10n.groupStatsRatingWord}",
+                  Colors.white,
+                  onDark: true),
+            ]),
         if (runnersUp.isNotEmpty) ...[
           SizedBox(height: 16),
           Divider(color: Colors.white24, height: 1),
@@ -496,17 +487,11 @@ class _RunnerUp extends StatelessWidget {
   }
 }
 
-class _HighlightCard extends StatelessWidget {
-  final String title;
-  final IconData icon;
-  final Color color;
-  final List<Widget> rows;
+class _BestImproverCard extends StatelessWidget {
+  final Map<String, dynamic> improver;
+  final AppLocalizations l10n;
 
-  const _HighlightCard(
-      {required this.title,
-      required this.icon,
-      required this.color,
-      required this.rows});
+  const _BestImproverCard({required this.improver, required this.l10n});
 
   @override
   Widget build(BuildContext context) {
@@ -518,14 +503,22 @@ class _HighlightCard extends StatelessWidget {
             Container(
               padding: EdgeInsets.all(6),
               decoration: BoxDecoration(
-                  color: color.withOpacity(0.14), shape: BoxShape.circle),
-              child: Icon(icon, size: 18, color: color),
+                  color: Palette.green.withValues(alpha: 0.14),
+                  shape: BoxShape.circle),
+              child: Icon(Icons.trending_up, size: 18, color: Palette.green),
             ),
             SizedBox(width: 10),
-            Text(title, style: TextPalette.h4),
+            Text(l10n.groupStatsBestImprover, style: TextPalette.h4),
           ]),
           SizedBox(height: 12),
-          ...rows,
+          Row(children: [
+            Expanded(
+                child: _PlayerName(userId: improver["user_id"], radius: 18)),
+            Text("${improver["previous_score"]} → ${improver["score"]}",
+                style: TextPalette.getBodyText(Palette.greyDark)),
+            SizedBox(width: 8),
+            _Pill("+${improver["change"]}", Palette.green),
+          ]),
         ],
       ),
     );
@@ -552,180 +545,162 @@ class _PlayerName extends StatelessWidget {
   }
 }
 
-class _PlayerRow extends StatelessWidget {
-  final String userId;
-  final String? label;
-  final String? value;
-  final Color color;
-
-  const _PlayerRow(
-      {required this.userId, this.label, this.value, required this.color});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 5),
-      child: Row(children: [
-        if (label != null) ...[
-          SizedBox(
-              width: 130,
-              child: Text(label!,
-                  style: TextPalette.getBodyText(Palette.greyDark))),
-        ],
-        Expanded(child: _PlayerName(userId: userId, radius: 18)),
-        if (value != null) _Pill(value!, color),
-      ]),
-    );
-  }
-}
-
-class _ResultBar extends StatelessWidget {
-  final int wins, draws, losses;
-
-  const _ResultBar(this.wins, this.draws, this.losses);
-
-  @override
-  Widget build(BuildContext context) {
-    Widget seg(int n, Color c) => n == 0
-        ? SizedBox.shrink()
-        : Expanded(flex: n, child: Container(color: c));
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(3),
-      child: SizedBox(
-        width: 64,
-        height: 6,
-        child: Row(children: [
-          seg(wins, Palette.green),
-          seg(draws, Palette.greyLight),
-          seg(losses, Palette.destructive),
-        ]),
-      ),
-    );
-  }
-}
-
-class _PlayersTable extends StatelessWidget {
-  final List<Map<String, dynamic>> players;
-  final String? potmId;
+class _RankingTable extends StatefulWidget {
+  final List<Map<String, dynamic>> ranking;
+  // gold row and trophy for the player at the top
+  final bool highlightFirst;
   final AppLocalizations l10n;
 
-  const _PlayersTable(
-      {required this.players, required this.potmId, required this.l10n});
+  const _RankingTable(
+      {Key? key,
+      required this.ranking,
+      required this.highlightFirst,
+      required this.l10n})
+      : super(key: key);
 
-  static const _numWidth = 30.0;
-  static const _ratingWidth = 56.0;
+  @override
+  State<_RankingTable> createState() => _RankingTableState();
+}
 
-  Widget _num(String text, {Color? color, bool bold = false}) => SizedBox(
+class _RankingTableState extends State<_RankingTable> {
+  static const _numWidth = 46.0;
+
+  // the ranking arrives sorted by score; tap a header to sort by its column,
+  // tap again to flip the order
+  String _sortKey = "score";
+  bool _descending = true;
+
+  List<Map<String, dynamic>> get _sorted {
+    var indexed = widget.ranking.asMap().entries.toList();
+    indexed.sort((a, b) {
+      num? x = a.value[_sortKey], y = b.value[_sortKey];
+      // players without a value go last, whatever the order
+      var c = x == null && y == null
+          ? 0
+          : x == null
+              ? 1
+              : y == null
+                  ? -1
+                  : _descending
+                      ? y.compareTo(x)
+                      : x.compareTo(y);
+      return c != 0 ? c : a.key.compareTo(b.key);
+    });
+    return indexed.map((e) => e.value).toList();
+  }
+
+  void _sortBy(String key) => setState(() {
+        if (key == _sortKey) {
+          _descending = !_descending;
+        } else {
+          _sortKey = key;
+          _descending = true;
+        }
+      });
+
+  Widget _head(String text, String key) => InkWell(
+        onTap: () => _sortBy(key),
+        child: SizedBox(
+          width: _numWidth,
+          child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+            Text(text,
+                style: TextPalette.getBodyText(Palette.greyDark)
+                    .copyWith(fontSize: 12, fontWeight: FontWeight.w600)),
+            if (key == _sortKey)
+              Icon(_descending ? Icons.arrow_drop_down : Icons.arrow_drop_up,
+                  size: 14, color: Palette.greyDark),
+          ]),
+        ),
+      );
+
+  Widget _cell(String text, {bool bold = false}) => SizedBox(
         width: _numWidth,
         child: Text(text,
             textAlign: TextAlign.center,
             style: TextPalette.bodyText.copyWith(
-                color: color,
                 fontWeight: bold ? FontWeight.w700 : FontWeight.w400)),
       );
 
-  Widget _head(String text, {double width = _numWidth}) => SizedBox(
-        width: width,
-        child: Text(text,
-            textAlign: TextAlign.center,
-            style: TextPalette.getBodyText(Palette.greyDark)
-                .copyWith(fontSize: 12, fontWeight: FontWeight.w600)),
-      );
+  // the monthly view carries the change in OVR since the previous month
+  bool get _showChange => widget.ranking.any((p) => p.containsKey("change"));
 
-  /// Rating as a chip: green from 4, orange from 3, red below.
-  Widget _rating(num? rating) {
-    if (rating == null) {
-      return SizedBox(
-          width: _ratingWidth,
-          child: Text("–",
-              textAlign: TextAlign.center,
-              style: TextPalette.getBodyText(Palette.greyLight)));
-    }
-    var color = rating >= 4
-        ? Palette.green
-        : rating >= 3
-            ? Palette.accent
+  /// Change since last month: green up, red down, "–" when not ranked then.
+  Widget _change(num? change) {
+    var color = change == null || change == 0
+        ? Palette.greyLight
+        : change > 0
+            ? Palette.green
             : Palette.destructive;
+    var text = change == null
+        ? "–"
+        : change > 0
+            ? "+$change"
+            : "$change";
     return SizedBox(
-      width: _ratingWidth,
-      child: Center(child: _Pill(rating.toStringAsFixed(2), color)),
+      width: _numWidth,
+      child: Text(text,
+          textAlign: TextAlign.center,
+          style: TextPalette.bodyText.copyWith(
+              color: color,
+              fontWeight: change == null || change == 0
+                  ? FontWeight.w400
+                  : FontWeight.w700)),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    var players = _sorted;
     return InfoContainer(
       padding: EdgeInsets.fromLTRB(12, 16, 12, 8),
-      child: LayoutBuilder(builder: (context, constraints) {
-        // On narrow screens drop the result bar and the games column.
-        var compact = constraints.maxWidth < 460;
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: EdgeInsets.only(left: 4, bottom: 12),
-              child: Text(l10n.groupStatsAllPlayers, style: TextPalette.h4),
-            ),
-            Row(children: [
-              SizedBox(width: 28),
-              Expanded(child: SizedBox()),
-              if (!compact) ...[
-                SizedBox(width: 64),
-                SizedBox(width: 10),
-                _head(l10n.groupStatsPlayedShort),
-              ],
-              _head(l10n.groupStatsWinsShort),
-              _head(l10n.groupStatsDrawsShort),
-              _head(l10n.groupStatsLossesShort),
-              _head(l10n.groupStatsRatingShort, width: _ratingWidth),
-            ]),
-            SizedBox(height: 6),
-            Divider(height: 1, color: Palette.greyLighter),
-            for (var i = 0; i < players.length; i++) ...[
-              _row(context, i, compact),
-              if (i < players.length - 1)
-                Divider(height: 1, color: Palette.greyLightest),
-            ],
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(children: [
+            SizedBox(width: 28),
+            Expanded(child: SizedBox()),
+            _head("OVR", "score"),
+            if (_showChange) _head("Δ", "change"),
+            _head(widget.l10n.groupStatsWinsShort, "wins"),
+            _head(widget.l10n.groupStatsRatingShort, "avg_rating"),
+          ]),
+          SizedBox(height: 6),
+          Divider(height: 1, color: Palette.greyLighter),
+          for (var i = 0; i < players.length; i++) ...[
+            _row(i, players[i]),
+            if (i < players.length - 1)
+              Divider(height: 1, color: Palette.greyLightest),
           ],
-        );
-      }),
+        ],
+      ),
     );
   }
 
-  Widget _row(BuildContext context, int i, bool compact) {
-    var p = players[i];
-    var isPotm = p["user_id"] == potmId;
+  Widget _row(int i, Map<String, dynamic> p) {
+    // the winner keeps the gold row wherever the sorting puts them
+    var top = widget.highlightFirst &&
+        p["user_id"] == widget.ranking.first["user_id"];
     return Container(
       padding: EdgeInsets.symmetric(vertical: 8),
-      decoration: isPotm
+      decoration: top
           ? BoxDecoration(
-              color: _gold.withOpacity(0.14),
+              color: _gold.withValues(alpha: 0.14),
               borderRadius: BorderRadius.circular(10))
           : null,
       child: Row(children: [
         SizedBox(
             width: 28,
             child: Center(
-                child: isPotm
+                child: top
                     ? Icon(Icons.emoji_events, size: 16, color: _gold)
                     : Text("${i + 1}",
                         style: TextPalette.getBodyText(Palette.greyDark)
                             .copyWith(fontSize: 13)))),
         Expanded(child: _PlayerName(userId: p["user_id"], radius: 15)),
-        if (!compact) ...[
-          _ResultBar(p["wins"], p["draws"], p["losses"]),
-          SizedBox(width: 10),
-          _num("${p["played"]}", color: Palette.greyDark),
-        ],
-        _num("${p["wins"]}",
-            color: p["wins"] > 0 ? Palette.green : Palette.greyLight,
-            bold: p["wins"] > 0),
-        _num("${p["draws"]}",
-            color: p["draws"] > 0 ? Palette.greyDark : Palette.greyLight),
-        _num("${p["losses"]}",
-            color: p["losses"] > 0 ? Palette.destructive : Palette.greyLight,
-            bold: p["losses"] > 0),
-        _rating(p["avg_rating"] as num?),
+        _cell("${p["score"]}", bold: true),
+        if (_showChange) _change(p["change"] as num?),
+        _cell("${p["wins"]}"),
+        _cell((p["avg_rating"] as num).toStringAsFixed(2)),
       ]),
     );
   }

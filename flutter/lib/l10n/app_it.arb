@@ -271,7 +271,6 @@
     "androidInstallBannerDownload": "Scarica",
     "androidInstallBannerLater": "Dopo",
     "matchPreviewTitle": "Anteprima della partita",
-    "groupStatsTitle": "Statistiche del mese",
     "groupStatsGroupOf": "Gruppo di {name}",
     "@groupStatsGroupOf": {
         "placeholders": {
@@ -291,6 +290,12 @@
     "groupStatsDrawsShort": "N",
     "groupStatsLossesShort": "P",
     "groupStatsRatingShort": "Voto",
+    "groupStatsInfoMonth": "OVR è il punteggio complessivo: 60% le tue vittorie di questo mese, 40% i voti ricevuti nelle partite di questo mese.",
+    "groupStatsInfoLastGames": "OVR è il punteggio complessivo: 60% le tue vittorie di questo mese, 40% le tue ultime 5 partite votate. Useremo i voti del mese quando tutti nel gruppo saranno stati votati.",
+    "groupStatsBestImprover": "Più migliorato",
+    "groupStatsTabMonthly": "Mensile",
+    "groupStatsTabAllTime": "Di sempre",
+    "groupStatsInfoPeriod": "OVR è il punteggio complessivo: 60% le tue vittorie, 40% il tuo voto medio nelle partite di questo periodo.",
     "groupStatsTogether": "insieme",
     "groupStatsPlayerOfMonth": "Giocatore del mese",
     "groupStatsWinsWord": "vittorie",
