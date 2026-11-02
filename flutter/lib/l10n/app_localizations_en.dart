@@ -898,6 +898,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get groupStatsTitle => 'Monthly stats';
 
   @override
+  String groupStatsGroupOf(String name) {
+    return '$name\'s group';
+  }
+
+  @override
   String get groupStatsMatches => 'Matches';
 
   @override

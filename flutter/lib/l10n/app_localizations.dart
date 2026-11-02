@@ -1698,6 +1698,12 @@ abstract class AppLocalizations {
   /// **'Monthly stats'**
   String get groupStatsTitle;
 
+  /// No description provided for @groupStatsGroupOf.
+  ///
+  /// In en, this message translates to:
+  /// **'{name}\'s group'**
+  String groupStatsGroupOf(String name);
+
   /// No description provided for @groupStatsMatches.
   ///
   /// In en, this message translates to:

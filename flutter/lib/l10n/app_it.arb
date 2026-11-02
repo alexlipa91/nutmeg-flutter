@@ -272,6 +272,12 @@
     "androidInstallBannerLater": "Dopo",
     "matchPreviewTitle": "Anteprima della partita",
     "groupStatsTitle": "Statistiche del mese",
+    "groupStatsGroupOf": "Gruppo di {name}",
+    "@groupStatsGroupOf": {
+        "placeholders": {
+            "name": {"type": "String"}
+        }
+    },
     "groupStatsMatches": "Partite",
     "groupStatsMostWins": "Più vittorie",
     "groupStatsBestRating": "Miglior voto",

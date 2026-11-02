@@ -438,6 +438,12 @@
     "androidInstallBannerLater": "Later",
     "matchPreviewTitle": "Match preview",
     "groupStatsTitle": "Monthly stats",
+    "groupStatsGroupOf": "{name}'s group",
+    "@groupStatsGroupOf": {
+        "placeholders": {
+            "name": {"type": "String"}
+        }
+    },
     "groupStatsMatches": "Matches",
     "groupStatsMostWins": "Most wins",
     "groupStatsBestRating": "Top rated",
