@@ -1058,6 +1058,48 @@ class _UserProfileWithStats extends StatelessWidget {
   }
 }
 
+class _FifaCardClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size s) {
+    final w = s.width, h = s.height;
+    return Path()
+      ..moveTo(w * 0.10, h * 0.02)
+      ..quadraticBezierTo(w * 0.5, 0, w * 0.90, h * 0.02)
+      ..quadraticBezierTo(w * 0.90, h * 0.07, w, h * 0.09)
+      ..lineTo(w, h * 0.86)
+      ..cubicTo(w, h * 0.93, w * 0.65, h * 0.95, w * 0.5, h)
+      ..cubicTo(w * 0.35, h * 0.95, 0, h * 0.93, 0, h * 0.86)
+      ..lineTo(0, h * 0.09)
+      ..quadraticBezierTo(w * 0.10, h * 0.07, w * 0.10, h * 0.02)
+      ..close();
+  }
+
+  @override
+  bool shouldReclip(_) => false;
+}
+
+class _StripesPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size s) {
+    final area = Rect.fromLTWH(0, 0, s.width, s.height * 0.65);
+    final paint = Paint()
+      ..strokeWidth = 1
+      ..shader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [Colors.white54, Colors.transparent],
+      ).createShader(area);
+    final step = s.width * 0.014;
+    for (double x = -area.height; x < s.width; x += step) {
+      canvas.drawLine(
+          Offset(x, area.height), Offset(x + area.height, 0), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_) => false;
+}
+
 class _FifaStyleCard extends StatelessWidget {
   final UserDetails userDetails;
 
@@ -1099,7 +1141,42 @@ class _FifaStyleCard extends StatelessWidget {
             final score = userDetails.getScoreMatches();
             return Stack(alignment: Alignment.topCenter, children: [
               Positioned.fill(
-                  child: Image.asset('assets/fifa_card.png', fit: BoxFit.fill)),
+                child: ClipPath(
+                  clipper: _FifaCardClipper(),
+                  child: Stack(fit: StackFit.expand, children: [
+                    DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            Color(0xFFF6DE8D),
+                            Color(0xFFD9B04A),
+                            Color(0xFFF2D77A),
+                            Color(0xFFC9A03C),
+                          ],
+                          stops: [0, 0.4, 0.7, 1],
+                        ),
+                      ),
+                    ),
+                    CustomPaint(painter: _StripesPainter()),
+                    DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment(-1, -0.3),
+                          end: Alignment(1, 0.3),
+                          colors: [
+                            Colors.transparent,
+                            Colors.white38,
+                            Colors.transparent,
+                          ],
+                          stops: [0.3, 0.5, 0.7],
+                        ),
+                      ),
+                    ),
+                  ]),
+                ),
+              ),
               Positioned(
                 top: h * 0.25,
                 left: w * 0.13,
