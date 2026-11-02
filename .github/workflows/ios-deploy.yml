@@ -8,7 +8,7 @@ on:
 jobs:
   deploy_ios:
     name: Build & Deploy iOS
-    if: contains(github.event.head_commit.message, '[deploy_test]') || contains(github.event.head_commit.message, '[deploy_prod]')
+    if: contains(github.event.head_commit.message, '[deploy_test]') || contains(github.event.head_commit.message, '[deploy_prod]') || contains(github.event.head_commit.message, '[deploy_test_ios]') || contains(github.event.head_commit.message, '[deploy_prod_ios]')
     runs-on: macos-26
     defaults:
       run:
@@ -53,7 +53,7 @@ jobs:
       - run: flutter pub get
       - run: flutter build ipa --release --export-options-plist ios/export.plist --dart-define-from-file=.env.prod
       - name: Upload to TestFlight
-        if: contains(github.event.head_commit.message, '[deploy_test]')
+        if: contains(github.event.head_commit.message, '[deploy_test]') || contains(github.event.head_commit.message, '[deploy_test_ios]')
         uses: maierj/fastlane-action@v3.0.0
         with:
           lane: 'closed_beta'
@@ -66,7 +66,7 @@ jobs:
 
       # --- prod: upload directly to App Store and submit for review ---
       - name: Release to App Store
-        if: contains(github.event.head_commit.message, '[deploy_prod]')
+        if: contains(github.event.head_commit.message, '[deploy_prod]') || contains(github.event.head_commit.message, '[deploy_prod_ios]')
         uses: maierj/fastlane-action@v3.1.0
         with:
           lane: 'release'

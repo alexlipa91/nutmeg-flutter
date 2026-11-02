@@ -8,7 +8,7 @@ on:
 jobs:
   deploy_android:
     name: Build & Deploy Android
-    if: contains(github.event.head_commit.message, '[deploy_test]') || contains(github.event.head_commit.message, '[deploy_prod]')
+    if: contains(github.event.head_commit.message, '[deploy_test]') || contains(github.event.head_commit.message, '[deploy_prod]') || contains(github.event.head_commit.message, '[deploy_test_android]') || contains(github.event.head_commit.message, '[deploy_prod_android]')
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -53,7 +53,7 @@ jobs:
 
       # --- prod: promote to production ---
       - name: Promote to Production
-        if: contains(github.event.head_commit.message, '[deploy_prod]')
+        if: contains(github.event.head_commit.message, '[deploy_prod]') || contains(github.event.head_commit.message, '[deploy_prod_android]')
         uses: maierj/fastlane-action@v3.1.0
         with:
           lane: "promoteToProduction"
