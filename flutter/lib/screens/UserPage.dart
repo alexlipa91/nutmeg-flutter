@@ -201,7 +201,7 @@ class UserPageState extends State<UserPage> {
       widgets = [
         title,
         verticalSpace,
-        _UserProfileWithStats(userDetails: userDetails),
+        _FifaStyleCard(userDetails: userDetails),
         verticalSpace,
         Row(children: [
           Expanded(
@@ -1054,6 +1054,140 @@ class _UserProfileWithStats extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _FifaStyleCard extends StatelessWidget {
+  final UserDetails userDetails;
+
+  const _FifaStyleCard({required this.userDetails});
+
+  Widget _stat(String label, String value, double w) {
+    final style = GoogleFonts.oswald(color: Color(0xFF3B2A06));
+    return Row(mainAxisSize: MainAxisSize.min, children: [
+      SizedBox(
+        width: w * 0.1,
+        child: Text(value,
+            textAlign: TextAlign.right,
+            style: style.copyWith(
+                fontSize: w * 0.07, fontWeight: FontWeight.w700)),
+      ),
+      SizedBox(width: w * 0.02),
+      Text(label,
+          style: style.copyWith(fontSize: w * 0.05, fontWeight: FontWeight.w500)),
+    ]);
+  }
+
+  String _cardName() {
+    final name = (userDetails.name ?? "N/A").trim();
+    final parts = name.split(RegExp(r'\s+'));
+    return (name.length > 14 && parts.length > 1 ? parts.last : name)
+        .toUpperCase();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: 320),
+        child: AspectRatio(
+          aspectRatio: 576 / 800,
+          child: LayoutBuilder(builder: (context, c) {
+            final w = c.maxWidth;
+            final h = c.maxHeight;
+            final score = userDetails.getScoreMatches();
+            return Stack(alignment: Alignment.topCenter, children: [
+              Positioned.fill(
+                  child: Image.asset('assets/fifa_card.png', fit: BoxFit.fill)),
+              Positioned(
+                top: h * 0.25,
+                left: w * 0.13,
+                width: w * 0.16,
+                child: Column(mainAxisSize: MainAxisSize.min, children: [
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                        score == null ? "-" : (score * 10).round().toString(),
+                        style: GoogleFonts.oswald(
+                            color: Color(0xFF3B2A06),
+                            fontSize: w * 0.13,
+                            height: 1,
+                            fontWeight: FontWeight.w700)),
+                  ),
+                  Text("OVR",
+                      style: GoogleFonts.oswald(
+                          color: Color(0xFF3B2A06),
+                          fontSize: w * 0.05,
+                          fontWeight: FontWeight.w500)),
+                  if (userDetails.location?.country.length == 2) ...[
+                    SizedBox(height: w * 0.03),
+                    CircleFlag(userDetails.location!.country.toLowerCase(),
+                        size: w * 0.09),
+                  ],
+                ]),
+              ),
+              Positioned(
+                top: h * 0.19,
+                left: w * 0.33,
+                child: InkWell(
+                  onTap: () async {
+                    try {
+                      await UserController.updloadPicture(context, userDetails);
+                    } catch (e, s) {
+                      logger.severe("Error updating profile picture", e, s);
+                    }
+                  },
+                  child: UserAvatar(w * 0.24, userDetails),
+                ),
+              ),
+              Positioned(
+                top: h * 0.65,
+                left: w * 0.12,
+                right: w * 0.12,
+                child: Text(
+                  _cardName(),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.oswald(
+                      color: Color(0xFF3B2A06),
+                      fontSize: w * 0.075,
+                      fontWeight: FontWeight.w700),
+                ),
+              ),
+              Positioned(
+                top: h * 0.72,
+                left: w * 0.14,
+                right: w * 0.14,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: Align(alignment: Alignment.centerRight, child: Padding(padding: EdgeInsets.only(right: w * 0.04), child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+                        _stat("MAT",
+                            userDetails.getNumJoinedMatches().toString(), w),
+                        _stat("MOTM",
+                            userDetails.getNumManOfTheMatch().toString(), w),
+                      ]))),
+                    ),
+                    Container(
+                        width: 1,
+                        height: w * 0.14,
+                        color: Color(0x803B2A06)),
+                    Expanded(
+                      child: Align(alignment: Alignment.centerLeft, child: Padding(padding: EdgeInsets.only(left: w * 0.04), child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+                        _stat("W", (userDetails.numWin ?? 0).toString(), w),
+                        _stat("L", (userDetails.numLoss ?? 0).toString(), w),
+                      ]))),
+                    ),
+                  ],
+                ),
+              ),
+            ]);
+          }),
+        ),
+      ),
     );
   }
 }
