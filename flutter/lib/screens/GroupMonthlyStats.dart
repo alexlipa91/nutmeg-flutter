@@ -1,7 +1,9 @@
 import 'dart:math' show min, pi, sin;
+import 'dart:ui' as ui;
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
@@ -9,11 +11,13 @@ import 'package:nutmeg/l10n/app_localizations.dart';
 import 'package:nutmeg/model/UserDetails.dart';
 import 'package:nutmeg/state/UsersState.dart';
 import 'package:nutmeg/utils/CrashlyticsLogger.dart';
+import 'package:nutmeg/utils/share_utils.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/widgets/Avatar.dart';
 import 'package:nutmeg/widgets/Containers.dart';
 import 'package:nutmeg/widgets/PageTemplate.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 final _logger = CrashlyticsLogger("GroupMonthlyStats");
 
@@ -321,15 +325,21 @@ class _GroupMonthlyStatsState extends State<GroupMonthlyStats> {
               count: specials.length,
               itemWidth: itemWidth,
               fraction: fraction,
-              builder: (i, width) => _FifaCard(
-                  entry: specials[i].$1,
-                  user: users.getUserDetail(specials[i].$1["user_id"]),
-                  period: data["month"] as String,
-                  theme: specials[i].$2,
-                  title: specials[i].$3,
-                  emphasizeChange: specials[i].$4,
-                  effects: specials[i].$5,
-                  maxWidth: width),
+              builder: (i, width) {
+                _FifaCard card(double w, bool effects) => _FifaCard(
+                    entry: specials[i].$1,
+                    user: users.getUserDetail(specials[i].$1["user_id"]),
+                    period: data["month"] as String,
+                    theme: specials[i].$2,
+                    title: specials[i].$3,
+                    emphasizeChange: specials[i].$4,
+                    effects: effects,
+                    maxWidth: w);
+                // tap for the big card to share; still, so the picture is clean
+                return GestureDetector(
+                    onTap: () => _showFifaCard(context, card(260, false)),
+                    child: card(width, specials[i].$5));
+              },
             );
           }),
           SizedBox(height: 8),
@@ -495,6 +505,80 @@ class _SpecialCardsState extends State<_SpecialCards> {
     );
   }
 }
+
+/// A card shown big, with a button to share it as a picture.
+class _CardDialog extends StatefulWidget {
+  final _FifaCard card;
+
+  const _CardDialog({required this.card});
+
+  @override
+  State<_CardDialog> createState() => _CardDialogState();
+}
+
+class _CardDialogState extends State<_CardDialog> {
+  final GlobalKey _boundary = GlobalKey();
+  bool _sharing = false;
+
+  Future<void> _share() async {
+    setState(() => _sharing = true);
+    try {
+      final boundary = _boundary.currentContext?.findRenderObject()
+          as RenderRepaintBoundary?;
+      if (boundary == null) return;
+      final card = await boundary.toImage(pixelRatio: 3);
+      // the card on a plain background, with some room around it
+      const pad = 48.0;
+      final size = Size(card.width + 2 * pad, card.height + 2 * pad);
+      final recorder = ui.PictureRecorder();
+      final canvas = Canvas(recorder);
+      canvas.drawRect(Offset.zero & size, Paint()..color = Colors.white);
+      canvas.drawImage(card, Offset(pad, pad), Paint());
+      final picture = await recorder
+          .endRecording()
+          .toImage(size.width.toInt(), size.height.toInt());
+      final bytes = await picture.toByteData(format: ui.ImageByteFormat.png);
+      if (bytes == null || !mounted) return;
+      await shareWithOrigin(
+        context,
+        text: widget.card.caption(context),
+        files: [
+          XFile.fromData(bytes.buffer.asUint8List(),
+              name: 'card.png', mimeType: 'image/png')
+        ],
+      );
+    } catch (e) {
+      _logger.warning("Could not share the card: $e");
+    } finally {
+      if (mounted) setState(() => _sharing = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      insetPadding: EdgeInsets.all(24),
+      child: Column(mainAxisSize: MainAxisSize.min, children: [
+        // exactly the card, so the picture has no empty sides
+        SizedBox(
+            width: widget.card.maxWidth,
+            child: RepaintBoundary(key: _boundary, child: widget.card)),
+        SizedBox(height: 16),
+        FilledButton.icon(
+          onPressed: _sharing ? null : _share,
+          icon: Icon(Icons.ios_share, size: 18),
+          label: Text(l10n.shareAction),
+        ),
+      ]),
+    );
+  }
+}
+
+void _showFifaCard(BuildContext context, _FifaCard card) =>
+    showDialog(context: context, builder: (_) => _CardDialog(card: card));
 
 /// Moving effects for the best player's card: a light sweeping across it now
 /// and then and a pulsing glow behind the picture.
@@ -801,6 +885,13 @@ class _FifaCard extends StatelessWidget {
             int.parse(period.substring(0, 4)), int.parse(period.substring(4))))
         .toUpperCase();
   }
+
+  /// What goes with the picture when the card is shared.
+  String caption(BuildContext context) => [
+        _cardName(),
+        if (title != null) title!,
+        _periodLabel(context),
+      ].join(" · ");
 
   /// Change since last month: arrow and number, green up and red down.
   Widget _changeChip(num change, double w, {double scale = 1}) {
@@ -1163,31 +1254,22 @@ class _RankingTableState extends State<_RankingTable> {
     );
   }
 
-  /// A plain card of the player, closed by tapping anywhere.
+  /// The player's card, big, with a button to share it.
   void _showCard(Map<String, dynamic> p) {
     var user = context.read<UsersState>().getUserDetail(p["user_id"]);
-    showDialog(
-      context: context,
-      builder: (dialogContext) => Dialog(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        insetPadding: EdgeInsets.all(24),
-        child: GestureDetector(
-          onTap: () => Navigator.of(dialogContext).pop(),
-          child: _FifaCard(
-              entry: p,
-              user: user,
-              period: widget.period,
-              // gold above 80, silver above 70, bronze below
-              theme: (p["score"] as num) > 80
-                  ? _FifaTheme.gold
-                  : (p["score"] as num) > 70
-                      ? _FifaTheme.silver
-                      : _FifaTheme.bronze,
-              maxWidth: 260),
-        ),
-      ),
-    );
+    _showFifaCard(
+        context,
+        _FifaCard(
+            entry: p,
+            user: user,
+            period: widget.period,
+            // gold above 80, silver above 70, bronze below
+            theme: (p["score"] as num) > 80
+                ? _FifaTheme.gold
+                : (p["score"] as num) > 70
+                    ? _FifaTheme.silver
+                    : _FifaTheme.bronze,
+            maxWidth: 260));
   }
 
   Widget _row(int i, Map<String, dynamic> p) {
