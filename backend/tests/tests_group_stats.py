@@ -171,6 +171,94 @@ class GroupStatsTests(unittest.TestCase):
         self.assertIsNone(out["month"])
         self.assertEqual(out["players"], [])
 
+    def test_ranking_wins_count_every_game_ratings_only_rated_ones(self):
+        ms = [
+            match(1, ["a", "b"], ["c", "d"], (2, 0),
+                  scores={"a": 4, "b": 4, "c": 2, "d": 2}),
+            match(8, ["a", "b"], ["c", "d"], (0, 3)),  # not rated
+        ]
+        out = group_stats.monthly_group_stats(ms)
+        ranking = out["ranking"]
+        self.assertEqual(out["ranking_source"], "month")
+        self.assertEqual([r["user_id"] for r in ranking], ["a", "b", "c", "d"])
+        a = ranking[0]
+        self.assertEqual((a["played"], a["wins"], a["avg_rating"]), (2, 1, 4))
+        # 1 win in 2 -> 50, rating 4 -> 75: 0.6 * 50 + 0.4 * 75 = 60 -> 50 + 0.49 * 60
+        self.assertEqual(a["score"], 79)
+        # 1 win in 2 -> 50, rating 2 -> 25: 0.6 * 50 + 0.4 * 25 = 40 -> 50 + 0.49 * 40
+        self.assertEqual(ranking[2]["score"], 70)
+
+    def test_ranking_uses_last_rated_games_when_someone_is_unrated(self):
+        # d has no rated game this month, so everyone falls back to history
+        ms = [match(1, ["a", "b"], ["c", "d"], (2, 0),
+                    scores={"a": 5, "b": 5, "c": 5})]
+        history = {"a": {
+            "20260101170000": 1.0,  # older than the last 5
+            "20260201170000": 4, "20260301170000": 4, "20260401170000": 4,
+            "20260501170000": 4, "20260601170000": 4,
+            "20261105170000": 1.0,  # after the month: ignored
+        }}
+        out = group_stats.monthly_group_stats(ms, history=history)
+        self.assertEqual(out["ranking_source"], "last_games")
+        by = {r["user_id"]: r for r in out["ranking"]}
+        self.assertEqual(by["a"]["avg_rating"], 4.0)
+        # a: 2 wins in 1 game -> 100, rating 4 -> 75: 0.6 * 100 + 0.4 * 75 = 90
+        self.assertEqual(by["a"]["score"], 94)
+        # b has no history: neutral 3 -> 50: 0.6 * 100 + 0.4 * 50 = 80
+        self.assertEqual((by["b"]["avg_rating"], by["b"]["score"]), (3.0, 89))
+        # c and d lost, neutral rating: 0.4 * 50 = 20
+        self.assertEqual((by["c"]["score"], by["d"]["score"]), (60, 60))
+
+    def test_ranking_draw_is_half_a_win_and_guests_are_skipped(self):
+        ms = [match(1, ["a", "guest_x"], ["b"], (1, 1),
+                    scores={"a": 3, "guest_x": 3, "b": 3})]
+        ranking = group_stats.monthly_group_stats(ms)["ranking"]
+        self.assertEqual(sorted(r["user_id"] for r in ranking), ["a", "b"])
+        # a draw -> 50, rating 3 -> 50: 50 -> 50 + 0.49 * 50
+        self.assertEqual(ranking[0]["score"], 75)
+
+    def test_best_improver_is_the_biggest_rise_since_last_month(self):
+        every = {"a": 3, "b": 3, "c": 3, "d": 3}
+        ms = [
+            match(1, ["a", "b"], ["c", "d"], (0, 2), month=9, scores=every),
+            match(1, ["a", "b"], ["c", "d"], (2, 0), month=10, scores=every),
+        ]
+        out = group_stats.monthly_group_stats(ms)
+        # a and b went from no wins (60) to all wins (89): +29; c and d fell
+        self.assertEqual(out["best_improver"]["change"], 29)
+        self.assertEqual(out["best_improver"]["previous_score"], 60)
+        self.assertEqual(out["best_improver"]["user_id"], "a")
+        # every player gets the change since last month
+        change = {r["user_id"]: r["change"] for r in out["ranking"]}
+        self.assertEqual(change, {"a": 29, "b": 29, "c": -29, "d": -29})
+        # nothing to compare with in the first month
+        self.assertIsNone(group_stats.monthly_group_stats(ms, "202609")["best_improver"])
+
+    def test_ranking_over_a_year_or_everything(self):
+        every = {"a": 3, "b": 3, "c": 3, "d": 3}
+        ms = [
+            match(1, ["a", "b"], ["c", "d"], (0, 2), month=9, scores=every),
+            match(1, ["a", "b"], ["c", "d"], (2, 0), month=10, scores=every),
+            Match.from_dict(  # last year
+                {"dateTime": datetime(2025, 5, 1, 18, tzinfo=timezone.utc),
+                 "going": {"a": {}, "c": {}}, "score": [1, 0],
+                 "teams": {"balanced": {"players": {"a": ["a"], "b": ["c"]}}}}, "old"),
+        ]
+        year = group_stats.monthly_group_stats(ms, "2026")
+        self.assertEqual(year["ranking_source"], "period")
+        self.assertEqual(year["matches"], 2)
+        by = {r["user_id"]: r for r in year["ranking"]}
+        # one win in two games each, rating 3: 0.6 * 50 + 0.4 * 50 = 50 -> 75
+        self.assertEqual((by["a"]["played"], by["a"]["wins"], by["a"]["score"]), (2, 1, 75))
+        self.assertIsNone(year["best_improver"])
+        # no month-over-month change outside the monthly view
+        self.assertTrue(all("change" not in r for r in year["ranking"]))
+        everything = group_stats.monthly_group_stats(ms, "all")
+        self.assertEqual(everything["matches"], 3)
+        self.assertEqual({r["user_id"]: r["played"] for r in everything["ranking"]}["a"], 3)
+
+    def test_ranking_empty_without_games(self):
+        self.assertEqual(group_stats.monthly_group_stats([])["ranking"], [])
 
 if __name__ == "__main__":
     unittest.main()

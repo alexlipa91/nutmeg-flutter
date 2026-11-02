@@ -8,7 +8,7 @@ Pure functions over Match objects, so they can be tested without Firestore.
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 import pytz
 
@@ -121,14 +121,137 @@ def player_of_the_month(
     ]
 
 
+# Ranking: wins count 60%, ratings 40%, then mapped to a FIFA-like 50-99 card.
+WINS_WEIGHT = 0.6
+RATING_WEIGHT = 0.4
+CARD_FLOOR = 50
+CARD_SPAN = 0.49
+# Rating used for a player with no rated game at all.
+NEUTRAL_RATING = 3.0
+# Games of rating history used when the month is not fully rated.
+HISTORY_GAMES = 5
+
+
+def card_score(avg_rating: float, wins: int, draws: int, played: int) -> int:
+    rating_part = (avg_rating - 1) / 4 * 100
+    wins_part = (wins + 0.5 * draws) / played * 100
+    points = WINS_WEIGHT * wins_part + RATING_WEIGHT * rating_part
+    return int(CARD_FLOOR + CARD_SPAN * points + 0.5)
+
+
+def _recent_rating(history: Optional[Dict[str, float]], month: str) -> float:
+    """Average of the last HISTORY_GAMES rated games up to `month`.
+    `history` maps a game date (yyyyMMdd...) to the player's rating."""
+    scores = [v for k, v in sorted((history or {}).items()) if k[:6] <= month]
+    recent = scores[-HISTORY_GAMES:]
+    return sum(recent) / len(recent) if recent else NEUTRAL_RATING
+
+
+def _is_month(period: str) -> bool:
+    return bool(period) and len(period) == 6
+
+
+def _in_period(match: Match, period: str) -> bool:
+    """`period` is a month (yyyymm), a year (yyyy) or "all"."""
+    if period == "all":
+        return True
+    return month_of(match).startswith(period)
+
+
+def _period_end(period: str) -> str:
+    """Last month (yyyymm) of the period."""
+    if period == "all":
+        return "999999"
+    return period if _is_month(period) else period + "12"
+
+
+def ranking(
+    matches: List[Match],
+    period: str,
+    history: Optional[Dict[str, Dict[str, float]]] = None,
+) -> Tuple[List[Dict[str, Any]], str]:
+    """
+    Players ranked by card score over the period's matches, and where the
+    ratings came from: "month", "last_games" or, for a year or everything,
+    "period". Wins and losses count every game; ratings only come from rated
+    games (ratings computed).
+    For a month: if every player has a rated game, the month's ratings are
+    used; otherwise everyone's last rated games (`history`: user -> {date:
+    rating}). For a longer period each player's rated games in it are used,
+    and the last rated games only for a player with none.
+    Best score first, ties on wins then rating.
+    """
+    acc: Dict[str, Dict[str, Any]] = {}
+    for m in matches:
+        scores = (m.ratings_summary or {}).get("finalScores") or {}
+        team_a, team_b = m.get_team_players()
+        for uid in team_a + team_b:
+            if is_guest(uid):
+                continue
+            p = acc.setdefault(
+                uid,
+                {"played": 0, "wins": 0, "draws": 0, "rating_sum": 0.0, "rated": 0},
+            )
+            p["played"] += 1
+            result = result_for_user(m, uid)
+            if result == "w":
+                p["wins"] += 1
+            elif result == "d":
+                p["draws"] += 1
+            if scores.get(uid) is not None:
+                p["rating_sum"] += scores[uid]
+                p["rated"] += 1
+
+    month_is_rated = bool(acc) and all(p["rated"] for p in acc.values())
+    use_period = month_is_rated if _is_month(period) else True
+    table = []
+    for uid, p in acc.items():
+        if use_period and p["rated"]:
+            avg = p["rating_sum"] / p["rated"]
+        else:
+            avg = _recent_rating((history or {}).get(uid), _period_end(period))
+        table.append({
+            "user_id": uid,
+            "played": p["played"],
+            "wins": p["wins"],
+            "avg_rating": round(avg, 2),
+            "score": card_score(avg, p["wins"], p["draws"], p["played"]),
+        })
+    table.sort(key=lambda e: (-e["score"], -e["wins"], -e["avg_rating"]))
+    if not _is_month(period):
+        return table, "period"
+    return table, "month" if month_is_rated else "last_games"
+
+
+def best_improver(
+    current: List[Dict[str, Any]], previous: List[Dict[str, Any]]
+) -> Optional[Dict[str, Any]]:
+    """The player whose score rose the most since the previous month, among
+    players ranked in both; ties go to the higher score. None if nobody rose."""
+    before = {e["user_id"]: e["score"] for e in previous}
+    gains = [
+        {
+            "user_id": e["user_id"],
+            "score": e["score"],
+            "previous_score": before[e["user_id"]],
+            "change": e["score"] - before[e["user_id"]],
+        }
+        for e in current
+        if e["user_id"] in before and e["score"] > before[e["user_id"]]
+    ]
+    return max(gains, key=lambda g: (g["change"], g["score"]), default=None)
+
+
 def monthly_group_stats(
-    matches: List[Match], month: Optional[str] = None
+    matches: List[Match],
+    month: Optional[str] = None,
+    history: Optional[Dict[str, Dict[str, float]]] = None,
 ) -> Dict[str, Any]:
     eligible = [m for m in matches if m and _eligible(m)]
     months = sorted({month_of(m) for m in eligible}, reverse=True)
     if month is None and months:
         month = months[0]
-    in_month = [m for m in eligible if month_of(m) == month]
+    in_month = [m for m in eligible if month and _in_period(m, month)]
 
     players: Dict[str, Dict[str, Any]] = {}
     pairs: Dict[str, Dict[str, Any]] = {}
@@ -218,6 +341,22 @@ def monthly_group_stats(
     podium = player_of_the_month(
         table, rated, by_wins[0]["wins"] if by_wins else 0
     )
+    ranked, ranking_source = ranking(in_month, month, history)
+    # improvement only makes sense month over month
+    previous_month = next(
+        (x for x in months if month and _is_month(month) and x < month), None
+    )
+    previous_ranked, _ = ranking(
+        [m for m in eligible if month_of(m) == previous_month],
+        previous_month,
+        history,
+    ) if previous_month else ([], "")
+    if previous_month:
+        before = {e["user_id"]: e["score"] for e in previous_ranked}
+        for e in ranked:
+            e["change"] = (
+                e["score"] - before[e["user_id"]] if e["user_id"] in before else None
+            )
 
     return {
         "month": month,
@@ -233,4 +372,7 @@ def monthly_group_stats(
             "repeat_awards": repeat_awards,
         },
         "players": by_wins,
+        "ranking": ranked,
+        "ranking_source": ranking_source,
+        "best_improver": best_improver(ranked, previous_ranked),
     }
