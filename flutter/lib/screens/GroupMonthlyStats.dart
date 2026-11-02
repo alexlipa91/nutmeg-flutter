@@ -813,35 +813,41 @@ class _FifaCard extends StatelessWidget {
                         style: title == null
                             ? _text(w * 0.07, FontWeight.w600,
                                 spacing: w * 0.03)
-                            : _text(w * 0.062, FontWeight.w600,
+                            : _text(w * 0.055, FontWeight.w600,
                                 spacing: w * 0.025)),
                   ),
                   Positioned(
-                    top: h * 0.215,
+                    top: h * 0.24,
                     left: w * 0.08,
                     width: emphasizeChange ? w * 0.28 : w * 0.26,
                     // as tall as the picture, so the number sits level with it
                     height: w * 0.39,
                     child: Center(
-                        child:
-                            Column(mainAxisSize: MainAxisSize.min, children: [
-                      FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text("${entry["score"]}",
-                            style: _text(w * 0.2, FontWeight.w700)),
-                      ),
-                      Text("OVR", style: _text(w * 0.055, FontWeight.w500)),
-                      if (change != null && change != 0) ...[
-                        SizedBox(height: w * 0.025),
-                        FittedBox(
-                            fit: BoxFit.scaleDown,
-                            child: _changeChip(change, w,
-                                scale: emphasizeChange ? 2 : 1)),
-                      ],
-                    ])),
+                        // the big change chip can be taller than the picture:
+                        // let it spill over instead of overflowing
+                        child: OverflowBox(
+                            maxHeight: double.infinity,
+                            child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: Text("${entry["score"]}",
+                                        style: _text(w * 0.2, FontWeight.w700)),
+                                  ),
+                                  Text("OVR",
+                                      style: _text(w * 0.055, FontWeight.w500)),
+                                  if (change != null && change != 0) ...[
+                                    SizedBox(height: w * 0.025),
+                                    FittedBox(
+                                        fit: BoxFit.scaleDown,
+                                        child: _changeChip(change, w,
+                                            scale: emphasizeChange ? 2 : 1)),
+                                  ],
+                                ]))),
                   ),
                   Positioned(
-                    top: h * 0.215,
+                    top: h * 0.24,
                     left: w * 0.38,
                     child: Container(
                       padding: EdgeInsets.all(w * 0.01),
@@ -859,7 +865,7 @@ class _FifaCard extends StatelessWidget {
                     ),
                   ),
                   Positioned(
-                    top: h * 0.585,
+                    top: h * 0.597,
                     left: w * 0.12,
                     right: w * 0.12,
                     child: Container(
@@ -874,7 +880,7 @@ class _FifaCard extends StatelessWidget {
                     ),
                   ),
                   Positioned(
-                    top: h * 0.6,
+                    top: h * 0.612,
                     left: w * 0.08,
                     right: w * 0.08,
                     child: Text(
@@ -887,7 +893,7 @@ class _FifaCard extends StatelessWidget {
                     ),
                   ),
                   Positioned(
-                    top: h * 0.735,
+                    top: h * 0.747,
                     left: w * 0.1,
                     right: w * 0.1,
                     child: Row(children: [
