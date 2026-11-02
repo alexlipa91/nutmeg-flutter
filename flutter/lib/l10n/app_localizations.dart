@@ -1788,12 +1788,6 @@ abstract class AppLocalizations {
   /// **'OVR is the overall score: 60% your wins this month, 40% your last 5 rated games. This month\'s ratings are used once everyone in the group has been rated.'**
   String get groupStatsInfoLastGames;
 
-  /// No description provided for @groupStatsBestImprover.
-  ///
-  /// In en, this message translates to:
-  /// **'Best improver'**
-  String get groupStatsBestImprover;
-
   /// No description provided for @groupStatsTabMonthly.
   ///
   /// In en, this message translates to:
@@ -1811,6 +1805,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'OVR is the overall score: 60% your wins, 40% your average match rating over this period.'**
   String get groupStatsInfoPeriod;
+
+  /// No description provided for @groupStatsInfoMinGames.
+  ///
+  /// In en, this message translates to:
+  /// **'Players need at least {n} games to appear.'**
+  String groupStatsInfoMinGames(int n);
 
   /// No description provided for @groupStatsTogether.
   ///

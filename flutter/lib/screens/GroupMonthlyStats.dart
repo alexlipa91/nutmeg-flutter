@@ -1,7 +1,12 @@
+import 'dart:math' show min;
+
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:nutmeg/api/CloudFunctionsUtils.dart';
 import 'package:nutmeg/l10n/app_localizations.dart';
+import 'package:nutmeg/model/UserDetails.dart';
 import 'package:nutmeg/state/UsersState.dart';
 import 'package:nutmeg/utils/CrashlyticsLogger.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
@@ -13,7 +18,6 @@ import 'package:provider/provider.dart';
 final _logger = CrashlyticsLogger("GroupMonthlyStats");
 
 final _gold = UiUtils.fromHex("#F5B83D");
-final _heroDark = UiUtils.fromHex("#1F2A7A");
 
 /// Monthly ranking of the players in an organizer's matches: one table with
 /// each player's score, wins and average rating, over the rated games.
@@ -276,6 +280,17 @@ class _GroupMonthlyStatsState extends State<GroupMonthlyStats> {
     var improver = !monthly || isCurrentMonth
         ? null
         : data["best_improver"] as Map<String, dynamic>?;
+    var improverEntry = improver == null
+        ? null
+        : ranking.where((e) => e["user_id"] == improver["user_id"]).firstOrNull;
+    var users = context.watch<UsersState>();
+    // special cards, swiped sideways; only for a finished month
+    // (player, look, title, whether the card is about the change)
+    var specials = <(Map<String, dynamic>, _FifaTheme, String, bool)>[
+      if (potm != null) (potm, _FifaTheme.gold, "POTM", false),
+      if (improverEntry != null)
+        (improverEntry, _FifaTheme.blue, "ON FIRE", true),
+    ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -293,17 +308,27 @@ class _GroupMonthlyStatsState extends State<GroupMonthlyStats> {
           Padding(
               padding: EdgeInsets.only(top: 40),
               child: Center(child: Text(l10n.groupStatsEmpty))),
-        if (potm != null) ...[
-          _PlayerOfTheMonthCard(
-              key: ValueKey("potm-$_month"),
-              potm: potm,
-              runnersUp: ranking.skip(1).take(2).toList(),
-              l10n: l10n),
-          SizedBox(height: 16),
-        ],
-        if (improver != null) ...[
-          _BestImproverCard(improver: improver, l10n: l10n),
-          SizedBox(height: 16),
+        if (specials.isNotEmpty) ...[
+          LayoutBuilder(builder: (context, c) {
+            // the card in the middle is full size, the next ones peek in
+            var itemWidth = min(240.0, c.maxWidth * 0.58);
+            var fraction = (itemWidth + 20) / c.maxWidth;
+            return _SpecialCards(
+              key: ValueKey("specials-$_month-${fraction.toStringAsFixed(3)}"),
+              count: specials.length,
+              itemWidth: itemWidth,
+              fraction: fraction,
+              builder: (i, width) => _FifaCard(
+                  entry: specials[i].$1,
+                  user: users.getUserDetail(specials[i].$1["user_id"]),
+                  period: data["month"] as String,
+                  theme: specials[i].$2,
+                  title: specials[i].$3,
+                  emphasizeChange: specials[i].$4,
+                  maxWidth: width),
+            );
+          }),
+          SizedBox(height: 8),
         ],
         if (ranking.isNotEmpty) ...[
           _RankingTable(
@@ -311,15 +336,20 @@ class _GroupMonthlyStatsState extends State<GroupMonthlyStats> {
               key: ValueKey("ranking-$_tab-$_month"),
               ranking: ranking,
               highlightFirst: !monthly || !isCurrentMonth,
+              period: data["month"] as String,
               l10n: l10n),
           Padding(
               padding: EdgeInsets.fromLTRB(4, 12, 4, 0),
               child: Text(
                   switch (data["ranking_source"]) {
-                    "month" => l10n.groupStatsInfoMonth,
-                    "last_games" => l10n.groupStatsInfoLastGames,
-                    _ => l10n.groupStatsInfoPeriod,
-                  },
+                        "month" => l10n.groupStatsInfoMonth,
+                        "last_games" => l10n.groupStatsInfoLastGames,
+                        _ => l10n.groupStatsInfoPeriod,
+                      } +
+                      // the year and all time leave out players with few games
+                      (((data["ranking_min_games"] as int?) ?? 0) > 0
+                          ? " ${l10n.groupStatsInfoMinGames(data["ranking_min_games"])}"
+                          : ""),
                   style: TextPalette.getBodyText(Palette.greyDark)
                       .copyWith(fontSize: 12))),
         ],
@@ -348,178 +378,530 @@ class _EmptyState extends StatelessWidget {
   }
 }
 
-class _Pill extends StatelessWidget {
-  final String text;
-  final Color color;
-  final bool onDark;
-
-  const _Pill(this.text, this.color, {this.onDark = false});
+class _FifaCardClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size s) {
+    final w = s.width, h = s.height;
+    return Path()
+      ..moveTo(w * 0.10, h * 0.02)
+      ..quadraticBezierTo(w * 0.5, 0, w * 0.90, h * 0.02)
+      ..quadraticBezierTo(w * 0.90, h * 0.07, w, h * 0.09)
+      ..lineTo(w, h * 0.86)
+      ..cubicTo(w, h * 0.93, w * 0.65, h * 0.95, w * 0.5, h)
+      ..cubicTo(w * 0.35, h * 0.95, 0, h * 0.93, 0, h * 0.86)
+      ..lineTo(0, h * 0.09)
+      ..quadraticBezierTo(w * 0.10, h * 0.07, w * 0.10, h * 0.02)
+      ..close();
+  }
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: onDark
-            ? Colors.white.withValues(alpha: 0.18)
-            : color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(text,
-          style: TextPalette.getBodyText(onDark ? Colors.white : color)
-              .copyWith(fontWeight: FontWeight.w600)),
-    );
-  }
+  bool shouldReclip(_) => false;
 }
 
-class _PlayerOfTheMonthCard extends StatelessWidget {
-  final Map<String, dynamic> potm;
-  final List<Map<String, dynamic>> runnersUp;
-  final AppLocalizations l10n;
+class _StripesPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size s) {
+    final area = Rect.fromLTWH(0, 0, s.width, s.height * 0.65);
+    final paint = Paint()
+      ..strokeWidth = 1
+      ..shader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [Colors.white54, Colors.transparent],
+      ).createShader(area);
+    final step = s.width * 0.014;
+    for (double x = -area.height; x < s.width; x += step) {
+      canvas.drawLine(
+          Offset(x, area.height), Offset(x + area.height, 0), paint);
+    }
+  }
 
-  const _PlayerOfTheMonthCard(
+  @override
+  bool shouldRepaint(_) => false;
+}
+
+/// Cards in a row to swipe: the one in the middle is full size, the others
+/// shrink and fade as they move away.
+class _SpecialCards extends StatefulWidget {
+  final int count;
+  final double itemWidth; // width of the card in the middle
+  final double fraction; // share of the width each page takes
+  final Widget Function(int index, double width) builder;
+
+  const _SpecialCards(
       {Key? key,
-      required this.potm,
-      required this.runnersUp,
-      required this.l10n})
+      required this.count,
+      required this.itemWidth,
+      required this.fraction,
+      required this.builder})
       : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    var ud = context.watch<UsersState>().getUserDetail(potm["user_id"]);
-    var name = ud?.name?.split(" ").first ?? "…";
+  State<_SpecialCards> createState() => _SpecialCardsState();
+}
 
-    var card = Container(
-      width: double.infinity,
-      padding: EdgeInsets.fromLTRB(20, 20, 20, 16),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Palette.primary, _heroDark],
-        ),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-              color: Palette.primary.withValues(alpha: 0.35),
-              blurRadius: 24,
-              offset: Offset(0, 12)),
-        ],
-      ),
-      child: Column(children: [
-        Text(l10n.groupStatsPlayerOfMonth,
-            style: TextPalette.getBodyText(Colors.white70)
-                .copyWith(fontWeight: FontWeight.w600)),
-        SizedBox(height: 16),
-        Container(
-          padding: EdgeInsets.all(4),
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(color: _gold, width: 3),
-            boxShadow: [
-              BoxShadow(color: _gold.withValues(alpha: 0.5), blurRadius: 22),
-            ],
+class _SpecialCardsState extends State<_SpecialCards> {
+  late final PageController _controller =
+      PageController(viewportFraction: widget.fraction);
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ScrollConfiguration(
+      // swipe with a finger, a trackpad or the mouse
+      behavior: ScrollConfiguration.of(context).copyWith(dragDevices: {
+        PointerDeviceKind.touch,
+        PointerDeviceKind.mouse,
+        PointerDeviceKind.trackpad,
+      }),
+      child: SizedBox(
+        // card height plus room for its shadow
+        height: widget.itemWidth * 800 / 576 + 28,
+        child: PageView.builder(
+          controller: _controller,
+          itemCount: widget.count,
+          itemBuilder: (context, i) => AnimatedBuilder(
+            animation: _controller,
+            builder: (context, _) {
+              var page =
+                  _controller.hasClients && _controller.position.haveDimensions
+                      ? _controller.page!
+                      : 0.0;
+              var away = (page - i).abs().clamp(0.0, 1.0);
+              return Align(
+                child: Opacity(
+                  opacity: 1 - 0.4 * away,
+                  child: Transform.scale(
+                    scale: 1 - 0.22 * away,
+                    child: SizedBox(
+                        width: widget.itemWidth,
+                        child: widget.builder(i, widget.itemWidth)),
+                  ),
+                ),
+              );
+            },
           ),
-          child: UserAvatar(44, ud),
         ),
-        SizedBox(height: 12),
-        Text(name,
-            style: TextPalette.h1Default
-                .copyWith(color: Colors.white, fontSize: 30)),
-        SizedBox(height: 12),
-        Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            alignment: WrapAlignment.center,
-            children: [
-              _Pill("${potm["score"]} OVR", Colors.white, onDark: true),
-              _Pill("${potm["wins"]} ${l10n.groupStatsWinsWord}", Colors.white,
-                  onDark: true),
-              _Pill(
-                  "${(potm["avg_rating"] as num).toStringAsFixed(2)} ${l10n.groupStatsRatingWord}",
-                  Colors.white,
-                  onDark: true),
-            ]),
-        if (runnersUp.isNotEmpty) ...[
-          SizedBox(height: 16),
-          Divider(color: Colors.white24, height: 1),
-          SizedBox(height: 12),
-          Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-            for (var i = 0; i < runnersUp.length; i++) ...[
-              if (i > 0) SizedBox(width: 24),
-              _RunnerUp(rank: i + 2, userId: runnersUp[i]["user_id"]),
-            ],
-          ]),
-        ],
+      ),
+    );
+  }
+}
+
+/// Colours and background effect of a card.
+class _FifaTheme {
+  final List<Color> gradient;
+  final List<double> stops;
+  final Color ink;
+  final Color ring;
+  final bool electric;
+
+  const _FifaTheme(
+      {required this.gradient,
+      required this.stops,
+      required this.ink,
+      required this.ring,
+      this.electric = false});
+
+  static const gold = _FifaTheme(gradient: [
+    Color(0xFFF6DE8D),
+    Color(0xFFD9B04A),
+    Color(0xFFF2D77A),
+    Color(0xFFC9A03C),
+  ], stops: [
+    0,
+    0.4,
+    0.7,
+    1
+  ], ink: Color(0xFF3B2A06), ring: Color(0xFF9A7620));
+
+  static const silver = _FifaTheme(gradient: [
+    Color(0xFFF2F4F7),
+    Color(0xFFB9C0CA),
+    Color(0xFFE6E9EE),
+    Color(0xFF9AA3AF),
+  ], stops: [
+    0,
+    0.4,
+    0.7,
+    1
+  ], ink: Color(0xFF2B3036), ring: Color(0xFF7B8490));
+
+  static const bronze = _FifaTheme(gradient: [
+    Color(0xFFE8B48A),
+    Color(0xFFB87333),
+    Color(0xFFD9956B),
+    Color(0xFF8A4F22),
+  ], stops: [
+    0,
+    0.4,
+    0.7,
+    1
+  ], ink: Color(0xFF2E1706), ring: Color(0xFF6E3B14));
+
+  static const blue = _FifaTheme(gradient: [
+    Color(0xFF1747FF),
+    Color(0xFF0096FF),
+    Color(0xFF2230E0),
+    Color(0xFF0A1A8C),
+  ], stops: [
+    0,
+    0.35,
+    0.7,
+    1
+  ], ink: Colors.white, ring: Color(0xFF9FE9FF), electric: true);
+}
+
+/// Glow behind the picture and a couple of lightning bolts, for the blue card.
+class _ElectricPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size s) {
+    final w = s.width, h = s.height;
+    canvas.drawRect(
+        Offset.zero & s,
+        Paint()
+          ..shader =
+              RadialGradient(colors: [Color(0xAA7FE8FF), Color(0x007FE8FF)])
+                  .createShader(Rect.fromCircle(
+                      center: Offset(w * 0.62, h * 0.34), radius: w * 0.6)));
+    final glow = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3
+      ..color = Color(0x557FE8FF)
+      ..maskFilter = MaskFilter.blur(BlurStyle.normal, 3);
+    final core = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1
+      ..color = Color(0xCCFFFFFF);
+    for (final pts in [
+      [
+        [0.06, 0.0],
+        [0.14, 0.08],
+        [0.07, 0.15],
+        [0.15, 0.25],
+        [0.09, 0.32],
+        [0.16, 0.44]
+      ],
+      [
+        [0.95, 0.06],
+        [0.88, 0.16],
+        [0.95, 0.24],
+        [0.89, 0.36],
+        [0.94, 0.46]
+      ],
+    ]) {
+      final path = Path()..moveTo(pts[0][0] * w, pts[0][1] * h);
+      for (final q in pts.skip(1)) {
+        path.lineTo(q[0] * w, q[1] * h);
+      }
+      canvas.drawPath(path, glow);
+      canvas.drawPath(path, core);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_) => false;
+}
+
+/// Thin darker outline inside the card edge, like the border of a real card.
+class _InsetBorderPainter extends CustomPainter {
+  final Color color;
+
+  _InsetBorderPainter(this.color);
+
+  @override
+  void paint(Canvas canvas, Size s) {
+    final m = Matrix4.identity()
+      ..translate(s.width / 2, s.height / 2)
+      ..scale(0.94, 0.95)
+      ..translate(-s.width / 2, -s.height / 2);
+    canvas.drawPath(
+        _FifaCardClipper().getClip(s).transform(m.storage),
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.2
+          ..color = color.withValues(alpha: 0.33));
+  }
+
+  @override
+  bool shouldRepaint(_) => false;
+}
+
+/// A player's card for a period: `entry` is the player's row of the ranking.
+/// `title` marks a special card (POTM, ...); without one it is a plain card.
+class _FifaCard extends StatelessWidget {
+  final Map<String, dynamic> entry;
+  final UserDetails? user;
+  final String period; // yyyyMM, yyyy or "all"
+  final _FifaTheme theme;
+  final String? title;
+  final double maxWidth;
+  // the card is about the change since last month: show it big
+  final bool emphasizeChange;
+
+  const _FifaCard(
+      {Key? key,
+      required this.entry,
+      required this.user,
+      required this.period,
+      required this.theme,
+      this.title,
+      this.maxWidth = 200,
+      this.emphasizeChange = false})
+      : super(key: key);
+
+  Color get _ink => theme.ink;
+
+  /// Light edge on dark text, dark edge on light text.
+  Color get _edge => _ink.computeLuminance() > 0.5
+      ? Colors.black.withValues(alpha: 0.35)
+      : Colors.white.withValues(alpha: 0.55);
+
+  TextStyle _text(double size, FontWeight weight,
+          {double? spacing, double height = 1}) =>
+      GoogleFonts.oswald(
+          color: _ink,
+          fontSize: size,
+          fontWeight: weight,
+          letterSpacing: spacing,
+          height: height,
+          shadows: [Shadow(color: _edge, offset: Offset(0, 0.8))]);
+
+  /// Label on top, number below, sharing the row equally.
+  Widget _statColumn(String label, String value, double w) {
+    return Expanded(
+      child: Column(mainAxisSize: MainAxisSize.min, children: [
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(label,
+              style: _text(w * 0.046, FontWeight.w500, height: 1.2)),
+        ),
+        Text(value, style: _text(w * 0.09, FontWeight.w700, height: 1.1)),
       ]),
     );
+  }
 
-    return TweenAnimationBuilder<double>(
-      tween: Tween(begin: 0.92, end: 1.0),
-      duration: Duration(milliseconds: 450),
-      curve: Curves.easeOutBack,
-      builder: (context, scale, child) => Opacity(
-        opacity: ((scale - 0.92) / 0.08).clamp(0.0, 1.0),
-        child: Transform.scale(scale: scale, child: child),
-      ),
-      child: card,
+  Widget _statSeparator(double w) =>
+      Container(width: 1, height: w * 0.1, color: _ink.withValues(alpha: 0.25));
+
+  String _cardName() {
+    final name = (user?.name ?? "…").trim();
+    final parts = name.split(RegExp(r'\s+'));
+    return (name.length > 14 && parts.length > 1 ? parts.last : name)
+        .toUpperCase();
+  }
+
+  String _periodLabel(BuildContext context) {
+    if (period == "all") {
+      return AppLocalizations.of(context)!.groupStatsTabAllTime.toUpperCase();
+    }
+    if (period.length == 4) return period;
+    return DateFormat("MMM yyyy", Localizations.localeOf(context).toString())
+        .format(DateTime(
+            int.parse(period.substring(0, 4)), int.parse(period.substring(4))))
+        .toUpperCase();
+  }
+
+  /// Change since last month: arrow and number, green up and red down.
+  Widget _changeChip(num change, double w, {double scale = 1}) {
+    final up = change > 0;
+    final color = up ? Color(0xFF1B6B33) : Color(0xFF9B2226);
+    return Container(
+      padding: EdgeInsets.fromLTRB(w * 0.005 * scale, w * 0.005 * scale,
+          w * 0.02 * scale, w * 0.005 * scale),
+      decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.7),
+          borderRadius: BorderRadius.circular(w)),
+      child: Row(mainAxisSize: MainAxisSize.min, children: [
+        Icon(up ? Icons.arrow_drop_up : Icons.arrow_drop_down,
+            size: w * 0.07 * scale, color: color),
+        Text(up ? "+$change" : "$change",
+            style: GoogleFonts.oswald(
+                color: color,
+                fontSize: w * 0.05 * scale,
+                height: 1,
+                fontWeight: FontWeight.w700)),
+      ]),
     );
   }
-}
-
-class _RunnerUp extends StatelessWidget {
-  final int rank;
-  final String userId;
-
-  const _RunnerUp({required this.rank, required this.userId});
 
   @override
   Widget build(BuildContext context) {
-    var ud = context.watch<UsersState>().getUserDetail(userId);
-    return Row(mainAxisSize: MainAxisSize.min, children: [
-      Text(rank == 2 ? "🥈" : "🥉", style: TextStyle(fontSize: 18)),
-      SizedBox(width: 6),
-      UserAvatar(14, ud),
-      SizedBox(width: 8),
-      Text(ud?.name?.split(" ").first ?? "…",
-          style: TextPalette.getBodyText(Colors.white)),
-    ]);
-  }
-}
-
-class _BestImproverCard extends StatelessWidget {
-  final Map<String, dynamic> improver;
-  final AppLocalizations l10n;
-
-  const _BestImproverCard({required this.improver, required this.l10n});
-
-  @override
-  Widget build(BuildContext context) {
-    return InfoContainer(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(children: [
-            Container(
-              padding: EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                  color: Palette.green.withValues(alpha: 0.14),
-                  shape: BoxShape.circle),
-              child: Icon(Icons.trending_up, size: 18, color: Palette.green),
-            ),
-            SizedBox(width: 10),
-            Text(l10n.groupStatsBestImprover, style: TextPalette.h4),
-          ]),
-          SizedBox(height: 12),
-          Row(children: [
-            Expanded(
-                child: _PlayerName(userId: improver["user_id"], radius: 18)),
-            Text("${improver["previous_score"]} → ${improver["score"]}",
-                style: TextPalette.getBodyText(Palette.greyDark)),
-            SizedBox(width: 8),
-            _Pill("+${improver["change"]}", Palette.green),
-          ]),
-        ],
+    num? change = entry["change"];
+    var label = _periodLabel(context);
+    return Center(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: maxWidth),
+        child: AspectRatio(
+          aspectRatio: 576 / 800,
+          child: LayoutBuilder(builder: (context, c) {
+            final w = c.maxWidth;
+            final h = c.maxHeight;
+            return Stack(
+                alignment: Alignment.topCenter,
+                clipBehavior: Clip.none,
+                children: [
+                  Positioned.fill(
+                    child: PhysicalShape(
+                      clipper: _FifaCardClipper(),
+                      color: theme.gradient[1],
+                      elevation: 8,
+                      shadowColor: Colors.black87,
+                      clipBehavior: Clip.antiAlias,
+                      child: Stack(fit: StackFit.expand, children: [
+                        DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: theme.gradient,
+                              stops: theme.stops,
+                            ),
+                          ),
+                        ),
+                        CustomPaint(
+                            painter: theme.electric
+                                ? _ElectricPainter()
+                                : _StripesPainter()),
+                        DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment(-1, -0.3),
+                              end: Alignment(1, 0.3),
+                              colors: [
+                                Colors.transparent,
+                                Colors.white.withValues(alpha: 0.5),
+                                Colors.transparent,
+                              ],
+                              stops: [0.25, 0.5, 0.75],
+                            ),
+                          ),
+                        ),
+                        CustomPaint(painter: _InsetBorderPainter(_ink)),
+                      ]),
+                    ),
+                  ),
+                  if (title != null)
+                    Positioned(
+                      top: h * 0.065,
+                      left: w * 0.1,
+                      right: w * 0.1,
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(title!,
+                            style: GoogleFonts.bebasNeue(
+                                color: _ink,
+                                fontSize: w * 0.17,
+                                height: 1,
+                                letterSpacing:
+                                    title!.length <= 4 ? w * 0.08 : w * 0.03,
+                                shadows: [
+                                  Shadow(color: _edge, offset: Offset(0, 0.8))
+                                ])),
+                      ),
+                    ),
+                  Positioned(
+                    top: title == null ? h * 0.1 : h * 0.166,
+                    left: 0,
+                    right: 0,
+                    child: Text(label,
+                        textAlign: TextAlign.center,
+                        style: title == null
+                            ? _text(w * 0.07, FontWeight.w600,
+                                spacing: w * 0.03)
+                            : _text(w * 0.062, FontWeight.w600,
+                                spacing: w * 0.025)),
+                  ),
+                  Positioned(
+                    top: h * 0.215,
+                    left: w * 0.08,
+                    width: emphasizeChange ? w * 0.28 : w * 0.26,
+                    // as tall as the picture, so the number sits level with it
+                    height: w * 0.39,
+                    child: Center(
+                        child:
+                            Column(mainAxisSize: MainAxisSize.min, children: [
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text("${entry["score"]}",
+                            style: _text(w * 0.2, FontWeight.w700)),
+                      ),
+                      Text("OVR", style: _text(w * 0.055, FontWeight.w500)),
+                      if (change != null && change != 0) ...[
+                        SizedBox(height: w * 0.025),
+                        FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: _changeChip(change, w,
+                                scale: emphasizeChange ? 2 : 1)),
+                      ],
+                    ])),
+                  ),
+                  Positioned(
+                    top: h * 0.215,
+                    left: w * 0.38,
+                    child: Container(
+                      padding: EdgeInsets.all(w * 0.01),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: theme.ring, width: 1.6),
+                        boxShadow: [
+                          BoxShadow(
+                              color: Colors.black38,
+                              blurRadius: 6,
+                              offset: Offset(0, 2)),
+                        ],
+                      ),
+                      child: UserAvatar(w * 0.22, user),
+                    ),
+                  ),
+                  Positioned(
+                    top: h * 0.585,
+                    left: w * 0.12,
+                    right: w * 0.12,
+                    child: Container(
+                      height: 1,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(colors: [
+                          _ink.withValues(alpha: 0),
+                          _ink.withValues(alpha: 0.67),
+                          _ink.withValues(alpha: 0),
+                        ]),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    top: h * 0.6,
+                    left: w * 0.08,
+                    right: w * 0.08,
+                    child: Text(
+                      _cardName(),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: _text(w * 0.105, FontWeight.w700,
+                          spacing: w * 0.012, height: 1.2),
+                    ),
+                  ),
+                  Positioned(
+                    top: h * 0.735,
+                    left: w * 0.1,
+                    right: w * 0.1,
+                    child: Row(children: [
+                      _statColumn("MATCHES", "${entry["played"]}", w),
+                      _statSeparator(w),
+                      _statColumn("WINS", "${entry["wins"]}", w),
+                      _statSeparator(w),
+                      _statColumn("AVG SCORE",
+                          (entry["avg_rating"] as num).toStringAsFixed(2), w),
+                    ]),
+                  ),
+                ]);
+          }),
+        ),
       ),
     );
   }
@@ -549,12 +931,14 @@ class _RankingTable extends StatefulWidget {
   final List<Map<String, dynamic>> ranking;
   // gold row and trophy for the player at the top
   final bool highlightFirst;
+  final String period; // yyyyMM, yyyy or "all"
   final AppLocalizations l10n;
 
   const _RankingTable(
       {Key? key,
       required this.ranking,
       required this.highlightFirst,
+      required this.period,
       required this.l10n})
       : super(key: key);
 
@@ -676,32 +1060,62 @@ class _RankingTableState extends State<_RankingTable> {
     );
   }
 
+  /// A plain card of the player, closed by tapping anywhere.
+  void _showCard(Map<String, dynamic> p) {
+    var user = context.read<UsersState>().getUserDetail(p["user_id"]);
+    showDialog(
+      context: context,
+      builder: (dialogContext) => Dialog(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        insetPadding: EdgeInsets.all(24),
+        child: GestureDetector(
+          onTap: () => Navigator.of(dialogContext).pop(),
+          child: _FifaCard(
+              entry: p,
+              user: user,
+              period: widget.period,
+              // gold above 80, silver above 70, bronze below
+              theme: (p["score"] as num) > 80
+                  ? _FifaTheme.gold
+                  : (p["score"] as num) > 70
+                      ? _FifaTheme.silver
+                      : _FifaTheme.bronze,
+              maxWidth: 260),
+        ),
+      ),
+    );
+  }
+
   Widget _row(int i, Map<String, dynamic> p) {
     // the winner keeps the gold row wherever the sorting puts them
     var top = widget.highlightFirst &&
         p["user_id"] == widget.ranking.first["user_id"];
-    return Container(
-      padding: EdgeInsets.symmetric(vertical: 8),
-      decoration: top
-          ? BoxDecoration(
-              color: _gold.withValues(alpha: 0.14),
-              borderRadius: BorderRadius.circular(10))
-          : null,
-      child: Row(children: [
-        SizedBox(
-            width: 28,
-            child: Center(
-                child: top
-                    ? Icon(Icons.emoji_events, size: 16, color: _gold)
-                    : Text("${i + 1}",
-                        style: TextPalette.getBodyText(Palette.greyDark)
-                            .copyWith(fontSize: 13)))),
-        Expanded(child: _PlayerName(userId: p["user_id"], radius: 15)),
-        _cell("${p["score"]}", bold: true),
-        if (_showChange) _change(p["change"] as num?),
-        _cell("${p["wins"]}"),
-        _cell((p["avg_rating"] as num).toStringAsFixed(2)),
-      ]),
-    );
+    return InkWell(
+        // cards are for a month; the year and all time have none
+        onTap: widget.period.length == 6 ? () => _showCard(p) : null,
+        child: Container(
+          padding: EdgeInsets.symmetric(vertical: 8),
+          decoration: top
+              ? BoxDecoration(
+                  color: _gold.withValues(alpha: 0.14),
+                  borderRadius: BorderRadius.circular(10))
+              : null,
+          child: Row(children: [
+            SizedBox(
+                width: 28,
+                child: Center(
+                    child: top
+                        ? Icon(Icons.emoji_events, size: 16, color: _gold)
+                        : Text("${i + 1}",
+                            style: TextPalette.getBodyText(Palette.greyDark)
+                                .copyWith(fontSize: 13)))),
+            Expanded(child: _PlayerName(userId: p["user_id"], radius: 15)),
+            _cell("${p["score"]}", bold: true),
+            if (_showChange) _change(p["change"] as num?),
+            _cell("${p["wins"]}"),
+            _cell((p["avg_rating"] as num).toStringAsFixed(2)),
+          ]),
+        ));
   }
 }

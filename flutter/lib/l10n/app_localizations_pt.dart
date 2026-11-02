@@ -959,9 +959,6 @@ class AppLocalizationsPt extends AppLocalizations {
       'OVR é a pontuação geral: 60% as tuas vitórias este mês, 40% os teus últimos 5 jogos avaliados. As notas deste mês serão usadas quando todos no grupo tiverem sido avaliados.';
 
   @override
-  String get groupStatsBestImprover => 'Maior evolução';
-
-  @override
   String get groupStatsTabMonthly => 'Mensal';
 
   @override
@@ -970,6 +967,11 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get groupStatsInfoPeriod =>
       'OVR é a pontuação geral: 60% as tuas vitórias, 40% a tua nota média dos jogos neste período.';
+
+  @override
+  String groupStatsInfoMinGames(int n) {
+    return 'São precisos pelo menos $n jogos para aparecer.';
+  }
 
   @override
   String get groupStatsTogether => 'juntos';

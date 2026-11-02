@@ -292,10 +292,15 @@
     "groupStatsRatingShort": "Nota",
     "groupStatsInfoMonth": "OVR é a pontuação geral: 60% as tuas vitórias este mês, 40% as tuas notas dos jogos deste mês.",
     "groupStatsInfoLastGames": "OVR é a pontuação geral: 60% as tuas vitórias este mês, 40% os teus últimos 5 jogos avaliados. As notas deste mês serão usadas quando todos no grupo tiverem sido avaliados.",
-    "groupStatsBestImprover": "Maior evolução",
     "groupStatsTabMonthly": "Mensal",
     "groupStatsTabAllTime": "Sempre",
     "groupStatsInfoPeriod": "OVR é a pontuação geral: 60% as tuas vitórias, 40% a tua nota média dos jogos neste período.",
+    "groupStatsInfoMinGames": "São precisos pelo menos {n} jogos para aparecer.",
+    "@groupStatsInfoMinGames": {
+        "placeholders": {
+            "n": {"type": "int"}
+        }
+    },
     "groupStatsTogether": "juntos",
     "groupStatsPlayerOfMonth": "Jogador do mês",
     "groupStatsWinsWord": "vitórias",

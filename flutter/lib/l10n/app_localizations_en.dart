@@ -947,9 +947,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'OVR is the overall score: 60% your wins this month, 40% your last 5 rated games. This month\'s ratings are used once everyone in the group has been rated.';
 
   @override
-  String get groupStatsBestImprover => 'Best improver';
-
-  @override
   String get groupStatsTabMonthly => 'Monthly';
 
   @override
@@ -958,6 +955,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get groupStatsInfoPeriod =>
       'OVR is the overall score: 60% your wins, 40% your average match rating over this period.';
+
+  @override
+  String groupStatsInfoMinGames(int n) {
+    return 'Players need at least $n games to appear.';
+  }
 
   @override
   String get groupStatsTogether => 'together';
