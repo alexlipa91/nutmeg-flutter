@@ -40,7 +40,7 @@ from src.utils import (
     NUTMEG_FEE_CENTS,
 )
 from flask import current_app as app
-from src.models._ratings import Ratings
+from src.models._ratings import Ratings, clean_skills
 from src import match_preview, pair_stats
 
 bp = Blueprint("matches", __name__, url_prefix="/matches")
@@ -450,6 +450,25 @@ def add_rating_multi(match_id):
     return {}
 
 
+@bp.route("/<match_id>/ratings/skills", methods=["POST"])
+def add_rating_skills(match_id):
+    """Traits the logged in player gave to the players they rated, optional:
+    {rated_user_id: [trait, ...]}. What is not valid is dropped."""
+    is_test = _is_test_from_request()
+    match = MatchModel.get_by_id(match_id, app.db_client, is_test=is_test)
+    if not match:
+        return {"error": "Match not found"}, 404
+    if flask.g.uid not in match.going:
+        return {"error": "User not authorized"}, 403
+
+    skills = clean_skills(flask.request.get_json(), flask.g.uid, set(match.going))
+    if skills:
+        Ratings.add_skills(
+            match_id, flask.g.uid, skills, app.db_client, is_test=is_test
+        )
+    return {}, 200
+
+
 @bp.route("/<match_id>/awards/add", methods=["POST"])
 def add_match_awards(match_id):
     """Add awards for a match. The request data should be a map of award_id -> user_id.
@@ -535,6 +554,17 @@ def get_ratings_given_by_user(match_id):
         return {"data": {}}, 200
 
     return {"data": ratings.get_ratings_given_by(flask.g.uid)}, 200
+
+
+@bp.route("/<match_id>/ratings/skills/given", methods=["GET"])
+def get_skills_given_by_user(match_id):
+    """Return the traits given by the authenticated user for this match."""
+    is_test = _is_test_from_request()
+    ratings = Ratings.get_by_match_id(match_id, app.db_client, is_test=is_test)
+    if not ratings:
+        return {"data": {}}, 200
+
+    return {"data": ratings.get_skills_given_by(flask.g.uid)}, 200
 
 
 @bp.route("/<match_id>/awards/given", methods=["GET"])

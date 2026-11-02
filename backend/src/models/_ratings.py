@@ -10,6 +10,43 @@ from typing import Any, Dict, List, Optional
 from google.cloud.firestore_v1.client import Client
 
 
+# What a player can be tagged for when rating, one tap each and optional. Each is
+# a vote for a FIFA-style attribute: fast (pace), shooter (shooting),
+# great_passer (passing), dribbler (dribbling), solid_defender (defending),
+# strong (physical) and great_in_goal (goalkeeping).
+TRAITS = (
+    "fast",
+    "shooter",
+    "great_passer",
+    "dribbler",
+    "solid_defender",
+    "strong",
+    "great_in_goal",
+)
+# So that a trait means something, a rater can pick only a couple per player.
+MAX_TRAITS_PER_PLAYER = 2
+
+
+def clean_skills(skills: Any, rater_id: str, players: Any) -> Dict[str, List[str]]:
+    """Keep what is valid in {rated_user_id: [trait, ...]} from a rater: only
+    players of the match other than the rater, only known traits, no repeats and
+    no more than MAX_TRAITS_PER_PLAYER."""
+    if not isinstance(skills, dict):
+        return {}
+    cleaned: Dict[str, List[str]] = {}
+    for rated_user_id, traits in skills.items():
+        if rated_user_id == rater_id or rated_user_id not in players:
+            continue
+        if not isinstance(traits, list):
+            continue
+        picked: List[str] = []
+        for trait in traits:
+            if trait in TRAITS and trait not in picked:
+                picked.append(trait)
+        cleaned[rated_user_id] = picked[:MAX_TRAITS_PER_PLAYER]
+    return cleaned
+
+
 def ratings_ref(match_id: str, db: Client, is_test: bool = False):
     """Return a DocumentReference for matches/{matchId}/ratings/data."""
     coll = "matches_test" if is_test else "matches"
@@ -110,6 +147,14 @@ class Ratings:
                 given[rated_user_id] = raters[user_id]
         return given
 
+    def get_skills_given_by(self, user_id: str) -> Dict[str, List[str]]:
+        """Return {rated_user_id: [trait, ...]} for traits given BY this user."""
+        given: Dict[str, List[str]] = {}
+        for rated_user_id, raters in self.skills.items():
+            if user_id in raters:
+                given[rated_user_id] = list(raters[user_id])
+        return given
+
     def is_computed(self) -> bool:
         """Return True if final scores have been computed."""
         return bool(self.final_scores)
@@ -125,6 +170,18 @@ class Ratings:
         update: Dict[str, Any] = {"scores": {}}
         for rated_user_id, score in scores.items():
             update["scores"][rated_user_id] = {rater_id: score}
+        ratings_ref(match_id, db, is_test=is_test).set(update, merge=True)
+
+    @staticmethod
+    def add_skills(match_id: str, rater_id: str, skills: Dict[str, List[str]], db: Client, is_test: bool = False) -> None:
+        """Add the traits one rater gave to several rated users, replacing what
+        they gave before (an empty list takes the traits back).
+
+        skills: {rated_user_id: [trait, ...]}
+        """
+        update: Dict[str, Any] = {"skills": {}}
+        for rated_user_id, traits in skills.items():
+            update["skills"][rated_user_id] = {rater_id: traits}
         ratings_ref(match_id, db, is_test=is_test).set(update, merge=True)
 
     @staticmethod
