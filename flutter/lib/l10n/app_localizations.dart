@@ -858,6 +858,12 @@ abstract class AppLocalizations {
   /// **'Picture'**
   String get pictureTitleText;
 
+  /// No description provided for @changePhotoAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Change photo'**
+  String get changePhotoAction;
+
   /// No description provided for @informationTitleText.
   ///
   /// In en, this message translates to:
@@ -1068,6 +1074,12 @@ abstract class AppLocalizations {
   /// **'Add traits'**
   String get traitsAdd;
 
+  /// No description provided for @profileCardAttributesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Your attributes appear once enough teammates have given you traits.'**
+  String get profileCardAttributesHint;
+
   /// No description provided for @ratePlayersButtonText.
   ///
   /// In en, this message translates to:
@@ -1122,23 +1134,11 @@ abstract class AppLocalizations {
   /// **'POTM'**
   String get numPlayersOfTheMatchBoxTitle;
 
-  /// No description provided for @numMatchesDrawBoxTitle.
+  /// No description provided for @winPercentBoxTitle.
   ///
   /// In en, this message translates to:
-  /// **'Draws'**
-  String get numMatchesDrawBoxTitle;
-
-  /// No description provided for @numMatchesWonBoxTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Wins'**
-  String get numMatchesWonBoxTitle;
-
-  /// No description provided for @numMatchesLostBoxTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Losses'**
-  String get numMatchesLostBoxTitle;
+  /// **'Win %'**
+  String get winPercentBoxTitle;
 
   /// No description provided for @averageScoreBoxTitle.
   ///

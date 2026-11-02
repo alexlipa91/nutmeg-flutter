@@ -439,6 +439,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pictureTitleText => 'Picture';
 
   @override
+  String get changePhotoAction => 'Change photo';
+
+  @override
   String get informationTitleText => 'Information';
 
   @override
@@ -549,6 +552,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get traitsAdd => 'Add traits';
 
   @override
+  String get profileCardAttributesHint =>
+      'Your attributes appear once enough teammates have given you traits.';
+
+  @override
   String get ratePlayersButtonText => 'RATE PLAYERS';
 
   @override
@@ -576,13 +583,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get numPlayersOfTheMatchBoxTitle => 'POTM';
 
   @override
-  String get numMatchesDrawBoxTitle => 'Draws';
-
-  @override
-  String get numMatchesWonBoxTitle => 'Wins';
-
-  @override
-  String get numMatchesLostBoxTitle => 'Losses';
+  String get winPercentBoxTitle => 'Win %';
 
   @override
   String get averageScoreBoxTitle => 'Avg. Score';

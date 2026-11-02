@@ -1,3 +1,5 @@
+import 'dart:math' show pi;
+
 import 'package:badges/badges.dart';
 import 'package:circle_flags/circle_flags.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
@@ -13,6 +15,7 @@ import 'package:nutmeg/utils/Utils.dart';
 import 'package:nutmeg/widgets/Avatar.dart';
 import 'package:nutmeg/widgets/ButtonsWithLoader.dart';
 import 'package:nutmeg/widgets/Containers.dart';
+import 'package:nutmeg/widgets/FifaCard.dart';
 import 'package:nutmeg/widgets/FeedbackBottomModal.dart';
 import 'package:nutmeg/widgets/PageTemplate.dart';
 import 'package:nutmeg/widgets/PlayerBottomModal.dart';
@@ -37,7 +40,8 @@ final logger = CrashlyticsLogger('UserPage');
 class UserPage extends StatefulWidget {
   final bool stripeOnboardingComplete;
 
-  const UserPage({Key? key, this.stripeOnboardingComplete = false}) : super(key: key);
+  const UserPage({Key? key, this.stripeOnboardingComplete = false})
+      : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -64,7 +68,8 @@ class UserPageState extends State<UserPage> {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(nextRuntimeMode ? "Test mode enabled" : "Test mode disabled"),
+        content:
+            Text(nextRuntimeMode ? "Test mode enabled" : "Test mode disabled"),
         duration: Duration(seconds: 2),
       ),
     );
@@ -205,8 +210,7 @@ class UserPageState extends State<UserPage> {
         verticalSpace,
         Row(children: [
           Expanded(
-            child: _PlayersPlayedWithYou(
-                playerCounts: userDetails.playedWith),
+            child: _PlayersPlayedWithYou(playerCounts: userDetails.playedWith),
           ),
         ]),
         if (userDetails.getLastScores().length > 0)
@@ -288,8 +292,8 @@ class UserPageState extends State<UserPage> {
 
               widgets.add(IntrinsicHeight(
                   child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
                     Expanded(child: Builder(builder: (BuildContext context) {
                       int n = userDetails.createdMatches!.length;
                       var dashboardWidgets = List<Widget>.from([]);
@@ -630,8 +634,7 @@ class UserInfoBox extends StatelessWidget {
         ]),
         SizedBox(height: 4),
         Text(description!,
-            style: TextPalette.bodyText,
-            textAlign: TextAlign.center),
+            style: TextPalette.bodyText, textAlign: TextAlign.center),
         if (bottom != null) SizedBox(height: 4),
         if (bottom != null) bottom!
       ],
@@ -681,7 +684,6 @@ class UserScoreBox extends StatelessWidget {
   }
 }
 
-
 class _PaymentMethodsCard extends StatefulWidget {
   final UserDetails userDetails;
   final bool stripeOnboardingComplete;
@@ -704,7 +706,8 @@ class _PaymentMethodsCardState extends State<_PaymentMethodsCard> {
   @override
   void initState() {
     super.initState();
-    var alreadyEnabled = widget.userDetails.areChargesEnabled(AppConfig.testMode);
+    var alreadyEnabled =
+        widget.userDetails.areChargesEnabled(AppConfig.testMode);
     if (!alreadyEnabled) {
       var hasAccount = widget.userDetails
               .getStripeInfo(AppConfig.testMode)
@@ -729,7 +732,8 @@ class _PaymentMethodsCardState extends State<_PaymentMethodsCard> {
       // Refresh user details from Firestore (webhook may have already updated charges_enabled)
       await context.read<UserState>().fetchLoggedUserDetails();
       var updated = context.read<UserState>().getLoggedUserDetails();
-      var chargesEnabled = updated?.areChargesEnabled(AppConfig.testMode) ?? false;
+      var chargesEnabled =
+          updated?.areChargesEnabled(AppConfig.testMode) ?? false;
       if (mounted) {
         setState(() {
           _stripeVerificationResult = chargesEnabled;
@@ -785,7 +789,8 @@ class _PaymentMethodsCardState extends State<_PaymentMethodsCard> {
             SizedBox(
               width: 16,
               height: 16,
-              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.blue),
+              child:
+                  CircularProgressIndicator(strokeWidth: 2, color: Colors.blue),
             ),
             SizedBox(width: 10),
             Text(AppLocalizations.of(context)!.stripeVerifying,
@@ -817,7 +822,6 @@ class _PaymentMethodsCardState extends State<_PaymentMethodsCard> {
 
     return SizedBox.shrink();
   }
-
 }
 
 class _PlayersInYourGames extends StatelessWidget {
@@ -891,7 +895,9 @@ class _PlayersPlayedWithYou extends StatelessWidget {
                 context,
                 MaterialPageRoute(
                     builder: (_) => _PlayerCountsPage(
-                        title: AppLocalizations.of(context)!.playedWithYouBoxTitle.toUpperCase(),
+                        title: AppLocalizations.of(context)!
+                            .playedWithYouBoxTitle
+                            .toUpperCase(),
                         playerCounts: playerCounts!)),
               )
           : null,
@@ -910,8 +916,7 @@ class _PlayerCountsPage extends StatefulWidget {
   final String title;
   final Map<String, int> playerCounts;
 
-  const _PlayerCountsPage(
-      {required this.title, required this.playerCounts});
+  const _PlayerCountsPage({required this.title, required this.playerCounts});
 
   @override
   State<_PlayerCountsPage> createState() => _PlayerCountsPageState();
@@ -939,8 +944,7 @@ class _PlayerCountsPageState extends State<_PlayerCountsPage> {
       appBar: Row(
         children: [
           BackButton(
-              color: Palette.black,
-              onPressed: () => Navigator.pop(context)),
+              color: Palette.black, onPressed: () => Navigator.pop(context)),
         ],
       ),
       widgets: [
@@ -971,8 +975,7 @@ class _PlayerCountsPageState extends State<_PlayerCountsPage> {
                             ),
                     ),
                     Container(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(
                         color: Palette.greyLighter,
                         borderRadius: BorderRadius.circular(12),
@@ -995,64 +998,142 @@ class _PlayerCountsPageState extends State<_PlayerCountsPage> {
 
 // --- Stats card widgets ---
 
-class _UserProfileWithStats extends StatelessWidget {
+/// The profile header: the player as a card, with the FIFA-style attributes
+/// once enough teammates have given them traits, and the usual stats below.
+class _UserProfileWithStats extends StatefulWidget {
   final UserDetails userDetails;
-  static const double _avatarRadius = 50;
 
   const _UserProfileWithStats({required this.userDetails});
 
   @override
+  State<_UserProfileWithStats> createState() => _UserProfileWithStatsState();
+}
+
+class _UserProfileWithStatsState extends State<_UserProfileWithStats> {
+  UserDetails get userDetails => widget.userDetails;
+
+  // the card's OVR, the same as in the group's All time table; asked for
+  // separately because it needs the player's matches
+  int? _score;
+  int? _winPercent;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadScore();
+  }
+
+  Future<void> _loadScore() async {
+    try {
+      var r = await CloudFunctionsClient()
+          .get("users/${userDetails.documentId}/all_time_score");
+      if (mounted) {
+        setState(() {
+          _score = (r?["all_time_score"] as num?)?.toInt();
+          var played = (r?["played"] as num?)?.toInt() ?? 0;
+          var wins = (r?["wins"] as num?)?.toInt() ?? 0;
+          if (played > 0) _winPercent = (100 * wins / played).round();
+        });
+      }
+    } catch (e) {
+      logger.warning("Could not load the all time score: $e");
+    }
+  }
+
+  Future<void> _changePicture(BuildContext context) async {
+    try {
+      await UserController.updloadPicture(context, userDetails);
+    } catch (e, s) {
+      logger.severe("Error updating profile picture", e, s);
+    }
+  }
+
+  /// The title of the card: a role from the player's best attribute, once they
+  /// have attributes and one clearly stands out; the app's name before that.
+  static const _roles = {
+    "PAC": "SPEEDSTER",
+    "SHO": "FINISHER",
+    "PAS": "PLAYMAKER",
+    "DRI": "DRIBBLER",
+    "DEF": "ROCK",
+    "PHY": "POWERHOUSE",
+    "GK": "KEEPER",
+  };
+  static const _minRoleValue = 65;
+
+  static String _title(Map<String, int> attributes) {
+    if (attributes.isEmpty) return "NUTMEG";
+    var best = attributes.entries.reduce((a, b) => b.value > a.value ? b : a);
+    return best.value >= _minRoleValue
+        ? _roles[best.key] ?? "NUTMEG"
+        : "NUTMEG";
+  }
+
+  /// Attributes in the order FIFA shows them, three to a line.
+  static const _attributes = ["PAC", "SHO", "PAS", "DRI", "DEF", "PHY"];
+
+  FifaCard _card(BuildContext context,
+      {required double maxWidth, required bool editable}) {
+    final attributes = userDetails.traitAttributes ?? {};
+    final hasAttributes = attributes.isNotEmpty;
+    return FifaCard(
+      user: userDetails,
+      score: _score,
+      title: _title(attributes),
+      theme: FifaTheme.gold,
+      maxWidth: maxWidth,
+      layout: hasAttributes ? FifaStatsLayout.grid : FifaStatsLayout.columns,
+      stats: hasAttributes
+          ? [for (var a in _attributes) FifaStat(a, "${attributes[a] ?? "–"}")]
+          : [
+              FifaStat("MATCHES", "${userDetails.numJoinedMatches ?? 0}"),
+              FifaStat("WINS", "${userDetails.numWin ?? 0}"),
+              FifaStat(
+                  "AVG SCORE",
+                  userDetails.averageScore == null
+                      ? "–"
+                      : userDetails.averageScore!.toStringAsFixed(2)),
+            ],
+      // goalkeeping only shows for players who are given it
+      extra: attributes.containsKey("GK") ? "GK ${attributes["GK"]}" : null,
+      onPictureTap: !editable ? null : () => _changePicture(context),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Stack(
-      clipBehavior: Clip.none,
-      alignment: Alignment.topCenter,
+    final l10n = AppLocalizations.of(context)!;
+    final hasAttributes = (userDetails.traitAttributes ?? {}).isNotEmpty;
+    return Column(
       children: [
-        // Stats card, pushed down to make room for the avatar
-        Padding(
-          padding: EdgeInsets.only(top: _avatarRadius),
-          child: InfoContainer(
-            padding: EdgeInsets.only(
-              top: _avatarRadius + 16,
-              left: 16,
-              right: 16,
-              bottom: 24,
-            ),
-            child: Column(
-              children: [
-                Text(userDetails.name ?? "N/A",
-                    style: TextPalette.getH2(Palette.black)),
-                if (userDetails.location != null) ...[
-                  SizedBox(height: 4),
-                  Text(userDetails.location!.getText(),
-                      style: TextPalette.bodyText),
-                ],
-                SizedBox(height: 24),
-                UserStatsCard.buildStatsContent(context, userDetails),
-              ],
-            ),
+        _card(context, maxWidth: 240, editable: true),
+        SizedBox(height: 8),
+        Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+          TextButton.icon(
+            onPressed: () => _changePicture(context),
+            icon: Icon(Icons.camera_alt_outlined, size: 18),
+            label: Text(l10n.changePhotoAction),
           ),
-        ),
-        // Avatar overlapping the top edge
-        InkWell(
-          onTap: () async {
-            try {
-              await UserController.updloadPicture(context, userDetails);
-            } catch (e, s) {
-              logger.severe("Error updating profile picture", e, s);
-            }
-          },
-          child: Badge(
-            badgeContent: Icon(Icons.camera_alt_outlined,
-                size: 12.0, color: Palette.white),
-            showBadge: true,
-            badgeStyle: BadgeStyle(
-              badgeColor: Palette.primary,
-              padding: EdgeInsets.all(4),
-            ),
-                    position: BadgePosition.custom(bottom: -2.0, end: 4.0),
-            child: UserAvatar(_avatarRadius, userDetails),
+          SizedBox(width: 8),
+          TextButton.icon(
+            onPressed: () => showFifaCard(
+                context, _card(context, maxWidth: 260, editable: false)),
+            icon: Icon(Icons.ios_share, size: 18),
+            label: Text(l10n.shareAction),
           ),
-        ),
+        ]),
+        if (!hasAttributes)
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 24),
+            child: Text(l10n.profileCardAttributesHint,
+                textAlign: TextAlign.center,
+                style: TextPalette.getBodyText(Palette.greyDark)
+                    .copyWith(fontSize: 12)),
+          ),
+        SizedBox(height: 16),
+        InfoContainer(
+            child: UserStatsCard.buildStatsContent(context, userDetails,
+                winPercent: _winPercent)),
       ],
     );
   }
@@ -1063,8 +1144,16 @@ class UserStatsCard extends StatelessWidget {
 
   const UserStatsCard({Key? key, required this.userDetails}) : super(key: key);
 
-  static Widget buildStatsContent(
-      BuildContext context, UserDetails userDetails) {
+  /// Two stats to a row. `winPercent` is the share of games won; without it,
+  /// it is worked out from the player's record.
+  static Widget buildStatsContent(BuildContext context, UserDetails userDetails,
+      {int? winPercent}) {
+    final l10n = AppLocalizations.of(context)!;
+    final wins = userDetails.numWin ?? 0;
+    final games =
+        wins + (userDetails.numDraw ?? 0) + (userDetails.numLoss ?? 0);
+    final percent =
+        winPercent ?? (games == 0 ? null : (100 * wins / games).round());
     return Column(
       children: [
         IntrinsicHeight(
@@ -1075,7 +1164,7 @@ class UserStatsCard extends StatelessWidget {
                 child: _StatItemWithIcon(
                   icon: Icons.sports_soccer,
                   backgroundColor: Color(0xFF4CAF50),
-                  label: AppLocalizations.of(context)!.numMatchesTitle,
+                  label: l10n.numMatchesTitle,
                   value: userDetails.getNumJoinedMatches().toString(),
                 ),
               ),
@@ -1083,46 +1172,40 @@ class UserStatsCard extends StatelessWidget {
                 child: _StatItemWithIcon(
                   icon: Icons.star,
                   backgroundColor: Palette.primary,
-                  label: AppLocalizations.of(context)!.averageScoreBoxTitle,
+                  label: l10n.averageScoreBoxTitle,
                   value: (userDetails.getScoreMatches() == null)
                       ? "-"
                       : userDetails.getScoreMatches()!.toStringAsFixed(1),
-                ),
-              ),
-              Expanded(
-                child: _StatItemWithIcon(
-                  icon: Icons.emoji_events,
-                  backgroundColor: Palette.accent,
-                  label: AppLocalizations.of(context)!
-                      .numPlayersOfTheMatchBoxTitle,
-                  value: userDetails.getNumManOfTheMatch().toString(),
                 ),
               ),
             ],
           ),
         ),
         SizedBox(height: 28),
-        Row(
-          children: [
-            Expanded(
-              child: _SimpleStatItem(
-                label: AppLocalizations.of(context)!.numMatchesWonBoxTitle,
-                value: (userDetails.numWin ?? 0).toString(),
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: _StatItemWithIcon(
+                  icon: Icons.emoji_events,
+                  backgroundColor: Palette.accent,
+                  label: l10n.numPlayersOfTheMatchBoxTitle,
+                  value: userDetails.getNumManOfTheMatch().toString(),
+                ),
               ),
-            ),
-            Expanded(
-              child: _SimpleStatItem(
-                label: AppLocalizations.of(context)!.numMatchesDrawBoxTitle,
-                value: (userDetails.numDraw ?? 0).toString(),
+              Expanded(
+                child: _StatItemWithIcon(
+                  icon: Icons.percent_rounded,
+                  backgroundColor: Palette.green,
+                  // a ring filled to the win rate in place of the hexagon
+                  progress: percent == null ? 0 : percent / 100,
+                  label: l10n.winPercentBoxTitle,
+                  value: percent == null ? "-" : "$percent%",
+                ),
               ),
-            ),
-            Expanded(
-              child: _SimpleStatItem(
-                label: AppLocalizations.of(context)!.numMatchesLostBoxTitle,
-                value: (userDetails.numLoss ?? 0).toString(),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ],
     );
@@ -1142,36 +1225,53 @@ class _StatItemWithIcon extends StatelessWidget {
   final Color backgroundColor;
   final String label;
   final String value;
+  // 0 to 1: a ring filled that far, in place of the hexagon
+  final double? progress;
 
   const _StatItemWithIcon({
     required this.icon,
     required this.backgroundColor,
     required this.label,
     required this.value,
+    this.progress,
   });
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        CustomPaint(
-          painter: _HexagonPainter(color: backgroundColor),
-          child: SizedBox(
-            width: 52,
-            height: 56,
-            child: Center(
-              child: Icon(icon, color: Colors.white, size: 24,
-                  shadows: [Shadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2))]),
+        if (progress != null)
+          CustomPaint(
+            painter: _RingPainter(progress: progress!, color: backgroundColor),
+            child: SizedBox(
+              width: 56,
+              height: 56,
+              child:
+                  Center(child: Icon(icon, color: backgroundColor, size: 22)),
+            ),
+          )
+        else
+          CustomPaint(
+            painter: _HexagonPainter(color: backgroundColor),
+            child: SizedBox(
+              width: 52,
+              height: 56,
+              child: Center(
+                child: Icon(icon, color: Colors.white, size: 24, shadows: [
+                  Shadow(
+                      color: Colors.black26,
+                      blurRadius: 4,
+                      offset: Offset(0, 2))
+                ]),
+              ),
             ),
           ),
-        ),
         SizedBox(height: 12),
         Expanded(
           child: Align(
             alignment: Alignment.topCenter,
             child: Text(label,
-                style: TextPalette.bodyText,
-                textAlign: TextAlign.center),
+                style: TextPalette.bodyText, textAlign: TextAlign.center),
           ),
         ),
         SizedBox(height: 4),
@@ -1188,32 +1288,43 @@ class _StatItemWithIcon extends StatelessWidget {
   }
 }
 
-class _SimpleStatItem extends StatelessWidget {
-  final String label;
-  final String value;
+/// A ring filled clockwise from the top to `progress` (0 to 1), like a gauge.
+class _RingPainter extends CustomPainter {
+  final double progress;
+  final Color color;
 
-  const _SimpleStatItem({
-    required this.label,
-    required this.value,
-  });
+  _RingPainter({required this.progress, required this.color});
 
   @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text(label, style: TextPalette.bodyText),
-        SizedBox(height: 4),
-        Text(
-          value,
-          style: GoogleFonts.roboto(
-            color: Palette.black,
-            fontSize: 28,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      ],
-    );
+  void paint(Canvas canvas, Size size) {
+    const stroke = 6.0;
+    final rect = Rect.fromCircle(
+        center: size.center(Offset.zero),
+        radius: (size.shortestSide - stroke) / 2);
+    canvas.drawArc(
+        rect,
+        0,
+        2 * pi,
+        false,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = stroke
+          ..color = Palette.greyLighter);
+    canvas.drawArc(
+        rect,
+        -pi / 2,
+        2 * pi * progress.clamp(0.0, 1.0),
+        false,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = stroke
+          ..strokeCap = StrokeCap.round
+          ..color = color);
   }
+
+  @override
+  bool shouldRepaint(_RingPainter old) =>
+      old.progress != progress || old.color != color;
 }
 
 class _HexagonPainter extends CustomPainter {
@@ -1233,12 +1344,12 @@ class _HexagonPainter extends CustomPainter {
 
     // Hexagon vertices (pointy-top)
     final points = [
-      Offset(w * 0.5, 0),       // top
-      Offset(w, h * 0.25),      // top-right
-      Offset(w, h * 0.75),      // bottom-right
-      Offset(w * 0.5, h),       // bottom
-      Offset(0, h * 0.75),      // bottom-left
-      Offset(0, h * 0.25),      // top-left
+      Offset(w * 0.5, 0), // top
+      Offset(w, h * 0.25), // top-right
+      Offset(w, h * 0.75), // bottom-right
+      Offset(w * 0.5, h), // bottom
+      Offset(0, h * 0.75), // bottom-left
+      Offset(0, h * 0.25), // top-left
     ];
 
     final path = Path();

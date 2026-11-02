@@ -227,6 +227,7 @@
 
     "createNewCourtText": "Create new Court",
     "pictureTitleText": "Picture",
+    "changePhotoAction": "Change photo",
     "informationTitleText": "Information",
     "typeTitleText": "Type",
     "courtInfoText": "Court Information",
@@ -282,6 +283,8 @@
     "traitGreatInGoal": "Great in Goal",
 
     "traitsAdd": "Add traits",
+
+    "profileCardAttributesHint": "Your attributes appear once enough teammates have given you traits.",
     "ratePlayersButtonText": "RATE PLAYERS",
     "updateRatesPlayersButtonText": "CHANGE VOTES",
     "submitRatesButtonText": "SUBMIT",
@@ -292,9 +295,7 @@
     "numMatchesShortTitle": "Matches",
     "numMatchesTitle": "Matches",
     "numPlayersOfTheMatchBoxTitle": "POTM",
-    "numMatchesDrawBoxTitle": "Draws",
-    "numMatchesWonBoxTitle": "Wins",
-    "numMatchesLostBoxTitle": "Losses",
+    "winPercentBoxTitle": "Win %",
     "averageScoreBoxTitle": "Avg. Score",
 
     "organiserSectionTitle": "ORGANISER",

@@ -39,6 +39,10 @@ class UserDetails {
   List<String>? lastScoreDates;
   Map<String, int>? skillsCount;
 
+  // FIFA-style attributes from the traits teammates gave, e.g. {"PAC": 78};
+  // empty until enough of them did
+  Map<String, int>? traitAttributes;
+
   List<String>? createdMatches;
   List<String>? createdTestMatches;
 
@@ -74,17 +78,17 @@ class UserDetails {
         name = json["name"],
         email = json["email"],
         creditsInCents = json["credits"],
-        stripeInfo = StripeInfo.fromJson(
-            json["stripe"] as Map<String, dynamic>?),
-        stripeTestInfo = StripeInfo.fromJson(
-            json["stripe_test"] as Map<String, dynamic>?),
+        stripeInfo =
+            StripeInfo.fromJson(json["stripe"] as Map<String, dynamic>?),
+        stripeTestInfo =
+            StripeInfo.fromJson(json["stripe_test"] as Map<String, dynamic>?),
         numJoinedMatches = json["num_matches_joined"] ?? 0,
         averageScore = json["avg_score"] ?? null,
         numRatedMatches = (json["scores"] ?? {})["number_of_scored_games"] ?? 0,
         sumTotalRates = ((json["scores"] ?? {})["total_sum"] ?? 0).toDouble(),
         potmDates = json["potm_dates"] != null
-            ? Map<String, bool>.from(
-                (json["potm_dates"] as Map).map((k, v) => MapEntry(k.toString(), true)))
+            ? Map<String, bool>.from((json["potm_dates"] as Map)
+                .map((k, v) => MapEntry(k.toString(), true)))
             : null,
         lastScores = (json["last_date_scores"] == null)
             ? []
@@ -96,6 +100,10 @@ class UserDetails {
                 Map<String, double>.from(json["last_date_scores"])),
         deltaFromLastScore = json["delta_from_last_score"],
         skillsCount = Map<String, int>.from((json["skills_count"] ?? {})),
+        traitAttributes = json["trait_attributes"] != null
+            ? Map<String, dynamic>.from(json["trait_attributes"])
+                .map((k, v) => MapEntry(k, (v as num).toInt()))
+            : null,
         createdMatches =
             Map<String, dynamic>.from(json["created_matches"] ?? {})
                 .keys
