@@ -7,6 +7,7 @@ Pure functions over Match objects, so they can be tested without Firestore.
 """
 from __future__ import annotations
 
+import math
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -130,6 +131,14 @@ CARD_SPAN = 0.49
 NEUTRAL_RATING = 3.0
 # Games of rating history used when the month is not fully rated.
 HISTORY_GAMES = 5
+# For a year or everything, a player counts as having also played a few average
+# games (so one good game doesn't beat a long record), and a player needs a
+# share of what a regular has played, at least a few games, to be ranked.
+SHRINK_GAMES = 5
+SHRINK_RATED = 3
+MIN_GAMES_SHARE = 0.3
+MIN_GAMES_FLOOR = 3
+REGULAR_PERCENTILE = 0.75
 
 
 def card_score(avg_rating: float, wins: int, draws: int, played: int) -> int:
@@ -165,20 +174,28 @@ def _period_end(period: str) -> str:
     return period if _is_month(period) else period + "12"
 
 
+def _percentile(values: List[int], q: float) -> int:
+    """Nearest-rank percentile."""
+    ordered = sorted(values)
+    return ordered[max(0, math.ceil(q * len(ordered)) - 1)]
+
+
 def ranking(
     matches: List[Match],
     period: str,
     history: Optional[Dict[str, Dict[str, float]]] = None,
-) -> Tuple[List[Dict[str, Any]], str]:
+) -> Tuple[List[Dict[str, Any]], str, int]:
     """
-    Players ranked by card score over the period's matches, and where the
-    ratings came from: "month", "last_games" or, for a year or everything,
-    "period". Wins and losses count every game; ratings only come from rated
-    games (ratings computed).
+    Players ranked by card score over the period's matches, where the ratings
+    came from ("month", "last_games" or, for a year or everything, "period")
+    and the minimum number of games to be ranked. Wins and losses count every
+    game; ratings only come from rated games (ratings computed).
     For a month: if every player has a rated game, the month's ratings are
     used; otherwise everyone's last rated games (`history`: user -> {date:
-    rating}). For a longer period each player's rated games in it are used,
-    and the last rated games only for a player with none.
+    rating}); no minimum. For a longer period each player's rated games in it
+    are used (the last rated games only for a player with none), results and
+    ratings are pulled towards the middle for players with few games, and
+    players below the minimum are left out.
     Best score first, ties on wins then rating.
     """
     acc: Dict[str, Dict[str, Any]] = {}
@@ -202,25 +219,47 @@ def ranking(
                 p["rating_sum"] += scores[uid]
                 p["rated"] += 1
 
+    long_period = not _is_month(period)
+    min_games = 0
+    if long_period and acc:
+        regular = _percentile([p["played"] for p in acc.values()], REGULAR_PERCENTILE)
+        min_games = max(MIN_GAMES_FLOOR, int(MIN_GAMES_SHARE * regular + 0.5))
+
     month_is_rated = bool(acc) and all(p["rated"] for p in acc.values())
     use_period = month_is_rated if _is_month(period) else True
     table = []
     for uid, p in acc.items():
+        if p["played"] < min_games:
+            continue
         if use_period and p["rated"]:
             avg = p["rating_sum"] / p["rated"]
         else:
             avg = _recent_rating((history or {}).get(uid), _period_end(period))
+        if long_period:
+            rated_avg = avg
+            if p["rated"]:
+                rated_avg = (p["rating_sum"] + SHRINK_RATED * NEUTRAL_RATING) / (
+                    p["rated"] + SHRINK_RATED
+                )
+            score = card_score(
+                rated_avg,
+                p["wins"] + 0.5 * p["draws"] + SHRINK_GAMES * 0.5,
+                0,
+                p["played"] + SHRINK_GAMES,
+            )
+        else:
+            score = card_score(avg, p["wins"], p["draws"], p["played"])
         table.append({
             "user_id": uid,
             "played": p["played"],
             "wins": p["wins"],
             "avg_rating": round(avg, 2),
-            "score": card_score(avg, p["wins"], p["draws"], p["played"]),
+            "score": score,
         })
     table.sort(key=lambda e: (-e["score"], -e["wins"], -e["avg_rating"]))
-    if not _is_month(period):
-        return table, "period"
-    return table, "month" if month_is_rated else "last_games"
+    if long_period:
+        return table, "period", min_games
+    return table, "month" if month_is_rated else "last_games", 0
 
 
 def best_improver(
@@ -341,16 +380,16 @@ def monthly_group_stats(
     podium = player_of_the_month(
         table, rated, by_wins[0]["wins"] if by_wins else 0
     )
-    ranked, ranking_source = ranking(in_month, month, history)
+    ranked, ranking_source, min_games = ranking(in_month, month, history)
     # improvement only makes sense month over month
     previous_month = next(
         (x for x in months if month and _is_month(month) and x < month), None
     )
-    previous_ranked, _ = ranking(
+    previous_ranked, _, _ = ranking(
         [m for m in eligible if month_of(m) == previous_month],
         previous_month,
         history,
-    ) if previous_month else ([], "")
+    ) if previous_month else ([], "", 0)
     if previous_month:
         before = {e["user_id"]: e["score"] for e in previous_ranked}
         for e in ranked:
@@ -374,5 +413,6 @@ def monthly_group_stats(
         "players": by_wins,
         "ranking": ranked,
         "ranking_source": ranking_source,
+        "ranking_min_games": min_games,
         "best_improver": best_improver(ranked, previous_ranked),
     }
