@@ -31,6 +31,10 @@ jobs:
           flutter-version: "3.41.0"
 
       # --- android-specific ---
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
       - run: echo $NUTMEG_DEPLOY_KEY | base64 -d > android/nutmeg-deploy-key.json
         env:
           NUTMEG_DEPLOY_KEY: ${{ secrets.NUTMEG_DEPLOY_KEY }}
