@@ -434,7 +434,6 @@ def _get_ratings_data_legacy(match_id, ratings_data):
             [],
             ratings_data.get("scores", {}),
             ratings_data.get("skills", {}),
-            {},
         )
     except NotEnoughVotersError:
         return {"scores": {}, "potms": []}
@@ -453,7 +452,11 @@ def add_rating_multi(match_id):
 
 @bp.route("/<match_id>/awards/add", methods=["POST"])
 def add_match_awards(match_id):
-    """Add awards for a match. The request data should be a map of award_id -> user_id."""
+    """Add awards for a match. The request data should be a map of award_id -> user_id.
+
+    Deprecated: match awards are no longer granted. Kept so that older app
+    versions still in use don't fail when submitting votes.
+    """
     is_test = _is_test_from_request()
     request_data = flask.request.get_json()
 
@@ -536,7 +539,10 @@ def get_ratings_given_by_user(match_id):
 
 @bp.route("/<match_id>/awards/given", methods=["GET"])
 def get_user_given_awards(match_id):
-    """Get awards given by the current user for this match."""
+    """Get awards given by the current user for this match.
+
+    Deprecated: match awards are no longer granted. Kept for older app versions.
+    """
     is_test = _is_test_from_request()
     ratings = Ratings.get_by_match_id(match_id, app.db_client, is_test=is_test)
     if not ratings:
@@ -1529,19 +1535,15 @@ def _freeze_match_stats(match_id, match: MatchModel, is_test=False):
         match.going or {},
         ratings.scores if ratings else {},
         ratings.skills if ratings else {},
-        ratings.award_votes if ratings else {},
     )
 
     # store final scores in ratings subcollection + match doc summary
     num_score_voters = ratings.num_voters() if ratings else 0
-    num_award_voters = len(ratings.award_votes) if ratings else 0
     Ratings.store_final_results(
         match_id,
         match_stats.user_scores,
         match_stats.potms,
-        match_stats.award_votes,
         num_score_voters,
-        num_award_voters,
         app.db_client,
         is_test=is_test,
     )
@@ -2158,8 +2160,6 @@ class MatchStats:
         going: List[str],
         raw_scores: Dict[str, Dict[str, float]],
         skills_scores: Dict[str, Dict[str, List[str]]],
-        # voter_id -> {award_id -> voted_user_id}
-        award_votes: Dict[str, Dict[str, str]],
     ):
         # collect unique voters across all scored users
         voters = set()
@@ -2176,11 +2176,9 @@ class MatchStats:
         self.going = going
         self.raw_scores = raw_scores
         self.raw_skill_scores = skills_scores
-        self.award_votes = award_votes
         self.user_scores = self.compute_user_scores()
         self.potms = self.compute_potms()
         self.user_skills = self.compute_user_skills()
-        self.award_votes = self.compute_award_votes()
 
     def compute_user_scores(self) -> Dict[str, float]:
         user_scores = {}
@@ -2215,20 +2213,6 @@ class MatchStats:
         if len(potms) > 1:
             return []
         return potms
-
-    def compute_award_votes(self) -> Dict[str, str]:
-        # award_id -> {voted_user -> number_of_votes}
-        award_votes = {}
-        for _, votes in self.award_votes.items():
-            for award_id, user_id in votes.items():
-                # user can be None if they did not vote
-                if user_id is None:
-                    continue
-                if award_id not in award_votes:
-                    award_votes[award_id] = {}
-                current_votes = award_votes[award_id].get(user_id, 0)
-                award_votes[award_id][user_id] = current_votes + 1
-        return award_votes
 
     def __repr__(self):
         return "{}\n{}\n{}".format(

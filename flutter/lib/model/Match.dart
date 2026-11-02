@@ -308,40 +308,21 @@ class Ratings {
 
   Map<String, double> scores;
   List<String>? potms;
-  // user_id -> {award_id -> number_of_votes}
-  Map<String, Map<String, int>> awards;
   int numDistinctScoreVoters;
-  int numDistinctAwardVoters;
   String? ratingsNotComputedReason;
-
-  static Map<String, Map<String, int>> readAwards(
-      Map<String, dynamic> awardsJson) {
-    
-    var awards = Map<String, Map<String, int>>();
-    for (var award in awardsJson.entries) {
-      var awardId = award.key;
-      var votes = Map<String, int>.from(award.value);
-      awards[awardId] = votes;
-    }
-    return awards;
-  }
 
   Ratings.fromJson(Map<String, dynamic> jsonInput)
       : scores = Map<String, double>.from(jsonInput["scores"] ?? {}),
         potms = List<String>.from(jsonInput["potms"] ?? []),
-        awards = readAwards(jsonInput["awards"] ?? {}),
         numDistinctScoreVoters = jsonInput["num_distinct_score_voters"] ?? 0,
-        numDistinctAwardVoters = jsonInput["num_distinct_award_voters"] ?? 0,
         ratingsNotComputedReason = jsonInput["ratings_not_computed_reason"];
 
   /// Parse from the `ratings` map embedded on the match document.
-  /// Keys are finalScores/finalPotms/finalAwards instead of scores/potms/awards.
+  /// Keys are finalScores/finalPotms instead of scores/potms.
   Ratings.fromMatchDoc(Map<String, dynamic> jsonInput)
       : scores = Map<String, double>.from(jsonInput["finalScores"] ?? {}),
         potms = List<String>.from(jsonInput["finalPotms"] ?? []),
-        awards = readAwards(jsonInput["finalAwards"] ?? {}),
         numDistinctScoreVoters = jsonInput["num_distinct_score_voters"] ?? 0,
-        numDistinctAwardVoters = jsonInput["num_distinct_award_voters"] ?? 0,
         ratingsNotComputedReason = jsonInput["ratings_not_computed_reason"];
 }
 

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:nutmeg/screens/MatchAwardsModal.dart';
 import 'package:nutmeg/state/MatchesState.dart';
 import 'package:nutmeg/state/UserRatings.dart';
 import 'package:nutmeg/state/UsersState.dart';
@@ -36,32 +35,19 @@ class RateButton extends StatelessWidget {
 }
 
 Future<void> rateAction(BuildContext context, String matchId) async {
-  bool userDismissedRateAction = false;
-
   // Get the existing UserRatings state from MatchDetails
   var userRatings = context.read<UserRatings>();
 
-  bool completed = await ModalBottomSheet.showNutmegModalBottomSheet(
-          context,
-          ChangeNotifierProvider.value(
-            value: userRatings,
-            child: RatePlayerSingleSheet(matchId: matchId),
-          ),
-          stickyBottom: ChangeNotifierProvider.value(
-            value: userRatings,
-            child: RatePlayersSubmitSticky(),
-          )) ??
-      false;
-
-  userDismissedRateAction = !completed;
-
-  if (!userDismissedRateAction) {
-    // Create a new UserRatings instance for the awards modal
-    var awardsUserRatings = UserRatings(matchId);
-    // Copy the ratings from the previous instance
-    awardsUserRatings.copyFrom(userRatings);
-    await MatchAwardsModal.bestAwardAction(context, matchId, awardsUserRatings);
-  }
+  await ModalBottomSheet.showNutmegModalBottomSheet(
+      context,
+      ChangeNotifierProvider.value(
+        value: userRatings,
+        child: RatePlayerSingleSheet(matchId: matchId),
+      ),
+      stickyBottom: ChangeNotifierProvider.value(
+        value: userRatings,
+        child: RatePlayersSubmitSticky(),
+      ));
 }
 
 class RatePlayerSingleSheet extends StatelessWidget {

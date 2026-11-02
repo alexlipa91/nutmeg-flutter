@@ -149,26 +149,21 @@ class Ratings:
         match_id: str,
         user_scores: Dict[str, float],
         potms: List[str],
-        award_votes: Dict[str, Any],
         num_score_voters: int,
-        num_award_voters: int,
         db: Client,
         is_test: bool = False,
     ) -> None:
-        """Write computed final scores, POTMs, and awards."""
+        """Write computed final scores and POTMs."""
         # TODO drop it once all clients move to use match
         ratings_ref(match_id, db, is_test=is_test).update({
             "finalScores": user_scores,
             "finalPotms": potms,
-            "finalAwards": award_votes,
         })
         # also store summary on the main match doc for fast reads
         Ratings._write_match_summary(match_id, {
             "finalScores": user_scores,
             "finalPotms": potms,
-            "finalAwards": award_votes,
             "num_distinct_score_voters": num_score_voters,
-            "num_distinct_award_voters": num_award_voters,
         }, db, is_test=is_test)
 
     @staticmethod
@@ -176,7 +171,6 @@ class Ratings:
         """Mark ratings as not computable with a reason."""
         ratings = Ratings.get_by_match_id(match_id, db, is_test=is_test)
         num_score_voters = ratings.num_voters() if ratings else 0
-        num_award_voters = len(ratings.award_votes) if ratings else 0
 
         # TODO drop it once all clients move to use match
         ratings_ref(match_id, db, is_test=is_test).set(
@@ -189,7 +183,6 @@ class Ratings:
             {
                 "ratings_not_computed_reason": reason,
                 "num_distinct_score_voters": num_score_voters,
-                "num_distinct_award_voters": num_award_voters,
             },
             db,
             is_test=is_test,
