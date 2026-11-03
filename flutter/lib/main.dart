@@ -148,11 +148,6 @@ String _pageBackgroundFor(String path) {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  if (kIsWeb) {
-    void syncPageBackground() => setPageBackground(_pageBackgroundFor(
-        appRouter.routerDelegate.currentConfiguration.uri.path));
-    appRouter.routerDelegate.addListener(syncPageBackground);
-  }
   await AppConfig.loadRuntimeOverrides();
 
   Logger.root.level = Level.LEVELS.firstWhere(
@@ -204,7 +199,19 @@ void main() async {
 
   ErrorWidget.builder = (errorDetails) => Container();
 
-  usePathUrlStrategy();
+  try {
+    usePathUrlStrategy();
+  } catch (_) {
+    // debug builds assert that the engine isn't initialized yet; release is fine
+  }
+
+  // must come after usePathUrlStrategy: touching appRouter earlier makes it
+  // read the initial URL with the hash strategy and open on '/'
+  if (kIsWeb) {
+    void syncPageBackground() => setPageBackground(_pageBackgroundFor(
+        appRouter.routerDelegate.currentConfiguration.uri.path));
+    appRouter.routerDelegate.addListener(syncPageBackground);
+  }
 
   // If this is the Stripe return tab, notify the opener and close — don't run the app
   if (handleStripeReturnTab()) return;
