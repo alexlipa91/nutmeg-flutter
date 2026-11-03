@@ -1,0 +1,39 @@
+name: iOS Submit For Review
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: App version already uploaded (e.g. 14.1.0)
+        required: true
+      build_number:
+        description: Build number already uploaded (e.g. 386)
+        required: true
+
+jobs:
+  submit_ios:
+    name: Submit uploaded build for review
+    runs-on: macos-26
+    defaults:
+      run:
+        working-directory: flutter
+    steps:
+      - uses: actions/checkout@v2
+      - name: Decode App Store Connect API key
+        run: echo "$ASC_API_KEY" | base64 -d > ios/AuthKey_${{ secrets.ASC_KEY_ID }}.p8
+        env:
+          ASC_API_KEY: ${{ secrets.ASC_API_KEY }}
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+          working-directory: 'flutter/ios'
+      - name: Submit for review
+        uses: maierj/fastlane-action@v3.1.0
+        with:
+          lane: 'submit_for_review'
+          options: '{ "version": "${{ inputs.version }}", "build_number": "${{ inputs.build_number }}" }'
+          subdirectory: 'flutter/ios'
+        env:
+          KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
