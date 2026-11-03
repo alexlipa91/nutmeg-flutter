@@ -202,7 +202,14 @@ class GenericAvailableMatchesListState
                 return list[i];
               },
               itemCount: 3),
-          floatingActionButton: widget.floatingActionButton,
+          // Lift the button above the floating bottom nav pill (pill 68 + 24
+          // padding, plus the device safe area; the FAB adds its own 16).
+          floatingActionButton: widget.floatingActionButton == null
+              ? null
+              : Padding(
+                  padding: EdgeInsets.only(
+                      bottom: 84 + MediaQuery.of(context).viewPadding.bottom),
+                  child: widget.floatingActionButton),
         ),
       ),
     );
