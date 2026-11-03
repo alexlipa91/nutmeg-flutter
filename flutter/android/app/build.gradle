@@ -35,7 +35,7 @@ android {
     defaultConfig {
         applicationId "com.nutmeg.nutmeg"
         minSdkVersion flutter.minSdkVersion
-        targetSdkVersion 35
+        targetSdkVersion 36
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
     }
