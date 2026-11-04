@@ -3,10 +3,8 @@ import 'package:fl_chart/fl_chart.dart';
 
 import 'package:flutter/material.dart' hide Badge;
 import 'package:nutmeg/l10n/app_localizations.dart';
-import 'package:nutmeg/state/UserState.dart';
 import 'package:nutmeg/utils/AllTimeRow.dart';
 import 'package:nutmeg/widgets/FifaCard.dart';
-import 'package:provider/provider.dart';
 import 'package:nutmeg/screens/UserPage.dart';
 import 'package:nutmeg/utils/InfoModals.dart';
 import 'package:nutmeg/utils/UiUtils.dart';
@@ -212,9 +210,7 @@ class _JoinedPlayerBottomModalState extends State<JoinedPlayerBottomModal> {
   Widget build(BuildContext context) {
     final user = widget.userDetails;
     final wide = MediaQuery.of(context).size.width > 700;
-    final isMe = context.read<UserState>().getLoggedUserId() == user.documentId;
-    // gold for yourself, the others by their score
-    final theme = isMe ? FifaTheme.gold : FifaTheme.forScore(_score);
+    final theme = FifaTheme.forScore(_score);
     FifaCard card(double width) => FifaCard.player(
         user: user, score: _score, theme: theme, maxWidth: width);
     return SingleChildScrollView(
