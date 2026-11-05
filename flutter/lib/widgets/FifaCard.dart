@@ -37,6 +37,10 @@ class FifaCardClipper extends CustomClipper<Path> {
 }
 
 class FifaStripesPainter extends CustomPainter {
+  final Color color;
+
+  const FifaStripesPainter([this.color = Colors.white54]);
+
   @override
   void paint(Canvas canvas, Size s) {
     final area = Rect.fromLTWH(0, 0, s.width, s.height * 0.65);
@@ -45,7 +49,7 @@ class FifaStripesPainter extends CustomPainter {
       ..shader = LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [Colors.white54, Colors.transparent],
+        colors: [color, Colors.transparent],
       ).createShader(area);
     final step = s.width * 0.014;
     for (double x = -area.height; x < s.width; x += step) {
@@ -64,7 +68,10 @@ class FifaStripesPainter extends CustomPainter {
 /// Moving effects for the best player's card: a light sweeping across it now
 /// and then and a pulsing glow behind the picture.
 class FifaGoldEffects extends StatefulWidget {
-  const FifaGoldEffects();
+  // the pulsing glow behind the picture; without it only the sweep is left
+  final bool glow;
+
+  const FifaGoldEffects({this.glow = true});
 
   @override
   State<FifaGoldEffects> createState() => _FifaGoldEffectsState();
@@ -95,14 +102,15 @@ class _FifaGoldEffectsState extends State<FifaGoldEffects>
   }
 
   @override
-  Widget build(BuildContext context) =>
-      CustomPaint(painter: _FifaGoldEffectsPainter(_controller));
+  Widget build(BuildContext context) => CustomPaint(
+      painter: _FifaGoldEffectsPainter(_controller, glow: widget.glow));
 }
 
 class _FifaGoldEffectsPainter extends CustomPainter {
   final Animation<double> t;
+  final bool glow;
 
-  _FifaGoldEffectsPainter(this.t) : super(repaint: t);
+  _FifaGoldEffectsPainter(this.t, {required this.glow}) : super(repaint: t);
 
   @override
   void paint(Canvas canvas, Size s) {
@@ -111,19 +119,20 @@ class _FifaGoldEffectsPainter extends CustomPainter {
     // glow behind the picture, pulsing twice per cycle
     final pulse = 0.5 + 0.5 * sin(2 * pi * v * 2);
     final center = Offset(w * 0.57, h * 0.38);
-    canvas.drawCircle(
-      center,
-      w * 0.36,
-      Paint()
-        ..shader = RadialGradient(
-          colors: [
-            Colors.transparent,
-            Color.fromRGBO(255, 244, 200, 0.3 + 0.35 * pulse),
-            Colors.transparent,
-          ],
-          stops: [0.45, 0.62, 1],
-        ).createShader(Rect.fromCircle(center: center, radius: w * 0.36)),
-    );
+    if (glow)
+      canvas.drawCircle(
+        center,
+        w * 0.36,
+        Paint()
+          ..shader = RadialGradient(
+            colors: [
+              Colors.transparent,
+              Color.fromRGBO(255, 244, 200, 0.3 + 0.35 * pulse),
+              Colors.transparent,
+            ],
+            stops: [0.45, 0.62, 1],
+          ).createShader(Rect.fromCircle(center: center, radius: w * 0.36)),
+      );
 
     // a band of light sweeping across during the first part of the cycle
     final e = (v / 0.4).clamp(0.0, 1.0);
@@ -161,6 +170,13 @@ class FifaTheme {
   final Color ink;
   final Color ring;
   final bool electric;
+  // stripes and the light band across the card
+  final Color stripe;
+  final double sheen;
+  // Oxanium type, metallic numbers, a shimmering gold rim and carbon lines
+  final bool holo;
+  // a picture for the whole card, in place of the gradient and its effects
+  final String? background;
 
   const FifaTheme({
     required this.gradient,
@@ -168,7 +184,28 @@ class FifaTheme {
     required this.ink,
     required this.ring,
     this.electric = false,
+    this.stripe = Colors.white54,
+    this.sheen = 0.5,
+    this.holo = false,
+    this.background,
   });
+
+  /// Black and gold, for the player of the month.
+  static const blackGold = FifaTheme(
+    gradient: [
+      Color(0xFF3A3A3A),
+      Color(0xFF111111),
+      Color(0xFF2A2A2A),
+      Color(0xFF050505),
+    ],
+    stops: [0, 0.4, 0.7, 1],
+    ink: Color(0xFFE8C766),
+    ring: Color(0xFFD9B04A),
+    stripe: Color(0x66D9B04A),
+    sheen: 0.12,
+    holo: true,
+    background: 'assets/potm_card_bg.png',
+  );
 
   static const gold = FifaTheme(
     gradient: [
@@ -283,6 +320,57 @@ class _ElectricPainter extends CustomPainter {
   bool shouldRepaint(_) => false;
 }
 
+/// Faint carbon-fibre lines: diagonals in both directions.
+class _CarbonPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size s) {
+    final step = s.width * 0.025;
+    final a = Paint()
+      ..strokeWidth = 1
+      ..color = Colors.white.withValues(alpha: 0.05);
+    final b = Paint()
+      ..strokeWidth = 1
+      ..color = Colors.white.withValues(alpha: 0.025);
+    for (double x = -s.height; x < s.width; x += step) {
+      canvas.drawLine(Offset(x, s.height), Offset(x + s.height, 0), a);
+      canvas.drawLine(Offset(x, 0), Offset(x + s.height, s.height), b);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_) => false;
+}
+
+const _holoColors = [
+  Color(0xFFF6DE8D),
+  Color(0xFFB8892B),
+  Color(0xFFFFF1B8),
+  Color(0xFFD9B04A),
+  Color(0xFF8A6A1F),
+  Color(0xFFF6DE8D),
+];
+
+/// Thin shimmering gold rim around the card edge.
+class _HoloRimPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size s) {
+    // the clip hides the outer half of the stroke
+    canvas.drawPath(
+      FifaCardClipper().getClip(s),
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 5
+        ..shader = SweepGradient(
+          colors: _holoColors,
+          transform: GradientRotation(pi / 4),
+        ).createShader(Offset.zero & s),
+    );
+  }
+
+  @override
+  bool shouldRepaint(_) => false;
+}
+
 /// Thin darker outline inside the card edge, like the border of a real card.
 class _InsetBorderPainter extends CustomPainter {
   final Color color;
@@ -373,20 +461,83 @@ class FifaCard extends StatelessWidget {
       ? Colors.black.withValues(alpha: 0.35)
       : Colors.white.withValues(alpha: 0.55);
 
+  static const _accent = Color(0xFFB8975A);
+
   TextStyle _text(
     double size,
     FontWeight weight, {
     double? spacing,
     double height = 1,
+    Color? color,
   }) =>
-      GoogleFonts.oswald(
-        color: _ink,
+      (theme.holo ? GoogleFonts.oxanium : GoogleFonts.oswald)(
+        color: color ?? _ink,
         fontSize: size,
         fontWeight: weight,
         letterSpacing: spacing,
         height: height,
         shadows: [Shadow(color: _edge, offset: Offset(0, 0.8))],
       );
+
+  /// Gold gradient with a soft glow on the holographic card, plain otherwise.
+  Widget _metal(String text, TextStyle style, {TextAlign? align}) {
+    if (!theme.holo) {
+      return Text(text,
+          style: style,
+          textAlign: align,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis);
+    }
+    final art = theme.background != null;
+    final gold = ShaderMask(
+      blendMode: BlendMode.srcIn,
+      shaderCallback: (r) => LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: art
+            ? [Color(0xFFF0D78A), Color(0xFFD4AC45), Color(0xFFA67C24)]
+            : [Color(0xFFFFF1B8), Color(0xFFE8C766), Color(0xFFB8892B)],
+      ).createShader(r),
+      child: Text(
+        text,
+        textAlign: align,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: style.copyWith(
+          color: Colors.white,
+          // the picture has its own glow; the text only needs an outline
+          shadows: art ? [] : [Shadow(color: Color(0xAAE8C766), blurRadius: 8)],
+        ),
+      ),
+    );
+    if (!art) return gold;
+    // a dark outline under the letters, so they stand out from the picture
+    final size = style.fontSize ?? 16;
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        Text(
+          text,
+          textAlign: align,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            fontFamily: style.fontFamily,
+            fontSize: size,
+            fontWeight: style.fontWeight,
+            letterSpacing: style.letterSpacing,
+            height: style.height,
+            foreground: Paint()
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = size * 0.09
+              ..strokeJoin = StrokeJoin.round
+              ..color = Colors.black.withValues(alpha: 0.9),
+          ),
+        ),
+        gold,
+      ],
+    );
+  }
 
   /// Label on top, number below, sharing the row equally.
   Widget _statColumn(String label, String value, double w) {
@@ -398,10 +549,13 @@ class FifaCard extends StatelessWidget {
             fit: BoxFit.scaleDown,
             child: Text(
               label,
-              style: _text(w * 0.046, FontWeight.w500, height: 1.2),
+              style: _text(theme.holo ? w * 0.038 : w * 0.046, FontWeight.w500,
+                  height: 1.2, color: theme.holo ? _accent : null),
             ),
           ),
-          Text(value, style: _text(w * 0.09, FontWeight.w700, height: 1.1)),
+          Text(value,
+              style: _text(theme.holo ? w * 0.075 : w * 0.09, FontWeight.w700,
+                  height: 1.1)),
         ],
       ),
     );
@@ -525,7 +679,9 @@ class FifaCard extends StatelessWidget {
             children: [
               Text(stat.value, style: _text(w * 0.075, FontWeight.w700)),
               SizedBox(width: w * 0.015),
-              Text(stat.label, style: _text(w * 0.045, FontWeight.w500)),
+              Text(stat.label,
+                  style: _text(w * 0.045, FontWeight.w500,
+                      color: theme.holo ? _accent : null)),
             ],
           ),
         ),
@@ -579,71 +735,186 @@ class FifaCard extends StatelessWidget {
             builder: (context, c) {
               final w = c.maxWidth;
               final h = c.maxHeight;
+              // a card with a title and a period leads with the period
+              final monthLed = title != null && subtitle != null;
+              // the picture's edge starts lower than the plain card's
+              final art = theme.background != null;
+              final bodyTop = monthLed ? (art ? 0.27 : 0.25) : 0.225;
+              // room under the picture for the longer header
+              final lower = monthLed ? 0.02 : 0.0;
+              final numberBlock = SizedBox(
+                // as tall as the picture, so the number sits level with it
+                width: emphasizeChange
+                    ? w * 0.28
+                    : (monthLed ? w * 0.22 : w * 0.26),
+                height: monthLed ? w * 0.46 : w * 0.39,
+                child: Center(
+                  // the big change chip can be taller than the picture:
+                  // let it spill over instead of overflowing
+                  child: OverflowBox(
+                    maxHeight: double.infinity,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: _metal(
+                            score == null ? "–" : "$score",
+                            _text(w * 0.2, FontWeight.w700),
+                          ),
+                        ),
+                        Text(
+                          "OVR",
+                          style: _text(w * 0.055, FontWeight.w500,
+                              color: theme.holo ? _accent : null),
+                        ),
+                        if (extra != null) ...[
+                          SizedBox(height: w * 0.02),
+                          Text(
+                            extra!,
+                            style: _text(w * 0.06, FontWeight.w700),
+                          ),
+                        ],
+                        // the player of the month card leaves the change out
+                        if (change != null && change != 0 && !theme.holo) ...[
+                          SizedBox(height: w * 0.025),
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: _changeChip(
+                              change!,
+                              w,
+                              scale: emphasizeChange ? 2 : 1,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+              );
+              final picture = Container(
+                padding: EdgeInsets.all(w * 0.01),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  // the holographic card has a rim of colour as a ring
+                  gradient:
+                      theme.holo ? SweepGradient(colors: _holoColors) : null,
+                  border: theme.holo
+                      ? null
+                      : Border.all(color: theme.ring, width: 1.6),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black38,
+                      blurRadius: 6,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: onPictureTap == null
+                    ? UserAvatar(w * 0.22, user)
+                    : InkWell(
+                        customBorder: CircleBorder(),
+                        onTap: onPictureTap,
+                        child: UserAvatar(w * 0.22, user),
+                      ),
+              );
               return Stack(
                 alignment: Alignment.topCenter,
                 clipBehavior: Clip.none,
                 children: [
-                  Positioned.fill(
-                    child: PhysicalShape(
-                      clipper: FifaCardClipper(),
-                      color: theme.gradient[1],
-                      elevation: effects ? 12 : 8,
-                      shadowColor: effects ? Color(0xFFFFB300) : Colors.black87,
-                      clipBehavior: Clip.antiAlias,
+                  if (art)
+                    Positioned.fill(
                       child: Stack(
                         fit: StackFit.expand,
                         children: [
-                          DecoratedBox(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: theme.gradient,
-                                stops: theme.stops,
-                              ),
+                          Image.asset(theme.background!, fit: BoxFit.fill),
+                          if (effects)
+                            ClipPath(
+                              clipper: FifaCardClipper(),
+                              child: FifaGoldEffects(glow: false),
                             ),
-                          ),
-                          CustomPaint(
-                            painter: theme.electric
-                                ? _ElectricPainter()
-                                : FifaStripesPainter(),
-                          ),
-                          DecoratedBox(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment(-1, -0.3),
-                                end: Alignment(1, 0.3),
-                                colors: [
-                                  Colors.transparent,
-                                  Colors.white.withValues(alpha: 0.5),
-                                  Colors.transparent,
-                                ],
-                                stops: [0.25, 0.5, 0.75],
-                              ),
-                            ),
-                          ),
-                          if (effects) FifaGoldEffects(),
-                          CustomPaint(painter: _InsetBorderPainter(_ink)),
                         ],
                       ),
+                    )
+                  else
+                    Positioned.fill(
+                      child: PhysicalShape(
+                        clipper: FifaCardClipper(),
+                        color: theme.gradient[1],
+                        elevation: effects ? 12 : 8,
+                        shadowColor:
+                            effects ? Color(0xFFFFB300) : Colors.black87,
+                        clipBehavior: Clip.antiAlias,
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            DecoratedBox(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: theme.gradient,
+                                  stops: theme.stops,
+                                ),
+                              ),
+                            ),
+                            CustomPaint(
+                              painter: theme.electric
+                                  ? _ElectricPainter()
+                                  : theme.holo
+                                      ? _CarbonPainter()
+                                      : FifaStripesPainter(theme.stripe),
+                            ),
+                            DecoratedBox(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment(-1, -0.3),
+                                  end: Alignment(1, 0.3),
+                                  colors: [
+                                    Colors.transparent,
+                                    Colors.white.withValues(alpha: theme.sheen),
+                                    Colors.transparent,
+                                  ],
+                                  stops: [0.25, 0.5, 0.75],
+                                ),
+                              ),
+                            ),
+                            if (effects) FifaGoldEffects(glow: !theme.holo),
+                            CustomPaint(painter: _InsetBorderPainter(_ink)),
+                            if (theme.holo)
+                              CustomPaint(painter: _HoloRimPainter()),
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
                   if (title != null)
                     Positioned(
-                      top: h * 0.065,
-                      left: w * 0.1,
-                      right: w * 0.1,
+                      top: monthLed ? h * (art ? 0.095 : 0.07) : h * 0.065,
+                      // the long title keeps clear of the card's shoulders
+                      left: monthLed ? w * 0.17 : w * 0.1,
+                      right: monthLed ? w * 0.17 : w * 0.1,
                       child: FittedBox(
                         fit: BoxFit.scaleDown,
                         child: Text(
                           title!,
-                          style: GoogleFonts.bebasNeue(
-                            color: _ink,
-                            fontSize: w * 0.17,
+                          style: (theme.holo
+                              ? GoogleFonts.oxanium
+                              : GoogleFonts.bebasNeue)(
+                            color: art ? _ink : (theme.holo ? _accent : _ink),
+                            fontWeight: theme.holo ? FontWeight.w700 : null,
+                            fontSize: monthLed
+                                ? (title!.length > 10 ? w * 0.065 : w * 0.1)
+                                : w * 0.17,
                             height: 1,
-                            letterSpacing:
-                                title!.length <= 4 ? w * 0.08 : w * 0.03,
+                            letterSpacing: monthLed
+                                ? (title!.length > 10 ? w * 0.015 : w * 0.06)
+                                : title!.length <= 4
+                                    ? w * 0.08
+                                    : w * 0.03,
                             shadows: [
+                              // a dark halo so it reads on the picture
+                              if (art)
+                                Shadow(color: Colors.black, blurRadius: 4),
                               Shadow(color: _edge, offset: Offset(0, 0.8)),
                             ],
                           ),
@@ -652,134 +923,110 @@ class FifaCard extends StatelessWidget {
                     ),
                   if (subtitle != null)
                     Positioned(
-                      top: title == null ? h * 0.1 : h * 0.166,
+                      top: monthLed
+                          ? h * (art ? 0.16 : 0.135)
+                          : title == null
+                              ? h * 0.1
+                              : h * 0.166,
+                      left: w * 0.08,
+                      right: w * 0.08,
+                      child: monthLed
+                          // the month is what sets the card apart: big
+                          ? FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: theme.holo
+                                  ? _metal(
+                                      subtitle!,
+                                      _text(w * 0.105, FontWeight.w800,
+                                          spacing: w * 0.012),
+                                    )
+                                  : Text(
+                                      subtitle!,
+                                      style: GoogleFonts.bebasNeue(
+                                        color: _ink,
+                                        fontSize: w * 0.16,
+                                        height: 1,
+                                        letterSpacing: w * 0.02,
+                                        shadows: [
+                                          Shadow(
+                                              color: _edge,
+                                              offset: Offset(0, 0.8)),
+                                        ],
+                                      ),
+                                    ),
+                            )
+                          : Text(
+                              subtitle!,
+                              textAlign: TextAlign.center,
+                              style: title == null
+                                  ? _text(
+                                      w * 0.07,
+                                      FontWeight.w600,
+                                      spacing: w * 0.03,
+                                    )
+                                  : _text(
+                                      w * 0.055,
+                                      FontWeight.w600,
+                                      spacing: w * 0.025,
+                                    ),
+                            ),
+                    ),
+                  if (monthLed)
+                    // number and picture as one row, centred on the card
+                    Positioned(
+                      top: h * bodyTop,
                       left: 0,
                       right: 0,
-                      child: Text(
-                        subtitle!,
-                        textAlign: TextAlign.center,
-                        style: title == null
-                            ? _text(
-                                w * 0.07,
-                                FontWeight.w600,
-                                spacing: w * 0.03,
-                              )
-                            : _text(
-                                w * 0.055,
-                                FontWeight.w600,
-                                spacing: w * 0.025,
-                              ),
-                      ),
-                    ),
-                  Positioned(
-                    top: h * 0.225,
-                    left: w * 0.08,
-                    width: emphasizeChange ? w * 0.28 : w * 0.26,
-                    // as tall as the picture, so the number sits level with it
-                    height: w * 0.39,
-                    child: Center(
-                      // the big change chip can be taller than the picture:
-                      // let it spill over instead of overflowing
-                      child: OverflowBox(
-                        maxHeight: double.infinity,
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            FittedBox(
-                              fit: BoxFit.scaleDown,
-                              child: Text(
-                                score == null ? "–" : "$score",
-                                style: _text(w * 0.2, FontWeight.w700),
-                              ),
-                            ),
-                            Text(
-                              "OVR",
-                              style: _text(w * 0.055, FontWeight.w500),
-                            ),
-                            if (extra != null) ...[
-                              SizedBox(height: w * 0.02),
-                              Text(
-                                extra!,
-                                style: _text(w * 0.06, FontWeight.w700),
-                              ),
-                            ],
-                            if (change != null && change != 0) ...[
-                              SizedBox(height: w * 0.025),
-                              FittedBox(
-                                fit: BoxFit.scaleDown,
-                                child: _changeChip(
-                                  change!,
-                                  w,
-                                  scale: emphasizeChange ? 2 : 1,
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    top: h * 0.225,
-                    left: w * 0.38,
-                    child: Container(
-                      padding: EdgeInsets.all(w * 0.01),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: theme.ring, width: 1.6),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black38,
-                            blurRadius: 6,
-                            offset: Offset(0, 2),
-                          ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          numberBlock,
+                          SizedBox(width: w * 0.04),
+                          picture
                         ],
                       ),
-                      child: onPictureTap == null
-                          ? UserAvatar(w * 0.22, user)
-                          : InkWell(
-                              customBorder: CircleBorder(),
-                              onTap: onPictureTap,
-                              child: UserAvatar(w * 0.22, user),
-                            ),
-                    ),
-                  ),
-                  Positioned(
-                    top: h * 0.597,
-                    left: w * 0.12,
-                    right: w * 0.12,
-                    child: Container(
-                      height: 1,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            _ink.withValues(alpha: 0),
-                            _ink.withValues(alpha: 0.67),
-                            _ink.withValues(alpha: 0),
-                          ],
+                    )
+                  else ...[
+                    Positioned(
+                        top: h * bodyTop, left: w * 0.08, child: numberBlock),
+                    Positioned(
+                        top: h * bodyTop, left: w * 0.38, child: picture),
+                  ],
+                  if (!theme.holo)
+                    Positioned(
+                      top: h * (0.597 + lower * 0.9),
+                      left: w * 0.12,
+                      right: w * 0.12,
+                      child: Container(
+                        height: 1,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              _ink.withValues(alpha: 0),
+                              _ink.withValues(alpha: 0.67),
+                              _ink.withValues(alpha: 0),
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                  ),
                   Positioned(
-                    top: h * 0.612,
+                    top: h * (0.612 + lower),
                     left: w * 0.08,
                     right: w * 0.08,
-                    child: Text(
+                    child: _metal(
                       _cardName(),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
-                      style: _text(
+                      _text(
                         w * 0.105,
                         FontWeight.w700,
                         spacing: w * 0.012,
                         height: 1.2,
                       ),
+                      align: TextAlign.center,
                     ),
                   ),
                   Positioned(
-                    top: h * 0.747,
+                    top: h * (0.747 + lower),
                     left: w * 0.1,
                     right: w * 0.1,
                     child: _statsArea(w),
@@ -804,46 +1051,55 @@ class FifaCardDialog extends StatefulWidget {
   State<FifaCardDialog> createState() => FifaCardDialogState();
 }
 
+/// Shares the picture of the card inside `boundary`, on a plain background
+/// with some room around it.
+Future<void> shareFifaCardPicture(
+  BuildContext context,
+  GlobalKey boundary,
+  String caption,
+) async {
+  try {
+    final render =
+        boundary.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+    if (render == null) return;
+    final card = await render.toImage(pixelRatio: 3);
+    const pad = 48.0;
+    final size = Size(card.width + 2 * pad, card.height + 2 * pad);
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder);
+    canvas.drawRect(Offset.zero & size, Paint()..color = Colors.white);
+    canvas.drawImage(card, Offset(pad, pad), Paint());
+    final picture = await recorder.endRecording().toImage(
+          size.width.toInt(),
+          size.height.toInt(),
+        );
+    final bytes = await picture.toByteData(format: ui.ImageByteFormat.png);
+    if (bytes == null || !context.mounted) return;
+    await shareWithOrigin(
+      context,
+      text: caption,
+      files: [
+        XFile.fromData(
+          bytes.buffer.asUint8List(),
+          name: 'card.png',
+          mimeType: 'image/png',
+        ),
+      ],
+    );
+  } catch (e) {
+    _logger.warning("Could not share the card: $e");
+  }
+}
+
 class FifaCardDialogState extends State<FifaCardDialog> {
   final GlobalKey _boundary = GlobalKey();
   bool _sharing = false;
 
   Future<void> _share() async {
     setState(() => _sharing = true);
-    try {
-      final boundary = _boundary.currentContext?.findRenderObject()
-          as RenderRepaintBoundary?;
-      if (boundary == null) return;
-      final card = await boundary.toImage(pixelRatio: 3);
-      // the card on a plain background, with some room around it
-      const pad = 48.0;
-      final size = Size(card.width + 2 * pad, card.height + 2 * pad);
-      final recorder = ui.PictureRecorder();
-      final canvas = Canvas(recorder);
-      canvas.drawRect(Offset.zero & size, Paint()..color = Colors.white);
-      canvas.drawImage(card, Offset(pad, pad), Paint());
-      final picture = await recorder.endRecording().toImage(
-            size.width.toInt(),
-            size.height.toInt(),
-          );
-      final bytes = await picture.toByteData(format: ui.ImageByteFormat.png);
-      if (bytes == null || !mounted) return;
-      await shareWithOrigin(
-        context,
-        text: widget.card.caption(context),
-        files: [
-          XFile.fromData(
-            bytes.buffer.asUint8List(),
-            name: 'card.png',
-            mimeType: 'image/png',
-          ),
-        ],
-      );
-    } catch (e) {
-      _logger.warning("Could not share the card: $e");
-    } finally {
-      if (mounted) setState(() => _sharing = false);
-    }
+    await shareFifaCardPicture(
+        context, _boundary, widget.card.caption(context));
+    if (mounted) setState(() => _sharing = false);
   }
 
   @override
@@ -875,3 +1131,49 @@ class FifaCardDialogState extends State<FifaCardDialog> {
 
 void showFifaCard(BuildContext context, FifaCard card) =>
     showDialog(context: context, builder: (_) => FifaCardDialog(card: card));
+
+/// A card with a share icon under it. The picture that is shared is the still
+/// card, without the moving effects.
+class ShareableFifaCard extends StatefulWidget {
+  final FifaCard Function(bool effects) card;
+  final bool effects;
+
+  const ShareableFifaCard({required this.card, this.effects = false});
+
+  @override
+  State<ShareableFifaCard> createState() => _ShareableFifaCardState();
+}
+
+class _ShareableFifaCardState extends State<ShareableFifaCard> {
+  final GlobalKey _boundary = GlobalKey();
+  bool _sharing = false;
+
+  Future<void> _share() async {
+    final caption = widget.card(false).caption(context);
+    setState(() => _sharing = true);
+    // wait for a frame without the effects
+    await WidgetsBinding.instance.endOfFrame;
+    if (!mounted) return;
+    await shareFifaCardPicture(context, _boundary, caption);
+    if (mounted) setState(() => _sharing = false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        RepaintBoundary(
+          key: _boundary,
+          child: widget.card(widget.effects && !_sharing),
+        ),
+        SizedBox(height: 4),
+        IconButton(
+          onPressed: _sharing ? null : _share,
+          tooltip: AppLocalizations.of(context)!.shareAction,
+          icon: Icon(Icons.ios_share, size: 20),
+        ),
+      ],
+    );
+  }
+}

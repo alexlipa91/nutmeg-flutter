@@ -290,7 +290,8 @@ class _GroupMonthlyStatsState extends State<GroupMonthlyStats> {
     // special cards, swiped sideways; only for a finished month
     // (player, look, title, whether it is about the change, moving effects)
     var specials = <(Map<String, dynamic>, FifaTheme, String, bool, bool)>[
-      if (potm != null) (potm, FifaTheme.gold, "POTM", false, true),
+      if (potm != null)
+        (potm, FifaTheme.blackGold, "PLAYER OF THE MONTH", false, true),
       if (improverEntry != null)
         (improverEntry, FifaTheme.blue, "ON FIRE", true, false),
     ];
@@ -332,10 +333,9 @@ class _GroupMonthlyStatsState extends State<GroupMonthlyStats> {
                     emphasizeChange: specials[i].$4,
                     effects: effects,
                     maxWidth: w);
-                // tap for the big card to share; still, so the picture is clean
-                return GestureDetector(
-                    onTap: () => showFifaCard(context, card(260, false)),
-                    child: card(width, specials[i].$5));
+                return ShareableFifaCard(
+                    card: (effects) => card(width, effects),
+                    effects: specials[i].$5);
               },
             );
           }),
@@ -465,8 +465,8 @@ class _SpecialCardsState extends State<_SpecialCards> {
         PointerDeviceKind.trackpad,
       }),
       child: SizedBox(
-        // card height plus room for its shadow
-        height: widget.itemWidth * 800 / 576 + 28,
+        // card height plus room for its shadow and the share icon
+        height: widget.itemWidth * 800 / 576 + 28 + 48,
         child: PageView.builder(
           controller: _controller,
           itemCount: widget.count,
