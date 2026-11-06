@@ -185,6 +185,10 @@ class FifaTheme {
   final List<Color>? ringColors;
   // the change since last month, as a chip under the score
   final bool showChange;
+  // size of the title and the month, for art with a narrower frame
+  final double headerScale;
+  // size of the numbers on the bottom row
+  final double statsScale;
 
   const FifaTheme({
     required this.gradient,
@@ -205,6 +209,8 @@ class FifaTheme {
     this.outline = Colors.black,
     this.ringColors,
     this.showChange = true,
+    this.headerScale = 1,
+    this.statsScale = 1,
   });
 
   /// Black and gold, for the player of the month.
@@ -287,6 +293,8 @@ class FifaTheme {
     metal: [Color(0xFFFFFFFF), Color(0xFFBFE3FF), Color(0xFF8FA6FF)],
     accent: Color(0xFF9DB4E8),
     outline: Color(0xFF070B33),
+    headerScale: 0.65,
+    statsScale: 0.85,
     ringColors: [
       Color(0xFF3FE0FF),
       Color(0xFF7B5CFF),
@@ -574,12 +582,16 @@ class FifaCard extends StatelessWidget {
             fit: BoxFit.scaleDown,
             child: Text(
               label,
-              style: _text(theme.holo ? w * 0.038 : w * 0.046, FontWeight.w500,
-                  height: 1.2, color: theme.holo ? theme.accent : null),
+              style: _text(
+                  theme.holo ? w * 0.038 * theme.statsScale : w * 0.046,
+                  FontWeight.w500,
+                  height: 1.2,
+                  color: theme.holo ? theme.accent : null),
             ),
           ),
           Text(value,
-              style: _text(theme.holo ? w * 0.075 : w * 0.09, FontWeight.w700,
+              style: _text(theme.holo ? w * 0.075 * theme.statsScale : w * 0.09,
+                  FontWeight.w700,
                   height: 1.1)),
         ],
       ),
@@ -810,7 +822,7 @@ class FifaCard extends StatelessWidget {
                             child: _changeChip(
                               change!,
                               w,
-                              scale: emphasizeChange ? 2 : 1,
+                              scale: emphasizeChange ? 1.6 : 1,
                             ),
                           ),
                         ],
@@ -932,11 +944,13 @@ class FifaCard extends StatelessWidget {
                                 art ? _ink : (theme.holo ? theme.accent : _ink),
                             fontWeight: theme.holo ? FontWeight.w700 : null,
                             fontSize: monthLed
-                                ? (title!.length > 10 ? w * 0.065 : w * 0.1)
+                                ? (title!.length > 10 ? w * 0.065 : w * 0.1) *
+                                    theme.headerScale
                                 : w * 0.17,
                             height: 1,
                             letterSpacing: monthLed
-                                ? (title!.length > 10 ? w * 0.015 : w * 0.06)
+                                ? (title!.length > 10 ? w * 0.015 : w * 0.06) *
+                                    theme.headerScale
                                 : title!.length <= 4
                                     ? w * 0.08
                                     : w * 0.03,
@@ -966,8 +980,10 @@ class FifaCard extends StatelessWidget {
                               child: theme.holo
                                   ? _metal(
                                       subtitle!,
-                                      _text(w * 0.105, FontWeight.w800,
-                                          spacing: w * 0.012),
+                                      _text(w * 0.105 * theme.headerScale,
+                                          FontWeight.w800,
+                                          spacing:
+                                              w * 0.012 * theme.headerScale),
                                     )
                                   : Text(
                                       subtitle!,
