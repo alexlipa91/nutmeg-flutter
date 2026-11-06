@@ -177,6 +177,14 @@ class FifaTheme {
   final bool holo;
   // a picture for the whole card, in place of the gradient and its effects
   final String? background;
+  // with a picture: the gradient of the big numbers, the small labels, the
+  // outline behind the text, the colours of the picture's ring
+  final List<Color> metal;
+  final Color accent;
+  final Color outline;
+  final List<Color>? ringColors;
+  // the change since last month, as a chip under the score
+  final bool showChange;
 
   const FifaTheme({
     required this.gradient,
@@ -188,6 +196,15 @@ class FifaTheme {
     this.sheen = 0.5,
     this.holo = false,
     this.background,
+    this.metal = const [
+      Color(0xFFF0D78A),
+      Color(0xFFD4AC45),
+      Color(0xFFA67C24)
+    ],
+    this.accent = const Color(0xFFB8975A),
+    this.outline = Colors.black,
+    this.ringColors,
+    this.showChange = true,
   });
 
   /// Black and gold, for the player of the month.
@@ -205,6 +222,7 @@ class FifaTheme {
     sheen: 0.12,
     holo: true,
     background: 'assets/potm_card_bg.png',
+    showChange: false,
   );
 
   static const gold = FifaTheme(
@@ -264,6 +282,17 @@ class FifaTheme {
     ink: Colors.white,
     ring: Color(0xFF9FE9FF),
     electric: true,
+    holo: true,
+    background: 'assets/fire_card_bg.png',
+    metal: [Color(0xFFFFFFFF), Color(0xFFBFE3FF), Color(0xFF8FA6FF)],
+    accent: Color(0xFF9DB4E8),
+    outline: Color(0xFF070B33),
+    ringColors: [
+      Color(0xFF3FE0FF),
+      Color(0xFF7B5CFF),
+      Color(0xFFFF4FD8),
+      Color(0xFF3FE0FF),
+    ],
   );
 }
 
@@ -461,8 +490,6 @@ class FifaCard extends StatelessWidget {
       ? Colors.black.withValues(alpha: 0.35)
       : Colors.white.withValues(alpha: 0.55);
 
-  static const _accent = Color(0xFFB8975A);
-
   TextStyle _text(
     double size,
     FontWeight weight, {
@@ -494,9 +521,7 @@ class FifaCard extends StatelessWidget {
       shaderCallback: (r) => LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: art
-            ? [Color(0xFFF0D78A), Color(0xFFD4AC45), Color(0xFFA67C24)]
-            : [Color(0xFFFFF1B8), Color(0xFFE8C766), Color(0xFFB8892B)],
+        colors: theme.metal,
       ).createShader(r),
       child: Text(
         text,
@@ -531,7 +556,7 @@ class FifaCard extends StatelessWidget {
               ..style = PaintingStyle.stroke
               ..strokeWidth = size * 0.09
               ..strokeJoin = StrokeJoin.round
-              ..color = Colors.black.withValues(alpha: 0.9),
+              ..color = theme.outline.withValues(alpha: 0.9),
           ),
         ),
         gold,
@@ -550,7 +575,7 @@ class FifaCard extends StatelessWidget {
             child: Text(
               label,
               style: _text(theme.holo ? w * 0.038 : w * 0.046, FontWeight.w500,
-                  height: 1.2, color: theme.holo ? _accent : null),
+                  height: 1.2, color: theme.holo ? theme.accent : null),
             ),
           ),
           Text(value,
@@ -681,7 +706,7 @@ class FifaCard extends StatelessWidget {
               SizedBox(width: w * 0.015),
               Text(stat.label,
                   style: _text(w * 0.045, FontWeight.w500,
-                      color: theme.holo ? _accent : null)),
+                      color: theme.holo ? theme.accent : null)),
             ],
           ),
         ),
@@ -766,7 +791,7 @@ class FifaCard extends StatelessWidget {
                         Text(
                           "OVR",
                           style: _text(w * 0.055, FontWeight.w500,
-                              color: theme.holo ? _accent : null),
+                              color: theme.holo ? theme.accent : null),
                         ),
                         if (extra != null) ...[
                           SizedBox(height: w * 0.02),
@@ -776,7 +801,9 @@ class FifaCard extends StatelessWidget {
                           ),
                         ],
                         // the player of the month card leaves the change out
-                        if (change != null && change != 0 && !theme.holo) ...[
+                        if (change != null &&
+                            change != 0 &&
+                            theme.showChange) ...[
                           SizedBox(height: w * 0.025),
                           FittedBox(
                             fit: BoxFit.scaleDown,
@@ -797,8 +824,9 @@ class FifaCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   // the holographic card has a rim of colour as a ring
-                  gradient:
-                      theme.holo ? SweepGradient(colors: _holoColors) : null,
+                  gradient: theme.holo
+                      ? SweepGradient(colors: theme.ringColors ?? _holoColors)
+                      : null,
                   border: theme.holo
                       ? null
                       : Border.all(color: theme.ring, width: 1.6),
@@ -900,7 +928,8 @@ class FifaCard extends StatelessWidget {
                           style: (theme.holo
                               ? GoogleFonts.oxanium
                               : GoogleFonts.bebasNeue)(
-                            color: art ? _ink : (theme.holo ? _accent : _ink),
+                            color:
+                                art ? _ink : (theme.holo ? theme.accent : _ink),
                             fontWeight: theme.holo ? FontWeight.w700 : null,
                             fontSize: monthLed
                                 ? (title!.length > 10 ? w * 0.065 : w * 0.1)
@@ -914,7 +943,7 @@ class FifaCard extends StatelessWidget {
                             shadows: [
                               // a dark halo so it reads on the picture
                               if (art)
-                                Shadow(color: Colors.black, blurRadius: 4),
+                                Shadow(color: theme.outline, blurRadius: 4),
                               Shadow(color: _edge, offset: Offset(0, 0.8)),
                             ],
                           ),
