@@ -1,3 +1,5 @@
+import 'dart:math' show min, pi, sin;
+
 import 'package:badges/badges.dart';
 import 'package:fl_chart/fl_chart.dart';
 
@@ -169,8 +171,8 @@ Future<void> showPlayerPopup(BuildContext context, UserDetails user) {
   );
 }
 
-/// What opens when you tap a player: a white panel with their card half above
-/// its top edge, a way to share the card, and their stats.
+/// What opens when you tap a player: their card, floating over the screen.
+/// Tap it to turn it over: the back has the stats.
 class JoinedPlayerBottomModal extends StatefulWidget {
   final UserDetails userDetails;
 
@@ -181,10 +183,17 @@ class JoinedPlayerBottomModal extends StatefulWidget {
       _JoinedPlayerBottomModalState();
 }
 
-class _JoinedPlayerBottomModalState extends State<JoinedPlayerBottomModal> {
-  static const _cardWidth = 220.0;
-  // the card's own shape is 576 by 800
-  static const _cardHeight = _cardWidth * 800 / 576;
+class _JoinedPlayerBottomModalState extends State<JoinedPlayerBottomModal>
+    with TickerProviderStateMixin {
+  static const _maxCardWidth = 280.0;
+
+  late final AnimationController _flip =
+      AnimationController(vsync: this, duration: Duration(milliseconds: 600));
+  // a small wobble when the card shows up, to say it can be turned
+  late final AnimationController _hint =
+      AnimationController(vsync: this, duration: Duration(milliseconds: 1200));
+  final GlobalKey _front = GlobalKey();
+  bool _sharing = false;
 
   // from the player's matches, so asked for once the popup is open
   int? _score;
@@ -194,6 +203,18 @@ class _JoinedPlayerBottomModalState extends State<JoinedPlayerBottomModal> {
   void initState() {
     super.initState();
     _load();
+    Future.delayed(Duration(milliseconds: 700), () {
+      if (mounted && !MediaQuery.disableAnimationsOf(context)) {
+        _hint.forward();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _flip.dispose();
+    _hint.dispose();
+    super.dispose();
   }
 
   Future<void> _load() async {
@@ -206,40 +227,89 @@ class _JoinedPlayerBottomModalState extends State<JoinedPlayerBottomModal> {
     }
   }
 
+  bool get _showsBack =>
+      _flip.status == AnimationStatus.completed ||
+      _flip.status == AnimationStatus.forward;
+
+  void _turn() {
+    _hint.value = 1;
+    _showsBack ? _flip.reverse() : _flip.forward();
+  }
+
+  Future<void> _share(FifaCard front) async {
+    final caption = front.caption(context);
+    // the picture is of the front
+    if (_showsBack) {
+      await _flip.reverse();
+      await WidgetsBinding.instance.endOfFrame;
+    }
+    if (!mounted) return;
+    setState(() => _sharing = true);
+    await shareFifaCardPicture(context, _front, caption);
+    if (mounted) setState(() => _sharing = false);
+  }
+
+  Widget _roundButton(IconData icon, VoidCallback? onPressed, {String? tip}) =>
+      IconButton(
+        onPressed: onPressed,
+        tooltip: tip,
+        style: IconButton.styleFrom(backgroundColor: Palette.white),
+        icon: Icon(icon, size: 20, color: Palette.primary),
+      );
+
   @override
   Widget build(BuildContext context) {
     final user = widget.userDetails;
-    final wide = MediaQuery.of(context).size.width > 700;
+    final width = min(_maxCardWidth, MediaQuery.of(context).size.width * 0.72);
+    final height = width * 800 / 576;
     final theme = FifaTheme.forScore(_score);
-    FifaCard card(double width) => FifaCard.player(
-        user: user, score: _score, theme: theme, maxWidth: width);
-    return SingleChildScrollView(
-      child: Stack(alignment: Alignment.topCenter, children: [
-        // the panel starts halfway down the card
-        Padding(
-          padding: EdgeInsets.only(top: _cardHeight / 2),
-          child: Container(
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: Palette.white,
-              borderRadius: wide
-                  ? BorderRadius.circular(20)
-                  : BorderRadius.vertical(top: Radius.circular(20)),
+    FifaCard card({Widget? back}) => FifaCard.player(
+        user: user, score: _score, theme: theme, maxWidth: width, back: back);
+    final front = card();
+    final back = card(
+        back: UserStatsCard.buildStatsContent(context, user,
+            winPercent: _winPercent));
+    return Padding(
+      padding: EdgeInsets.fromLTRB(16, 24, 16, 16),
+      child: Column(mainAxisSize: MainAxisSize.min, children: [
+        GestureDetector(
+          onTap: _turn,
+          onHorizontalDragEnd: (_) => _turn(),
+          child: SizedBox(
+            width: width,
+            height: height,
+            child: AnimatedBuilder(
+              animation: Listenable.merge([_flip, _hint]),
+              builder: (context, _) {
+                final wobble = _flip.value == 0
+                    ? 0.35 * sin(2 * pi * _hint.value) * (1 - _hint.value)
+                    : 0.0;
+                final angle =
+                    Curves.easeInOut.transform(_flip.value) * pi + wobble;
+                return Transform(
+                  alignment: Alignment.center,
+                  transform: Matrix4.identity()
+                    ..setEntry(3, 2, 0.0012)
+                    ..rotateY(angle),
+                  child: angle > pi / 2
+                      // the back is seen mirrored: turn it once more
+                      ? Transform(
+                          alignment: Alignment.center,
+                          transform: Matrix4.rotationY(pi),
+                          child: back)
+                      : RepaintBoundary(key: _front, child: front),
+                );
+              },
             ),
-            padding: EdgeInsets.fromLTRB(16, _cardHeight / 2 + 8, 16, 16),
-            child: Column(mainAxisSize: MainAxisSize.min, children: [
-              TextButton.icon(
-                onPressed: () => showFifaCard(context, card(260)),
-                icon: Icon(Icons.ios_share, size: 18),
-                label: Text(AppLocalizations.of(context)!.shareAction),
-              ),
-              SizedBox(height: 8),
-              UserStatsCard.buildStatsContent(context, user,
-                  winPercent: _winPercent),
-            ]),
           ),
         ),
-        card(_cardWidth),
+        SizedBox(height: 12),
+        Row(mainAxisSize: MainAxisSize.min, children: [
+          _roundButton(Icons.flip, _turn),
+          SizedBox(width: 12),
+          _roundButton(Icons.ios_share, _sharing ? null : () => _share(front),
+              tip: AppLocalizations.of(context)!.shareAction),
+        ]),
       ]),
     );
   }

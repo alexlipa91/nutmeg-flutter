@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:nutmeg/l10n/app_localizations.dart';
 import 'package:nutmeg/model/UserDetails.dart';
 import 'package:nutmeg/utils/CrashlyticsLogger.dart';
+import 'package:nutmeg/utils/UiUtils.dart';
 import 'package:nutmeg/utils/share_utils.dart';
 import 'package:nutmeg/widgets/Avatar.dart';
 import 'package:share_plus/share_plus.dart';
@@ -175,6 +176,8 @@ class FifaTheme {
   final double sheen;
   // Oxanium type, metallic numbers, a shimmering gold rim and carbon lines
   final bool holo;
+  // Oxanium type in place of Oswald and Bebas
+  final bool oxanium;
   // a picture for the whole card, in place of the gradient and its effects
   final String? background;
   // with a picture: the gradient of the big numbers, the small labels, the
@@ -199,6 +202,7 @@ class FifaTheme {
     this.stripe = Colors.white54,
     this.sheen = 0.5,
     this.holo = false,
+    this.oxanium = false,
     this.background,
     this.metal = const [
       Color(0xFFF0D78A),
@@ -227,6 +231,7 @@ class FifaTheme {
     stripe: Color(0x66D9B04A),
     sheen: 0.12,
     holo: true,
+    oxanium: true,
     background: 'assets/potm_card_bg.png',
     showChange: false,
   );
@@ -241,6 +246,9 @@ class FifaTheme {
     stops: [0, 0.4, 0.7, 1],
     ink: Color(0xFF3B2A06),
     ring: Color(0xFF9A7620),
+    background: 'assets/gold_card_bg.png',
+    oxanium: true,
+    statsScale: 1.25,
   );
 
   static const silver = FifaTheme(
@@ -253,6 +261,9 @@ class FifaTheme {
     stops: [0, 0.4, 0.7, 1],
     ink: Color(0xFF2B3036),
     ring: Color(0xFF7B8490),
+    background: 'assets/silver_card_bg.png',
+    oxanium: true,
+    statsScale: 1.25,
   );
 
   /// Gold above 80, silver above 70, bronze below; silver while the score is
@@ -275,6 +286,9 @@ class FifaTheme {
     stops: [0, 0.4, 0.7, 1],
     ink: Color(0xFF2E1706),
     ring: Color(0xFF6E3B14),
+    background: 'assets/bronze_card_bg.png',
+    oxanium: true,
+    statsScale: 1.25,
   );
 
   static const blue = FifaTheme(
@@ -289,6 +303,7 @@ class FifaTheme {
     ring: Color(0xFF9FE9FF),
     electric: true,
     holo: true,
+    oxanium: true,
     background: 'assets/fire_card_bg.png',
     metal: [Color(0xFFFFFFFF), Color(0xFFBFE3FF), Color(0xFF8FA6FF)],
     accent: Color(0xFF9DB4E8),
@@ -473,6 +488,8 @@ class FifaCard extends StatelessWidget {
   final bool effects;
   // the picture can be tapped (to change it)
   final VoidCallback? onPictureTap;
+  // the back of the card: what it shows in place of the front's content
+  final Widget? back;
 
   const FifaCard({
     Key? key,
@@ -489,6 +506,7 @@ class FifaCard extends StatelessWidget {
     this.emphasizeChange = false,
     this.effects = false,
     this.onPictureTap,
+    this.back,
   }) : super(key: key);
 
   Color get _ink => theme.ink;
@@ -498,6 +516,12 @@ class FifaCard extends StatelessWidget {
       ? Colors.black.withValues(alpha: 0.35)
       : Colors.white.withValues(alpha: 0.55);
 
+  /// Oxanium on the light cards (gold, silver, bronze) goes one weight up, so
+  /// it holds against the stripes of the picture.
+  FontWeight _weight(FontWeight w) => theme.oxanium && !theme.holo
+      ? FontWeight.values[(w.index + 1).clamp(0, 8)]
+      : w;
+
   TextStyle _text(
     double size,
     FontWeight weight, {
@@ -505,10 +529,10 @@ class FifaCard extends StatelessWidget {
     double height = 1,
     Color? color,
   }) =>
-      (theme.holo ? GoogleFonts.oxanium : GoogleFonts.oswald)(
+      (theme.oxanium ? GoogleFonts.oxanium : GoogleFonts.oswald)(
         color: color ?? _ink,
         fontSize: size,
-        fontWeight: weight,
+        fontWeight: _weight(weight),
         letterSpacing: spacing,
         height: height,
         shadows: [Shadow(color: _edge, offset: Offset(0, 0.8))],
@@ -583,14 +607,15 @@ class FifaCard extends StatelessWidget {
             child: Text(
               label,
               style: _text(
-                  theme.holo ? w * 0.038 * theme.statsScale : w * 0.046,
+                  theme.oxanium ? w * 0.038 * theme.statsScale : w * 0.046,
                   FontWeight.w500,
                   height: 1.2,
                   color: theme.holo ? theme.accent : null),
             ),
           ),
           Text(value,
-              style: _text(theme.holo ? w * 0.075 * theme.statsScale : w * 0.09,
+              style: _text(
+                  theme.oxanium ? w * 0.075 * theme.statsScale : w * 0.09,
                   FontWeight.w700,
                   height: 1.1)),
         ],
@@ -653,6 +678,7 @@ class FifaCard extends StatelessWidget {
     required FifaTheme theme,
     double maxWidth = 200,
     VoidCallback? onPictureTap,
+    Widget? back,
   }) {
     final attributes = user.traitAttributes ?? {};
     final hasAttributes = attributes.isNotEmpty;
@@ -681,6 +707,7 @@ class FifaCard extends StatelessWidget {
       // goalkeeping only shows for players who are given it
       extra: attributes.containsKey("GK") ? "GK ${attributes["GK"]}" : null,
       onPictureTap: onPictureTap,
+      back: back,
     );
   }
 
@@ -714,10 +741,11 @@ class FifaCard extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(stat.value, style: _text(w * 0.075, FontWeight.w700)),
+              Text(stat.value,
+                  style: _text(w * 0.075 * theme.statsScale, FontWeight.w700)),
               SizedBox(width: w * 0.015),
               Text(stat.label,
-                  style: _text(w * 0.045, FontWeight.w500,
+                  style: _text(w * 0.045 * theme.statsScale, FontWeight.w500,
                       color: theme.holo ? theme.accent : null)),
             ],
           ),
@@ -927,155 +955,200 @@ class FifaCard extends StatelessWidget {
                         ),
                       ),
                     ),
-                  if (title != null)
+                  if (back != null) ...[
+                    // the back of the card: the name, then what `back` shows
                     Positioned(
-                      top: monthLed ? h * (art ? 0.095 : 0.07) : h * 0.065,
-                      // the long title keeps clear of the card's shoulders
-                      left: monthLed ? w * 0.17 : w * 0.1,
-                      right: monthLed ? w * 0.17 : w * 0.1,
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(
-                          title!,
-                          style: (theme.holo
-                              ? GoogleFonts.oxanium
-                              : GoogleFonts.bebasNeue)(
-                            color:
-                                art ? _ink : (theme.holo ? theme.accent : _ink),
-                            fontWeight: theme.holo ? FontWeight.w700 : null,
-                            fontSize: monthLed
-                                ? (title!.length > 10 ? w * 0.065 : w * 0.1) *
-                                    theme.headerScale
-                                : w * 0.17,
-                            height: 1,
-                            letterSpacing: monthLed
-                                ? (title!.length > 10 ? w * 0.015 : w * 0.06) *
-                                    theme.headerScale
-                                : title!.length <= 4
-                                    ? w * 0.08
-                                    : w * 0.03,
-                            shadows: [
-                              // a dark halo so it reads on the picture
-                              if (art)
-                                Shadow(color: theme.outline, blurRadius: 4),
-                              Shadow(color: _edge, offset: Offset(0, 0.8)),
-                            ],
-                          ),
-                        ),
+                      top: h * (0.1 + lower),
+                      left: w * 0.1,
+                      right: w * 0.1,
+                      child: _metal(
+                        _cardName(),
+                        _text(w * 0.105, FontWeight.w700,
+                            spacing: w * 0.012, height: 1.2),
+                        align: TextAlign.center,
                       ),
                     ),
-                  if (subtitle != null)
                     Positioned(
-                      top: monthLed
-                          ? h * (art ? 0.16 : 0.135)
-                          : title == null
-                              ? h * 0.1
-                              : h * 0.166,
-                      left: w * 0.08,
-                      right: w * 0.08,
-                      child: monthLed
-                          // the month is what sets the card apart: big
-                          ? FittedBox(
-                              fit: BoxFit.scaleDown,
-                              child: theme.holo
-                                  ? _metal(
-                                      subtitle!,
-                                      _text(w * 0.105 * theme.headerScale,
-                                          FontWeight.w800,
-                                          spacing:
-                                              w * 0.012 * theme.headerScale),
-                                    )
-                                  : Text(
-                                      subtitle!,
-                                      style: GoogleFonts.bebasNeue(
-                                        color: _ink,
-                                        fontSize: w * 0.16,
-                                        height: 1,
-                                        letterSpacing: w * 0.02,
-                                        shadows: [
-                                          Shadow(
-                                              color: _edge,
-                                              offset: Offset(0, 0.8)),
-                                        ],
-                                      ),
-                                    ),
-                            )
-                          : Text(
-                              subtitle!,
-                              textAlign: TextAlign.center,
-                              style: title == null
-                                  ? _text(
-                                      w * 0.07,
-                                      FontWeight.w600,
-                                      spacing: w * 0.03,
-                                    )
-                                  : _text(
-                                      w * 0.055,
-                                      FontWeight.w600,
-                                      spacing: w * 0.025,
-                                    ),
-                            ),
-                    ),
-                  if (monthLed)
-                    // number and picture as one row, centred on the card
-                    Positioned(
-                      top: h * bodyTop,
-                      left: 0,
-                      right: 0,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          numberBlock,
-                          SizedBox(width: w * 0.04),
-                          picture
-                        ],
-                      ),
-                    )
-                  else ...[
-                    Positioned(
-                        top: h * bodyTop, left: w * 0.08, child: numberBlock),
-                    Positioned(
-                        top: h * bodyTop, left: w * 0.38, child: picture),
-                  ],
-                  if (!theme.holo)
-                    Positioned(
-                      top: h * (0.597 + lower * 0.9),
+                      top: h * 0.21,
+                      bottom: h * 0.1,
                       left: w * 0.12,
                       right: w * 0.12,
-                      child: Container(
-                        height: 1,
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              _ink.withValues(alpha: 0),
-                              _ink.withValues(alpha: 0.67),
-                              _ink.withValues(alpha: 0),
-                            ],
-                          ),
+                      child: Center(
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: SizedBox(width: w * 0.9, child: back!),
                         ),
                       ),
                     ),
-                  Positioned(
-                    top: h * (0.612 + lower),
-                    left: w * 0.08,
-                    right: w * 0.08,
-                    child: _metal(
-                      _cardName(),
-                      _text(
-                        w * 0.105,
-                        FontWeight.w700,
-                        spacing: w * 0.012,
-                        height: 1.2,
+                  ] else ...[
+                    if (title != null)
+                      Positioned(
+                        top: monthLed
+                            ? h * (art ? 0.095 : 0.07)
+                            : h * (theme.oxanium ? 0.1 : 0.065),
+                        // the long title keeps clear of the card's shoulders
+                        left: monthLed
+                            ? w * 0.17
+                            : (theme.oxanium ? w * 0.15 : w * 0.1),
+                        right: monthLed
+                            ? w * 0.17
+                            : (theme.oxanium ? w * 0.15 : w * 0.1),
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            title!,
+                            style: (theme.oxanium
+                                ? GoogleFonts.oxanium
+                                : GoogleFonts.bebasNeue)(
+                              color: art
+                                  ? _ink
+                                  : (theme.holo ? theme.accent : _ink),
+                              fontWeight: theme.oxanium
+                                  ? (monthLed
+                                      ? FontWeight.w700
+                                      : _weight(FontWeight.w600))
+                                  : null,
+                              fontSize: monthLed
+                                  ? (title!.length > 10 ? w * 0.065 : w * 0.1) *
+                                      theme.headerScale
+                                  : (theme.oxanium ? w * 0.095 : w * 0.17),
+                              height: 1,
+                              letterSpacing: monthLed
+                                  ? (title!.length > 10
+                                          ? w * 0.015
+                                          : w * 0.06) *
+                                      theme.headerScale
+                                  : theme.oxanium
+                                      ? w * 0.04
+                                      : title!.length <= 4
+                                          ? w * 0.08
+                                          : w * 0.03,
+                              shadows: [
+                                // a dark halo so it reads on the picture
+                                if (art && theme.holo)
+                                  Shadow(color: theme.outline, blurRadius: 4),
+                                Shadow(color: _edge, offset: Offset(0, 0.8)),
+                              ],
+                            ),
+                          ),
+                        ),
                       ),
-                      align: TextAlign.center,
+                    if (subtitle != null)
+                      Positioned(
+                        top: monthLed
+                            ? h * (art ? 0.16 : 0.135)
+                            : title == null
+                                ? h * 0.1
+                                : h * 0.166,
+                        left: w * 0.08,
+                        right: w * 0.08,
+                        child: monthLed
+                            // the month is what sets the card apart: big
+                            ? FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: theme.holo
+                                    ? _metal(
+                                        subtitle!,
+                                        _text(w * 0.105 * theme.headerScale,
+                                            FontWeight.w800,
+                                            spacing:
+                                                w * 0.012 * theme.headerScale),
+                                      )
+                                    : Text(
+                                        subtitle!,
+                                        style: GoogleFonts.bebasNeue(
+                                          color: _ink,
+                                          fontSize: w * 0.16,
+                                          height: 1,
+                                          letterSpacing: w * 0.02,
+                                          shadows: [
+                                            Shadow(
+                                                color: _edge,
+                                                offset: Offset(0, 0.8)),
+                                          ],
+                                        ),
+                                      ),
+                              )
+                            : Text(
+                                subtitle!,
+                                textAlign: TextAlign.center,
+                                style: title == null
+                                    ? _text(
+                                        w * 0.07,
+                                        FontWeight.w600,
+                                        spacing: w * 0.03,
+                                      )
+                                    : _text(
+                                        w * 0.055,
+                                        FontWeight.w600,
+                                        spacing: w * 0.025,
+                                      ),
+                              ),
+                      ),
+                    if (monthLed)
+                      // number and picture as one row, centred on the card
+                      Positioned(
+                        top: h * bodyTop,
+                        left: 0,
+                        right: 0,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            numberBlock,
+                            SizedBox(width: w * 0.04),
+                            picture
+                          ],
+                        ),
+                      )
+                    else ...[
+                      Positioned(
+                          top: h * bodyTop, left: w * 0.08, child: numberBlock),
+                      Positioned(
+                          top: h * bodyTop, left: w * 0.38, child: picture),
+                    ],
+                    if (!theme.holo)
+                      Positioned(
+                        top: h * (0.597 + lower * 0.9),
+                        left: w * 0.12,
+                        right: w * 0.12,
+                        child: Container(
+                          height: 1,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                _ink.withValues(alpha: 0),
+                                _ink.withValues(alpha: 0.67),
+                                _ink.withValues(alpha: 0),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    Positioned(
+                      // Oxanium sits higher: keep the name off the line above it
+                      top: h * (0.612 + lower) +
+                          (theme.oxanium && !theme.holo ? 24 : 0),
+                      left: w * 0.08,
+                      right: w * 0.08,
+                      child: _metal(
+                        _cardName(),
+                        _text(
+                          w * 0.105,
+                          FontWeight.w700,
+                          spacing: w * 0.012,
+                          height: 1.2,
+                        ),
+                        align: TextAlign.center,
+                      ),
                     ),
-                  ),
-                  Positioned(
-                    top: h * (0.747 + lower),
-                    left: w * 0.1,
-                    right: w * 0.1,
-                    child: _statsArea(w),
-                  ),
+                    Positioned(
+                      top: h * (0.747 + lower) +
+                          (theme.oxanium && !theme.holo ? 16 : 0),
+                      left: w * 0.1,
+                      right: w * 0.1,
+                      child: _statsArea(w),
+                    ),
+                  ],
                 ],
               );
             },
@@ -1216,7 +1289,7 @@ class _ShareableFifaCardState extends State<ShareableFifaCard> {
         IconButton(
           onPressed: _sharing ? null : _share,
           tooltip: AppLocalizations.of(context)!.shareAction,
-          icon: Icon(Icons.ios_share, size: 20),
+          icon: Icon(Icons.ios_share, size: 20, color: Palette.primary),
         ),
       ],
     );
