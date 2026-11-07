@@ -71,7 +71,7 @@ platform :ios do
         submit_for_review: true,
         automatic_release: true,
         force: true,
-        skip_metadata: true,
+        skip_metadata: false,
         skip_screenshots: true,
         run_precheck_before_submit: false,
         submission_information: { add_id_info_uses_idfa: false }
@@ -93,7 +93,7 @@ platform :ios do
         automatic_release: true,
         force: true, # Skip HTML report verification
         skip_app_version_update: true,
-        skip_metadata: true,
+        skip_metadata: false,
         skip_screenshots: true,
         skip_binary_upload: true,
         run_precheck_before_submit: false,
