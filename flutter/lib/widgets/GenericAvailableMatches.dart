@@ -202,10 +202,32 @@ class GenericAvailableMatchesListState
                 return list[i];
               },
               itemCount: 3),
+          // The shell nav floats over this page. The default FAB spot uses
+          // view padding only, so the button lands under the pill.
           floatingActionButton: widget.floatingActionButton,
+          floatingActionButtonLocation: _AboveShellNavFabLocation(
+            max(
+              0.0,
+              MediaQuery.paddingOf(context).bottom -
+                  MediaQuery.viewPaddingOf(context).bottom,
+            ),
+          ),
         ),
       ),
     );
+  }
+}
+
+/// [FloatingActionButtonLocation.endFloat], shifted up by [lift].
+class _AboveShellNavFabLocation extends FloatingActionButtonLocation {
+  final double lift;
+
+  const _AboveShellNavFabLocation(this.lift);
+
+  @override
+  Offset getOffset(ScaffoldPrelayoutGeometry scaffoldGeometry) {
+    final Offset end = FloatingActionButtonLocation.endFloat.getOffset(scaffoldGeometry);
+    return Offset(end.dx, end.dy - lift);
   }
 }
 
