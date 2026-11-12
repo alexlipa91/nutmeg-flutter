@@ -1,1 +1,4 @@
-UX improvements
+New player cards: your profile is now a card with attributes and win rate, plus Player of the Month and On Fire cards on the leaderboard.
+Rate teammates with optional traits after each match.
+One sortable leaderboard for the month, the year and all time.
+Fixes for deep links and Sign in with Apple, and layout improvements.

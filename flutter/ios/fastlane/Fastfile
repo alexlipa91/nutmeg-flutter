@@ -5,6 +5,39 @@ app_id = ENV["APP_APPLE_ID"]
 team_id = "CQD5MU7BCC"
 username = "jirachi155@gmail.com"
 
+# Locales of the App Store listing, read from App Store Connect.
+#
+# deliver applies metadata/default/* only to locales it finds locally, and it
+# creates an empty localization for any local folder the listing doesn't have.
+# An en-GB folder did that to 14.1.2, which then couldn't be submitted. Passing
+# the listing's own locales sends What's New to all of them, and any empty
+# non-primary localization on the editable version is removed first.
+def listing_locales(bundle_identifier)
+  app = Spaceship::ConnectAPI::App.find(bundle_identifier)
+  UI.user_error!("Could not find #{bundle_identifier} on App Store Connect") unless app
+
+  platform = Spaceship::ConnectAPI::Platform::IOS
+  edit_version = app.get_edit_app_store_version(platform: platform)
+  version = edit_version || app.get_live_app_store_version(platform: platform)
+  return [app.primary_locale] unless version
+
+  localizations = version.get_app_store_version_localizations
+  if edit_version
+    empty = localizations.select do |localization|
+      localization.locale != app.primary_locale && localization.description.to_s.strip.empty?
+    end
+    empty.each do |localization|
+      UI.important("Removing the empty #{localization.locale} localization from version #{edit_version.version_string}")
+      localization.delete!
+    end
+    localizations -= empty
+  end
+
+  locales = localizations.map(&:locale)
+  UI.message("App Store listing locales: #{locales.join(', ')}")
+  locales
+end
+
 platform :ios do
   lane :install_certificates do
       setup_ci(verbose: true)
@@ -67,6 +100,7 @@ platform :ios do
     deliver(
         api_key: api_key,
         app_identifier: bundle_identifier,
+        languages: listing_locales(bundle_identifier),
         ipa: "../build/ios/ipa/Nutmeg.ipa",
         submit_for_review: true,
         automatic_release: true,
@@ -87,6 +121,7 @@ platform :ios do
 
     deliver(
         api_key: api_key,
+        languages: listing_locales(bundle_identifier),
         build_number: options[:build_number],
         app_version: options[:version],
         submit_for_review: true,
