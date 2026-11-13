@@ -149,6 +149,13 @@ flutter_icons:
   image_path_ios: "assets/nutmeg.png"
   android: true
   ios: true
+  # Adaptive icon for Android 8+, so launchers that mask icons (circle on Pixel)
+  # show the full-bleed blue instead of a white circle around a small square.
+  # The foreground already keeps the wordmark inside the 66dp safe zone.
+  adaptive_icon_background: "#394BBB"
+  adaptive_icon_foreground: "assets/nutmeg_adaptive_foreground.png"
+  adaptive_icon_foreground_inset: 0
+  adaptive_icon_monochrome: "assets/nutmeg_adaptive_foreground.png"
 
 flutter_native_splash:
   color: "#394BBB"
