@@ -1,17 +1,20 @@
 import unittest
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from unittest import mock
 
 from src import match_preview, player_form
 from src.models._matches import Match
 from src.pair_stats import pair_results_for_match, pairs_from_lineup, pair_key
 
+# Previews are only generated for upcoming matches.
+FUTURE = datetime.now(timezone.utc) + timedelta(days=3)
+
 
 def make_match(score=(3, 1), a=("u1", "u2", "guest_x"), b=("u3", "u4"), max_players=5):
     going = {u: {} for u in list(a) + list(b)}
     return Match.from_dict(
         {
-            "dateTime": datetime(2026, 11, 7, 19, 0, tzinfo=timezone.utc),
+            "dateTime": FUTURE,
             "going": going,
             "maxPlayers": max_players,
             "score": list(score) if score else None,
@@ -69,13 +72,14 @@ STATS = {("u1", "u2"): {"together": 9, "together_wins": 7, "together_draws": 1,
 
 class PreviewTests(unittest.TestCase):
     def facts(self):
-        return match_preview.build_facts(make_match(score=None), USERS, STATS)
+        return match_preview.build_facts(make_match(score=None), USERS, STATS)[0]
 
     def test_facts_shape(self):
         f = self.facts()
         self.assertEqual(f["venue"], "Camp Nou Court")
         self.assertEqual(f["team_a"]["players"][0]["name"], "Marco")
-        self.assertEqual(f["pairs_together"][0]["wins"], 7)
+        self.assertEqual(f["storylines"][0]["type"], "partnership")
+        self.assertEqual(f["storylines"][0]["wins"], 7)
         # guests get the default rating
         self.assertIn(2.5, [p["rating"] for p in f["team_a"]["players"]])
         # no ids or full names leak into the facts
@@ -85,7 +89,7 @@ class PreviewTests(unittest.TestCase):
 
     def test_rating_gap(self):
         even = {u: {"name": u, "avg_score": 3.0} for u in USERS}
-        f = match_preview.build_facts(make_match(score=None), even, {})
+        f, _ = match_preview.build_facts(make_match(score=None), even, {})
         self.assertTrue(f["evenly_matched"])
         self.assertEqual(f["rating_gap"], 0.0)
         # fixture ratings: sides average 2.93 vs 2.70
@@ -95,7 +99,7 @@ class PreviewTests(unittest.TestCase):
 
     def test_same_first_name_disambiguated(self):
         users = {**USERS, "u4": {"name": "Marco Pons", "avg_score": 2.4}}
-        f = match_preview.build_facts(make_match(score=None), users, {})
+        f, _ = match_preview.build_facts(make_match(score=None), users, {})
         names = [p["name"] for t in ("team_a", "team_b") for p in f[t]["players"]]
         self.assertIn("Marco R.", names)
         self.assertIn("Marco P.", names)
@@ -151,10 +155,6 @@ class PreviewTests(unittest.TestCase):
         self.assertNotIn("Rossi", str(kwargs["json"]))
 
 
-if __name__ == "__main__":
-    unittest.main()
-
-
 class FormTests(unittest.TestCase):
     def test_result_for_user(self):
         m = make_match(score=(3, 1))
@@ -181,13 +181,15 @@ class FormTests(unittest.TestCase):
 
     def test_facts_include_form_only_when_notable(self):
         m = make_match(score=None)
-        f = match_preview.build_facts(m, USERS, {})
-        self.assertNotIn("players_in_form", f)
+        f, _ = match_preview.build_facts(m, USERS, {})
+        self.assertNotIn("in_form", [s["type"] for s in f["storylines"]])
         forms = {"u1": player_form.notable_form(list("wwwwd")), "u3": None}
         forms = {u: v for u, v in forms.items() if v}
-        f = match_preview.build_facts(m, USERS, {}, forms=forms)
-        self.assertEqual(f["players_in_form"][0]["name"], "Marco")
-        self.assertEqual(f["players_in_form"][0]["wins"], 4)
+        f, keys = match_preview.build_facts(m, USERS, {}, forms=forms)
+        form = [s for s in f["storylines"] if s["type"] == "in_form"][0]
+        self.assertEqual(form["name"], "Marco")
+        self.assertEqual(form["wins"], 4)
+        self.assertIn("form:u1", keys)
         self.assertNotIn("u1", str(f))
 
 
@@ -257,7 +259,7 @@ class GetPreviewTests(unittest.TestCase):
         return {
             "going": {u: {} for u in a + b},
             "maxPlayers": max_players,
-            "dateTime": datetime(2026, 11, 7, 19, 0, tzinfo=timezone.utc),
+            "dateTime": FUTURE,
             "teams": {"balanced": {"players": {"a": a, "b": b}}},
         }
 
@@ -308,3 +310,109 @@ class GetPreviewTests(unittest.TestCase):
         with mock.patch.object(match_preview.Secrets, "GEMINI_API_KEY", ""):
             out = match_preview.get_preview(db, "m1", "en", False, lambda u: USERS.get(u, {}))
         self.assertIsNone(out)
+
+
+def story(key, score, type_="partnership"):
+    return {"key": key, "score": score, "fact": {"type": type_}}
+
+
+class VarietyTests(unittest.TestCase):
+    def test_storylines_rank_striking_records_over_long_ones(self):
+        stats = {
+            # many games, unremarkable record
+            ("u1", "u2"): {"together": 20, "together_wins": 10, "together_losses": 10},
+            # fewer games, one-sided head to head
+            ("u1", "u3"): {"against": 6, "lo_wins_against": 6},
+            # always teammates, now on opposite sides
+            ("u2", "u4"): {"together": 7, "together_wins": 4},
+        }
+        f, keys = match_preview.build_facts(make_match(score=None), USERS, stats)
+        types = [s["type"] for s in f["storylines"]]
+        self.assertEqual(set(types[:2]), {"rivalry", "first_time_apart"})
+        self.assertNotIn("u1", str(f))
+        self.assertIn("against:u1_u3", keys)
+
+    def test_recent_storylines_are_pushed_down(self):
+        cands = [story("a", 2.0), story("b", 1.6), story("c", 1.5)]
+        self.assertEqual(
+            [c["key"] for c in match_preview.pick_storylines(cands, [], "s", n=1)], ["a"]
+        )
+        recent = [{"storylines": ["a"]}]
+        self.assertNotEqual(
+            [c["key"] for c in match_preview.pick_storylines(cands, recent, "s", n=1)],
+            ["a"],
+        )
+
+    def test_pick_limits_types(self):
+        cands = [story("p%d" % i, 3 - i * 0.1) for i in range(4)]
+        cands += [story("r1", 1.0, "dead_even_ratings"), story("r2", 0.9, "lopsided_ratings")]
+        picked = match_preview.pick_storylines(cands, [], "s", n=4)
+        types = [c["fact"]["type"] for c in picked]
+        self.assertEqual(types.count("partnership"), 2)
+        self.assertEqual(sum(t.endswith("_ratings") for t in types), 1)
+
+    def test_angle_fits_storylines_and_avoids_recent(self):
+        recent = [{"angle": a} for a in ("tabloid", "radio", "gossip")]
+        seen = set()
+        for i in range(40):
+            a = match_preview.pick_angle(["potm_record"], recent, "seed%d" % i)
+            seen.add(a)
+            self.assertNotIn(a, {"tabloid", "radio", "gossip", "rivalry",
+                                 "partnership", "underdog"})
+        self.assertGreater(len(seen), 1)
+        # deterministic per seed (same angle for every language of a match)
+        self.assertEqual(match_preview.pick_angle([], [], "k"),
+                         match_preview.pick_angle([], [], "k"))
+        self.assertIn(match_preview.pick_angle(["rivalry"], [], "k"), match_preview.ANGLES)
+
+    def test_recent_helpers_skip_this_match(self):
+        entries = [
+            {"matchId": "m0", "lang": "en", "headline": "Old", "opening": "O."},
+            {"matchId": "m2", "lang": "es", "headline": "Es", "opening": "E."},
+            {"matchId": "m2", "lang": "en", "headline": "New", "opening": "N."},
+            {"matchId": "m1", "lang": "en", "headline": "Self", "opening": "S."},
+        ]
+        recent = match_preview.recent_matches(entries, "m1")
+        self.assertEqual([e["matchId"] for e in recent], ["m2", "m0"])
+        texts = match_preview.recent_texts(entries, "m1", "en")
+        self.assertEqual([t["headline"] for t in texts], ["New", "Old"])
+
+    def test_opening(self):
+        self.assertEqual(match_preview._opening("Hi there. More 3.5 text."), "Hi there.")
+        self.assertEqual(match_preview._opening("Rating 3.5 wins! Next"), "Rating 3.5 wins!")
+        self.assertEqual(match_preview._opening("no stop"), "no stop")
+
+
+class HistoryFlowTests(unittest.TestCase):
+    def test_history_recorded_and_fed_back(self):
+        db, seen = FakeDb(), []
+
+        def fake_gemini(facts, lang, key, angle, texts):
+            seen.append((angle, texts))
+            return {"headline": "H%d" % len(seen), "body": "First line. Rest."}
+
+        def run(mid, a, b):
+            d = GetPreviewTests.match_dict(a, b)
+            d["organizerId"] = "org1"
+            db.store["matches/" + mid] = d
+            with mock.patch.object(match_preview.Secrets, "GEMINI_API_KEY", "KEY"), \
+                 mock.patch("src.match_preview.gemini_preview", side_effect=fake_gemini):
+                return match_preview.get_preview(db, mid, "en", False, lambda u: USERS.get(u, {}))
+
+        run("m1", ["u1", "u2", "guest_x"], ["u3", "u4"])
+        run("m2", ["u1", "u2", "guest_x"], ["u3", "u4"])
+        entries = db.store["preview_history/org1"]["entries"]
+        self.assertEqual([e["matchId"] for e in entries], ["m1", "m2"])
+        self.assertEqual(entries[0]["opening"], "First line.")
+        self.assertEqual(seen[0][1], [])
+        self.assertEqual(seen[1][1], [{"headline": "H1", "opening": "First line."}])
+        # consecutive previews of the group never share an angle
+        self.assertNotEqual(seen[0][0], seen[1][0])
+        # regenerating a match replaces its entry instead of adding one
+        run("m2", ["u1", "u3", "guest_x"], ["u2", "u4"])
+        entries = db.store["preview_history/org1"]["entries"]
+        self.assertEqual([e["matchId"] for e in entries], ["m1", "m2"])
+
+
+if __name__ == "__main__":
+    unittest.main()
